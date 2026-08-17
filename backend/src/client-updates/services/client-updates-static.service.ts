@@ -74,11 +74,19 @@ export class ClientUpdatesStaticService implements OnModuleInit {
 
     instance.use(
       '/updates/client-win',
-      (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      (
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+      ) => {
         try {
           const url = typeof req.url === 'string' ? req.url : '';
           const pathname = url.split('?')[0] || '';
-          if (pathname === '' || pathname === '/' || pathname === '/index.html') {
+          if (
+            pathname === '' ||
+            pathname === '/' ||
+            pathname === '/index.html'
+          ) {
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             res.setHeader(
               'Cache-Control',
@@ -94,7 +102,11 @@ export class ClientUpdatesStaticService implements OnModuleInit {
         }
         next();
       },
-      (req: express.Request, _res: express.Response, next: express.NextFunction) => {
+      (
+        req: express.Request,
+        _res: express.Response,
+        next: express.NextFunction,
+      ) => {
         try {
           if (
             typeof req.url === 'string' &&
@@ -132,4 +144,3 @@ export class ClientUpdatesStaticService implements OnModuleInit {
     );
   }
 }
-

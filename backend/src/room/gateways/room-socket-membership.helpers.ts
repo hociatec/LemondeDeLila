@@ -42,7 +42,9 @@ export function removeSocketFromRoomMembership(
   };
 }
 
-export function hasUserConnectionsInRoom<TMeta extends { userId: number; roomId: number }>(
+export function hasUserConnectionsInRoom<
+  TMeta extends { userId: number; roomId: number },
+>(
   rooms: SocketRoomMap,
   silentRooms: SocketRoomMap,
   clients: ClientLookup<TMeta>,
@@ -74,7 +76,9 @@ function removeFromSetMap(
   return set.size;
 }
 
-function hasUserConnectionInMap<TMeta extends { userId: number; roomId: number }>(
+function hasUserConnectionInMap<
+  TMeta extends { userId: number; roomId: number },
+>(
   map: SocketRoomMap,
   clients: ClientLookup<TMeta>,
   roomId: number,

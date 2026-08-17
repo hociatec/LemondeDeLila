@@ -1,6 +1,11 @@
 import { GameStateEntity } from '../../../core/entities/game-state.entity';
 import { PanierExpressMetadata } from './model/panier-express-state.entity';
-import { asRecord, stringEqualsInsensitive, toText, toUnknownArray } from './panier-express-state.helpers';
+import {
+  asRecord,
+  stringEqualsInsensitive,
+  toText,
+  toUnknownArray,
+} from './panier-express-state.helpers';
 
 export function resolveBasicPanierExpressPickChoice(args: {
   kind: string;
@@ -11,7 +16,9 @@ export function resolveBasicPanierExpressPickChoice(args: {
   pendingData: Record<string, unknown>;
   clearPending: (state: GameStateEntity) => GameStateEntity;
   getMetadata: (state: GameStateEntity) => PanierExpressMetadata;
-  asStringDeckPool: (pool: PanierExpressMetadata['decks']) => PanierExpressMetadata['decks'];
+  asStringDeckPool: (
+    pool: PanierExpressMetadata['decks'],
+  ) => PanierExpressMetadata['decks'];
   discardMany: (
     pool: PanierExpressMetadata['decks'],
     deckKey: string,
@@ -48,9 +55,9 @@ export function resolveBasicPanierExpressPickChoice(args: {
     inventory?: unknown;
   }>;
   toStringArray: (value: unknown) => string[];
-  createMetaRng: (
-    metadata: PanierExpressMetadata,
-  ) => { getMeta: () => PanierExpressMetadata };
+  createMetaRng: (metadata: PanierExpressMetadata) => {
+    getMeta: () => PanierExpressMetadata;
+  };
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
@@ -207,7 +214,9 @@ export function resolveBasicPanierExpressPickChoice(args: {
     }
 
     let next = args.clearPending(args.state);
-    const target = args.getPlayers(next).find((player) => player.id === targetPlayerId);
+    const target = args
+      .getPlayers(next)
+      .find((player) => player.id === targetPlayerId);
     const cards = args.toStringArray(target?.inventory ?? []);
     if (!cards.length) {
       next = args.appendLog(
@@ -249,7 +258,9 @@ export function resolveBasicPanierExpressPickChoice(args: {
     if (!Number.isFinite(targetPlayerId)) {
       return args.clearPending(args.state);
     }
-    const me = args.getPlayers(args.state).find((player) => player.id === args.actorId);
+    const me = args
+      .getPlayers(args.state)
+      .find((player) => player.id === args.actorId);
     const inventory = args.toStringArray(me?.inventory ?? []);
     if (!inventory.length) {
       return args.clearPending(args.state);
@@ -281,7 +292,9 @@ export function resolveBasicPanierExpressPickChoice(args: {
     }
 
     let next = args.clearPending(args.state);
-    const target = args.getPlayers(next).find((player) => player.id === targetPlayerId);
+    const target = args
+      .getPlayers(next)
+      .find((player) => player.id === targetPlayerId);
     const targetInv = args.toStringArray(target?.inventory ?? []);
     if (!targetInv.length) {
       next = args.appendLog(
@@ -339,7 +352,9 @@ export function resolveBasicPanierExpressPickChoice(args: {
       next = args.addCourseToPlayer(next, args.actorId, card);
     }
 
-    const me = args.getPlayers(next).find((player) => player.id === args.actorId);
+    const me = args
+      .getPlayers(next)
+      .find((player) => player.id === args.actorId);
     const myInv = args.toStringArray(me?.inventory ?? []);
     if (myInv.length) {
       const metaRng = args.createMetaRng(args.getMetadata(next));
@@ -347,7 +362,11 @@ export function resolveBasicPanierExpressPickChoice(args: {
       next = { ...next, metadata: picked.meta };
       const give = toText(picked.value).trim();
       if (give) {
-        const removedGive = args.removeCourseFromPlayer(next, args.actorId, give);
+        const removedGive = args.removeCourseFromPlayer(
+          next,
+          args.actorId,
+          give,
+        );
         next = removedGive.state;
         if (removedGive.removed) {
           next = args.addCourseToPlayer(next, targetPlayerId, give);
@@ -411,7 +430,8 @@ export function resolveBasicPanierExpressPickChoice(args: {
             type: 'pick',
             playerId: pid,
             blocking: true,
-              label: 'Choisissez une carte a donner au joueur suivant, puis Entree.',
+            label:
+              'Choisissez une carte a donner au joueur suivant, puis Entree.',
             choices: inventory,
             data: {
               kind: 'event.troc_improvise',
@@ -556,10 +576,15 @@ export function resolveBasicPanierExpressPickChoice(args: {
       return args.clearPending(args.state);
     }
     let next = args.clearPending(args.state);
-    const target = args.getPlayers(next).find((player) => player.id === targetPlayerId);
+    const target = args
+      .getPlayers(next)
+      .find((player) => player.id === targetPlayerId);
     const targetInv = args.toStringArray(target?.inventory);
     if (!targetInv.length) {
-      next = args.appendLog(next, `[Panier Express] Troc rapide : cible sans inventaire.`);
+      next = args.appendLog(
+        next,
+        `[Panier Express] Troc rapide : cible sans inventaire.`,
+      );
       return args.advanceTurn(next);
     }
     const metaRng = args.createMetaRng(args.getMetadata(next));
@@ -585,7 +610,8 @@ export function resolveBasicPanierExpressPickChoice(args: {
 
   if (args.kind === 'exchange.voisin.choose_give') {
     const targetPlayerId = Number(args.pendingData.targetPlayerId);
-    const exchangeLabel = toText(args.pendingData.exchangeLabel).trim() || 'Echange';
+    const exchangeLabel =
+      toText(args.pendingData.exchangeLabel).trim() || 'Echange';
     if (!Number.isFinite(targetPlayerId)) {
       return args.clearPending(args.state);
     }
@@ -594,10 +620,15 @@ export function resolveBasicPanierExpressPickChoice(args: {
       return args.clearPending(args.state);
     }
     let next = args.clearPending(args.state);
-    const target = args.getPlayers(next).find((player) => player.id === targetPlayerId);
+    const target = args
+      .getPlayers(next)
+      .find((player) => player.id === targetPlayerId);
     const targetInv = args.toStringArray(target?.inventory);
     if (!targetInv.length) {
-      next = args.appendLog(next, `[Panier Express] ${exchangeLabel} : cible sans inventaire.`);
+      next = args.appendLog(
+        next,
+        `[Panier Express] ${exchangeLabel} : cible sans inventaire.`,
+      );
       return args.advanceTurn(next);
     }
     const metaRng = args.createMetaRng(args.getMetadata(next));

@@ -180,7 +180,9 @@ export function applyBasicPanierExpressEvent(args: {
         effect: 'pick',
       });
     case 'emballage-defectueux': {
-      const me = args.getPlayers(next).find((player) => player.id === args.playerId);
+      const me = args
+        .getPlayers(next)
+        .find((player) => player.id === args.playerId);
       const cards = args.toStringArray(me?.inventory);
       if (!cards.length) {
         next = args.appendLog(
@@ -326,7 +328,9 @@ export function applyBasicPanierExpressEvent(args: {
       });
     }
     case 'echange-spontane': {
-      const me = args.getPlayers(next).find((player) => player.id === args.playerId);
+      const me = args
+        .getPlayers(next)
+        .find((player) => player.id === args.playerId);
       const inventory = args.toStringArray(me?.inventory);
       const targets = args.buildTargets(args.playerId);
       const choices = args.buildTargetChoices(targets);

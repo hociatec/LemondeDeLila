@@ -13,10 +13,11 @@ export function applyPanierExpressExchangeCard(args: {
   card: string;
   utils: PanierExpressUtils;
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
-  createMetaRng: (
+  createMetaRng: (metadata: any) => { getMeta: () => any };
+  pickOne: <T>(
     metadata: any,
-  ) => { getMeta: () => any };
-  pickOne: <T>(metadata: any, items: T[]) => { meta: any; value: T | undefined };
+    items: T[],
+  ) => { meta: any; value: T | undefined };
 }): GameStateEntity | null {
   const kind = String(args.card ?? '').trim();
   if (!kind) return args.state;
@@ -70,7 +71,12 @@ export function applyPanierExpressExchangeCard(args: {
     next = setInventoryState(args.utils, next, args.initiatorPlayerId, []);
     next = setInventoryState(args.utils, next, args.targetPlayerId, []);
     targetInv.forEach((card) => {
-      next = addCardToPlayerState(args.utils, next, args.initiatorPlayerId, card);
+      next = addCardToPlayerState(
+        args.utils,
+        next,
+        args.initiatorPlayerId,
+        card,
+      );
     });
     initiatorInv.forEach((card) => {
       next = addCardToPlayerState(args.utils, next, args.targetPlayerId, card);

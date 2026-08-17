@@ -1,4 +1,8 @@
-import type { WonderGood, WonderInventory, WonderPrices } from './le-marche-des-merveilles-state.entity';
+import type {
+  WonderGood,
+  WonderInventory,
+  WonderPrices,
+} from './le-marche-des-merveilles-state.entity';
 
 export const WONDER_GOODS: WonderGood[] = [
   'gemmes',
@@ -37,7 +41,9 @@ export function clampPrice(value: number): number {
   return Math.max(1, Math.min(10, Math.trunc(value)));
 }
 
-export function copyInventory(source?: Partial<WonderInventory>): WonderInventory {
+export function copyInventory(
+  source?: Partial<WonderInventory>,
+): WonderInventory {
   return {
     gemmes: Number(source?.gemmes ?? 0),
     potions: Number(source?.potions ?? 0),

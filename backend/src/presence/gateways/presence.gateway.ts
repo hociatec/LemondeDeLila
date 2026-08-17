@@ -120,4 +120,3 @@ export class PresenceGateway
     return 'home';
   }
 }
-

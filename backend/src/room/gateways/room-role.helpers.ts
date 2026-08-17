@@ -22,13 +22,9 @@ export function resolveSpectatorIntent(
 }
 
 export function buildRoomRoleClientMessage(spectator: boolean): string {
-  return spectator
-    ? 'Mode spectateur activé.'
-    : 'Mode spectateur désactivé.';
+  return spectator ? 'Mode spectateur activé.' : 'Mode spectateur désactivé.';
 }
 
-export function buildRoomRoleAnnouncementMessage(
-  spectator: boolean,
-): string {
+export function buildRoomRoleAnnouncementMessage(spectator: boolean): string {
   return spectator ? 'Mode spectateur.' : 'Mode joueur.';
 }

@@ -73,7 +73,6 @@ export class MorpionService extends AbstractGameService {
   }
 
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity {
-    const players = baseState.players ?? [];
     const baseMeta =
       baseState.metadata && typeof baseState.metadata === 'object'
         ? (baseState.metadata as Record<string, unknown>)
@@ -583,7 +582,7 @@ export class MorpionService extends AbstractGameService {
       metadata: {
         ...meta,
         ...((queued.metadata as any) ?? {}),
-      } as any,
+      },
       pending: null,
       turn: {
         ...(queued.turn ?? { direction: 1 }),

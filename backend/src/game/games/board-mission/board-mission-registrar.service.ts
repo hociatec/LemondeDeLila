@@ -101,7 +101,10 @@ export class BoardMissionRegistrarService implements OnModuleInit {
             ...meta,
             statuses: {
               skipTurn: Object.fromEntries(
-                Object.keys(meta.positions ?? {}).map((key) => [Number(key), 0]),
+                Object.keys(meta.positions ?? {}).map((key) => [
+                  Number(key),
+                  0,
+                ]),
               ),
             },
             pendingContext: null,
@@ -121,7 +124,8 @@ export class BoardMissionRegistrarService implements OnModuleInit {
       getAvailableActions: (
         state: GameStateEntity,
         playerId: number,
-      ): GameSingleActionDto[] => getBoardMissionAvailableActions(state, playerId),
+      ): GameSingleActionDto[] =>
+        getBoardMissionAvailableActions(state, playerId),
       validateAction: (
         state: GameStateEntity,
         action: GameSingleActionDto,
@@ -171,7 +175,9 @@ export class BoardMissionRegistrarService implements OnModuleInit {
     for (const manifestPath of manifests) {
       try {
         const raw = fs.readFileSync(manifestPath, 'utf-8');
-        const manifest = JSON.parse(raw.replace(/^\uFEFF/, '')) as BoardMissionManifest;
+        const manifest = JSON.parse(
+          raw.replace(/^\uFEFF/, ''),
+        ) as BoardMissionManifest;
         if (manifest.engine !== 'board-mission') continue;
         const id = manifest.code ?? manifest.id ?? '';
         if (!id) continue;
@@ -183,7 +189,9 @@ export class BoardMissionRegistrarService implements OnModuleInit {
       } catch (error) {
         const message =
           error instanceof Error ? error.message : String(error ?? '');
-        this.logger.warn(`Manifest board-mission ignoré ${manifestPath}: ${message}`);
+        this.logger.warn(
+          `Manifest board-mission ignoré ${manifestPath}: ${message}`,
+        );
       }
     }
     return results;

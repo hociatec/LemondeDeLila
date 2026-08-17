@@ -88,7 +88,9 @@ export class SocialProfileService {
       profile.defeatMessage = trimmed.length > 0 ? trimmed : null;
     }
     if (typeof visibility === 'string') {
-      const normalized = visibility.trim().toLowerCase() as SocialProfileVisibility;
+      const normalized = visibility
+        .trim()
+        .toLowerCase() as SocialProfileVisibility;
       if (!PROFILE_VISIBILITY.includes(normalized)) {
         throw new HttpException('Visibilite invalide.', 400);
       }

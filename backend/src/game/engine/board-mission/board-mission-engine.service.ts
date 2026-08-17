@@ -44,7 +44,10 @@ export class BoardMissionEngineService {
     private readonly support: BoardMissionRuntimeSupportService,
   ) {}
 
-  applyActions<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
+  applyActions<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(
     state: GameStateEntity,
     actions: GameSingleActionDto[],
     model: BoardMissionResolvedModel<TRules>,
@@ -62,7 +65,10 @@ export class BoardMissionEngineService {
     });
   }
 
-  private handleRoll<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
+  private handleRoll<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(
     state: GameStateEntity,
     model: BoardMissionResolvedModel<TRules>,
   ): GameStateEntity {
@@ -95,11 +101,10 @@ export class BoardMissionEngineService {
     return ctx.state;
   }
 
-  private applyStep<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
-    ctx: TurnContext,
-    step: BoardMissionFlowStep,
-    rules: TRules,
-  ): TurnContext {
+  private applyStep<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(ctx: TurnContext, step: BoardMissionFlowStep, rules: TRules): TurnContext {
     if (ctx.finished) return ctx;
     if (ctx.turnResolved && step.type !== 'advance_turn') return ctx;
 
@@ -123,29 +128,42 @@ export class BoardMissionEngineService {
     }
   }
 
-  private applyEnsureActiveClient<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
-    ctx: TurnContext,
-    rules: TRules,
-  ): TurnContext {
-    const nextState = this.ensureActiveClient<TMeta, TRules>(ctx.state, ctx.playerId, rules);
+  private applyEnsureActiveClient<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(ctx: TurnContext, rules: TRules): TurnContext {
+    const nextState = this.ensureActiveClient<TMeta, TRules>(
+      ctx.state,
+      ctx.playerId,
+      rules,
+    );
     return {
       ...ctx,
       state: nextState,
-      activeClient: this.support.getActiveClient<TMeta>(nextState, ctx.playerId),
+      activeClient: this.support.getActiveClient<TMeta>(
+        nextState,
+        ctx.playerId,
+      ),
     };
   }
 
-  private applyEnsureTurnEvent<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
-    ctx: TurnContext,
-    rules: TRules,
-  ): TurnContext {
+  private applyEnsureTurnEvent<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(ctx: TurnContext, rules: TRules): TurnContext {
     return {
       ...ctx,
-      state: this.ensureEventForPlayer<TMeta, TRules>(ctx.state, ctx.playerId, rules),
+      state: this.ensureEventForPlayer<TMeta, TRules>(
+        ctx.state,
+        ctx.playerId,
+        rules,
+      ),
     };
   }
 
-  private applyRoll<TMeta extends BoardMissionMetadata>(ctx: TurnContext): TurnContext {
+  private applyRoll<TMeta extends BoardMissionMetadata>(
+    ctx: TurnContext,
+  ): TurnContext {
     const client = this.support.getActiveClient<TMeta>(ctx.state, ctx.playerId);
     if (!client) {
       return {
@@ -183,13 +201,17 @@ export class BoardMissionEngineService {
     };
   }
 
-  private applyMove<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
-    ctx: TurnContext,
-    rules: TRules,
-  ): TurnContext {
+  private applyMove<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(ctx: TurnContext, rules: TRules): TurnContext {
     if (!ctx.activeClient || ctx.roll == null) return ctx;
 
-    let nextState = this.setPlayerPosition<TMeta>(ctx.state, ctx.playerId, ctx.finalIndex);
+    let nextState = this.setPlayerPosition<TMeta>(
+      ctx.state,
+      ctx.playerId,
+      ctx.finalIndex,
+    );
     const meta = this.support.getMeta<TMeta>(nextState);
     const arrivedTileTitle =
       this.support.getTileByIndex(meta, ctx.finalIndex)?.title ??
@@ -211,15 +233,21 @@ export class BoardMissionEngineService {
     };
   }
 
-  private applyBlockedPath<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
-    ctx: TurnContext,
-    rules: TRules,
-  ): TurnContext {
+  private applyBlockedPath<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(ctx: TurnContext, rules: TRules): TurnContext {
     if (!ctx.activeClient || ctx.roll == null) return ctx;
 
     const meta = this.support.getMeta<TMeta>(ctx.state);
-    const pathIndices = this.buildPathIndices(ctx.startIndex + 1, ctx.finalIndex);
-    const blockedIndex = this.support.findTileIndexById(meta, meta.blockedTileId);
+    const pathIndices = this.buildPathIndices(
+      ctx.startIndex + 1,
+      ctx.finalIndex,
+    );
+    const blockedIndex = this.support.findTileIndexById(
+      meta,
+      meta.blockedTileId,
+    );
     if (blockedIndex == null || !pathIndices.includes(blockedIndex)) return ctx;
 
     const blockedTile = this.support.getTileByIndex(meta, blockedIndex);
@@ -228,7 +256,8 @@ export class BoardMissionEngineService {
       this.support.formatMessage(rules.messages.blocked, {
         player: resolvePlayerNameFromState(ctx.state, ctx.playerId),
         tileTitle:
-          blockedTile?.title ?? `case ${meta.blockedTileId ?? blockedIndex + 1}`,
+          blockedTile?.title ??
+          `case ${meta.blockedTileId ?? blockedIndex + 1}`,
       }),
     );
     nextState = this.setPlayerPosition<TMeta>(
@@ -246,10 +275,10 @@ export class BoardMissionEngineService {
     };
   }
 
-  private applyDestination<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
-    ctx: TurnContext,
-    rules: TRules,
-  ): TurnContext {
+  private applyDestination<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(ctx: TurnContext, rules: TRules): TurnContext {
     if (!ctx.activeClient || ctx.roll == null) return ctx;
 
     const meta = this.support.getMeta<TMeta>(ctx.state);
@@ -272,9 +301,15 @@ export class BoardMissionEngineService {
     nextState = this.incrementTrip<TMeta>(nextState, ctx.playerId);
 
     const completed =
-      this.support.getMeta<TMeta>(nextState).completedTrips?.[ctx.playerId] ?? 0;
+      this.support.getMeta<TMeta>(nextState).completedTrips?.[ctx.playerId] ??
+      0;
     if (completed >= rules.victory.target) {
-      nextState = this.setWinner<TMeta, TRules>(nextState, ctx.playerId, completed, rules);
+      nextState = this.setWinner<TMeta, TRules>(
+        nextState,
+        ctx.playerId,
+        completed,
+        rules,
+      );
       return {
         ...ctx,
         state: nextState,
@@ -285,12 +320,19 @@ export class BoardMissionEngineService {
     }
 
     nextState = this.dropActiveClient<TMeta>(nextState, ctx.playerId);
-    nextState = this.ensureActiveClient<TMeta, TRules>(nextState, ctx.playerId, rules);
+    nextState = this.ensureActiveClient<TMeta, TRules>(
+      nextState,
+      ctx.playerId,
+      rules,
+    );
 
     return {
       ...ctx,
       state: nextState,
-      activeClient: this.support.getActiveClient<TMeta>(nextState, ctx.playerId),
+      activeClient: this.support.getActiveClient<TMeta>(
+        nextState,
+        ctx.playerId,
+      ),
       turnResolved: true,
       shouldAdvanceTurn: true,
     };
@@ -304,11 +346,10 @@ export class BoardMissionEngineService {
     };
   }
 
-  private ensureActiveClient<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
-    state: GameStateEntity,
-    playerId: number,
-    rules: TRules,
-  ): GameStateEntity {
+  private ensureActiveClient<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(state: GameStateEntity, playerId: number, rules: TRules): GameStateEntity {
     const meta = this.support.getMeta<TMeta>(state);
     const existing = meta.activeClients?.[playerId];
     if (existing != null) return state;
@@ -329,7 +370,10 @@ export class BoardMissionEngineService {
           next,
           this.support.formatMessage(rules.messages.newClient, {
             clientName: card.clientName,
-            destination: this.support.tileTitleById(updatedMeta, card.destinationId),
+            destination: this.support.tileTitleById(
+              updatedMeta,
+              card.destinationId,
+            ),
           }),
         );
       }
@@ -339,11 +383,10 @@ export class BoardMissionEngineService {
     return next;
   }
 
-  private ensureEventForPlayer<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
-    state: GameStateEntity,
-    playerId: number,
-    rules: TRules,
-  ): GameStateEntity {
+  private ensureEventForPlayer<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(state: GameStateEntity, playerId: number, rules: TRules): GameStateEntity {
     const meta = this.support.getMeta<TMeta>(state);
     if (meta.eventTurnPlayerId === playerId && meta.lastEventId != null) {
       return state;
@@ -388,7 +431,10 @@ export class BoardMissionEngineService {
     return this.support.replaceMeta(state, updated);
   }
 
-  private setWinner<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
+  private setWinner<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(
     state: GameStateEntity,
     playerId: number,
     completed: number,
@@ -429,7 +475,9 @@ export class BoardMissionEngineService {
     return this.support.replaceMeta(state, updatedMeta);
   }
 
-  private drawClientCard<TMeta extends BoardMissionMetadata>(meta: TMeta): {
+  private drawClientCard<TMeta extends BoardMissionMetadata>(
+    meta: TMeta,
+  ): {
     cardId: number | null;
     meta: TMeta;
   } {
@@ -450,7 +498,9 @@ export class BoardMissionEngineService {
     };
   }
 
-  private drawEventCard<TMeta extends BoardMissionMetadata>(meta: TMeta): {
+  private drawEventCard<TMeta extends BoardMissionMetadata>(
+    meta: TMeta,
+  ): {
     card: BoardMissionEventCard | null;
     meta: TMeta;
   } {

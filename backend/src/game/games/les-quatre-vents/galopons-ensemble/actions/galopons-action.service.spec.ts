@@ -186,9 +186,9 @@ describe('GaloponsActionService', () => {
     let state = setup.hydrateInitialState(makeSetupBaseState());
     expect((state.pending as any)?.type).toBe('choose_pawn');
     expect((state.pending as any)?.playerId).toBe(1);
-    expect((state.players ?? []).find((player: any) => player?.id === 2)?.pawn).toBe(
-      'shetland',
-    );
+    expect(
+      (state.players ?? []).find((player: any) => player?.id === 2)?.pawn,
+    ).toBe('shetland');
     expect(
       (state.players ?? []).find((player: any) => player?.id === 2)?.pawnLabel,
     ).toBe('Le Poney Shetland');
@@ -410,7 +410,9 @@ describe('GaloponsActionService', () => {
         playerId: 1,
         blocking: true,
         choices: ['P2'],
-        data: { context: { kind: 'pair_advance', actorId: 1, replayAfter: false } },
+        data: {
+          context: { kind: 'pair_advance', actorId: 1, replayAfter: false },
+        },
       },
       metadata: {
         ...meta(makeState()),
@@ -439,7 +441,9 @@ describe('GaloponsActionService', () => {
         playerId: 1,
         blocking: true,
         choices: ['P2'],
-        data: { context: { kind: 'pair_advance', actorId: 1, replayAfter: false } },
+        data: {
+          context: { kind: 'pair_advance', actorId: 1, replayAfter: false },
+        },
       },
       metadata: {
         ...meta(makeState()),
@@ -473,7 +477,9 @@ describe('GaloponsActionService', () => {
         blocking: true,
         choices: ['P2'],
         initiatorPlayerId: 1,
-        data: { context: { kind: 'pair_advance', actorId: 1, replayAfter: false } },
+        data: {
+          context: { kind: 'pair_advance', actorId: 1, replayAfter: false },
+        },
       },
       turn: { currentPlayerId: 1, direction: 1 },
       metadata: {
@@ -514,7 +520,9 @@ describe('GaloponsActionService', () => {
         playerId: 1,
         blocking: true,
         choices: ['P2'],
-        data: { context: { kind: 'help_advance', actorId: 1, replayAfter: false } },
+        data: {
+          context: { kind: 'help_advance', actorId: 1, replayAfter: false },
+        },
       },
       metadata: {
         ...meta(makeState()),
@@ -536,16 +544,16 @@ describe('GaloponsActionService', () => {
     const { service } = makeRuntime();
     const out = (service as any).applyCard(makeState(), 1, {
       id: 15,
-      text: "Vous aidez un poulain perdu à retrouver son chemin. Donnez-lui une pomme en la défaussant, puis rejouez immédiatement.",
+      text: 'Vous aidez un poulain perdu à retrouver son chemin. Donnez-lui une pomme en la défaussant, puis rejouez immédiatement.',
     });
 
     expect(meta(out).apples[1]).toBe(1);
     expect(meta(out).ious?.[1] ?? {}).toEqual({});
     expect(out.pending).toBeNull();
-    expect((meta(out) as any).keepTurn).toBe(true);
+    expect(meta(out).keepTurn).toBe(true);
   });
 
-  it("requires exact landing on the final tile and bounces back on overshoot", () => {
+  it('requires exact landing on the final tile and bounces back on overshoot', () => {
     const { service } = makeRuntime([2]);
     const state = {
       ...makeState(),
@@ -565,7 +573,7 @@ describe('GaloponsActionService', () => {
     expect(out.status).toBe('started');
   });
 
-  it("sends the player back toward the start when the stable is reached without enough apples", () => {
+  it('sends the player back toward the start when the stable is reached without enough apples', () => {
     const { service } = makeRuntime([1, 2]);
     const state = {
       ...makeState(),
@@ -633,7 +641,7 @@ describe('GaloponsActionService', () => {
     expect(meta(nextTurnFromStart).movementDirection?.[1]).toBe(1);
   });
 
-  it("declares victory only for the player who reaches the stable with enough apples", () => {
+  it('declares victory only for the player who reaches the stable with enough apples', () => {
     const { service } = makeRuntime([1]);
     const state = {
       ...makeState(),
@@ -703,7 +711,10 @@ describe('GaloponsActionService', () => {
       {
         ...state,
         log: [],
-        metadata: { ...meta(state), positions: { ...meta(state).positions, 1: 1 } },
+        metadata: {
+          ...meta(state),
+          positions: { ...meta(state).positions, 1: 1 },
+        },
       },
       1,
     );
@@ -711,7 +722,10 @@ describe('GaloponsActionService', () => {
       {
         ...state,
         log: [],
-        metadata: { ...meta(state), positions: { ...meta(state).positions, 1: 3 } },
+        metadata: {
+          ...meta(state),
+          positions: { ...meta(state).positions, 1: 3 },
+        },
       },
       1,
     );
@@ -719,7 +733,10 @@ describe('GaloponsActionService', () => {
       {
         ...state,
         log: [],
-        metadata: { ...meta(state), positions: { ...meta(state).positions, 1: 4 } },
+        metadata: {
+          ...meta(state),
+          positions: { ...meta(state).positions, 1: 4 },
+        },
       },
       1,
     );
@@ -736,9 +753,9 @@ describe('GaloponsActionService', () => {
 
     expect(cardMessages).not.toContain('Piochez une carte Aventure.');
     expect(skipMessages).not.toContain('Passez des tours.');
-    expect(skipMessages.some((message) => /passe 1 tour\(s\)\./i.test(message))).toBe(
-      false,
-    );
+    expect(
+      skipMessages.some((message) => /passe 1 tour\(s\)\./i.test(message)),
+    ).toBe(false);
     expect(finishMessages).not.toContain('Écurie finale.');
   });
 

@@ -904,7 +904,10 @@ export class ContesActionService {
       return this.recordConteNarration(next, playerId, card);
     }
 
-    return this.core.appendLog(stateWithLastDraw, `${baseMessage} ${card.text}`);
+    return this.core.appendLog(
+      stateWithLastDraw,
+      `${baseMessage} ${card.text}`,
+    );
   }
 
   private recordConteNarration(
@@ -969,9 +972,7 @@ export class ContesActionService {
     const pawns = Array.isArray(meta.pawns) ? meta.pawns : [];
     const match = pawns.find((pawn) => toText(pawn?.id).trim() === pawnId);
     const fullLabel =
-      match && toText(match.label).trim()
-        ? toText(match.label).trim()
-        : pawnId;
+      match && toText(match.label).trim() ? toText(match.label).trim() : pawnId;
     return this.simplifyPawnLabel(fullLabel);
   }
 

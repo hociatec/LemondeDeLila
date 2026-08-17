@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto, GameStateWithActions } from '../../../../engine/dto/game-action.dto';
+import type {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../../../../engine/dto/game-action.dto';
 import { formatPresenterActions } from '../../../../presenters/actions-presenter.helper';
 import {
   GOOD_LABELS,

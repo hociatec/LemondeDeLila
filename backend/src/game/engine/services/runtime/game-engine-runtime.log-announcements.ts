@@ -30,7 +30,11 @@ export function appendBoardArrivalAnnouncements(params: {
     if (!handler?.shouldAnnounceBoardArrivals?.()) {
       return next;
     }
-    if (String(next.status ?? '').toLowerCase().trim() !== 'started') {
+    if (
+      String(next.status ?? '')
+        .toLowerCase()
+        .trim() !== 'started'
+    ) {
       return next;
     }
 
@@ -41,9 +45,11 @@ export function appendBoardArrivalAnnouncements(params: {
       ? (nextMeta['tiles'] as Record<string, unknown>[])
       : [];
     const prevPositions =
-      getMetadataObject(prevMeta, 'positions') ?? ({} as Record<string, unknown>);
+      getMetadataObject(prevMeta, 'positions') ??
+      ({} as Record<string, unknown>);
     const nextPositions =
-      getMetadataObject(nextMeta, 'positions') ?? ({} as Record<string, unknown>);
+      getMetadataObject(nextMeta, 'positions') ??
+      ({} as Record<string, unknown>);
 
     if (tiles.length === 0) {
       return next;
@@ -60,7 +66,8 @@ export function appendBoardArrivalAnnouncements(params: {
     const changed = players
       .map<PlayerMovement | null>((player) => {
         if (!player || typeof player.id !== 'number') return null;
-        const username = normalizeUsernameForLog(player.username) || `joueur ${player.id}`;
+        const username =
+          normalizeUsernameForLog(player.username) || `joueur ${player.id}`;
         const prevRaw = prevPositions[String(player.id)];
         const nextRaw = nextPositions[String(player.id)];
         const prevPos = typeof prevRaw === 'number' ? prevRaw : Number(prevRaw);
@@ -174,7 +181,8 @@ export function appendSkipTurnAnnouncements(params: {
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
     const currentPlayer =
       currentPlayerId != null
-        ? (state.players?.find((player) => player?.id === currentPlayerId) ?? null)
+        ? (state.players?.find((player) => player?.id === currentPlayerId) ??
+          null)
         : null;
     const currentName = normalizeUsernameForLog(currentPlayer?.username);
     const expectedTurnAnnouncement = currentName
@@ -190,7 +198,8 @@ export function appendSkipTurnAnnouncements(params: {
         ? String(lastEntry.message).trim()
         : '';
     const shouldMoveTurnAnnouncement =
-      expectedTurnAnnouncement != null && lastMessage === expectedTurnAnnouncement;
+      expectedTurnAnnouncement != null &&
+      lastMessage === expectedTurnAnnouncement;
     if (shouldMoveTurnAnnouncement) {
       existingLog.pop();
       out = {
@@ -209,12 +218,13 @@ export function appendSkipTurnAnnouncements(params: {
       const player = out.players?.find((item) => item?.id === id) ?? null;
       const name = normalizeUsernameForLog(player?.username);
       const who = name ? name : `joueur ${id}`;
-      const suffix = remaining > 0 && remaining < 100 ? ` (${remaining} restant)` : '';
+      const suffix =
+        remaining > 0 && remaining < 100 ? ` (${remaining} restant)` : '';
       out = appendLog(out, `${who} passe son tour${suffix}.`);
     }
 
     if (shouldMoveTurnAnnouncement) {
-      out = appendLog(out, expectedTurnAnnouncement as string);
+      out = appendLog(out, expectedTurnAnnouncement);
     }
 
     const cleanedTurnFlow = { ...turnFlow, skipped: [] };
@@ -229,4 +239,3 @@ export function appendSkipTurnAnnouncements(params: {
     return state;
   }
 }
-

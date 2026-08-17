@@ -1,7 +1,10 @@
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { RoomService } from './room.service';
-import { PresenceService, type PresenceBroadcastPlayer } from '../../presence/services/presence.service';
+import {
+  PresenceService,
+  type PresenceBroadcastPlayer,
+} from '../../presence/services/presence.service';
 import { PresenceTransport } from '../../presence/services/presence-transport';
 
 type Fixture = {
@@ -739,9 +742,7 @@ describe('RoomService lifecycle scenarios', () => {
       room: { id: 10 },
       leftAt: null,
     });
-    deps.participants.count
-      .mockResolvedValueOnce(1)
-      .mockResolvedValueOnce(1);
+    deps.participants.count.mockResolvedValueOnce(1).mockResolvedValueOnce(1);
     deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
     jest
       .spyOn(service, 'invalidateRoomPayloadCache')

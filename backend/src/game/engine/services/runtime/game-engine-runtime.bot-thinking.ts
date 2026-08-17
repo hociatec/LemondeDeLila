@@ -78,4 +78,3 @@ export async function runNormalizeBotThinking(params: {
   await runtime.storeSet(roomId, gameType, cleared, { asyncPersist: true });
   return cleared;
 }
-

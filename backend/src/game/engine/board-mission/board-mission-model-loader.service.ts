@@ -17,7 +17,8 @@ export interface BoardMissionContentJson<TItem> {
 }
 
 export interface BoardMissionLoadedModel
-  extends BoardMissionResolvedModel<BoardMissionRules>,
+  extends
+    BoardMissionResolvedModel<BoardMissionRules>,
     BoardMissionDeckCatalog<
       BoardMissionClientCard & { route?: string },
       BoardMissionEventCard
@@ -35,18 +36,18 @@ export class BoardMissionModelLoaderService {
   load(gameType: string, gameDir: string): BoardMissionLoadedModel {
     const baseDir = path.join(gameDir, '__content_loader__');
 
-    const board = this.contentLoader.loadContent<BoardMissionLoadedModel['board']>(
-      {
-        gameType,
-        baseDir,
-        contentDir: 'content',
-        filename: 'board.json',
-        validators: [
-          this.contentLoader.validators.version(1),
-          this.contentLoader.validators.arrayField('tiles', 1),
-        ],
-      },
-    );
+    const board = this.contentLoader.loadContent<
+      BoardMissionLoadedModel['board']
+    >({
+      gameType,
+      baseDir,
+      contentDir: 'content',
+      filename: 'board.json',
+      validators: [
+        this.contentLoader.validators.version(1),
+        this.contentLoader.validators.arrayField('tiles', 1),
+      ],
+    });
 
     const clients = this.contentLoader.loadContent<{
       version: 1;

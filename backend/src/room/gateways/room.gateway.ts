@@ -10,9 +10,7 @@ import { RoomService } from '../services/room.service';
 import { BotService } from '../../bot/services/bot.service';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
-import type {
-  RoomPayload,
-} from '../dto/room-response.dto';
+import type { RoomPayload } from '../dto/room-response.dto';
 import type { RoomFocusIntent } from '../dto/room-focus-intent.dto';
 import type { RoomIntent, RoomStartWizardIntent } from '../dto/room-intent.dto';
 import { CatalogService } from '../../catalog/services/catalog.service';
@@ -30,20 +28,12 @@ import {
   listVisibleSpectators,
   mergePlayers,
 } from './room-roster';
-import { RoomChatStore, type RoomChatMessage } from './room-chat-state';
+import { RoomChatStore } from './room-chat-state';
 import {
   buildRoomSnapshot,
   collectRoomAnnouncementMessages,
   type RoomSnapshot,
 } from './room-announcement.helpers';
-import {
-  buildBotJoinedMessage,
-  buildBotLeftMessage,
-  buildPlayerBecamePlayerMessage,
-  buildPlayerBecameSpectatorMessage,
-  buildPlayerJoinedMessage,
-  buildPlayerLeftMessage,
-} from './room-announcement-message.helpers';
 import { emitRoomAnnouncementDiff } from './room-announcement-diff.helpers';
 import {
   addBotToRoomPayload,
@@ -71,7 +61,6 @@ import {
   buildRoomRoleAnnouncementMessage,
   buildRoomRoleClientMessage,
   resolveSpectatorIntent,
-  resolveTruthyFlag,
 } from './room-role.helpers';
 import { buildCreatedRoomState } from './room-created-state.helpers';
 import {
@@ -425,9 +414,7 @@ export class RoomGateway
       }
     }
     if (meta) {
-      const {
-        remainingTotalConnections,
-      } = removeSocketFromRoomMembership(
+      const { remainingTotalConnections } = removeSocketFromRoomMembership(
         this.rooms,
         this.silentRooms,
         meta.roomId,
@@ -902,10 +889,7 @@ export class RoomGateway
           },
         });
       }
-      this.lastRoomSnapshotByRoomId.set(
-        roomId,
-        buildRoomSnapshot(payload),
-      );
+      this.lastRoomSnapshotByRoomId.set(roomId, buildRoomSnapshot(payload));
       this.lastRoomStatusByRoomId.set(roomId, nextStatus);
     } catch (err) {
       await this.sendError(client, (err as Error).message || 'Erreur table');
@@ -1630,8 +1614,10 @@ export class RoomGateway
     }
     const isOwner = state.room.owner?.id === meta.userId;
 
-    const hasSpectatorFlag =
-      Object.prototype.hasOwnProperty.call(row, 'spectator');
+    const hasSpectatorFlag = Object.prototype.hasOwnProperty.call(
+      row,
+      'spectator',
+    );
     const spectatorRaw = row.spectator;
     const spectator = resolveSpectatorIntent(
       spectatorRaw,
@@ -1894,7 +1880,8 @@ export class RoomGateway
       },
       {
         userId: meta.userId,
-        roomId: this.asRecord(payload).roomId ?? this.asRecord(payload).room ?? null,
+        roomId:
+          this.asRecord(payload).roomId ?? this.asRecord(payload).room ?? null,
         ...trace,
       },
     );
@@ -2082,7 +2069,13 @@ export class RoomGateway
       'ws.room.setAmbience.total',
       async () => {
         const row = this.asRecord(payload);
-        const raw = String(row.soundId ?? '').trim();
+        const raw =
+          typeof row.soundId === 'string'
+            ? row.soundId.trim()
+            : typeof row.soundId === 'number' ||
+                typeof row.soundId === 'boolean'
+              ? String(row.soundId)
+              : '';
         const soundId = raw.length ? raw : null;
 
         const allowed = new Set<string>([
@@ -2133,7 +2126,8 @@ export class RoomGateway
           meta.roomId,
           meta.userId,
         );
-        const roomWithRuntime = room as unknown as RoomWithOptionalRuntimeFields;
+        const roomWithRuntime =
+          room as unknown as RoomWithOptionalRuntimeFields;
         roomWithRuntime.tableAmbienceSoundId = soundId;
         await this.roomsService.saveRoom(room);
 

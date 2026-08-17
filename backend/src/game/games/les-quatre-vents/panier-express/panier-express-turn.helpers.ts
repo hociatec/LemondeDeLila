@@ -13,7 +13,9 @@ export function ensurePanierExpressStarted(args: {
   isBot: (player: unknown) => boolean;
   queuePawnSelection: (state: GameStateEntity) => GameStateEntity;
   assignBotPawns: (state: GameStateEntity) => GameStateEntity;
-  finalizeStarterAfterPawnSelection: (state: GameStateEntity) => GameStateEntity;
+  finalizeStarterAfterPawnSelection: (
+    state: GameStateEntity,
+  ) => GameStateEntity;
 }): GameStateEntity {
   const status = (args.state.status || '').toLowerCase();
   if (status === 'started' || status !== 'starting') {

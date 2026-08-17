@@ -69,4 +69,3 @@ export function exposeGameStateForUser(params: {
   const withChoiceActions = attachPendingChoiceActions(withSyntheticPending);
   return fixMojibakeDeep(stripBoardAndGridIfNotStarted(withChoiceActions));
 }
-

@@ -52,7 +52,7 @@ describe('VaultRoomSnapshotsService', () => {
         snapshotStore.set(String(entity.id), entity as SnapshotRecord);
         return entity;
       }),
-    } as unknown as Repository<VaultRoomSnapshotEntity>;
+    } as any;
 
     const roomBots = {
       save: jest.fn(async (entity: any) => entity),
@@ -241,17 +241,21 @@ describe('VaultRoomSnapshotsService', () => {
       createdAt: new Date('2026-02-25T20:00:00.000Z'),
     });
 
+    const deleteSnapshot = jest.fn(async function (
+      this: void,
+      { id, ownerUserId }: any,
+    ) {
+      const item = snapshotStore.get(String(id));
+      if (!item || item.ownerUserId !== Number(ownerUserId)) {
+        return { affected: 0 };
+      }
+      snapshotStore.delete(String(id));
+      return { affected: 1 };
+    });
     const snapshots = {
       find: jest.fn(async () => []),
       findOne: jest.fn(async () => null),
-      delete: jest.fn(async ({ id, ownerUserId }: any) => {
-        const item = snapshotStore.get(String(id));
-        if (!item || item.ownerUserId !== Number(ownerUserId)) {
-          return { affected: 0 };
-        }
-        snapshotStore.delete(String(id));
-        return { affected: 1 };
-      }),
+      delete: deleteSnapshot,
       create: jest.fn((data: any) => data),
       save: jest.fn(async (entity: any) => entity),
     } as unknown as Repository<VaultRoomSnapshotEntity>;
@@ -284,7 +288,7 @@ describe('VaultRoomSnapshotsService', () => {
 
     expect(ok).toBe(true);
     expect(rooms.adminDestroyRoom).toHaveBeenCalledWith(20);
-    expect(snapshots.delete).toHaveBeenCalledWith({
+    expect(deleteSnapshot).toHaveBeenCalledWith({
       id: 'snap-1',
       ownerUserId: 1,
     });

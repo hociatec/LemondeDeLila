@@ -809,9 +809,7 @@ describe('PanierExpressService', () => {
 
     const pendingState = (service as any).applyMerchantRequest(state, 1);
     expect(pendingState.pending?.type).toBe('pick');
-    expect((pendingState.pending as any)?.data?.kind).toBe(
-      'merchant_request.choose',
-    );
+    expect(pendingState.pending?.data?.kind).toBe('merchant_request.choose');
     expect(pendingState.pending?.choices).toEqual(['Refuser']);
     expect(String(pendingState.pending?.question ?? '')).toContain(
       'Inventaire vide',
@@ -832,9 +830,9 @@ describe('PanierExpressService', () => {
     expect(logs.some((message: string) => message.includes("n'a pas"))).toBe(
       false,
     );
-    expect(
-      logs.some((message: string) => message.includes('refuse')),
-    ).toBe(true);
+    expect(logs.some((message: string) => message.includes('refuse'))).toBe(
+      true,
+    );
   });
 
   it("l'ÃƒÂ©change imposÃƒÂ© ne rend pas alÃƒÂ©atoirement la carte donnÃƒÂ©e au joueur ciblÃƒÂ©", () => {
@@ -958,7 +956,7 @@ describe('PanierExpressService', () => {
       players: [{ id: 1, username: 'A' }],
       status: 'started',
     } as any);
-    const tile = (state.metadata as any)?.tiles?.find(
+    const tile = state.metadata?.tiles?.find(
       (entry: any) => entry?.id === 'case-21-stand-au-choix',
     );
 
@@ -990,7 +988,9 @@ describe('PanierExpressService', () => {
     const after = (service as any).applyEvent(state, 1);
     const logs = (after.log ?? []).map((entry: any) => entry.message);
 
-    expect(logs).toContain('[Panier Express] Carte Événement: Erreur de livraison.');
+    expect(logs).toContain(
+      '[Panier Express] Carte Événement: Erreur de livraison.',
+    );
     expect(logs).toContain('[Panier Express] A défausse "tomate".');
     expect(
       logs.some((message: string) =>
@@ -1049,7 +1049,9 @@ describe('PanierExpressService', () => {
     const after = (service as any).applyEvent(state, 1);
     const logs = (after.log ?? []).map((entry: any) => entry.message);
 
-    expect(logs).toContain('[Panier Express] Carte Événement: Retour en arrière.');
+    expect(logs).toContain(
+      '[Panier Express] Carte Événement: Retour en arrière.',
+    );
     expect(logs).toContain(
       '[Panier Express] Retour en arrière: reculez de 3 cases.',
     );
@@ -1120,7 +1122,7 @@ describe('PanierExpressService', () => {
       'oignon',
       'poire',
     ]);
-    expect((after.metadata as any)?.discards?.courses).toContain('poire');
+    expect(after.metadata?.discards?.courses).toContain('poire');
     expect((service as any).turnStatus.getStatus(after, 1, 'keepTurn')).toBe(1);
     expect(logs).toContain(
       '[Panier Express] Recette express: vous piochez « poire », mais cet ingrédient est déjà dans le panier. Il est donc défaussé. Vous rejouez immédiatement.',
@@ -1158,7 +1160,9 @@ describe('PanierExpressService', () => {
     expect(after.players[0].basket).toEqual(['carotte']);
     expect(after.players[0].inventory).toEqual(['salade', 'tomate', 'oignon']);
     expect((service as any).turnStatus.getStatus(after, 1, 'keepTurn')).toBe(0);
-    expect(logs).toContain('[Panier Express] Recette express: reçoit "carotte".');
+    expect(logs).toContain(
+      '[Panier Express] Recette express: reçoit "carotte".',
+    );
   });
 
   it("journalise l'intempérie avant les déplacements des joueurs", () => {
@@ -1182,11 +1186,12 @@ describe('PanierExpressService', () => {
 
     const after = (service as any).applyEvent(state, 1);
     const logs = (after.log ?? []).map((entry: any) => String(entry.message));
-    const weatherIndex = logs.findIndex((message) =>
-      message.includes('Intempérie') && message.includes('reculent'),
+    const weatherIndex = logs.findIndex(
+      (message) =>
+        message.includes('Intempérie') && message.includes('reculent'),
     );
-    const firstMoveIndex = logs.findIndex((message) =>
-      message.includes('recule') && message.includes('1 case'),
+    const firstMoveIndex = logs.findIndex(
+      (message) => message.includes('recule') && message.includes('1 case'),
     );
 
     expect(weatherIndex).toBeGreaterThanOrEqual(0);

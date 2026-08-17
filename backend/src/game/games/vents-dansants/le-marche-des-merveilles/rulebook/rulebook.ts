@@ -101,7 +101,12 @@ export function validateAction(
   const coins = meta.coins?.[actorId] ?? 0;
   const inventory = copyInventory(meta.inventories?.[actorId]);
 
-  if ((normalizedType === 'buy' || normalizedType === 'sell' || normalizedType === 'rumor') && !good) {
+  if (
+    (normalizedType === 'buy' ||
+      normalizedType === 'sell' ||
+      normalizedType === 'rumor') &&
+    !good
+  ) {
     throw new Error('Marchandise manquante.');
   }
   if (normalizedType === 'buy' && good && coins < (meta.prices?.[good] ?? 0)) {
@@ -140,7 +145,12 @@ export function validateAction(
 }
 
 export function parseGood(value: unknown): WonderGood | null {
-  const raw = String(value ?? '').trim();
+  const raw =
+    typeof value === 'string'
+      ? value.trim()
+      : typeof value === 'number' || typeof value === 'boolean'
+        ? String(value).trim()
+        : '';
   return (WONDER_GOODS as string[]).includes(raw) ? (raw as WonderGood) : null;
 }
 

@@ -39,10 +39,7 @@ export class GameEngineStateStore {
     return `${gameType}:${roomId}`;
   }
 
-  async get(
-    roomId: number,
-    gameType: string,
-  ): Promise<GameStateEntity | null> {
+  async get(roomId: number, gameType: string): Promise<GameStateEntity | null> {
     const key = this.buildKey(roomId, gameType);
     const cached = this.states.get(key);
     if (cached) {

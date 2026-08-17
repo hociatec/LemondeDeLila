@@ -87,7 +87,10 @@ export function handlePanierExpressExchangeRefuse(args: {
 }): GameStateEntity {
   const actorId = args.getActorIdFromAction(args.action);
   if (typeof actorId !== 'number') {
-    return args.appendLog(args.state, "[Panier Express] Refus d'échange invalide.");
+    return args.appendLog(
+      args.state,
+      "[Panier Express] Refus d'échange invalide.",
+    );
   }
 
   const pending = args.getPendingRecord(args.state);
@@ -144,23 +147,32 @@ export function handlePanierExpressMerchantRequestAccept(args: {
 }): GameStateEntity {
   const actorId = args.getActorIdFromAction(args.action);
   if (typeof actorId !== 'number') {
-    return args.appendLog(args.state, '[Panier Express] Acceptation du marchand invalide.');
+    return args.appendLog(
+      args.state,
+      '[Panier Express] Acceptation du marchand invalide.',
+    );
   }
 
   const pending = args.getPendingRecord(args.state);
   const pendingData = asRecord(pending?.data);
   const ingredient =
     pending &&
-    ((toText(pending.type) === 'merchant_request' && pendingData.kind == null) ||
+    ((toText(pending.type) === 'merchant_request' &&
+      pendingData.kind == null) ||
       (toText(pending.type) === 'pick' &&
         toText(pendingData.kind) === 'merchant_request.choose'))
       ? toText(pendingData.ingredient).trim()
       : '';
   if (!ingredient) {
-    return args.appendLog(args.state, '[Panier Express] Acceptation du marchand invalide.');
+    return args.appendLog(
+      args.state,
+      '[Panier Express] Acceptation du marchand invalide.',
+    );
   }
 
-  const player = (args.state.players ?? []).find((entry) => entry.id === actorId);
+  const player = (args.state.players ?? []).find(
+    (entry) => entry.id === actorId,
+  );
   const inventory = player ? args.toStringArray(player.inventory) : [];
   if (!inventory.includes(ingredient)) {
     return args.appendLog(
@@ -208,14 +220,18 @@ export function handlePanierExpressMerchantRequestRefuse(args: {
 }): GameStateEntity {
   const actorId = args.getActorIdFromAction(args.action);
   if (typeof actorId !== 'number') {
-    return args.appendLog(args.state, '[Panier Express] Refus du marchand invalide.');
+    return args.appendLog(
+      args.state,
+      '[Panier Express] Refus du marchand invalide.',
+    );
   }
 
   const pending = args.getPendingRecord(args.state);
   const pendingData = asRecord(pending?.data);
   const ingredient =
     pending &&
-    ((toText(pending.type) === 'merchant_request' && pendingData.kind == null) ||
+    ((toText(pending.type) === 'merchant_request' &&
+      pendingData.kind == null) ||
       (toText(pending.type) === 'pick' &&
         toText(pendingData.kind) === 'merchant_request.choose'))
       ? toText(pendingData.ingredient).trim()

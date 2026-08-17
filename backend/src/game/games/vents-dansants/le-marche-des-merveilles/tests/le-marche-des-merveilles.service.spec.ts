@@ -86,7 +86,10 @@ describe('LeMarcheDesMerveilles', () => {
 
     state = {
       ...state,
-      turn: { ...(state.turn ?? { direction: 1 as const }), currentPlayerId: 1 },
+      turn: {
+        ...(state.turn ?? { direction: 1 as const }),
+        currentPlayerId: 1,
+      },
     };
     state = actions.applyActions(state, [
       { type: 'sell', payload: { good: 'gemmes' } } as any,
@@ -125,10 +128,14 @@ describe('LeMarcheDesMerveilles', () => {
     let state = setup.hydrateInitialState(baseState());
 
     for (let i = 0; i < 12; i += 1) {
-      state = actions.applyActions(state, [{ type: 'pass', payload: {} } as any]);
+      state = actions.applyActions(state, [
+        { type: 'pass', payload: {} } as any,
+      ]);
     }
 
     expect(state.status).toBe('finished');
-    expect((state.metadata as LeMarcheDesMerveillesMetadata).winnerId).toBeNull();
+    expect(
+      (state.metadata as LeMarcheDesMerveillesMetadata).winnerId,
+    ).toBeNull();
   });
 });

@@ -13,15 +13,11 @@ import {
   GOOD_LABELS,
   PROTECT_COST,
   RUMOR_COST,
-  WONDER_GOODS,
   clampPrice,
   copyInventory,
   inventoryValue,
 } from '../model/le-marche-des-merveilles-market';
-import type {
-  LeMarcheDesMerveillesMetadata,
-  WonderGood,
-} from '../model/le-marche-des-merveilles-state.entity';
+import type { LeMarcheDesMerveillesMetadata } from '../model/le-marche-des-merveilles-state.entity';
 import { normalizeMarketAction, parseGood } from '../rulebook/rulebook';
 
 type MarketActionPayload = {
@@ -71,7 +67,9 @@ export class LeMarcheDesMerveillesActionService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     const playerId = state.turn?.currentPlayerId ?? null;
-    const good = parseGood(((action.payload ?? {}) as MarketActionPayload).good);
+    const good = parseGood(
+      ((action.payload ?? {}) as MarketActionPayload).good,
+    );
     if (playerId == null || !good) return state;
 
     const meta = this.getMeta(state);
@@ -106,7 +104,9 @@ export class LeMarcheDesMerveillesActionService {
     action: GameSingleActionDto,
   ): GameStateEntity {
     const playerId = state.turn?.currentPlayerId ?? null;
-    const good = parseGood(((action.payload ?? {}) as MarketActionPayload).good);
+    const good = parseGood(
+      ((action.payload ?? {}) as MarketActionPayload).good,
+    );
     if (playerId == null || !good) return state;
 
     const meta = this.getMeta(state);
@@ -144,7 +144,11 @@ export class LeMarcheDesMerveillesActionService {
     const payload = (action.payload ?? {}) as MarketActionPayload;
     const good = parseGood(payload.good);
     const direction = String(payload.direction ?? '').trim();
-    if (playerId == null || !good || (direction !== 'up' && direction !== 'down')) {
+    if (
+      playerId == null ||
+      !good ||
+      (direction !== 'up' && direction !== 'down')
+    ) {
       return state;
     }
 
@@ -231,7 +235,10 @@ export class LeMarcheDesMerveillesActionService {
     return this.finishAction(next);
   }
 
-  private finishAction(state: GameStateEntity, suffix?: string): GameStateEntity {
+  private finishAction(
+    state: GameStateEntity,
+    suffix?: string,
+  ): GameStateEntity {
     const playerId = state.turn?.currentPlayerId ?? null;
     let next = state;
     if (suffix && playerId != null) {

@@ -19,10 +19,7 @@ import { TurnActionsService } from '../../../modules/turn/services/turn-actions.
 import { StandEffectRegistryService } from '../../../modules/effects/services/stand-effect-registry.service';
 import { ActionResolverService } from '../../../modules/action-resolver/services/action-resolver.service';
 import { TurnStatusService } from '../../../modules/turn/services/turn-status.service';
-import {
-  QuizRunnerService,
-  QuizQuestion,
-} from '../../../modules/quiz/services/quiz-runner.service';
+import { QuizRunnerService } from '../../../modules/quiz/services/quiz-runner.service';
 import { VictoryService } from '../../../modules/victory/services/victory.service';
 import { BotRunnerService } from '../../../modules/bot/services/bot-runner.service';
 import { ActionLogService } from '../../../modules/actionlog/services/action-log.service';
@@ -99,7 +96,6 @@ import {
   addPanierExpressCourseToPlayer,
   discardPanierExpressRandomCourse,
   getPanierExpressDiscardCourses,
-  removePanierExpressCourseFromInventory,
   removePanierExpressCourseFromPlayer,
   setPanierExpressPickPending,
 } from './panier-express-event-state.helpers';
@@ -130,12 +126,8 @@ import {
   resolvePanierExpressTile,
 } from './panier-express-board.helpers';
 import { buildPanierExpressShortcuts } from './panier-express.shortcuts';
-import { ensureShoppingLists, toStringArray } from './panier-express.shopping';
-import {
-  stringEqualsInsensitive,
-  toPlayerIdValue,
-  toUnknownArray,
-} from './panier-express-state.helpers';
+import { ensureShoppingLists } from './panier-express.shopping';
+import { toUnknownArray } from './panier-express-state.helpers';
 
 @Injectable()
 export class PanierExpressService extends AbstractGameService {
@@ -389,7 +381,10 @@ export class PanierExpressService extends AbstractGameService {
   private mergeMetadataWithDefaults(
     state: GameStateEntity,
   ): PanierExpressMetadata {
-    return mergePanierExpressMetadataWithDefaults(state, this.buildMetadata(state));
+    return mergePanierExpressMetadataWithDefaults(
+      state,
+      this.buildMetadata(state),
+    );
   }
 
   private hydrateMetadataCollections(
@@ -689,7 +684,8 @@ export class PanierExpressService extends AbstractGameService {
           this.deckPool.discard<string>(asStringDeckPool(pool), deckKey, card),
         appendLog: (value, message) => this.core.appendLog(value, message),
         advanceAfterDraw: (value) => this.advanceAfterDraw(value),
-        withPending: (value, pendingState) => this.withPending(value, pendingState),
+        withPending: (value, pendingState) =>
+          this.withPending(value, pendingState),
       });
     }
 
@@ -707,7 +703,8 @@ export class PanierExpressService extends AbstractGameService {
           this.deckPool.discard<string>(asStringDeckPool(pool), deckKey, card),
         appendLog: (value, message) => this.core.appendLog(value, message),
         advanceAfterDraw: (value) => this.advanceAfterDraw(value),
-        withPending: (value, pendingState) => this.withPending(value, pendingState),
+        withPending: (value, pendingState) =>
+          this.withPending(value, pendingState),
       });
     }
 
@@ -722,7 +719,8 @@ export class PanierExpressService extends AbstractGameService {
         toStringArray: (value) => this.utils.toStringArray(value),
         appendLog: (value, message) => this.core.appendLog(value, message),
         advanceAfterDraw: (value) => this.advanceAfterDraw(value),
-        withPending: (value, pendingState) => this.withPending(value, pendingState),
+        withPending: (value, pendingState) =>
+          this.withPending(value, pendingState),
       });
     }
 
@@ -736,7 +734,8 @@ export class PanierExpressService extends AbstractGameService {
       drawCourse: (value, playerId, standId) =>
         this.drawSvc.drawCourse(value, playerId, standId),
       advanceAfterDraw: (value) => this.advanceAfterDraw(value),
-      withPending: (value, pendingState) => this.withPending(value, pendingState),
+      withPending: (value, pendingState) =>
+        this.withPending(value, pendingState),
     });
   }
 
@@ -874,7 +873,8 @@ export class PanierExpressService extends AbstractGameService {
       getMetadata: (value) => this.getMetadata(value),
       createMetaRng: (metadata) => this.random.createMetaRng(metadata as any),
       pickOne: (metadata, items) => this.random.pickOne(metadata, items),
-      formatCourseLabel: (ingredient) => this.utils.formatCourseLabel(ingredient),
+      formatCourseLabel: (ingredient) =>
+        this.utils.formatCourseLabel(ingredient),
       playerName: (value, currentPlayerId) =>
         this.utils.playerName(value, currentPlayerId),
       appendLog: (value, message) => this.core.appendLog(value, message),
@@ -955,21 +955,6 @@ export class PanierExpressService extends AbstractGameService {
       card: string,
     ): { updated: boolean } => {
       const result = removePanierExpressCourseFromPlayer({
-        state: next,
-        playerId: pid,
-        card,
-        toStringArray: (value) => this.utils.toStringArray(value),
-        removeOne: (items, value) => this.utils.removeOne(items, value),
-      });
-      next = result.state;
-      return { updated: result.updated };
-    };
-
-    const removeOneCourseFromInventory = (
-      pid: number,
-      card: string,
-    ): { updated: boolean } => {
-      const result = removePanierExpressCourseFromInventory({
         state: next,
         playerId: pid,
         card,
@@ -1107,7 +1092,8 @@ export class PanierExpressService extends AbstractGameService {
       formatCourseLabel: (card) => this.utils.formatCourseLabel(card),
       courseItems: () => this.setup.courseItems(),
       setPickPending,
-      withPending: (value, pendingState) => this.withPending(value, pendingState),
+      withPending: (value, pendingState) =>
+        this.withPending(value, pendingState),
       addOneCourseToPlayer: addOneCourseToPlayerState,
       addToDiscard: addToDiscardState,
       ensureDiscardCourses: (value) => {
@@ -1180,7 +1166,8 @@ export class PanierExpressService extends AbstractGameService {
       action,
       getActorIdFromAction: (value) => this.getActorIdFromAction(value),
       appendLog: (value, message) => this.core.appendLog(value, message),
-      acceptOffer: (value, actorId) => this.exchangeSvc.acceptOffer(value, actorId),
+      acceptOffer: (value, actorId) =>
+        this.exchangeSvc.acceptOffer(value, actorId),
       advanceTurn: (value) => this.phaseFlow.advanceTurn(value),
     });
   }
@@ -1195,8 +1182,10 @@ export class PanierExpressService extends AbstractGameService {
       getActorIdFromAction: (value) => this.getActorIdFromAction(value),
       appendLog: (value, message) => this.core.appendLog(value, message),
       getPendingRecord: (value) => this.getPendingRecord(value),
-      refuseOffer: (value, actorId) => this.exchangeSvc.refuseOffer(value, actorId),
-      applyQuiz: (value, initiatorId) => this.quizSvc.applyQuiz(value, initiatorId),
+      refuseOffer: (value, actorId) =>
+        this.exchangeSvc.refuseOffer(value, actorId),
+      applyQuiz: (value, initiatorId) =>
+        this.quizSvc.applyQuiz(value, initiatorId),
       playerName: (value, playerId) => this.utils.playerName(value, playerId),
       advanceTurn: (value) => this.phaseFlow.advanceTurn(value),
     });

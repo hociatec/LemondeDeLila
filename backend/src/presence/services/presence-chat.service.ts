@@ -129,7 +129,11 @@ export class PresenceChatService {
       if (denied) {
         return { kind: 'denied', payload: denied };
       }
-      const normalized = await this.chat.editOwnMessage(user.id, messageId, text);
+      const normalized = await this.chat.editOwnMessage(
+        user.id,
+        messageId,
+        text,
+      );
       return {
         kind: 'ok',
         event: { type: 'chat-message.updated', payload: normalized },

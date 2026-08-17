@@ -658,7 +658,6 @@ describe('All games scenario coverage harness', () => {
 
   it('hydrates and runs multi-step action flows for every registered game', async () => {
     if (skipReason) {
-      // eslint-disable-next-line no-console
       console.warn(`[all-games.scenario-coverage] SKIPPED: ${skipReason}`);
       return;
     }

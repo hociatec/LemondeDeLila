@@ -5,13 +5,6 @@ import { generateKeyPairSync } from 'crypto';
 import { HttpJwtGuard } from './http-jwt.guard';
 import { WsJwtGuard } from './ws-jwt.guard';
 
-type JwtSignOptions = {
-  algorithm: 'HS256' | 'RS256';
-  issuer: string;
-  subject: string;
-  expiresIn: string;
-};
-
 type HttpRequestLike = {
   headers: Record<string, string>;
   user?: { id?: number; username?: string };

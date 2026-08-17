@@ -1,14 +1,18 @@
 import { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { PanierExpressDeckPool, PanierExpressMetadata } from './model/panier-express-state.entity';
+import {
+  PanierExpressDeckPool,
+  PanierExpressMetadata,
+} from './model/panier-express-state.entity';
 import { toText } from './panier-express-state.helpers';
 
 export function handlePanierExpressLuckyDraw(args: {
   state: GameStateEntity;
   playerId: number;
   getMetadata: (state: GameStateEntity) => PanierExpressMetadata;
-  createMetaRng: (
-    metadata: PanierExpressMetadata,
-  ) => { rng: unknown; getMeta: () => PanierExpressMetadata };
+  createMetaRng: (metadata: PanierExpressMetadata) => {
+    rng: unknown;
+    getMeta: () => PanierExpressMetadata;
+  };
   drawPool: (
     pool: PanierExpressDeckPool,
     deckKey: string,
@@ -91,9 +95,10 @@ export function handlePanierExpressGenerousProducerDraw(args: {
     standId?: string,
   ) => GameStateEntity;
   getMetadata: (state: GameStateEntity) => PanierExpressMetadata;
-  createMetaRng: (
-    metadata: PanierExpressMetadata,
-  ) => { rng: unknown; getMeta: () => PanierExpressMetadata };
+  createMetaRng: (metadata: PanierExpressMetadata) => {
+    rng: unknown;
+    getMeta: () => PanierExpressMetadata;
+  };
   drawPool: (
     pool: PanierExpressDeckPool,
     deckKey: string,
@@ -187,13 +192,18 @@ export function handlePanierExpressSeasonChangeDraw(args: {
   ) => GameStateEntity;
 }): GameStateEntity {
   let next = args.drawCourse(args.state, args.playerId, 'bonus');
-  const order = args.toUnknownArray(args.data.order)
+  const order = args
+    .toUnknownArray(args.data.order)
     .map((value) => Number(value))
     .filter((value) => Number.isFinite(value));
   const cursor = Number(args.data.cursor);
   const processed = Number(args.data.processed);
 
-  if (!order.length || !Number.isFinite(cursor) || !Number.isFinite(processed)) {
+  if (
+    !order.length ||
+    !Number.isFinite(cursor) ||
+    !Number.isFinite(processed)
+  ) {
     return args.advanceAfterDraw(next);
   }
 
@@ -201,7 +211,9 @@ export function handlePanierExpressSeasonChangeDraw(args: {
   const nextProcessed = processed + 1;
   while (nextProcessed < order.length) {
     const nextPlayerId = Number(order[nextCursor]);
-    const player = (next.players ?? []).find((entry) => entry.id === nextPlayerId);
+    const player = (next.players ?? []).find(
+      (entry) => entry.id === nextPlayerId,
+    );
     const cards = args.toStringArray(player?.inventory);
     if (cards.length) {
       return args.withPending(next, {
@@ -261,7 +273,7 @@ export function continuePanierExpressQueuedDraw(args: {
     return args.advanceAfterDraw(args.state);
   }
 
-  let next = args.drawCourse(
+  const next = args.drawCourse(
     args.state,
     Number(entry.playerId),
     toText(entry.standId).trim() || undefined,

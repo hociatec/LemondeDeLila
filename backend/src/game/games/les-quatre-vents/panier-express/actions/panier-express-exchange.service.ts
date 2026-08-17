@@ -51,7 +51,10 @@ export class PanierExpressExchangeService {
       this.adapter(),
     );
     if (result.kind === 'updated') return result.state;
-    return this.core.appendLog(state, "[Panier Express] Cible d'echange invalide.");
+    return this.core.appendLog(
+      state,
+      "[Panier Express] Cible d'echange invalide.",
+    );
   }
 
   chooseGive(
@@ -141,7 +144,10 @@ export class PanierExpressExchangeService {
         : null;
     const cleared = this.exchangeFlow.refuseOffer(state, targetPlayerId);
     if (!offer) {
-      return this.core.appendLog(state, `[Panier Express] Refus d'echange invalide.`);
+      return this.core.appendLog(
+        state,
+        `[Panier Express] Refus d'echange invalide.`,
+      );
     }
     return this.core.appendLog(
       cleared,

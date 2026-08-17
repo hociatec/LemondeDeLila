@@ -73,7 +73,8 @@ export class GaloponsPresenterService extends BasePresenterService {
     const players = Array.isArray(state.players) ? state.players : [];
     const applesLines = players.map((player) => {
       const name =
-        typeof player?.username === 'string' && player.username.trim().length > 0
+        typeof player?.username === 'string' &&
+        player.username.trim().length > 0
           ? player.username.trim()
           : `Joueur ${player?.id ?? '?'}`;
       const count = meta.apples?.[player?.id ?? -1] ?? 0;

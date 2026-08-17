@@ -19,7 +19,6 @@ import { DeckPoliciesService } from '../../../../modules/deck-policies/services/
 import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
 import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
 import { PromptPoliciesService } from '../../../../modules/prompt-policies/services/prompt-policies.service';
-import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
 import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import {
   assignConfiguredBotPawns,
@@ -510,7 +509,7 @@ export class MinuitActionService {
       logLabelResolver: (choice, currentState) =>
         this.resolvePawnName(this.getMeta(currentState), toText(choice.id)),
       pickChoice: ({ available, catalog }) =>
-        available.length > 0 ? available[0] : catalog[0] ?? null,
+        available.length > 0 ? available[0] : (catalog[0] ?? null),
     });
   }
 

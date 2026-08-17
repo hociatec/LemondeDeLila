@@ -89,16 +89,15 @@ export function assignConfiguredBotPawns(params: {
       available: pool,
       catalog: params.catalog,
     });
-    const resolved =
-      isConfiguredBotPawnPickResult(picked)
-        ? picked
-        : {
-            choice:
-              (picked as ConfiguredSetupPawnChoice | null) ??
-              pool[0] ??
-              params.catalog[0] ??
-              null,
-          };
+    const resolved = isConfiguredBotPawnPickResult(picked)
+      ? picked
+      : {
+          choice:
+            (picked as ConfiguredSetupPawnChoice | null) ??
+            pool[0] ??
+            params.catalog[0] ??
+            null,
+        };
     if (resolved.state) {
       working = resolved.state;
       metadata = asRecord(working.metadata);
@@ -212,10 +211,14 @@ export function queueConfiguredPawnSelection(params: {
   ) => Set<string>;
   includeChoiceMapData?: boolean;
   choiceLabelBuilder?: (choice: ConfiguredSetupPawnChoice) => string;
-  pawnDataMapper?: (choice: ConfiguredSetupPawnChoice) => Record<string, unknown>;
+  pawnDataMapper?: (
+    choice: ConfiguredSetupPawnChoice,
+  ) => Record<string, unknown>;
   extraPendingData?: Record<string, unknown>;
 }): GameStateEntity {
-  const players = Array.isArray(params.state.players) ? params.state.players : [];
+  const players = Array.isArray(params.state.players)
+    ? params.state.players
+    : [];
   if (!players.length || !params.catalog.length) {
     return params.state;
   }
@@ -319,7 +322,9 @@ function collectTakenPawnIds(
   const taken = new Set<string>();
   const metadata = asRecord(state.metadata);
   if (metadataAssignmentKey) {
-    for (const value of Object.values(asRecord(metadata[metadataAssignmentKey]))) {
+    for (const value of Object.values(
+      asRecord(metadata[metadataAssignmentKey]),
+    )) {
       const text = toText(value);
       if (text) taken.add(text);
     }

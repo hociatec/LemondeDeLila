@@ -9,21 +9,25 @@ import type {
   BoardMissionRules,
 } from './board-mission.types';
 
-type RuntimeMeta<TMeta extends BoardMissionMetadata> = TMeta & Record<string, unknown>;
+type RuntimeMeta<TMeta extends BoardMissionMetadata> = TMeta &
+  Record<string, unknown>;
 
 @Injectable()
 export class BoardMissionSetupService {
   constructor(private readonly random: RandomService) {}
 
-  hydrateInitialState<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
+  hydrateInitialState<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(
     baseState: GameStateEntity,
     model: BoardMissionResolvedModel<TRules> & {
       board: { tiles: TMeta['tiles'] };
-    } & BoardMissionDeckCatalog<TMeta['clients'][number], TMeta['events'][number]>,
-    enrichMeta?: (
-      meta: TMeta,
-      baseState: GameStateEntity,
-    ) => TMeta,
+    } & BoardMissionDeckCatalog<
+        TMeta['clients'][number],
+        TMeta['events'][number]
+      >,
+    enrichMeta?: (meta: TMeta, baseState: GameStateEntity) => TMeta,
   ): GameStateEntity {
     const clientsDeck = model[model.rules.decks.clients];
     const eventsDeck = model[model.rules.decks.events];

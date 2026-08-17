@@ -73,7 +73,7 @@ export class PanierExpressBotService {
           typeof action.payload?.index === 'number' ? action.payload.index : 0;
         const pending = state.pending as any;
         const pendingData =
-          pending && typeof pending === 'object' ? pending.data ?? {} : {};
+          pending && typeof pending === 'object' ? (pending.data ?? {}) : {};
         const pendingKind =
           typeof pendingData?.kind === 'string' ? pendingData.kind.trim() : '';
 
@@ -86,10 +86,17 @@ export class PanierExpressBotService {
             Array.isArray(pending?.choices) && index >= 0
               ? String(pending.choices[index] ?? '').trim()
               : '';
-          if (ingredient && choice && choice.localeCompare(ingredient, 'fr', { sensitivity: 'base' }) === 0) {
+          if (
+            ingredient &&
+            choice &&
+            choice.localeCompare(ingredient, 'fr', { sensitivity: 'base' }) ===
+              0
+          ) {
             return 10;
           }
-          if (choice.localeCompare('Refuser', 'fr', { sensitivity: 'base' }) === 0) {
+          if (
+            choice.localeCompare('Refuser', 'fr', { sensitivity: 'base' }) === 0
+          ) {
             return ingredient ? 8 : 9;
           }
           return -5;

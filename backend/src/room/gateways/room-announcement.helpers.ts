@@ -49,10 +49,12 @@ export function collectRoomAnnouncementMessages(
 
   for (const id of roleSwitchIds) {
     if (previous.spectators.has(id) && next.players.has(id)) {
-      const username = next.players.get(id) ?? previous.spectators.get(id) ?? '';
+      const username =
+        next.players.get(id) ?? previous.spectators.get(id) ?? '';
       messages.push(buildPlayerBecamePlayerMessage(username));
     } else if (previous.players.has(id) && next.spectators.has(id)) {
-      const username = next.spectators.get(id) ?? previous.players.get(id) ?? '';
+      const username =
+        next.spectators.get(id) ?? previous.players.get(id) ?? '';
       messages.push(buildPlayerBecameSpectatorMessage(username));
     }
   }
@@ -73,7 +75,10 @@ export function collectRoomAnnouncementMessages(
   );
   collectBotDiffMessages(messages, previous.bots, next.bots);
 
-  if (previous.ownerId !== next.ownerId || previous.ownerName !== next.ownerName) {
+  if (
+    previous.ownerId !== next.ownerId ||
+    previous.ownerName !== next.ownerName
+  ) {
     messages.push(
       next.ownerName.length === 0
         ? 'Propriétaire : aucun.'

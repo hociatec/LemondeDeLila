@@ -25,9 +25,9 @@ export function applyAdvancedPanierExpressEventBatch(args: {
   ) => GameStateEntity;
   playerName: (state: GameStateEntity, playerId: number) => string;
   getMetadata: (state: GameStateEntity) => PanierExpressMetadata;
-  createMetaRng: (
-    metadata: PanierExpressMetadata,
-  ) => { getMeta: () => PanierExpressMetadata };
+  createMetaRng: (metadata: PanierExpressMetadata) => {
+    getMeta: () => PanierExpressMetadata;
+  };
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
@@ -89,7 +89,9 @@ export function applyAdvancedPanierExpressEventBatch(args: {
     case 'produit-oublie': {
       const items = args.courseItems();
       const metaRng = args.createMetaRng(args.getMetadata(next));
-      const picked = items.length ? args.pickOne(metaRng.getMeta(), items) : null;
+      const picked = items.length
+        ? args.pickOne(metaRng.getMeta(), items)
+        : null;
       next = picked ? { ...next, metadata: picked.meta } : next;
       const added = picked ? String(picked.value ?? '').trim() : null;
       if (!added) return next;
@@ -103,7 +105,10 @@ export function applyAdvancedPanierExpressEventBatch(args: {
     case 'offre-ephemere': {
       const discard = args.ensureDiscardCourses(next);
       if (!discard.length) {
-        next = args.appendLog(next, `[Panier Express] ${args.eventLabel} : defausse vide.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] ${args.eventLabel} : defausse vide.`,
+        );
         return addEffectLog('none');
       }
       const metaRng = args.createMetaRng(args.getMetadata(next));
@@ -178,19 +183,33 @@ export function applyAdvancedPanierExpressEventBatch(args: {
     }
     case 'carton-abime':
       next = args.setTurnStatus(next, args.playerId, 'revealShoppingList', 1);
-      next = args.appendLog(next, `[Panier Express] Carton abime : votre liste est visible (1 tour).`);
+      next = args.appendLog(
+        next,
+        `[Panier Express] Carton abime : votre liste est visible (1 tour).`,
+      );
       return addEffectLog('reveal_list');
     case 'conseil-de-voisinage': {
-      const me = args.getPlayers(next).find((player) => player.id === args.playerId);
+      const me = args
+        .getPlayers(next)
+        .find((player) => player.id === args.playerId);
       const myList = args.toStringArray(me?.shoppingList ?? []);
       const myBasket = args.toStringArray(me?.basket ?? []);
       const myInventory = args.toStringArray(me?.inventory ?? []);
-      const missing = new Set(myList.filter((item) => !myBasket.includes(item)));
+      const missing = new Set(
+        myList.filter((item) => !myBasket.includes(item)),
+      );
       if (!missing.size) {
-        next = args.appendLog(next, `[Panier Express] Conseil de voisinage : aucun besoin (liste deja complete).`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] Conseil de voisinage : aucun besoin (liste deja complete).`,
+        );
         return addEffectLog('none');
       }
-      const candidates: Array<{ targetPlayerId: number; card: string; label: string }> = [];
+      const candidates: Array<{
+        targetPlayerId: number;
+        card: string;
+        label: string;
+      }> = [];
       args.getPlayers(next).forEach((player) => {
         if (player.id === args.playerId) return;
         const inventory = args.toStringArray(player.inventory);
@@ -204,7 +223,10 @@ export function applyAdvancedPanierExpressEventBatch(args: {
         });
       });
       if (!candidates.length) {
-        next = args.appendLog(next, `[Panier Express] Conseil de voisinage : aucun autre joueur n'a de carte utile pour votre liste.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] Conseil de voisinage : aucun autre joueur n'a de carte utile pour votre liste.`,
+        );
         return addEffectLog('none');
       }
       next = args.setPickPending({
@@ -216,10 +238,16 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       return addEffectLog('pick');
     }
     case 'troc-improvise': {
-      const order = args.getPlayers(next).map((player) => Number(player.id)).filter((id) => Number.isFinite(id));
+      const order = args
+        .getPlayers(next)
+        .map((player) => Number(player.id))
+        .filter((id) => Number.isFinite(id));
       const start = order.indexOf(args.playerId);
       if (!order.length || start < 0) {
-        next = args.appendLog(next, `[Panier Express] Troc improvise : impossible.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] Troc improvise : impossible.`,
+        );
         return addEffectLog('none');
       }
       let cursor = start;
@@ -227,14 +255,16 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       while (processed < order.length) {
         const pid = order[cursor];
         const inventory = args.toStringArray(
-          args.getPlayers(next).find((player) => player.id === pid)?.inventory ?? [],
+          args.getPlayers(next).find((player) => player.id === pid)
+            ?.inventory ?? [],
         );
         if (inventory.length) {
           next = args.withPending(next, {
             type: 'pick',
             playerId: pid,
             blocking: true,
-            label: 'Choisissez une carte a donner au joueur suivant, puis Entree.',
+            label:
+              'Choisissez une carte a donner au joueur suivant, puis Entree.',
             choices: inventory,
             data: { kind: 'event.troc_improvise', order, cursor, processed },
           });
@@ -244,15 +274,24 @@ export function applyAdvancedPanierExpressEventBatch(args: {
         processed += 1;
       }
       if (!next.pending) {
-        next = args.appendLog(next, `[Panier Express] Troc improvise : aucun inventaire a echanger.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] Troc improvise : aucun inventaire a echanger.`,
+        );
       }
       return addEffectLog('multi_pick');
     }
     case 'changement-de-saison': {
-      const order = args.getPlayers(next).map((player) => Number(player.id)).filter((id) => Number.isFinite(id));
+      const order = args
+        .getPlayers(next)
+        .map((player) => Number(player.id))
+        .filter((id) => Number.isFinite(id));
       const start = order.indexOf(args.playerId);
       if (!order.length || start < 0) {
-        next = args.appendLog(next, `[Panier Express] Changement de saison : impossible.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] Changement de saison : impossible.`,
+        );
         return addEffectLog('none');
       }
       const pid = order[start];
@@ -267,7 +306,13 @@ export function applyAdvancedPanierExpressEventBatch(args: {
               blocking: true,
               label: 'Choisissez une carte a defausser, puis Entree.',
               choices: cards,
-              data: { kind: 'event.changement_de_saison', order, cursor: start, processed: 0, cards },
+              data: {
+                kind: 'event.changement_de_saison',
+                order,
+                cursor: start,
+                processed: 0,
+                cards,
+              },
             },
           }
         : {
@@ -277,7 +322,12 @@ export function applyAdvancedPanierExpressEventBatch(args: {
               playerId: pid,
               blocking: true,
               label: 'Piocher une course bonus (Espace).',
-              data: { kind: 'event.changement_de_saison', order, cursor: start, processed: 0 },
+              data: {
+                kind: 'event.changement_de_saison',
+                order,
+                cursor: start,
+                processed: 0,
+              },
             },
           };
       return addEffectLog('multi_pick');
@@ -286,7 +336,10 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       const players = args.getPlayers(next);
       const idx = players.findIndex((player) => player.id === args.playerId);
       if (idx < 0 || players.length < 2) {
-        next = args.appendLog(next, `[Panier Express] Echange obligatoire : aucun echange possible.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] Echange obligatoire : aucun echange possible.`,
+        );
         return addEffectLog('none');
       }
       const targetId = Number(players[(idx + 1) % players.length]?.id);
@@ -295,7 +348,10 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       const myInventory = args.toStringArray(me?.inventory);
       const theirInventory = args.toStringArray(target?.inventory);
       if (!myInventory.length || !theirInventory.length) {
-        next = args.appendLog(next, `[Panier Express] Echange obligatoire : inventaire vide.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] Echange obligatoire : inventaire vide.`,
+        );
         return addEffectLog('none');
       }
       const metaRng = args.createMetaRng(args.getMetadata(next));
@@ -305,17 +361,28 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       const pickB = args.pickOne(args.getMetadata(next), theirInventory);
       next = { ...next, metadata: pickB.meta };
       const giveB = String(pickB.value ?? '').trim();
-      if (giveA) next = args.removeOneCourseFromPlayer(next, args.playerId, giveA).state;
-      if (giveB) next = args.removeOneCourseFromPlayer(next, targetId, giveB).state;
+      if (giveA)
+        next = args.removeOneCourseFromPlayer(next, args.playerId, giveA).state;
+      if (giveB)
+        next = args.removeOneCourseFromPlayer(next, targetId, giveB).state;
       if (giveA) next = args.addOneCourseToPlayer(next, targetId, giveA);
       if (giveB) next = args.addOneCourseToPlayer(next, args.playerId, giveB);
-      next = args.appendLog(next, `[Panier Express] Echange obligatoire : echange entre ${args.playerName(args.state, args.playerId)} et ${args.playerName(args.state, targetId)}.`);
+      next = args.appendLog(
+        next,
+        `[Panier Express] Echange obligatoire : echange entre ${args.playerName(args.state, args.playerId)} et ${args.playerName(args.state, targetId)}.`,
+      );
       return addEffectLog('swap_random', { targetId });
     }
     case 'inversion-de-panier': {
-      const others = args.getPlayers(next).filter((player) => player.id !== args.playerId).map((player) => player.id);
+      const others = args
+        .getPlayers(next)
+        .filter((player) => player.id !== args.playerId)
+        .map((player) => player.id);
       if (!others.length) {
-        next = args.appendLog(next, `[Panier Express] Inversion de panier : aucun joueur disponible.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] Inversion de panier : aucun joueur disponible.`,
+        );
         return addEffectLog('none');
       }
       const metaRng = args.createMetaRng(args.getMetadata(next));
@@ -323,44 +390,68 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       next = { ...next, metadata: picked.meta };
       const targetId = Number(picked.value);
       const playersWithInventory = args.getPlayers(next).map((player) => {
-        if (player.id !== args.playerId && player.id !== targetId) return player;
+        if (player.id !== args.playerId && player.id !== targetId)
+          return player;
         return { ...player, inventory: args.toStringArray(player.inventory) };
       });
-      const me = playersWithInventory.find((player) => player.id === args.playerId);
-      const target = playersWithInventory.find((player) => player.id === targetId);
+      const me = playersWithInventory.find(
+        (player) => player.id === args.playerId,
+      );
+      const target = playersWithInventory.find(
+        (player) => player.id === targetId,
+      );
       const myInventory = args.toStringArray(me?.inventory);
       const theirInventory = args.toStringArray(target?.inventory);
       next = {
         ...next,
         players: playersWithInventory.map((player) => {
-          if (player.id === args.playerId) return { ...player, inventory: theirInventory };
-          if (player.id === targetId) return { ...player, inventory: myInventory };
+          if (player.id === args.playerId)
+            return { ...player, inventory: theirInventory };
+          if (player.id === targetId)
+            return { ...player, inventory: myInventory };
           return player;
         }),
       };
-      next = args.appendLog(next, `[Panier Express] Inversion de panier : echange d'inventaire avec ${args.playerName(args.state, targetId)}.`);
+      next = args.appendLog(
+        next,
+        `[Panier Express] Inversion de panier : echange d'inventaire avec ${args.playerName(args.state, targetId)}.`,
+      );
       return addEffectLog('swap_inventory', { targetId });
     }
     case 'rupture-de-stock':
     case 'stand-detrempe':
       next = args.setTurnStatus(next, args.playerId, 'noDrawCourses', 1);
-      next = args.appendLog(next, `[Panier Express] ${args.eventLabel || args.event} : aucune pioche de course ce tour-ci.`);
+      next = args.appendLog(
+        next,
+        `[Panier Express] ${args.eventLabel || args.event} : aucune pioche de course ce tour-ci.`,
+      );
       return addEffectLog('no_draw');
     case 'marche-bonde':
     case 'file-attente-interminable':
     case 'panne-de-caisse':
       next = args.setTurnStatus(next, args.playerId, 'skipTurn', 1);
-      next = args.appendLog(next, `[Panier Express] ${args.eventLabel} : vous passez votre prochain tour.`);
+      next = args.appendLog(
+        next,
+        `[Panier Express] ${args.eventLabel} : vous passez votre prochain tour.`,
+      );
       return addEffectLog('skipTurn');
     case 'chariot-perce': {
       const discardedResult = args.discardRandomCourse(next, args.playerId);
       next = discardedResult.state;
       if (!discardedResult.discarded) {
-        next = args.appendLog(next, `[Panier Express] Chariot perce : aucun ingredient a defausser.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] Chariot perce : aucun ingredient a defausser.`,
+        );
         return addEffectLog('none');
       }
-      next = args.appendLog(next, `[Panier Express] Chariot perce : defausse "${args.formatCourseLabel(discardedResult.discarded)}".`);
-      return addEffectLog('discard_random', { card: discardedResult.discarded });
+      next = args.appendLog(
+        next,
+        `[Panier Express] Chariot perce : defausse "${args.formatCourseLabel(discardedResult.discarded)}".`,
+      );
+      return addEffectLog('discard_random', {
+        card: discardedResult.discarded,
+      });
     }
     default:
       if (

@@ -99,7 +99,7 @@ export class SocialRelationshipService {
 
     const existing = await this.findRelations(requesterId, addresseeId);
     if (existing.length > 0) {
-        if (existing.some((r) => r.status === 'blocked')) {
+      if (existing.some((r) => r.status === 'blocked')) {
         throw new HttpException('Relation bloquee.', 403);
       }
       if (existing.some((r) => r.status === 'accepted')) {
@@ -151,9 +151,13 @@ export class SocialRelationshipService {
     });
     const saved = await this.relationships.save(relation);
 
-    await this.notifications.notifyUser(addresseeId, 'social.friend.requested', {
-      requesterId,
-    });
+    await this.notifications.notifyUser(
+      addresseeId,
+      'social.friend.requested',
+      {
+        requesterId,
+      },
+    );
 
     return {
       id: saved.id,

@@ -29,13 +29,23 @@ export async function runScheduleBotTurn(params: {
   gameType: string;
   state: GameStateEntity;
   buildKey: (roomId: number, gameType: string) => string;
-  buildSystemTimerKey: (roomId: number, gameType: string, suffix: string) => string;
+  buildSystemTimerKey: (
+    roomId: number,
+    gameType: string,
+    suffix: string,
+  ) => string;
   toMetadata: RuntimeMetadataDeps['toMetadata'];
   normalizeString: RuntimeMetadataDeps['normalizeMetadataString'];
   parseNumber: RuntimeMetadataDeps['parseMetadataNumber'];
-  getMetadataObject: (meta: Record<string, unknown>, key: string) => Record<string, unknown> | null;
+  getMetadataObject: (
+    meta: Record<string, unknown>,
+    key: string,
+  ) => Record<string, unknown> | null;
   registryGetHandler: (gameType: string) => GameRulesAdapter | null;
-  getBotActorIdForState: (state: GameStateEntity, handler: GameRulesAdapter | null) => number | null;
+  getBotActorIdForState: (
+    state: GameStateEntity,
+    handler: GameRulesAdapter | null,
+  ) => number | null;
   pendingSignature: (pending: PendingState | null | undefined) => string | null;
   markBotThinking: (
     roomId: number,
@@ -43,7 +53,11 @@ export async function runScheduleBotTurn(params: {
     state: GameStateEntity,
     botTurn?: boolean,
   ) => Promise<GameStateEntity>;
-  scheduleBotTurn: (roomId: number, gameType: string, state: GameStateEntity) => Promise<void>;
+  scheduleBotTurn: (
+    roomId: number,
+    gameType: string,
+    state: GameStateEntity,
+  ) => Promise<void>;
   applySystemActions: (
     roomId: number,
     gameType: string,
@@ -172,10 +186,15 @@ export async function runScheduleBotTurn(params: {
             latestMeta,
             'currentQuestion',
           );
-          if (latestQuestionMeta && typeof latestQuestionMeta['id'] === 'string') {
+          if (
+            latestQuestionMeta &&
+            typeof latestQuestionMeta['id'] === 'string'
+          ) {
             return;
           }
-          const latestInterUntilMs = parseNumber(latestMeta['interQuestionUntilMs']);
+          const latestInterUntilMs = parseNumber(
+            latestMeta['interQuestionUntilMs'],
+          );
           if (latestInterUntilMs === null) return;
           if (latestInterUntilMs !== interUntilMs) return;
           await applySystemActions(roomId, gameType, [
@@ -198,8 +217,14 @@ export async function runScheduleBotTurn(params: {
           const latestMeta = toMetadata(latest);
           const latestConfigMeta = getMetadataObject(latestMeta, 'config');
           if (latestConfigMeta?.['useTimer'] !== true) return;
-          const latestQuestionMeta = getMetadataObject(latestMeta, 'currentQuestion');
-          if (!latestQuestionMeta || typeof latestQuestionMeta['id'] !== 'string') {
+          const latestQuestionMeta = getMetadataObject(
+            latestMeta,
+            'currentQuestion',
+          );
+          if (
+            !latestQuestionMeta ||
+            typeof latestQuestionMeta['id'] !== 'string'
+          ) {
             return;
           }
           if (latestQuestionMeta['id'] !== questionId) return;
@@ -221,7 +246,9 @@ export async function runScheduleBotTurn(params: {
   const handler = registryGetHandler(gameType);
   const botActorId = getBotActorIdForState(state, handler);
   const botPlayer =
-    botActorId != null ? (state.players?.find((p) => p.id === botActorId) ?? null) : null;
+    botActorId != null
+      ? (state.players?.find((p) => p.id === botActorId) ?? null)
+      : null;
   if (!botPlayer?.isBot) {
     botScheduler.clear(key);
     return;
@@ -240,7 +267,9 @@ export async function runScheduleBotTurn(params: {
     gameType === 'arche-de-mnemosyne' && (pending as any)?.type === 'quiz';
   const configMeta = getMetadataObject(meta, 'config');
   const quizTimerSeconds =
-    isQuizPending && configMeta && typeof configMeta['timerSeconds'] === 'number'
+    isQuizPending &&
+    configMeta &&
+    typeof configMeta['timerSeconds'] === 'number'
       ? Number(configMeta['timerSeconds'])
       : null;
   const quizTimerMs =
@@ -260,7 +289,12 @@ export async function runScheduleBotTurn(params: {
     ? { ...state, metadata: { ...meta, botImmediateStartPending: false } }
     : state;
 
-  const thinking = await markBotThinking(roomId, gameType, stateForSchedule, true);
+  const thinking = await markBotThinking(
+    roomId,
+    gameType,
+    stateForSchedule,
+    true,
+  );
   broadcaster?.(gameType, roomId, thinking);
   gameLogger.debug('Bot turn scheduled', {
     roomId,

@@ -247,7 +247,7 @@ describe('CatPattes flow', () => {
         : null);
     expect(discardAction).toBeDefined();
 
-    state = actionsService.applyActions(state, [discardAction as any]);
+    state = actionsService.applyActions(state, [discardAction]);
     const meta2: any = state.metadata ?? {};
     const afterPlayCount = Array.isArray(meta2.hands?.[1])
       ? meta2.hands[1].length

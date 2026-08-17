@@ -4,7 +4,10 @@ import {
 } from '../../../core/entities/game-state.entity';
 import { TileEffectRegistryService } from '../../../modules/effects/services/tile-effect-registry.service';
 import { StandEffectRegistryService } from '../../../modules/effects/services/stand-effect-registry.service';
-import { PanierExpressMetadata, PanierExpressTile } from './model/panier-express-state.entity';
+import {
+  PanierExpressMetadata,
+  PanierExpressTile,
+} from './model/panier-express-state.entity';
 import { toText } from './panier-express-state.helpers';
 
 export function getPanierExpressStandLabel(
@@ -118,9 +121,9 @@ export function applyPanierExpressMerchantRequest(args: {
   ensureMetadata: (state: GameStateEntity) => GameStateEntity;
   courseItems: () => string[];
   getMetadata: (state: GameStateEntity) => PanierExpressMetadata;
-  createMetaRng: (
-    metadata: PanierExpressMetadata,
-  ) => { getMeta: () => PanierExpressMetadata };
+  createMetaRng: (metadata: PanierExpressMetadata) => {
+    getMeta: () => PanierExpressMetadata;
+  };
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
@@ -128,7 +131,9 @@ export function applyPanierExpressMerchantRequest(args: {
   formatCourseLabel: (ingredient: string) => string;
   playerName: (state: GameStateEntity, playerId: number) => string;
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
-  getPlayers: (state: GameStateEntity) => Array<{ id: number; inventory?: unknown }>;
+  getPlayers: (
+    state: GameStateEntity,
+  ) => Array<{ id: number; inventory?: unknown }>;
   toStringArray: (value: unknown) => string[];
 }): GameStateEntity {
   let next = args.ensureMetadata(args.state);
@@ -138,7 +143,7 @@ export function applyPanierExpressMerchantRequest(args: {
   const pick = args.pickOne(rng.getMeta(), pool);
   next = {
     ...next,
-    metadata: pick.meta as PanierExpressMetadata,
+    metadata: pick.meta,
   };
 
   const ingredient = String(pick.value ?? '').trim();
@@ -156,7 +161,9 @@ export function applyPanierExpressMerchantRequest(args: {
     `[Panier Express] Case Échange : ${playerName} est sollicité pour "${label}".`,
   );
 
-  const player = args.getPlayers(next).find((entry) => entry.id === args.playerId);
+  const player = args
+    .getPlayers(next)
+    .find((entry) => entry.id === args.playerId);
   const inventory = args.toStringArray(player?.inventory);
   const hasInventory = inventory.length > 0;
   const pending: PendingState = {
@@ -193,10 +200,7 @@ export function registerPanierExpressTileHandlers(args: {
     state: GameStateEntity,
     playerId: number,
   ) => GameStateEntity;
-  applyExchange: (
-    state: GameStateEntity,
-    playerId: number,
-  ) => GameStateEntity;
+  applyExchange: (state: GameStateEntity, playerId: number) => GameStateEntity;
   applyQuiz: (state: GameStateEntity, playerId: number) => GameStateEntity;
   applyMoveToStandChoice: (
     state: GameStateEntity,

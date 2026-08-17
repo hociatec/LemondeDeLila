@@ -30,19 +30,38 @@ export async function emitRoomAnnouncementDiff(params: {
 
   for (const id of roleSwitchIds) {
     if (previous.spectators.has(id) && next.players.has(id)) {
-      const username = next.players.get(id) ?? previous.spectators.get(id) ?? '';
+      const username =
+        next.players.get(id) ?? previous.spectators.get(id) ?? '';
       await announce(buildPlayerBecamePlayerMessage(username));
     } else if (previous.players.has(id) && next.spectators.has(id)) {
-      const username = next.spectators.get(id) ?? previous.players.get(id) ?? '';
+      const username =
+        next.spectators.get(id) ?? previous.players.get(id) ?? '';
       await announce(buildPlayerBecameSpectatorMessage(username));
     }
   }
 
-  await emitPlayerDiff(roomId, previous.players, next.players, false, roleSwitchIds, announce);
-  await emitPlayerDiff(roomId, previous.spectators, next.spectators, true, roleSwitchIds, announce);
+  await emitPlayerDiff(
+    roomId,
+    previous.players,
+    next.players,
+    false,
+    roleSwitchIds,
+    announce,
+  );
+  await emitPlayerDiff(
+    roomId,
+    previous.spectators,
+    next.spectators,
+    true,
+    roleSwitchIds,
+    announce,
+  );
   await emitBotDiff(roomId, previous.bots, next.bots, announce);
 
-  if (previous.ownerId !== next.ownerId || previous.ownerName !== next.ownerName) {
+  if (
+    previous.ownerId !== next.ownerId ||
+    previous.ownerName !== next.ownerName
+  ) {
     const message =
       next.ownerName.length === 0
         ? 'Propriétaire : aucun.'

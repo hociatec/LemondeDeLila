@@ -90,15 +90,20 @@ function buildLinearTiles(
   return Array.from({ length: count }, (_value, index) => {
     const n = index + 1;
     const override = overrides[n] ?? {};
-    const type = String(override.type ?? 'neutral');
-    const title = String(override.title ?? `Case ${n}`);
+    const type = typeof override.type === 'string' ? override.type : 'neutral';
+    const title =
+      typeof override.title === 'string' ? override.title : `Case ${n}`;
     const defaultKind = type === 'card' ? 'case symbole' : 'case neutre';
     return {
       n,
       type,
       title,
-      label: String(override.label ?? `case ${n}. ${title} (${defaultKind})`),
-      description: String(override.description ?? ''),
+      label:
+        typeof override.label === 'string'
+          ? override.label
+          : `case ${n}. ${title} (${defaultKind})`,
+      description:
+        typeof override.description === 'string' ? override.description : '',
     };
   });
 }
@@ -694,12 +699,11 @@ describe('FrousseActionService movement effects', () => {
       { type: 'draw', payload: {} } as any,
     ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
-    const drawMessage = messages.find((m) => m.includes('pioche une carte')) ?? '';
+    const drawMessage =
+      messages.find((m) => m.includes('pioche une carte')) ?? '';
 
     expect(drawMessage).toContain('Doublez votre prochain lancer de dé.');
-    expect(drawMessage).not.toContain(
-      '): Doublez le prochain lancer de dé.',
-    );
+    expect(drawMessage).not.toContain('): Doublez le prochain lancer de dé.');
   });
 
   it('bounces back from the exit when the final tile is overshot', () => {
@@ -722,9 +726,9 @@ describe('FrousseActionService movement effects', () => {
 
     expect(meta.positions?.[1]).toBe(44);
     expect(meta.winnerId ?? null).toBeNull();
-    expect(messages.some((message) => message.includes("s'échappe du manoir"))).toBe(
-      false,
-    );
+    expect(
+      messages.some((message) => message.includes("s'échappe du manoir")),
+    ).toBe(false);
   });
 
   it('teleports to case 40 when the accented card text is drawn, then continues from there', () => {

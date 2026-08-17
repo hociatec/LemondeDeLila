@@ -44,4 +44,3 @@ export type RuntimeBotActorDeps = {
     handler: GameRulesAdapter | null,
   ) => number | null;
 };
-

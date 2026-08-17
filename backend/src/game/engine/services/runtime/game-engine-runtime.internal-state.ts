@@ -17,7 +17,10 @@ export async function runGetInternalState(params: {
   storeGet: RuntimeStoreGet;
   storeSet: RuntimeStoreSet;
   storeDelete: (roomId: number, gameType: string) => Promise<void>;
-  storeSyncRoomStatus: (state: GameStateEntity, payload: RoomPayload) => GameStateEntity;
+  storeSyncRoomStatus: (
+    state: GameStateEntity,
+    payload: RoomPayload,
+  ) => GameStateEntity;
   cleanupRoom: (roomId: number, gameType: string) => void;
   isRoomNotFound: (err: unknown) => boolean;
   toMetadata: RuntimeMetadataDeps['toMetadata'];
@@ -30,11 +33,29 @@ export async function runGetInternalState(params: {
     gameType: string,
     state: GameStateEntity,
   ) => Promise<void>;
-  buildInitialState: (payload: RoomPayload, gameType: string) => GameStateEntity;
-  markBotThinking: (roomId: number, gameType: string, state: GameStateEntity) => Promise<GameStateEntity>;
-  normalizeBotThinking: (roomId: number, gameType: string, state: GameStateEntity) => Promise<GameStateEntity>;
-  scheduleBotTurn: (roomId: number, gameType: string, state: GameStateEntity) => Promise<void>;
-  syncRosterForStartedRoom: (state: GameStateEntity, payload: RoomPayload) => GameStateEntity;
+  buildInitialState: (
+    payload: RoomPayload,
+    gameType: string,
+  ) => GameStateEntity;
+  markBotThinking: (
+    roomId: number,
+    gameType: string,
+    state: GameStateEntity,
+  ) => Promise<GameStateEntity>;
+  normalizeBotThinking: (
+    roomId: number,
+    gameType: string,
+    state: GameStateEntity,
+  ) => Promise<GameStateEntity>;
+  scheduleBotTurn: (
+    roomId: number,
+    gameType: string,
+    state: GameStateEntity,
+  ) => Promise<void>;
+  syncRosterForStartedRoom: (
+    state: GameStateEntity,
+    payload: RoomPayload,
+  ) => GameStateEntity;
   gameLogger: Pick<RuntimeLogger, 'warn' | 'error' | 'info' | 'debug'>;
   exceptions: {
     NotFoundException: typeof NotFoundException;
@@ -82,7 +103,9 @@ export async function runGetInternalState(params: {
   const actualGameType = String(payload?.room?.gameType ?? '').trim();
   if (actualGameType && actualGameType !== gameType) {
     cleanupRoom(roomId, gameType);
-    throw new exceptions.BadRequestException('Type de jeu invalide pour cette table');
+    throw new exceptions.BadRequestException(
+      'Type de jeu invalide pour cette table',
+    );
   }
 
   const existing = await storeGet(roomId, gameType);
@@ -94,8 +117,12 @@ export async function runGetInternalState(params: {
     const roomStartedAt = normalizeMetadataString(payload.room.startedAt);
 
     const maybeFinished =
-      previousStatus === 'finished' ? existing : forceFinishedIfWinnerDetected(existing);
-    const maybeFinishedStatus = String(maybeFinished?.status ?? '').toLowerCase();
+      previousStatus === 'finished'
+        ? existing
+        : forceFinishedIfWinnerDetected(existing);
+    const maybeFinishedStatus = String(
+      maybeFinished?.status ?? '',
+    ).toLowerCase();
     if (roomStatus === 'started' && maybeFinishedStatus === 'finished') {
       if (isWithinFinishedGraceWindow(maybeFinished)) {
         await scheduleFinishedRoomReset(roomId, gameType, maybeFinished);
@@ -218,8 +245,10 @@ export async function runGetInternalState(params: {
       turnIndex: withRoster.turnIndex,
       currentPlayerId: withRoster.turn?.currentPlayerId ?? null,
       players:
-        withRoster.players?.map((p) => ({ id: p.id, isBot: Boolean(p.isBot) })) ??
-        [],
+        withRoster.players?.map((p) => ({
+          id: p.id,
+          isBot: Boolean(p.isBot),
+        })) ?? [],
       incomingPlayers,
       gameStarted,
     });

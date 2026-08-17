@@ -121,7 +121,8 @@ function hydratePlayers(
   >();
 
   assignmentOrder.forEach((player) => {
-    const username = String(player.username ?? '').toLowerCase();
+    const username =
+      typeof player.username === 'string' ? player.username.toLowerCase() : '';
     const isBot = player.isBot === true || username.includes('bot');
     const existingList = toStringArray(player.shoppingList).slice(0, 3);
     const existingPawn = getPawnText(player);

@@ -1,6 +1,10 @@
 import { GameStateEntity } from '../../../core/entities/game-state.entity';
 import { GameSingleActionDto } from '../../../engine/dto/game-action.dto';
-import { PanierExpressMetadata, PanierExpressPlayer, PanierExpressTile } from './model/panier-express-state.entity';
+import {
+  PanierExpressMetadata,
+  PanierExpressPlayer,
+  PanierExpressTile,
+} from './model/panier-express-state.entity';
 
 export function handlePanierExpressAnswerQuiz(args: {
   state: GameStateEntity;
@@ -68,7 +72,10 @@ export function handlePanierExpressAnswerQuiz(args: {
     metadata: {
       ...metadata,
       quiz: result.state,
-      quizOutcome: { ...(metadata.quizOutcome ?? {}), [playerId]: outcomeEntry },
+      quizOutcome: {
+        ...(metadata.quizOutcome ?? {}),
+        [playerId]: outcomeEntry,
+      },
     },
     pending: null,
   };
@@ -225,6 +232,8 @@ export function updatePanierExpressPlayer(
 ): GameStateEntity {
   return {
     ...state,
-    players: players.map((player) => (player.id === playerId ? updater(player) : player)),
+    players: players.map((player) =>
+      player.id === playerId ? updater(player) : player,
+    ),
   };
 }

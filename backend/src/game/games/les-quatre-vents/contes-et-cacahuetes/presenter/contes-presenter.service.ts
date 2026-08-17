@@ -131,7 +131,7 @@ export class ContesPresenterService {
         key: keyof ContesCacahuetesMetadata['statuses'],
         label: string,
       ) => {
-        if (Boolean((statusMap[key] as Record<number, unknown>)?.[pid])) {
+        if ((statusMap[key] as Record<number, unknown>)?.[pid]) {
           statuses.push(label);
         }
       };

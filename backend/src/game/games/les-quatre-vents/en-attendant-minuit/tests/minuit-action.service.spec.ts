@@ -792,7 +792,7 @@ describe('MinuitActionService', () => {
       messages.some((m) => m.includes('sur une case occupée : recul')),
     ).toBe(true);
     expect(messages.some((m) => m.includes('en case 6'))).toBe(true);
-    expect((next.metadata as any).positions[1]).toBe(4);
+    expect(next.metadata.positions[1]).toBe(4);
   });
 
   it('does not auto-roll the die for "Bonnet du Père Noël"', () => {
@@ -949,7 +949,8 @@ describe('MinuitActionService', () => {
             title: 'Case Recule - Neige fondue',
             type: 'move',
             delta: -1,
-            description: 'Vous glissez sur une plaque de glace. Reculez de 1 case.',
+            description:
+              'Vous glissez sur une plaque de glace. Reculez de 1 case.',
           },
           {
             n: 7,
@@ -975,18 +976,24 @@ describe('MinuitActionService', () => {
     expect(phaseOneMessages).toContain('Lilas a choisi la bonne réponse !');
     expect(
       phaseOneMessages.filter((m) =>
-        m.includes('sur une case occupée : recul d\'une case.'),
+        m.includes("sur une case occupée : recul d'une case."),
       ).length,
     ).toBeGreaterThanOrEqual(2);
     expect(
-      phaseOneMessages.some((m) => m.includes('en case 4 (Case Avance - Traîneau express).')),
-    ).toBe(true);
-    expect(
-      phaseOneMessages.some((m) => m.includes('en case 6 (Case Recule - Neige fondue).')),
+      phaseOneMessages.some((m) =>
+        m.includes('en case 4 (Case Avance - Traîneau express).'),
+      ),
     ).toBe(true);
     expect(
       phaseOneMessages.some((m) =>
-        m.includes('Enchaînement de cases interrompu pour éviter une boucle infinie.'),
+        m.includes('en case 6 (Case Recule - Neige fondue).'),
+      ),
+    ).toBe(true);
+    expect(
+      phaseOneMessages.some((m) =>
+        m.includes(
+          'Enchaînement de cases interrompu pour éviter une boucle infinie.',
+        ),
       ),
     ).toBe(true);
     expect((afterQuiz.metadata as any).positions[1]).toBe(3);
@@ -1052,7 +1059,7 @@ describe('MinuitActionService', () => {
           { n: 34, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 35, title: 'Case neutre', type: 'neutral', description: '' },
         ],
-      } as any,
+      },
     } as any;
 
     random.rollDice.mockClear();
@@ -1098,7 +1105,9 @@ describe('MinuitActionService', () => {
       metadata: {
         positions: { 1: 0, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
-        tiles: [{ n: 1, title: 'Case départ', type: 'neutral', description: '' }],
+        tiles: [
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
+        ],
         decks: {
           cards: [
             {
@@ -1106,7 +1115,9 @@ describe('MinuitActionService', () => {
               title: 'Traîneau bloqué dans la neige',
               category: 'Surprises',
               kind: 'Surprise',
-              lines: ['Vous devez pelleter pour le dégager. Passez votre tour.'],
+              lines: [
+                'Vous devez pelleter pour le dégager. Passez votre tour.',
+              ],
             },
           ],
           discard: [],
@@ -1123,9 +1134,9 @@ describe('MinuitActionService', () => {
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
 
     expect(messages).toContain('Olaf pioche "Traîneau bloqué dans la neige".');
-    expect(
-      messages.some((m) => m.includes('Olaf passe 1 tour(s).')),
-    ).toBe(false);
+    expect(messages.some((m) => m.includes('Olaf passe 1 tour(s).'))).toBe(
+      false,
+    );
   });
 
   it('uses the corrected "Carte de vœux magique" title in the draw log', () => {
@@ -1185,9 +1196,9 @@ describe('MinuitActionService', () => {
 
     expect(messages).toContain('Lilas pioche "Carte de vœux magique".');
     expect(messages.some((message) => /vSux/i.test(message))).toBe(false);
-    expect(messages.some((message) => /Vous recevez une carte/i.test(message))).toBe(
-      false,
-    );
+    expect(
+      messages.some((message) => /Vous recevez une carte/i.test(message)),
+    ).toBe(false);
   });
 });
 

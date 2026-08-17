@@ -1,5 +1,8 @@
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { extractPawnPromptToken, normalizePromptToken } from '../game-engine.prompt-token';
+import {
+  extractPawnPromptToken,
+  normalizePromptToken,
+} from '../game-engine.prompt-token';
 
 export function ensureRandomStarterAtGameStart(params: {
   baseState: GameStateEntity;
@@ -7,7 +10,9 @@ export function ensureRandomStarterAtGameStart(params: {
   toMetadata: (state: { metadata?: unknown }) => Record<string, unknown>;
 }): GameStateEntity {
   const { baseState, state, toMetadata } = params;
-  const status = String(state.status ?? '').toLowerCase().trim();
+  const status = String(state.status ?? '')
+    .toLowerCase()
+    .trim();
   if (status !== 'started') return state;
 
   const players = Array.isArray(state.players) ? state.players : [];
@@ -28,14 +33,19 @@ export function ensureRandomStarterAtGameStart(params: {
 
   const baseStarterId = baseState.turn?.currentPlayerId ?? null;
   const starterId =
-    typeof baseStarterId === 'number' && players.some((p) => p?.id === baseStarterId)
+    typeof baseStarterId === 'number' &&
+    players.some((p) => p?.id === baseStarterId)
       ? baseStarterId
       : (players[0]?.id ?? null);
   if (typeof starterId !== 'number') return state;
 
   const currentId = state.turn?.currentPlayerId ?? null;
-  const starterIndex = Math.max(0, players.findIndex((p) => p?.id === starterId));
-  const currentTurnIndex = typeof state.turnIndex === 'number' ? state.turnIndex : 0;
+  const starterIndex = Math.max(
+    0,
+    players.findIndex((p) => p?.id === starterId),
+  );
+  const currentTurnIndex =
+    typeof state.turnIndex === 'number' ? state.turnIndex : 0;
   if (currentId === starterId && currentTurnIndex === starterIndex) {
     return state;
   }
@@ -47,7 +57,9 @@ export function ensureRandomStarterAtGameStart(params: {
   };
 }
 
-function removeRecentTurnAnnouncements(state: GameStateEntity): GameStateEntity {
+function removeRecentTurnAnnouncements(
+  state: GameStateEntity,
+): GameStateEntity {
   const log = Array.isArray(state.log) ? [...state.log] : [];
   let changed = false;
   for (let i = log.length - 1; i >= 0 && i >= log.length - 6; i -= 1) {
@@ -66,20 +78,27 @@ export function appendFirstTurnAnnouncement(params: {
   normalizeUsernameForLog: (username: unknown) => string;
 }): GameStateEntity {
   const { appendLog, normalizeUsernameForLog } = params;
-  let { state } = params;
+  const { state } = params;
 
-  const status = String(state.status ?? '').toLowerCase().trim();
+  const status = String(state.status ?? '')
+    .toLowerCase()
+    .trim();
   if (status !== 'started') {
     return state;
   }
 
   const pending = state.pending ?? null;
-  const pendingType = String(pending?.type ?? '').trim().toLowerCase();
+  const pendingType = String(pending?.type ?? '')
+    .trim()
+    .toLowerCase();
   const announcementPlayerId =
     pendingType === 'choose_pawn' || pendingType === 'pick_pawn'
       ? (pending?.playerId ?? null)
       : (state.turn?.currentPlayerId ?? null);
-  if (typeof announcementPlayerId !== 'number' || !Number.isFinite(announcementPlayerId)) {
+  if (
+    typeof announcementPlayerId !== 'number' ||
+    !Number.isFinite(announcementPlayerId)
+  ) {
     return state;
   }
 
@@ -123,4 +142,3 @@ export function appendFirstTurnAnnouncement(params: {
       : `C'est au tour de ${name}.`,
   );
 }
-

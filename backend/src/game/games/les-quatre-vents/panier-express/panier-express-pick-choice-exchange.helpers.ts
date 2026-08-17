@@ -1,10 +1,12 @@
 import { GameStateEntity } from '../../../core/entities/game-state.entity';
 import { PanierExpressMetadata } from './model/panier-express-state.entity';
-import { asRecord, toText, toUnknownArray } from './panier-express-state.helpers';
+import {
+  asRecord,
+  toText,
+  toUnknownArray,
+} from './panier-express-state.helpers';
 
-function buildCourseSets(
-  stands: Record<string, unknown>,
-): {
+function buildCourseSets(stands: Record<string, unknown>): {
   fruit: Set<string>;
   veg: Set<string>;
   summerFruit: Set<string>;
@@ -25,7 +27,9 @@ function buildCourseSets(
   const winterVeg = new Set<string>();
 
   Object.entries(stands).forEach(([id, items]) => {
-    const list = Array.isArray(items) ? items.map((value) => String(value)) : [];
+    const list = Array.isArray(items)
+      ? items.map((value) => String(value))
+      : [];
     if (id === 'bonus') return;
     if (fruitStand(id)) {
       list.forEach((course) => fruit.add(course));
@@ -82,9 +86,9 @@ export function resolvePanierExpressExchangePickChoice(args: {
     playerId: number,
     card: string,
   ) => { state: GameStateEntity; removed: boolean };
-  createMetaRng: (
-    metadata: PanierExpressMetadata,
-  ) => { getMeta: () => PanierExpressMetadata };
+  createMetaRng: (metadata: PanierExpressMetadata) => {
+    getMeta: () => PanierExpressMetadata;
+  };
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
@@ -113,9 +117,9 @@ export function resolvePanierExpressExchangePickChoice(args: {
     const chosenTarget = asRecord(targets[args.index]);
     const targetPlayerId = Number(chosenTarget?.playerId);
     if (!Number.isFinite(targetPlayerId)) return args.clearPending(args.state);
-    const target = args.getPlayers(args.state).find(
-      (player) => player.id === targetPlayerId,
-    );
+    const target = args
+      .getPlayers(args.state)
+      .find((player) => player.id === targetPlayerId);
     const targetInv = args.toStringArray(target?.inventory);
     if (!targetInv.length) {
       let next = args.clearPending(args.state);
@@ -154,9 +158,9 @@ export function resolvePanierExpressExchangePickChoice(args: {
     if (!Number.isFinite(targetPlayerId) || !take) {
       return args.clearPending(args.state);
     }
-    const me = args.getPlayers(args.state).find(
-      (player) => player.id === args.actorId,
-    );
+    const me = args
+      .getPlayers(args.state)
+      .find((player) => player.id === args.actorId);
     const myInv = args.toStringArray(me?.inventory);
     if (!myInv.length) return args.clearPending(args.state);
     return {
@@ -276,9 +280,9 @@ export function resolvePanierExpressExchangePickChoice(args: {
     const chosenTarget = targets[args.index];
     const targetPlayerId = Number(chosenTarget.playerId);
     if (!Number.isFinite(targetPlayerId)) return args.clearPending(args.state);
-    const me = args.getPlayers(args.state).find(
-      (player) => player.id === args.actorId,
-    );
+    const me = args
+      .getPlayers(args.state)
+      .find((player) => player.id === args.actorId);
     const myInv = args.toStringArray(me?.inventory ?? []);
     const fruitCards = myInv.filter((card) => courseSets.fruit.has(card));
     if (!fruitCards.length) {
@@ -312,9 +316,9 @@ export function resolvePanierExpressExchangePickChoice(args: {
       return args.clearPending(args.state);
     }
     let next = args.clearPending(args.state);
-    const target = args.getPlayers(next).find(
-      (player) => player.id === targetPlayerId,
-    );
+    const target = args
+      .getPlayers(next)
+      .find((player) => player.id === targetPlayerId);
     const targetInv = args.toStringArray(target?.inventory ?? []);
     const vegCards = targetInv.filter((card) => courseSets.veg.has(card));
     if (!vegCards.length) {
@@ -352,9 +356,9 @@ export function resolvePanierExpressExchangePickChoice(args: {
     const chosenTarget = targets[args.index];
     const targetPlayerId = Number(chosenTarget.playerId);
     if (!Number.isFinite(targetPlayerId)) return args.clearPending(args.state);
-    const me = args.getPlayers(args.state).find(
-      (player) => player.id === args.actorId,
-    );
+    const me = args
+      .getPlayers(args.state)
+      .find((player) => player.id === args.actorId);
     const myInv = args.toStringArray(me?.inventory ?? []);
     const fruitCards = myInv.filter((card) => courseSets.summerFruit.has(card));
     if (!fruitCards.length) {
@@ -392,9 +396,9 @@ export function resolvePanierExpressExchangePickChoice(args: {
       return args.clearPending(args.state);
     }
     let next = args.clearPending(args.state);
-    const target = args.getPlayers(next).find(
-      (player) => player.id === targetPlayerId,
-    );
+    const target = args
+      .getPlayers(next)
+      .find((player) => player.id === targetPlayerId);
     const targetInv = args.toStringArray(target?.inventory ?? []);
     const winterVegCards = targetInv.filter((card) =>
       courseSets.winterVeg.has(card),

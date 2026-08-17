@@ -31,9 +31,9 @@ export function applyAdvancedPanierExpressEvent(args: {
     label: string,
   ) => GameStateEntity;
   getMetadata: (state: GameStateEntity) => PanierExpressMetadata;
-  createMetaRng: (
-    metadata: PanierExpressMetadata,
-  ) => { getMeta: () => PanierExpressMetadata };
+  createMetaRng: (metadata: PanierExpressMetadata) => {
+    getMeta: () => PanierExpressMetadata;
+  };
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
@@ -91,11 +91,15 @@ export function applyAdvancedPanierExpressEvent(args: {
       const metaNow = args.getMetadata(next);
       const tiles = Array.isArray(metaNow.tiles) ? metaNow.tiles : [];
       const positions = metaNow.positions ?? {};
-      const targets = args.getPlayers(next)
+      const targets = args
+        .getPlayers(next)
         .map((player) => {
           const pos = positions[player.id] ?? 0;
           const tile = tiles[pos];
-          if (tile?.type === 'stand' && toText(tile.standId).startsWith('bio')) {
+          if (
+            tile?.type === 'stand' &&
+            toText(tile.standId).startsWith('bio')
+          ) {
             return { playerId: player.id, standId: 'bonus' };
           }
           return null;
@@ -128,7 +132,9 @@ export function applyAdvancedPanierExpressEvent(args: {
       });
     }
     case 'recette-express': {
-      const me = args.getPlayers(next).find((player) => player.id === args.playerId);
+      const me = args
+        .getPlayers(next)
+        .find((player) => player.id === args.playerId);
       const list = args.toStringArray(me?.shoppingList ?? []);
       const basket = args.toStringArray(me?.basket ?? []);
       const inventory = args.toStringArray(me?.inventory ?? []);
@@ -174,9 +180,9 @@ export function applyAdvancedPanierExpressEvent(args: {
       }
 
       next = args.addOneCourseToPlayer(next, args.playerId, card);
-      const playerNow = args.getPlayers(next).find(
-        (player) => player.id === args.playerId,
-      );
+      const playerNow = args
+        .getPlayers(next)
+        .find((player) => player.id === args.playerId);
       const kept =
         args.toStringArray(playerNow?.basket).includes(card) ||
         args.toStringArray(playerNow?.inventory).includes(card);
@@ -221,17 +227,25 @@ export function applyAdvancedPanierExpressEvent(args: {
         }
       }
       if (bestIndex == null) {
-        next = args.appendLog(next, `[Panier Express] ${args.eventLabel} : aucun stand trouve.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] ${args.eventLabel} : aucun stand trouve.`,
+        );
         return args.appendActionLog(next, args.playerId, 'event', {
           event: args.event,
           effect: 'none',
         });
       }
-      const targets = args.getPlayers(next).filter(
-        (player) => (metaNow.positions?.[player.id] ?? 0) === bestIndex,
-      );
+      const targets = args
+        .getPlayers(next)
+        .filter(
+          (player) => (metaNow.positions?.[player.id] ?? 0) === bestIndex,
+        );
       if (!targets.length) {
-        next = args.appendLog(next, `[Panier Express] ${args.eventLabel} : aucun joueur sur le stand.`);
+        next = args.appendLog(
+          next,
+          `[Panier Express] ${args.eventLabel} : aucun joueur sur le stand.`,
+        );
         return args.appendActionLog(next, args.playerId, 'event', {
           event: args.event,
           effect: 'none',

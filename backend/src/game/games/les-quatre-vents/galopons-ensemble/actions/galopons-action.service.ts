@@ -22,9 +22,7 @@ import {
   createPendingState,
 } from '../../../../modules/pending-action/services/pending-action.service';
 import { continueSequentialPawnSelection } from '../../../../core/helpers/sequential-pawn-selection.helper';
-import {
-  applyConfiguredPawnSelection,
-} from '../../../../core/helpers/configured-pawn-selection.helper';
+import { applyConfiguredPawnSelection } from '../../../../core/helpers/configured-pawn-selection.helper';
 import { assignConfiguredBotPawns } from '../../../../core/helpers/configured-pawn-setup.helper';
 import type {
   GaloponsCard,
@@ -584,17 +582,25 @@ export class GaloponsActionService {
           ...meta,
           statuses: {
             ...meta.statuses,
-            skipTurn: { ...(meta.statuses.skipTurn ?? {}), [playerId]: curr + effect.count },
+            skipTurn: {
+              ...(meta.statuses.skipTurn ?? {}),
+              [playerId]: curr + effect.count,
+            },
           },
         };
         return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       }
       case 'give_apple_with_iou':
-        return this.createChooseTargetPending(next, playerId, {
-          kind: 'give_apple',
-          actorId: playerId,
-          replayAfter: false,
-        }, turnInitiatorPlayerId);
+        return this.createChooseTargetPending(
+          next,
+          playerId,
+          {
+            kind: 'give_apple',
+            actorId: playerId,
+            replayAfter: false,
+          },
+          turnInitiatorPlayerId,
+        );
       case 'discard_apple_and_replay': {
         const apples = meta.apples?.[playerId] ?? 0;
         if (apples > 0) {
@@ -622,17 +628,27 @@ export class GaloponsActionService {
         );
       }
       case 'help_advance_for_apple':
-        return this.createChooseTargetPending(next, playerId, {
-          kind: 'help_advance',
-          actorId: playerId,
-          replayAfter: false,
-        }, turnInitiatorPlayerId);
+        return this.createChooseTargetPending(
+          next,
+          playerId,
+          {
+            kind: 'help_advance',
+            actorId: playerId,
+            replayAfter: false,
+          },
+          turnInitiatorPlayerId,
+        );
       case 'pair_advance':
-        return this.createChooseTargetPending(next, playerId, {
-          kind: 'pair_advance',
-          actorId: playerId,
-          replayAfter: false,
-        }, turnInitiatorPlayerId);
+        return this.createChooseTargetPending(
+          next,
+          playerId,
+          {
+            kind: 'pair_advance',
+            actorId: playerId,
+            replayAfter: false,
+          },
+          turnInitiatorPlayerId,
+        );
       case 'global_skip_turn': {
         const skip = { ...(meta.statuses?.skipTurn ?? {}) };
         for (const id of Object.keys(meta.positions ?? {})
@@ -646,7 +662,10 @@ export class GaloponsActionService {
       case 'discard_apple': {
         const apples = meta.apples?.[playerId] ?? 0;
         if (apples > 0) {
-          meta = { ...meta, apples: { ...meta.apples, [playerId]: apples - 1 } };
+          meta = {
+            ...meta,
+            apples: { ...meta.apples, [playerId]: apples - 1 },
+          };
           return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
         }
         return this.core.appendLog(
@@ -705,25 +724,16 @@ export class GaloponsActionService {
 
     // Donner une pomme (peut être combiné avec "Rejouez immédiatement").
     if (/Donnez-lui une pomme/i.test(text)) {
-      const targets = this.otherPlayers(next, playerId);
-      const pending: PendingState = {
-        type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis Entrée.',
+      return this.createChooseTargetPending(
+        next,
         playerId,
-        blocking: true,
-        choices: targets.map((t) => t.username),
-        data: {
-          targets: targets.map((t) => ({
-            targetPlayerId: t.id,
-            targetUsername: t.username,
-          })),
+        {
+          kind: 'give_apple',
+          actorId: playerId,
+          replayAfter,
         },
-      };
-      return this.createChooseTargetPending(next, playerId, {
-        kind: 'give_apple',
-        actorId: playerId,
-        replayAfter,
-      }, turnInitiatorPlayerId);
+        turnInitiatorPlayerId,
+      );
     }
 
     // Rejouer.
@@ -798,48 +808,30 @@ export class GaloponsActionService {
         text,
       )
     ) {
-      const targets = this.otherPlayers(next, playerId);
-      const pending: PendingState = {
-        type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis Entrée.',
+      return this.createChooseTargetPending(
+        next,
         playerId,
-        blocking: true,
-        choices: targets.map((t) => t.username),
-        data: {
-          targets: targets.map((t) => ({
-            targetPlayerId: t.id,
-            targetUsername: t.username,
-          })),
+        {
+          kind: 'pair_advance',
+          actorId: playerId,
+          replayAfter,
         },
-      };
-      return this.createChooseTargetPending(next, playerId, {
-        kind: 'pair_advance',
-        actorId: playerId,
-        replayAfter,
-      }, turnInitiatorPlayerId);
+        turnInitiatorPlayerId,
+      );
     }
 
     // Aider un autre joueur en +2 et recevoir une pomme.
     if (/aidez un autre joueur en le faisant avancer de 2 cases/i.test(text)) {
-      const targets = this.otherPlayers(next, playerId);
-      const pending: PendingState = {
-        type: 'choose_target',
-        label: 'Choisissez un joueur dans la liste, puis Entrée.',
+      return this.createChooseTargetPending(
+        next,
         playerId,
-        blocking: true,
-        choices: targets.map((t) => t.username),
-        data: {
-          targets: targets.map((t) => ({
-            targetPlayerId: t.id,
-            targetUsername: t.username,
-          })),
+        {
+          kind: 'help_advance',
+          actorId: playerId,
+          replayAfter,
         },
-      };
-      return this.createChooseTargetPending(next, playerId, {
-        kind: 'help_advance',
-        actorId: playerId,
-        replayAfter,
-      }, turnInitiatorPlayerId);
+        turnInitiatorPlayerId,
+      );
     }
 
     // Défausser une pomme.
@@ -1028,7 +1020,10 @@ export class GaloponsActionService {
     pos: number,
   ): GameStateEntity {
     const meta = this.getMeta(state);
-    const maxPos = Math.max(0, (Array.isArray(meta.tiles) ? meta.tiles.length : 1) - 1);
+    const maxPos = Math.max(
+      0,
+      (Array.isArray(meta.tiles) ? meta.tiles.length : 1) - 1,
+    );
     const nextMeta: GaloponsMetadata = {
       ...meta,
       positions: {
@@ -1181,7 +1176,10 @@ export class GaloponsActionService {
       return pendingInitiatorPlayerId;
     }
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
-    if (typeof currentPlayerId === 'number' && Number.isFinite(currentPlayerId)) {
+    if (
+      typeof currentPlayerId === 'number' &&
+      Number.isFinite(currentPlayerId)
+    ) {
       return currentPlayerId;
     }
     return fallbackPlayerId;

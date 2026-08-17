@@ -58,4 +58,3 @@ export function exposeGameState(params: {
   const withLifecycle = attachStartLifecycle({ state: withDescriptors });
   return fixMojibakeDeep(stripBoardAndGridIfNotStarted(withLifecycle));
 }
-

@@ -18,7 +18,10 @@ export class BoardMissionPresenterService {
     private readonly support: BoardMissionRuntimeSupportService,
   ) {}
 
-  exposeStateForUser<TMeta extends BoardMissionMetadata, TRules extends BoardMissionRules>(
+  exposeStateForUser<
+    TMeta extends BoardMissionMetadata,
+    TRules extends BoardMissionRules,
+  >(
     state: GameStateEntity,
     userId: number,
     model: BoardMissionResolvedModel<TRules>,
@@ -69,12 +72,13 @@ export class BoardMissionPresenterService {
         taxi: {
           currentClient: client
             ? `${client.clientName} vers ${this.support.tileTitleById(meta, client.destinationId)}`
-            : game.idleClientText ?? 'Aucun client à bord.',
-          route: client?.route ?? game.idleRouteText ?? 'Aucun trajet en cours.',
+            : (game.idleClientText ?? 'Aucun client à bord.'),
+          route:
+            client?.route ?? game.idleRouteText ?? 'Aucun trajet en cours.',
           stats: `Trajets complétés : ${completed} / ${model.rules.victory.target}`,
           event: event
             ? `${event.title} bloque ${this.support.tileTitleById(meta, event.blockedTileId)}.`
-            : game.idleEventText ?? 'Pas d’obstacle identifié.',
+            : (game.idleEventText ?? 'Pas d’obstacle identifié.'),
         },
         ui: {
           panels: {

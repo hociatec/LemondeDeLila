@@ -21,7 +21,10 @@ import { BoardMissionRuntimeSupportService } from '../../engine/board-mission/bo
 type PresenterCase = {
   label: string;
   presenter: {
-    exposeStateForUser(state: GameStateEntity, userId: number): {
+    exposeStateForUser(
+      state: GameStateEntity,
+      userId: number,
+    ): {
       extras?: {
         ui?: {
           panels?: Record<string, unknown>;

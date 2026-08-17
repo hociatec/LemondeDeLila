@@ -664,10 +664,8 @@ describe('GameEngineService', () => {
       1,
     );
 
-    expect(
-      (exposed?.pending as any)?.data?.choiceActionsByIndex?.length,
-    ).toBe(2);
-    expect((exposed?.pending as any)?.data?.choiceActionsByIndex?.[1]).toEqual({
+    expect(exposed?.pending?.data?.choiceActionsByIndex?.length).toBe(2);
+    expect(exposed?.pending?.data?.choiceActionsByIndex?.[1]).toEqual({
       type: 'answer_quiz',
       payload: { answerIndex: 1 },
       meta: undefined,
@@ -715,13 +713,13 @@ describe('GameEngineService', () => {
       1,
     );
 
-    expect((exposed as any).pending?.type).toBe('choose_action');
-    expect((exposed as any).pending?.playerId).toBe(1);
-    expect((exposed as any).pending?.choices).toEqual([
+    expect(exposed.pending?.type).toBe('choose_action');
+    expect(exposed.pending?.playerId).toBe(1);
+    expect(exposed.pending?.choices).toEqual([
       'Fam - Carte 2',
       'Fam - Carte 1',
     ]);
-    expect((exposed as any).pending?.data?.choiceActionsByIndex?.[0]).toEqual({
+    expect(exposed.pending?.data?.choiceActionsByIndex?.[0]).toEqual({
       type: 'discard_card',
       payload: { memberId: 'm2', familyId: 'f' },
       meta: undefined,
@@ -773,10 +771,10 @@ describe('GameEngineService', () => {
       1,
     );
 
-    expect((exposed as any).pending?.data?.context).toBe('synthetic:ask_card');
-    expect((exposed as any).pending?.blocking).toBe(false);
-    expect((exposed as any).pending?.choices?.[0]).toBe('Fox : Fam - Carte 1');
-    expect((exposed as any).pending?.data?.choiceActionsByIndex?.[0]).toEqual({
+    expect(exposed.pending?.data?.context).toBe('synthetic:ask_card');
+    expect(exposed.pending?.blocking).toBe(false);
+    expect(exposed.pending?.choices?.[0]).toBe('Fox : Fam - Carte 1');
+    expect(exposed.pending?.data?.choiceActionsByIndex?.[0]).toEqual({
       type: 'ask_card',
       payload: { cardId: 'c1', targetPlayerId: 2 },
       meta: undefined,
@@ -1500,11 +1498,7 @@ describe('GameEngineService', () => {
     );
 
     expect(out).toBe(current);
-    expect(broadcast).toHaveBeenCalledWith(
-      'galopons-ensemble',
-      1,
-      current,
-    );
+    expect(broadcast).toHaveBeenCalledWith('galopons-ensemble', 1, current);
     expect((engine as any).exposeState).toHaveBeenCalledWith(
       current,
       'galopons-ensemble',
@@ -2082,18 +2076,18 @@ describe('GameEngineService', () => {
     };
 
     expect(synced.turn?.currentPlayerId).toBe(1);
-    expect(
-      (synced.players ?? []).find((p: any) => p?.id === 1)?.username,
-    ).toBe('hacene');
+    expect((synced.players ?? []).find((p: any) => p?.id === 1)?.username).toBe(
+      'hacene',
+    );
     expect((synced.players ?? []).find((p: any) => p?.id === 1)?.isBot).toBe(
       false,
     );
     expect(
       (synced.players ?? []).find((p: any) => p?.id === -7)?.username,
     ).toBe('Margalo');
-    expect(
-      (synced.players ?? []).find((p: any) => p?.id === -7)?.isBot,
-    ).toBe(true);
+    expect((synced.players ?? []).find((p: any) => p?.id === -7)?.isBot).toBe(
+      true,
+    );
     expect((engine as any).getBotActorIdForState(synced, handler)).toBeNull();
 
     const botTurnState = {

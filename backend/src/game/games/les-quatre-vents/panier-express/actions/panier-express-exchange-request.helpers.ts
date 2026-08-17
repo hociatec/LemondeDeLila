@@ -15,8 +15,14 @@ export function requestPanierExpressSpecialExchange(args: {
   resolvedCard: string;
   utils: PanierExpressUtils;
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
-  nextInt: (metadata: any, maxExclusive: number) => { meta: any; value: number };
-  pickOne: <T>(metadata: any, items: T[]) => { meta: any; value: T | undefined };
+  nextInt: (
+    metadata: any,
+    maxExclusive: number,
+  ) => { meta: any; value: number };
+  pickOne: <T>(
+    metadata: any,
+    items: T[],
+  ) => { meta: any; value: T | undefined };
   shuffle: <T>(metadata: any, items: T[]) => { meta: any; values: T[] };
 }): GameStateEntity | null {
   const targetChoices = (state: GameStateEntity) =>
@@ -129,7 +135,8 @@ export function requestPanierExpressSpecialExchange(args: {
           type: 'pick',
           playerId: args.playerId,
           blocking: true,
-          label: "Choisissez un joueur pour l'echange strategique, puis Entree.",
+          label:
+            "Choisissez un joueur pour l'echange strategique, puis Entree.",
           choices,
           data: {
             kind: 'exchange.strategique.choose_target',
@@ -326,7 +333,8 @@ export function requestPanierExpressSpecialExchange(args: {
     const pickedByPlayer: Record<number, string> = {};
     for (const pid of shuffledPlayers.values) {
       const inv = args.utils.toStringArray(
-        (next.players ?? []).find((player: any) => player.id === pid)?.inventory,
+        (next.players ?? []).find((player: any) => player.id === pid)
+          ?.inventory,
       );
       const pick = args.pickOne((next.metadata as any) ?? {}, inv);
       next = { ...next, metadata: pick.meta };
@@ -344,7 +352,10 @@ export function requestPanierExpressSpecialExchange(args: {
         next = addCardToPlayerState(args.utils, next, receiverId, card);
       }
     }
-    return args.appendLog(next, `[Panier Express] Echange masque : echange realise.`);
+    return args.appendLog(
+      next,
+      `[Panier Express] Echange masque : echange realise.`,
+    );
   }
 
   if (args.resolvedCard === 'panier-collectif') {
@@ -439,7 +450,10 @@ export function requestPanierExpressSpecialExchange(args: {
     });
     const cardLabel = args.utils.formatCourseLabel(card);
     return args.appendLog(
-      addToDiscardState({ ...args.state, players, metadata: updatedMeta }, card),
+      addToDiscardState(
+        { ...args.state, players, metadata: updatedMeta },
+        card,
+      ),
       `[Panier Express] Defausse aleatoire : ${args.utils.playerName(args.state, args.playerId)} defausse "${cardLabel}".`,
     );
   }

@@ -14,7 +14,14 @@ export function hasRecentPawnSelectionLogs(
   const recentMessages = Array.isArray(log)
     ? log
         .slice(-6)
-        .map((entry) => String(entry?.message ?? '').trim())
+        .map((entry) => {
+          const raw = entry?.message;
+          if (typeof raw === 'string') return raw.trim();
+          if (typeof raw === 'number' && Number.isFinite(raw))
+            return String(raw);
+          if (typeof raw === 'boolean') return raw ? 'true' : 'false';
+          return '';
+        })
         .filter((message) => message.length > 0)
     : [];
 

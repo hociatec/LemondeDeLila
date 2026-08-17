@@ -22,8 +22,9 @@ export function parseRoomCreateRequest(
   const maxPlayers =
     typeof maxPlayersRaw === 'number'
       ? maxPlayersRaw
-      : Number.isFinite(parseInt(String(maxPlayersRaw ?? ''), 10))
-        ? parseInt(String(maxPlayersRaw ?? ''), 10)
+      : typeof maxPlayersRaw === 'string' &&
+          Number.isFinite(parseInt(maxPlayersRaw, 10))
+        ? parseInt(maxPlayersRaw, 10)
         : null;
   const isPrivate = typeof row.isPrivate === 'boolean' ? row.isPrivate : false;
 
@@ -35,8 +36,7 @@ export function parseRoomJoinRequest(
 ): RoomJoinRequest {
   const roomId = Number(row.roomId ?? row.room ?? 0);
   const spectator = resolveTruthyFlag(row.spectator);
-  const silent =
-    resolveTruthyFlag(row.silent) || resolveTruthyFlag(row.hidden);
+  const silent = resolveTruthyFlag(row.silent) || resolveTruthyFlag(row.hidden);
 
   return { roomId, spectator, silent };
 }

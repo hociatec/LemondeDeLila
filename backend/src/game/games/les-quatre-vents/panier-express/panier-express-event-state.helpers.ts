@@ -182,7 +182,9 @@ export function addPanierExpressCourseToPlayer(args: {
 
   next = { ...next, players };
   const metadata = args.getMetadata(next);
-  const playerNow = (next.players ?? []).find((player) => player.id === args.playerId);
+  const playerNow = (next.players ?? []).find(
+    (player) => player.id === args.playerId,
+  );
   const hasCard =
     args.toStringArray(playerNow?.basket).includes(trimmed) ||
     args.toStringArray(playerNow?.inventory).includes(trimmed);
@@ -206,9 +208,9 @@ export function discardPanierExpressRandomCourse(args: {
   state: GameStateEntity;
   playerId: number;
   getMetadata: (state: GameStateEntity) => PanierExpressMetadata;
-  createMetaRng: (
-    metadata: PanierExpressMetadata,
-  ) => { getMeta: () => PanierExpressMetadata };
+  createMetaRng: (metadata: PanierExpressMetadata) => {
+    getMeta: () => PanierExpressMetadata;
+  };
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
@@ -216,7 +218,9 @@ export function discardPanierExpressRandomCourse(args: {
   toStringArray: (value: unknown) => string[];
   removeOne: (items: string[], value: string) => string[];
 }): { state: GameStateEntity; discarded: string | null } {
-  const player = (args.state.players ?? []).find((entry) => entry.id === args.playerId);
+  const player = (args.state.players ?? []).find(
+    (entry) => entry.id === args.playerId,
+  );
   if (!player) {
     return { state: args.state, discarded: null };
   }

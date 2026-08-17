@@ -402,7 +402,7 @@ describe('PanierExpress pending scenarios', () => {
     };
 
     expect(pendingState.pending?.type).toBe('pick');
-    expect((pendingState.pending as any)?.data?.kind).toBe(
+    expect(pendingState.pending?.data?.kind).toBe(
       'exchange.voisin.choose_give',
     );
     expect(pendingState.pending?.choices).toEqual(['amande']);
@@ -423,10 +423,11 @@ describe('PanierExpress pending scenarios', () => {
     expect(b.inventory).toEqual(['amande']);
     expect(after.turn?.currentPlayerId).toBe(2);
     expect(
-      logs.some((message) =>
-        message.includes('Échange devant:') &&
-        message.includes('donne "amande" à B') &&
-        message.includes('reçoit "noix"'),
+      logs.some(
+        (message) =>
+          message.includes('Échange devant:') &&
+          message.includes('donne "amande" à B') &&
+          message.includes('reçoit "noix"'),
       ),
     ).toBe(true);
   });
@@ -497,10 +498,11 @@ describe('PanierExpress pending scenarios', () => {
     expect(aCards).toContain('noix');
     expect(bCards).toContain('amande');
     expect(
-      logs.some((message) =>
-        message.includes('Échange stratégique:') &&
-        message.includes('donne "amande"') &&
-        message.includes('reçoit "noix"'),
+      logs.some(
+        (message) =>
+          message.includes('Échange stratégique:') &&
+          message.includes('donne "amande"') &&
+          message.includes('reçoit "noix"'),
       ),
     ).toBe(true);
   });

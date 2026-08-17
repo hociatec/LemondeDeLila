@@ -20,7 +20,9 @@ export function syncRosterForStartedRoom(params: {
     let changed = false;
     if (
       !state ||
-      String(state.status ?? '').toLowerCase().trim() !== 'started'
+      String(state.status ?? '')
+        .toLowerCase()
+        .trim() !== 'started'
     ) {
       return state;
     }
@@ -108,13 +110,16 @@ export function syncRosterForStartedRoom(params: {
       typeof currentTurnPlayerId === 'number' &&
       currentTurnPlayerId < 0 &&
       mappedPlayers.some(
-        (player) => player?.id === currentTurnPlayerId && player?.isBot === true,
+        (player) =>
+          player?.id === currentTurnPlayerId && player?.isBot === true,
       )
     ) {
       preserveBotIds.add(currentTurnPlayerId);
     }
     const pendingPlayerId =
-      typeof state.pending?.playerId === 'number' ? state.pending.playerId : null;
+      typeof state.pending?.playerId === 'number'
+        ? state.pending.playerId
+        : null;
     if (
       typeof pendingPlayerId === 'number' &&
       pendingPlayerId < 0 &&
@@ -149,14 +154,24 @@ export function syncRosterForStartedRoom(params: {
       currentPlayerId !== 0 &&
       !nextPlayers.some((p) => p?.id === currentPlayerId)
     ) {
-      const prevIndex = Math.max(0, players.findIndex((p) => p?.id === currentPlayerId));
-      const fallbackIndex = Math.min(prevIndex, Math.max(0, nextPlayers.length - 1));
-      const fallbackId = nextPlayers[fallbackIndex]?.id ?? nextPlayers[0]?.id ?? null;
+      const prevIndex = Math.max(
+        0,
+        players.findIndex((p) => p?.id === currentPlayerId),
+      );
+      const fallbackIndex = Math.min(
+        prevIndex,
+        Math.max(0, nextPlayers.length - 1),
+      );
+      const fallbackId =
+        nextPlayers[fallbackIndex]?.id ?? nextPlayers[0]?.id ?? null;
       if (fallbackId !== currentPlayerId) {
         changed = true;
         state = {
           ...state,
-          turn: { ...(state.turn ?? { direction: 1 }), currentPlayerId: fallbackId },
+          turn: {
+            ...(state.turn ?? { direction: 1 }),
+            currentPlayerId: fallbackId,
+          },
         };
       }
     }
@@ -170,7 +185,9 @@ export function syncRosterForStartedRoom(params: {
       changed = true;
       state = {
         ...state,
-        pending: state.pending ? { ...state.pending, playerId: null } : state.pending,
+        pending: state.pending
+          ? { ...state.pending, playerId: null }
+          : state.pending,
       };
     }
 

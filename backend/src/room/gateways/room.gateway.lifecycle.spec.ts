@@ -631,10 +631,10 @@ describe('RoomGateway lifecycle scenarios', () => {
     try {
       const { gateway, deps } = createGatewayFixture();
 
-      (gateway as any).sendRoomState = jest.fn().mockResolvedValue(undefined);
-      (gateway as any).hasUserConnections = jest.fn().mockReturnValue(false);
+      gateway.sendRoomState = jest.fn().mockResolvedValue(undefined);
+      gateway.hasUserConnections = jest.fn().mockReturnValue(false);
 
-      (gateway as any).scheduleDelayedParticipantLeave(10, 3);
+      gateway.scheduleDelayedParticipantLeave(10, 3);
       jest.runOnlyPendingTimers();
 
       expect(deps.roomsService.leaveRoom).toHaveBeenCalledWith(

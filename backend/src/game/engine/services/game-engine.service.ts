@@ -9,9 +9,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { RoomService } from '../../../room/services/room.service';
-import {
-  RoomPayload,
-} from '../../../room/dto/room-response.dto';
+import { RoomPayload } from '../../../room/dto/room-response.dto';
 import { GameCoreService } from '../../core/services/game-core.service';
 import {
   GameSingleActionDto,
@@ -168,34 +166,44 @@ export class GameEngineService {
       state: GameStateEntity,
       opts?: { asyncPersist?: boolean },
     ) => this.store.set(roomId, gameType, state, opts),
-    storeDelete: (roomId: number, gameType: string) => this.store.delete(roomId, gameType),
+    storeDelete: (roomId: number, gameType: string) =>
+      this.store.delete(roomId, gameType),
     storeSyncRoomStatus: (state: GameStateEntity, payload: RoomPayload) =>
       this.store.syncRoomStatus(state, payload),
     storeMarkBotThinking: (state: GameStateEntity, isBot: boolean) =>
       this.store.markBotThinking(state, isBot),
     botSchedulerClear: (key: string) => this.botScheduler.clear(key),
-    buildKey: (roomId: number, gameType: string) => this.buildKey(roomId, gameType),
+    buildKey: (roomId: number, gameType: string) =>
+      this.buildKey(roomId, gameType),
     buildSystemTimerKey: (roomId: number, gameType: string, suffix: string) =>
       this.buildSystemTimerKey(roomId, gameType, suffix),
-    cleanupRoom: (roomId: number, gameType: string) => this.cleanupRoom(roomId, gameType),
+    cleanupRoom: (roomId: number, gameType: string) =>
+      this.cleanupRoom(roomId, gameType),
     getInternalState: (roomId: number, gameType: string) =>
       this.getInternalState(roomId, gameType),
-    normalizeBotThinking: (roomId: number, gameType: string, state: GameStateEntity) =>
-      this.normalizeBotThinking(roomId, gameType, state),
+    normalizeBotThinking: (
+      roomId: number,
+      gameType: string,
+      state: GameStateEntity,
+    ) => this.normalizeBotThinking(roomId, gameType, state),
     markBotThinking: (
       roomId: number,
       gameType: string,
       state: GameStateEntity,
       botTurn?: boolean,
     ) => this.markBotThinking(roomId, gameType, state, botTurn),
-    scheduleBotTurn: (roomId: number, gameType: string, state: GameStateEntity) =>
-      this.scheduleBotTurn(roomId, gameType, state),
+    scheduleBotTurn: (
+      roomId: number,
+      gameType: string,
+      state: GameStateEntity,
+    ) => this.scheduleBotTurn(roomId, gameType, state),
     applySystemActions: (
       roomId: number,
       gameType: string,
       actions: GameSingleActionDto[],
     ) => this.applySystemActions(roomId, gameType, actions),
-    playBotTurn: (roomId: number, gameType: string) => this.playBotTurn(roomId, gameType),
+    playBotTurn: (roomId: number, gameType: string) =>
+      this.playBotTurn(roomId, gameType),
     getBotActorIdForState: (
       state: GameStateEntity,
       handler: GameRulesAdapter | null,
@@ -227,7 +235,8 @@ export class GameEngineService {
       handler: GameRulesAdapter | undefined,
       previous: GameStateEntity,
       next: GameStateEntity,
-    ) => this.appendBoardArrivalAnnouncements(gameType, handler, previous, next),
+    ) =>
+      this.appendBoardArrivalAnnouncements(gameType, handler, previous, next),
     appendSkipTurnAnnouncements: (state: GameStateEntity) =>
       this.appendSkipTurnAnnouncements(state),
     normalizeWinnerMetadata: (state: GameStateEntity) =>
@@ -258,13 +267,19 @@ export class GameEngineService {
       this.deriveFinishedOutcomes(state),
     buildEndgameMessagesByPlayerId: (players: PlayerStateEntity[]) =>
       this.buildEndgameMessagesByPlayerId(players),
-    buildEndedPayload: (roomId: number, gameType: string, state: GameStateEntity) =>
-      this.buildEndedPayload(roomId, gameType, state),
+    buildEndedPayload: (
+      roomId: number,
+      gameType: string,
+      state: GameStateEntity,
+    ) => this.buildEndedPayload(roomId, gameType, state),
     broadcastCurrentStateAndExpose: (
       roomId: number,
       gameType: string,
       state: GameStateEntity,
-    ) => Promise.resolve(this.broadcastCurrentStateAndExpose(roomId, gameType, state)),
+    ) =>
+      Promise.resolve(
+        this.broadcastCurrentStateAndExpose(roomId, gameType, state),
+      ),
     coreAppendLog: (state: GameStateEntity, message: string) =>
       this.core.appendLog(state, message),
     coreBuildBaseState: (payload: RoomPayload, gameType: string) =>
@@ -658,7 +673,8 @@ export class GameEngineService {
       toMetadata,
       normalizeMetadataString,
       parseMetadataNumber,
-      forceFinishedIfWinnerDetected: this.runtimeDeps.forceFinishedIfWinnerDetected,
+      forceFinishedIfWinnerDetected:
+        this.runtimeDeps.forceFinishedIfWinnerDetected,
       isWithinFinishedGraceWindow: this.runtimeDeps.isWithinFinishedGraceWindow,
       scheduleFinishedRoomReset: this.runtimeDeps.scheduleFinishedRoomReset,
       buildInitialState: this.runtimeDeps.buildInitialState,
@@ -754,7 +770,8 @@ export class GameEngineService {
       botSchedulerClear: this.runtimeDeps.botSchedulerClear,
       buildKey: this.runtimeDeps.buildKey,
       exposeState: this.runtimeDeps.exposeState,
-      broadcastCurrentStateAndExpose: this.runtimeDeps.broadcastCurrentStateAndExpose,
+      broadcastCurrentStateAndExpose:
+        this.runtimeDeps.broadcastCurrentStateAndExpose,
       coreAppendLog: this.runtimeDeps.coreAppendLog,
       storeSet: this.runtimeDeps.storeSet,
       normalizeWinnerMetadata: this.runtimeDeps.normalizeWinnerMetadata,
@@ -1482,9 +1499,8 @@ export class GameEngineService {
       coreBuildBaseState: this.runtimeDeps.coreBuildBaseState,
       coreAppendLog: this.runtimeDeps.coreAppendLog,
       registryGetHandler: this.runtimeDeps.registryGetHandler,
-      ensureRandomStarterAtGameStart:
-        (baseState, currentState) =>
-          this.ensureRandomStarterAtGameStart(baseState, currentState),
+      ensureRandomStarterAtGameStart: (baseState, currentState) =>
+        this.ensureRandomStarterAtGameStart(baseState, currentState),
       appendFirstTurnAnnouncement: this.runtimeDeps.appendFirstTurnAnnouncement,
     });
   }
@@ -1554,7 +1570,9 @@ export class GameEngineService {
       return;
     }
 
-    const expectedFinishedAt = normalizeMetadataString(toMetadata(state)['finishedAt']);
+    const expectedFinishedAt = normalizeMetadataString(
+      toMetadata(state)['finishedAt'],
+    );
 
     this.botScheduler.schedule({
       key: systemKey,

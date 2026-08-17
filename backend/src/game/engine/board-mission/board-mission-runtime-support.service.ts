@@ -7,7 +7,8 @@ import type {
   BoardMissionTile,
 } from './board-mission.types';
 
-type RuntimeMeta<TMeta extends BoardMissionMetadata> = TMeta & Record<string, unknown>;
+type RuntimeMeta<TMeta extends BoardMissionMetadata> = TMeta &
+  Record<string, unknown>;
 
 @Injectable()
 export class BoardMissionRuntimeSupportService {
