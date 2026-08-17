@@ -56,7 +56,7 @@ bool JsonFileStorage::ReadIfExists(const wxString& path, nlohmann::json& content
     }
     catch (const nlohmann::json::exception& error)
     {
-        throw std::runtime_error(std::string(lila::shared::errors::InvalidJsonFile) + " " + error.what());
+        throw std::runtime_error(lila::shared::errors::WithDetails(lila::shared::errors::CorruptedJsonFile, error.what()));
     }
 
     return true;
@@ -91,3 +91,4 @@ void JsonFileStorage::Remove(const wxString& path, const char* errorMessage)
     }
 }
 }
+

@@ -6,6 +6,7 @@ import { AdminUsersService } from '../services/admin-users.service';
 import { AdminCatalogInvalidationService } from '../services/admin-catalog-invalidation.service';
 import type { AdminListUsersDto } from '../dto/admin-list-users.dto';
 import {
+import { WS_EVENTS } from '../../common/ws/ws-events';
   AdminBanUserWsDto,
   AdminListUsersWsDto,
   AdminUserIdWsDto,
@@ -33,14 +34,14 @@ export class AdminUsersWsHandler {
       limit: dto.limit ?? 20,
     };
     const result = await this.users.list(query);
-    return { type: 'admin.users.list', payload: result };
+    return { type: WS_EVENTS.admin.users.list, payload: result };
   }
 
   async usersGet(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminUserIdWsDto, payload);
     const user = await this.users.get(dto.id);
-    return { type: 'admin.users.get', payload: { user } };
+    return { type: WS_EVENTS.admin.users.get, payload: { user } };
   }
 
   async usersBan(session: WsSession, payload: any) {
@@ -52,21 +53,21 @@ export class AdminUsersWsHandler {
       dto.durationDays,
       dto.bannedUntil ?? null,
     );
-    return { type: 'admin.users.ban', payload: res };
+    return { type: WS_EVENTS.admin.users.ban, payload: res };
   }
 
   async usersUnban(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminUserIdWsDto, payload);
     const res = await this.users.unban(dto.id);
-    return { type: 'admin.users.unban', payload: res };
+    return { type: WS_EVENTS.admin.users.unban, payload: res };
   }
 
   async usersDelete(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminUserIdWsDto, payload);
     const res = await this.users.delete(dto.id);
-    return { type: 'admin.users.delete', payload: res };
+    return { type: WS_EVENTS.admin.users.delete, payload: res };
   }
 
   async usersUpdateRoles(session: WsSession, payload: any) {
@@ -74,6 +75,7 @@ export class AdminUsersWsHandler {
     const dto = this.validator.validate(AdminUserRolesWsDto, payload);
     const user = await this.users.update(dto.id, { roles: dto.roles });
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
-    return { type: 'admin.users.rolesUpdated', payload: { user } };
+    return { type: WS_EVENTS.admin.users.rolesUpdated, payload: { user } };
   }
 }
+

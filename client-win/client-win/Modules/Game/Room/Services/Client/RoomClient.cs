@@ -48,28 +48,28 @@ public sealed class RoomClient : IRoomFacade
     public event Action<JsonElement>? IntentReceived;
 
     public Task AddBotAsync(CancellationToken cancellationToken = default) =>
-        _session.SendCommandAwaitAckAsync("bot.add", payload: null, cancellationToken: cancellationToken);
+        _session.SendCommandAwaitAckAsync(WsMessageTypes.Room.AddBot, payload: null, cancellationToken: cancellationToken);
 
     public Task RemoveBotAsync(CancellationToken cancellationToken = default) =>
-        _session.SendCommandAwaitAckAsync("bot.remove", payload: null, cancellationToken: cancellationToken);
+        _session.SendCommandAwaitAckAsync(WsMessageTypes.Room.RemoveBot, payload: null, cancellationToken: cancellationToken);
 
     public Task TogglePrivacyAsync(CancellationToken cancellationToken = default) =>
-        _session.SendCommandAwaitAckAsync("room.toggle-privacy", payload: null, cancellationToken: cancellationToken);
+        _session.SendCommandAwaitAckAsync(WsMessageTypes.Room.TogglePrivacy, payload: null, cancellationToken: cancellationToken);
 
     public Task ToggleRoleAsync(CancellationToken cancellationToken = default) =>
         // Le serveur decide du role cible (toggle) si `spectator` n'est pas fourni.
-        _session.SendCommandAwaitAckAsync("room.set-role", payload: null, cancellationToken: cancellationToken);
+        _session.SendCommandAwaitAckAsync(WsMessageTypes.Room.SetRole, payload: null, cancellationToken: cancellationToken);
 
     public Task RequestInfoAsync(CancellationToken cancellationToken = default) =>
-        _session.SendCommandAsync("room.info", payload: null, cancellationToken: cancellationToken);
+        _session.SendCommandAsync(WsMessageTypes.Room.Info, payload: null, cancellationToken: cancellationToken);
 
     public Task RequestChatHistoryAsync(CancellationToken cancellationToken = default) =>
-        _session.SendCommandAsync("room.chat.history", payload: null, cancellationToken: cancellationToken);
+        _session.SendCommandAsync(WsMessageTypes.Room.ChatHistory, payload: null, cancellationToken: cancellationToken);
 
     public Task SendChatMessageAsync(string message, CancellationToken cancellationToken = default)
     {
         var payload = new { message = (message ?? string.Empty).Trim() };
-        return _session.SendCommandAsync("room.chat.send", payload, cancellationToken);
+        return _session.SendCommandAsync(WsMessageTypes.Room.ChatSend, payload, cancellationToken);
     }
 
     public void PublishAnnouncement(RoomAnnouncement announcement)
@@ -152,16 +152,16 @@ public sealed class RoomClient : IRoomFacade
 
             switch (normalized)
             {
-                case "room.intent":
+                case WsMessageTypes.Room.Intent:
                     IntentReceived?.Invoke(payload);
                     break;
-                case "room.chat.message":
+                case WsMessageTypes.Room.ChatMessage:
                     HandleChatMessage(payload);
                     break;
-                case "room.chat.history":
+                case WsMessageTypes.Room.ChatHistory:
                     HandleChatHistory(payload);
                     break;
-                case "room.privacy":
+                case WsMessageTypes.Room.Privacy:
                     if (TryReadBoolean(payload, "isPrivate", out var visibility))
                     {
                         if (!_lastPrivacy.HasValue || _lastPrivacy.Value != visibility)
@@ -172,7 +172,7 @@ public sealed class RoomClient : IRoomFacade
                         }
                     }
                     break;
-                case "room.role":
+                case WsMessageTypes.Room.Role:
                     if (TryReadBoolean(payload, "spectator", out var spectator))
                     {
                         if (_isSpectator != spectator)
@@ -183,7 +183,7 @@ public sealed class RoomClient : IRoomFacade
                         }
                     }
                     break;
-                case "room.info":
+                case WsMessageTypes.Room.Info:
                     if (TryReadString(payload, "message", out var info))
                     {
                         if (ShouldSkipInfoRepeat(info))
@@ -195,10 +195,10 @@ public sealed class RoomClient : IRoomFacade
                         InfoReceived?.Invoke(info);
                     }
                     break;
-                case "bot.added":
+                case WsMessageTypes.Room.BotAdded:
                     HandleBotEvent(payload, added: true);
                     break;
-                case "bot.removed":
+                case WsMessageTypes.Room.BotRemoved:
                     HandleBotEvent(payload, added: false);
                     break;
                 default:

@@ -10,6 +10,7 @@
 #include "shared/accessibility/NonFocusablePanel.h"
 #include "shared/accessibility/AccessibilityUtils.h"
 #include "shared/ui/Theme.h"
+#include "shared/errors/ErrorMessages.h"
 
 namespace lila::modules::chat::presentation
 {
@@ -20,9 +21,21 @@ void ChatFrame::BuildLayout()
 
     auto* headerPanel = new lila::shared::accessibility::NonFocusablePanel(root);
     auto* headerSizer = new wxBoxSizer(wxVERTICAL);
-    auto* titleLabel = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Tchat"));
-    auto* subtitleLabel = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Tchat global du client"));
-    statusLabel_ = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Ouverture du tchat..."));
+    auto* titleLabel = new wxStaticText(
+        headerPanel,
+        wxID_ANY,
+        wxString::FromUTF8(lila::shared::errors::ChatFrameHeader));
+    auto* subtitleLabel = new wxStaticText(
+        headerPanel,
+        wxID_ANY,
+        wxString::FromUTF8(lila::shared::errors::ChatFrameSubtitle));
+    statusLabel_ = new wxTextCtrl(
+        headerPanel,
+        wxID_ANY,
+        wxString::FromUTF8(lila::shared::errors::ChatFrameOpeningMessage),
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxTE_READONLY | wxTE_CENTER | wxBORDER_NONE);
     headerSizer->Add(titleLabel, 0, wxALIGN_CENTER_HORIZONTAL);
     headerSizer->Add(subtitleLabel, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 4);
     headerSizer->Add(statusLabel_, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 6);
@@ -30,12 +43,15 @@ void ChatFrame::BuildLayout()
 
     auto* contentPanel = new lila::shared::accessibility::NonFocusablePanel(root);
     auto* contentSizer = new wxBoxSizer(wxVERTICAL);
-    auto* historyLabel = new wxStaticText(contentPanel, wxID_ANY, wxString(L"Messages"));
+    auto* historyLabel = new wxStaticText(
+        contentPanel,
+        wxID_ANY,
+        wxString::FromUTF8(lila::shared::errors::ChatMessagesHeader));
     historyList_ = new wxListBox(contentPanel, wxID_ANY);
     emptyHistoryCtrl_ = new wxTextCtrl(
         contentPanel,
         wxID_ANY,
-        wxString(L"Aucun message."),
+        wxString::FromUTF8(lila::shared::errors::ChatNoMessage),
         wxDefaultPosition,
         wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
@@ -43,12 +59,21 @@ void ChatFrame::BuildLayout()
     emptyHistoryCtrl_->SetMinSize(wxSize(-1, 90));
 
     auto* historyActionSizer = new wxBoxSizer(wxHORIZONTAL);
-    editMessageButton_ = new wxButton(contentPanel, wxID_ANY, wxString(L"Modifier le message"));
-    deleteMessageButton_ = new wxButton(contentPanel, wxID_ANY, wxString(L"Supprimer le message"));
+    editMessageButton_ = new wxButton(
+        contentPanel,
+        wxID_ANY,
+        wxString::FromUTF8(lila::shared::errors::ChatEditMessageAction));
+    deleteMessageButton_ = new wxButton(
+        contentPanel,
+        wxID_ANY,
+        wxString::FromUTF8(lila::shared::errors::ChatDeleteMessageAction));
     historyActionSizer->Add(editMessageButton_, 0, wxRIGHT, 10);
     historyActionSizer->Add(deleteMessageButton_, 0);
 
-    auto* inputLabel = new wxStaticText(contentPanel, wxID_ANY, wxString(L"Votre message"));
+    auto* inputLabel = new wxStaticText(
+        contentPanel,
+        wxID_ANY,
+        wxString::FromUTF8(lila::shared::errors::ChatYourMessageHint));
     inputCtrl_ = new wxTextCtrl(
         contentPanel,
         wxID_ANY,
@@ -106,17 +131,28 @@ void ChatFrame::ApplyTheme()
     deleteMessageButton_->SetBackgroundColour(Theme::PanelBackground());
     deleteMessageButton_->SetForegroundColour(Theme::TextPrimary());
     
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*statusLabel_, statusLabel_->GetLabel());
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*historyList_, wxString(L"Messages du tchat"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyHistoryCtrl_, wxString(L"Liste des messages vide"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*editMessageButton_, wxString(L"Modifier le message"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*deleteMessageButton_, wxString(L"Supprimer le message"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*inputCtrl_, wxString(L"Saisir un message"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*statusLabel_, statusLabel_->GetValue());
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *historyList_,
+        wxString::FromUTF8(lila::shared::errors::ChatMessagesListAccessible));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *emptyHistoryCtrl_,
+        wxString::FromUTF8(lila::shared::errors::ChatMessagesEmptyAccessible));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *editMessageButton_,
+        wxString::FromUTF8(lila::shared::errors::ChatEditMessageAction));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *deleteMessageButton_,
+        wxString::FromUTF8(lila::shared::errors::ChatDeleteMessageAction));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *inputCtrl_,
+        wxString::FromUTF8(lila::shared::errors::ChatInputHintAccessible));
 }
 
 void ChatFrame::UpdateStatus(const wxString& message, bool isError)
 {
-    statusLabel_->SetLabel(message);
+    statusLabel_->SetValue(message);
+    statusLabel_->SetInsertionPointEnd();
     statusLabel_->SetForegroundColour(
         isError ? lila::shared::ui::Theme::Error() : lila::shared::ui::Theme::Accent());
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*statusLabel_, message);

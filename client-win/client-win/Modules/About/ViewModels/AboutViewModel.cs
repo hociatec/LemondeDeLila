@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -32,8 +32,8 @@ public sealed class AboutViewModel : ObservableObject
     private readonly INotifyGatewayClient _notify;
     private readonly ISoundService _sounds;
     private AboutPage _page = AboutPage.Root;
-    private string _title = "À propos";
-    private string _status = "Entrée : sélectionner. Échap : retour.";
+    private string _title = "Ã€ propos";
+    private string _status = "EntrÃ©e : sÃ©lectionner. Ã‰chap : retour.";
     private string _details = string.Empty;
     private bool _isBusy;
     private AboutMenuItem? _selectedItem;
@@ -188,14 +188,14 @@ public sealed class AboutViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowInfo));
         OnPropertyChanged(nameof(ShowContactAdmin));
 
-        Title = "À propos";
+        Title = "Ã€ propos";
         Details = string.Empty;
         Items.Clear();
         Items.Add(new AboutMenuItem("Raccourcis", tag: TagShortcuts));
         Items.Add(new AboutMenuItem("Informations sur l'application", tag: TagInfo));
         Items.Add(new AboutMenuItem("Contacter un administrateur", tag: TagContactAdmin));
         SelectedItem = Items.FirstOrDefault();
-        Status = "Entrée : ouvrir. Échap : retour.";
+        Status = "EntrÃ©e : ouvrir. Ã‰chap : retour.";
     }
 
     private void BuildShortcuts()
@@ -210,7 +210,7 @@ public sealed class AboutViewModel : ObservableObject
         Details = string.Empty;
         Items.Clear();
         SelectedItem = null;
-        Status = "Échap : retour.";
+        Status = "Ã‰chap : retour.";
         OnPropertyChanged(nameof(ShortcutsText));
     }
 
@@ -224,7 +224,7 @@ public sealed class AboutViewModel : ObservableObject
 
         Title = "Informations sur l'application";
         Details = string.Empty;
-        Status = "Flèches : lire. Échap : retour.";
+        Status = "FlÃ¨ches : lire. Ã‰chap : retour.";
 
         RefreshLocalInfo();
     }
@@ -241,7 +241,7 @@ public sealed class AboutViewModel : ObservableObject
         Details = string.Empty;
         Items.Clear();
         SelectedItem = null;
-        Status = "Tab : naviguer. Entrée : envoyer. Échap : retour.";
+        Status = "Tab : naviguer. EntrÃ©e : envoyer. Ã‰chap : retour.";
         ContactMessage = string.Empty;
     }
 
@@ -300,10 +300,10 @@ public sealed class AboutViewModel : ObservableObject
         try
         {
             var (ok, err) = await _notify.SendWithAckAsync(
-                    "notify.admin_contact.send",
+                    WsMessageTypes.Notify.AdminContactSend,
                     new { message },
-                    successType: "notify.admin_contact.sent",
-                    errorType: "notify.admin_contact.error")
+                    successType: WsMessageTypes.Notify.AdminContactSent,
+                    errorType: WsMessageTypes.Notify.AdminContactError)
                 .ConfigureAwait(true);
 
             if (!ok)
@@ -314,10 +314,10 @@ public sealed class AboutViewModel : ObservableObject
             }
 
             _sounds.Play(SoundId.AdminContactSent);
-            await _dialogs.ShowInfo("Contact admin", "Message envoyé au staff.").ConfigureAwait(true);
-            // Après envoi depuis le menu principal, revenir au menu principal.
+            await _dialogs.ShowInfo("Contact admin", "Message envoyÃ© au staff.").ConfigureAwait(true);
+            // AprÃ¨s envoi depuis le menu principal, revenir au menu principal.
             _close();
-            Status = "Message envoyé au staff.";
+            Status = "Message envoyÃ© au staff.";
         }
         catch (Exception ex)
         {
@@ -343,7 +343,7 @@ public sealed class AboutViewModel : ObservableObject
         Items.Clear();
         Items.Add(new AboutMenuItem($"Nom : {AppName}"));
         Items.Add(new AboutMenuItem($"Version actuelle : {CurrentVersion}"));
-        Items.Add(new AboutMenuItem($"Dernière mise à jour locale : {LocalUpdatedAt}"));
+        Items.Add(new AboutMenuItem($"DerniÃ¨re mise Ã  jour locale : {LocalUpdatedAt}"));
 
         if (!string.IsNullOrWhiteSpace(previousTag))
         {
@@ -406,17 +406,17 @@ public sealed class AboutViewModel : ObservableObject
     private string BuildShortcutsText()
     {
         var sb = new StringBuilder();
-        sb.AppendLine("Général");
-        sb.AppendLine("- Flèches : naviguer");
-        sb.AppendLine("- Entrée : valider / sélectionner");
-        sb.AppendLine("- Échap : retour / fermer");
-        sb.AppendLine("- Ctrl+U : présence (joueurs connectés)");
+        sb.AppendLine("GÃ©nÃ©ral");
+        sb.AppendLine("- FlÃ¨ches : naviguer");
+        sb.AppendLine("- EntrÃ©e : valider / sÃ©lectionner");
+        sb.AppendLine("- Ã‰chap : retour / fermer");
+        sb.AppendLine("- Ctrl+U : prÃ©sence (joueurs connectÃ©s)");
         sb.AppendLine("- F3 : contacter un administrateur");
         sb.AppendLine();
         sb.AppendLine("Table (salle)");
         sb.AppendLine("- F2 : menu de la table (actions)");
-        sb.AppendLine("- Tab : basculer Zone de jeu → Historique");
-        sb.AppendLine("- Maj+Tab : basculer Historique → Zone de jeu");
+        sb.AppendLine("- Tab : basculer Zone de jeu â†’ Historique");
+        sb.AppendLine("- Maj+Tab : basculer Historique â†’ Zone de jeu");
         sb.AppendLine("- i : informations table");
         sb.AppendLine("- w : lister les joueurs");
         sb.AppendLine("- q : quitter la table");
@@ -427,22 +427,22 @@ public sealed class AboutViewModel : ObservableObject
         sb.AppendLine("- Ctrl+B : bannir un joueur");
         sb.AppendLine("- Ctrl+P : changer le proprietaire");
         sb.AppendLine("- Ctrl+M : mode joueur/spectateur");
-        sb.AppendLine("- Ctrl+H : visiblité de la table");
+        sb.AppendLine("- Ctrl+H : visiblitÃ© de la table");
         sb.AppendLine();
         sb.AppendLine("Objets / interface (en partie, selon le jeu)");
         sb.AppendLine("- Espace : piocher");
-        sb.AppendLine("- Retour arrière : défausser (choisir une carte)");
+        sb.AppendLine("- Retour arriÃ¨re : dÃ©fausser (choisir une carte)");
         sb.AppendLine("- s : score (Panier Express)");
         sb.AppendLine("- l : shopping list (Panier Express)");
         sb.AppendLine("- b : annoncer panier");
         sb.AppendLine("- i : annoncer inventaire");
         sb.AppendLine("- c : annoncer main");
-        sb.AppendLine("- f : annoncer familles complètes");
+        sb.AppendLine("- f : annoncer familles complÃ¨tes");
         sb.AppendLine("- p : position plateau");
         sb.AppendLine();
         sb.AppendLine("Tchat");
-        sb.AppendLine("- Entrée : envoyer le message");
-        sb.AppendLine("- Échap : fermer le tchat");
+        sb.AppendLine("- EntrÃ©e : envoyer le message");
+        sb.AppendLine("- Ã‰chap : fermer le tchat");
         return sb.ToString();
     }
 
@@ -454,3 +454,4 @@ public sealed class AboutViewModel : ObservableObject
         ContactAdmin
     }
 }
+

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +9,7 @@ using client_win.Modules.Network.WebSockets;
 using client_win.Modules.User.Services;
 using Serilog;
 using client_win.Modules.Game.Room.Services;
+using client_win.Core.Constants;
 
 namespace client_win.Modules.Game.Room.Services;
 
@@ -45,7 +46,7 @@ public sealed partial class RoomGatewayClient : IRoomGatewayClient
         var token = user?.Token;
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new InvalidOperationException("Utilisateur non authentifi�.");
+            throw new InvalidOperationException("Utilisateur non authentifié.");
         }
         if (string.IsNullOrWhiteSpace(gameType))
         {
@@ -69,7 +70,7 @@ public sealed partial class RoomGatewayClient : IRoomGatewayClient
                 }
                 else
                 {
-                    Log.Information("WS room.create: socket warm r�utilis�");
+                    Log.Information("WS room.create: socket warm réutilisé");
                 }
 
                 var created = await WaitRoomCreatedAsync(socket, gameType, linked.Token).ConfigureAwait(false);
@@ -78,10 +79,10 @@ public sealed partial class RoomGatewayClient : IRoomGatewayClient
                 {
                     await socket.CloseAsync().ConfigureAwait(false);
                     await socket.DisposeAsync().ConfigureAwait(false);
-                    throw new InvalidOperationException("Cr�ation de table �chou�e (roomId invalide).");
+                    throw new InvalidOperationException("Création de table échouée (roomId invalide).");
                 }
 
-                Log.Information("Connexion � la room WS (r�utilisation socket) roomId={RoomId}", roomId);
+                Log.Information("Connexion à la room WS (réutilisation socket) roomId={RoomId}", roomId);
                 var session = new RoomSession(
                     roomId,
                     gameType,
@@ -115,12 +116,12 @@ public sealed partial class RoomGatewayClient : IRoomGatewayClient
                     throw;
                 }
 
-                Log.Warning(ex, "WS room.create: �chec transitoire (tentative {Attempt}/{MaxAttempts}), retry", attempt, maxAttempts);
+                Log.Warning(ex, "WS room.create: échec transitoire (tentative {Attempt}/{MaxAttempts}), retry", attempt, maxAttempts);
                 await Task.Delay(GameTiming.Room.GatewayRetryDelay, linked.Token).ConfigureAwait(false);
             }
         }
 
-        throw lastError ?? new InvalidOperationException("Cr�ation de table �chou�e.");
+        throw lastError ?? new InvalidOperationException("Création de table échouée.");
     }
 public async Task<IRoomSession> ConnectAsync(int roomId, CancellationToken cancellationToken = default)
     {
@@ -138,7 +139,7 @@ public async Task<IRoomSession> ConnectAsync(int roomId, CancellationToken cance
         var token = user?.Token;
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new InvalidOperationException("Utilisateur non authentifié.");
+            throw new InvalidOperationException("Utilisateur non authentifiÃ©.");
         }
         if (roomId <= 0)
         {
@@ -167,19 +168,19 @@ public async Task<IRoomSession> ConnectAsync(int roomId, CancellationToken cance
                 }
 
                 var type = typeProp.GetString() ?? string.Empty;
-                if (string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(type, WsMessageTypes.Room.Pong, StringComparison.OrdinalIgnoreCase))
                 {
                     TryUpdateClockFromPong(doc.RootElement);
                     return;
                 }
 
-                if (string.Equals(type, "room.updated", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(type, WsMessageTypes.Room.Updated, StringComparison.OrdinalIgnoreCase))
                 {
                     earlyRoomUpdated = JsonSerializer.Deserialize<RoomEnvelope<RoomPayloadDto>>(raw, _json);
                     return;
                 }
 
-                if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(type, WsMessageTypes.Error, StringComparison.OrdinalIgnoreCase))
                 {
                     string? message = null;
                     if (doc.RootElement.TryGetProperty("payload", out var payload) &&
@@ -222,7 +223,7 @@ public async Task<IRoomSession> ConnectAsync(int roomId, CancellationToken cance
                     var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
                     var join = JsonSerializer.Serialize(new
                     {
-                        type = "room.join",
+                        type = WsMessageTypes.Room.Join,
                         payload = new
                         {
                             roomId,
@@ -238,7 +239,7 @@ public async Task<IRoomSession> ConnectAsync(int roomId, CancellationToken cance
                     // Fallback: connect directly with query params.
                     var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId, spectator, silent);
                     var headers = await BuildHeadersAsync(linked.Token).ConfigureAwait(false);
-                    Log.Information("WS room.connect: connexion à {Endpoint}", uri);
+                    Log.Information("WS room.connect: connexion Ã  {Endpoint}", uri);
                     await socket.ConnectAsync(uri, token: token, headers: headers, cancellationToken: linked.Token).ConfigureAwait(false);
                 }
 
@@ -255,7 +256,7 @@ public async Task<IRoomSession> ConnectAsync(int roomId, CancellationToken cance
                 {
                     await socket.CloseAsync().ConfigureAwait(false);
                     await socket.DisposeAsync().ConfigureAwait(false);
-                    throw new InvalidOperationException("Connexion table échouée (état manquant).");
+                    throw new InvalidOperationException("Connexion table Ã©chouÃ©e (Ã©tat manquant).");
                 }
 
                 var gameType = payload.Room.GameType;
@@ -292,7 +293,7 @@ public async Task<IRoomSession> ConnectAsync(int roomId, CancellationToken cance
         var token = user?.Token;
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new InvalidOperationException("Utilisateur non authentifié.");
+            throw new InvalidOperationException("Utilisateur non authentifiÃ©.");
         }
 
         var uri = BuildRoomUri(_config.RealtimeGatewayWs, roomId: 0);
@@ -302,4 +303,6 @@ public async Task<IRoomSession> ConnectAsync(int roomId, CancellationToken cance
         await TrySyncClockAsync(socket, cancellationToken).ConfigureAwait(false);
     }
 }
+
+
 

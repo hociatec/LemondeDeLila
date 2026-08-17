@@ -12,6 +12,7 @@ namespace
 {
 using lila::shared::data::json::ReadOptionalInteger;
 using lila::shared::data::json::ReadOptionalString;
+using lila::shared::data::json::EnsureObject;
 }
 
 UserAuthRemoteDataSource::UserAuthRemoteDataSource(shared::network::realtime::RealtimeApiClient& client)
@@ -54,10 +55,7 @@ LoginRemotePayload UserAuthRemoteDataSource::ParseLoginPayload(const shared::net
         throw std::runtime_error(lila::shared::errors::LoginParseFailed);
     }
 
-    if (!response.payload.is_object())
-    {
-        throw std::runtime_error(lila::shared::errors::AuthResponsePayloadMustBeObject);
-    }
+    EnsureObject(response.payload, lila::shared::errors::AuthResponsePayloadMustBeObject);
 
     LoginRemotePayload payload;
     payload.token = ReadOptionalString(response.payload, lila::shared::contracts::user::TokenField.data());

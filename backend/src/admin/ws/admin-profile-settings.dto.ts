@@ -20,3 +20,5 @@ export class AdminProfileSettingsUpdateWsDto {
   @Max(100000)
   bioMaxLength?: number;
 }
+
+

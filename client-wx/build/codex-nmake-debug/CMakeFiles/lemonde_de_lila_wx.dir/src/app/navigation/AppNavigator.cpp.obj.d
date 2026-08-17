@@ -580,6 +580,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/application/ChatMessageStore.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/domain/ChatMessage.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/domain/ChatServerError.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/domain/ChatState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/application/IChatGateway.h

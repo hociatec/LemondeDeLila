@@ -17,7 +17,7 @@ inline nlohmann::json ParseDocument(const std::string& raw, const char* context)
     }
     catch (const nlohmann::json::exception& error)
     {
-        throw std::runtime_error(std::string(context) + ": " + error.what());
+        throw std::runtime_error(lila::shared::errors::WithDetails(context, error.what()));
     }
 }
 
@@ -78,6 +78,22 @@ inline bool ReadOptionalBool(const nlohmann::json& source, const char* fieldName
     return iterator->get<bool>();
 }
 
+inline void EnsureObjectOrNull(const nlohmann::json& source, const char* message)
+{
+    if (!source.is_object() && !source.is_null())
+    {
+        throw std::runtime_error(message);
+    }
+}
+
+inline void EnsureObject(const nlohmann::json& source, const char* message)
+{
+    if (!source.is_object())
+    {
+        throw std::runtime_error(message);
+    }
+}
+
 inline std::string ReadRequiredString(const nlohmann::json& source, const char* fieldName)
 {
     const auto iterator = source.find(fieldName);
@@ -105,3 +121,4 @@ inline int ReadRequiredInteger(const nlohmann::json& source, const char* fieldNa
 }
 
 }
+

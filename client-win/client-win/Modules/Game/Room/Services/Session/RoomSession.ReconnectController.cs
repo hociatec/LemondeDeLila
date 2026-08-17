@@ -95,7 +95,7 @@ public sealed partial class RoomSession
 
                     if (IsFatalReconnectError(message))
                     {
-                        try { _session.Left?.Invoke("room.deleted"); } catch { }
+                        try { _session.Left?.Invoke(WsMessageTypes.Room.Deleted); } catch { }
                         return;
                     }
 

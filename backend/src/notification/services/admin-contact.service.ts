@@ -8,6 +8,7 @@ import { User } from '../../user/entities/user.entity';
 import { NotificationInboxDbService } from './notification-inbox-db.service';
 import { UserBadgeCountsService } from './user-badge-counts.service';
 import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 export type AdminContactItem = {
   kind: 'admin_contact';
@@ -351,7 +352,7 @@ export class AdminContactService {
           },
         });
         try {
-          await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
+          await this.notifications.notifyUser(uid, WS_EVENTS.notify.inbox.item, item);
         } catch (err) {
           this.logger.warn(
             `notify.inbox.item failed for user ${uid}: ${(err as Error).message}`,
@@ -439,7 +440,7 @@ export class AdminContactService {
           },
         });
         try {
-          await this.notifications.notifyUser(uid, 'notify.inbox.item', item);
+          await this.notifications.notifyUser(uid, WS_EVENTS.notify.inbox.item, item);
         } catch (err) {
           this.logger.warn(
             `notify.inbox.item failed for user ${uid}: ${(err as Error).message}`,
@@ -538,7 +539,7 @@ export class AdminContactService {
         try {
           await this.notifications.notifyUser(
             row.userId,
-            'notify.inbox.item',
+            WS_EVENTS.notify.inbox.item,
             item,
           );
         } catch (err) {
@@ -580,7 +581,7 @@ export class AdminContactService {
     await Promise.all(
       Array.from(byUser.entries()).map(async ([userId, ids]) => {
         try {
-          await this.notifications.notifyUser(userId, 'notify.inbox.removed', {
+          await this.notifications.notifyUser(userId, WS_EVENTS.notify.inbox.removed, {
             ids,
             contactId: cid,
           });
@@ -600,3 +601,4 @@ export class AdminContactService {
     );
   }
 }
+

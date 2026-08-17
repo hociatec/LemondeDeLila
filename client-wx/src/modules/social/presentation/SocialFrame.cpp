@@ -36,7 +36,7 @@ SocialFrame::SocialFrame(
           nullptr,
           wxID_ANY,
           wxString::Format(
-              wxString(L"Social - %s"),
+              wxString::FromUTF8(lila::shared::errors::SocialFrameTitle),
               wxString::FromUTF8(shared::config::AppConfig::AppTitle.data())),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
@@ -88,7 +88,7 @@ SocialFrame::SocialFrame(
     }
 
     SetScreen(Screen::Menu);
-    UpdateStatus(wxString::FromUTF8("Flèches haut/bas : naviguer. Entrée : sélectionner. Échap : revenir."));
+    UpdateStatus(wxString::FromUTF8(lila::shared::errors::KeyboardNavigationHint));
     CentreOnScreen();
     CallAfter(
         [this]()
@@ -169,3 +169,4 @@ void SocialFrame::ApplyBusyState()
     // le lecteur d'écran annonce alors "indisponible" sur les écrans sociaux.
 }
 }
+

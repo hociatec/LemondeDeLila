@@ -1,33 +1,23 @@
 ﻿#include "modules/messaging/infrastructure/MessagingApi.h"
 
 #include <ctime>
-#include <iomanip>
 #include <optional>
-#include <sstream>
 #include <stdexcept>
 #include <utility>
+#include <string_view>
 
 #include "modules/session/application/SessionStore.h"
 #include "shared/contracts/BackendWsContracts.h"
 #include "shared/network/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/realtime/AuthenticatedRealtimeApiHelpers.h"
 #include "shared/data/JsonReaders.h"
+#include "shared/data/DateTime.h"
 #include "shared/errors/ErrorMessages.h"
 
 namespace lila::modules::messaging::infrastructure
 {
 namespace
 {
-void EnsurePayloadObjectOrNull(
-    const nlohmann::json& payload,
-    const char* fallbackMessage)
-{
-    if (!payload.is_object() && !payload.is_null())
-    {
-        throw std::runtime_error(fallbackMessage);
-    }
-}
-
 std::string BoxToString(domain::MessagingBox box)
 {
     switch (box)
@@ -45,36 +35,28 @@ std::string BoxToString(domain::MessagingBox box)
 
 std::optional<std::time_t> ParseIsoTimestamp(const std::string& rawValue)
 {
-    if (rawValue.empty())
+    return lila::shared::data::datetime::ParseIsoTimestamp(rawValue);
+}
+
+const nlohmann::json& EnsureArrayOrEmpty(
+    const nlohmann::json& source,
+    std::string_view fieldName,
+    const char* errorMessage)
+{
+    static const nlohmann::json emptyArray = nlohmann::json::array();
+
+    const auto fieldIterator = source.find(fieldName);
+    if (fieldIterator == source.end() || fieldIterator->is_null())
     {
-        return std::nullopt;
+        return emptyArray;
     }
 
-    std::string normalized = rawValue;
-    if (!normalized.empty() && normalized.back() == 'Z')
+    if (!fieldIterator->is_array())
     {
-        normalized.pop_back();
+        throw std::runtime_error(errorMessage);
     }
 
-    const std::size_t fractionSeparator = normalized.find('.');
-    if (fractionSeparator != std::string::npos)
-    {
-        normalized = normalized.substr(0, fractionSeparator);
-    }
-
-    std::tm parsed{};
-    std::istringstream input(normalized);
-    input >> std::get_time(&parsed, "%Y-%m-%dT%H:%M:%S");
-    if (input.fail())
-    {
-        return std::nullopt;
-    }
-
-#ifdef _WIN32
-    return _mkgmtime(&parsed);
-#else
-    return timegm(&parsed);
-#endif
+    return *fieldIterator;
 }
 }
 
@@ -173,7 +155,7 @@ std::optional<domain::MessagingUser> MessagingApi::SearchUser(const std::string&
         },
         lila::shared::errors::MessagingSearchUserFailed);
 
-    EnsurePayloadObjectOrNull(response.payload, lila::shared::errors::MessagingResponsePayloadInvalidType);
+    lila::shared::data::json::EnsureObjectOrNull(response.payload, lila::shared::errors::MessagingResponsePayloadInvalidType);
 
     const auto userIt = response.payload.find(std::string(lila::shared::contracts::messaging::SearchResultKey));
     if (userIt == response.payload.end() || userIt->is_null())
@@ -191,33 +173,25 @@ std::optional<domain::MessagingUser> MessagingApi::SearchUser(const std::string&
 
 void MessagingApi::MarkRead(const std::string& messageId) const
 {
-    SendRequest(
+    static_cast<void>(SendRequest(
         std::string(lila::shared::contracts::messaging::MarkReadEvent),
         {
             {std::string(lila::shared::contracts::messaging::MessageIdField), messageId},
         },
-        lila::shared::errors::MessagingMarkReadFailed);
+        lila::shared::errors::MessagingMarkReadFailed));
 }
 
 std::vector<domain::MessagingMessage> MessagingApi::ReadMessagesPayload(
     const lila::shared::network::realtime::RealtimeApiResponse& response) const
 {
-    EnsurePayloadObjectOrNull(response.payload, lila::shared::errors::MessagingResponsePayloadInvalidType);
+    lila::shared::data::json::EnsureObjectOrNull(response.payload, lila::shared::errors::MessagingResponsePayloadInvalidType);
 
-    const auto itemsIt = response.payload.find(std::string(lila::shared::contracts::messaging::ItemsKey));
-    if (itemsIt == response.payload.end() || itemsIt->is_null())
-    {
-        return {};
-    }
-
-    if (!itemsIt->is_array())
-    {
-        throw std::runtime_error(lila::shared::errors::MessagingMessagesMustBeArray);
-    }
+    const auto& itemsIt =
+        EnsureArrayOrEmpty(response.payload, lila::shared::contracts::messaging::ItemsKey, lila::shared::errors::MessagingMessagesMustBeArray);
 
     std::vector<domain::MessagingMessage> messages;
-    messages.reserve(itemsIt->size());
-    for (const auto& item : *itemsIt)
+    messages.reserve(itemsIt.size());
+    for (const auto& item : itemsIt)
     {
         if (!item.is_object())
         {
@@ -233,7 +207,7 @@ std::vector<domain::MessagingMessage> MessagingApi::ReadMessagesPayload(
 std::optional<domain::MessagingMessage> MessagingApi::ReadMessagePayload(
     const lila::shared::network::realtime::RealtimeApiResponse& response) const
 {
-    EnsurePayloadObjectOrNull(response.payload, lila::shared::errors::MessagingResponsePayloadInvalidType);
+    lila::shared::data::json::EnsureObjectOrNull(response.payload, lila::shared::errors::MessagingResponsePayloadInvalidType);
 
     const auto messageIt = response.payload.find(std::string(lila::shared::contracts::messaging::MessageKey));
     if (messageIt == response.payload.end() || messageIt->is_null())
@@ -255,7 +229,8 @@ domain::MessagingMessage MessagingApi::ReadMessage(const nlohmann::json& source)
     message.id = ReadOptionalString(source, lila::shared::contracts::messaging::IdField.data());
     message.subject = ReadOptionalString(source, lila::shared::contracts::messaging::SubjectField.data());
     message.text = ReadOptionalString(source, lila::shared::contracts::messaging::TextField.data());
-    message.createdAtUtc = ReadOptionalTimestamp(source, lila::shared::contracts::messaging::CreatedAtField.data());
+    message.createdAtUtc = ParseIsoTimestamp(ReadOptionalString(source, lila::shared::contracts::messaging::CreatedAtField.data()))
+                              .value_or(std::time(nullptr));
     message.isSent =
         ReadOptionalString(source, lila::shared::contracts::messaging::DirectionField.data()) == lila::shared::contracts::messaging::SentDirection;
     message.isDeleted = !ReadOptionalString(source, lila::shared::contracts::messaging::DeletedAtField.data()).empty();
@@ -290,23 +265,18 @@ std::string MessagingApi::ReadOptionalString(const nlohmann::json& source, const
     return lila::shared::data::json::ReadOptionalString(source, fieldName);
 }
 
-std::time_t MessagingApi::ReadOptionalTimestamp(const nlohmann::json& source, const char* fieldName)
-{
-    return ParseIsoTimestamp(ReadOptionalString(source, fieldName)).value_or(std::time(nullptr));
-}
-
 lila::shared::network::realtime::RealtimeApiResponse MessagingApi::SendRequest(
     const std::string& type,
     nlohmann::json payload,
     const std::string& fallbackMessage) const
 {
-    const auto response = lila::shared::network::realtime::helpers::SendAndCheckAuth(
-        client_, sessionStore_, lila::shared::errors::NoActiveMessagingSession, type, std::move(payload));
-    lila::shared::network::realtime::helpers::EnsureSuccessOrThrow(
-        response,
+    return lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
+        client_,
         sessionStore_,
+        lila::shared::errors::NoActiveMessagingSession,
+        type,
+        std::move(payload),
         fallbackMessage);
-    return response;
 }
 }
 

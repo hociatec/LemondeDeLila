@@ -1,4 +1,4 @@
-#include "modules/messaging/presentation/MessagingFrame.h"
+﻿#include "modules/messaging/presentation/MessagingFrame.h"
 #include "shared/ui/BackgroundTask.h"
 
 #include <algorithm>
@@ -42,7 +42,7 @@ MessagingFrame::MessagingFrame(
           nullptr,
           wxID_ANY,
           wxString::Format(
-              wxString(L"Messagerie - %s"),
+              wxString::FromUTF8(lila::shared::errors::MessagingFrameTitle),
               wxString::FromUTF8(shared::config::AppConfig::AppTitle.data())),
       wxDefaultPosition,
       wxSize(WindowWidth, WindowHeight),
@@ -62,10 +62,7 @@ MessagingFrame::MessagingFrame(
     }
 
     SetScreen(Screen::Menu);
-    UpdateStatus(
-        wxString(
-            L"Flèches haut/bas : naviguer. Entrée : sélectionner. "
-            L"Échap : revenir."));
+    UpdateStatus(wxString::FromUTF8(lila::shared::errors::KeyboardNavigationHint));
     CentreOnScreen();
     CallAfter(
         [this]()
@@ -81,13 +78,13 @@ void MessagingFrame::BuildLayout()
 
     auto* headerPanel = new lila::shared::accessibility::NonFocusablePanel(root, 0);
     auto* headerSizer = new wxBoxSizer(wxVERTICAL);
-    auto* titleLabel = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Messagerie"));
+    auto* titleLabel = new wxStaticText(headerPanel, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader));
     auto* subtitleLabel = new wxStaticText(
         headerPanel,
         wxID_ANY,
-        wxString(L"Boîte de réception des messages privés"));
-    statusLabel_ = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Choisissez une section."));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*statusLabel_, wxString(L"État de messagerie"));
+        wxString::FromUTF8(lila::shared::errors::MessagingFrameSubtitle));
+    statusLabel_ = new wxStaticText(headerPanel, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingFrameInitialStatus));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*statusLabel_, wxString::FromUTF8(lila::shared::errors::MessagingFrameStatusAccessible));
     headerSizer->Add(titleLabel, 0, wxALIGN_CENTER_HORIZONTAL);
     headerSizer->Add(subtitleLabel, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 4);
     headerSizer->Add(statusLabel_, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 6);
@@ -99,15 +96,16 @@ void MessagingFrame::BuildLayout()
     {
         auto* sizer = new wxBoxSizer(wxVERTICAL);
         static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 4> menuItems = {{
-            {"compose", wxString(L"Rédiger un message"), wxEmptyString},
-            {"inbox", wxString(L"Boîte de réception"), wxEmptyString},
-            {"outbox", wxString(L"Messages envoyés"), wxEmptyString},
-            {"deleted", wxString(L"Corbeille"), wxEmptyString},
+            {"compose", wxString::FromUTF8(lila::shared::errors::MessagingMenuCompose), wxEmptyString},
+            {"inbox", wxString::FromUTF8(lila::shared::errors::MessagingMenuInbox), wxEmptyString},
+            {"outbox", wxString::FromUTF8(lila::shared::errors::MessagingMenuOutbox), wxEmptyString},
+            {"deleted", wxString::FromUTF8(lila::shared::errors::MessagingMenuDeleted), wxEmptyString},
         }};
         menu_ = new lila::shared::ui::controls::VerticalMenu(
             menuPanel_,
             lila::shared::ui::navigation::BuildMenuItems(menuItems));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu_, wxString(L"Menu messagerie"));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+            *menu_, wxString::FromUTF8(lila::shared::errors::MessagingPageMenu));
         sizer->Add(menu_, 1, wxEXPAND);
         menuPanel_->SetSizer(sizer);
     }
@@ -120,7 +118,7 @@ void MessagingFrame::BuildLayout()
         emptyMessagesCtrl_ = new wxTextCtrl(
             listPanel_,
             wxID_ANY,
-            wxString(L"Aucun message."),
+            wxString::FromUTF8(lila::shared::errors::MessagingNoMessage),
             wxDefaultPosition,
             wxDefaultSize,
             wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
@@ -128,9 +126,10 @@ void MessagingFrame::BuildLayout()
         sizer->Add(listTitleLabel_, 0, wxBOTTOM, 10);
         sizer->Add(messagesList_, 1, wxEXPAND | wxBOTTOM, 12);
         sizer->Add(emptyMessagesCtrl_, 0, wxEXPAND);
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*listTitleLabel_, wxString(L"Boîte de messages"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*messagesList_, wxString(L"Liste des messages"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyMessagesCtrl_, wxString(L"Aucun message"));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*listTitleLabel_, wxString::FromUTF8(lila::shared::errors::MessagingListHeader));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+            *messagesList_, wxString::FromUTF8(lila::shared::errors::MessagingListHeader));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyMessagesCtrl_, wxString::FromUTF8(lila::shared::errors::MessagingNoMessage));
         lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder({listTitleLabel_, messagesList_, emptyMessagesCtrl_});
         listPanel_->SetSizer(sizer);
     }
@@ -138,7 +137,7 @@ void MessagingFrame::BuildLayout()
     detailPanel_ = new wxPanel(screenBook_);
     {
         auto* sizer = new wxBoxSizer(wxVERTICAL);
-        auto* title = new wxStaticText(detailPanel_, wxID_ANY, wxString(L"Détail du message"));
+        auto* title = new wxStaticText(detailPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingMessageDetail));
         detailCtrl_ = new wxTextCtrl(
             detailPanel_,
             wxID_ANY,
@@ -149,10 +148,10 @@ void MessagingFrame::BuildLayout()
         detailCtrl_->SetMinSize(wxSize(-1, 420));
 
         auto* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-        replyButton_ = new wxButton(detailPanel_, wxID_ANY, wxString(L"Répondre"));
-        deleteButton_ = new wxButton(detailPanel_, wxID_ANY, wxString(L"Supprimer"));
-        restoreButton_ = new wxButton(detailPanel_, wxID_ANY, wxString(L"Restaurer"));
-        purgeButton_ = new wxButton(detailPanel_, wxID_ANY, wxString(L"Supprimer définitivement"));
+        replyButton_ = new wxButton(detailPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingReplyButton));
+        deleteButton_ = new wxButton(detailPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingDeleteButton));
+        restoreButton_ = new wxButton(detailPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingRestoreButton));
+        purgeButton_ = new wxButton(detailPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingPurgeButton));
         buttonSizer->Add(replyButton_, 0, wxRIGHT, 10);
         buttonSizer->Add(deleteButton_, 0, wxRIGHT, 10);
         buttonSizer->Add(restoreButton_, 0, wxRIGHT, 10);
@@ -161,11 +160,11 @@ void MessagingFrame::BuildLayout()
         sizer->Add(title, 0, wxBOTTOM, 10);
         sizer->Add(detailCtrl_, 1, wxEXPAND | wxBOTTOM, 12);
         sizer->Add(buttonSizer, 0, wxALIGN_LEFT);
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*detailCtrl_, wxString(L"Détail du message"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*replyButton_, wxString(L"Répondre"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*deleteButton_, wxString(L"Supprimer"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*restoreButton_, wxString(L"Restaurer"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*purgeButton_, wxString(L"Supprimer définitivement"));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*detailCtrl_, wxString::FromUTF8(lila::shared::errors::MessagingMessageDetail));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*replyButton_, wxString::FromUTF8(lila::shared::errors::MessagingReplyButton));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*deleteButton_, wxString::FromUTF8(lila::shared::errors::MessagingDeleteButton));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*restoreButton_, wxString::FromUTF8(lila::shared::errors::MessagingRestoreButton));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*purgeButton_, wxString::FromUTF8(lila::shared::errors::MessagingPurgeButton));
         lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder(
             {detailCtrl_, replyButton_, deleteButton_, restoreButton_, purgeButton_});
         detailPanel_->SetSizer(sizer);
@@ -174,12 +173,12 @@ void MessagingFrame::BuildLayout()
     composePanel_ = new wxPanel(screenBook_);
     {
         auto* sizer = new wxBoxSizer(wxVERTICAL);
-        auto* title = new wxStaticText(composePanel_, wxID_ANY, wxString(L"Rédiger un message"));
-        auto* recipientLabel = new wxStaticText(composePanel_, wxID_ANY, wxString(L"Destinataire"));
+        auto* title = new wxStaticText(composePanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingMenuCompose));
+        auto* recipientLabel = new wxStaticText(composePanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingComposeRecipient));
         recipientCtrl_ = new wxTextCtrl(composePanel_, wxID_ANY);
-        auto* subjectLabel = new wxStaticText(composePanel_, wxID_ANY, wxString(L"Sujet"));
+        auto* subjectLabel = new wxStaticText(composePanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingComposeSubject));
         subjectCtrl_ = new wxTextCtrl(composePanel_, wxID_ANY);
-        auto* bodyLabel = new wxStaticText(composePanel_, wxID_ANY, wxString(L"Message"));
+        auto* bodyLabel = new wxStaticText(composePanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingComposeBody));
         bodyCtrl_ = new wxTextCtrl(
             composePanel_,
             wxID_ANY,
@@ -190,8 +189,8 @@ void MessagingFrame::BuildLayout()
         bodyCtrl_->SetMinSize(wxSize(-1, 280));
 
         auto* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-        sendComposeButton_ = new wxButton(composePanel_, wxID_ANY, wxString(L"Envoyer"));
-        cancelComposeButton_ = new wxButton(composePanel_, wxID_ANY, wxString(L"Annuler"));
+        sendComposeButton_ = new wxButton(composePanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingSendButton));
+        cancelComposeButton_ = new wxButton(composePanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::MessagingCancelButton));
         buttonSizer->Add(sendComposeButton_, 0, wxRIGHT, 10);
         buttonSizer->Add(cancelComposeButton_, 0);
 
@@ -203,23 +202,26 @@ void MessagingFrame::BuildLayout()
         sizer->Add(bodyLabel, 0, wxBOTTOM, 6);
         sizer->Add(bodyCtrl_, 1, wxEXPAND | wxBOTTOM, 12);
         sizer->Add(buttonSizer, 0, wxALIGN_LEFT);
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*recipientLabel, wxString(L"Destinataire"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*recipientCtrl_, wxString(L"Champ destinataire"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*subjectLabel, wxString(L"Sujet"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*subjectCtrl_, wxString(L"Champ sujet"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*bodyLabel, wxString(L"Message"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*bodyCtrl_, wxString(L"Contenu du message"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*sendComposeButton_, wxString(L"Envoyer"));
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*cancelComposeButton_, wxString(L"Annuler"));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*recipientLabel, wxString::FromUTF8(lila::shared::errors::MessagingComposeRecipient));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+            *recipientCtrl_, wxString::FromUTF8(lila::shared::errors::MessagingComposeRecipient));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*subjectLabel, wxString::FromUTF8(lila::shared::errors::MessagingComposeSubject));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+            *subjectCtrl_, wxString::FromUTF8(lila::shared::errors::MessagingComposeSubject));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*bodyLabel, wxString::FromUTF8(lila::shared::errors::MessagingComposeBody));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+            *bodyCtrl_, wxString::FromUTF8(lila::shared::errors::MessagingComposeBody));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*sendComposeButton_, wxString::FromUTF8(lila::shared::errors::MessagingSendButton));
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*cancelComposeButton_, wxString::FromUTF8(lila::shared::errors::MessagingCancelButton));
         lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder(
             {recipientCtrl_, subjectCtrl_, bodyCtrl_, sendComposeButton_, cancelComposeButton_});
         composePanel_->SetSizer(sizer);
     }
 
-    screenBook_->AddPage(menuPanel_, wxString(L"Menu"));
-    screenBook_->AddPage(listPanel_, wxString(L"Liste"));
-    screenBook_->AddPage(detailPanel_, wxString(L"Détail"));
-    screenBook_->AddPage(composePanel_, wxString(L"Rédaction"));
+    screenBook_->AddPage(menuPanel_, wxString::FromUTF8(lila::shared::errors::MessagingPageMenu));
+    screenBook_->AddPage(listPanel_, wxString::FromUTF8(lila::shared::errors::MessagingPageList));
+    screenBook_->AddPage(detailPanel_, wxString::FromUTF8(lila::shared::errors::MessagingPageDetail));
+    screenBook_->AddPage(composePanel_, wxString::FromUTF8(lila::shared::errors::MessagingPageCompose));
 
     rootSizer->Add(headerPanel, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 28);
     rootSizer->Add(screenBook_, 1, wxEXPAND | wxALL, 24);
@@ -377,7 +379,7 @@ void MessagingFrame::SyncSelectionState()
     const auto selected = GetSelectedMessage();
     if (!selected.has_value())
     {
-        detailCtrl_->SetValue(wxString(L"Aucun message."));
+        detailCtrl_->SetValue(wxString::FromUTF8(lila::shared::errors::MessagingNoMessage));
         replyButton_->Show(false);
         deleteButton_->Show(false);
         restoreButton_->Show(false);
@@ -428,14 +430,14 @@ wxString MessagingFrame::BoxTitle(domain::MessagingBox box)
     switch (box)
     {
     case domain::MessagingBox::Inbox:
-        return wxString(L"Boîte de réception");
+        return wxString::FromUTF8(lila::shared::errors::MessagingMenuInbox);
     case domain::MessagingBox::Outbox:
-        return wxString(L"Messages envoyés");
+        return wxString::FromUTF8(lila::shared::errors::MessagingMenuOutbox);
     case domain::MessagingBox::Deleted:
-        return wxString(L"Corbeille");
+        return wxString::FromUTF8(lila::shared::errors::MessagingMenuDeleted);
     }
 
-    return wxString(L"Messagerie");
+    return wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader);
 }
 
 std::size_t MessagingFrame::GetBoxIndex(domain::MessagingBox box) const
@@ -453,3 +455,5 @@ std::size_t MessagingFrame::GetBoxIndex(domain::MessagingBox box) const
     return 0;
 }
 }
+
+

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -43,22 +43,22 @@ public sealed class RoomLobbyClient : IRoomLobbyClient
 
         if (res.Payload?.AlreadyInRoom == true)
         {
-            return "Le joueur est déjà dans la table.";
+            return "Le joueur est dÃ©jÃ  dans la table.";
         }
 
         if (res.Payload?.Pending == true)
         {
             _sounds.Play(SoundId.InvitationSent);
-            return "Invitation déjà envoyée (en attente).";
+            return "Invitation dÃ©jÃ  envoyÃ©e (en attente).";
         }
 
         if (!string.IsNullOrWhiteSpace(res.Payload?.InvitationId))
         {
             _sounds.Play(SoundId.InvitationSent);
-            return "Invitation envoyée.";
+            return "Invitation envoyÃ©e.";
         }
 
-        return "Invitation traitée.";
+        return "Invitation traitÃ©e.";
     }
 
     public async Task<InvitePresenceListResult> InvitePresenceListAsync(int roomId, CancellationToken cancellationToken = default)
@@ -73,7 +73,7 @@ public sealed class RoomLobbyClient : IRoomLobbyClient
 
         if (!res.Success)
         {
-            throw new InvalidOperationException(res.Error ?? "Liste des présences impossible.");
+            throw new InvalidOperationException(res.Error ?? "Liste des prÃ©sences impossible.");
         }
 
         var players = (res.Payload?.Players ?? Array.Empty<InvitePresenceListedPlayer>())
@@ -105,8 +105,8 @@ public sealed class RoomLobbyClient : IRoomLobbyClient
             return new RoomInviteRespondResult(accepted: false, expired: false, roomId: null, spectator: false);
         }
 
-        if (string.Equals(res.Type, "rooms.invite.accepted", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(res.Type, "room.lobby.invite.accepted", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(res.Type, WsMessageTypes.Rooms.EventInviteAccepted, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(res.Type, WsMessageTypes.Rooms.EventLobbyInviteAccepted, StringComparison.OrdinalIgnoreCase))
         {
             return new RoomInviteRespondResult(
                 accepted: true,
@@ -269,8 +269,8 @@ public sealed class RoomLobbyClient : IRoomLobbyClient
                     return;
                 }
                 var type = typeProp.GetString() ?? string.Empty;
-                if (!string.Equals(type, "rooms.public.refresh", StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(type, "room.lobby.refresh", StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(type, WsMessageTypes.Rooms.EventPublicRefresh, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(type, WsMessageTypes.Rooms.EventLobbyRefresh, StringComparison.OrdinalIgnoreCase))
                 {
                     return;
                 }
@@ -415,3 +415,4 @@ public sealed class RoomLobbyClient : IRoomLobbyClient
         }
     }
 }
+

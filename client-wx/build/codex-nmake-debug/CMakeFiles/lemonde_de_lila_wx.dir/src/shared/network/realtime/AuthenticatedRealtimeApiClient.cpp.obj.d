@@ -223,4 +223,5 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/http/WsTicketProvider.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeProtocol.h

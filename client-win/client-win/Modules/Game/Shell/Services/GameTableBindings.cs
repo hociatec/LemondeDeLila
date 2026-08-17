@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Serilog;
+using client_win.Core.Constants;
 using client_win.Core.Input;
 using client_win.Modules.Catalog.Models;
 using client_win.Modules.Game.History.Services;
@@ -1010,7 +1011,7 @@ internal sealed class GameTableBindings : IAsyncDisposable
 
             // Source de vérité: l'autorisation serveur.
             // Aucun fallback local (owner/spectator/minPlayers) pour éviter les décisions côté client.
-            _tableVm.GameZone.CanStart = RoomAllowedActions.Contains(room, "room.start");
+            _tableVm.GameZone.CanStart = RoomAllowedActions.Contains(room, WsMessageTypes.Room.Start);
         }
         catch
         {

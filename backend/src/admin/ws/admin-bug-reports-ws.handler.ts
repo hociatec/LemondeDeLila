@@ -6,6 +6,7 @@ import { BugReportsService } from '../../bug-reports/bug-reports.service';
 import { BugReportCommentsService } from '../../bug-reports/bug-report-comments.service';
 import type { BugReportEntity } from '../../bug-reports/entities/bug-report.entity';
 import {
+import { WS_EVENTS } from '../../common/ws/ws-events';
   AdminBugReportCreateWsDto,
   AdminBugReportIdWsDto,
   AdminBugReportsListWsDto,
@@ -30,7 +31,7 @@ export class AdminBugReportsWsHandler {
       createdByUserId: user.id,
       createdByUsername: user.username,
     });
-    return { type: 'admin.bugReports.create', payload: { report } };
+    return { type: WS_EVENTS.admin.bugReports.create, payload: { report } };
   }
 
   async list(session: WsSession, payload: any) {
@@ -42,7 +43,7 @@ export class AdminBugReportsWsHandler {
       ...r,
       commentsCount: counts[r.id] ?? 0,
     }));
-    return { type: 'admin.bugReports.list', payload: { items: withCounts } };
+    return { type: WS_EVENTS.admin.bugReports.list, payload: { items: withCounts } };
   }
 
   async get(session: WsSession, payload: any) {
@@ -54,7 +55,7 @@ export class AdminBugReportsWsHandler {
     }
     const counts = await this.comments.countByReportIds([report.id]);
     return {
-      type: 'admin.bugReports.get',
+      type: WS_EVENTS.admin.bugReports.get,
       payload: {
         report: { ...report, commentsCount: counts[report.id] ?? 0 },
       },
@@ -71,7 +72,7 @@ export class AdminBugReportsWsHandler {
     if (!report) {
       throw new BadRequestException('Rapport introuvable');
     }
-    return { type: 'admin.bugReports.update', payload: { report } };
+    return { type: WS_EVENTS.admin.bugReports.update, payload: { report } };
   }
 
   async updateStatus(session: WsSession, payload: any) {
@@ -84,7 +85,7 @@ export class AdminBugReportsWsHandler {
     if (!report) {
       throw new BadRequestException('Rapport introuvable');
     }
-    return { type: 'admin.bugReports.updateStatus', payload: { report } };
+    return { type: WS_EVENTS.admin.bugReports.updateStatus, payload: { report } };
   }
 
   async delete(session: WsSession, payload: any) {
@@ -94,6 +95,7 @@ export class AdminBugReportsWsHandler {
     if (!ok) {
       throw new BadRequestException('Rapport introuvable');
     }
-    return { type: 'admin.bugReports.delete', payload: { removed: true } };
+    return { type: WS_EVENTS.admin.bugReports.delete, payload: { removed: true } };
   }
 }
+

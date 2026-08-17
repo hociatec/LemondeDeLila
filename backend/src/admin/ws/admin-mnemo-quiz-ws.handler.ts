@@ -4,6 +4,7 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { MnemoQuizStoreService } from '../../game/games/vents-infinis/arche-de-mnemosyne/store/mnemo-quiz-store.service';
 import type {
+import { WS_EVENTS } from '../../common/ws/ws-events';
   MnemoQuestionStatus,
   MnemoQuizQuestion,
 } from '../../game/games/vents-infinis/arche-de-mnemosyne/model/mnemo-quiz.model';
@@ -66,7 +67,7 @@ export class AdminMnemoQuizWsHandler {
     requireAdmin(session);
     this.validator.validate(AdminMnemoQuizCategoriesListWsDto, payload ?? {});
     return {
-      type: 'admin.quiz.mnemo.categories',
+      type: WS_EVENTS.admin.quiz.mnemo.categories,
       payload: this.buildCategoriesPayload(),
     };
   }
@@ -79,7 +80,7 @@ export class AdminMnemoQuizWsHandler {
     );
     this.store.createCategory(dto.name);
     return {
-      type: 'admin.quiz.mnemo.categories',
+      type: WS_EVENTS.admin.quiz.mnemo.categories,
       payload: this.buildCategoriesPayload(),
     };
   }
@@ -92,7 +93,7 @@ export class AdminMnemoQuizWsHandler {
     );
     this.store.renameCategory(dto.id, dto.name);
     return {
-      type: 'admin.quiz.mnemo.categories',
+      type: WS_EVENTS.admin.quiz.mnemo.categories,
       payload: this.buildCategoriesPayload(),
     };
   }
@@ -105,7 +106,7 @@ export class AdminMnemoQuizWsHandler {
     );
     this.store.deleteCategory(dto.id);
     return {
-      type: 'admin.quiz.mnemo.categories',
+      type: WS_EVENTS.admin.quiz.mnemo.categories,
       payload: this.buildCategoriesPayload(),
     };
   }
@@ -117,7 +118,7 @@ export class AdminMnemoQuizWsHandler {
       payload ?? {},
     );
     return {
-      type: 'admin.quiz.mnemo.questions',
+      type: WS_EVENTS.admin.quiz.mnemo.questions,
       payload: this.buildQuestionsPayload({
         categoryId: dto.categoryId?.trim() || undefined,
         status: this.normalizeStatus(dto.status),
@@ -145,7 +146,7 @@ export class AdminMnemoQuizWsHandler {
       status: this.normalizeStatus(dto.status) ?? 'validated',
     });
     return {
-      type: 'admin.quiz.mnemo.questions',
+      type: WS_EVENTS.admin.quiz.mnemo.questions,
       payload: this.buildQuestionsPayload(),
     };
   }
@@ -205,7 +206,7 @@ export class AdminMnemoQuizWsHandler {
 
     this.store.updateQuestion(dto.id, patch);
     return {
-      type: 'admin.quiz.mnemo.questions',
+      type: WS_EVENTS.admin.quiz.mnemo.questions,
       payload: this.buildQuestionsPayload(),
     };
   }
@@ -218,8 +219,9 @@ export class AdminMnemoQuizWsHandler {
     );
     this.store.deleteQuestion(dto.id);
     return {
-      type: 'admin.quiz.mnemo.questions',
+      type: WS_EVENTS.admin.quiz.mnemo.questions,
       payload: this.buildQuestionsPayload(),
     };
   }
 }
+

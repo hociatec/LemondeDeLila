@@ -91,6 +91,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
 C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/generated/AppBuildInfo.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/StringUtils.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm

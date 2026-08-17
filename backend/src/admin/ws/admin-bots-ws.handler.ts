@@ -5,6 +5,7 @@ import { PayloadValidationService } from '../../common/validation/payload-valida
 import { BotService } from '../../bot/services/bot.service';
 import { BotSettingsService } from '../../game/modules/bot/services/bot-settings.service';
 import {
+import { WS_EVENTS } from '../../common/ws/ws-events';
   AdminBotNameCreateWsDto,
   AdminBotNameDeleteWsDto,
   AdminBotNameUpdateWsDto,
@@ -26,7 +27,7 @@ export class AdminBotsWsHandler {
     this.validator.validate(AdminBotNamesListWsDto, payload ?? {});
     const names = await this.bots.listBotNames();
     return {
-      type: 'admin.bots.names.list',
+      type: WS_EVENTS.admin.bots.namesList,
       payload: {
         names: names.map((n) => ({
           id: n.id,
@@ -42,7 +43,7 @@ export class AdminBotsWsHandler {
     requireAdmin(session);
     this.validator.validate(AdminBotSettingsGetWsDto, payload ?? {});
     return {
-      type: 'admin.bots.settings.get',
+      type: WS_EVENTS.admin.bots.settingsGet,
       payload: this.botSettings.getSettings(),
     };
   }
@@ -55,7 +56,7 @@ export class AdminBotsWsHandler {
       botStartDelayMs: dto.botStartDelayMs,
       botDrawDelayMs: dto.botDrawDelayMs,
     });
-    return { type: 'admin.bots.settings.update', payload: updated };
+    return { type: WS_EVENTS.admin.bots.settingsUpdate, payload: updated };
   }
 
   async botNameCreate(session: WsSession, payload: any) {
@@ -82,3 +83,4 @@ export class AdminBotsWsHandler {
     return this.botsNamesList(session, {});
   }
 }
+

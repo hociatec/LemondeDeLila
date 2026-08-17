@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { requireAdmin } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 import { GameCategoriesService } from '../../game/engine/services/game-categories.service';
 import { GameCatalogOverridesService } from '../../game/engine/services/game-catalog-overrides.service';
 import type { GameCatalogOverride } from '../../game/engine/services/game-catalog-overrides.service';
@@ -75,14 +76,14 @@ export class AdminGamesWsHandler {
         };
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
-    return { type: 'admin.games.list', payload: { games: payload } };
+    return { type: WS_EVENTS.admin.games.list, payload: { games: payload } };
   }
 
   gamesCategoriesList(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminGameCategoriesListWsDto, payload ?? {});
     return {
-      type: 'admin.games.categories',
+      type: WS_EVENTS.admin.games.categories,
       payload: this.buildCategoriesPayload(),
     };
   }
@@ -93,7 +94,7 @@ export class AdminGamesWsHandler {
     await this.categories.createCategory(dto.name, dto.parentId ?? null);
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return {
-      type: 'admin.games.categories',
+      type: WS_EVENTS.admin.games.categories,
       payload: this.buildCategoriesPayload(),
     };
   }
@@ -107,7 +108,7 @@ export class AdminGamesWsHandler {
     });
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return {
-      type: 'admin.games.categories',
+      type: WS_EVENTS.admin.games.categories,
       payload: this.buildCategoriesPayload(),
     };
   }
@@ -118,7 +119,7 @@ export class AdminGamesWsHandler {
     await this.categories.assignCategory(dto.gameType, dto.categoryId ?? null);
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return {
-      type: 'admin.games.category.assign',
+      type: WS_EVENTS.admin.games.categoryAssign,
       payload: this.buildCategoriesPayload(),
     };
   }
@@ -129,7 +130,7 @@ export class AdminGamesWsHandler {
     await this.categories.deleteCategory(dto.id);
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
     return {
-      type: 'admin.games.categories',
+      type: WS_EVENTS.admin.games.categories,
       payload: this.buildCategoriesPayload(),
     };
   }
@@ -139,7 +140,7 @@ export class AdminGamesWsHandler {
     const dto = this.validator.validate(AdminGameSetEnabledWsDto, payload);
     await this.overrides.setEnabled(dto.gameType, dto.enabled);
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
-    return { type: 'admin.games.setEnabled', payload: { ok: true } };
+    return { type: WS_EVENTS.admin.games.setEnabled, payload: { ok: true } };
   }
 
   async gamesUpdate(session: WsSession, payload: any) {
@@ -161,7 +162,7 @@ export class AdminGamesWsHandler {
 
     await this.overrides.updateGameOverride(dto.gameType, update);
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
-    return { type: 'admin.games.update', payload: { ok: true } };
+    return { type: WS_EVENTS.admin.games.update, payload: { ok: true } };
   }
 
   async gamesReset(session: WsSession, payload: any) {
@@ -169,6 +170,7 @@ export class AdminGamesWsHandler {
     const dto = this.validator.validate(AdminGameResetWsDto, payload);
     await this.overrides.clearGameOverride(dto.gameType);
     await this.catalogInvalidation.invalidateCatalogAndNotify(admin.id);
-    return { type: 'admin.games.reset', payload: { ok: true } };
+    return { type: WS_EVENTS.admin.games.reset, payload: { ok: true } };
   }
 }
+

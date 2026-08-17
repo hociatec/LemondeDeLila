@@ -6,6 +6,7 @@ import { ChatMessage } from '../entities/chat-message.entity';
 import { ChatValidator } from './chat.validator';
 import { IsNull } from 'typeorm';
 import { ChatSettingsService } from './chat-settings.service';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 type BroadcastUser = {
   id: number;
@@ -45,7 +46,7 @@ export class ChatService {
     await this.messages.save(message);
 
     const normalized = {
-      type: 'chat-message',
+      type: WS_EVENTS.chat.message,
       id: messageId,
       text: sanitized,
       createdAt: createdAt.toISOString(),
@@ -159,7 +160,7 @@ export class ChatService {
       : new Date().toISOString();
 
     return {
-      type: 'chat-message',
+      type: WS_EVENTS.chat.message,
       id: message.messageId,
       text: message.message,
       createdAt: createdIso,

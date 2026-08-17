@@ -1,7 +1,34 @@
 ﻿#pragma once
 
-namespace lila::shared::errors
+#include <string>
+
+namespace lila::shared::errors {
+
+inline std::string WithDetails(const char* message, const std::string& details)
 {
+    if (details.empty())
+    {
+        return std::string(message);
+    }
+
+    const std::string baseMessage(message);
+    if (baseMessage.empty())
+    {
+        return details;
+    }
+
+    if (baseMessage.back() == ':')
+    {
+        return baseMessage + " " + details;
+    }
+
+    if (baseMessage.back() == ' ')
+    {
+        return baseMessage + details;
+    }
+
+    return baseMessage + " : " + details;
+}
 inline constexpr const char* UnexpectedError = "Une erreur inattendue est survenue.";
 inline constexpr const char* InvalidRealtimeResponse = "La réponse temps réel est invalide.";
 inline constexpr const char* RealtimeRequestMismatch = "La réponse temps réel ne correspond pas à la requête envoyée.";
@@ -13,6 +40,7 @@ inline constexpr const char* InvalidJsonFile = "Le fichier JSON est invalide.";
 inline constexpr const char* CorruptedJsonFile = "Le fichier JSON est corrompu.";
 inline constexpr const char* InvalidSessionUnauthenticated = "Impossible de sauvegarder une session non authentifiée.";
 inline constexpr const char* InvalidOptionsRepository = "Dépôt d'options requis.";
+inline constexpr const char* OptionsSaveFailed = "Impossible de sauvegarder les options.";
 inline constexpr const char* InvalidSessionRepository = "Dépôt de session requis.";
 inline constexpr const char* Utf8ToWideConversionFailed = "La conversion UTF-8 vers Unicode a échoué.";
 inline constexpr const char* Utf8ToWideConversionNotSupported = "La conversion UTF-8 vers Unicode n'est possible que sous Windows.";
@@ -61,16 +89,54 @@ inline constexpr const char* WinHttpUnsupportedTransport = "Le transport WebSock
 inline constexpr const char* ChatDisabled = "Le tchat est désactivé dans les options.";
 inline constexpr const char* ChatLoginRequired = "Authentification requise pour ouvrir le tchat.";
 inline constexpr const char* ChatClosed = "Tchat fermé.";
+inline constexpr const char* ChatConnecting = "Connexion au serveur...";
+inline constexpr const char* ChatAuthenticating = "Authentification...";
+inline constexpr const char* ChatLoadingData = "Chargement des données...";
 inline constexpr const char* ChatConnectionFailed = "Connexion tchat échouée :";
+inline constexpr const char* ChatConnected = "Tchat connecté.";
 inline constexpr const char* ChatReconnectionInterrupted = "Connexion au serveur interrompue :";
 inline constexpr const char* ChatServerRefused = "La connexion au tchat a été refusée par le serveur.";
 inline constexpr const char* ChatNotConnected = "Tchat non connecté.";
 inline constexpr const char* ChatErrorMessage = "Erreur tchat.";
+inline constexpr const char* ChatFrameTitle = "Tchat - %s";
+inline constexpr const char* ChatFrameHeader = "Tchat";
+inline constexpr const char* ChatFrameSubtitle = "Tchat global du client";
+inline constexpr const char* ChatFrameOpeningMessage = "Ouverture du tchat...";
+inline constexpr const char* ChatMessagesHeader = "Messages";
+inline constexpr const char* ChatNoMessage = "Aucun message.";
+inline constexpr const char* ChatEditMessageAction = "Modifier le message";
+inline constexpr const char* ChatDeleteMessageAction = "Supprimer le message";
+inline constexpr const char* ChatYourMessageHint = "Votre message";
+inline constexpr const char* ChatUnknownUser = "Inconnu";
+inline constexpr const char* ChatTimeFormatUnknown = "??:??";
+inline constexpr const char* ChatEditableSuffix = " - modifiable";
+inline constexpr const char* ChatInputHint = "Saisissez votre message puis appuyez sur Entrée.";
+inline constexpr const char* ChatInputHintAccessible = "Saisir un message";
+inline constexpr const char* ChatMessagesListAccessible = "Messages du tchat";
+inline constexpr const char* ChatMessagesEmptyAccessible = "Liste des messages vide";
 inline constexpr const char* ChatEventInvalid = "L'événement tchat est invalide.";
+inline constexpr const char* ChatEventPayloadInvalid = "La charge utile d'événement tchat est invalide.";
+inline constexpr const char* ChatEventDataInvalid = "Les données de l'événement tchat sont invalides.";
 inline constexpr const char* ChatSendFailed = "Envoi tchat échoué :";
 inline constexpr const char* ChatEditFailed = "Modification tchat échouée :";
 inline constexpr const char* ChatDeleteFailed = "Suppression tchat échouée :";
-inline constexpr const char* ChatReconnectionTicketRejected = "ticket WS refusé par l'API (HTTP";
+inline constexpr const char* ChatReconnectionTicketRejected = WsTicketRejectedByApiPrefix;
+inline constexpr const char* ChatReconnecting = "Reconnexion au serveur...";
+inline constexpr const char* ChatReconnected = "Connexion au serveur rétablie.";
+inline constexpr const char* ChatHistoryLoaded = " résultats chargés.";
+inline constexpr const char* ChatSendBusy = "Envoi du message...";
+inline constexpr const char* ChatEditBusy = "Modification du message...";
+inline constexpr const char* ChatDeleteBusy = "Suppression du message...";
+inline constexpr const char* ChatSent = "Message envoyé.";
+inline constexpr const char* ChatEdited = "Modification envoyée.";
+inline constexpr const char* ChatDeleted = "Message supprimé.";
+inline constexpr const char* ChatEditMode = "Édition du message.";
+inline constexpr const char* ChatEditAborted = "Édition annulée.";
+inline constexpr const char* ChatEditHint = "Saisissez votre message puis appuyez sur Entrée.";
+inline constexpr const char* ChatDeleteConfirm = "Supprimer ce message ?";
+inline constexpr const char* ChatCloseConfirmation = "Fermer le tchat ?";
+inline constexpr const char* ChatActionInvalidPayload = "La charge utile du message tchat doit être un objet JSON.";
+inline constexpr const char* ChatMessagesMustBeArray = "Le tableau 'messages' doit être un tableau JSON.";
 inline constexpr const char* LoginInputUsernameRequired = "Le nom d'utilisateur est requis.";
 inline constexpr const char* LoginInputPasswordRequired = "Le mot de passe est requis.";
 inline constexpr const char* RegisterInputUsernameRequired = "Le nom d'utilisateur est requis.";
@@ -97,6 +163,7 @@ inline constexpr const char* JsonFieldTypeBooleanSuffix = "' doit être un bool�
 inline constexpr const char* JsonFieldTypeStringRequiredSuffix = "' doit être une chaîne.";
 inline constexpr const char* JsonFieldTypeIntegerRequiredSuffix = "' doit être un entier.";
 inline constexpr const char* JsonFieldTypeArrayPrefix = "Le tableau ";
+inline constexpr const char* KeyboardNavigationHint = "Flèches haut/bas : naviguer. Entrée : sélectionner. Échap : revenir.";
 inline constexpr const char* MessagingUsersMustBeObject = "L'utilisateur recherché doit être un objet JSON.";
 inline constexpr const char* MessagingMessagesMustBeArray = "La liste des messages doit être un tableau JSON.";
 inline constexpr const char* MessagingEachMessageMustBeObject = "Chaque message doit être un objet JSON.";
@@ -139,7 +206,102 @@ inline constexpr const char* MessagingRestoreBusy = "Restauration du message..."
 inline constexpr const char* MessagingPurgeBusy = "Suppression définitive du message...";
 inline constexpr const char* MessagingRecipientRequired = "Le destinataire est requis.";
 inline constexpr const char* MessagingBodyRequired = "Le message ne peut pas être vide.";
+inline constexpr const char* MessagingFrameTitle = "Messagerie - %s";
+inline constexpr const char* MessagingFrameHeader = "Messagerie";
+inline constexpr const char* MessagingFrameSubtitle = "Boîte de réception des messages privés";
+inline constexpr const char* MessagingFrameInitialStatus = "Choisissez une section.";
+inline constexpr const char* MessagingFrameStatusAccessible = "État de messagerie";
+inline constexpr const char* MessagingMenuCompose = "Rédiger un message";
+inline constexpr const char* MessagingMenuInbox = "Boîte de réception";
+inline constexpr const char* MessagingMenuOutbox = "Messages envoyés";
+inline constexpr const char* MessagingMenuDeleted = "Corbeille";
+inline constexpr const char* MessagingPageMenu = "Menu";
+inline constexpr const char* MessagingPageList = "Liste";
+inline constexpr const char* MessagingPageDetail = "Détail";
+inline constexpr const char* MessagingPageCompose = "Rédaction";
+inline constexpr const char* MessagingListHeader = "Boîte de messages";
+inline constexpr const char* MessagingMessageDetail = "Détail du message";
+inline constexpr const char* MessagingComposeTitle = "Rédiger un message";
+inline constexpr const char* MessagingComposeRecipient = "Destinataire";
+inline constexpr const char* MessagingComposeSubject = "Sujet";
+inline constexpr const char* MessagingComposeBody = "Message";
+inline constexpr const char* MessagingSendButton = "Envoyer";
+inline constexpr const char* MessagingCancelButton = "Annuler";
+inline constexpr const char* MessagingReplyButton = "Répondre";
+inline constexpr const char* MessagingDeleteButton = "Supprimer";
+inline constexpr const char* MessagingRestoreButton = "Restaurer";
+inline constexpr const char* MessagingPurgeButton = "Supprimer définitivement";
+inline constexpr const char* MessagingReplyPrefix = "Re: ";
+inline constexpr const char* MessagingUnknownUser = "Inconnu";
+inline constexpr const char* MessagingNoSubject = "Sans sujet";
+inline constexpr const char* MessagingLabelSubject = "Sujet : ";
+inline constexpr const char* MessagingLabelFrom = "De : ";
+inline constexpr const char* MessagingLabelTo = "À : ";
+inline constexpr const char* MessagingLabelDate = "Date : ";
+inline constexpr const char* MessagingLabelContent = "\n\nContenu :\n";
+inline constexpr const char* MessagingSubjectSeparator = " - ";
 inline constexpr const char* SocialOnlyOwnProfileEditable = "Seul votre profil peut être modifié.";
+inline constexpr const char* SocialFrameTitle = "Social - %s";
+inline constexpr const char* SocialFrameHeader = "Social";
+inline constexpr const char* SocialSocialHeader = "Réseau social";
+inline constexpr const char* SocialSocialSubtitle = "Messagerie, amis, demandes et profil.";
+inline constexpr const char* SocialSocialStateAccessible = "État social";
+inline constexpr const char* SocialNavigationMenuAccessible = "Menu de navigation";
+inline constexpr const char* SocialMenuMessaging = "Messagerie";
+inline constexpr const char* SocialMenuFriends = "Amis";
+inline constexpr const char* SocialMenuIncomingRequests = "Demandes reçues";
+inline constexpr const char* SocialMenuOutgoingRequests = "Demandes envoyées";
+inline constexpr const char* SocialMenuBlocked = "Bloqués";
+inline constexpr const char* SocialMenuProfile = "Mon profil";
+inline constexpr const char* SocialSectionFriends = "Liste d'amis";
+inline constexpr const char* SocialNoFriend = "Aucun ami.";
+inline constexpr const char* SocialNoIncomingRequest = "Aucune demande reçue.";
+inline constexpr const char* SocialNoOutgoingRequest = "Aucune demande envoyée.";
+inline constexpr const char* SocialBlockedUsersTitle = "Utilisateurs bloqués";
+inline constexpr const char* SocialNoBlockedUser = "Aucun utilisateur bloqué.";
+inline constexpr const char* SocialProfileTitle = "Profil";
+inline constexpr const char* SocialProfileDetails = "Détails du profil";
+inline constexpr const char* SocialProfileEditBio = "Modifier la bio";
+inline constexpr const char* SocialProfileEditVictory = "Modifier le message de victoire";
+inline constexpr const char* SocialProfileEditDefeat = "Modifier le message de défaite";
+inline constexpr const char* SocialProfileEditVisibility = "Modifier la visibilité";
+inline constexpr const char* SocialProfileBioLabel = "Bio";
+inline constexpr const char* SocialProfileVictoryLabel = "Message de victoire";
+inline constexpr const char* SocialProfileDefeatLabel = "Message de défaite";
+inline constexpr const char* SocialProfileVisibilityLabel = "Visibilité du profil";
+inline constexpr const char* SocialProfileVisibilityChoicePublic = "Public";
+inline constexpr const char* SocialProfileVisibilityChoiceFriends = "Amis";
+inline constexpr const char* SocialProfileVisibilityChoicePrivate = "Privé";
+inline constexpr const char* SocialProfileSave = "Enregistrer";
+inline constexpr const char* SocialProfileSaveBio = "Enregistrer la bio";
+inline constexpr const char* SocialProfileSaveMessage = "Enregistrer le message";
+inline constexpr const char* SocialProfileSaveVisibility = "Enregistrer la visibilité";
+inline constexpr const char* SocialProfileCancel = "Annuler";
+inline constexpr const char* SocialProfileActionMenuList = "Actions sur les amis";
+inline constexpr const char* SocialProfileActionIncomingList = "Actions sur les demandes reçues";
+inline constexpr const char* SocialProfileActionOutgoingList = "Actions sur les demandes envoyées";
+inline constexpr const char* SocialProfileActionBlockedList = "Actions sur les utilisateurs bloqués";
+inline constexpr const char* SocialProfileActionView = "Voir le profil";
+inline constexpr const char* SocialProfileActionRemoveFriend = "Retirer de ma liste d'amis";
+inline constexpr const char* SocialProfileActionBlock = "Bloquer";
+inline constexpr const char* SocialProfileActionUnblock = "Débloquer";
+inline constexpr const char* SocialProfileActionAccept = "Accepter";
+inline constexpr const char* SocialProfileActionReject = "Refuser";
+inline constexpr const char* SocialProfileActionCancel = "Annuler";
+inline constexpr const char* SocialProfileUnknownUser = "Utilisateur inconnu";
+inline constexpr const char* SocialProfileBlockedSuffix = " - bloqué";
+inline constexpr const char* SocialProfileAt = " - ";
+inline constexpr const char* SocialProfileVisibilityPrefix = "Visibilité : ";
+inline constexpr const char* SocialProfileCreatedAt = "Créé : ";
+inline constexpr const char* SocialProfileUpdatedAt = "Mis à jour : ";
+inline constexpr const char* SocialProfileBioText = "Bio : ";
+inline constexpr const char* SocialProfileVictoryText = "Message de victoire : ";
+inline constexpr const char* SocialProfileDefeatText = "Message de défaite : ";
+inline constexpr const char* SocialProfilePrivateText = "Ce profil est privé.";
+inline constexpr const char* SocialProfileEmptyText = "(vide)";
+inline constexpr const char* SocialProfileVisibilityFriends = "Amis";
+inline constexpr const char* SocialProfileVisibilityPrivate = "Privé";
+inline constexpr const char* SocialProfileVisibilityPublic = "Public";
 inline constexpr const char* SocialSelectPlayerToAct = "Sélectionnez un joueur.";
 inline constexpr const char* SocialProfileLoaded = "Profil chargé.";
 inline constexpr const char* SocialProfileUnavailable = "Profil indisponible.";
@@ -166,6 +328,25 @@ inline constexpr const char* SocialProfileAcceptBusy = "Acceptation de la demand
 inline constexpr const char* SocialProfileRejectBusy = "Refus de la demande...";
 inline constexpr const char* SocialProfileCancelBusy = "Annulation de la demande...";
 inline constexpr const char* MessagingSearchBusy = "Chargement...";
+inline constexpr const char* VerticalMenuIndexOutOfRange = "Indice d'élément de menu invalide.";
 inline constexpr const char* MessagingLoadResultsEmpty = "0 résultats chargés.";
 inline constexpr const char* MessagingLoadResultsCount = "%zu résultats chargés.";
+inline constexpr const char* MessagingLoadMessagesBusy = "Chargement des messages...";
+inline constexpr const char* MessagingDeleteConfirm = "Voulez-vous vraiment supprimer ce message ?";
+inline constexpr const char* MessagingRestoreConfirm = "Voulez-vous vraiment restaurer ce message ?";
+inline constexpr const char* MessagingPurgeConfirm = "Cette action supprime définitivement le message. Continuer ?";
+inline constexpr const char* MessagingDeletedMessage = "Message supprimé.";
+inline constexpr const char* MessagingRestoredMessage = "Message restauré.";
+inline constexpr const char* MessagingPurgedMessage = "Message supprimé définitivement.";
+inline constexpr const char* MessagingSentToUser = "Message envoyé à %s.";
+inline constexpr const char* MessagingSentMessage = "Message envoyé.";
+inline constexpr const char* MessagingNoMessage = "Aucun message.";
+inline constexpr const char* MessagingMarkReadBusy = "Marquage du message comme lu...";
 }
+
+
+
+
+
+
+

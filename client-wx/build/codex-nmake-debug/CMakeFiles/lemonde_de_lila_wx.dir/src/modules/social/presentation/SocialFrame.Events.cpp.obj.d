@@ -526,6 +526,8 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/frame.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialFriendRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialUser.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialProfile.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/vcpkg/installed/x64-windows/include/wx/button.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h

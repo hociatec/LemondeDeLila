@@ -2,6 +2,7 @@
 #include "shared/network/NetworkPolicy.h"
 #include "shared/text/Encoding.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/contracts/BackendWsContracts.h"
 
 #include <array>
 #include <cstdint>
@@ -30,14 +31,16 @@ struct ParsedEndpoint
 
 std::string NormalizeEndpointForWinHttp(const std::string& endpoint)
 {
-    if (endpoint.rfind("ws://", 0) == 0)
+    if (endpoint.rfind(std::string(lila::shared::contracts::ws::WsScheme), 0) == 0)
     {
-        return "http://" + endpoint.substr(5);
+        return std::string(lila::shared::contracts::ws::HttpScheme) +
+            endpoint.substr(std::string(lila::shared::contracts::ws::WsScheme).size());
     }
 
-    if (endpoint.rfind("wss://", 0) == 0)
+    if (endpoint.rfind(std::string(lila::shared::contracts::ws::WssScheme), 0) == 0)
     {
-        return "https://" + endpoint.substr(6);
+        return std::string(lila::shared::contracts::ws::HttpsScheme) +
+            endpoint.substr(std::string(lila::shared::contracts::ws::WssScheme).size());
     }
 
     return endpoint;
@@ -45,7 +48,9 @@ std::string NormalizeEndpointForWinHttp(const std::string& endpoint)
 
 ParsedEndpoint ParseEndpoint(const std::string& endpoint)
 {
-    const bool secure = endpoint.rfind("wss://", 0) == 0 || endpoint.rfind("https://", 0) == 0;
+    const bool secure =
+        endpoint.rfind(std::string(lila::shared::contracts::ws::WssScheme), 0) == 0 ||
+        endpoint.rfind(std::string(lila::shared::contracts::ws::HttpsScheme), 0) == 0;
     const auto normalizedEndpoint = NormalizeEndpointForWinHttp(endpoint);
     const auto endpointWide = lila::shared::text::Utf8ToWide(normalizedEndpoint);
     URL_COMPONENTS components{};
@@ -300,13 +305,13 @@ void WinHttpWebSocketClient::Connect(const std::string& endpoint, const WebSocke
     if (!WinHttpSendRequest(request.Get(), WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0))
     {
         Close();
-        throw std::runtime_error(std::string(lila::shared::errors::WinHttpHandshakeSendFailed) + " " + endpoint);
+        throw std::runtime_error(lila::shared::errors::WithDetails(lila::shared::errors::WinHttpHandshakeSendFailed, endpoint));
     }
 
     if (!WinHttpReceiveResponse(request.Get(), nullptr))
     {
         Close();
-        throw std::runtime_error(std::string(lila::shared::errors::WinHttpHandshakeResponseFailed) + " " + endpoint);
+        throw std::runtime_error(lila::shared::errors::WithDetails(lila::shared::errors::WinHttpHandshakeResponseFailed, endpoint));
     }
 
     state_->webSocket.Reset(WinHttpWebSocketCompleteUpgrade(request.Get(), 0));
@@ -416,3 +421,4 @@ std::string WinHttpWebSocketClient::SendAndReceive(
     return Receive();
 }
 }
+

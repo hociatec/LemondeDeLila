@@ -4,6 +4,7 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { AdminPerfSnapshotWsDto } from './admin-ws.dto';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 @Injectable()
 export class AdminPerfWsHandler {
@@ -16,6 +17,7 @@ export class AdminPerfWsHandler {
     requireAdmin(session);
     const dto = this.validator.validate(AdminPerfSnapshotWsDto, payload ?? {});
     const snapshot = this.perf.snapshot({ windowSeconds: dto.windowSeconds });
-    return { type: 'admin.perf.snapshot', payload: snapshot };
+    return { type: WS_EVENTS.admin.perf.snapshot, payload: snapshot };
   }
 }
+

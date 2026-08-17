@@ -118,6 +118,8 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/domain/ChatMessage.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp

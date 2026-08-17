@@ -641,3 +641,4 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/button.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibilityUtils.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NonFocusablePanel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppConfig.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h

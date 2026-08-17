@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text;
+using client_win.Core.Constants;
 using client_win.Modules.User.Services;
 
 namespace client_win.Modules.Network.Services;
@@ -53,7 +54,7 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
         var localIsAdmin = IsAdminFromToken(token);
 
         var res = await _ws.RequestAsync<ApiCapabilitiesPayload>(
-            "api.capabilities",
+            WsMessageTypes.Api.Capabilities,
             new { },
             token,
             cancellationToken).ConfigureAwait(false);
@@ -94,9 +95,9 @@ public sealed class ApiCapabilitiesService : IApiCapabilitiesService, IDisposabl
         var capabilities = new ApiCapabilities
         {
             IsAdmin = localIsAdmin || (res.Payload?.IsAdmin == true),
-            SupportsAdminRoomsList = res.Payload?.Features?.GetValueOrDefault("admin.rooms.list") == true,
-            SupportsAdminRoomsDestroy = res.Payload?.Features?.GetValueOrDefault("admin.rooms.destroy") == true,
-            SupportsAdminRoomsCleanup = res.Payload?.Features?.GetValueOrDefault("admin.rooms.cleanup") == true,
+            SupportsAdminRoomsList = res.Payload?.Features?.GetValueOrDefault(WsMessageTypes.Admin.RoomsList) == true,
+            SupportsAdminRoomsDestroy = res.Payload?.Features?.GetValueOrDefault(WsMessageTypes.Admin.RoomsDestroy) == true,
+            SupportsAdminRoomsCleanup = res.Payload?.Features?.GetValueOrDefault(WsMessageTypes.Admin.RoomsCleanup) == true,
             RoutesCount = res.Payload?.RoutesCount ?? 0,
             WsTypes = wsTypes,
             GeneratedAt = res.Payload?.GeneratedAt ?? string.Empty

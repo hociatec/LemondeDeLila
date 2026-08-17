@@ -11,6 +11,7 @@
 #include "modules/messaging/domain/MessagingUser.h"
 #include "modules/messaging/application/IMessagingGateway.h"
 #include "shared/network/realtime/RealtimeApiClient.h"
+#include "shared/contracts/BackendWsContracts.h"
 
 namespace lila::modules::session::application
 {
@@ -31,8 +32,12 @@ public:
         lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client,
         lila::modules::session::application::SessionStore& sessionStore);
 
-    [[nodiscard]] std::vector<domain::MessagingMessage> GetBox(domain::MessagingBox box, int limit = 100) const override;
-    [[nodiscard]] std::vector<domain::MessagingMessage> GetConversation(int userId, int limit = 100) const override;
+    [[nodiscard]] std::vector<domain::MessagingMessage> GetBox(
+        domain::MessagingBox box,
+        int limit = lila::shared::contracts::messaging::DefaultPageLimit) const override;
+    [[nodiscard]] std::vector<domain::MessagingMessage> GetConversation(
+        int userId,
+        int limit = lila::shared::contracts::messaging::DefaultPageLimit) const override;
     [[nodiscard]] std::optional<domain::MessagingMessage> Send(
         int recipientId,
         const std::string& text,
@@ -51,7 +56,6 @@ private:
     [[nodiscard]] static domain::MessagingMessage ReadMessage(const nlohmann::json& source);
     [[nodiscard]] static domain::MessagingUser ReadUser(const nlohmann::json& source);
     [[nodiscard]] static std::string ReadOptionalString(const nlohmann::json& source, const char* fieldName);
-    [[nodiscard]] static std::time_t ReadOptionalTimestamp(const nlohmann::json& source, const char* fieldName);
     [[nodiscard]] lila::shared::network::realtime::RealtimeApiResponse SendRequest(
         const std::string& type,
         nlohmann::json payload,

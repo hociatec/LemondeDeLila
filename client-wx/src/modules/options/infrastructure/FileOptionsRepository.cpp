@@ -69,7 +69,7 @@ domain::OptionsState FileOptionsRepository::Load() const
     }
     catch (const std::exception& error)
     {
-        throw std::runtime_error(std::string(lila::shared::errors::InvalidOptionsFile) + " " + error.what());
+        throw std::runtime_error(lila::shared::errors::WithDetails(lila::shared::errors::InvalidOptionsFile, error.what()));
     }
 
     return ParseOptions(document);
@@ -109,6 +109,7 @@ void FileOptionsRepository::Save(const domain::OptionsState& state) const
     lila::shared::persistence::JsonFileStorage::Write(
         path,
         document,
-        "Impossible de sauvegarder les options.");
+        lila::shared::errors::OptionsSaveFailed);
 }
 }
+

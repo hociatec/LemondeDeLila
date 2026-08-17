@@ -8,6 +8,7 @@ import { NotificationService } from '../../notification/services/notification.se
 import { User } from '../../user/entities/user.entity';
 import { ClientUpdatesService } from '../../client-updates/services/client-updates.service';
 import { parseVersion } from '../../common/utils/version.utils';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 import {
   AdminClientUpdateAnnounceWsDto,
   AdminClientUpdateForceLatestWsDto,
@@ -60,14 +61,14 @@ export class AdminClientUpdatesWsHandler {
       recipients.map((u) =>
         this.notifications.notifyUser(
           u.id,
-          'client.update.available',
+          WS_EVENTS.clientUpdate.available,
           payloadOut,
         ),
       ),
     );
 
     return {
-      type: 'admin.client.update.announce',
+      type: WS_EVENTS.admin.clientUpdate.announce,
       payload: { delivered: recipients.length },
     };
   }
@@ -126,14 +127,14 @@ export class AdminClientUpdatesWsHandler {
       recipients.map((u) =>
         this.notifications.notifyUser(
           u.id,
-          'client.update.required',
+          WS_EVENTS.clientUpdate.required,
           payloadOut,
         ),
       ),
     );
 
     return {
-      type: 'admin.client.update.forceLatest',
+      type: WS_EVENTS.admin.clientUpdate.forceLatest,
       payload: {
         delivered: recipients.length,
         minRequiredVersion: latestVersion,
@@ -213,7 +214,7 @@ export class AdminClientUpdatesWsHandler {
         );
         await Promise.all(
           recipients.map((u) =>
-            this.notifications.notifyUser(u.id, 'client.update.imminent', {
+            this.notifications.notifyUser(u.id, WS_EVENTS.clientUpdate.imminent, {
               message: imminentMessage,
               etaSeconds,
               scheduledAt: new Date(scheduledAtMs).toISOString(),
@@ -265,7 +266,7 @@ export class AdminClientUpdatesWsHandler {
 
         await Promise.all(
           recipients.map((u) =>
-            this.notifications.notifyUser(u.id, 'client.update.required', {
+            this.notifications.notifyUser(u.id, WS_EVENTS.clientUpdate.required, {
               message:
                 latest?.message ??
                 'Une mise à jour du client est requise pour continuer.',
@@ -292,7 +293,7 @@ export class AdminClientUpdatesWsHandler {
     this.scheduledTimer = setTimeout(() => void sendForcedUpdate(), delayMs);
 
     return {
-      type: 'admin.client.update.schedule',
+      type: WS_EVENTS.admin.clientUpdate.schedule,
       payload: {
         delivered: recipients.length,
         scheduledAt: new Date(scheduledAtMs).toISOString(),
@@ -301,3 +302,5 @@ export class AdminClientUpdatesWsHandler {
     };
   }
 }
+
+

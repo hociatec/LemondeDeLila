@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using client_win.Core.Constants;
 using client_win.Modules.Game.Room.Input;
 
 namespace client_win.Modules.Game.Room.Services;
@@ -75,24 +76,24 @@ internal static class RoomAllowedActions
             "room.tableambiencevolume" => RoomShortcutCodes.TableAmbienceVolume,
             "room.savesnapshot" => RoomShortcutCodes.SaveSnapshot,
             "room.snapshot.save" => RoomShortcutCodes.SaveSnapshot,
-            "room.reset" => RoomShortcutCodes.Reset,
-            "room.info" => RoomShortcutCodes.Info,
+            WsMessageTypes.Room.Reset => RoomShortcutCodes.Reset,
+            WsMessageTypes.Room.Info => RoomShortcutCodes.Info,
             "room.togglerole" => RoomShortcutCodes.ToggleRole,
-            "room.set-role" => RoomShortcutCodes.ToggleRole,
+            WsMessageTypes.Room.SetRole => RoomShortcutCodes.ToggleRole,
             "room.toggleprivacy" => RoomShortcutCodes.TogglePrivacy,
-            "room.toggle-privacy" => RoomShortcutCodes.TogglePrivacy,
+            WsMessageTypes.Room.TogglePrivacy => RoomShortcutCodes.TogglePrivacy,
             "room.players" => RoomShortcutCodes.Players,
             "room.addbot" => RoomShortcutCodes.AddBot,
-            "bot.add" => RoomShortcutCodes.AddBot,
+            WsMessageTypes.Room.AddBot => RoomShortcutCodes.AddBot,
             "room.removebot" => RoomShortcutCodes.RemoveBot,
-            "bot.remove" => RoomShortcutCodes.RemoveBot,
+            WsMessageTypes.Room.RemoveBot => RoomShortcutCodes.RemoveBot,
             "room.invite" => RoomShortcutCodes.Invite,
-            "room.kick" => RoomShortcutCodes.Kick,
-            "room.ban" => RoomShortcutCodes.Ban,
+            WsMessageTypes.Room.Kick => RoomShortcutCodes.Kick,
+            WsMessageTypes.Room.Ban => RoomShortcutCodes.Ban,
             "room.transferowner" => RoomShortcutCodes.TransferOwner,
-            "room.set-owner" => RoomShortcutCodes.TransferOwner,
+            WsMessageTypes.Room.SetOwner => RoomShortcutCodes.TransferOwner,
             "room.quit" => RoomShortcutCodes.Quit,
-            "room.leave" => RoomShortcutCodes.Quit,
+            WsMessageTypes.Room.Leave => RoomShortcutCodes.Quit,
             _ => key,
         };
     }

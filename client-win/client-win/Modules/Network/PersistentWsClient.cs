@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using client_win.Core;
 using client_win.Core.Constants;
+using client_win.Core.Constants;
 using client_win.Core.Network;
 using Serilog;
 
@@ -147,7 +148,7 @@ public sealed class PersistentWsClient : IAsyncDisposable
 
         // If we know the server capabilities, avoid sending unsupported messages.
         // Keep api.capabilities always allowed so we can bootstrap the capabilities cache.
-        if (!string.Equals(type, "api.capabilities", StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(type, WsMessageTypes.Api.Capabilities, StringComparison.OrdinalIgnoreCase))
         {
             HashSet<string>? supported;
             lock (_sync)

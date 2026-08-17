@@ -4,10 +4,10 @@
 #include <stdexcept>
 #include <string>
 
-#include "shared/errors/ErrorMessages.h"
-#include "shared/network/realtime/RealtimeApiClient.h"
-#include "shared/network/realtime/AuthenticatedRealtimeApiClient.h"
 #include "modules/session/application/SessionStore.h"
+#include "shared/errors/ErrorMessages.h"
+#include "shared/network/realtime/AuthenticatedRealtimeApiClient.h"
+#include "shared/network/realtime/RealtimeApiClient.h"
 
 namespace lila::shared::network::realtime
 {
@@ -25,14 +25,12 @@ inline RealtimeApiResponse SendAndCheckAuth(
         throw std::runtime_error(noActiveSessionMessage);
     }
 
-    const auto response = client.Send(
+    return client.Send(
         {
             .type = type,
             .payload = std::move(payload),
         },
         sessionStore.Current().token);
-
-    return response;
 }
 
 inline void EnsureSuccessOrThrow(
@@ -51,7 +49,22 @@ inline void EnsureSuccessOrThrow(
         throw std::runtime_error(lila::shared::errors::SessionExpiredMessage);
     }
 
-    throw std::runtime_error(response.errorMessage.empty() ? fallbackMessage : response.errorMessage);
+    throw std::runtime_error(lila::shared::errors::WithDetails(fallbackMessage.c_str(), response.errorMessage));
+}
+
+inline RealtimeApiResponse SendAuthenticatedRequest(
+    const AuthenticatedRealtimeApiClient& client,
+    lila::modules::session::application::SessionStore& sessionStore,
+    const std::string& noActiveSessionMessage,
+    const std::string& type,
+    nlohmann::json payload,
+    const std::string& fallbackMessage)
+{
+    auto response = SendAndCheckAuth(
+        client, sessionStore, noActiveSessionMessage, type, std::move(payload));
+    EnsureSuccessOrThrow(response, sessionStore, fallbackMessage);
+    return response;
 }
 }
 }
+

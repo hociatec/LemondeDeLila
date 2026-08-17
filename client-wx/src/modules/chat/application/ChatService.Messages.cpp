@@ -6,6 +6,7 @@
 #include "modules/session/application/SessionStore.h"
 #include "modules/chat/infrastructure/ChatProtocol.h"
 #include "shared/errors/ErrorMessages.h"
+#include <sstream>
 
 namespace lila::modules::chat::application
 {
@@ -22,7 +23,9 @@ void ChatService::ProcessIncomingMessage(const std::string& rawJson)
         {
             messagesStore_.LoadHistory(std::move(event.messages), std::max(0, event.editWindowSeconds));
             NotifyMessagesChanged();
-            SetStatus(std::to_string(messagesStore_.Snapshot().size()) + " résultats chargés.", false);
+            std::ostringstream status;
+            status << messagesStore_.Snapshot().size() << lila::shared::errors::ChatHistoryLoaded;
+            SetStatus(status.str(), false);
             return;
         }
     case infrastructure::ChatEventType::MessageUpserted:

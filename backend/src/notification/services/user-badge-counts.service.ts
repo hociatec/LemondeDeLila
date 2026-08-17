@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PrivateMessage } from '../../messaging/entities/private-message.entity';
 import { NotificationService } from './notification.service';
 import { NotificationInboxDbService } from './notification-inbox-db.service';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 @Injectable()
 export class UserBadgeCountsService {
@@ -41,6 +42,6 @@ export class UserBadgeCountsService {
 
   async notifyCounts(userId: number): Promise<void> {
     const counts = await this.getCounts(userId);
-    await this.notifications.notifyUser(userId, 'notify.counts', counts);
+    await this.notifications.notifyUser(userId, WS_EVENTS.notify.counts, counts);
   }
 }

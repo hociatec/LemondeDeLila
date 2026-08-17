@@ -1,15 +1,15 @@
-using System;
+﻿using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using client_win.Core.Diagnostics;
 using client_win.Modules.Network.Services;
 using Serilog;
-
+using client_win.Core.Constants;
 namespace client_win.Modules.Network;
 
 /// <summary>
-/// Couche légère pour envoyer des requêtes typées via le client WS persistant.
+/// Couche lÃ©gÃ¨re pour envoyer des requÃªtes typÃ©es via le client WS persistant.
 /// </summary>
 public sealed class WsRequestClient
 {
@@ -60,7 +60,7 @@ public sealed class WsRequestClient
         }
         catch (TaskCanceledException tex)
         {
-            var message = $"La requête temps réel '{type}' a expiré.";
+            var message = $"La requÃªte temps rÃ©el '{type}' a expirÃ©.";
             if (!suppressUserError)
             {
                 _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: tex.Message));
@@ -72,7 +72,7 @@ public sealed class WsRequestClient
         {
             if (!suppressUserError)
             {
-                _errorBus?.Publish(new Modules.Error.AppError("Requête temps réel échouée.", Modules.Error.ErrorSeverity.Error, context: type, detail: ex.Message));
+                _errorBus?.Publish(new Modules.Error.AppError("RequÃªte temps rÃ©el Ã©chouÃ©e.", Modules.Error.ErrorSeverity.Error, context: type, detail: ex.Message));
             }
             Log.Warning(ex, "WS error: {Type}", type);
             return WsResponse<TPayload>.Fail(type, ex.Message);
@@ -83,15 +83,15 @@ public sealed class WsRequestClient
         string responseType = root.TryGetProperty("type", out var t) ? t.GetString() ?? type : type;
         string? reqId = root.TryGetProperty("requestId", out var id) ? id.GetString() : null;
         Log.Debug("WS response: {Type} ({RequestId})", responseType, reqId ?? "?");
-        if (string.Equals(responseType, "error", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(responseType, WsMessageTypes.Error, StringComparison.OrdinalIgnoreCase))
         {
             string? context = root.TryGetProperty("context", out var c) ? c.GetString() : null;
             string message = root.TryGetProperty("payload", out var p) &&
                              p.TryGetProperty("message", out var msg)
-                ? msg.GetString() ?? "Erreur temps réel"
-                : "Erreur temps réel";
-            // UX: le backend renvoie parfois un context identique au type de requête (ex: "auth.login").
-            // Éviter d'afficher un "Détail: auth.login" inutile aux joueurs.
+                ? msg.GetString() ?? "Erreur temps rÃ©el"
+                : "Erreur temps rÃ©el";
+            // UX: le backend renvoie parfois un context identique au type de requÃªte (ex: "auth.login").
+            // Ã‰viter d'afficher un "DÃ©tail: auth.login" inutile aux joueurs.
             var detail = string.IsNullOrWhiteSpace(context) ? null : context.Trim();
             if (!string.IsNullOrWhiteSpace(detail) &&
                 string.Equals(detail, type, StringComparison.OrdinalIgnoreCase))
@@ -102,7 +102,7 @@ public sealed class WsRequestClient
             {
                 _errorBus?.Publish(new Modules.Error.AppError(message, Modules.Error.ErrorSeverity.Error, context: type, detail: detail));
             }
-            // On conserve le type demandé pour faciliter le diagnostic côté appelant.
+            // On conserve le type demandÃ© pour faciliter le diagnostic cÃ´tÃ© appelant.
             return WsResponse<TPayload>.Fail(type, message);
         }
 
@@ -162,3 +162,6 @@ public sealed class WsResponse<TPayload>
 
     public static WsResponse<TPayload> Fail(string type, string message) => new(false, type, default, null, message);
 }
+
+
+

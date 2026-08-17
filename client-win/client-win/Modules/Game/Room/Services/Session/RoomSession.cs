@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -9,6 +9,7 @@ using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using Serilog;
 using client_win.Modules.Game.Room.Services;
+using client_win.Core.Constants;
 
 namespace client_win.Modules.Game.Room.Services;
 
@@ -104,7 +105,7 @@ public sealed partial class RoomSession : IRoomSession
     {
         try
         {
-            var leave = JsonSerializer.Serialize(new { type = "room.leave", payload = new { } }, _json);
+            var leave = JsonSerializer.Serialize(new { type = WsMessageTypes.Room.Leave, payload = new { } }, _json);
             await _socket.SendAsync(leave, cancellationToken).ConfigureAwait(false);
         }
         catch
@@ -136,7 +137,7 @@ public sealed partial class RoomSession : IRoomSession
         }
         catch
         {
-            // Best-effort (ne pas casser la boucle WS si un handler client échoue).
+            // Best-effort (ne pas casser la boucle WS si un handler client Ã©choue).
         }
 
         _supervisor.HandleStateChanged(state);
@@ -164,27 +165,27 @@ public sealed partial class RoomSession : IRoomSession
                 return;
             }
 
-            if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Error, StringComparison.OrdinalIgnoreCase))
             {
                 HandleError(root);
                 return;
             }
 
-            if (string.Equals(type, "room.left", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(type, "room.deleted", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Room.Left, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, WsMessageTypes.Room.Deleted, StringComparison.OrdinalIgnoreCase))
             {
-                // Sortie imposée (kick/ban/delete) OU table supprimée. La navigation est gérée par l'UI.
+                // Sortie imposÃ©e (kick/ban/delete) OU table supprimÃ©e. La navigation est gÃ©rÃ©e par l'UI.
                 Left?.Invoke(type);
                 return;
             }
 
-            if (string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Room.Pong, StringComparison.OrdinalIgnoreCase))
             {
                 _supervisor.HandlePong(root);
                 return;
             }
 
-            if (string.Equals(type, "room.ack", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Room.Ack, StringComparison.OrdinalIgnoreCase))
             {
                 _supervisor.HandleCommandAck(root);
                 return;
@@ -196,8 +197,8 @@ public sealed partial class RoomSession : IRoomSession
                 return;
             }
 
-            if (string.Equals(type, "room.updated", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(type, "room.created", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Room.Updated, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, WsMessageTypes.Room.Created, StringComparison.OrdinalIgnoreCase))
             {
                 HandleRoomState(root);
             }
@@ -234,7 +235,7 @@ public sealed partial class RoomSession : IRoomSession
             if (IsFatalRoomError(trimmed))
             {
                 // Ensure the UI exits the table if the room no longer exists.
-                Left?.Invoke("room.deleted");
+                Left?.Invoke(WsMessageTypes.Room.Deleted);
             }
         }
         catch
@@ -251,8 +252,8 @@ public sealed partial class RoomSession : IRoomSession
         {
             return true;
         }
-        if (normalized.Contains("n'�tes pas dans une table") ||
-            normalized.Contains("n��tes pas dans une table"))
+        if (normalized.Contains("n'êtes pas dans une table") ||
+            normalized.Contains("n’êtes pas dans une table"))
         {
             return true;
         }
@@ -284,7 +285,7 @@ public sealed partial class RoomSession : IRoomSession
             var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
             var join = JsonSerializer.Serialize(new
             {
-                type = "room.join",
+                type = WsMessageTypes.Room.Join,
                 payload = new
                 {
                     roomId = RoomId,
@@ -370,7 +371,7 @@ public sealed partial class RoomSession : IRoomSession
             var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
             var join = JsonSerializer.Serialize(new
             {
-                type = "room.join",
+                type = WsMessageTypes.Room.Join,
                 payload = new
                 {
                     roomId = RoomId,
@@ -426,7 +427,7 @@ public sealed partial class RoomSession : IRoomSession
                 var age = DateTime.UtcNow - _lastPongUtc;
                 if (_lastPongUtc != DateTime.MinValue && age > GameTiming.Room.GhostConnectionThreshold)
                 {
-                    // Socket "fantôme" probable: forcer une reconnexion.
+                    // Socket "fantÃ´me" probable: forcer une reconnexion.
                     RequestReconnect(force: true);
                     continue;
                 }
@@ -440,13 +441,13 @@ public sealed partial class RoomSession : IRoomSession
             try
             {
                 var ping = JsonSerializer.Serialize(
-                    new { type = "room.ping", payload = new { clientSentAtMs = ServerClock.UtcNowMs() } },
+                    new { type = WsMessageTypes.Room.Ping, payload = new { clientSentAtMs = ServerClock.UtcNowMs() } },
                     _json);
                 await _socket.SendAsync(ping, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
-                // Best-effort: la reconnexion sera déclenchée par StateChanged ou par le watchdog.
+                // Best-effort: la reconnexion sera dÃ©clenchÃ©e par StateChanged ou par le watchdog.
             }
         }
     }
@@ -464,7 +465,7 @@ public sealed partial class RoomSession : IRoomSession
             _ => 30,
         };
 
-        // Jitter +/-20% pour éviter que tout le monde reconnecte en même temps.
+        // Jitter +/-20% pour Ã©viter que tout le monde reconnecte en mÃªme temps.
         return GameTiming.ComputeJitterBackoff(seconds);
     }
 
@@ -656,6 +657,8 @@ public sealed partial class RoomSession : IRoomSession
         }
     }
 }
+
+
 
 
 

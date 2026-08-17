@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { SendMessageDto } from '../dto/send-message.dto';
 import { MessagingService } from '../services/messaging.service';
 import { MessagingNotificationService } from '../services/messaging-notification.service';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 import {
   MessagingConversationDto,
   MessagingListDto,
@@ -30,7 +31,7 @@ export class MessagingWsHandler {
       dto.userId,
       dto.limit,
     );
-    return { type: 'messaging.conversation', payload: { items } };
+    return { type: WS_EVENTS.messaging.conversation, payload: { items } };
   }
 
   async messages(session: WsSession, payload: unknown) {
@@ -41,7 +42,7 @@ export class MessagingWsHandler {
       user.id,
       dto.limit ?? 100,
     );
-    return { type: 'messaging.messages', payload: { box, items } };
+    return { type: WS_EVENTS.messaging.messages, payload: { box, items } };
   }
 
   async send(session: WsSession, payload: unknown) {
@@ -49,7 +50,7 @@ export class MessagingWsHandler {
     const dto = this.validator.validate(MessagingSendDto, payload);
     const message = await this.messaging.send(user.id, dto as SendMessageDto);
     await this.notifier.notifyMessageSent(dto.recipientId, message);
-    return { type: 'messaging.message', payload: { message } };
+    return { type: WS_EVENTS.messaging.messageSent, payload: { message } };
   }
 
   async delete(session: WsSession, payload: unknown) {
@@ -57,7 +58,7 @@ export class MessagingWsHandler {
     const dto = this.validator.validate(MessagingMessageActionDto, payload);
     const message = await this.messaging.delete(user.id, dto.messageId);
     await this.notifier.notifyCountsBestEffort(user.id);
-    return { type: 'messaging.deleted', payload: { message } };
+    return { type: WS_EVENTS.messaging.messageDeleted, payload: { message } };
   }
 
   async restore(session: WsSession, payload: unknown) {
@@ -65,7 +66,7 @@ export class MessagingWsHandler {
     const dto = this.validator.validate(MessagingMessageActionDto, payload);
     const message = await this.messaging.restore(user.id, dto.messageId);
     await this.notifier.notifyCountsBestEffort(user.id);
-    return { type: 'messaging.restored', payload: { message } };
+    return { type: WS_EVENTS.messaging.messageRestored, payload: { message } };
   }
 
   async purge(session: WsSession, payload: unknown) {
@@ -73,14 +74,14 @@ export class MessagingWsHandler {
     const dto = this.validator.validate(MessagingMessageActionDto, payload);
     const message = await this.messaging.purge(user.id, dto.messageId);
     await this.notifier.notifyCountsBestEffort(user.id);
-    return { type: 'messaging.purged', payload: { message } };
+    return { type: WS_EVENTS.messaging.messagePurged, payload: { message } };
   }
 
   async search(payload: unknown) {
     const dto = this.validator.validate(MessagingSearchDto, payload);
     const username = dto.username ?? dto.query ?? '';
     const user = await this.messaging.lookupUser(username);
-    return { type: 'messaging.user', payload: { user } };
+    return { type: WS_EVENTS.messaging.user, payload: { user } };
   }
 
   async markRead(session: WsSession, payload: unknown) {
@@ -88,7 +89,7 @@ export class MessagingWsHandler {
     const dto = this.validator.validate(MessagingMarkReadDto, payload);
     await this.messaging.markRead(user.id, dto.messageId);
     await this.notifier.notifyCountsBestEffort(user.id);
-    return { type: 'messaging.markRead', payload: { ok: true } };
+    return { type: WS_EVENTS.messaging.markRead, payload: { ok: true } };
   }
 
   private async resolveBox(

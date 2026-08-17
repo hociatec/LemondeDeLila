@@ -636,6 +636,7 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/textctrl.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/application/MessagingService.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/application/IMessagingGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/MenuBlueprint.h

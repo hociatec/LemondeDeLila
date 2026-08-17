@@ -62,3 +62,5 @@ export class AdminBugReportUpdateStatusWsDto extends AdminBugReportIdWsDto {
     | 'refused'
     | 'rejected';
 }
+
+

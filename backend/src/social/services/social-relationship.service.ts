@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { NotificationService } from '../../notification/services/notification.service';
 import { User } from '../../user/entities/user.entity';
 import { SocialRelationship } from '../entities/social-relationship.entity';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 export type SocialDirection = 'incoming' | 'outgoing' | 'all';
 
@@ -127,7 +128,7 @@ export class SocialRelationshipService {
 
           await this.notifications.notifyUser(
             addresseeId,
-            'social.friend.accepted',
+            WS_EVENTS.social.friendAccepted,
             {
               userId: requesterId,
             },
@@ -153,7 +154,7 @@ export class SocialRelationshipService {
 
     await this.notifications.notifyUser(
       addresseeId,
-      'social.friend.requested',
+      WS_EVENTS.social.friendRequested,
       {
         requesterId,
       },
@@ -181,9 +182,13 @@ export class SocialRelationshipService {
     relation.status = 'accepted';
     const saved = await this.relationships.save(relation);
 
-    await this.notifications.notifyUser(requesterId, 'social.friend.accepted', {
-      userId,
-    });
+    await this.notifications.notifyUser(
+      requesterId,
+      WS_EVENTS.social.friendAccepted,
+      {
+        userId,
+      },
+    );
 
     return {
       id: saved.id,
@@ -206,9 +211,13 @@ export class SocialRelationshipService {
 
     await this.relationships.remove(relation);
 
-    await this.notifications.notifyUser(requesterId, 'social.friend.rejected', {
-      userId,
-    });
+    await this.notifications.notifyUser(
+      requesterId,
+      WS_EVENTS.social.friendRejected,
+      {
+        userId,
+      },
+    );
 
     return { removed: true };
   }

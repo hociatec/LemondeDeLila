@@ -12,9 +12,56 @@
 #include "modules/options/application/OptionsStore.h"
 #include "shared/ui/BackgroundTask.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/text/StringUtils.h"
 
 namespace lila::modules::chat::presentation
 {
+namespace
+{
+std::string BuildServerErrorMessage(const std::optional<lila::modules::chat::domain::ChatServerError>& serverError)
+{
+    if (!serverError.has_value())
+    {
+        return {};
+    }
+
+    const auto serverMessage = lila::shared::text::TrimCopy(serverError->message);
+    const auto serverReason = lila::shared::text::TrimCopy(serverError->reason);
+    if (serverMessage.empty())
+    {
+        return serverReason;
+    }
+
+    if (serverReason.empty())
+    {
+        return serverMessage;
+    }
+
+    return serverMessage + " : " + serverReason;
+}
+
+std::string ResolveChatErrorMessage(
+    const std::string& baseMessage,
+    const std::optional<lila::modules::chat::domain::ChatServerError>& serverError)
+{
+    const auto trimmedBase = lila::shared::text::TrimCopy(baseMessage);
+    const bool isBaseUnhelpful = trimmedBase.empty() ||
+        trimmedBase == lila::shared::errors::UnexpectedError ||
+        trimmedBase == lila::shared::errors::ChatErrorMessage;
+    if (!isBaseUnhelpful)
+    {
+        return trimmedBase;
+    }
+
+    const auto serverMessage = BuildServerErrorMessage(serverError);
+    return serverMessage.empty()
+        ? trimmedBase
+        : lila::shared::errors::WithDetails(
+            lila::shared::errors::ChatConnectionFailed,
+            serverMessage);
+}
+}
+
 void ChatFrame::RunChatAction(
     const wxString& busyMessage,
     const std::function<void()>& action,
@@ -129,8 +176,8 @@ void ChatFrame::BindEvents()
             }
 
             const int confirmation = wxMessageBox(
-                wxString(L"Supprimer ce message ?"),
-                wxString(L"Tchat"),
+                wxString::FromUTF8(lila::shared::errors::ChatDeleteConfirm),
+                wxString::FromUTF8(lila::shared::errors::ChatFrameHeader),
                 wxYES_NO | wxNO_DEFAULT | wxICON_WARNING,
                 this);
             if (confirmation == wxYES)
@@ -138,7 +185,7 @@ void ChatFrame::BindEvents()
                 isHistoryActionMode_ = false;
                 const std::string messageId = message->id;
                 RunChatAction(
-                    wxString(L"Suppression du message..."),
+                    wxString::FromUTF8(lila::shared::errors::ChatDeleteBusy),
                     [this, messageId]()
                     {
                         chatService_.Delete(messageId);
@@ -146,7 +193,7 @@ void ChatFrame::BindEvents()
                     [this]()
                     {
                         CancelEdit();
-                        UpdateStatus(wxString(L"Message supprimé."));
+                        UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatDeleted));
                     });
             }
         });
@@ -270,7 +317,7 @@ void ChatFrame::OpenChat()
         return;
     }
 
-    SetBusyState(true, wxString(L"Connexion au serveur..."));
+    SetBusyState(true, wxString::FromUTF8(lila::shared::errors::ChatConnecting));
     InvalidateOpenChatRequest();
     const std::size_t requestId = activeOpenChatRequestId_;
     wxWeakRef<ChatFrame> weakSelf(this);
@@ -316,12 +363,22 @@ void ChatFrame::OpenChat()
                     weakSelf->SetBusyState(false);
                     if (!errorMessage.empty())
                     {
-                        weakSelf->UpdateStatus(wxString::FromUTF8(errorMessage), true);
-                        wxMessageBox(
-                            wxString::FromUTF8(errorMessage),
-                            wxString(L"Tchat"),
-                            wxOK | wxICON_INFORMATION,
-                            weakSelf);
+                        const auto serverError = weakSelf->chatService_.LastServerError();
+                        const std::string resolvedMessage = ResolveChatErrorMessage(errorMessage, serverError);
+                        const std::string safeMessage = resolvedMessage.empty()
+                            ? lila::shared::errors::WithDetails(
+                                  lila::shared::errors::ChatConnectionFailed,
+                                  lila::shared::errors::UnexpectedError)
+                            : resolvedMessage;
+                        weakSelf->UpdateStatus(wxString::FromUTF8(safeMessage), true);
+                        if (weakSelf->statusLabel_ != nullptr)
+                        {
+                            weakSelf->statusLabel_->SetFocus();
+                        }
+                        wxBell();
+                        weakSelf->ShowAccessibleErrorDialog(
+                            wxString::FromUTF8(safeMessage),
+                            wxString::FromUTF8(lila::shared::errors::ChatFrameHeader));
 
                         weakSelf->RequestCloseToSession();
 
@@ -330,12 +387,22 @@ void ChatFrame::OpenChat()
 
                     if (!connected)
                     {
-                        weakSelf->UpdateStatus(wxString::FromUTF8(weakSelf->chatService_.StatusMessage()), true);
-                        wxMessageBox(
-                            wxString::FromUTF8(weakSelf->chatService_.StatusMessage()),
-                            wxString(L"Tchat"),
-                            wxOK | wxICON_INFORMATION,
-                            weakSelf);
+                        const auto statusMessage = lila::shared::text::TrimCopy(weakSelf->chatService_.StatusMessage());
+                        const std::string fallbackMessage = lila::shared::errors::WithDetails(
+                            lila::shared::errors::ChatConnectionFailed,
+                            lila::shared::errors::UnexpectedError);
+                        const auto serverError = weakSelf->chatService_.LastServerError();
+                        const std::string resolvedMessage =
+                            ResolveChatErrorMessage(statusMessage.empty() ? fallbackMessage : statusMessage, serverError);
+                        weakSelf->UpdateStatus(wxString::FromUTF8(resolvedMessage), true);
+                        if (weakSelf->statusLabel_ != nullptr)
+                        {
+                            weakSelf->statusLabel_->SetFocus();
+                        }
+                        wxBell();
+                        weakSelf->ShowAccessibleErrorDialog(
+                            wxString::FromUTF8(resolvedMessage),
+                            wxString::FromUTF8(lila::shared::errors::ChatFrameHeader));
                         weakSelf->RequestCloseToSession();
                         return;
                     }
@@ -361,28 +428,28 @@ void ChatFrame::SendInput()
     {
         const std::string messageId = *pendingEditMessageId_;
         RunChatAction(
-            wxString(L"Modification du message..."),
+            wxString::FromUTF8(lila::shared::errors::ChatEditBusy),
             [this, messageId, payload]()
             {
                 chatService_.Edit(messageId, payload);
             },
             [this]()
             {
-                UpdateStatus(wxString(L"Modification envoyée."));
+                UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatEdited));
                 CancelEdit();
             });
     }
     else
     {
         RunChatAction(
-            wxString(L"Envoi du message..."),
+            wxString::FromUTF8(lila::shared::errors::ChatSendBusy),
             [this, payload]()
             {
                 chatService_.Send(payload);
             },
             [this]()
             {
-                UpdateStatus(wxString(L"Message envoyé."));
+                UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatSent));
                 inputCtrl_->Clear();
             });
     }
@@ -403,8 +470,8 @@ void ChatFrame::CancelEdit()
 
     pendingEditMessageId_.reset();
     inputCtrl_->Clear();
-    inputCtrl_->SetHint(wxString(L"Saisissez votre message puis appuyez sur Entrée."));
-    UpdateStatus(wxString(L"Édition annulée."));
+    inputCtrl_->SetHint(wxString::FromUTF8(lila::shared::errors::ChatEditHint));
+    UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatEditAborted));
     SyncActionState();
 }
 
@@ -489,8 +556,8 @@ bool ChatFrame::ConfirmClose()
     }
 
     const int answer = wxMessageBox(
-        wxString(L"Fermer le tchat ?"),
-        wxString(L"Tchat"),
+        wxString::FromUTF8(lila::shared::errors::ChatCloseConfirmation),
+        wxString::FromUTF8(lila::shared::errors::ChatFrameHeader),
         wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION,
         this);
     return answer == wxYES;
@@ -503,7 +570,7 @@ void ChatFrame::BeginEdit(const domain::ChatMessage& message)
     inputCtrl_->SetValue(wxString::FromUTF8(message.text));
     inputCtrl_->SetFocus();
     inputCtrl_->SelectAll();
-    UpdateStatus(wxString(L"Édition du message."));
+    UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatEditMode));
     SyncActionState();
 }
 }

@@ -1,4 +1,4 @@
-﻿#include "modules/session/infrastructure/FileSessionRepository.h"
+#include "modules/session/infrastructure/FileSessionRepository.h"
 #include "shared/contracts/BackendWsContracts.h"
 #include "shared/data/JsonReaders.h"
 #include "shared/errors/ErrorMessages.h"
@@ -13,12 +13,11 @@ namespace lila::modules::session::infrastructure
 {
 namespace
 {
+using lila::shared::data::json::EnsureObject;
+
 domain::Session ParseSession(const nlohmann::json& document)
 {
-    if (!document.is_object())
-    {
-        throw std::runtime_error(lila::shared::errors::InvalidSessionFile);
-    }
+    EnsureObject(document, lila::shared::errors::InvalidSessionFile);
 
     domain::Session session;
     session.userId = lila::shared::data::json::ReadOptionalInteger(
@@ -47,7 +46,7 @@ std::optional<domain::Session> FileSessionRepository::Load() const
     }
     catch (const std::exception& error)
     {
-        throw std::runtime_error(std::string(lila::shared::errors::InvalidSessionFile) + " " + error.what());
+        throw std::runtime_error(lila::shared::errors::WithDetails(lila::shared::errors::InvalidSessionFile, error.what()));
     }
 
     auto session = ParseSession(document);
@@ -87,3 +86,4 @@ void FileSessionRepository::Clear()
         lila::shared::errors::FileSessionDeleteFailed);
 }
 }
+

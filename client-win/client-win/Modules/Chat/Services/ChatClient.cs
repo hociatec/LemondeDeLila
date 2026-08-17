@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
@@ -10,7 +10,7 @@ using client_win.Modules.Network.WebSockets;
 namespace client_win.Modules.Chat.Services;
 
 /// <summary>
-/// Client WebSocket léger pour le tchat (messages de type chat-history / chat-message).
+/// Client WebSocket lÃ©ger pour le tchat (messages de type chat-history / chat-message).
 /// </summary>
 public sealed class ChatClient : IAsyncDisposable
 {
@@ -86,10 +86,10 @@ public sealed class ChatClient : IAsyncDisposable
 
     private void HandleRawMessage(string raw)
     {
-        if (raw.IndexOf("chat-history", StringComparison.OrdinalIgnoreCase) < 0 &&
-            raw.IndexOf("chat-message", StringComparison.OrdinalIgnoreCase) < 0 &&
-            raw.IndexOf("\"type\":\"error\"", StringComparison.OrdinalIgnoreCase) < 0 &&
-            raw.IndexOf("\"type\": \"error\"", StringComparison.OrdinalIgnoreCase) < 0)
+        if (raw.IndexOf(WsMessageTypes.Chat.History, StringComparison.OrdinalIgnoreCase) < 0 &&
+            raw.IndexOf(WsMessageTypes.Chat.Message, StringComparison.OrdinalIgnoreCase) < 0 &&
+            raw.IndexOf("\"type\":\"" + WsMessageTypes.Chat.Error + "\"", StringComparison.OrdinalIgnoreCase) < 0 &&
+            raw.IndexOf("\"type\": \"" + WsMessageTypes.Chat.Error + "\"", StringComparison.OrdinalIgnoreCase) < 0)
         {
             return;
         }
@@ -171,7 +171,7 @@ public sealed class ChatClient : IAsyncDisposable
                     MessageDeleted?.Invoke(id!);
                 }
             }
-            else if (type.Equals("error", StringComparison.OrdinalIgnoreCase))
+            else if (type.Equals(WsMessageTypes.Chat.Error, StringComparison.OrdinalIgnoreCase))
             {
                 string message = root.TryGetProperty("payload", out var p) &&
                                  p.TryGetProperty("message", out var m)
@@ -261,3 +261,4 @@ public sealed class ChatClient : IAsyncDisposable
         await _transport.DisposeAsync().ConfigureAwait(false);
     }
 }
+

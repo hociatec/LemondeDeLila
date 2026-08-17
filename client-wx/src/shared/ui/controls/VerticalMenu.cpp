@@ -1,5 +1,7 @@
 #include "shared/ui/controls/VerticalMenu.h"
 
+#include "shared/errors/ErrorMessages.h"
+
 #include <stdexcept>
 
 #include <wx/event.h>
@@ -38,7 +40,7 @@ void VerticalMenu::SetSelectedIndex(std::size_t index)
 
     if (index >= itemCount_)
     {
-        throw std::out_of_range("VerticalMenu index out of range.");
+        throw std::out_of_range(lila::shared::errors::VerticalMenuIndexOutOfRange);
     }
 
     FocusIndex(index);
@@ -342,3 +344,4 @@ void VerticalMenu::UpdateVisualSelection()
     listBox_->Refresh();
 }
 }
+

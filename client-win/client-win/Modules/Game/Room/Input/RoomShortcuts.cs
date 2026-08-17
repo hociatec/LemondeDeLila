@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Windows.Input;
 using client_win.Core.Input;
+using client_win.Core.Constants;
 
 namespace client_win.Modules.Game.Room.Input;
 
@@ -10,8 +11,8 @@ public static class RoomShortcutCodes
     public const string TableAmbience = "room.tableAmbience";
     public const string TableAmbienceVolume = "room.tableAmbienceVolume";
     public const string SaveSnapshot = "room.saveSnapshot";
-    public const string Reset = "room.reset";
-    public const string Info = "room.info";
+    public const string Reset = WsMessageTypes.Room.Reset;
+    public const string Info = WsMessageTypes.Room.Info;
     public const string ToggleRole = "room.toggleRole";
     public const string TogglePrivacy = "room.togglePrivacy";
     public const string Players = "room.players";

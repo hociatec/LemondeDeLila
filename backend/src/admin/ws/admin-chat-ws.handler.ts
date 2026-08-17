@@ -8,6 +8,7 @@ import { ChatService } from '../../chat/services/chat.service';
 import { ChatSettingsService } from '../../chat/services/chat-settings.service';
 import { User } from '../../user/entities/user.entity';
 import {
+import { WS_EVENTS } from '../../common/ws/ws-events';
   AdminChatBanWsDto,
   AdminChatClearWsDto,
   AdminChatDeleteWsDto,
@@ -53,14 +54,14 @@ export class AdminChatWsHandler {
         chatBanReason: m.user?.chatBanReason ?? null,
       },
     }));
-    return { type: 'admin.chat.messages', payload: { messages } };
+    return { type: WS_EVENTS.admin.chat.messages, payload: { messages } };
   }
 
   chatSettingsGet(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminChatSettingsGetWsDto, payload ?? {});
     return {
-      type: 'admin.chat.settings.get',
+      type: WS_EVENTS.admin.chat.settingsGet,
       payload: this.chatSettings.getSettings(),
     };
   }
@@ -72,21 +73,21 @@ export class AdminChatWsHandler {
       chatHistoryLimit: dto.chatHistoryLimit,
       editWindowSeconds: dto.editWindowSeconds,
     });
-    return { type: 'admin.chat.settings.update', payload: updated };
+    return { type: WS_EVENTS.admin.chat.settingsUpdate, payload: updated };
   }
 
   async chatDelete(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminChatDeleteWsDto, payload);
     const ok = await this.chat.adminDeleteMessage(dto.messageId);
-    return { type: 'admin.chat.delete', payload: { ok } };
+    return { type: WS_EVENTS.admin.chat.delete, payload: { ok } };
   }
 
   async chatClear(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminChatClearWsDto, payload);
     const deleted = await this.chat.adminClearAll();
-    return { type: 'admin.chat.clear', payload: { deleted } };
+    return { type: WS_EVENTS.admin.chat.clear, payload: { deleted } };
   }
 
   async chatBan(session: WsSession, payload: any) {
@@ -105,7 +106,7 @@ export class AdminChatWsHandler {
     await this.userRepo.save(user);
 
     return {
-      type: 'admin.chat.ban',
+      type: WS_EVENTS.admin.chat.ban,
       payload: {
         ok: true,
         userId: user.id,
@@ -127,8 +128,9 @@ export class AdminChatWsHandler {
     user.chatBanReason = null;
     await this.userRepo.save(user);
     return {
-      type: 'admin.chat.unban',
+      type: WS_EVENTS.admin.chat.unban,
       payload: { ok: true, userId: user.id, byUserId: admin.id },
     };
   }
 }
+

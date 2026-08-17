@@ -108,6 +108,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/NetworkPolicy.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/array
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector

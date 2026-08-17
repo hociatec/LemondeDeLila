@@ -86,9 +86,13 @@ int ChatMessageStore::EditWindowSeconds() const
 
 void ChatMessageStore::TrimToMaximum()
 {
-    if (messages_.size() > 500)
+    if (messages_.size() > lila::shared::contracts::chat::MaxHistoryMessages)
     {
-        messages_.erase(messages_.begin(), messages_.begin() + static_cast<std::ptrdiff_t>(messages_.size() - 500));
+        messages_.erase(
+            messages_.begin(),
+            messages_.begin() +
+                static_cast<std::ptrdiff_t>(
+                    messages_.size() - lila::shared::contracts::chat::MaxHistoryMessages));
     }
 }
 }

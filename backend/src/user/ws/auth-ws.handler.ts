@@ -3,6 +3,7 @@ import { UserAuthService } from '../services/user.auth.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 @Injectable()
 export class AuthWsHandler {
@@ -14,12 +15,12 @@ export class AuthWsHandler {
   async register(payload: unknown) {
     const dto = this.validator.validate(RegisterDto, payload);
     await this.auth.register(dto.email, dto.username, dto.password);
-    return { type: 'auth.register.ok', payload: { message: 'inscrit' } };
+    return { type: WS_EVENTS.auth.registerOk, payload: { message: 'inscrit' } };
   }
 
   async login(payload: unknown) {
     const dto = this.validator.validate(LoginDto, payload);
     const result = await this.auth.login(dto.username, dto.password);
-    return { type: 'auth.login.ok', payload: result };
+    return { type: WS_EVENTS.auth.loginOk, payload: result };
   }
 }

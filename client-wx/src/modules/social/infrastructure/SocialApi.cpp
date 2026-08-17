@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <utility>
+#include <string_view>
 
 #include "modules/session/application/SessionStore.h"
 #include "shared/contracts/BackendWsContracts.h"
@@ -12,21 +13,29 @@
 
 namespace lila::modules::social::infrastructure
 {
-namespace
-{
-void EnsurePayloadObjectOrNull(
-    const nlohmann::json& payload,
-    const char* fallbackMessage)
-{
-    if (!payload.is_object() && !payload.is_null())
-    {
-        throw std::runtime_error(fallbackMessage);
-    }
-}
-}
-
 using lila::shared::data::json::ReadOptionalBool;
 using lila::shared::data::json::ReadOptionalString;
+
+const nlohmann::json& EnsureArrayOrEmpty(
+    const nlohmann::json& source,
+    std::string_view fieldName,
+    const std::string& errorMessage)
+{
+    static const nlohmann::json emptyArray = nlohmann::json::array();
+
+    const auto fieldIterator = source.find(fieldName);
+    if (fieldIterator == source.end() || fieldIterator->is_null())
+    {
+        return emptyArray;
+    }
+
+    if (!fieldIterator->is_array())
+    {
+        throw std::runtime_error(errorMessage);
+    }
+
+    return *fieldIterator;
+}
 
 SocialApi::SocialApi(
     lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client,
@@ -63,65 +72,58 @@ std::vector<domain::SocialUser> SocialApi::GetBlockedUsers() const
 
 bool SocialApi::RequestFriend(int userId) const
 {
-    Send(
+    return Send(
         std::string(lila::shared::contracts::social::FriendsRequestEvent),
         {{std::string(lila::shared::contracts::social::UserIdField), userId}},
-        lila::shared::errors::SocialRequestFriendFailed);
-    return true;
+        lila::shared::errors::SocialRequestFriendFailed).success;
 }
 
 bool SocialApi::AcceptFriend(int userId) const
 {
-    Send(
+    return Send(
         std::string(lila::shared::contracts::social::FriendsAcceptEvent),
         {{std::string(lila::shared::contracts::social::UserIdField), userId}},
-        lila::shared::errors::SocialAcceptFriendFailed);
-    return true;
+        lila::shared::errors::SocialAcceptFriendFailed).success;
 }
 
 bool SocialApi::RejectFriend(int userId) const
 {
-    Send(
+    return Send(
         std::string(lila::shared::contracts::social::FriendsRejectEvent),
         {{std::string(lila::shared::contracts::social::UserIdField), userId}},
-        lila::shared::errors::SocialRejectFriendFailed);
-    return true;
+        lila::shared::errors::SocialRejectFriendFailed).success;
 }
 
 bool SocialApi::CancelRequest(int userId) const
 {
-    Send(
+    return Send(
         std::string(lila::shared::contracts::social::FriendsCancelEvent),
         {{std::string(lila::shared::contracts::social::UserIdField), userId}},
-        lila::shared::errors::SocialCancelRequestFailed);
-    return true;
+        lila::shared::errors::SocialCancelRequestFailed).success;
 }
 
 bool SocialApi::RemoveFriend(int userId) const
 {
-    Send(
+    return Send(
         std::string(lila::shared::contracts::social::FriendsRemoveEvent),
         {{std::string(lila::shared::contracts::social::UserIdField), userId}},
-        lila::shared::errors::SocialRemoveFriendFailed);
-    return true;
+        lila::shared::errors::SocialRemoveFriendFailed).success;
 }
 
 bool SocialApi::BlockUser(int userId) const
 {
-    Send(
+    return Send(
         std::string(lila::shared::contracts::social::FriendsBlockEvent),
         {{std::string(lila::shared::contracts::social::UserIdField), userId}},
-        lila::shared::errors::SocialBlockUserFailed);
-    return true;
+        lila::shared::errors::SocialBlockUserFailed).success;
 }
 
 bool SocialApi::UnblockUser(int userId) const
 {
-    Send(
+    return Send(
         std::string(lila::shared::contracts::social::FriendsUnblockEvent),
         {{std::string(lila::shared::contracts::social::UserIdField), userId}},
-        lila::shared::errors::SocialUnblockUserFailed);
-    return true;
+        lila::shared::errors::SocialUnblockUserFailed).success;
 }
 
 std::optional<domain::SocialProfile> SocialApi::GetProfile(std::optional<int> userId) const
@@ -137,7 +139,7 @@ std::optional<domain::SocialProfile> SocialApi::GetProfile(std::optional<int> us
         std::move(payload),
         lila::shared::errors::SocialLoadProfileFailed);
 
-    EnsurePayloadObjectOrNull(response.payload, lila::shared::errors::SocialResponsePayloadInvalidType);
+    lila::shared::data::json::EnsureObjectOrNull(response.payload, lila::shared::errors::SocialResponsePayloadInvalidType);
 
     const auto profileIt = response.payload.find(std::string(lila::shared::contracts::social::ProfileItemsKey));
     if (profileIt == response.payload.end() || profileIt->is_null())
@@ -165,7 +167,7 @@ std::optional<domain::SocialProfile> SocialApi::UpdateProfile(const domain::Soci
         },
         lila::shared::errors::SocialUpdateProfileFailed);
 
-    EnsurePayloadObjectOrNull(response.payload, lila::shared::errors::SocialResponsePayloadInvalidType);
+    lila::shared::data::json::EnsureObjectOrNull(response.payload, lila::shared::errors::SocialResponsePayloadInvalidType);
 
     const auto profileIt = response.payload.find(std::string(lila::shared::contracts::social::ProfileItemsKey));
     if (profileIt == response.payload.end() || profileIt->is_null())
@@ -185,22 +187,20 @@ std::vector<domain::SocialUser> SocialApi::ReadUsersPayload(
     const std::string& type,
     const nlohmann::json& payload) const
 {
-    EnsurePayloadObjectOrNull(payload, lila::shared::errors::SocialResponsePayloadInvalidType);
+    lila::shared::data::json::EnsureObjectOrNull(payload, lila::shared::errors::SocialResponsePayloadInvalidType);
 
-    const auto itemsIt = payload.find(std::string(lila::shared::contracts::social::ItemsKey));
-    if (itemsIt == payload.end() || itemsIt->is_null())
+    const auto& itemsIt = EnsureArrayOrEmpty(
+        payload,
+        lila::shared::contracts::social::ItemsKey,
+        lila::shared::errors::SocialListArrayPrefix + type + lila::shared::errors::SocialListArraySuffix);
+    if (itemsIt.empty())
     {
         return {};
     }
 
-    if (!itemsIt->is_array())
-    {
-        throw std::runtime_error(lila::shared::errors::SocialListArrayPrefix + type + lila::shared::errors::SocialListArraySuffix);
-    }
-
     std::vector<domain::SocialUser> users;
-    users.reserve(itemsIt->size());
-    for (const auto& item : *itemsIt)
+    users.reserve(itemsIt.size());
+    for (const auto& item : itemsIt)
     {
         if (!item.is_object())
         {
@@ -217,22 +217,20 @@ std::vector<domain::SocialFriendRequest> SocialApi::ReadRequestsPayload(
     const std::string& type,
     const nlohmann::json& payload) const
 {
-    EnsurePayloadObjectOrNull(payload, lila::shared::errors::SocialResponsePayloadInvalidType);
+    lila::shared::data::json::EnsureObjectOrNull(payload, lila::shared::errors::SocialResponsePayloadInvalidType);
 
-    const auto itemsIt = payload.find(std::string(lila::shared::contracts::social::ItemsKey));
-    if (itemsIt == payload.end() || itemsIt->is_null())
+    const auto& itemsIt = EnsureArrayOrEmpty(
+        payload,
+        lila::shared::contracts::social::ItemsKey,
+        lila::shared::errors::SocialListArrayPrefix + type + lila::shared::errors::SocialListArraySuffix);
+    if (itemsIt.empty())
     {
         return {};
     }
 
-    if (!itemsIt->is_array())
-    {
-        throw std::runtime_error(lila::shared::errors::SocialListArrayPrefix + type + lila::shared::errors::SocialListArraySuffix);
-    }
-
     std::vector<domain::SocialFriendRequest> requests;
-    requests.reserve(itemsIt->size());
-    for (const auto& item : *itemsIt)
+    requests.reserve(itemsIt.size());
+    for (const auto& item : itemsIt)
     {
         if (!item.is_object())
         {
@@ -307,7 +305,7 @@ domain::SocialProfile SocialApi::ReadProfile(const nlohmann::json& source)
     profile.visibility = ReadOptionalString(source, lila::shared::contracts::social::SocialVisibilityField.data());
     if (profile.visibility.empty())
     {
-        profile.visibility = "public";
+        profile.visibility = std::string(lila::shared::contracts::social::SocialVisibilityPublic);
     }
     profile.createdAt = ReadOptionalString(source, lila::shared::contracts::social::SocialCreatedAtField.data());
     profile.updatedAt = ReadOptionalString(source, lila::shared::contracts::social::SocialUpdatedAtField.data());
@@ -321,9 +319,12 @@ lila::shared::network::realtime::RealtimeApiResponse SocialApi::Send(
     nlohmann::json payload,
     const std::string& fallbackMessage) const
 {
-    auto response = lila::shared::network::realtime::helpers::SendAndCheckAuth(
-        client_, sessionStore_, lila::shared::errors::NoActiveSocialSession, type, std::move(payload));
-    lila::shared::network::realtime::helpers::EnsureSuccessOrThrow(response, sessionStore_, fallbackMessage);
-    return response;
+    return lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
+        client_,
+        sessionStore_,
+        lila::shared::errors::NoActiveSocialSession,
+        type,
+        std::move(payload),
+        fallbackMessage);
 }
 }

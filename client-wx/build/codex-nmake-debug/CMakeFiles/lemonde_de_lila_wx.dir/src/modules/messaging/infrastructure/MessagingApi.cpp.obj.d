@@ -226,12 +226,13 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/application/IMessagingGateway.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/application/SessionStore.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/ISessionRepository.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/Session.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/AuthenticatedRealtimeApiClient.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/http/WsTicketProvider.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/AuthenticatedRealtimeApiHelpers.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/DateTime.h

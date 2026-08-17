@@ -9,6 +9,7 @@
 #include <wx/textctrl.h>
 
 #include "modules/chat/application/ChatService.h"
+#include "shared/errors/ErrorMessages.h"
 
 namespace lila::modules::chat::presentation
 {
@@ -102,8 +103,10 @@ bool ChatFrame::CanActOnMessage(const domain::ChatMessage& message) const
 wxString ChatFrame::BuildMessageLabel(const domain::ChatMessage& message) const
 {
     const wxDateTime timestamp(static_cast<time_t>(message.timestampUtc));
-    const wxString timeLabel = timestamp.IsValid() ? timestamp.Format("%H:%M") : wxString(L"??:??");
-    const wxString userLabel = wxString::FromUTF8(message.user.empty() ? "Inconnu" : message.user);
+    const wxString timeLabel = timestamp.IsValid()
+        ? timestamp.Format("%H:%M")
+        : wxString::FromUTF8(lila::shared::errors::ChatTimeFormatUnknown);
+    const wxString userLabel = wxString::FromUTF8(message.user.empty() ? lila::shared::errors::ChatUnknownUser : message.user);
     const wxString textLabel = wxString::FromUTF8(message.text);
 
     wxString label;
@@ -111,7 +114,7 @@ wxString ChatFrame::BuildMessageLabel(const domain::ChatMessage& message) const
 
     if (message.isMine && CanActOnMessage(message))
     {
-        label << wxString(L" - modifiable");
+        label << wxString::FromUTF8(lila::shared::errors::ChatEditableSuffix);
     }
 
     return label;
@@ -135,7 +138,7 @@ void ChatFrame::SyncActionState()
 
     if (!editing)
     {
-        inputCtrl_->SetHint(wxString(L"Saisissez votre message puis appuyez sur Entrée."));
+        inputCtrl_->SetHint(wxString::FromUTF8(lila::shared::errors::ChatInputHint));
     }
 
     if (!hasMessages)
@@ -146,7 +149,7 @@ void ChatFrame::SyncActionState()
 
     if (emptyHistoryCtrl_->IsShown())
     {
-        emptyHistoryCtrl_->SetValue(wxString(L"Aucun message."));
+        emptyHistoryCtrl_->SetValue(wxString::FromUTF8(lila::shared::errors::ChatNoMessage));
     }
 }
 }

@@ -100,3 +100,5 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/application/IMessagingGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view

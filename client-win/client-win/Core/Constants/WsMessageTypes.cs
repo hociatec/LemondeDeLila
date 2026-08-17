@@ -1,4 +1,4 @@
-namespace client_win.Core.Constants;
+﻿namespace client_win.Core.Constants;
 
 /// <summary>
 /// Constantes centralisées pour les types de messages WebSocket.
@@ -8,6 +8,12 @@ namespace client_win.Core.Constants;
 /// </summary>
 public static class WsMessageTypes
 {
+    public const string Error = "error";
+    public static class Api
+    {
+        public const string Capabilities = "api.capabilities";
+    }
+
     /// <summary>
     /// Types de messages d'authentification
     /// </summary>
@@ -30,10 +36,48 @@ public static class WsMessageTypes
     }
 
     /// <summary>
+    /// Types de messages de gestion d'une table/room
+    /// </summary>
+    public static class Room
+    {
+        public const string Leave = "room.leave";
+        public const string Left = "room.left";
+        public const string Deleted = "room.deleted";
+        public const string Pong = "room.pong";
+        public const string Ack = "room.ack";
+        public const string Updated = "room.updated";
+        public const string Created = "room.created";
+        public const string Join = "room.join";
+        public const string Ping = "room.ping";
+        public const string Create = "room.create";
+
+        public const string AddBot = "bot.add";
+        public const string RemoveBot = "bot.remove";
+        public const string TogglePrivacy = "room.toggle-privacy";
+        public const string SetRole = "room.set-role";
+        public const string Info = "room.info";
+        public const string ChatHistory = "room.chat.history";
+        public const string ChatSend = "room.chat.send";
+        public const string Intent = "room.intent";
+        public const string ChatMessage = "room.chat.message";
+        public const string Privacy = "room.privacy";
+        public const string Role = "room.role";
+        public const string BotAdded = "bot.added";
+        public const string BotRemoved = "bot.removed";
+        public const string Start = "room.start";
+        public const string Reset = "room.reset";
+        public const string Ban = "room.ban";
+        public const string Kick = "room.kick";
+        public const string SetOwner = "room.set-owner";
+        public const string SetAmbience = "room.set-ambience";
+    }
+
+    /// <summary>
     /// Types de messages du chat
     /// </summary>
     public static class Chat
     {
+        public const string Error = "error";
         public const string Send = "chat-send";
         public const string Edit = "chat-edit";
         public const string Delete = "chat-delete";
@@ -88,6 +132,8 @@ public static class WsMessageTypes
         /// </summary>
         public const string Games = "catalog.games";
 
+        public const string Invalidate = "catalog.invalidate";
+
         // Alias pour compatibilité avec l'ancien nommage
         public const string GetAll = All;
     }
@@ -101,6 +147,9 @@ public static class WsMessageTypes
         public const string FriendsRequests = "social.friends.requests";
         public const string FriendsBlocked = "social.friends.blocked";
         public const string FriendsRequest = "social.friends.request";
+        public const string FriendRequested = "social.friend.requested";
+        public const string FriendConnected = "social.friend.connected";
+        public const string FriendDisconnected = "social.friend.disconnected";
         public const string FriendsAccept = "social.friends.accept";
         public const string FriendsReject = "social.friends.reject";
         public const string FriendsCancel = "social.friends.cancel";
@@ -170,7 +219,7 @@ public static class WsMessageTypes
 
         public const string PerfSnapshot = "admin.perf.snapshot";
 
-        // Quiz (Arche de Mnémosyne)
+        // Quiz (Arche de Mnemosyne)
         public const string MnemoQuizCategories = "admin.quiz.mnemo.categories";
         public const string MnemoQuizCategoryCreate = "admin.quiz.mnemo.category.create";
         public const string MnemoQuizCategoryUpdate = "admin.quiz.mnemo.category.update";
@@ -201,6 +250,33 @@ public static class WsMessageTypes
         public const string StatsResetAll = "admin.stats.resetAll";
     }
 
+    public static class Notify
+    {
+        public const string ClientHello = "client.hello";
+        public const string Counts = "notify.counts";
+        public const string CountsGet = "notify.counts.get";
+        public const string Error = "notify.error";
+        public const string InboxList = "notify.inbox.list";
+        public const string InboxSnapshot = "notify.inbox.snapshot";
+        public const string InboxItem = "notify.inbox.item";
+        public const string InboxRemoved = "notify.inbox.removed";
+        public const string InboxDelete = "notify.inbox.delete";
+        public const string InboxMarkRead = "notify.inbox.markRead";
+        public const string AdminContactSend = "notify.admin_contact.send";
+        public const string AdminContactError = "notify.admin_contact.error";
+        public const string AdminContactKind = "admin_contact";
+        public const string AdminContactSent = "notify.admin_contact.sent";
+        public const string AdminContactReply = "notify.admin_contact.reply";
+        public const string AdminContactSetHandled = "notify.admin_contact.setHandled";
+        public const string AdminContactSetStatus = "notify.admin_contact.setStatus";
+        public const string AdminContactCycleStatus = "notify.admin_contact.cycleStatus";
+        public const string AdminContactThreads = "notify.admin_contact.threads";
+        public const string AdminContactDeleteThread = "notify.admin_contact.deleteThread";
+        public const string ClientUpdateAvailable = "client.update.available";
+        public const string ClientUpdateImminent = "client.update.imminent";
+        public const string ClientUpdateRequired = "client.update.required";
+    }
+
     public static class Rooms
     {
         // Canonical lobby routes
@@ -211,6 +287,16 @@ public static class WsMessageTypes
         public const string PublicSubscribe = "room.lobby.subscribe";
         public const string PublicUnsubscribe = "room.lobby.unsubscribe";
 
+        public const string EventInviteReceived = "rooms.invite.received";
+        public const string EventInviteAccepted = "rooms.invite.accepted";
+        public const string EventInviteResponded = "rooms.invite.responded";
+        public const string EventPublicRefresh = "rooms.public.refresh";
+        public const string EventRestoreReady = "rooms.restore.ready";
+        public const string EventLobbyInviteReceived = "room.lobby.invite.received";
+        public const string EventLobbyInviteAccepted = "room.lobby.invite.accepted";
+        public const string EventLobbyInviteResponded = "room.lobby.invite.responded";
+        public const string EventLobbyRefresh = "room.lobby.refresh";
+
         // Backward compatibility
         public const string LegacyInviteSend = "rooms.invite.send";
         public const string LegacyInvitePresenceList = "rooms.invite.presence.list";
@@ -218,6 +304,12 @@ public static class WsMessageTypes
         public const string LegacyPublicList = "rooms.public.list";
         public const string LegacyPublicSubscribe = "rooms.public.subscribe";
         public const string LegacyPublicUnsubscribe = "rooms.public.unsubscribe";
+    }
+
+    public static class Sound
+    {
+        public const string Updated = "sounds.updated";
+        public const string TableAmbiencesUpdated = "sounds.tableAmbiences.updated";
     }
 
     public static class Vault
@@ -249,3 +341,9 @@ public static class WsMessageTypes
         public const string Admin = "admin";
     }
 }
+
+
+
+
+
+

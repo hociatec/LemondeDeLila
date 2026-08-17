@@ -7,6 +7,7 @@ import { PayloadValidationService } from '../../common/validation/payload-valida
 import { NotificationService } from '../../notification/services/notification.service';
 import { User } from '../../user/entities/user.entity';
 import { AdminBroadcastWsDto } from './admin-ws.dto';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 @Injectable()
 export class AdminBroadcastWsHandler {
@@ -35,10 +36,11 @@ export class AdminBroadcastWsHandler {
 
     await Promise.all(
       ids.map((u) =>
-        this.notifications.notifyUser(u.id, 'admin.broadcast', payloadOut),
+        this.notifications.notifyUser(u.id, WS_EVENTS.admin.broadcast, payloadOut),
       ),
     );
 
-    return { type: 'admin.broadcast', payload: { delivered: ids.length } };
+    return { type: WS_EVENTS.admin.broadcast, payload: { delivered: ids.length } };
   }
 }
+

@@ -627,3 +627,4 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/textctrl.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NonFocusablePanel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibilityUtils.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/Theme.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h

@@ -529,3 +529,4 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/RegisterRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/RegistrationResult.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/application/RegisterUseCase.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppConfig.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h

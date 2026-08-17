@@ -4,6 +4,7 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { BugReportCommentsService } from '../../bug-reports/bug-report-comments.service';
 import {
+import { WS_EVENTS } from '../../common/ws/ws-events';
   AdminBugReportCommentAddWsDto,
   AdminBugReportCommentsListWsDto,
 } from './admin-bug-report-comments.dto';
@@ -22,7 +23,7 @@ export class AdminBugReportCommentsWsHandler {
       payload,
     );
     const items = await this.comments.listByReportId(dto.reportId);
-    return { type: 'admin.bugReports.comments.list', payload: { items } };
+    return { type: WS_EVENTS.admin.bugReports.commentsList, payload: { items } };
   }
 
   async add(session: WsSession, payload: any) {
@@ -40,7 +41,7 @@ export class AdminBugReportCommentsWsHandler {
     }
     const counts = await this.comments.countByReportIds([reportId]);
     return {
-      type: 'admin.bugReports.comments.add',
+      type: WS_EVENTS.admin.bugReports.commentsAdd,
       payload: {
         comment,
         reportId,
@@ -49,3 +50,4 @@ export class AdminBugReportCommentsWsHandler {
     };
   }
 }
+

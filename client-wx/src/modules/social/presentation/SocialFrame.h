@@ -7,10 +7,12 @@
 #include <vector>
 
 #include <wx/frame.h>
+#include <wx/string.h>
 
 #include "modules/social/domain/SocialFriendRequest.h"
 #include "modules/social/domain/SocialProfile.h"
 #include "modules/social/domain/SocialUser.h"
+#include "shared/errors/ErrorMessages.h"
 
 class wxButton;
 class wxChoice;
@@ -99,7 +101,7 @@ private:
     void ActivateBlockedAction(std::size_t actionIndex);
     void FocusProfileEditorControl(bool reverse);
     void SetScreen(Screen screen);
-    void ShowActionFeedback(const wxString& message, const wxString& title = wxString(L"Social"));
+    void ShowActionFeedback(const wxString& message, const wxString& title = wxString::FromUTF8(lila::shared::errors::SocialFrameHeader));
     void RunBackgroundTask(
         const wxString& busyMessage,
         const std::function<void()>& worker,

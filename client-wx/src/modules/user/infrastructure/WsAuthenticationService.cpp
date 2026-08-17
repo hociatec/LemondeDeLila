@@ -19,8 +19,9 @@ domain::AuthenticationResult WsAuthenticationService::Login(const domain::LoginC
 
     if (!response.success)
     {
-        return domain::AuthenticationResult::Fail(
-            response.errorMessage.empty() ? lila::shared::errors::AuthenticationFailed : response.errorMessage);
+        return domain::AuthenticationResult::Fail(lila::shared::errors::WithDetails(
+            lila::shared::errors::AuthenticationFailed,
+            response.errorMessage));
     }
 
     try
@@ -48,8 +49,9 @@ domain::RegistrationResult WsAuthenticationService::Register(const domain::Regis
 
     if (!response.success)
     {
-        return domain::RegistrationResult::Fail(
-            response.errorMessage.empty() ? lila::shared::errors::RegistrationFailed : response.errorMessage);
+        return domain::RegistrationResult::Fail(lila::shared::errors::WithDetails(
+            lila::shared::errors::RegistrationFailed,
+            response.errorMessage));
     }
 
     (void)remote::UserAuthRemoteDataSource::ParseRegisterPayload(response);

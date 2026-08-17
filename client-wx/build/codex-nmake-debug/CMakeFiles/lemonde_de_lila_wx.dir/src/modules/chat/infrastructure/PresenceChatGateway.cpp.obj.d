@@ -91,6 +91,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/application/IChatGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/http/WsTicketProvider.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h

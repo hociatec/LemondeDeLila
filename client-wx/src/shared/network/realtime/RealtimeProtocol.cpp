@@ -1,4 +1,5 @@
-﻿#include "shared/network/realtime/RealtimeProtocol.h"
+#include "shared/network/realtime/RealtimeProtocol.h"
+#include "shared/contracts/BackendWsContracts.h"
 #include "shared/data/JsonReaders.h"
 #include "shared/errors/ErrorMessages.h"
 
@@ -34,9 +35,9 @@ std::string GenerateRequestId()
 std::string BuildEnvelope(const RealtimeApiRequest& request, const std::string& requestId)
 {
     nlohmann::json envelope = {
-        {"type", request.type},
-        {"requestId", requestId},
-        {"payload", request.payload}
+        {lila::shared::contracts::realtime::TypeField.data(), request.type},
+        {lila::shared::contracts::realtime::RequestIdField.data(), requestId},
+        {lila::shared::contracts::realtime::PayloadField.data(), request.payload}
     };
     return envelope.dump();
 }
@@ -61,19 +62,21 @@ RealtimeApiResponse ParseResponse(
     }
 
     RealtimeApiResponse response;
-    response.type = lila::shared::data::json::ReadOptionalString(decoded, "type");
+    response.type = lila::shared::data::json::ReadOptionalString(
+        decoded, lila::shared::contracts::realtime::TypeField.data());
     if (response.type.empty())
     {
         response.type = fallbackType;
     }
 
-    response.requestId = lila::shared::data::json::ReadOptionalString(decoded, "requestId");
+    response.requestId = lila::shared::data::json::ReadOptionalString(
+        decoded, lila::shared::contracts::realtime::RequestIdField.data());
     if (!response.requestId.empty() && response.requestId != expectedRequestId)
     {
         throw RealtimeProtocolError(lila::shared::errors::RealtimeRequestMismatch);
     }
 
-    const auto payloadIterator = decoded.find("payload");
+    const auto payloadIterator = decoded.find(lila::shared::contracts::realtime::PayloadField.data());
     if (payloadIterator == decoded.end() || payloadIterator->is_null())
     {
         response.payload = nlohmann::json::object();
@@ -87,10 +90,12 @@ RealtimeApiResponse ParseResponse(
         response.payload = *payloadIterator;
     }
 
-    if (response.type == "error")
+    if (response.type == std::string(lila::shared::contracts::realtime::ErrorType))
     {
         response.errorKind = RealtimeErrorKind::Server;
-        response.errorMessage = lila::shared::data::json::ReadOptionalString(response.payload, "message");
+        response.errorMessage = lila::shared::data::json::ReadOptionalString(
+            response.payload,
+            lila::shared::contracts::realtime::MessageField.data());
         if (response.errorMessage.empty())
         {
             response.errorMessage = lila::shared::errors::RealtimeServerError;
@@ -98,14 +103,17 @@ RealtimeApiResponse ParseResponse(
         return response;
     }
 
-    response.success = lila::shared::data::json::ReadOptionalBool(decoded, "success", true);
+    response.success = lila::shared::data::json::ReadOptionalBool(
+        decoded, lila::shared::contracts::realtime::SuccessField.data(), true);
     if (!response.success)
     {
         response.errorKind = RealtimeErrorKind::Server;
-        response.errorMessage = lila::shared::data::json::ReadOptionalString(decoded, "message");
+        response.errorMessage = lila::shared::data::json::ReadOptionalString(
+            decoded, lila::shared::contracts::realtime::MessageField.data());
         if (response.errorMessage.empty() && response.payload.is_object())
         {
-            response.errorMessage = lila::shared::data::json::ReadOptionalString(response.payload, "message");
+            response.errorMessage = lila::shared::data::json::ReadOptionalString(
+                response.payload, lila::shared::contracts::realtime::MessageField.data());
         }
         if (response.errorMessage.empty())
         {
@@ -116,5 +124,3 @@ RealtimeApiResponse ParseResponse(
     return response;
 }
 }
-
-

@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Text.Json;
 using client_win.Modules.Game.Play.Session.Dtos;
 using client_win.Modules.Game.Play.State.Dtos;
 using client_win.Modules.Network.Services;
 using Serilog;
+using client_win.Core.Constants;
 
 namespace client_win.Modules.Game.Play.Session.Services;
 
@@ -72,7 +73,7 @@ internal sealed class GameSessionMessageRouter
                 return;
             }
 
-            if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Error, StringComparison.OrdinalIgnoreCase))
             {
                 HandleError(root);
                 return;
@@ -142,7 +143,7 @@ internal sealed class GameSessionMessageRouter
 
             if (string.Equals(action, "game.actions", StringComparison.OrdinalIgnoreCase))
             {
-                _emitCommandAck("Action reçue par le serveur.");
+                _emitCommandAck("Action reÃ§ue par le serveur.");
                 return;
             }
 
@@ -183,9 +184,9 @@ internal sealed class GameSessionMessageRouter
 
                 if (!string.IsNullOrWhiteSpace(message))
                 {
-                    // Robustesse lecteur d'écran: si l'utilisateur spamme 'T' pour ré-entendre "à qui le tour",
-                    // certains lecteurs/dédup peuvent ignorer les messages identiques. On rend le message unique
-                    // sans impact visuel/audible en alternant un caractère invisible.
+                    // Robustesse lecteur d'Ã©cran: si l'utilisateur spamme 'T' pour rÃ©-entendre "Ã  qui le tour",
+                    // certains lecteurs/dÃ©dup peuvent ignorer les messages identiques. On rend le message unique
+                    // sans impact visuel/audible en alternant un caractÃ¨re invisible.
                     _emitUiMessage($"[ui.shortcut] {message}");
                     return;
                 }
@@ -392,5 +393,7 @@ internal sealed class GameSessionMessageRouter
         }
     }
 }
+
+
 
 

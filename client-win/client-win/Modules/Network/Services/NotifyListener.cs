@@ -28,6 +28,7 @@ using client_win.Modules.Messaging.Views;
 using client_win.Modules.Game.Room.Lobby.Services;
 using client_win.Modules.Game.Shell.Services;
 using Serilog;
+using client_win.Core.Constants;
 
 namespace client_win.Modules.Network.Services;
 
@@ -310,7 +311,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
 	            {
 	                var hello = JsonSerializer.Serialize(new
 	                {
-	                    type = "client.hello",
+	                    type = WsMessageTypes.Notify.ClientHello,
 	                    payload = new { version = AppInfo.GetShortVersion() },
 	                });
 	                await ws.SendAsync(hello, cancellationToken).ConfigureAwait(false);
@@ -323,12 +324,12 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
 	            // Source de vérité des badges (serveur) avec ack explicite.
 	            try
 	            {
-	                var (ok, error) = await SendWithAckAsync(
-	                    "notify.counts.get",
-	                    payload: null,
-	                    successType: "notify.counts",
-	                    errorType: "notify.error",
-	                    cancellationToken).ConfigureAwait(false);
+                var (ok, error) = await SendWithAckAsync(
+                    WsMessageTypes.Notify.CountsGet,
+                    payload: null,
+                    successType: WsMessageTypes.Notify.Counts,
+                    errorType: WsMessageTypes.Notify.Error,
+                    cancellationToken).ConfigureAwait(false);
 
 	                if (ok)
 	                {
@@ -336,7 +337,10 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
 	                }
 	                else
 	                {
-	                    Log.Warning("notify.counts.get: échec de la réponse: {Error}", error ?? "inconnue");
+                    Log.Warning(
+                        "{Type}: échec de la réponse: {Error}",
+                        WsMessageTypes.Notify.CountsGet,
+                        error ?? "inconnue");
 	                }
 	            }
 	            catch
@@ -432,7 +436,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
 	        {
 	            foreach (var kvp in _pendingAcks)
 	            {
-	                kvp.Value.TrySetResult(("notify.error", $"WS notify déconnecté: {reason}"));
+                kvp.Value.TrySetResult((WsMessageTypes.Notify.Error, $"WS notify déconnecté: {reason}"));
 	            }
 	            _pendingAcks.Clear();
                 _countsSupported = false;
@@ -456,7 +460,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
 
         private void HandleMessageOnUi(string type, JsonElement root)
         {
-            if (string.Equals(type, "admin.broadcast", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Admin.Broadcast, StringComparison.OrdinalIgnoreCase))
             {
                 var message = root.TryGetProperty("payload", out var p) && p.TryGetProperty("message", out var m)
                     ? (m.GetString() ?? string.Empty)
@@ -468,13 +472,13 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
                 return;
             }
 
-            if (string.Equals(type, "catalog.invalidate", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Catalog.Invalidate, StringComparison.OrdinalIgnoreCase))
             {
                 _catalog.InvalidateCache();
                 return;
             }
 
-            if (string.Equals(type, "client.update.available", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Notify.ClientUpdateAvailable, StringComparison.OrdinalIgnoreCase))
             {
                 if (ClientUpdateNotifySuppression.IsActive())
                 {
@@ -500,7 +504,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
                 return;
             }
 
-            if (string.Equals(type, "client.update.imminent", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Notify.ClientUpdateImminent, StringComparison.OrdinalIgnoreCase))
             {
                 if (ClientUpdateNotifySuppression.IsActive())
                 {
@@ -527,7 +531,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
                 return;
             }
 
-            if (string.Equals(type, "client.update.required", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Notify.ClientUpdateRequired, StringComparison.OrdinalIgnoreCase))
             {
                 if (ClientUpdateNotifySuppression.IsActive())
                 {
@@ -553,56 +557,56 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
                 return;
             }
 
-            if (string.Equals(type, "rooms.invite.received", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(type, "room.lobby.invite.received", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Rooms.EventInviteReceived, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, WsMessageTypes.Rooms.EventLobbyInviteReceived, StringComparison.OrdinalIgnoreCase))
             {
                 _ = HandleRoomInviteReceivedAsync(root);
                 return;
             }
 
-            if (string.Equals(type, "rooms.invite.responded", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(type, "room.lobby.invite.responded", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Rooms.EventInviteResponded, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type, WsMessageTypes.Rooms.EventLobbyInviteResponded, StringComparison.OrdinalIgnoreCase))
             {
                 HandleRoomInviteResponded(root);
                 return;
             }
 
-            if (string.Equals(type, "rooms.restore.ready", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Rooms.EventRestoreReady, StringComparison.OrdinalIgnoreCase))
             {
                 _ = HandleRoomRestoreReadyAsync(root);
                 return;
             }
 
-            if (string.Equals(type, "messaging.new", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Messaging.Message, StringComparison.OrdinalIgnoreCase))
             {
                 HandleMessagingNew(root);
                 return;
             }
 
-            if (string.Equals(type, "social.friend.requested", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Social.FriendRequested, StringComparison.OrdinalIgnoreCase))
             {
                 HandleFriendRequested(root);
                 return;
             }
 
-            if (string.Equals(type, "social.friend.connected", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Social.FriendConnected, StringComparison.OrdinalIgnoreCase))
             {
                 HandleFriendPresence(root, connected: true);
                 return;
             }
 
-            if (string.Equals(type, "social.friend.disconnected", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Social.FriendDisconnected, StringComparison.OrdinalIgnoreCase))
             {
                 HandleFriendPresence(root, connected: false);
                 return;
             }
 
-            if (string.Equals(type, "sounds.updated", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Sound.Updated, StringComparison.OrdinalIgnoreCase))
             {
                 _ = HandleSoundsUpdatedAsync();
                 return;
             }
-            if (string.Equals(type, "sounds.tableAmbiences.updated", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Sound.TableAmbiencesUpdated, StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
@@ -615,25 +619,25 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
                 return;
             }
 
-            if (string.Equals(type, "notify.inbox.snapshot", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Notify.InboxSnapshot, StringComparison.OrdinalIgnoreCase))
             {
                 HandleInboxSnapshot(root);
                 return;
             }
 
-            if (string.Equals(type, "notify.inbox.item", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Notify.InboxItem, StringComparison.OrdinalIgnoreCase))
             {
                 HandleInboxItem(root);
                 return;
             }
 
-            if (string.Equals(type, "notify.inbox.removed", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Notify.InboxRemoved, StringComparison.OrdinalIgnoreCase))
             {
                 HandleInboxRemoved(root);
                 return;
             }
 
-            if (string.Equals(type, "notify.admin_contact.error", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Notify.AdminContactError, StringComparison.OrdinalIgnoreCase))
             {
                 var msg = root.TryGetProperty("payload", out var p) && p.ValueKind == JsonValueKind.Object &&
                           p.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String
@@ -646,7 +650,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
                 return;
             }
 
-            if (string.Equals(type, "notify.counts", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(type, WsMessageTypes.Notify.Counts, StringComparison.OrdinalIgnoreCase))
             {
                 HandleCounts(root);
             }
@@ -867,7 +871,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
 	    }
 
     public Task RequestInboxSnapshotAsync(CancellationToken cancellationToken = default) =>
-        SendAsync("notify.inbox.list", payload: null, cancellationToken);
+        SendAsync(WsMessageTypes.Notify.InboxList, payload: null, cancellationToken);
 
     private void HandleInboxSnapshot(JsonElement root)
     {
@@ -924,7 +928,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
 
             _inbox.Upsert(item);
 
-            if (string.Equals(item.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(item.Kind, WsMessageTypes.Notify.AdminContactKind, StringComparison.OrdinalIgnoreCase))
             {
                 var me = _session.CurrentUser;
                 var fromMe = me != null && item.FromUserId == me.UserId;
@@ -934,7 +938,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
 	            // Source de vérité serveur pour badges.
 	            _ = Task.Run(async () =>
 	            {
-	                try { await SendAsync("notify.counts.get").ConfigureAwait(false); } catch { }
+            try { await SendAsync(WsMessageTypes.Notify.CountsGet).ConfigureAwait(false); } catch { }
 	            });
 	        }
 	        catch
@@ -987,7 +991,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
             // Source de vérité serveur pour badges.
             _ = Task.Run(async () =>
             {
-                try { await SendAsync("notify.counts.get").ConfigureAwait(false); } catch { }
+                try { await SendAsync(WsMessageTypes.Notify.CountsGet).ConfigureAwait(false); } catch { }
             });
         }
         catch
@@ -1445,7 +1449,7 @@ public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClie
 	            // Source de vérité serveur pour badges.
 	            _ = Task.Run(async () =>
 	            {
-	                try { await SendAsync("notify.counts.get").ConfigureAwait(false); } catch { }
+                try { await SendAsync(WsMessageTypes.Notify.CountsGet).ConfigureAwait(false); } catch { }
 	            });
 	        }
 	        catch

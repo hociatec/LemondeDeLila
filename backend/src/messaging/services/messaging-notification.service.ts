@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { NotificationService } from '../../notification/services/notification.service';
 import { UserBadgeCountsService } from '../../notification/services/user-badge-counts.service';
 import { MessageDto } from './messaging.service';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 @Injectable()
 export class MessagingNotificationService {
@@ -15,7 +16,7 @@ export class MessagingNotificationService {
   async notifyMessageSent(recipientId: number, message: MessageDto) {
     const preview = this.buildPreview(message.text);
     try {
-      await this.notifications.notifyUser(recipientId, 'messaging.new', {
+      await this.notifications.notifyUser(recipientId, WS_EVENTS.messaging.messageSent, {
         messageId: message.id,
         from: message.sender,
         subject: message.subject,

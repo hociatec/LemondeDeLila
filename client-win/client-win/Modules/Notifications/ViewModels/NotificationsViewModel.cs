@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using client_win.Core;
+using client_win.Core.Constants;
 using client_win.Modules.Network.Services;
 using client_win.Modules.Notifications.Models;
 using client_win.Modules.Notifications.Services;
@@ -98,7 +99,7 @@ public sealed class NotificationsViewModel : ObservableObject, IShellNavigationA
         set => SetProperty(ref _replyText, value);
     }
 
-    public bool CanReply => SelectedItem != null && string.Equals(SelectedItem.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase);
+    public bool CanReply => SelectedItem != null && string.Equals(SelectedItem.Kind, WsMessageTypes.Notify.AdminContactKind, StringComparison.OrdinalIgnoreCase);
 
     private bool IsStaff
     {
@@ -164,7 +165,7 @@ public sealed class NotificationsViewModel : ObservableObject, IShellNavigationA
         }
     }
 
-    public bool CanToggleHandled => IsStaff && SelectedItem != null && string.Equals(SelectedItem.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase);
+    public bool CanToggleHandled => IsStaff && SelectedItem != null && string.Equals(SelectedItem.Kind, WsMessageTypes.Notify.AdminContactKind, StringComparison.OrdinalIgnoreCase);
 
     public string SelectedDetailText => FormatDetail(SelectedItem);
 
@@ -259,7 +260,7 @@ public sealed class NotificationsViewModel : ObservableObject, IShellNavigationA
         }
 
         await _notify.SendAsync(
-                "notify.admin_contact.reply",
+                WsMessageTypes.Notify.AdminContactReply,
                 new
                 {
                     contactId = it.ContactId,
@@ -325,7 +326,7 @@ public sealed class NotificationsViewModel : ObservableObject, IShellNavigationA
         try
         {
             await _notify.SendAsync(
-                    "notify.admin_contact.setStatus",
+                    WsMessageTypes.Notify.AdminContactSetStatus,
                     new { contactId = it.ContactId, status = it.IsHandled ? "open" : "handled" })
                 .ConfigureAwait(true);
 
@@ -352,7 +353,7 @@ public sealed class NotificationsViewModel : ObservableObject, IShellNavigationA
         try
         {
             await _notify.SendAsync(
-                    "notify.admin_contact.setStatus",
+                    WsMessageTypes.Notify.AdminContactSetStatus,
                     new { contactId = it.ContactId, status })
                 .ConfigureAwait(true);
 
@@ -388,15 +389,15 @@ public sealed class NotificationsViewModel : ObservableObject, IShellNavigationA
         try
         {
             if (IsStaff &&
-                string.Equals(it.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(it.Kind, WsMessageTypes.Notify.AdminContactKind, StringComparison.OrdinalIgnoreCase) &&
                 !string.IsNullOrWhiteSpace(it.ContactId))
             {
-                await _notify.SendAsync("notify.admin_contact.deleteThread", new { contactId = it.ContactId }).ConfigureAwait(true);
+                await _notify.SendAsync(WsMessageTypes.Notify.AdminContactDeleteThread, new { contactId = it.ContactId }).ConfigureAwait(true);
                 Status = "Thread supprimǸ.";
                 return;
             }
 
-            await _notify.SendAsync("notify.inbox.delete", new { id = it.Id }).ConfigureAwait(true);
+            await _notify.SendAsync(WsMessageTypes.Notify.InboxDelete, new { id = it.Id }).ConfigureAwait(true);
             _inbox.Remove(it.Id);
             await _notify.RequestInboxSnapshotAsync().ConfigureAwait(true);
             Status = "Notification supprimée.";
@@ -414,7 +415,7 @@ public sealed class NotificationsViewModel : ObservableObject, IShellNavigationA
         {
             return Task.CompletedTask;
         }
-        return _notify.SendAsync("notify.inbox.markRead", new { id = it.Id });
+        return _notify.SendAsync(WsMessageTypes.Notify.InboxMarkRead, new { id = it.Id });
     }
 
     private void UpdateStatusAndSelection()
@@ -454,7 +455,7 @@ public sealed class NotificationsViewModel : ObservableObject, IShellNavigationA
 
         var ts = item.CreatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
 
-        if (string.Equals(item.Kind, "admin_contact", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(item.Kind, WsMessageTypes.Notify.AdminContactKind, StringComparison.OrdinalIgnoreCase))
         {
             var status = (item.AdminStatus ?? string.Empty).Trim().ToLowerInvariant();
             var label = status switch

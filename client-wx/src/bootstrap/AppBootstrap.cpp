@@ -21,6 +21,7 @@
 #include "shared/network/http/WsTicketProvider.h"
 #include "shared/network/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/realtime/RealtimeApiClient.h"
+#include "shared/contracts/BackendWsContracts.h"
 #include "shared/network/websocket/WinHttpWebSocketClient.h"
 
 #include <wx/msgdlg.h>
@@ -42,7 +43,7 @@ bool AppBootstrap::Start()
         wsTicketProvider_ = std::make_unique<shared::network::http::WsTicketProvider>(
             shared::config::AppConfig::ResolveBackendApiWs());
         shared::network::websocket::WebSocketHeaders realtimeHeaders;
-        realtimeHeaders.emplace("x-lila-client-version", shared::config::AppConfig::ResolveClientVersion());
+        realtimeHeaders.emplace(std::string(shared::contracts::ws::ClientVersionHeader), shared::config::AppConfig::ResolveClientVersion());
         realtimeApiClient_ = std::make_unique<shared::network::realtime::RealtimeApiClient>(
             shared::config::AppConfig::ResolveBackendApiWs(),
             std::move(realtimeHeaders),
@@ -64,7 +65,9 @@ bool AppBootstrap::Start()
         sessionStore_ = std::make_unique<modules::session::application::SessionStore>(
             std::make_unique<modules::session::infrastructure::FileSessionRepository>());
         chatGateway_ = std::make_unique<modules::chat::infrastructure::PresenceChatGateway>(
-            shared::config::AppConfig::ResolvePresenceWs() + "?context=chat",
+            shared::config::AppConfig::ResolvePresenceWs() +
+                std::string(shared::contracts::ws::PresenceContextQuery) +
+                std::string(shared::contracts::ws::PresenceContextChat),
             *chatWebSocketClient_,
             *wsTicketProvider_);
         chatProtocol_ = std::make_unique<modules::chat::infrastructure::ChatProtocol>();

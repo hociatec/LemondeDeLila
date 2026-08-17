@@ -11,7 +11,6 @@
 
 class wxButton;
 class wxListBox;
-class wxStaticText;
 class wxTextCtrl;
 
 namespace lila::modules::chat::application
@@ -50,6 +49,7 @@ private:
     void OpenChat();
     void RefreshHistory();
     void UpdateStatus(const wxString& message, bool isError = false);
+    void ShowAccessibleErrorDialog(const wxString& message, const wxString& title);
     void SetBusyState(bool isBusy, const wxString& statusMessage = wxEmptyString);
     void SyncActionState();
     void SendInput();
@@ -69,7 +69,7 @@ private:
     lila::modules::options::application::OptionsStore& optionsStore_;
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
-    wxStaticText* statusLabel_ = nullptr;
+    wxTextCtrl* statusLabel_ = nullptr;
     wxListBox* historyList_ = nullptr;
     wxTextCtrl* emptyHistoryCtrl_ = nullptr;
     wxTextCtrl* inputCtrl_ = nullptr;

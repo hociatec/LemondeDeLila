@@ -9,6 +9,7 @@
 #include "modules/session/application/SessionStore.h"
 #include "shared/network/http/WsTicketProvider.h"
 #include "shared/config/AppConfig.h"
+#include "shared/contracts/BackendWsContracts.h"
 #include "shared/errors/ErrorMessages.h"
 
 namespace lila::modules::chat::application
@@ -33,19 +34,19 @@ bool ChatService::Open()
     {
         {
             std::scoped_lock lock(mutex_);
-            messagesStore_.LoadHistory({}, 300);
+            messagesStore_.LoadHistory({}, lila::shared::contracts::chat::DefaultHistoryLoadLimit);
             lastServerError_.reset();
             stopRequested_ = false;
         }
 
         SetState(domain::ChatState::Connecting);
-        SetStatus("Connexion au serveur...", false);
+        SetStatus(lila::shared::errors::ChatConnecting, false);
 
         gateway_.Open(sessionStore_.Current().token, shared::config::AppConfig::ResolveClientVersion());
-        SetStatus("Authentification...", false);
+        SetStatus(lila::shared::errors::ChatAuthenticating, false);
         SetState(domain::ChatState::Connected);
 
-        SetStatus("Chargement des données...", false);
+        SetStatus(lila::shared::errors::ChatLoadingData, false);
         ProcessIncomingMessage(gateway_.Receive());
         if (State() == domain::ChatState::Error)
         {
@@ -53,7 +54,7 @@ bool ChatService::Open()
             return false;
         }
 
-        SetStatus("Tchat connecté.", false);
+        SetStatus(lila::shared::errors::ChatConnected, false);
         StartReceiveLoop();
         return true;
     }
@@ -62,9 +63,11 @@ bool ChatService::Open()
         SetState(domain::ChatState::Error);
         sessionStore_.Clear();
         SetStatus(
-            std::string("Connexion tchat échouée : session invalide (HTTP ")
-            + std::to_string(exception.StatusCode())
-            + "), reconnectez-vous.",
+            lila::shared::errors::WithDetails(
+                lila::shared::errors::ChatConnectionFailed,
+                std::string(lila::shared::errors::WsTicketRejectedByApiPrefix)
+                    + std::to_string(exception.StatusCode())
+                    + "), reconnectez-vous."),
             true);
         Close();
         return false;
@@ -72,7 +75,7 @@ bool ChatService::Open()
     catch (const std::exception& exception)
     {
         SetState(domain::ChatState::Error);
-        SetStatus(std::string(lila::shared::errors::ChatConnectionFailed) + " " + exception.what(), true);
+        SetStatus(lila::shared::errors::WithDetails(lila::shared::errors::ChatConnectionFailed, exception.what()), true);
         Close();
         return false;
     }
@@ -80,8 +83,10 @@ bool ChatService::Open()
 
 void ChatService::Close()
 {
+    bool shouldNotifyClosed = true;
     {
         std::scoped_lock lock(mutex_);
+        shouldNotifyClosed = state_ != domain::ChatState::Error;
         stopRequested_ = true;
         messagesStore_.Clear();
     }
@@ -94,7 +99,10 @@ void ChatService::Close()
     }
 
     SetState(domain::ChatState::Disconnected);
-    SetStatus(lila::shared::errors::ChatClosed, false);
+    if (shouldNotifyClosed)
+    {
+        SetStatus(lila::shared::errors::ChatClosed, false);
+    }
 }
 
 void ChatService::Send(const std::string& text)
@@ -110,7 +118,7 @@ void ChatService::Send(const std::string& text)
     }
     catch (const std::exception& exception)
     {
-        SetStatus(std::string(lila::shared::errors::ChatSendFailed) + " " + exception.what(), true);
+        SetStatus(lila::shared::errors::WithDetails(lila::shared::errors::ChatSendFailed, exception.what()), true);
     }
 }
 
@@ -127,7 +135,7 @@ void ChatService::Edit(const std::string& messageId, const std::string& text)
     }
     catch (const std::exception& exception)
     {
-        SetStatus(std::string(lila::shared::errors::ChatEditFailed) + " " + exception.what(), true);
+        SetStatus(lila::shared::errors::WithDetails(lila::shared::errors::ChatEditFailed, exception.what()), true);
     }
 }
 
@@ -144,7 +152,7 @@ void ChatService::Delete(const std::string& messageId)
     }
     catch (const std::exception& exception)
     {
-        SetStatus(std::string(lila::shared::errors::ChatDeleteFailed) + " " + exception.what(), true);
+        SetStatus(lila::shared::errors::WithDetails(lila::shared::errors::ChatDeleteFailed, exception.what()), true);
     }
 }
 
@@ -184,13 +192,13 @@ void ChatService::ReceiveLoop()
             }
 
             SetState(domain::ChatState::Reconnecting);
-            SetStatus("Reconnexion au serveur...", false);
+            SetStatus(lila::shared::errors::ChatReconnecting, false);
             try
             {
                 gateway_.Close();
                 gateway_.Open(sessionStore_.Current().token, shared::config::AppConfig::ResolveClientVersion());
                 SetState(domain::ChatState::Connected);
-                SetStatus("Connexion au serveur rétablie.", false);
+                SetStatus(lila::shared::errors::ChatReconnected, false);
                 continue;
             }
             catch (const lila::shared::network::http::WsTicketRequestError& reconnectError)
@@ -208,7 +216,10 @@ void ChatService::ReceiveLoop()
             catch (const std::exception& reconnectError)
             {
                 SetState(domain::ChatState::Error);
-                SetStatus(std::string(lila::shared::errors::ChatReconnectionInterrupted) + " " + reconnectError.what(), true);
+                SetStatus(lila::shared::errors::WithDetails(
+                    lila::shared::errors::ChatReconnectionInterrupted,
+                    reconnectError.what()),
+                    true);
                 break;
             }
         }

@@ -1,12 +1,13 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { WsRouteRegistry } from '../../common/ws/ws-route-registry.service';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 @Injectable()
 export class ApiCapabilitiesWsRegistrar implements OnModuleInit {
   constructor(private readonly registry: WsRouteRegistry) {}
 
   onModuleInit() {
-    this.registry.register('api.capabilities', async (session, _payload) => {
+    this.registry.register(WS_EVENTS.api.capabilities, async (session, _payload) => {
       // Keep this payload stable: clients can use it to avoid sending unsupported WS messages.
       const roles = Array.isArray(session.user?.roles)
         ? session.user.roles
@@ -14,13 +15,17 @@ export class ApiCapabilitiesWsRegistrar implements OnModuleInit {
       const isAdmin = roles.includes('ROLE_ADMIN') || roles.includes('admin');
       const wsTypes = this.registry.listTypes();
       return {
-        type: 'api.capabilities',
+        type: WS_EVENTS.api.capabilities,
         payload: {
           isAdmin,
           features: {
-            'admin.rooms.list': this.registry.has('admin.rooms.list'),
-            'admin.rooms.destroy': this.registry.has('admin.rooms.destroy'),
-            'admin.rooms.cleanup': this.registry.has('admin.rooms.cleanup'),
+            [WS_EVENTS.admin.rooms.list]: this.registry.has(WS_EVENTS.admin.rooms.list),
+            [WS_EVENTS.admin.rooms.destroy]: this.registry.has(
+              WS_EVENTS.admin.rooms.destroy,
+            ),
+            [WS_EVENTS.admin.rooms.cleanup]: this.registry.has(
+              WS_EVENTS.admin.rooms.cleanup,
+            ),
           },
           routesCount: this.registry.listTypes().length,
           wsTypes,

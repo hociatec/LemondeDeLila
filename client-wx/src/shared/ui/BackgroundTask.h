@@ -17,7 +17,7 @@ inline constexpr const char* UnexpectedErrorMessage = lila::shared::errors::Unex
 
 inline void RunDetachedBackgroundTask(std::function<void()> worker)
 {
-    lila::shared::concurrency::RunAsync(std::move(worker));
+    static_cast<void>(lila::shared::concurrency::RunAsync(std::move(worker)));
 }
 
 inline void RunBackgroundTask(
@@ -25,7 +25,7 @@ inline void RunBackgroundTask(
     std::function<void()> worker,
     std::function<void(std::string)> completion)
 {
-    lila::shared::concurrency::RunAsync(
+    static_cast<void>(lila::shared::concurrency::RunAsync(
         [worker = std::move(worker)](std::stop_token)
         {
             worker();
@@ -47,7 +47,7 @@ inline void RunBackgroundTask(
 
                     completion(std::move(errorMessage));
                 });
-        });
+        }));
 }
 
 template <typename TResult>
@@ -56,7 +56,7 @@ inline void RunBackgroundTaskWithResult(
     std::function<TResult()> worker,
     std::function<void(std::string, std::optional<TResult>)> completion)
 {
-    lila::shared::concurrency::RunAsync<TResult>(
+    static_cast<void>(lila::shared::concurrency::RunAsync<TResult>(
         [worker = std::move(worker)](std::stop_token)
         {
             return worker();
@@ -83,7 +83,7 @@ inline void RunBackgroundTaskWithResult(
 
                     completion(std::move(errorMessage), std::move(result));
                 });
-        });
+        }));
 }
 
 }

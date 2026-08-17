@@ -1,5 +1,6 @@
 #include "shared/config/AppConfig.h"
 #include "AppBuildInfo.h"
+#include "shared/contracts/BackendWsContracts.h"
 #include "shared/text/StringUtils.h"
 
 #include <cstdlib>
@@ -58,7 +59,7 @@ std::string AppConfig::ResolveBackendApiWs()
 
 std::string AppConfig::ResolvePresenceWs()
 {
-    return ExtractOrigin(ResolveBackendApiWs()) + "/presence";
+    return ExtractOrigin(ResolveBackendApiWs()) + std::string(lila::shared::contracts::ws::PresencePath);
 }
 
 std::string AppConfig::ResolveClientVersion()

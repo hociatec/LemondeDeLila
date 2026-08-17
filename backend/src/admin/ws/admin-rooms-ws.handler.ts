@@ -8,6 +8,7 @@ import { AdminRoomsCleanupWsDto } from './admin-rooms-cleanup.dto';
 import { AdminRoomsDestroyWsDto } from './admin-rooms-destroy.dto';
 import { AdminRoomsListWsDto } from './admin-rooms-list.dto';
 import {
+import { WS_EVENTS } from '../../common/ws/ws-events';
   AdminRoomsSettingsGetWsDto,
   AdminRoomsSettingsUpdateWsDto,
 } from './admin-rooms-settings.dto';
@@ -34,7 +35,7 @@ export class AdminRoomsWsHandler {
       dryRun: dto.dryRun === true,
       excludeActivePlayers: true,
     });
-    return { type: 'admin.rooms.cleanup', payload: res };
+    return { type: WS_EVENTS.admin.rooms.cleanup, payload: res };
   }
 
   async roomsList(session: WsSession, payload: any) {
@@ -46,7 +47,7 @@ export class AdminRoomsWsHandler {
       includeStarted: dto.includeStarted === true,
       joinableOnly: dto.joinableOnly === true,
     });
-    return { type: 'admin.rooms.list', payload: res };
+    return { type: WS_EVENTS.admin.rooms.list, payload: res };
   }
 
   async roomsDestroy(session: WsSession, payload: any) {
@@ -56,14 +57,14 @@ export class AdminRoomsWsHandler {
       throw new BadRequestException('Confirmation requise.');
     }
     const res = await this.rooms.adminDestroyRoom(dto.roomId);
-    return { type: 'admin.rooms.destroy', payload: res };
+    return { type: WS_EVENTS.admin.rooms.destroy, payload: res };
   }
 
   roomsSettingsGet(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminRoomsSettingsGetWsDto, payload ?? {});
     return {
-      type: 'admin.rooms.settings.get',
+      type: WS_EVENTS.admin.rooms.settingsGet,
       payload: this.roomSettings.get(),
     };
   }
@@ -80,6 +81,7 @@ export class AdminRoomsWsHandler {
       autoCleanupIntervalSeconds: dto.autoCleanupIntervalSeconds ?? undefined,
       autoCleanupLimit: dto.autoCleanupLimit ?? undefined,
     });
-    return { type: 'admin.rooms.settings.update', payload: updated };
+    return { type: WS_EVENTS.admin.rooms.settingsUpdate, payload: updated };
   }
 }
+

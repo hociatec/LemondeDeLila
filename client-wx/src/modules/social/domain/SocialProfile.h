@@ -1,5 +1,7 @@
 #pragma once
 
+#include "shared/contracts/BackendWsContracts.h"
+
 #include "modules/social/domain/SocialUser.h"
 
 namespace lila::modules::social::domain
@@ -10,7 +12,7 @@ struct SocialProfile final
     std::string bio;
     std::string victoryMessage;
     std::string defeatMessage;
-    std::string visibility = "public";
+    std::string visibility = std::string(lila::shared::contracts::social::SocialVisibilityPublic);
     std::string createdAt;
     std::string updatedAt;
     bool isOwner = false;
@@ -22,6 +24,6 @@ struct SocialProfileUpdate final
     std::string bio;
     std::string victoryMessage;
     std::string defeatMessage;
-    std::string visibility = "public";
+    std::string visibility = std::string(lila::shared::contracts::social::SocialVisibilityPublic);
 };
 }

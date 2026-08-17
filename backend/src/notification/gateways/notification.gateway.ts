@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -96,7 +97,7 @@ export class NotificationGateway
           const origin = this.extractOriginFromWsArgs(args);
           const latest = await this.clientUpdates.getLatest();
           this.safeSend(client, {
-            type: 'client.update.required',
+            type: WS_EVENTS.clientUpdate.required,
             payload: {
               minRequiredVersion,
               currentVersion: clientVersion || null,
@@ -133,7 +134,7 @@ export class NotificationGateway
     client.on('error', () => client.close());
     client.on('message', (data) => this.onClientMessage(client, data));
     this.safeSend(client, {
-      type: 'notify.connected',
+      type: WS_EVENTS.notify.connected,
       payload: { userId: user.id },
     });
 
@@ -143,14 +144,14 @@ export class NotificationGateway
       this.logger.log(
         `notify.counts initial push for user ${user.id}: ${JSON.stringify(payload)}`,
       );
-      this.safeSend(client, { type: 'notify.counts', payload });
+      this.safeSend(client, { type: WS_EVENTS.notify.counts, payload });
     } catch {
       this.logger.warn(
         `notify.counts initial push failed for user ${user.id}; client will retry`,
       );
       // Even on failure, send zeros to avoid client timeouts.
       this.safeSend(client, {
-        type: 'notify.counts',
+        type: WS_EVENTS.notify.counts,
         payload: { unreadNotifications: 0, unreadMessages: 0 },
       });
     }
@@ -202,8 +203,8 @@ export class NotificationGateway
       if (friendIds.length === 0) return;
 
       const type = isOnline
-        ? 'social.friend.connected'
-        : 'social.friend.disconnected';
+        ? WS_EVENTS.social.friendConnected
+        : WS_EVENTS.social.friendDisconnected;
       const payload = {
         userId,
         username: String(username || '').trim() || `user#${userId}`,
@@ -271,7 +272,7 @@ export class NotificationGateway
     const requestId =
       typeof parsed?.requestId === 'string' ? parsed.requestId : null;
 
-    if (type === 'notify.counts.get') {
+    if (type === WS_EVENTS.notify.countsGet) {
       this.logger.log(
         `notify.counts.get received user=${meta.userId} requestId=${requestId ?? 'none'}`,
       );
@@ -280,14 +281,14 @@ export class NotificationGateway
         this.logger.log(
           `notify.counts.get for user ${meta.userId}: ${JSON.stringify(payload)}`,
         );
-        this.safeSendResponse(client, 'notify.counts', payload, requestId);
+        this.safeSendResponse(client, WS_EVENTS.notify.counts, payload, requestId);
       } catch {
         this.logger.warn(
           `notify.counts.get failed for user ${meta.userId}, returning zeros`,
         );
         this.safeSendResponse(
           client,
-          'notify.counts',
+          WS_EVENTS.notify.counts,
           { unreadNotifications: 0, unreadMessages: 0 },
           requestId,
         );
@@ -295,19 +296,19 @@ export class NotificationGateway
       return;
     }
 
-    if (type === 'notify.inbox.list') {
+    if (type === WS_EVENTS.notify.inbox.list) {
       try {
         const items = await this.adminContacts.listInbox(meta.userId, 200);
         this.safeSendResponse(
           client,
-          'notify.inbox.snapshot',
+          WS_EVENTS.notify.inbox.snapshot,
           { items },
           requestId,
         );
       } catch {
         this.safeSendResponse(
           client,
-          'notify.inbox.snapshot',
+          WS_EVENTS.notify.inbox.snapshot,
           { items: [] },
           requestId,
         );
@@ -315,7 +316,7 @@ export class NotificationGateway
       return;
     }
 
-    if (type === 'notify.inbox.delete') {
+    if (type === WS_EVENTS.notify.inbox.delete) {
       const id =
         typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
       if (!id) return;
@@ -332,7 +333,7 @@ export class NotificationGateway
         );
         this.safeSendResponse(
           client,
-          'notify.inbox.snapshot',
+          WS_EVENTS.notify.inbox.snapshot,
           { items },
           requestId,
         );
@@ -342,7 +343,7 @@ export class NotificationGateway
       return;
     }
 
-    if (type === 'notify.inbox.markRead') {
+    if (type === WS_EVENTS.notify.inbox.markRead) {
       const id =
         typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
       if (!id) return;
@@ -350,7 +351,7 @@ export class NotificationGateway
         await this.adminContacts.markRead(meta.userId, id);
         this.safeSendResponse(
           client,
-          'notify.inbox.markRead',
+          WS_EVENTS.notify.inbox.markRead,
           { ok: true },
           requestId,
         );
@@ -360,7 +361,7 @@ export class NotificationGateway
       return;
     }
 
-    if (type === 'notify.admin_contact.send') {
+    if (type === WS_EVENTS.notify.inbox.send) {
       try {
         const message =
           typeof parsed?.payload?.message === 'string'
@@ -376,14 +377,14 @@ export class NotificationGateway
         );
         this.safeSendResponse(
           client,
-          'notify.admin_contact.sent',
+          WS_EVENTS.notify.inbox.sent,
           { id: item.id, contactId: item.contactId },
           requestId,
         );
       } catch (err: any) {
         this.safeSendResponse(
           client,
-          'notify.admin_contact.error',
+          WS_EVENTS.notify.inbox.error,
           { message: String(err?.message || 'Erreur') },
           requestId,
         );
@@ -391,7 +392,7 @@ export class NotificationGateway
       return;
     }
 
-    if (type === 'notify.admin_contact.reply') {
+    if (type === WS_EVENTS.notify.inbox.reply) {
       try {
         const from = {
           id: meta.userId,
@@ -430,14 +431,14 @@ export class NotificationGateway
             );
         this.safeSendResponse(
           client,
-          'notify.admin_contact.sent',
+          WS_EVENTS.notify.inbox.sent,
           { id: item.id, contactId: item.contactId },
           requestId,
         );
       } catch (err: any) {
         this.safeSendResponse(
           client,
-          'notify.admin_contact.error',
+          WS_EVENTS.notify.inbox.error,
           { message: String(err?.message || 'Erreur') },
           requestId,
         );
@@ -445,7 +446,7 @@ export class NotificationGateway
       return;
     }
 
-    if (type === 'notify.admin_contact.setHandled') {
+    if (type === WS_EVENTS.notify.inbox.setHandled) {
       try {
         const contactId =
           typeof parsed?.payload?.contactId === 'string'
@@ -463,14 +464,14 @@ export class NotificationGateway
         );
         this.safeSendResponse(
           client,
-          'notify.admin_contact.setHandled',
+          WS_EVENTS.notify.inbox.setHandled,
           { ok: true },
           requestId,
         );
       } catch (err: any) {
         this.safeSendResponse(
           client,
-          'notify.admin_contact.error',
+          WS_EVENTS.notify.inbox.error,
           { message: String(err?.message || 'Erreur') },
           requestId,
         );
@@ -478,7 +479,7 @@ export class NotificationGateway
       return;
     }
 
-    if (type === 'notify.admin_contact.setStatus') {
+    if (type === WS_EVENTS.notify.inbox.setStatus) {
       try {
         const contactId =
           typeof parsed?.payload?.contactId === 'string'
@@ -509,14 +510,14 @@ export class NotificationGateway
         }
         this.safeSendResponse(
           client,
-          'notify.admin_contact.setStatus',
+          WS_EVENTS.notify.inbox.setStatus,
           { ok: true },
           requestId,
         );
       } catch (err: any) {
         this.safeSendResponse(
           client,
-          'notify.admin_contact.error',
+          WS_EVENTS.notify.inbox.error,
           { message: String(err?.message || 'Erreur') },
           requestId,
         );
@@ -524,7 +525,7 @@ export class NotificationGateway
       return;
     }
 
-    if (type === 'notify.admin_contact.cycleStatus') {
+    if (type === WS_EVENTS.notify.inbox.cycleStatus) {
       try {
         const contactId =
           typeof parsed?.payload?.contactId === 'string'
@@ -550,14 +551,14 @@ export class NotificationGateway
               })();
         this.safeSendResponse(
           client,
-          'notify.admin_contact.cycleStatus',
+          WS_EVENTS.notify.inbox.cycleStatus,
           { ok: true, status: res.status },
           requestId,
         );
       } catch (err: any) {
         this.safeSendResponse(
           client,
-          'notify.admin_contact.error',
+          WS_EVENTS.notify.inbox.error,
           { message: String(err?.message || 'Erreur') },
           requestId,
         );
@@ -565,7 +566,7 @@ export class NotificationGateway
       return;
     }
 
-    if (type === 'notify.admin_contact.threads') {
+    if (type === WS_EVENTS.notify.inbox.threads) {
       try {
         const limitThreads =
           typeof parsed?.payload?.limit === 'number'
@@ -581,7 +582,7 @@ export class NotificationGateway
         };
         this.safeSendResponse(
           client,
-          'notify.admin_contact.threads',
+          WS_EVENTS.notify.inbox.threads,
           {
             sections: [
               {
@@ -610,7 +611,7 @@ export class NotificationGateway
       } catch (err: any) {
         this.safeSendResponse(
           client,
-          'notify.admin_contact.error',
+          WS_EVENTS.notify.inbox.error,
           { message: String(err?.message || 'Erreur') },
           requestId,
         );
@@ -618,7 +619,7 @@ export class NotificationGateway
       return;
     }
 
-    if (type === 'notify.admin_contact.deleteThread') {
+    if (type === WS_EVENTS.notify.inbox.deleteThread) {
       try {
         const contactId =
           typeof parsed?.payload?.contactId === 'string'
@@ -634,14 +635,14 @@ export class NotificationGateway
         );
         this.safeSendResponse(
           client,
-          'notify.admin_contact.deleteThread',
+          WS_EVENTS.notify.inbox.deleteThread,
           { ok: true },
           requestId,
         );
       } catch (err: any) {
         this.safeSendResponse(
           client,
-          'notify.admin_contact.error',
+          WS_EVENTS.notify.inbox.error,
           { message: String(err?.message || 'Erreur') },
           requestId,
         );
@@ -673,7 +674,7 @@ export class NotificationGateway
         const required = isVersionLower(version, minRequiredVersion);
         if (required === true) {
           this.safeSend(client, {
-            type: 'client.update.required',
+            type: WS_EVENTS.clientUpdate.required,
             payload: {
               minRequiredVersion,
               currentVersion: version,
@@ -699,7 +700,7 @@ export class NotificationGateway
         if (available === true) {
           // Send directly to this socket (no broadcast) to avoid duplicates across instances.
           this.safeSend(client, {
-            type: 'client.update.available',
+            type: WS_EVENTS.clientUpdate.available,
             payload: {
               version: latestVersion,
               message: latest?.message ?? null,
@@ -726,3 +727,4 @@ export class NotificationGateway
     );
   }
 }
+

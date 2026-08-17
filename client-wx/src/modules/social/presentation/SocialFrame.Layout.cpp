@@ -1,4 +1,4 @@
-#include "modules/social/presentation/SocialFrame.h"
+﻿#include "modules/social/presentation/SocialFrame.h"
 
 #include <array>
 #include <span>
@@ -13,6 +13,7 @@
 
 #include "shared/accessibility/NonFocusablePanel.h"
 #include "shared/accessibility/AccessibilityUtils.h"
+#include "shared/errors/ErrorMessages.h"
 #include "shared/ui/Theme.h"
 #include "shared/ui/controls/VerticalMenu.h"
 #include "shared/ui/navigation/MenuBlueprint.h"
@@ -26,31 +27,31 @@ void SocialFrame::BuildLayout()
 
     auto* headerPanel = new lila::shared::accessibility::NonFocusablePanel(root, 0);
     auto* headerSizer = new wxBoxSizer(wxVERTICAL);
-    titleLabel_ = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Réseau social"));
-    subtitleLabel_ = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Messagerie, amis, demandes et profil."));
+    titleLabel_ = new wxStaticText(headerPanel, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialSocialHeader));
+    subtitleLabel_ = new wxStaticText(headerPanel, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialSocialSubtitle));
     headerSizer->Add(titleLabel_, 0, wxBOTTOM, 6);
     headerSizer->Add(subtitleLabel_, 0);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*titleLabel_, wxString(L"Réseau social"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*subtitleLabel_, wxString(L"Messagerie, amis, demandes et profil."));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*titleLabel_, wxString::FromUTF8(lila::shared::errors::SocialSocialHeader));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*subtitleLabel_, wxString::FromUTF8(lila::shared::errors::SocialSocialSubtitle));
     headerPanel->SetSizer(headerSizer);
 
     auto* contentPanel = new lila::shared::accessibility::NonFocusablePanel(root);
     auto* contentSizer = new wxBoxSizer(wxHORIZONTAL);
 
     static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 6> MenuItems = {{
-        {"messaging", wxString(L"Messagerie"), wxEmptyString},
-        {"friends", wxString(L"Amis"), wxEmptyString},
-        {"incoming", wxString(L"Demandes reçues"), wxEmptyString},
-        {"outgoing", wxString(L"Demandes envoyées"), wxEmptyString},
-        {"blocked", wxString(L"Bloqués"), wxEmptyString},
-        {"profile", wxString(L"Mon profil"), wxEmptyString},
+        {"messaging", wxString::FromUTF8(lila::shared::errors::SocialMenuMessaging), wxEmptyString},
+        {"friends", wxString::FromUTF8(lila::shared::errors::SocialMenuFriends), wxEmptyString},
+        {"incoming", wxString::FromUTF8(lila::shared::errors::SocialMenuIncomingRequests), wxEmptyString},
+        {"outgoing", wxString::FromUTF8(lila::shared::errors::SocialMenuOutgoingRequests), wxEmptyString},
+        {"blocked", wxString::FromUTF8(lila::shared::errors::SocialMenuBlocked), wxEmptyString},
+        {"profile", wxString::FromUTF8(lila::shared::errors::SocialMenuProfile), wxEmptyString},
     }};
 
     menu_ = new lila::shared::ui::controls::VerticalMenu(
         contentPanel,
         lila::shared::ui::navigation::BuildMenuItems(MenuItems));
     menu_->SetMinSize(wxSize(260, -1));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu_, wxString(L"Menu de navigation"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu_, wxString::FromUTF8(lila::shared::errors::SocialNavigationMenuAccessible));
 
     sectionBook_ = new wxSimplebook(contentPanel, wxID_ANY);
     BuildFriendsSection(sectionBook_);
@@ -58,11 +59,11 @@ void SocialFrame::BuildLayout()
     BuildOutgoingRequestsSection(sectionBook_);
     BuildBlockedSection(sectionBook_);
     BuildProfileSection(sectionBook_);
-    sectionBook_->AddPage(friendsPanel_, wxString(L"Amis"));
-    sectionBook_->AddPage(incomingRequestsPanel_, wxString(L"Demandes reçues"));
-    sectionBook_->AddPage(outgoingRequestsPanel_, wxString(L"Demandes envoyées"));
-    sectionBook_->AddPage(blockedPanel_, wxString(L"Bloqués"));
-    sectionBook_->AddPage(profilePanel_, wxString(L"Profil"));
+    sectionBook_->AddPage(friendsPanel_, wxString::FromUTF8(lila::shared::errors::SocialMenuFriends));
+    sectionBook_->AddPage(incomingRequestsPanel_, wxString::FromUTF8(lila::shared::errors::SocialMenuIncomingRequests));
+    sectionBook_->AddPage(outgoingRequestsPanel_, wxString::FromUTF8(lila::shared::errors::SocialMenuOutgoingRequests));
+    sectionBook_->AddPage(blockedPanel_, wxString::FromUTF8(lila::shared::errors::SocialMenuBlocked));
+    sectionBook_->AddPage(profilePanel_, wxString::FromUTF8(lila::shared::errors::SocialMenuProfile));
 
     contentSizer->Add(menu_, 0, wxEXPAND | wxRIGHT, 20);
     contentSizer->Add(sectionBook_, 1, wxEXPAND);
@@ -72,7 +73,7 @@ void SocialFrame::BuildLayout()
     auto* footerSizer = new wxBoxSizer(wxHORIZONTAL);
     statusLabel_ = new wxStaticText(footerPanel, wxID_ANY, wxEmptyString);
     footerSizer->Add(statusLabel_, 1, wxALIGN_CENTER_VERTICAL);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*statusLabel_, wxString(L"État social"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*statusLabel_, wxString::FromUTF8(lila::shared::errors::SocialSocialStateAccessible));
     footerPanel->SetSizer(footerSizer);
 
     rootSizer->Add(headerPanel, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 28);
@@ -89,22 +90,22 @@ void SocialFrame::BuildFriendsSection(wxWindow* parent)
 {
     friendsPanel_ = new wxPanel(parent);
     auto* sizer = new wxBoxSizer(wxVERTICAL);
-    auto* title = new wxStaticText(friendsPanel_, wxID_ANY, wxString(L"Liste d'amis"));
+    auto* title = new wxStaticText(friendsPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialSectionFriends));
     friendsList_ = new lila::shared::ui::controls::VerticalMenu(friendsPanel_, {});
     friendsList_->SetMinSize(wxSize(260, -1));
     emptyFriendsCtrl_ = new wxTextCtrl(
         friendsPanel_,
         wxID_ANY,
-        wxString(L"Aucun ami."),
+        wxString::FromUTF8(lila::shared::errors::SocialNoFriend),
         wxDefaultPosition,
         wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
     emptyFriendsCtrl_->SetMinSize(wxSize(-1, 80));
 
     static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 3> FriendsActionItems = {{
-        {"view-profile", wxString(L"Voir le profil"), wxEmptyString},
-        {"remove-friend", wxString(L"Retirer de ma liste d'amis"), wxEmptyString},
-        {"block-friend", wxString(L"Bloquer"), wxEmptyString},
+        {"view-profile", wxString::FromUTF8(lila::shared::errors::SocialProfileActionView), wxEmptyString},
+        {"remove-friend", wxString::FromUTF8(lila::shared::errors::SocialProfileActionRemoveFriend), wxEmptyString},
+        {"block-friend", wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlock), wxEmptyString},
     }};
     friendsActionsMenu_ = new lila::shared::ui::controls::VerticalMenu(
         friendsPanel_,
@@ -115,9 +116,9 @@ void SocialFrame::BuildFriendsSection(wxWindow* parent)
     sizer->Add(friendsList_, 1, wxEXPAND | wxBOTTOM, 12);
     sizer->Add(emptyFriendsCtrl_, 0, wxEXPAND | wxBOTTOM, 12);
     sizer->Add(friendsActionsMenu_, 0, wxEXPAND);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*friendsList_, wxString(L"Liste des amis"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyFriendsCtrl_, wxString(L"Aucun ami."));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*friendsActionsMenu_, wxString(L"Actions sur les amis"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*friendsList_, wxString::FromUTF8(lila::shared::errors::SocialSectionFriends));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyFriendsCtrl_, wxString::FromUTF8(lila::shared::errors::SocialNoFriend));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*friendsActionsMenu_, wxString::FromUTF8(lila::shared::errors::SocialProfileActionMenuList));
     lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder(
         {
             friendsList_,
@@ -130,23 +131,23 @@ void SocialFrame::BuildIncomingRequestsSection(wxWindow* parent)
 {
     incomingRequestsPanel_ = new wxPanel(parent);
     auto* sizer = new wxBoxSizer(wxVERTICAL);
-    auto* title = new wxStaticText(incomingRequestsPanel_, wxID_ANY, wxString(L"Demandes reçues"));
+    auto* title = new wxStaticText(incomingRequestsPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialMenuIncomingRequests));
     incomingRequestsList_ = new lila::shared::ui::controls::VerticalMenu(incomingRequestsPanel_, {});
     incomingRequestsList_->SetMinSize(wxSize(260, -1));
     emptyIncomingRequestsCtrl_ = new wxTextCtrl(
         incomingRequestsPanel_,
         wxID_ANY,
-        wxString(L"Aucune demande reçue."),
+        wxString::FromUTF8(lila::shared::errors::SocialNoIncomingRequest),
         wxDefaultPosition,
         wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
     emptyIncomingRequestsCtrl_->SetMinSize(wxSize(-1, 80));
 
     static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 4> IncomingActionItems = {{
-        {"accept-request", wxString(L"Accepter"), wxEmptyString},
-        {"reject-request", wxString(L"Refuser"), wxEmptyString},
-        {"view-profile", wxString(L"Voir le profil"), wxEmptyString},
-        {"block-user", wxString(L"Bloquer"), wxEmptyString},
+        {"accept-request", wxString::FromUTF8(lila::shared::errors::SocialProfileActionAccept), wxEmptyString},
+        {"reject-request", wxString::FromUTF8(lila::shared::errors::SocialProfileActionReject), wxEmptyString},
+        {"view-profile", wxString::FromUTF8(lila::shared::errors::SocialProfileActionView), wxEmptyString},
+        {"block-user", wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlock), wxEmptyString},
     }};
     incomingActionsMenu_ = new lila::shared::ui::controls::VerticalMenu(
         incomingRequestsPanel_,
@@ -157,9 +158,9 @@ void SocialFrame::BuildIncomingRequestsSection(wxWindow* parent)
     sizer->Add(incomingRequestsList_, 1, wxEXPAND | wxBOTTOM, 12);
     sizer->Add(emptyIncomingRequestsCtrl_, 0, wxEXPAND | wxBOTTOM, 12);
     sizer->Add(incomingActionsMenu_, 0, wxEXPAND);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*incomingRequestsList_, wxString(L"Demandes reçues"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyIncomingRequestsCtrl_, wxString(L"Aucune demande reçue."));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*incomingActionsMenu_, wxString(L"Actions sur les demandes reçues"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*incomingRequestsList_, wxString::FromUTF8(lila::shared::errors::SocialMenuIncomingRequests));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyIncomingRequestsCtrl_, wxString::FromUTF8(lila::shared::errors::SocialNoIncomingRequest));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*incomingActionsMenu_, wxString::FromUTF8(lila::shared::errors::SocialProfileActionIncomingList));
     lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder(
         {
             incomingRequestsList_,
@@ -172,22 +173,22 @@ void SocialFrame::BuildOutgoingRequestsSection(wxWindow* parent)
 {
     outgoingRequestsPanel_ = new wxPanel(parent);
     auto* sizer = new wxBoxSizer(wxVERTICAL);
-    auto* title = new wxStaticText(outgoingRequestsPanel_, wxID_ANY, wxString(L"Demandes envoyées"));
+    auto* title = new wxStaticText(outgoingRequestsPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialMenuOutgoingRequests));
     outgoingRequestsList_ = new lila::shared::ui::controls::VerticalMenu(outgoingRequestsPanel_, {});
     outgoingRequestsList_->SetMinSize(wxSize(260, -1));
     emptyOutgoingRequestsCtrl_ = new wxTextCtrl(
         outgoingRequestsPanel_,
         wxID_ANY,
-        wxString(L"Aucune demande envoyée."),
+        wxString::FromUTF8(lila::shared::errors::SocialNoOutgoingRequest),
         wxDefaultPosition,
         wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
     emptyOutgoingRequestsCtrl_->SetMinSize(wxSize(-1, 80));
 
     static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 3> OutgoingActionItems = {{
-        {"cancel-request", wxString(L"Annuler"), wxEmptyString},
-        {"view-profile", wxString(L"Voir le profil"), wxEmptyString},
-        {"block-user", wxString(L"Bloquer"), wxEmptyString},
+        {"cancel-request", wxString::FromUTF8(lila::shared::errors::SocialProfileActionCancel), wxEmptyString},
+        {"view-profile", wxString::FromUTF8(lila::shared::errors::SocialProfileActionView), wxEmptyString},
+        {"block-user", wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlock), wxEmptyString},
     }};
     outgoingActionsMenu_ = new lila::shared::ui::controls::VerticalMenu(
         outgoingRequestsPanel_,
@@ -198,9 +199,9 @@ void SocialFrame::BuildOutgoingRequestsSection(wxWindow* parent)
     sizer->Add(outgoingRequestsList_, 1, wxEXPAND | wxBOTTOM, 12);
     sizer->Add(emptyOutgoingRequestsCtrl_, 0, wxEXPAND | wxBOTTOM, 12);
     sizer->Add(outgoingActionsMenu_, 0, wxEXPAND);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*outgoingRequestsList_, wxString(L"Demandes envoyées"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyOutgoingRequestsCtrl_, wxString(L"Aucune demande envoyée."));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*outgoingActionsMenu_, wxString(L"Actions sur les demandes envoyées"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*outgoingRequestsList_, wxString::FromUTF8(lila::shared::errors::SocialMenuOutgoingRequests));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyOutgoingRequestsCtrl_, wxString::FromUTF8(lila::shared::errors::SocialNoOutgoingRequest));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*outgoingActionsMenu_, wxString::FromUTF8(lila::shared::errors::SocialProfileActionOutgoingList));
     lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder(
         {
             outgoingRequestsList_,
@@ -213,20 +214,20 @@ void SocialFrame::BuildBlockedSection(wxWindow* parent)
 {
     blockedPanel_ = new wxPanel(parent);
     auto* sizer = new wxBoxSizer(wxVERTICAL);
-    auto* title = new wxStaticText(blockedPanel_, wxID_ANY, wxString(L"Utilisateurs bloqués"));
+    auto* title = new wxStaticText(blockedPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialMenuBlocked));
     blockedUsersList_ = new lila::shared::ui::controls::VerticalMenu(blockedPanel_, {});
     blockedUsersList_->SetMinSize(wxSize(260, -1));
     emptyBlockedUsersCtrl_ = new wxTextCtrl(
         blockedPanel_,
         wxID_ANY,
-        wxString(L"Aucun utilisateur bloqué."),
+        wxString::FromUTF8(lila::shared::errors::SocialNoBlockedUser),
         wxDefaultPosition,
         wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
     emptyBlockedUsersCtrl_->SetMinSize(wxSize(-1, 80));
 
     static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 1> BlockedActionItems = {{
-        {"unblock-user", wxString(L"Débloquer"), wxEmptyString},
+        {"unblock-user", wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblock), wxEmptyString},
     }};
     blockedActionsMenu_ = new lila::shared::ui::controls::VerticalMenu(
         blockedPanel_,
@@ -237,9 +238,9 @@ void SocialFrame::BuildBlockedSection(wxWindow* parent)
     sizer->Add(blockedUsersList_, 1, wxEXPAND | wxBOTTOM, 12);
     sizer->Add(emptyBlockedUsersCtrl_, 0, wxEXPAND | wxBOTTOM, 12);
     sizer->Add(blockedActionsMenu_, 0, wxEXPAND);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*blockedUsersList_, wxString(L"Utilisateurs bloqués"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyBlockedUsersCtrl_, wxString(L"Aucun utilisateur bloqué."));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*blockedActionsMenu_, wxString(L"Actions sur les utilisateurs bloqués"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*blockedUsersList_, wxString::FromUTF8(lila::shared::errors::SocialMenuBlocked));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyBlockedUsersCtrl_, wxString::FromUTF8(lila::shared::errors::SocialNoBlockedUser));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*blockedActionsMenu_, wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlockedList));
     lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder(
         {
             blockedUsersList_,
@@ -252,7 +253,7 @@ void SocialFrame::BuildProfileSection(wxWindow* parent)
 {
     profilePanel_ = new wxPanel(parent);
     auto* rootSizer = new wxBoxSizer(wxVERTICAL);
-    profileTitleLabel_ = new wxStaticText(profilePanel_, wxID_ANY, wxString(L"Mon profil"));
+    profileTitleLabel_ = new wxStaticText(profilePanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialMenuProfile));
     profileInfoCtrl_ = new wxTextCtrl(
         profilePanel_,
         wxID_ANY,
@@ -268,10 +269,10 @@ void SocialFrame::BuildProfileSection(wxWindow* parent)
     profileEditorMenuPanel_ = new wxPanel(editorHost);
     auto* menuPanelSizer = new wxBoxSizer(wxVERTICAL);
     static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 4> ProfileMenuItems = {{
-        {"bio", wxString(L"Modifier la bio"), wxEmptyString},
-        {"victory", wxString(L"Modifier le message de victoire"), wxEmptyString},
-        {"defeat", wxString(L"Modifier le message de défaite"), wxEmptyString},
-        {"visibility", wxString(L"Modifier la visibilité"), wxEmptyString},
+        {"bio", wxString::FromUTF8(lila::shared::errors::SocialProfileEditBio), wxEmptyString},
+        {"victory", wxString::FromUTF8(lila::shared::errors::SocialProfileEditVictory), wxEmptyString},
+        {"defeat", wxString::FromUTF8(lila::shared::errors::SocialProfileEditDefeat), wxEmptyString},
+        {"visibility", wxString::FromUTF8(lila::shared::errors::SocialProfileEditVisibility), wxEmptyString},
     }};
     profileMenu_ = new lila::shared::ui::controls::VerticalMenu(
         profileEditorMenuPanel_,
@@ -281,7 +282,7 @@ void SocialFrame::BuildProfileSection(wxWindow* parent)
 
     profileBioEditorPanel_ = new wxPanel(editorHost);
     auto* bioSizer = new wxBoxSizer(wxVERTICAL);
-    bioSizer->Add(new wxStaticText(profileBioEditorPanel_, wxID_ANY, wxString(L"Bio")), 0, wxBOTTOM, 8);
+    bioSizer->Add(new wxStaticText(profileBioEditorPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialProfileBioLabel)), 0, wxBOTTOM, 8);
     profileBioCtrl_ = new wxTextCtrl(
         profileBioEditorPanel_,
         wxID_ANY,
@@ -295,25 +296,25 @@ void SocialFrame::BuildProfileSection(wxWindow* parent)
 
     profileVictoryEditorPanel_ = new wxPanel(editorHost);
     auto* victorySizer = new wxBoxSizer(wxVERTICAL);
-    victorySizer->Add(new wxStaticText(profileVictoryEditorPanel_, wxID_ANY, wxString(L"Message de victoire")), 0, wxBOTTOM, 8);
+    victorySizer->Add(new wxStaticText(profileVictoryEditorPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialProfileVictoryLabel)), 0, wxBOTTOM, 8);
     profileVictoryCtrl_ = new wxTextCtrl(profileVictoryEditorPanel_, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_TAB);
     victorySizer->Add(profileVictoryCtrl_, 0, wxEXPAND);
     profileVictoryEditorPanel_->SetSizer(victorySizer);
 
     profileDefeatEditorPanel_ = new wxPanel(editorHost);
     auto* defeatSizer = new wxBoxSizer(wxVERTICAL);
-    defeatSizer->Add(new wxStaticText(profileDefeatEditorPanel_, wxID_ANY, wxString(L"Message de défaite")), 0, wxBOTTOM, 8);
+    defeatSizer->Add(new wxStaticText(profileDefeatEditorPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialProfileDefeatLabel)), 0, wxBOTTOM, 8);
     profileDefeatCtrl_ = new wxTextCtrl(profileDefeatEditorPanel_, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_TAB);
     defeatSizer->Add(profileDefeatCtrl_, 0, wxEXPAND);
     profileDefeatEditorPanel_->SetSizer(defeatSizer);
 
     profileVisibilityEditorPanel_ = new wxPanel(editorHost);
     auto* visibilitySizer = new wxBoxSizer(wxVERTICAL);
-    visibilitySizer->Add(new wxStaticText(profileVisibilityEditorPanel_, wxID_ANY, wxString(L"Visibilité du profil")), 0, wxBOTTOM, 8);
+    visibilitySizer->Add(new wxStaticText(profileVisibilityEditorPanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialProfileVisibilityLabel)), 0, wxBOTTOM, 8);
     profileVisibilityChoice_ = new wxChoice(profileVisibilityEditorPanel_, wxID_ANY);
-    profileVisibilityChoice_->Append(wxString(L"Public"), reinterpret_cast<void*>(0));
-    profileVisibilityChoice_->Append(wxString(L"Amis"), reinterpret_cast<void*>(1));
-    profileVisibilityChoice_->Append(wxString(L"Privé"), reinterpret_cast<void*>(2));
+    profileVisibilityChoice_->Append(wxString::FromUTF8(lila::shared::errors::SocialProfileVisibilityChoicePublic), reinterpret_cast<void*>(0));
+    profileVisibilityChoice_->Append(wxString::FromUTF8(lila::shared::errors::SocialProfileVisibilityChoiceFriends), reinterpret_cast<void*>(1));
+    profileVisibilityChoice_->Append(wxString::FromUTF8(lila::shared::errors::SocialProfileVisibilityChoicePrivate), reinterpret_cast<void*>(2));
     visibilitySizer->Add(profileVisibilityChoice_, 0, wxEXPAND);
     profileVisibilityEditorPanel_->SetSizer(visibilitySizer);
 
@@ -325,8 +326,8 @@ void SocialFrame::BuildProfileSection(wxWindow* parent)
     editorHost->SetSizer(editorHostSizer);
 
     auto* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-    profileSaveButton_ = new wxButton(profilePanel_, wxID_ANY, wxString(L"Enregistrer"));
-    profileCancelButton_ = new wxButton(profilePanel_, wxID_ANY, wxString(L"Annuler"));
+    profileSaveButton_ = new wxButton(profilePanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialProfileSave));
+    profileCancelButton_ = new wxButton(profilePanel_, wxID_ANY, wxString::FromUTF8(lila::shared::errors::SocialProfileCancel));
     buttonSizer->Add(profileSaveButton_, 0, wxRIGHT, 10);
     buttonSizer->Add(profileCancelButton_, 0);
 
@@ -334,14 +335,14 @@ void SocialFrame::BuildProfileSection(wxWindow* parent)
     rootSizer->Add(profileInfoCtrl_, 0, wxEXPAND | wxBOTTOM, 12);
     rootSizer->Add(editorHost, 1, wxEXPAND | wxBOTTOM, 12);
     rootSizer->Add(buttonSizer, 0, wxALIGN_LEFT);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileTitleLabel_, wxString(L"Profil"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileInfoCtrl_, wxString(L"Détails du profil"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileBioCtrl_, wxString(L"Bio"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileVictoryCtrl_, wxString(L"Message de victoire"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileDefeatCtrl_, wxString(L"Message de défaite"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileVisibilityChoice_, wxString(L"Visibilité"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileSaveButton_, wxString(L"Enregistrer"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileCancelButton_, wxString(L"Annuler"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileTitleLabel_, wxString::FromUTF8(lila::shared::errors::SocialProfileTitle));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileInfoCtrl_, wxString::FromUTF8(lila::shared::errors::SocialProfileDetails));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileBioCtrl_, wxString::FromUTF8(lila::shared::errors::SocialProfileBioLabel));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileVictoryCtrl_, wxString::FromUTF8(lila::shared::errors::SocialProfileVictoryLabel));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileDefeatCtrl_, wxString::FromUTF8(lila::shared::errors::SocialProfileDefeatLabel));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileVisibilityChoice_, wxString::FromUTF8(lila::shared::errors::SocialProfileVisibilityLabel));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileSaveButton_, wxString::FromUTF8(lila::shared::errors::SocialProfileSave));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profileCancelButton_, wxString::FromUTF8(lila::shared::errors::SocialProfileCancel));
     lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder(
         {
             profileInfoCtrl_,
@@ -461,3 +462,4 @@ void SocialFrame::ApplyTheme()
     statusLabel_->SetForegroundColour(Theme::Accent());
 }
 }
+

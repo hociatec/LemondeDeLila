@@ -6,6 +6,7 @@ import {
   NotificationEvent,
 } from './notification-transport';
 import { fixMojibakeDeep } from '../../common/utils/mojibake';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 @Injectable()
 export class NotificationService implements OnModuleDestroy {
@@ -88,7 +89,7 @@ export class NotificationService implements OnModuleDestroy {
         : null;
     const message =
       payload != null
-        ? JSON.stringify({ type: 'server.disconnect', payload })
+        ? JSON.stringify({ type: WS_EVENTS.system.serverDisconnect, payload })
         : null;
 
     for (const [userId, sockets] of Array.from(

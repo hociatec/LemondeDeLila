@@ -10,6 +10,7 @@ import { GameEngineService } from '../../game/engine/services/game-engine.servic
 import { GameRegistryService } from '../../game/engine/services/game-registry.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import { PresenceService } from '../../presence/services/presence.service';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 import type { VaultRoomSnapshot } from '../vault.types';
 import type { GameStateEntity } from '../../game/core/entities/game-state.entity';
 
@@ -393,7 +394,7 @@ export class VaultRoomSnapshotsService {
 
     // Notify players to open the restored table.
     for (const p of humans) {
-      await this.notifications.notifyUser(p.id, 'rooms.restore.ready', {
+      await this.notifications.notifyUser(p.id, WS_EVENTS.room.restoreReady, {
         roomId: created.id,
         roomName: `${roomName} (restaurée)`,
         by: { id: ownerUserId },

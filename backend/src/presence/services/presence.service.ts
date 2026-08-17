@@ -6,6 +6,7 @@ import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { RoomParticipant } from '../../room/entities/room-participant.entity';
 import { In, IsNull, Repository } from 'typeorm';
 import { PresenceEvent, PresenceTransport } from './presence-transport';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 import {
   PresenceChatCommandResult,
   PresenceChatService,
@@ -138,28 +139,28 @@ export class PresenceService implements OnModuleDestroy {
     if (!payload || typeof payload.type !== 'string') {
       return;
     }
-    if (payload.type === 'chat-send') {
+    if (payload.type === WS_EVENTS.chat.send) {
       from.lastInteractionAt = Date.now();
       await this.handleChatSend(from, payload);
       return;
     }
-    if (payload.type === 'chat-edit') {
+    if (payload.type === WS_EVENTS.chat.edit) {
       from.lastInteractionAt = Date.now();
       await this.handleChatEdit(from, payload);
       return;
     }
-    if (payload.type === 'chat-delete') {
+    if (payload.type === WS_EVENTS.chat.delete) {
       from.lastInteractionAt = Date.now();
       await this.handleChatDelete(from, payload);
       return;
     }
-    if (payload.type === 'presence-context') {
+    if (payload.type === WS_EVENTS.chat.presenceContext) {
       from.lastInteractionAt = Date.now();
       this.handlePresenceContext(from, payload);
       this.broadcastPresence();
       return;
     }
-    if (payload.type === 'presence-activity') {
+    if (payload.type === WS_EVENTS.chat.presenceActivity) {
       // Client-side interaction heartbeat (keyboard/mouse/touch), used for "absent" detection.
       const at =
         typeof payload.at === 'number' && Number.isFinite(payload.at)
@@ -224,7 +225,7 @@ export class PresenceService implements OnModuleDestroy {
     }
     if (result.kind === 'denied') {
       this.safeSend(socket, {
-        type: 'error',
+        type: WS_EVENTS.chat.error,
         payload: result.payload,
       });
       try {
@@ -236,7 +237,7 @@ export class PresenceService implements OnModuleDestroy {
     }
     if (result.kind === 'error') {
       this.safeSend(socket, {
-        type: 'error',
+        type: WS_EVENTS.chat.error,
         payload: {
           message: result.message,
         },

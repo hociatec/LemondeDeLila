@@ -128,6 +128,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/application/ChatMessageStore.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/domain/ChatMessage.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/domain/ChatServerError.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/domain/ChatState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/application/IChatGateway.h
@@ -139,3 +141,18 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/application/SessionSto
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/ISessionRepository.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/Session.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/infrastructure/ChatProtocol.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sstream
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/istream
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ostream.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ios
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocnum
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iterator
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/streambuf
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xiosbase
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/share.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocale
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfacet
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocinfo
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_xlocinfo_types.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/clocale
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/locale.h

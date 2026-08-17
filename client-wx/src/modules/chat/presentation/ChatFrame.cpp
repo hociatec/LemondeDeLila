@@ -4,7 +4,15 @@
 
 #include "modules/chat/application/ChatService.h"
 #include "modules/options/application/OptionsStore.h"
+#include "shared/accessibility/AccessibilityUtils.h"
 #include "shared/config/AppConfig.h"
+#include "shared/errors/ErrorMessages.h"
+#include "shared/ui/Theme.h"
+
+#include <wx/button.h>
+#include <wx/dialog.h>
+#include <wx/sizer.h>
+#include <wx/textctrl.h>
 
 namespace
 {
@@ -23,7 +31,7 @@ ChatFrame::ChatFrame(
           nullptr,
           wxID_ANY,
           wxString::Format(
-              "Tchat - %s",
+              wxString::FromUTF8(lila::shared::errors::ChatFrameTitle),
               wxString::FromUTF8(shared::config::AppConfig::AppTitle.data())),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
@@ -84,5 +92,42 @@ void ChatFrame::RequestCloseToSession()
     {
         onCloseRequested_();
     }
+}
+
+void ChatFrame::ShowAccessibleErrorDialog(const wxString& message, const wxString& title)
+{
+    const wxString safeMessage = message.empty()
+        ? wxString::FromUTF8(lila::shared::errors::UnexpectedError)
+        : message;
+    wxDialog dialog(
+        this,
+        wxID_ANY,
+        title.empty() ? wxString::FromUTF8(lila::shared::errors::ChatFrameHeader) : title,
+        wxDefaultPosition,
+        wxSize(420, 180),
+        wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP);
+    auto* rootSizer = new wxBoxSizer(wxVERTICAL);
+    auto* messageCtrl = new wxTextCtrl(
+        &dialog,
+        wxID_ANY,
+        safeMessage,
+        wxDefaultPosition,
+        wxSize(380, 120),
+        wxTE_MULTILINE | wxTE_READONLY | wxTE_WORDWRAP);
+    messageCtrl->SetBackgroundColour(lila::shared::ui::Theme::PanelBackground());
+    messageCtrl->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
+    auto* closeButton = new wxButton(&dialog, wxID_OK, wxString(L"OK"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *messageCtrl,
+        title.empty() ? wxString::FromUTF8(lila::shared::errors::ChatFrameHeader) : title,
+        safeMessage);
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *closeButton,
+        wxString(L"OK"));
+    rootSizer->Add(messageCtrl, 1, wxEXPAND | wxALL, 16);
+    rootSizer->Add(closeButton, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 16);
+    dialog.SetSizerAndFit(rootSizer);
+    messageCtrl->SetFocus();
+    dialog.ShowModal();
 }
 }

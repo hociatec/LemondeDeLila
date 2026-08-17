@@ -6,6 +6,7 @@ import { PayloadValidationService } from '../../common/validation/payload-valida
 import * as fs from 'fs';
 import * as path from 'path';
 import { AdminLogsDownloadWsDto } from './admin-ws.dto';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 @Injectable()
 export class AdminLogsWsHandler {
@@ -50,7 +51,7 @@ export class AdminLogsWsHandler {
       : lines;
     const tail = filtered.slice(-linesCount);
     return {
-      type: 'admin.logs.download',
+      type: WS_EVENTS.admin.logs.download,
       payload: {
         file: latest.entry,
         lines: tail,
@@ -59,3 +60,4 @@ export class AdminLogsWsHandler {
     };
   }
 }
+

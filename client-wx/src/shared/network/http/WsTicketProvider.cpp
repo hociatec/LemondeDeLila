@@ -1,8 +1,10 @@
-﻿#include "shared/network/http/WsTicketProvider.h"
+#include "shared/network/http/WsTicketProvider.h"
 #include "shared/network/NetworkPolicy.h"
 #include "shared/data/JsonReaders.h"
 #include "shared/text/Encoding.h"
+#include "shared/contracts/BackendWsContracts.h"
 #include "shared/errors/ErrorMessages.h"
+
 
 #include <array>
 #include <cctype>
@@ -83,14 +85,14 @@ std::string ExtractOriginFromWs(const std::string& endpoint)
 
     const std::size_t pathStart = endpoint.find('/', schemeSeparator + 3);
     const std::string wsOrigin = pathStart == std::string::npos ? endpoint : endpoint.substr(0, pathStart);
-    if (wsOrigin.rfind("wss://", 0) == 0)
+    if (wsOrigin.rfind(std::string(lila::shared::contracts::ws::WssScheme), 0) == 0)
     {
-        return "https://" + wsOrigin.substr(6);
+        return std::string(lila::shared::contracts::ws::HttpsScheme) + wsOrigin.substr(std::string(lila::shared::contracts::ws::WssScheme).size());
     }
 
-    if (wsOrigin.rfind("ws://", 0) == 0)
+    if (wsOrigin.rfind(std::string(lila::shared::contracts::ws::WsScheme), 0) == 0)
     {
-        return "http://" + wsOrigin.substr(5);
+        return std::string(lila::shared::contracts::ws::HttpScheme) + wsOrigin.substr(std::string(lila::shared::contracts::ws::WsScheme).size());
     }
 
     throw std::runtime_error(lila::shared::errors::WsTicketSchemaUnsupported);
@@ -141,13 +143,13 @@ std::string ReadTicketErrorMessage(const std::string& responseBody)
             return {};
         }
 
-        const auto messageIterator = response.find("message");
+        const auto messageIterator = response.find(std::string(lila::shared::contracts::realtime::MessageField));
         if (messageIterator != response.end() && messageIterator->is_string())
         {
             return messageIterator->get<std::string>();
         }
 
-        const auto errorIterator = response.find("error");
+        const auto errorIterator = response.find(std::string(lila::shared::contracts::realtime::ErrorField));
         if (errorIterator != response.end() && errorIterator->is_string())
         {
             return errorIterator->get<std::string>();
@@ -226,7 +228,7 @@ std::string RequestTicketFromUrl(const std::string& url, const std::string& bear
             throw std::runtime_error(lila::shared::errors::HttpRequestCreationFailed);
         }
 
-        const std::wstring authorization = L"Authorization: Bearer " + lila::shared::text::Utf8ToWide(bearerToken) + L"\r\n";
+        const std::wstring authorization = lila::shared::text::Utf8ToWide(std::string(lila::shared::contracts::ws::AuthorizationHeader)) + L": " + lila::shared::text::Utf8ToWide(std::string(lila::shared::contracts::ws::AuthorizationScheme)) + lila::shared::text::Utf8ToWide(bearerToken) + L"\r\n";
         if (!WinHttpAddRequestHeaders(request, authorization.c_str(), static_cast<DWORD>(authorization.size()), WINHTTP_ADDREQ_FLAG_ADD))
         {
             throw std::runtime_error(lila::shared::errors::HttpAuthorizationHeaderFailed);
@@ -304,8 +306,8 @@ std::string WsTicketProvider::GetTicket(const std::string& scope, const std::str
 
     const std::string origin = ExtractOriginFromWs(backendApiWsEndpoint_);
     const std::array<std::string, 2> candidates = {{
-        origin + "/ws/ticket?scope=" + scope,
-        origin + "/api/ws/ticket?scope=" + scope,
+        origin + std::string(lila::shared::contracts::ws::WsTicketPath) + scope,
+        origin + std::string(lila::shared::contracts::ws::WsTicketApiPath) + scope,
     }};
 
     std::string lastErrorMessage = lila::shared::errors::WsTicketUnavailable;
@@ -315,7 +317,7 @@ std::string WsTicketProvider::GetTicket(const std::string& scope, const std::str
         {
             const auto responseBody = RequestTicketFromUrl(url, bearerToken);
             const auto document = lila::shared::data::json::ParseDocument(responseBody, lila::shared::errors::WsTicketResponseInvalid);
-            const auto iterator = document.find("ticket");
+            const auto iterator = document.find(std::string(lila::shared::contracts::ws::WsTicketResponseField));
             if (iterator != document.end() && iterator->is_string())
             {
                 const std::string ticket = iterator->get<std::string>();
@@ -362,6 +364,8 @@ unsigned long lila::shared::network::http::WsTicketRequestError::StatusCode() co
 {
     return statusCode_;
 }
+
+
 
 
 

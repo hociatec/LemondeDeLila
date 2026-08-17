@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "shared/network/http/WsTicketProvider.h"
+#include "shared/contracts/BackendWsContracts.h"
 #include "shared/network/realtime/RealtimeProtocol.h"
 
 namespace lila::shared::network::realtime
@@ -32,13 +33,21 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
         websocket::WebSocketHeaders headers;
         if (!clientVersion_.empty())
         {
-            headers.emplace("x-lila-client-version", clientVersion_);
+            headers.emplace(
+                std::string(lila::shared::contracts::ws::ClientVersionHeader),
+                clientVersion_);
         }
 
         if (!bearerToken.empty())
         {
-            headers.emplace("Authorization", "Bearer " + bearerToken);
-            headers.emplace("x-lila-ws-ticket", wsTicketProvider_.GetTicket("api", bearerToken));
+            headers.emplace(
+                std::string(lila::shared::contracts::ws::AuthorizationHeader),
+                std::string(lila::shared::contracts::ws::AuthorizationScheme) + bearerToken);
+            headers.emplace(
+                std::string(lila::shared::contracts::ws::WsTicketHeader),
+                wsTicketProvider_.GetTicket(
+                    std::string(lila::shared::contracts::ws::WsTicketScopeApi),
+                    bearerToken));
         }
 
         const std::string requestId = protocol::GenerateRequestId();

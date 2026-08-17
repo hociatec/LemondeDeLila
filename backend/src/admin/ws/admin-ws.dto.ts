@@ -454,3 +454,5 @@ export class AdminBotSettingsUpdateWsDto {
   @Min(0)
   botDrawDelayMs?: number;
 }
+
+

@@ -5,6 +5,7 @@ import { PayloadValidationService } from '../../common/validation/payload-valida
 import { AdminCatalogInvalidationService } from '../services/admin-catalog-invalidation.service';
 import { RoleDefinitionsService } from '../services/role-definitions.service';
 import {
+import { WS_EVENTS } from '../../common/ws/ws-events';
   AdminRoleDefinitionCreateWsDto,
   AdminRoleDefinitionDeleteWsDto,
   AdminRoleDefinitionUpdateWsDto,
@@ -24,7 +25,7 @@ export class AdminRolesWsHandler {
     this.validator.validate(AdminRolesListWsDto, payload ?? {});
     const definitions = await this.roleDefinitions.list();
     return {
-      type: 'admin.roles.list',
+      type: WS_EVENTS.admin.roles.list,
       payload: {
         roles: definitions.map((d) => d.name),
         definitions,
@@ -36,7 +37,7 @@ export class AdminRolesWsHandler {
     requireAdmin(session);
     const definitions = await this.roleDefinitions.list();
     return {
-      type: 'admin.roles.definitions',
+      type: WS_EVENTS.admin.roles.definitions,
       payload: { definitions },
     };
   }
@@ -82,3 +83,4 @@ export class AdminRolesWsHandler {
     return this.rolesDefinitionsList(session);
   }
 }
+

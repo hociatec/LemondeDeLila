@@ -1,4 +1,4 @@
-#include "modules/social/presentation/SocialFrame.h"
+﻿#include "modules/social/presentation/SocialFrame.h"
 
 #include <array>
 #include <memory>
@@ -18,6 +18,7 @@
 #include "shared/accessibility/AccessibilityUtils.h"
 #include "shared/ui/controls/VerticalMenu.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/contracts/BackendWsContracts.h"
 
 namespace lila::modules::social::presentation
 {
@@ -291,7 +292,7 @@ void SocialFrame::LoadProfile(std::optional<int> userId)
             }
 
             profileTitleLabel_->SetLabel(currentProfile_->isOwner
-                ? wxString(L"Mon profil")
+                ? wxString::FromUTF8(lila::shared::errors::SocialMenuProfile)
                 : wxString::FromUTF8(currentProfile_->user.username));
 
             if (!currentProfile_->isOwner && !currentProfile_->canView)
@@ -326,16 +327,16 @@ void SocialFrame::SaveProfile()
     switch (profileVisibilityChoice_->GetSelection())
     {
     case 0:
-        update.visibility = "public";
+        update.visibility = std::string(lila::shared::contracts::social::SocialVisibilityPublic);
         break;
     case 1:
-        update.visibility = "friends";
+        update.visibility = std::string(lila::shared::contracts::social::SocialVisibilityFriends);
         break;
     case 2:
-        update.visibility = "private";
+        update.visibility = std::string(lila::shared::contracts::social::SocialVisibilityPrivate);
         break;
     default:
-        update.visibility = "public";
+        update.visibility = std::string(lila::shared::contracts::social::SocialVisibilityPublic);
         break;
     }
 
@@ -466,14 +467,14 @@ void SocialFrame::SyncProfileControls()
 {
     if (!currentProfile_.has_value())
     {
-        profileTitleLabel_->SetLabel(wxString(L"Profil"));
+        profileTitleLabel_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileTitle));
         profileInfoCtrl_->SetValue(wxEmptyString);
         profileBioCtrl_->SetValue(wxEmptyString);
         profileVictoryCtrl_->SetValue(wxEmptyString);
         profileDefeatCtrl_->SetValue(wxEmptyString);
         profileVisibilityChoice_->SetSelection(0);
         profileMenu_->Show(false);
-        profileSaveButton_->SetLabel(wxString(L"Enregistrer"));
+        profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSave));
         profileSaveButton_->Show(false);
         profileSaveButton_->Enable(false);
         SyncProfileEditorVisibility();
@@ -481,17 +482,17 @@ void SocialFrame::SyncProfileControls()
     }
 
     const auto& profile = *currentProfile_;
-    profileTitleLabel_->SetLabel(profile.isOwner ? wxString(L"Mon profil") : wxString::FromUTF8(profile.user.username));
+    profileTitleLabel_->SetLabel(profile.isOwner ? wxString::FromUTF8(lila::shared::errors::SocialMenuProfile) : wxString::FromUTF8(profile.user.username));
     profileInfoCtrl_->SetValue(BuildProfileInfoText(profile));
     profileBioCtrl_->SetValue(wxString::FromUTF8(profile.bio));
     profileVictoryCtrl_->SetValue(wxString::FromUTF8(profile.victoryMessage));
     profileDefeatCtrl_->SetValue(wxString::FromUTF8(profile.defeatMessage));
 
-    if (profile.visibility == "friends")
+    if (profile.visibility == lila::shared::contracts::social::SocialVisibilityFriends)
     {
         profileVisibilityChoice_->SetSelection(1);
     }
-    else if (profile.visibility == "private")
+    else if (profile.visibility == lila::shared::contracts::social::SocialVisibilityPrivate)
     {
         profileVisibilityChoice_->SetSelection(2);
     }
@@ -503,7 +504,7 @@ void SocialFrame::SyncProfileControls()
     profileMenu_->Show(profile.isOwner);
     if (!profile.isOwner || profileEditorMode_ == ProfileEditorMode::Menu)
     {
-        profileSaveButton_->SetLabel(wxString(L"Enregistrer"));
+        profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSave));
         profileSaveButton_->Show(false);
         profileSaveButton_->Enable(false);
     }
@@ -512,19 +513,19 @@ void SocialFrame::SyncProfileControls()
         switch (profileEditorMode_)
         {
         case ProfileEditorMode::Bio:
-            profileSaveButton_->SetLabel(wxString(L"Enregistrer la bio"));
+            profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSaveBio));
             break;
         case ProfileEditorMode::VictoryMessage:
-            profileSaveButton_->SetLabel(wxString(L"Enregistrer le message"));
+            profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSaveMessage));
             break;
         case ProfileEditorMode::DefeatMessage:
-            profileSaveButton_->SetLabel(wxString(L"Enregistrer le message"));
+            profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSaveMessage));
             break;
         case ProfileEditorMode::Visibility:
-            profileSaveButton_->SetLabel(wxString(L"Enregistrer la visibilité"));
+            profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSaveVisibility));
             break;
         case ProfileEditorMode::Menu:
-            profileSaveButton_->SetLabel(wxString(L"Enregistrer"));
+            profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSave));
             break;
         }
 
@@ -564,9 +565,10 @@ void SocialFrame::SyncSelectionState()
 
         const bool blockedFriend = friendSelection < friends_.size() && IsBlockedUser(friends_[friendSelection].id);
         const std::array<lila::shared::ui::controls::VerticalMenuItem, 3> menuItems = {{
-            {"view-profile", wxString(L"Voir le profil")},
-            {"remove-friend", wxString(L"Retirer de ma liste d'amis")},
-            {"block-friend", blockedFriend ? wxString(L"Débloquer") : wxString(L"Bloquer")},
+            {"view-profile", wxString::FromUTF8(lila::shared::errors::SocialProfileActionView)},
+            {"remove-friend", wxString::FromUTF8(lila::shared::errors::SocialProfileActionRemoveFriend)},
+            {"block-friend", blockedFriend ? wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblock)
+                                          : wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlock)},
         }};
         const std::size_t selectedAction = friendsActionsMenu_->GetSelectedIndex();
         friendsActionsMenu_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{menuItems.data(), menuItems.size()});
@@ -584,10 +586,11 @@ void SocialFrame::SyncSelectionState()
         const bool blockedSender = incomingSelection < incomingRequests_.size() &&
             IsBlockedUser(incomingRequests_[incomingSelection].requester.id);
         const std::array<lila::shared::ui::controls::VerticalMenuItem, 4> menuItems = {{
-            {"accept-request", wxString(L"Accepter")},
-            {"reject-request", wxString(L"Refuser")},
-            {"view-profile", wxString(L"Voir le profil")},
-            {"block-user", blockedSender ? wxString(L"Débloquer") : wxString(L"Bloquer")},
+            {"accept-request", wxString::FromUTF8(lila::shared::errors::SocialProfileActionAccept)},
+            {"reject-request", wxString::FromUTF8(lila::shared::errors::SocialProfileActionReject)},
+            {"view-profile", wxString::FromUTF8(lila::shared::errors::SocialProfileActionView)},
+            {"block-user", blockedSender ? wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblock)
+                                         : wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlock)},
         }};
         const std::size_t selectedAction = incomingActionsMenu_->GetSelectedIndex();
         incomingActionsMenu_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{menuItems.data(), menuItems.size()});
@@ -605,9 +608,10 @@ void SocialFrame::SyncSelectionState()
         const bool blockedReceiver = outgoingSelection < outgoingRequests_.size() &&
             IsBlockedUser(outgoingRequests_[outgoingSelection].addressee.id);
         const std::array<lila::shared::ui::controls::VerticalMenuItem, 3> menuItems = {{
-            {"cancel-request", wxString(L"Annuler")},
-            {"view-profile", wxString(L"Voir le profil")},
-            {"block-user", blockedReceiver ? wxString(L"Débloquer") : wxString(L"Bloquer")},
+            {"cancel-request", wxString::FromUTF8(lila::shared::errors::SocialProfileActionCancel)},
+            {"view-profile", wxString::FromUTF8(lila::shared::errors::SocialProfileActionView)},
+            {"block-user", blockedReceiver ? wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblock)
+                                          : wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlock)},
         }};
         const std::size_t selectedAction = outgoingActionsMenu_->GetSelectedIndex();
         outgoingActionsMenu_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{menuItems.data(), menuItems.size()});
@@ -693,13 +697,13 @@ wxString SocialFrame::BuildUserLabel(const domain::SocialUser& user) const
 {
     if (user.id <= 0)
     {
-        return wxString(L"Utilisateur inconnu");
+        return wxString::FromUTF8(lila::shared::errors::SocialProfileUnknownUser);
     }
 
-    wxString label = wxString::FromUTF8(user.username.empty() ? "Utilisateur inconnu" : user.username);
+    wxString label = wxString::FromUTF8(user.username.empty() ? lila::shared::errors::SocialProfileUnknownUser : user.username);
     if (!user.blockedAt.empty() && user.since.empty())
     {
-        label += wxString(L" - bloqué");
+        label += wxString::FromUTF8(lila::shared::errors::SocialProfileBlockedSuffix);
     }
     return label;
 }
@@ -707,10 +711,10 @@ wxString SocialFrame::BuildUserLabel(const domain::SocialUser& user) const
 wxString SocialFrame::BuildRequestLabel(const domain::SocialFriendRequest& request, bool incoming) const
 {
     const std::string name = incoming ? request.requester.username : request.addressee.username;
-    wxString label = wxString::FromUTF8(name.empty() ? "Utilisateur inconnu" : name);
+    wxString label = wxString::FromUTF8(name.empty() ? lila::shared::errors::SocialProfileUnknownUser : name);
     if (!request.createdAt.empty())
     {
-        label += wxString(L" - ");
+        label += wxString::FromUTF8(lila::shared::errors::SocialProfileAt);
         label += wxString::FromUTF8(request.createdAt);
     }
     return label;
@@ -719,31 +723,32 @@ wxString SocialFrame::BuildRequestLabel(const domain::SocialFriendRequest& reque
 wxString SocialFrame::BuildProfileInfoText(const domain::SocialProfile& profile) const
 {
     wxString text;
-    text << wxString(L"Visibilité : ") << wxString::FromUTF8(VisibilityToFrench(profile.visibility)) << '\n';
+    text << wxString::FromUTF8(lila::shared::errors::SocialProfileVisibilityPrefix)
+         << wxString::FromUTF8(VisibilityToFrench(profile.visibility)) << '\n';
 
     if (!profile.createdAt.empty())
     {
-        text << wxString(L"Créé : ") << wxString::FromUTF8(profile.createdAt) << '\n';
+        text << wxString::FromUTF8(lila::shared::errors::SocialProfileCreatedAt) << wxString::FromUTF8(profile.createdAt) << '\n';
     }
     if (!profile.updatedAt.empty())
     {
-        text << wxString(L"Mis à jour : ") << wxString::FromUTF8(profile.updatedAt) << '\n';
+        text << wxString::FromUTF8(lila::shared::errors::SocialProfileUpdatedAt) << wxString::FromUTF8(profile.updatedAt) << '\n';
     }
 
     if (profile.isOwner || profile.canView)
     {
-        text << wxString(L"Bio : ")
-             << wxString::FromUTF8(profile.bio.empty() ? "(vide)" : profile.bio)
+        text << wxString::FromUTF8(lila::shared::errors::SocialProfileBioText)
+             << wxString::FromUTF8(profile.bio.empty() ? lila::shared::errors::SocialProfileEmptyText : profile.bio)
              << "\n\n";
-        text << wxString(L"Message de victoire : ")
-             << wxString::FromUTF8(profile.victoryMessage.empty() ? "(vide)" : profile.victoryMessage)
+        text << wxString::FromUTF8(lila::shared::errors::SocialProfileVictoryText)
+             << wxString::FromUTF8(profile.victoryMessage.empty() ? lila::shared::errors::SocialProfileEmptyText : profile.victoryMessage)
              << "\n\n";
-        text << wxString(L"Message de défaite : ")
-             << wxString::FromUTF8(profile.defeatMessage.empty() ? "(vide)" : profile.defeatMessage);
+        text << wxString::FromUTF8(lila::shared::errors::SocialProfileDefeatText)
+             << wxString::FromUTF8(profile.defeatMessage.empty() ? lila::shared::errors::SocialProfileEmptyText : profile.defeatMessage);
     }
     else
     {
-        text << wxString(L"Ce profil est privé.");
+        text << wxString::FromUTF8(lila::shared::errors::SocialProfilePrivateText);
     }
 
     return text;
@@ -751,15 +756,15 @@ wxString SocialFrame::BuildProfileInfoText(const domain::SocialProfile& profile)
 
 std::string SocialFrame::VisibilityToFrench(const std::string& value)
 {
-    if (value == "friends")
+    if (value == lila::shared::contracts::social::SocialVisibilityFriends)
     {
-        return "Amis";
+        return lila::shared::errors::SocialProfileVisibilityFriends;
     }
-    if (value == "private")
+    if (value == lila::shared::contracts::social::SocialVisibilityPrivate)
     {
-        return "Privé";
+        return lila::shared::errors::SocialProfileVisibilityPrivate;
     }
-    return "Public";
+    return lila::shared::errors::SocialProfileVisibilityPublic;
 }
 
 std::optional<SocialFrame::Section> SocialFrame::MenuIndexToSection(std::size_t index)
@@ -823,7 +828,7 @@ wxString SocialFrame::BuildSectionStatus(Section section, std::size_t count)
         return wxString::FromUTF8(lila::shared::errors::SocialProfileLoaded);
     }
 
-    return wxString(L"Social");
+    return wxString::FromUTF8(lila::shared::errors::SocialFrameHeader);
 }
 
 std::optional<int> SocialFrame::GetStoredSectionSelection(Section section) const
@@ -925,4 +930,6 @@ std::size_t SocialFrame::SectionIndex(Section section)
     return 0;
 }
 }
+
+
 

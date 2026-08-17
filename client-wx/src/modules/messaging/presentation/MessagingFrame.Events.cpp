@@ -438,7 +438,7 @@ void MessagingFrame::LoadBox(domain::MessagingBox box, bool preserveSelection)
     auto results = std::make_shared<std::vector<domain::MessagingMessage>>();
     const auto previousSelection = selectedMessageId_;
     RunBackgroundTask(
-        wxString(L"Chargement de la boîte de réception..."),
+        wxString::FromUTF8(lila::shared::errors::MessagingLoadMessagesBusy),
         [this, results, box]()
         {
             *results = messagingService_.LoadBox(box);
@@ -518,7 +518,7 @@ void MessagingFrame::SendComposedMessage()
     auto recipient = std::make_shared<std::optional<domain::MessagingUser>>();
     auto sentMessage = std::make_shared<std::optional<domain::MessagingMessage>>();
     RunBackgroundTask(
-        wxString(L"Envoi du message..."),
+        wxString::FromUTF8(lila::shared::errors::MessagingSendBusy),
         [this, recipient, sentMessage, recipientName, subject, body]()
         {
             *recipient = messagingService_.SearchUser(recipientName.ToUTF8().data());
@@ -542,12 +542,12 @@ void MessagingFrame::SendComposedMessage()
 
             const wxString userLabel = wxString::FromUTF8((*recipient)->username);
             const wxString confirmation = wxString::Format(
-                wxString(L"Message envoyé à %s."),
+                wxString::FromUTF8(lila::shared::errors::MessagingSentToUser),
                 userLabel);
             UpdateStatus(confirmation);
             wxMessageBox(
                 confirmation,
-                wxString(L"Messagerie"),
+                wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
                 wxOK | wxICON_INFORMATION,
                 this);
             if (currentBox_ != domain::MessagingBox::Outbox)
@@ -568,8 +568,8 @@ void MessagingFrame::DeleteSelectedMessage()
     }
 
     if (wxMessageBox(
-            wxString(L"Voulez-vous vraiment supprimer ce message ?"),
-            wxString(L"Messagerie"),
+            wxString::FromUTF8(lila::shared::errors::MessagingDeleteConfirm),
+            wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
             wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION,
             this) != wxYES)
     {
@@ -577,16 +577,20 @@ void MessagingFrame::DeleteSelectedMessage()
     }
 
     RunBackgroundTask(
-        wxString(L"Suppression du message..."),
+        wxString::FromUTF8(lila::shared::errors::MessagingDeleteBusy),
         [this, message]()
         {
             static_cast<void>(messagingService_.Delete(message->id));
         },
         [this]()
         {
-            const wxString confirmation = wxString(L"Message supprimé.");
+            const wxString confirmation = wxString::FromUTF8(lila::shared::errors::MessagingDeletedMessage);
             UpdateStatus(confirmation);
-            wxMessageBox(confirmation, wxString(L"Messagerie"), wxOK | wxICON_INFORMATION, this);
+            wxMessageBox(
+                confirmation,
+                wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
+                wxOK | wxICON_INFORMATION,
+                this);
             RefreshCurrentBox(false);
         });
 }
@@ -600,16 +604,20 @@ void MessagingFrame::RestoreSelectedMessage()
     }
 
     RunBackgroundTask(
-        wxString(L"Restauration du message..."),
+        wxString::FromUTF8(lila::shared::errors::MessagingRestoreBusy),
         [this, message]()
         {
             static_cast<void>(messagingService_.Restore(message->id));
         },
         [this]()
         {
-            const wxString confirmation = wxString(L"Message restauré.");
+            const wxString confirmation = wxString::FromUTF8(lila::shared::errors::MessagingRestoredMessage);
             UpdateStatus(confirmation);
-            wxMessageBox(confirmation, wxString(L"Messagerie"), wxOK | wxICON_INFORMATION, this);
+            wxMessageBox(
+                confirmation,
+                wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
+                wxOK | wxICON_INFORMATION,
+                this);
             RefreshCurrentBox(false);
         });
 }
@@ -623,8 +631,8 @@ void MessagingFrame::PurgeSelectedMessage()
     }
 
     if (wxMessageBox(
-            wxString(L"Cette action supprime définitivement le message. Continuer ?"),
-            wxString(L"Messagerie"),
+            wxString::FromUTF8(lila::shared::errors::MessagingPurgeConfirm),
+            wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
             wxYES_NO | wxNO_DEFAULT | wxICON_WARNING,
             this) != wxYES)
     {
@@ -632,16 +640,20 @@ void MessagingFrame::PurgeSelectedMessage()
     }
 
     RunBackgroundTask(
-        wxString(L"Suppression définitive du message..."),
+        wxString::FromUTF8(lila::shared::errors::MessagingPurgeBusy),
         [this, message]()
         {
             static_cast<void>(messagingService_.Purge(message->id));
         },
         [this]()
         {
-            const wxString confirmation = wxString(L"Message supprimé définitivement.");
+            const wxString confirmation = wxString::FromUTF8(lila::shared::errors::MessagingPurgedMessage);
             UpdateStatus(confirmation);
-            wxMessageBox(confirmation, wxString(L"Messagerie"), wxOK | wxICON_INFORMATION, this);
+            wxMessageBox(
+                confirmation,
+                wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
+                wxOK | wxICON_INFORMATION,
+                this);
             RefreshCurrentBox(false);
         });
 }
@@ -658,7 +670,9 @@ void MessagingFrame::ReplyToSelectedMessage()
     OpenCompose(recipient, Screen::Detail);
     const wxString subject = wxString::FromUTF8(message->subject);
     subjectCtrl_->SetValue(
-        subject.StartsWith(wxString(L"Re: ")) ? subject : wxString(L"Re: ") + subject);
+        subject.StartsWith(wxString::FromUTF8(lila::shared::errors::MessagingReplyPrefix))
+            ? subject
+            : wxString::FromUTF8(lila::shared::errors::MessagingReplyPrefix) + subject);
 }
 
 void MessagingFrame::MarkSelectedMessageRead()
@@ -670,7 +684,7 @@ void MessagingFrame::MarkSelectedMessageRead()
     }
 
     RunBackgroundTask(
-        wxString(L"Marquage du message comme lu..."),
+        wxString::FromUTF8(lila::shared::errors::MessagingMarkReadBusy),
         [this, message]()
         {
             messagingService_.MarkRead(message->id);
@@ -693,25 +707,26 @@ wxString MessagingFrame::BuildMessageLabel(const domain::MessagingMessage& messa
     const wxDateTime timestamp(static_cast<time_t>(message.createdAtUtc));
     const wxString timeLabel = timestamp.IsValid()
         ? timestamp.Format("%d/%m %H:%M")
-        : wxString::FromUTF8("Inconnu");
+        : wxString::FromUTF8(lila::shared::errors::MessagingUnknownUser);
     const wxString userLabel = wxString::FromUTF8(message.isSent ? message.recipient.username : message.sender.username);
-    const wxString subject = wxString::FromUTF8(message.subject.empty() ? "Sans sujet" : message.subject);
-    return timeLabel + wxString(L" - ") + userLabel + wxString(L" - ") + subject;
+    const wxString subject = wxString::FromUTF8(message.subject.empty() ? lila::shared::errors::MessagingNoSubject : message.subject);
+    return timeLabel + wxString::FromUTF8(lila::shared::errors::MessagingSubjectSeparator) + userLabel
+           + wxString::FromUTF8(lila::shared::errors::MessagingSubjectSeparator) + subject;
 }
 
 wxString MessagingFrame::BuildMessageDetail(const domain::MessagingMessage& message) const
 {
     const wxDateTime timestamp(static_cast<time_t>(message.createdAtUtc));
     wxString text;
-    text << wxString::FromUTF8("Sujet : ")
-         << wxString::FromUTF8(message.subject.empty() ? "Sans sujet" : message.subject)
-         << wxString::FromUTF8("\nDe : ")
+    text << wxString::FromUTF8(lila::shared::errors::MessagingLabelSubject)
+         << wxString::FromUTF8(message.subject.empty() ? lila::shared::errors::MessagingNoSubject : message.subject)
+         << wxString::FromUTF8(lila::shared::errors::MessagingLabelFrom)
          << wxString::FromUTF8(message.sender.username)
-         << wxString::FromUTF8("\nÀ : ")
+         << wxString::FromUTF8(lila::shared::errors::MessagingLabelTo)
          << wxString::FromUTF8(message.recipient.username)
-         << wxString::FromUTF8("\nDate : ")
-         << (timestamp.IsValid() ? timestamp.Format("%d/%m/%Y %H:%M") : wxString::FromUTF8("Inconnu"))
-         << wxString::FromUTF8("\n\nContenu :\n")
+         << wxString::FromUTF8(lila::shared::errors::MessagingLabelDate)
+         << (timestamp.IsValid() ? timestamp.Format("%d/%m/%Y %H:%M") : wxString::FromUTF8(lila::shared::errors::MessagingUnknownUser))
+         << wxString::FromUTF8(lila::shared::errors::MessagingLabelContent)
          << wxString::FromUTF8(message.text);
     return text;
 }
@@ -765,3 +780,4 @@ void MessagingFrame::RestoreCurrentBoxSelection()
     }
 }
 }
+

@@ -5,6 +5,7 @@ import { ChatService } from '../../chat/services/chat.service';
 import { ChatSettingsService } from '../../chat/services/chat-settings.service';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { User } from '../../user/entities/user.entity';
+import { WS_EVENTS } from '../../common/ws/ws-events';
 
 export type PresenceChatBanPayload = {
   message: string;
@@ -19,7 +20,7 @@ export type PresenceChatCommandResult =
   | { kind: 'noop' };
 
 export type PresenceChatHistoryPayload = {
-  type: 'chat-history';
+  type: typeof WS_EVENTS.chat.history;
   editWindowSeconds: number;
   messages: Array<Record<string, unknown>>;
 };
@@ -83,7 +84,7 @@ export class PresenceChatService {
     const editWindowSeconds = this.chatSettings.getEditWindowSeconds();
     const messages = await this.chat.getRecentNormalizedMessages(limit);
     return {
-      type: 'chat-history',
+      type: WS_EVENTS.chat.history,
       editWindowSeconds,
       messages,
     };
@@ -136,7 +137,10 @@ export class PresenceChatService {
       );
       return {
         kind: 'ok',
-        event: { type: 'chat-message.updated', payload: normalized },
+        event: {
+          type: WS_EVENTS.chat.messageUpdated,
+          payload: normalized,
+        },
       };
     } catch (err) {
       this.logger.warn(
@@ -169,7 +173,10 @@ export class PresenceChatService {
       }
       return {
         kind: 'ok',
-        event: { type: 'chat-message.deleted', payload: { id: messageId } },
+        event: {
+          type: WS_EVENTS.chat.messageDeleted,
+          payload: { id: messageId },
+        },
       };
     } catch (err) {
       this.logger.warn(

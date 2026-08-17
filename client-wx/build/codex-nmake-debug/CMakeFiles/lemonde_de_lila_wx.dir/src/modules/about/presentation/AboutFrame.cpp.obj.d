@@ -630,6 +630,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/Session.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NonFocusablePanel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibilityUtils.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppConfig.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/Theme.h

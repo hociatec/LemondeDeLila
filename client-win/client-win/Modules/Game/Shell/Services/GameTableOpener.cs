@@ -29,6 +29,7 @@ using client_win.Modules.Settings.Services;
 using client_win.Modules.User.Services;
 using client_win.Modules.TextPrompts.Services;
 using client_win.Modules.Shell.Services;
+using client_win.Core.Constants;
 using client_win.Modules.Game.Room.Lobby.Services;
 using client_win.Modules.Game.Room.Lobby.ViewModels;
 using client_win.Modules.Vault.Services;
@@ -314,14 +315,14 @@ public sealed partial class GameTableOpener : IGameTableOpener
         if (target.Kind == RosterEntryKind.Bot)
         {
             await session.SendCommandAwaitAckAsync(
-                    "bot.remove",
+                    WsMessageTypes.Room.RemoveBot,
                     payload: new { botId = target.Id })
                 .ConfigureAwait(true);
             return;
         }
 
         await session.SendCommandAwaitAckAsync(
-                ban ? "room.ban" : "room.kick",
+                ban ? WsMessageTypes.Room.Ban : WsMessageTypes.Room.Kick,
                 payload: new { userId = target.Id })
             .ConfigureAwait(true);
     }
@@ -370,10 +371,10 @@ public sealed partial class GameTableOpener : IGameTableOpener
             return;
         }
 
-        await session.SendCommandAwaitAckAsync(
-                "room.set-owner",
-                payload: new { userId = target.Id })
-            .ConfigureAwait(true);
+                await session.SendCommandAwaitAckAsync(
+                        WsMessageTypes.Room.SetOwner,
+                        payload: new { userId = target.Id })
+                    .ConfigureAwait(true);
     }
 
     public async Task OpenExistingAsync(int roomId, object returnContent, bool spectator)
@@ -781,7 +782,7 @@ public sealed partial class GameTableOpener : IGameTableOpener
             try
             {
                 var roomNow = currentSession.LastRoomState?.Room;
-                var canStartNow = RoomAllowedActions.Contains(roomNow, "room.start");
+                var canStartNow = RoomAllowedActions.Contains(roomNow, WsMessageTypes.Room.Start);
                 var alreadyStartedNow =
                     string.Equals(roomNow?.Status, "started", StringComparison.OrdinalIgnoreCase) ||
                     !string.IsNullOrWhiteSpace(roomNow?.StartedAt);
@@ -969,10 +970,10 @@ public sealed partial class GameTableOpener : IGameTableOpener
             try
             {
                 // Convention: empty string clears the ambience (silence).
-                await session.SendCommandAwaitAckAsync(
-                        "room.set-ambience",
-                        payload: new { soundId = selected })
-                    .ConfigureAwait(true);
+                            await session.SendCommandAwaitAckAsync(
+                                    WsMessageTypes.Room.SetAmbience,
+                                    payload: new { soundId = selected })
+                                .ConfigureAwait(true);
             }
             catch
             {
@@ -1085,7 +1086,7 @@ public sealed partial class GameTableOpener : IGameTableOpener
                 var postStartConfigActionType = string.Empty;
                 Dictionary<string, object>? postStartConfigPayload = null;
                 var room = session.LastRoomState?.Room;
-                var canStart = RoomAllowedActions.Contains(room, "room.start");
+                var canStart = RoomAllowedActions.Contains(room, WsMessageTypes.Room.Start);
                 var alreadyStarted = string.Equals(room?.Status, "started", StringComparison.OrdinalIgnoreCase) ||
                                     !string.IsNullOrWhiteSpace(room?.StartedAt);
 
@@ -1237,7 +1238,7 @@ public sealed partial class GameTableOpener : IGameTableOpener
                         try
                         {
                             await session.SendCommandAwaitAckAsync(
-                                    "room.set-ambience",
+                                    WsMessageTypes.Room.SetAmbience,
                                     payload: new { soundId = startFlow.AmbienceSoundId })
                                 .ConfigureAwait(true);
                         }
@@ -1272,7 +1273,7 @@ public sealed partial class GameTableOpener : IGameTableOpener
                 {
                     try { bindings?.NotifyStartRequestedFromStartConfig(); } catch { }
                     await session.SendCommandAwaitAckAsync(
-                            "room.start",
+                            WsMessageTypes.Room.Start,
                             payload: null)
                         .ConfigureAwait(true);
                 }
@@ -1346,12 +1347,12 @@ public sealed partial class GameTableOpener : IGameTableOpener
                 }
 
                 await session.SendCommandAwaitAckAsync(
-                        "room.reset",
+                        WsMessageTypes.Room.Reset,
                         payload: null)
                     .ConfigureAwait(true);
             }
             Task SendChat(string message) =>
-                session?.SendCommandAsync("room.chat.send", payload: new { message }) ?? Task.CompletedTask;
+                session?.SendCommandAsync(WsMessageTypes.Room.ChatSend, payload: new { message }) ?? Task.CompletedTask;
 
             async Task ShowRules()
             {
@@ -1553,8 +1554,8 @@ public sealed partial class GameTableOpener : IGameTableOpener
                     {
                             async Task StartFromFallbackAsync()
                             {
-                                await session.SendCommandAwaitAckAsync(
-                                        "room.start",
+                            await session.SendCommandAwaitAckAsync(
+                                        WsMessageTypes.Room.Start,
                                         payload: null)
                                     .ConfigureAwait(true);
                             }
@@ -1562,7 +1563,7 @@ public sealed partial class GameTableOpener : IGameTableOpener
                             var start = startHandler ?? StartFromFallbackAsync;
 	                        var newVm = new GameRoomViewModel(
 	                            game,
-                            onSendChat: msg => session.SendCommandAsync("room.chat.send", payload: new { message = msg }),
+                            onSendChat: msg => session.SendCommandAsync(WsMessageTypes.Room.ChatSend, payload: new { message = msg }),
                             onShowRules: ShowRulesAsync,
                             onConfigureTableAmbience: ConfigureTableAmbienceAsync,
                             onConfigureTableAmbienceVolume: ConfigureTableAmbienceVolumeAsync,
@@ -1571,7 +1572,7 @@ public sealed partial class GameTableOpener : IGameTableOpener
                             onReset: async () =>
                             {
                                 await session.SendCommandAwaitAckAsync(
-                                        "room.reset",
+                                        WsMessageTypes.Room.Reset,
                                         payload: null)
                                     .ConfigureAwait(true);
                             },
@@ -1717,7 +1718,7 @@ public sealed partial class GameTableOpener : IGameTableOpener
 
                     onSessionLeft = type =>
                     {
-                          if (string.Equals(type, "room.deleted", StringComparison.OrdinalIgnoreCase))
+                           if (string.Equals(type, WsMessageTypes.Room.Deleted, StringComparison.OrdinalIgnoreCase))
                           {
                               _ = ExitAsync(null, forceTavern: true);
                           }

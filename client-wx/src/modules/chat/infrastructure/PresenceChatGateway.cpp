@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "shared/contracts/BackendWsContracts.h"
 #include "shared/network/http/WsTicketProvider.h"
 #include "shared/network/websocket/IWebSocketClient.h"
 #include "shared/network/websocket/WinHttpWebSocketClient.h"
@@ -31,11 +32,19 @@ PresenceChatGateway::PresenceChatGateway(
 
 void PresenceChatGateway::Open(const std::string& bearerToken, const std::string& clientVersion)
 {
-    const std::string ticket = ticketProvider_.GetTicket("presence", bearerToken);
+    const std::string ticket = ticketProvider_.GetTicket(
+        std::string(lila::shared::contracts::ws::WsTicketScopePresence),
+        bearerToken);
     lila::shared::network::websocket::WebSocketHeaders headers;
-    headers.emplace("Authorization", "Bearer " + bearerToken);
-    headers.emplace("x-lila-client-version", clientVersion);
-    headers.emplace("x-lila-ws-ticket", ticket);
+    headers.emplace(
+        std::string(lila::shared::contracts::ws::AuthorizationHeader),
+        std::string(lila::shared::contracts::ws::AuthorizationScheme) + bearerToken);
+    headers.emplace(
+        std::string(lila::shared::contracts::ws::ClientVersionHeader),
+        clientVersion);
+    headers.emplace(
+        std::string(lila::shared::contracts::ws::WsTicketHeader),
+        ticket);
     webSocketClient_.Connect(endpoint_, headers);
 }
 

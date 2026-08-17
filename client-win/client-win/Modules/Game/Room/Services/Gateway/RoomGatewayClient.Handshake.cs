@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
@@ -8,6 +8,7 @@ using client_win.Modules.Network.Services;
 using client_win.Modules.Network.WebSockets;
 using Serilog;
 using client_win.Modules.Game.Room.Services;
+using client_win.Core.Constants;
 
 namespace client_win.Modules.Game.Room.Services;
 
@@ -34,12 +35,12 @@ public sealed partial class RoomGatewayClient
                 }
 
                 var type = typeProp.GetString() ?? string.Empty;
-                if (string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(type, WsMessageTypes.Room.Pong, StringComparison.OrdinalIgnoreCase))
                 {
                     TryUpdateClockFromPong(doc.RootElement);
                     return;
                 }
-                if (string.Equals(type, "room.created", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(type, WsMessageTypes.Room.Created, StringComparison.OrdinalIgnoreCase))
                 {
                     var msg = JsonSerializer.Deserialize<RoomEnvelope<RoomPayloadDto>>(raw, _json);
                     if (msg != null)
@@ -49,7 +50,7 @@ public sealed partial class RoomGatewayClient
                     return;
                 }
 
-                if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(type, WsMessageTypes.Error, StringComparison.OrdinalIgnoreCase))
                 {
                     string? message = null;
                     if (doc.RootElement.TryGetProperty("payload", out var payload) &&
@@ -61,7 +62,7 @@ public sealed partial class RoomGatewayClient
                     }
 
                     tcs.TrySetException(new InvalidOperationException(
-                        string.IsNullOrWhiteSpace(message) ? "Erreur création de table." : message));
+                        string.IsNullOrWhiteSpace(message) ? "Erreur crÃ©ation de table." : message));
                 }
             }
             catch
@@ -83,7 +84,7 @@ public sealed partial class RoomGatewayClient
             if (state is WebSocketState.Error or WebSocketState.Disconnected)
             {
                 tcs.TrySetException(new InvalidOperationException(
-                    "Connexion WebSocket fermée pendant la création de table. Vérifiez la connectivité WS."));
+                    "Connexion WebSocket fermÃ©e pendant la crÃ©ation de table. VÃ©rifiez la connectivitÃ© WS."));
             }
         }
 
@@ -96,8 +97,8 @@ public sealed partial class RoomGatewayClient
             await TrySyncClockAsync(socket, cancellationToken).ConfigureAwait(false);
 
             var trace = new { id = Guid.NewGuid().ToString("N"), sentAtMs = ServerClock.NowServerMs() };
-            var create = JsonSerializer.Serialize(
-                new { type = "room.create", payload = new { gameType, _trace = trace } },
+                var create = JsonSerializer.Serialize(
+                new { type = WsMessageTypes.Room.Create, payload = new { gameType, _trace = trace } },
                 _json);
             await socket.SendAsync(create, cancellationToken).ConfigureAwait(false);
             connected = true;
@@ -105,12 +106,12 @@ public sealed partial class RoomGatewayClient
             using var timeout = new CancellationTokenSource(GameTiming.Room.GatewayConnectTimeout);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
-            Log.Information("WS room.create: réponse reçue en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
+            Log.Information("WS room.create: rÃ©ponse reÃ§ue en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
             return res;
         }
         catch (OperationCanceledException)
         {
-            throw new InvalidOperationException("Timeout création de table.");
+            throw new InvalidOperationException("Timeout crÃ©ation de table.");
         }
         finally
         {
@@ -140,12 +141,12 @@ public sealed partial class RoomGatewayClient
                 }
 
                 var type = typeProp.GetString() ?? string.Empty;
-                if (string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(type, WsMessageTypes.Room.Pong, StringComparison.OrdinalIgnoreCase))
                 {
                     TryUpdateClockFromPong(doc.RootElement);
                     return;
                 }
-                if (string.Equals(type, "room.updated", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(type, WsMessageTypes.Room.Updated, StringComparison.OrdinalIgnoreCase))
                 {
                     var msg = JsonSerializer.Deserialize<RoomEnvelope<RoomPayloadDto>>(raw, _json);
                     if (msg != null)
@@ -155,7 +156,7 @@ public sealed partial class RoomGatewayClient
                     return;
                 }
 
-                if (string.Equals(type, "error", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(type, WsMessageTypes.Error, StringComparison.OrdinalIgnoreCase))
                 {
                     string? message = null;
                     if (doc.RootElement.TryGetProperty("payload", out var payload) &&
@@ -189,7 +190,7 @@ public sealed partial class RoomGatewayClient
             if (state is WebSocketState.Error or WebSocketState.Disconnected)
             {
                 tcs.TrySetException(new InvalidOperationException(
-                    "Connexion WebSocket fermée pendant la connexion à la table. Vérifiez la connectivité WS."));
+                    "Connexion WebSocket fermÃ©e pendant la connexion Ã  la table. VÃ©rifiez la connectivitÃ© WS."));
             }
         }
 
@@ -204,7 +205,7 @@ public sealed partial class RoomGatewayClient
             using var timeout = new CancellationTokenSource(GameTiming.Room.GatewayConnectTimeout);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var res = await tcs.Task.WaitAsync(linked.Token).ConfigureAwait(false);
-            Log.Information("WS room.connect: état reçu en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
+            Log.Information("WS room.connect: Ã©tat reÃ§u en {ElapsedMs}ms (roomId={RoomId})", (DateTime.UtcNow - startedAt).TotalMilliseconds, res.RoomId);
             return res;
         }
         catch (OperationCanceledException)
@@ -282,7 +283,7 @@ public sealed partial class RoomGatewayClient
                 }
 
                 var type = typeProp.GetString() ?? string.Empty;
-                if (!string.Equals(type, "room.pong", StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(type, WsMessageTypes.Room.Pong, StringComparison.OrdinalIgnoreCase))
                 {
                     return;
                 }
@@ -303,7 +304,7 @@ public sealed partial class RoomGatewayClient
         try
         {
             var ping = JsonSerializer.Serialize(
-                new { type = "room.ping", payload = new { clientSentAtMs = ServerClock.UtcNowMs() } },
+                new { type = WsMessageTypes.Room.Ping, payload = new { clientSentAtMs = ServerClock.UtcNowMs() } },
                 _json);
             await socket.SendAsync(ping, cancellationToken).ConfigureAwait(false);
 
@@ -313,7 +314,7 @@ public sealed partial class RoomGatewayClient
         }
         catch
         {
-            // Best-effort: si le ping échoue ou timeout, on continue quand même.
+            // Best-effort: si le ping Ã©choue ou timeout, on continue quand mÃªme.
         }
         finally
         {
@@ -369,3 +370,5 @@ public sealed partial class RoomGatewayClient
         };
     }
 }
+
+
