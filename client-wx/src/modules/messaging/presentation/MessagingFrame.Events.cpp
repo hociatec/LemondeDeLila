@@ -476,17 +476,17 @@ void MessagingFrame::LoadBox(domain::MessagingBox box, bool preserveSelection)
                 selectedMessageId_ = boxMessages_.front().id;
             }
 
-            if (boxMessages_.empty())
-            {
-                UpdateStatus(wxString(L"0 résultats chargés."));
-            }
-            else
-            {
+    if (boxMessages_.empty())
+    {
+                UpdateStatus(wxString::FromUTF8(lila::shared::errors::MessagingLoadResultsEmpty));
+    }
+    else
+    {
                 UpdateStatus(
                     wxString::Format(
-                        L"%zu résultats chargés.",
+                        wxString::FromUTF8(lila::shared::errors::MessagingLoadResultsCount),
                         boxMessages_.size()));
-            }
+    }
 
             SetScreen(Screen::List);
         });
@@ -503,14 +503,14 @@ void MessagingFrame::SendComposedMessage()
 
     if (recipientName.empty())
     {
-        UpdateStatus(wxString(L"Le destinataire est requis."), true);
+        UpdateStatus(wxString::FromUTF8(lila::shared::errors::MessagingRecipientRequired), true);
         recipientCtrl_->SetFocus();
         return;
     }
 
     if (body.empty())
     {
-        UpdateStatus(wxString(L"Le message ne peut pas être vide."), true);
+        UpdateStatus(wxString::FromUTF8(lila::shared::errors::MessagingBodyRequired), true);
         bodyCtrl_->SetFocus();
         return;
     }

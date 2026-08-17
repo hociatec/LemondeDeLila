@@ -12,6 +12,7 @@
 #include "modules/social/application/SocialService.h"
 #include "shared/ui/controls/VerticalMenu.h"
 #include "shared/ui/navigation/MenuBlueprint.h"
+#include "shared/errors/ErrorMessages.h"
 
 namespace
 {
@@ -373,7 +374,7 @@ void SocialFrame::OpenSelectedProfile()
     const auto userId = GetSelectedUserId();
     if (!userId.has_value())
     {
-        UpdateStatus(wxString(L"Sélectionnez un joueur."), true);
+        UpdateStatus(wxString::FromUTF8(lila::shared::errors::SocialSelectPlayerToAct), true);
         return;
     }
 
@@ -401,14 +402,14 @@ void SocialFrame::ActivateFriendAction(std::size_t actionIndex)
     if (actionIndex == 1)
     {
         RunBackgroundTask(
-            wxString(L"Retrait de l'ami..."),
+            wxString::FromUTF8(lila::shared::errors::SocialProfileRemoveBusy),
             [this, userId]()
             {
                 socialService_.RemoveFriend(userId);
             },
             [this]()
             {
-                ShowActionFeedback(wxString(L"Cet ami a été retiré de votre liste."));
+                ShowActionFeedback(wxString::FromUTF8(lila::shared::errors::SocialFriendRemoved));
                 LoadFriends();
             });
         return;
@@ -417,8 +418,8 @@ void SocialFrame::ActivateFriendAction(std::size_t actionIndex)
     if (actionIndex == 2)
     {
         RunBackgroundTask(
-            isBlocked ? wxString(L"Déblocage de l'utilisateur...")
-                      : wxString(L"Blocage de l'utilisateur..."),
+            isBlocked ? wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblocked)
+                      : wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlocked),
             [this, userId, isBlocked]()
             {
                 if (isBlocked)
@@ -431,8 +432,8 @@ void SocialFrame::ActivateFriendAction(std::size_t actionIndex)
             },
             [this, isBlocked]()
             {
-                ShowActionFeedback(
-                    isBlocked ? wxString(L"Utilisateur débloqué.") : wxString(L"Utilisateur bloqué."));
+                ShowActionFeedback(wxString::FromUTF8(
+                    isBlocked ? lila::shared::errors::SocialProfileUnblocked : lila::shared::errors::SocialProfileBlocked));
                 LoadFriends();
             });
     }
@@ -457,14 +458,14 @@ void SocialFrame::ActivateIncomingAction(std::size_t actionIndex)
     if (actionIndex == 0)
     {
         RunBackgroundTask(
-            wxString(L"Acceptation de la demande..."),
+            wxString::FromUTF8(lila::shared::errors::SocialProfileAcceptBusy),
             [this, userId]()
             {
                 socialService_.AcceptFriend(userId);
             },
             [this]()
             {
-                ShowActionFeedback(wxString(L"Demande acceptée."));
+                ShowActionFeedback(wxString::FromUTF8(lila::shared::errors::SocialProfileAccepted));
                 LoadIncomingRequests();
             });
         return;
@@ -473,14 +474,14 @@ void SocialFrame::ActivateIncomingAction(std::size_t actionIndex)
     if (actionIndex == 1)
     {
         RunBackgroundTask(
-            wxString(L"Refus de la demande..."),
+            wxString::FromUTF8(lila::shared::errors::SocialProfileRejectBusy),
             [this, userId]()
             {
                 socialService_.RejectFriend(userId);
             },
             [this]()
             {
-                ShowActionFeedback(wxString(L"Demande refusée."));
+                ShowActionFeedback(wxString::FromUTF8(lila::shared::errors::SocialProfileRejected));
                 LoadIncomingRequests();
             });
         return;
@@ -489,8 +490,8 @@ void SocialFrame::ActivateIncomingAction(std::size_t actionIndex)
     if (actionIndex == 3)
     {
         RunBackgroundTask(
-            isBlocked ? wxString(L"Déblocage de l'utilisateur...")
-                      : wxString(L"Blocage de l'utilisateur..."),
+            isBlocked ? wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblocked)
+                      : wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlocked),
             [this, userId, isBlocked]()
             {
                 if (isBlocked)
@@ -503,8 +504,8 @@ void SocialFrame::ActivateIncomingAction(std::size_t actionIndex)
             },
             [this, isBlocked]()
             {
-                ShowActionFeedback(
-                    isBlocked ? wxString(L"Utilisateur débloqué.") : wxString(L"Utilisateur bloqué."));
+                ShowActionFeedback(wxString::FromUTF8(
+                    isBlocked ? lila::shared::errors::SocialProfileUnblocked : lila::shared::errors::SocialProfileBlocked));
                 LoadIncomingRequests();
             });
     }
@@ -529,14 +530,14 @@ void SocialFrame::ActivateOutgoingAction(std::size_t actionIndex)
     if (actionIndex == 0)
     {
         RunBackgroundTask(
-            wxString(L"Annulation de la demande..."),
+            wxString::FromUTF8(lila::shared::errors::SocialProfileCancelBusy),
             [this, userId]()
             {
                 socialService_.CancelRequest(userId);
             },
             [this]()
             {
-                ShowActionFeedback(wxString(L"Demande annulée."));
+                ShowActionFeedback(wxString::FromUTF8(lila::shared::errors::SocialProfileCanceled));
                 LoadOutgoingRequests();
             });
         return;
@@ -545,8 +546,8 @@ void SocialFrame::ActivateOutgoingAction(std::size_t actionIndex)
     if (actionIndex == 2)
     {
         RunBackgroundTask(
-            isBlocked ? wxString(L"Déblocage de l'utilisateur...")
-                      : wxString(L"Blocage de l'utilisateur..."),
+            isBlocked ? wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblocked)
+                      : wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlocked),
             [this, userId, isBlocked]()
             {
                 if (isBlocked)
@@ -559,8 +560,8 @@ void SocialFrame::ActivateOutgoingAction(std::size_t actionIndex)
             },
             [this, isBlocked]()
             {
-                ShowActionFeedback(
-                    isBlocked ? wxString(L"Utilisateur débloqué.") : wxString(L"Utilisateur bloqué."));
+                ShowActionFeedback(wxString::FromUTF8(
+                    isBlocked ? lila::shared::errors::SocialProfileUnblocked : lila::shared::errors::SocialProfileBlocked));
                 LoadOutgoingRequests();
             });
     }
@@ -581,14 +582,14 @@ void SocialFrame::ActivateBlockedAction(std::size_t actionIndex)
 
     const int userId = blockedUsers_[selection].id;
     RunBackgroundTask(
-        wxString(L"Déblocage de l'utilisateur..."),
+        wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblocked),
         [this, userId]()
         {
             socialService_.UnblockUser(userId);
         },
         [this]()
         {
-            ShowActionFeedback(wxString(L"Utilisateur débloqué."));
+            ShowActionFeedback(wxString::FromUTF8(lila::shared::errors::SocialProfileUnblocked));
             LoadBlockedUsers();
         });
 }

@@ -17,12 +17,13 @@
 #include "shared/ui/Theme.h"
 #include "shared/accessibility/AccessibilityUtils.h"
 #include "shared/ui/controls/VerticalMenu.h"
+#include "shared/errors/ErrorMessages.h"
 
 namespace lila::modules::social::presentation
 {
 namespace
 {
-const auto* kProfileUnavailableStatus = "Profil indisponible.";
+const auto* kProfileUnavailableStatus = lila::shared::errors::SocialProfileUnavailable;
 
 template <typename T, typename Formatter>
 void PopulateList(lila::shared::ui::controls::VerticalMenu& list, const std::vector<T>& items, const Formatter& formatter)
@@ -159,7 +160,7 @@ void SocialFrame::LoadFriends()
     auto results = std::make_shared<std::vector<domain::SocialUser>>();
     auto blockedResults = std::make_shared<std::vector<domain::SocialUser>>();
     RunBackgroundTask(
-        wxString(L"Chargement des amis..."),
+        wxString::FromUTF8(lila::shared::errors::SocialLoadFriendsBusy),
         [this, results, blockedResults]()
         {
             *results = socialService_.LoadFriends();
@@ -188,7 +189,7 @@ void SocialFrame::LoadIncomingRequests()
     auto results = std::make_shared<std::vector<domain::SocialFriendRequest>>();
     auto blockedResults = std::make_shared<std::vector<domain::SocialUser>>();
     RunBackgroundTask(
-        wxString(L"Chargement des demandes reçues..."),
+        wxString::FromUTF8(lila::shared::errors::SocialLoadIncomingRequestsBusy),
         [this, results, blockedResults]()
         {
             *results = socialService_.LoadIncomingRequests();
@@ -217,7 +218,7 @@ void SocialFrame::LoadOutgoingRequests()
     auto results = std::make_shared<std::vector<domain::SocialFriendRequest>>();
     auto blockedResults = std::make_shared<std::vector<domain::SocialUser>>();
     RunBackgroundTask(
-        wxString(L"Chargement des demandes envoyées..."),
+        wxString::FromUTF8(lila::shared::errors::SocialLoadOutgoingRequestsBusy),
         [this, results, blockedResults]()
         {
             *results = socialService_.LoadOutgoingRequests();
@@ -245,7 +246,7 @@ void SocialFrame::LoadBlockedUsers()
 {
     auto results = std::make_shared<std::vector<domain::SocialUser>>();
     RunBackgroundTask(
-        wxString(L"Chargement des utilisateurs bloqués..."),
+        wxString::FromUTF8(lila::shared::errors::SocialLoadBlockedUsersBusy),
         [this, results]()
         {
             *results = socialService_.LoadBlockedUsers();
@@ -272,7 +273,7 @@ void SocialFrame::LoadProfile(std::optional<int> userId)
     profileEditorMode_ = ProfileEditorMode::Menu;
     auto result = std::make_shared<std::optional<domain::SocialProfile>>();
     RunBackgroundTask(
-        wxString(L"Chargement du profil..."),
+        wxString::FromUTF8(lila::shared::errors::SocialProfileLoading),
         [this, result, userId]()
         {
             *result = socialService_.LoadProfile(userId);
@@ -295,11 +296,11 @@ void SocialFrame::LoadProfile(std::optional<int> userId)
 
             if (!currentProfile_->isOwner && !currentProfile_->canView)
             {
-                UpdateStatus(wxString(L"Profil privé."));
+                UpdateStatus(wxString::FromUTF8(lila::shared::errors::SocialProfilePrivate));
             }
             else
             {
-                UpdateStatus(wxString(L"Profil chargé."));
+                UpdateStatus(wxString::FromUTF8(lila::shared::errors::SocialProfileLoaded));
             }
 
             if (currentSection_ == Section::Profile)
@@ -313,7 +314,7 @@ void SocialFrame::SaveProfile()
 {
     if (!currentProfile_.has_value() || !currentProfile_->isOwner)
     {
-        UpdateStatus(wxString(L"Seul votre profil peut être modifié."), true);
+        UpdateStatus(wxString::FromUTF8(lila::shared::errors::SocialOnlyOwnProfileEditable), true);
         return;
     }
 
@@ -340,7 +341,7 @@ void SocialFrame::SaveProfile()
 
     auto result = std::make_shared<std::optional<domain::SocialProfile>>();
     RunBackgroundTask(
-        wxString(L"Enregistrement du profil..."),
+            wxString::FromUTF8(lila::shared::errors::SocialSaveProfileBusy),
         [this, result, update]()
         {
             *result = socialService_.SaveProfile(update);
@@ -350,7 +351,7 @@ void SocialFrame::SaveProfile()
             currentProfile_ = *result;
             profileEditorMode_ = ProfileEditorMode::Menu;
             SyncProfileControls();
-            ShowActionFeedback(wxString(L"Profil mis à jour."));
+            ShowActionFeedback(wxString::FromUTF8(lila::shared::errors::SocialProfileUpdated));
             if (currentSection_ == Section::Profile)
             {
                 FocusCurrentScreen();
@@ -801,18 +802,25 @@ std::size_t SocialFrame::SectionToMenuIndex(Section section)
 
 wxString SocialFrame::BuildSectionStatus(Section section, std::size_t count)
 {
+    const auto buildResultsStatus = [](std::size_t resultCount)
+    {
+        return resultCount == 0
+            ? wxString::FromUTF8(lila::shared::errors::SocialSectionResultsEmpty)
+            : wxString::Format(wxString::FromUTF8(lila::shared::errors::SocialSectionResultsCount), resultCount);
+    };
+
     switch (section)
     {
     case Section::Friends:
-        return wxString::Format(L"%zu résultats chargés.", count);
+        return buildResultsStatus(count);
     case Section::IncomingRequests:
-        return wxString::Format(L"%zu résultats chargés.", count);
+        return buildResultsStatus(count);
     case Section::OutgoingRequests:
-        return wxString::Format(L"%zu résultats chargés.", count);
+        return buildResultsStatus(count);
     case Section::Blocked:
-        return wxString::Format(L"%zu résultats chargés.", count);
+        return buildResultsStatus(count);
     case Section::Profile:
-        return wxString(L"Profil chargé.");
+        return wxString::FromUTF8(lila::shared::errors::SocialProfileLoaded);
     }
 
     return wxString(L"Social");
