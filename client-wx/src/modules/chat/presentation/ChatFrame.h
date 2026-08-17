@@ -28,11 +28,6 @@ namespace lila::modules::session::application
 class SessionStore;
 }
 
-namespace lila::shared::network::http
-{
-class WsTicketProvider;
-}
-
 namespace lila::modules::chat::presentation
 {
 class ChatFrame final : public wxFrame
@@ -45,7 +40,6 @@ public:
         lila::modules::chat::application::ChatService& chatService,
         lila::modules::options::application::OptionsStore& optionsStore,
         lila::modules::session::application::SessionStore& sessionStore,
-        lila::shared::network::http::WsTicketProvider& wsTicketProvider,
         CloseRequestedHandler onCloseRequested,
         ExitRequestedHandler onExitRequested);
     ~ChatFrame() override;
@@ -59,7 +53,6 @@ private:
         const std::function<void()>& action,
         const std::function<void()>& onSuccess = {});
     void OpenChat();
-    void RunConnectionDiagnostics();
     void RefreshHistory();
     void UpdateStatus(const wxString& message, bool isError = false);
     void ShowAccessibleErrorDialog(const wxString& message, const wxString& title);
@@ -81,7 +74,6 @@ private:
     lila::modules::chat::application::ChatService& chatService_;
     lila::modules::options::application::OptionsStore& optionsStore_;
     lila::modules::session::application::SessionStore& sessionStore_;
-    lila::shared::network::http::WsTicketProvider& wsTicketProvider_;
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
     wxTextCtrl* statusLabel_ = nullptr;
@@ -90,13 +82,9 @@ private:
     wxTextCtrl* inputCtrl_ = nullptr;
     wxButton* editMessageButton_ = nullptr;
     wxButton* deleteMessageButton_ = nullptr;
-    wxButton* testConnectionButton_ = nullptr;
-    wxTextCtrl* diagnosticsOutput_ = nullptr;
     bool isBusy_ = false;
     bool isHistoryActionMode_ = false;
     bool isReturningToSession_ = false;
-    bool isConnectionTestRunning_ = false;
-    std::size_t connectionTestRequestId_ = 0;
     std::size_t activeOpenChatRequestId_ = 0;
     std::optional<std::string> selectedActionMessageId_;
     std::vector<domain::ChatMessage> visibleMessages_;

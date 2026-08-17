@@ -5,8 +5,8 @@ import { PayloadValidationService } from '../../common/validation/payload-valida
 import { BugReportsService } from '../../bug-reports/bug-reports.service';
 import { BugReportCommentsService } from '../../bug-reports/bug-report-comments.service';
 import type { BugReportEntity } from '../../bug-reports/entities/bug-report.entity';
-import {
 import { WS_EVENTS } from '../../common/ws/ws-events';
+import {
   AdminBugReportCreateWsDto,
   AdminBugReportIdWsDto,
   AdminBugReportsListWsDto,

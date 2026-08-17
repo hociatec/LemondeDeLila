@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { GameCoreModule } from '../../core/core.module';
 import { GameRegistryModule } from '../../engine/game-registry.module';
 import { EngineServicesModule } from '../../engine/services/engine-services.module';
+import { SetupFlowModule } from '../../modules/setup-flow/setup-flow.module';
 import { BoardGameDeckKitModule } from '../../modules/game-kits/board-game-kits.module';
 import { BoardMissionEngineService } from '../../engine/board-mission/board-mission-engine.service';
 import { BoardMissionRuntimeSupportService } from '../../engine/board-mission/board-mission-runtime-support.service';
@@ -17,6 +18,7 @@ import { BoardMissionRegistrarService } from './board-mission-registrar.service'
     GameCoreModule,
     GameRegistryModule,
     EngineServicesModule,
+    SetupFlowModule,
   ],
   providers: [
     BoardMissionEngineService,

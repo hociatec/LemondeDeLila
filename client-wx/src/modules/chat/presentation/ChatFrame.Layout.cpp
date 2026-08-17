@@ -88,29 +88,13 @@ void ChatFrame::BuildLayout()
     contentSizer->Add(historyActionSizer, 0, wxBOTTOM, 18);
     contentSizer->Add(inputLabel, 0, wxBOTTOM, 8);
     contentSizer->Add(inputCtrl_, 0, wxEXPAND | wxBOTTOM, 12);
-    testConnectionButton_ = new wxButton(
-        contentPanel,
-        wxID_ANY,
-        wxString::FromUTF8("Tester la connexion"));
-    diagnosticsOutput_ = new wxTextCtrl(
-        contentPanel,
-        wxID_ANY,
-        wxString::FromUTF8("En attente des tests de connexion..."),
-        wxDefaultPosition,
-        wxDefaultSize,
-        wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_BESTWRAP);
-    diagnosticsOutput_->SetMinSize(wxSize(-1, 160));
-    contentSizer->Add(testConnectionButton_, 0, wxBOTTOM, 10);
-    contentSizer->Add(diagnosticsOutput_, 0, wxEXPAND | wxBOTTOM, 10);
     lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder(
         {historyList_,
          emptyHistoryCtrl_,
          editMessageButton_,
          deleteMessageButton_,
          inputLabel,
-         inputCtrl_,
-         testConnectionButton_,
-         diagnosticsOutput_});
+         inputCtrl_});
     contentPanel->SetSizer(contentSizer);
 
     rootSizer->Add(headerPanel, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 28);
@@ -147,10 +131,6 @@ void ChatFrame::ApplyTheme()
     inputCtrl_->SetBackgroundColour(wxColour(12, 21, 35));
     inputCtrl_->SetForegroundColour(Theme::TextPrimary());
     statusLabel_->SetForegroundColour(Theme::Accent());
-    testConnectionButton_->SetBackgroundColour(Theme::PanelBackground());
-    testConnectionButton_->SetForegroundColour(Theme::TextPrimary());
-    diagnosticsOutput_->SetBackgroundColour(Theme::PanelBackground());
-    diagnosticsOutput_->SetForegroundColour(Theme::TextPrimary());
     editMessageButton_->SetBackgroundColour(Theme::PanelBackground());
     editMessageButton_->SetForegroundColour(Theme::TextPrimary());
     deleteMessageButton_->SetBackgroundColour(Theme::PanelBackground());
@@ -172,12 +152,6 @@ void ChatFrame::ApplyTheme()
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *inputCtrl_,
         wxString::FromUTF8(lila::shared::errors::ChatInputHintAccessible));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *testConnectionButton_,
-        wxString::FromUTF8("Tester la connexion"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *diagnosticsOutput_,
-        wxString::FromUTF8("Resultats de test de connexion"));
 }
 
 void ChatFrame::UpdateStatus(const wxString& message, bool isError)

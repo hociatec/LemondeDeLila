@@ -4,8 +4,8 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { AdminCatalogInvalidationService } from '../services/admin-catalog-invalidation.service';
 import { RoleDefinitionsService } from '../services/role-definitions.service';
-import {
 import { WS_EVENTS } from '../../common/ws/ws-events';
+import {
   AdminRoleDefinitionCreateWsDto,
   AdminRoleDefinitionDeleteWsDto,
   AdminRoleDefinitionUpdateWsDto,

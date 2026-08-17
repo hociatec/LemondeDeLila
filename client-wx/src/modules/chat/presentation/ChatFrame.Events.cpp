@@ -217,13 +217,6 @@ void ChatFrame::BindEvents()
                 });
             }
         });
-    testConnectionButton_->Bind(
-        wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-        {
-            RunConnectionDiagnostics();
-        });
-
     inputCtrl_->Bind(
         wxEVT_CHAR_HOOK,
         [this](wxKeyEvent& event)

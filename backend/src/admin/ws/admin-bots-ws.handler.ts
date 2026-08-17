@@ -4,8 +4,8 @@ import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { BotService } from '../../bot/services/bot.service';
 import { BotSettingsService } from '../../game/modules/bot/services/bot-settings.service';
-import {
 import { WS_EVENTS } from '../../common/ws/ws-events';
+import {
   AdminBotNameCreateWsDto,
   AdminBotNameDeleteWsDto,
   AdminBotNameUpdateWsDto,

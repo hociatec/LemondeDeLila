@@ -7,8 +7,8 @@ import { RoomMaintenanceSettingsService } from '../../room/services/room-mainten
 import { AdminRoomsCleanupWsDto } from './admin-rooms-cleanup.dto';
 import { AdminRoomsDestroyWsDto } from './admin-rooms-destroy.dto';
 import { AdminRoomsListWsDto } from './admin-rooms-list.dto';
-import {
 import { WS_EVENTS } from '../../common/ws/ws-events';
+import {
   AdminRoomsSettingsGetWsDto,
   AdminRoomsSettingsUpdateWsDto,
 } from './admin-rooms-settings.dto';

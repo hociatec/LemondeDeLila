@@ -3,8 +3,8 @@ import { requireAdmin } from '../../common/ws/ws-auth';
 import type { WsSession } from '../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../common/validation/payload-validation.service';
 import { SocialProfileSettingsService } from '../../social/services/social-profile-settings.service';
-import {
 import { WS_EVENTS } from '../../common/ws/ws-events';
+import {
   AdminProfileSettingsGetWsDto,
   AdminProfileSettingsUpdateWsDto,
 } from './admin-profile-settings.dto';
