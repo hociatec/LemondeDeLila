@@ -2,13 +2,14 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ChatService } from '../../chat/services/chat.service';
-import { ChatSettingsService } from '../../chat/services/chat-settings.service';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { RoomParticipant } from '../../room/entities/room-participant.entity';
 import { In, IsNull, Repository } from 'typeorm';
 import { PresenceEvent, PresenceTransport } from './presence-transport';
-import { User } from '../../user/entities/user.entity';
+import {
+  PresenceChatCommandResult,
+  PresenceChatService,
+} from './presence-chat.service';
 
 export type PresenceConnectionContext =
   | 'home'
@@ -71,20 +72,12 @@ export class PresenceService implements OnModuleDestroy {
   private readonly pingTimeoutMs = 10_000;
   private readonly instanceId = randomUUID();
   private readonly originTtlMs = 120_000;
-  private readonly chatBanCache = new Map<
-    number,
-    { at: number; until: Date | null; reason: string | null }
-  >();
-  private readonly chatBanCacheTtlMs = 10_000;
   private readonly absentAfterMs = 3 * 60_000;
 
   constructor(
-    private readonly chat: ChatService,
-    private readonly chatSettings: ChatSettingsService,
+    private readonly chat: PresenceChatService,
     @InjectRepository(RoomParticipant)
     private readonly participants: Repository<RoomParticipant>,
-    @InjectRepository(User)
-    private readonly users: Repository<User>,
     private readonly transport: PresenceTransport,
   ) {
     this.transport
@@ -179,51 +172,10 @@ export class PresenceService implements OnModuleDestroy {
 
   private async handleChatSend(from: PresenceClient, payload: any) {
     const text = typeof payload.text === 'string' ? payload.text : '';
-    try {
-      // IMPORTANT: éviter le log info sur chaque message (bruyant + ajoute de la latence sur disque).
-      this.logger.debug(
-        `Chat-send reçu de ${from.user.username} (#${from.user.id})`,
-      );
-      const ban = await this.getChatBan(from.user.id);
-      if (ban?.until && ban.until.getTime() > Date.now()) {
-        this.safeSend(from.socket, {
-          type: 'error',
-          payload: {
-            message: 'Accès au tchat refusé.',
-            reason: ban.reason ?? null,
-            until: ban.until ? ban.until.toISOString() : null,
-          },
-        });
-        try {
-          from.socket.close(4403, 'chat banned');
-        } catch {
-          /* ignore */
-        }
-        return;
-      }
-    } catch (err) {
-      this.logger.warn(
-        `Message chat invalide pour ${from.user.username}: ${(err as Error)?.message ?? 'inconnu'}`,
-      );
-      return;
-    }
-    try {
-      const normalized = await this.chat.recordMessageForBroadcast(
-        { id: from.user.id, username: from.user.username },
-        text,
-      );
-      this.broadcastChat(normalized);
-    } catch (err) {
-      this.logger.warn(
-        `Echec enregistrement/diffusion message tchat pour ${from.user.username}: ${(err as Error)?.message ?? 'inconnu'}`,
-      );
-      this.safeSend(from.socket, {
-        type: 'error',
-        payload: {
-          message: (err as Error)?.message ?? 'Erreur tchat.',
-        },
-      });
-    }
+    const result = await this.chat.sendMessage(from.user, text);
+    this.handleChatCommandResult(from.socket, result, (event) =>
+      this.broadcastChat(event),
+    );
   }
 
   private async handleChatEdit(from: PresenceClient, payload: any) {
@@ -233,43 +185,10 @@ export class PresenceService implements OnModuleDestroy {
     if (!messageId) {
       return;
     }
-    try {
-      const ban = await this.getChatBan(from.user.id);
-      if (ban?.until && ban.until.getTime() > Date.now()) {
-        this.safeSend(from.socket, {
-          type: 'error',
-          payload: {
-            message: 'Accès au tchat refusé.',
-            reason: ban.reason ?? null,
-            until: ban.until ? ban.until.toISOString() : null,
-          },
-        });
-        try {
-          from.socket.close(4403, 'chat banned');
-        } catch {
-          /* ignore */
-        }
-        return;
-      }
-    } catch {
-      // ignore ban lookup errors; best-effort
-    }
-
-    try {
-      const normalized = await this.chat.editOwnMessage(
-        from.user.id,
-        messageId,
-        text,
-      );
-      this.broadcastChat({ type: 'chat-message.updated', payload: normalized });
-    } catch (err) {
-      this.safeSend(from.socket, {
-        type: 'error',
-        payload: {
-          message: (err as Error)?.message ?? 'Modification impossible.',
-        },
-      });
-    }
+    const result = await this.chat.editMessage(from.user, messageId, text);
+    this.handleChatCommandResult(from.socket, result, (event) =>
+      this.broadcastChat(event),
+    );
   }
 
   private async handleChatDelete(from: PresenceClient, payload: any) {
@@ -278,73 +197,51 @@ export class PresenceService implements OnModuleDestroy {
     if (!messageId) {
       return;
     }
-    try {
-      const ban = await this.getChatBan(from.user.id);
-      if (ban?.until && ban.until.getTime() > Date.now()) {
-        this.safeSend(from.socket, {
-          type: 'error',
-          payload: {
-            message: 'Accès au tchat refusé.',
-            reason: ban.reason ?? null,
-            until: ban.until ? ban.until.toISOString() : null,
-          },
-        });
-        try {
-          from.socket.close(4403, 'chat banned');
-        } catch {
-          /* ignore */
-        }
-        return;
-      }
-    } catch {
-      // ignore ban lookup errors; best-effort
-    }
-
-    try {
-      const ok = await this.chat.deleteOwnMessage(from.user.id, messageId);
-      if (ok) {
-        this.broadcastChat({
-          type: 'chat-message.deleted',
-          payload: { id: messageId },
-        });
-      }
-    } catch (err) {
-      this.safeSend(from.socket, {
-        type: 'error',
-        payload: {
-          message: (err as Error)?.message ?? 'Suppression impossible.',
-        },
-      });
-    }
+    const result = await this.chat.deleteMessage(from.user, messageId);
+    this.handleChatCommandResult(from.socket, result, (event) =>
+      this.broadcastChat(event),
+    );
   }
 
   async isChatBannedNow(userId: number): Promise<boolean> {
-    const ban = await this.getChatBan(userId);
-    return !!(ban?.until && ban.until.getTime() > Date.now());
+    return this.chat.isChatBannedNow(userId);
   }
 
   async getChatBanInfo(
     userId: number,
   ): Promise<{ until: Date | null; reason: string | null } | null> {
-    return this.getChatBan(userId);
+    return this.chat.getChatBanInfo(userId);
   }
 
-  private async getChatBan(
-    userId: number,
-  ): Promise<{ until: Date | null; reason: string | null } | null> {
-    const cached = this.chatBanCache.get(userId);
-    if (cached && Date.now() - cached.at < this.chatBanCacheTtlMs) {
-      return { until: cached.until, reason: cached.reason };
+  private handleChatCommandResult(
+    socket: WebSocket,
+    result: PresenceChatCommandResult,
+    onOk: (event: Record<string, unknown>) => void,
+  ) {
+    if (result.kind === 'ok') {
+      onOk(result.event);
+      return;
     }
-
-    const user = await this.users.findOne({
-      where: { id: userId },
-      select: ['id', 'chatBannedUntil', 'chatBanReason'] as any,
-    });
-    const until = user?.chatBannedUntil ?? null;
-    const reason = user?.chatBanReason ?? null;
-    this.chatBanCache.set(userId, { at: Date.now(), until, reason });
-    return { until, reason };
+    if (result.kind === 'denied') {
+      this.safeSend(socket, {
+        type: 'error',
+        payload: result.payload,
+      });
+      try {
+        socket.close(4403, 'chat banned');
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+    if (result.kind === 'error') {
+      this.safeSend(socket, {
+        type: 'error',
+        payload: {
+          message: result.message,
+        },
+      });
+    }
   }
 
   private safeSend(client: WebSocket, payload: any) {
@@ -411,12 +308,7 @@ export class PresenceService implements OnModuleDestroy {
 
   async sendHistory(to: WebSocket) {
     try {
-      const limit = this.chatSettings.getChatHistoryLimit();
-      const payload = {
-        type: 'chat-history',
-        editWindowSeconds: this.chatSettings.getEditWindowSeconds(),
-        messages: await this.chat.getRecentNormalizedMessages(limit),
-      };
+      const payload = await this.chat.buildChatHistoryPayload();
       to.send(JSON.stringify(payload));
     } catch (err) {
       this.logger.error('Echec envoi historique chat', err as Error);

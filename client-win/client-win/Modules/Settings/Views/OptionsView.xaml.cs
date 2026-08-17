@@ -3,9 +3,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Threading;
 using System.Windows.Media;
+using System.Windows.Threading;
 using client_win.Modules.Settings.ViewModels;
+using client_win.Modules.Shell.Controls;
 using client_win.Modules.Shell.Services;
 using client_win.Modules.Shell.Views;
 
@@ -16,6 +17,7 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
     private bool _didInitialFocus;
     private bool _didHookFocusRetention;
     private int _tabHeaderFocusRequestId;
+    private int _categoryOptionFocusRequestId;
 
     public OptionsView()
     {
@@ -32,16 +34,16 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
         }
         _didInitialFocus = true;
 
-        RequestTabHeaderFocus();
+        RequestFirstOptionFocusInCurrentCategory();
     }
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key is Key.Left or Key.Right)
         {
-            if (!TryNavigateTabs(e.Key == Key.Right))
+            if (!TryNavigateTabsFromFocusedHeader(e.Key == Key.Right))
             {
-                // Let controls (e.g. sliders) handle the key.
+                // Let controls (for example sliders) handle the key.
                 return;
             }
 
@@ -51,6 +53,7 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
 
         if (e.Key is Key.Up or Key.Down)
         {
+            var forward = e.Key == Key.Down;
             var slider = FindAncestorOrSelf<Slider>(Keyboard.FocusedElement as DependencyObject);
             if (slider != null && slider.IsEnabled)
             {
@@ -65,6 +68,13 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
                     : Math.Max(slider.Minimum, slider.Value - delta);
                 return;
             }
+
+            if (TryNavigateTabsFromFocusedHeader(forward))
+            {
+                e.Handled = true;
+            }
+
+            return;
         }
 
         if (e.Key != Key.Escape)
@@ -124,6 +134,11 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
         }));
     }
 
+    private void OnCategorySelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        RequestFirstOptionFocusInCurrentCategory();
+    }
+
     private static T? FindAncestorOrSelf<T>(DependencyObject? start) where T : DependencyObject
     {
         var current = start;
@@ -138,6 +153,7 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
             var parent = VisualTreeHelper.GetParent(current);
             current = parent ?? LogicalTreeHelper.GetParent(current);
         }
+
         return null;
     }
 
@@ -159,15 +175,6 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
             return false;
         }
 
-        // Do not steal left/right from controls that use it (slider, text input, combo).
-        var focused = Keyboard.FocusedElement as DependencyObject;
-        if (FindAncestorOrSelf<Slider>(focused) != null ||
-            FindAncestorOrSelf<TextBoxBase>(focused) != null ||
-            FindAncestorOrSelf<ComboBox>(focused) != null)
-        {
-            return false;
-        }
-
         var index = CategoryTabs.SelectedIndex;
         if (index < 0)
         {
@@ -177,17 +184,112 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
         var next = forward ? index + 1 : index - 1;
         if (next < 0 || next >= CategoryTabs.Items.Count)
         {
-            // Bloqué aux extrémités (pas de boucle).
-            RequestTabHeaderFocus();
+            RequestFirstOptionFocusInCurrentCategory();
             return true;
         }
 
         CategoryTabs.SelectedIndex = next;
-
-        // Keep focus on the current tab header so left/right remains consistent and
-        // screen readers announce the selected tab label.
-        RequestTabHeaderFocus();
+        RequestFirstOptionFocusInCurrentCategory();
         return true;
+    }
+
+    private bool TryNavigateTabsFromFocusedHeader(bool forward)
+    {
+        if (!IsFocusedOnCategoryHeader())
+        {
+            return false;
+        }
+
+        return TryNavigateTabs(forward);
+    }
+
+    private bool IsFocusedOnCategoryHeader()
+    {
+        if (CategoryTabs == null)
+        {
+            return false;
+        }
+
+        var focused = Keyboard.FocusedElement as DependencyObject;
+        if (focused == null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(focused, CategoryTabs))
+        {
+            return true;
+        }
+
+        var focusedListItem = FindAncestorOrSelf<ListBoxItem>(focused);
+        if (focusedListItem == null)
+        {
+            return false;
+        }
+
+        return ReferenceEquals(FindAncestorOrSelf<VerticalMenuList>(focusedListItem), CategoryTabs);
+    }
+
+    private bool TryFocusFirstOptionInCurrentCategory()
+    {
+        if (CategoryTabs == null || !IsLoaded || !IsVisible)
+        {
+            return false;
+        }
+
+        EnsureDefaultTabSelected();
+        var index = CategoryTabs.SelectedIndex;
+        if (index < 0 || index >= CategoryTabs.Items.Count)
+        {
+            return false;
+        }
+
+        if (CategoryTabs.ItemContainerGenerator.ContainerFromIndex(index) is not ListBoxItem tabItem)
+        {
+            return false;
+        }
+
+        var firstCheckbox = FindFirstDescendant<CheckBox>(tabItem);
+        if (firstCheckbox != null &&
+            firstCheckbox.IsVisible &&
+            firstCheckbox.IsEnabled &&
+            firstCheckbox.Focusable)
+        {
+            return TryKeyboardFocus(firstCheckbox);
+        }
+
+        var firstButton = FindFirstDescendant<Button>(tabItem);
+        if (firstButton != null &&
+            firstButton.IsVisible &&
+            firstButton.IsEnabled &&
+            firstButton.IsTabStop)
+        {
+            return TryKeyboardFocus(firstButton);
+        }
+
+        return false;
+    }
+
+    private void RequestFirstOptionFocusInCurrentCategory()
+    {
+        var requestId = unchecked(++_categoryOptionFocusRequestId);
+        RunFirstOptionFocusPass(requestId);
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => RunFirstOptionFocusPass(requestId)));
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => RunFirstOptionFocusPass(requestId)));
+    }
+
+    private void RunFirstOptionFocusPass(int requestId)
+    {
+        if (requestId != _categoryOptionFocusRequestId)
+        {
+            return;
+        }
+
+        if (!TryFocusFirstOptionInCurrentCategory())
+        {
+            EnsureDefaultTabSelected();
+            FocusSelectedTabHeader();
+        }
     }
 
     private void EnsureDefaultTabSelected()
@@ -211,7 +313,7 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
         }
 
         var index = CategoryTabs.SelectedIndex >= 0 ? CategoryTabs.SelectedIndex : 0;
-        if (CategoryTabs.ItemContainerGenerator.ContainerFromIndex(index) is TabItem tab)
+        if (CategoryTabs.ItemContainerGenerator.ContainerFromIndex(index) is ListBoxItem tab)
         {
             tab.Focus();
             Keyboard.Focus(tab);
@@ -240,8 +342,63 @@ public partial class OptionsView : UserControl, IInitialFocusTarget
         FocusSelectedTabHeader();
     }
 
+    private static bool TryKeyboardFocus(IInputElement? target)
+    {
+        if (target == null)
+        {
+            return false;
+        }
+
+        try
+        {
+            (target as UIElement)?.Focus();
+            var current = Keyboard.Focus(target);
+            if (ReferenceEquals(current, target))
+            {
+                return true;
+            }
+        }
+        catch
+        {
+            return false;
+        }
+
+        if (target is UIElement uiElement && uiElement.IsKeyboardFocused)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static T? FindFirstDescendant<T>(DependencyObject? root) where T : DependencyObject
+    {
+        if (root == null)
+        {
+            return null;
+        }
+
+        if (root is T directMatch)
+        {
+            return directMatch;
+        }
+
+        var childrenCount = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < childrenCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            var found = FindFirstDescendant<T>(child);
+            if (found != null)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
+
     public void RequestInitialFocus()
     {
-        RequestTabHeaderFocus();
+        RequestFirstOptionFocusInCurrentCategory();
     }
 }

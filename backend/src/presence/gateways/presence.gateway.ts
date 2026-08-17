@@ -1,4 +1,4 @@
-import {
+﻿import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   WebSocketGateway,
@@ -10,6 +10,7 @@ import {
   PresenceConnectionContext,
   PresenceService,
 } from '../services/presence.service';
+import { PresenceChatService } from '../services/presence-chat.service';
 import { WsAuthPayload } from '../../common/interfaces/ws-auth-payload';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import { WsTicketAuthService } from '../../common/ws/ws-ticket-auth.service';
@@ -27,6 +28,7 @@ export class PresenceGateway
 
   constructor(
     private readonly presence: PresenceService,
+    private readonly chat: PresenceChatService,
     private readonly auth: WsJwtAuthService,
     private readonly wsTickets: WsTicketAuthService,
   ) {
@@ -45,17 +47,13 @@ export class PresenceGateway
     }
     const context = this.resolveContext(client, args);
     if (context === 'chat') {
-      const ban = await this.presence.getChatBanInfo(payload.id);
-      if (ban?.until && ban.until.getTime() > Date.now()) {
+      const banned = await this.chat.getActiveChatBanPayload(payload.id);
+      if (banned) {
         try {
           client.send(
             JSON.stringify({
               type: 'error',
-              payload: {
-                message: 'Accès au tchat refusé.',
-                reason: ban.reason ?? null,
-                until: ban.until ? ban.until.toISOString() : null,
-              },
+              payload: banned,
             }),
           );
         } catch {
@@ -122,3 +120,4 @@ export class PresenceGateway
     return 'home';
   }
 }
+

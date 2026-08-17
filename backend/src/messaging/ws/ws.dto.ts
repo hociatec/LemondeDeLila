@@ -68,3 +68,10 @@ export class MessagingMarkReadDto {
   @MaxLength(64)
   messageId!: string;
 }
+
+export class MessagingMessageActionDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(64)
+  messageId!: string;
+}

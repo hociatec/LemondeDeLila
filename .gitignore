@@ -8,6 +8,10 @@
 # Local env
 backend/.env
 backend/logs/
+backend/coverage/
+backend/data/
+backend/dist.locked-*/
+backend/keys/*.pem
 
 # Runtime logs (written by systemd unit on the server)
 log/

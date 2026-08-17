@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChatModule } from '../chat/chat.module';
 import { NotificationModule } from '../notification/notification.module';
 import { PresenceGateway } from './gateways/presence.gateway';
+import { PresenceChatService } from './services/presence-chat.service';
 import { PresenceService } from './services/presence.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomParticipant } from '../room/entities/room-participant.entity';
@@ -50,6 +51,7 @@ import { RedisClientFactory } from '../common/redis/redis-client.factory';
     },
     PresenceGateway,
     PresenceService,
+    PresenceChatService,
   ],
   exports: [PresenceService],
 })

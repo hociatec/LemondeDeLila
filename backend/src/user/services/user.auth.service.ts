@@ -65,7 +65,10 @@ export class UserAuthService {
     await this.users.save(user);
   }
 
-  async login(username: string, password: string): Promise<{ token: string }> {
+  async login(
+    username: string,
+    password: string,
+  ): Promise<{ token: string; userId: number; username: string }> {
     const user = await this.users.findOne({ where: { username } });
     if (!user) {
       throw new UnauthorizedException('Identifiants invalides');
@@ -133,7 +136,7 @@ export class UserAuthService {
         return options;
       })(),
     );
-    return { token };
+    return { token, userId: user.id, username: user.username };
   }
 
   private readonly _banReasonWhitespace = /\s+/g;

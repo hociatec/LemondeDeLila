@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MessagingService } from './services/messaging.service';
+import { MessagingNotificationService } from './services/messaging-notification.service';
 import { MessageValidatorService } from './services/message-validator.service';
 import { PrivateMessage } from './entities/private-message.entity';
 import { User } from '../user/entities/user.entity';
@@ -15,6 +16,7 @@ import { NotificationModule } from '../notification/notification.module';
   ],
   providers: [
     MessagingService,
+    MessagingNotificationService,
     MessageValidatorService,
     MessagingWsHandler,
     MessagingWsRegistrar,

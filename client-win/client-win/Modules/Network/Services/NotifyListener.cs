@@ -31,7 +31,7 @@ using Serilog;
 
 namespace client_win.Modules.Network.Services;
 
-public sealed class NotifyListener : INotifyListener, INotifyGatewayClient, IAsyncDisposable
+public sealed partial class NotifyListener : INotifyListener, INotifyGatewayClient, IAsyncDisposable
 {
     private readonly ClientConfiguration _config;
     private readonly ISessionService _session;

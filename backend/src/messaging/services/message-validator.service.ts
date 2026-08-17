@@ -18,7 +18,7 @@ export class MessageValidatorService {
     }
     if (sanitized.length > DEFAULT_MESSAGE_MAX_LENGTH) {
       throw new BadRequestException(
-        'Le message est trop long (max 1000 caracteres)',
+        'Le message est trop long (max 1000 caractères)',
       );
     }
     return sanitized;
@@ -37,7 +37,7 @@ export class MessageValidatorService {
     }
     if (sanitized.length > MessageValidatorService.SUBJECT_MAX_LENGTH) {
       throw new BadRequestException(
-        `Le sujet est trop long (max ${MessageValidatorService.SUBJECT_MAX_LENGTH} caracteres)`,
+        `Le sujet est trop long (max ${MessageValidatorService.SUBJECT_MAX_LENGTH} caractères)`,
       );
     }
     return sanitized;

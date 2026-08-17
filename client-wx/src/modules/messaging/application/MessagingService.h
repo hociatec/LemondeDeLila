@@ -1,0 +1,34 @@
+#pragma once
+
+#include <optional>
+#include <string>
+#include <vector>
+
+#include "modules/messaging/domain/MessagingBox.h"
+#include "modules/messaging/domain/MessagingMessage.h"
+#include "modules/messaging/domain/MessagingUser.h"
+#include "modules/messaging/application/IMessagingGateway.h"
+
+namespace lila::modules::messaging::application
+{
+class MessagingService final
+{
+public:
+    explicit MessagingService(IMessagingGateway& api);
+
+    [[nodiscard]] std::vector<domain::MessagingMessage> LoadBox(domain::MessagingBox box, int limit = 100) const;
+    [[nodiscard]] std::vector<domain::MessagingMessage> LoadConversation(int userId, int limit = 100) const;
+    [[nodiscard]] std::optional<domain::MessagingMessage> Send(
+        int recipientId,
+        const std::string& text,
+        const std::optional<std::string>& subject) const;
+    [[nodiscard]] std::optional<domain::MessagingMessage> Delete(const std::string& messageId) const;
+    [[nodiscard]] std::optional<domain::MessagingMessage> Restore(const std::string& messageId) const;
+    [[nodiscard]] std::optional<domain::MessagingMessage> Purge(const std::string& messageId) const;
+    [[nodiscard]] std::optional<domain::MessagingUser> SearchUser(const std::string& query) const;
+    void MarkRead(const std::string& messageId) const;
+
+private:
+    IMessagingGateway& api_;
+};
+}

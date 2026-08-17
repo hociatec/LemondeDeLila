@@ -1,28 +1,25 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { MessagingService } from '../services/messaging.service';
+import { HttpException, Injectable } from '@nestjs/common';
 import { SendMessageDto } from '../dto/send-message.dto';
-import { PayloadValidationService } from '../../common/validation/payload-validation.service';
-import { requireUser } from '../../common/ws/ws-auth';
-import type { WsSession } from '../../common/ws/ws-route-registry.service';
-import { NotificationService } from '../../notification/services/notification.service';
-import { UserBadgeCountsService } from '../../notification/services/user-badge-counts.service';
+import { MessagingService } from '../services/messaging.service';
+import { MessagingNotificationService } from '../services/messaging-notification.service';
 import {
   MessagingConversationDto,
   MessagingListDto,
+  MessagingMessageActionDto,
   MessagingMarkReadDto,
   MessagingSearchDto,
   MessagingSendDto,
 } from './ws.dto';
+import { PayloadValidationService } from '../../common/validation/payload-validation.service';
+import { requireUser } from '../../common/ws/ws-auth';
+import type { WsSession } from '../../common/ws/ws-route-registry.service';
 
 @Injectable()
 export class MessagingWsHandler {
-  private readonly logger = new Logger(MessagingWsHandler.name);
-
   constructor(
     private readonly messaging: MessagingService,
     private readonly validator: PayloadValidationService,
-    private readonly notifications: NotificationService,
-    private readonly counts: UserBadgeCountsService,
+    private readonly notifier: MessagingNotificationService,
   ) {}
 
   async conversation(session: WsSession, payload: unknown) {
@@ -51,57 +48,31 @@ export class MessagingWsHandler {
     const user = requireUser(session);
     const dto = this.validator.validate(MessagingSendDto, payload);
     const message = await this.messaging.send(user.id, dto as SendMessageDto);
-    // Notification temps réel au destinataire (via WS notify).
-    try {
-      const preview =
-        (message.text || '').trim().length > 0
-          ? (message.text || '').trim().slice(0, 200)
-          : '';
-      await this.notifications.notifyUser(dto.recipientId, 'messaging.new', {
-        messageId: message.id,
-        from: message.sender,
-        subject: message.subject,
-        preview,
-        createdAt: message.createdAt,
-      });
-    } catch {
-      // best-effort notification; continue to counts update below
-    }
-    // Toujours pousser les compteurs, même si la notification WS échoue.
-    try {
-      await this.counts.notifyCounts(dto.recipientId);
-    } catch (err) {
-      this.logger.warn(
-        `notifyCounts failed for user ${dto.recipientId}: ${(err as Error).message}`,
-      );
-    }
+    await this.notifier.notifyMessageSent(dto.recipientId, message);
     return { type: 'messaging.message', payload: { message } };
   }
 
   async delete(session: WsSession, payload: unknown) {
     const user = requireUser(session);
-    const row = asRecord(payload);
-    const messageId = String(row.messageId ?? row.id ?? '');
-    const message = await this.messaging.delete(user.id, messageId);
-    await this.counts.notifyCounts(user.id);
+    const dto = this.validator.validate(MessagingMessageActionDto, payload);
+    const message = await this.messaging.delete(user.id, dto.messageId);
+    await this.notifier.notifyCountsBestEffort(user.id);
     return { type: 'messaging.deleted', payload: { message } };
   }
 
   async restore(session: WsSession, payload: unknown) {
     const user = requireUser(session);
-    const row = asRecord(payload);
-    const messageId = String(row.messageId ?? row.id ?? '');
-    const message = await this.messaging.restore(user.id, messageId);
-    await this.counts.notifyCounts(user.id);
+    const dto = this.validator.validate(MessagingMessageActionDto, payload);
+    const message = await this.messaging.restore(user.id, dto.messageId);
+    await this.notifier.notifyCountsBestEffort(user.id);
     return { type: 'messaging.restored', payload: { message } };
   }
 
   async purge(session: WsSession, payload: unknown) {
     const user = requireUser(session);
-    const row = asRecord(payload);
-    const messageId = String(row.messageId ?? row.id ?? '');
-    const message = await this.messaging.purge(user.id, messageId);
-    await this.counts.notifyCounts(user.id);
+    const dto = this.validator.validate(MessagingMessageActionDto, payload);
+    const message = await this.messaging.purge(user.id, dto.messageId);
+    await this.notifier.notifyCountsBestEffort(user.id);
     return { type: 'messaging.purged', payload: { message } };
   }
 
@@ -116,13 +87,7 @@ export class MessagingWsHandler {
     const user = requireUser(session);
     const dto = this.validator.validate(MessagingMarkReadDto, payload);
     await this.messaging.markRead(user.id, dto.messageId);
-    try {
-      await this.counts.notifyCounts(user.id);
-    } catch (err) {
-      this.logger.warn(
-        `notifyCounts failed after markRead for user ${user.id}: ${(err as Error).message}`,
-      );
-    }
+    await this.notifier.notifyCountsBestEffort(user.id);
     return { type: 'messaging.markRead', payload: { ok: true } };
   }
 
@@ -161,8 +126,3 @@ export class MessagingWsHandler {
   }
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value != null && typeof value === 'object'
-    ? (value as Record<string, unknown>)
-    : {};
-}

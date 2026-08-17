@@ -1,0 +1,181 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\app\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\app\Application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\app\navigation\AppNavigator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\bootstrap\AppBootstrap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\about\presentation\AboutFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Connection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Messages.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtocol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\PresenceChatGateway.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.Layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.Events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.History.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\application\MessagingService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\MessagingApi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.Events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\SocialService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\infrastructure\SocialApi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Sections.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\application\HomeAuthValidator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.Layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.Theme.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.Navigation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.Events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.Submit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\ActionButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\AccessibilityUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\FileOptionsRepository.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\AuthenticatedRealtimeApiClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeApiClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\WinHttpWebSocketClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\Theme.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\application\LoginUseCase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\application\RegisterUseCase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\main_menu\presentation\MainMenuFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\main_menu\presentation\MainMenuContent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\main_menu\presentation\MainMenuFrame.Layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\main_menu\presentation\MainMenuFrame.Theme.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\main_menu\presentation\MainMenuFrame.Events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\application\SessionStore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\infrastructure\FileSessionRepository.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\remote\JwtLoginClaimsParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\WsAuthenticationService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\wamp64\www\lemondeDeLila\client-wx\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_json.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{8832BC70-E7B8-3E46-B848-AE56D57C3A95}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

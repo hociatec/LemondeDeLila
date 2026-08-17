@@ -1,0 +1,397 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineSystem.cmake:205 (message)"
+      - "CMakeLists.txt:3 (project)"
+    message: |
+      The system is: Windows - 10.0.26200 - AMD64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:3 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      Version MSBuild 17.14.51+25f168cee pour .NET Framework
+      La génération a démarré 16/08/2026 05:39:04.
+      
+      Projet "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\3.31.6\\CompilerIdCXX\\CompilerIdCXX.vcxproj" sur le nœud 1 (cibles par défaut).
+      PrepareForBuild:
+        Création du répertoire "Debug\\".
+        La sortie structurée est activée. La mise en forme du compilateur diagnostics reflète la hiérarchie des erreurs. Pour plus d’informations, consultez https://aka.ms/cpp/structured-output.
+        Création du répertoire "Debug\\CompilerIdCXX.tlog\\".
+      InitializeBuildStatus:
+        Création de "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild", car "AlwaysCreate" a été spécifié.
+        Mise à jour de l'horodatage "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
+      ClCompile:
+        C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TP /FC /errorReport:queue CMakeCXXCompilerId.cpp
+        CMakeCXXCompilerId.cpp
+      Link:
+        C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdCXX.lib" /MACHINE:X64 Debug\\CMakeCXXCompilerId.obj
+        CompilerIdCXX.vcxproj -> C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\3.31.6\\CompilerIdCXX\\CompilerIdCXX.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_CXX_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_CXX_COMPILER=C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        Suppression du fichier "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
+        Mise à jour de l'horodatage "Debug\\CompilerIdCXX.tlog\\CompilerIdCXX.lastbuildstate".
+      Génération du projet "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\3.31.6\\CompilerIdCXX\\CompilerIdCXX.vcxproj" terminée (cibles par défaut).
+      
+      La génération a réussi.
+          0 Avertissement(s)
+          0 Erreur(s)
+      
+      Temps écoulé 00:00:02.56
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.vcxproj"
+      
+      The CXX compiler identification is MSVC, found in:
+        C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/3.31.6/CompilerIdCXX/CompilerIdCXX.exe
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:3 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-h32zfl"
+      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-h32zfl"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od /RTC1"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      VCPKG_INSTALLED_DIR: "C:/vcpkg/installed"
+      VCPKG_PREFER_SYSTEM_LIBS: "OFF"
+      VCPKG_TARGET_TRIPLET: "x64-windows"
+      Z_VCPKG_ROOT_DIR: "C:/vcpkg"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-h32zfl'
+        
+        Run Build Command(s): C:/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_0dc1b.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Version MSBuild 17.14.51+25f168cee pour .NET Framework
+        La g├®n├®ration a d├®marr├® 16/08/2026 05:39:08.
+        
+        Projet "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-h32zfl\\cmTC_0dc1b.vcxproj" sur le n┼ôud 1 (cibles par d├®faut).
+        PrepareForBuild:
+          Cr├®ation du r├®pertoire "cmTC_0dc1b.dir\\Debug\\".
+          La sortie structur├®e est activ├®e. La mise en forme du compilateur diagnostics refl├¿te la hi├®rarchie des erreurs. Pour plus dÔÇÖinformations, consultez https://aka.ms/cpp/structured-output.
+          Cr├®ation du r├®pertoire "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-h32zfl\\Debug\\".
+          Cr├®ation du r├®pertoire "cmTC_0dc1b.dir\\Debug\\cmTC_0dc1b.tlog\\".
+        InitializeBuildStatus:
+          Cr├®ation de "cmTC_0dc1b.dir\\Debug\\cmTC_0dc1b.tlog\\unsuccessfulbuild", car "AlwaysCreate" a ├®t├® sp├®cifi├®.
+          Mise ├á jour de l'horodatage "cmTC_0dc1b.dir\\Debug\\cmTC_0dc1b.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_0dc1b.dir\\Debug\\\\" /Fd"cmTC_0dc1b.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-3.31\\Modules\\CMakeCXXCompilerABI.cpp"
+          Compilateur d'optimisation Microsoft (R) C/C++ version┬á19.44.35228 pour x64
+          Copyright (C) Microsoft Corporation. Tous droits r├®serv├®s.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_0dc1b.dir\\Debug\\\\" /Fd"cmTC_0dc1b.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-3.31\\Modules\\CMakeCXXCompilerABI.cpp"
+          CMakeCXXCompilerABI.cpp
+        Link:
+          C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-h32zfl\\Debug\\cmTC_0dc1b.exe" /INCREMENTAL /ILK:"cmTC_0dc1b.dir\\Debug\\cmTC_0dc1b.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-h32zfl/Debug/cmTC_0dc1b.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-h32zfl/Debug/cmTC_0dc1b.lib" /MACHINE:X64  /machine:x64 cmTC_0dc1b.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_0dc1b.vcxproj -> C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-h32zfl\\Debug\\cmTC_0dc1b.exe
+        FinalizeBuildStatus:
+          Suppression du fichier "cmTC_0dc1b.dir\\Debug\\cmTC_0dc1b.tlog\\unsuccessfulbuild".
+          Mise ├á jour de l'horodatage "cmTC_0dc1b.dir\\Debug\\cmTC_0dc1b.tlog\\cmTC_0dc1b.lastbuildstate".
+        G├®n├®ration du projet "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-h32zfl\\cmTC_0dc1b.vcxproj" termin├®e (cibles par d├®faut).
+        
+        La g├®n├®ration a r├®ussi.
+            0 Avertissement(s)
+            0 Erreur(s)
+        
+        Temps ├®coul├® 00:00:02.23
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:3 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'CXX': C:/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:3 (project)"
+    message: |
+      Running the CXX compiler's linker: "C:/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.44.35228.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/Internal/CheckSourceCompiles.cmake:108 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CheckCXXSourceCompiles.cmake:58 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/FindThreads.cmake:99 (CHECK_CXX_SOURCE_COMPILES)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/FindThreads.cmake:163 (_threads_check_libc)"
+      - "C:/vcpkg/scripts/buildsystems/vcpkg.cmake:939 (_find_package)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)"
+      - "C:/vcpkg/installed/x64-windows/share/wxwidgets/wxWidgetsConfig.cmake:224 (find_dependency)"
+      - "C:/vcpkg/installed/x64-windows/share/wxwidgets/vcpkg-cmake-wrapper.cmake:55 (_find_package)"
+      - "C:/vcpkg/scripts/buildsystems/vcpkg.cmake:893 (include)"
+      - "CMakeLists.txt:9 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-ugbjd8"
+      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-ugbjd8"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      VCPKG_INSTALLED_DIR: "C:/vcpkg/installed"
+      VCPKG_PREFER_SYSTEM_LIBS: "OFF"
+      VCPKG_TARGET_TRIPLET: "x64-windows"
+      Z_VCPKG_ROOT_DIR: "C:/vcpkg"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-ugbjd8'
+        
+        Run Build Command(s): C:/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_aa8d4.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Version MSBuild 17.14.51+25f168cee pour .NET Framework
+        La g├®n├®ration a d├®marr├® 16/08/2026 05:39:11.
+        
+        Projet "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj" sur le n┼ôud 1 (cibles par d├®faut).
+        PrepareForBuild:
+          Cr├®ation du r├®pertoire "cmTC_aa8d4.dir\\Debug\\".
+          La sortie structur├®e est activ├®e. La mise en forme du compilateur diagnostics refl├¿te la hi├®rarchie des erreurs. Pour plus dÔÇÖinformations, consultez https://aka.ms/cpp/structured-output.
+          Cr├®ation du r├®pertoire "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\Debug\\".
+          Cr├®ation du r├®pertoire "cmTC_aa8d4.dir\\Debug\\cmTC_aa8d4.tlog\\".
+        InitializeBuildStatus:
+          Cr├®ation de "cmTC_aa8d4.dir\\Debug\\cmTC_aa8d4.tlog\\unsuccessfulbuild", car "AlwaysCreate" a ├®t├® sp├®cifi├®.
+          Mise ├á jour de l'horodatage "cmTC_aa8d4.dir\\Debug\\cmTC_aa8d4.tlog\\unsuccessfulbuild".
+        SetModuleDependencies:
+          Cr├®ation du r├®pertoire "cmTC_aa8d4.dir\\Debug\\cmTC_aa8d4_MD.tlog\\".
+          Analyse des sources ├á la recherche des d├®pendances de module...
+          C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_aa8d4.dir\\Debug\\\\" /scanDependencies "cmTC_aa8d4.dir\\Debug\\\\" /Fo"cmTC_aa8d4.dir\\Debug\\\\" /Fd"cmTC_aa8d4.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx"
+          Compilateur d'optimisation Microsoft (R) C/C++ version┬á19.44.35228 pour x64
+        C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx(1,10): fatal  error C1083: Impossible d'ouvrir le fichier include├í: 'pthread.h'├í: No such file or directory [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj]
+        C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx(1,10): fatal  error C1083: Impossible d'ouvrir le fichier include├í: 'pthread.h'├í: No such file or directory [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj]
+          Copyright (C) Microsoft Corporation. Tous droits r├®serv├®s.
+          cl /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_aa8d4.dir\\Debug\\\\" /scanDependencies "cmTC_aa8d4.dir\\Debug\\\\" /Fo"cmTC_aa8d4.dir\\Debug\\\\" /Fd"cmTC_aa8d4.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx"
+          src.cxx
+        C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx(1,10): error C1083: Impossible d'ouvrir le fichier include┬á: 'pthread.h'┬á: No such file or directory [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj]
+        C:\\BuildTools\\MSBuild\\Microsoft\\VC\\v170\\Microsoft.CppCommon.targets(532,5): warning MSB8074: impossible de lire le fichier de d├®pendances du module cmTC_aa8d4.dir\\Debug\\src.cxx.module.json┬á: ├ël├®ment attendu 'root' provenant de l'espace de noms ''.. D├®tection de 'None' avec le nom '', espace de noms ''.  L'ordre de g├®n├®ration est peut-├¬tre incorrect. [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj]
+        ClCompile:
+          Compilation...
+          C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_aa8d4.dir\\Debug\\\\" /Fo"cmTC_aa8d4.dir\\Debug\\\\" /Fd"cmTC_aa8d4.dir\\Debug\\vc143.pdb" /sourceDependencies "cmTC_aa8d4.dir\\Debug\\.d.json" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx"
+          Compilateur d'optimisation Microsoft (R) C/C++ version┬á19.44.35228 pour x64
+          Copyright (C) Microsoft Corporation. Tous droits r├®serv├®s.
+          cl /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_aa8d4.dir\\Debug\\\\" /Fo"cmTC_aa8d4.dir\\Debug\\\\" /Fd"cmTC_aa8d4.dir\\Debug\\vc143.pdb" /sourceDependencies "cmTC_aa8d4.dir\\Debug\\.d.json" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx"
+          src.cxx
+        C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx(1,10): error C1083: Impossible d'ouvrir le fichier include┬á: 'pthread.h'┬á: No such file or directory [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj]
+        G├®n├®ration du projet "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj" termin├®e (cibles par d├®faut) -- ├ëCHEC.
+        
+        ├ëCHEC de la build.
+        
+        "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj" (cible par d├®faut) (1) ->
+        (SetModuleDependencies cible) -> 
+          C:\\BuildTools\\MSBuild\\Microsoft\\VC\\v170\\Microsoft.CppCommon.targets(532,5): warning MSB8074: impossible de lire le fichier de d├®pendances du module cmTC_aa8d4.dir\\Debug\\src.cxx.module.json┬á: ├ël├®ment attendu 'root' provenant de l'espace de noms ''.. D├®tection de 'None' avec le nom '', espace de noms ''.  L'ordre de g├®n├®ration est peut-├¬tre incorrect. [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj]
+        
+        
+        "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj" (cible par d├®faut) (1) ->
+        (SetModuleDependencies cible) -> 
+          C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx(1,10): fatal  error C1083: Impossible d'ouvrir le fichier include├í: 'pthread.h'├í: No such file or directory [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj]
+          C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx(1,10): fatal  error C1083: Impossible d'ouvrir le fichier include├í: 'pthread.h'├í: No such file or directory [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj]
+          C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx(1,10): error C1083: Impossible d'ouvrir le fichier include┬á: 'pthread.h'┬á: No such file or directory [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj]
+        
+        
+        "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj" (cible par d├®faut) (1) ->
+        (ClCompile cible) -> 
+          C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\src.cxx(1,10): error C1083: Impossible d'ouvrir le fichier include┬á: 'pthread.h'┬á: No such file or directory [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ugbjd8\\cmTC_aa8d4.vcxproj]
+        
+            1 Avertissement(s)
+            4 Erreur(s)
+        
+        Temps ├®coul├® 00:00:02.53
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CheckLibraryExists.cmake:78 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/FindThreads.cmake:112 (CHECK_LIBRARY_EXISTS)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/FindThreads.cmake:175 (_threads_check_lib)"
+      - "C:/vcpkg/scripts/buildsystems/vcpkg.cmake:939 (_find_package)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)"
+      - "C:/vcpkg/installed/x64-windows/share/wxwidgets/wxWidgetsConfig.cmake:224 (find_dependency)"
+      - "C:/vcpkg/installed/x64-windows/share/wxwidgets/vcpkg-cmake-wrapper.cmake:55 (_find_package)"
+      - "C:/vcpkg/scripts/buildsystems/vcpkg.cmake:893 (include)"
+      - "CMakeLists.txt:9 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthreads"
+    directories:
+      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-9300fd"
+      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-9300fd"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      VCPKG_INSTALLED_DIR: "C:/vcpkg/installed"
+      VCPKG_PREFER_SYSTEM_LIBS: "OFF"
+      VCPKG_TARGET_TRIPLET: "x64-windows"
+      Z_VCPKG_ROOT_DIR: "C:/vcpkg"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREADS_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-9300fd'
+        
+        Run Build Command(s): C:/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_5d614.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Version MSBuild 17.14.51+25f168cee pour .NET Framework
+        La g├®n├®ration a d├®marr├® 16/08/2026 05:39:14.
+        
+        Projet "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\cmTC_5d614.vcxproj" sur le n┼ôud 1 (cibles par d├®faut).
+        PrepareForBuild:
+          Cr├®ation du r├®pertoire "cmTC_5d614.dir\\Debug\\".
+          La sortie structur├®e est activ├®e. La mise en forme du compilateur diagnostics refl├¿te la hi├®rarchie des erreurs. Pour plus dÔÇÖinformations, consultez https://aka.ms/cpp/structured-output.
+          Cr├®ation du r├®pertoire "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\Debug\\".
+          Cr├®ation du r├®pertoire "cmTC_5d614.dir\\Debug\\cmTC_5d614.tlog\\".
+        InitializeBuildStatus:
+          Cr├®ation de "cmTC_5d614.dir\\Debug\\cmTC_5d614.tlog\\unsuccessfulbuild", car "AlwaysCreate" a ├®t├® sp├®cifi├®.
+          Mise ├á jour de l'horodatage "cmTC_5d614.dir\\Debug\\cmTC_5d614.tlog\\unsuccessfulbuild".
+        SetModuleDependencies:
+          Cr├®ation du r├®pertoire "cmTC_5d614.dir\\Debug\\cmTC_5d614_MD.tlog\\".
+          Analyse des sources ├á la recherche des d├®pendances de module...
+          C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_5d614.dir\\Debug\\\\" /scanDependencies "cmTC_5d614.dir\\Debug\\\\" /Fo"cmTC_5d614.dir\\Debug\\\\" /Fd"cmTC_5d614.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\CheckFunctionExists.cxx"
+          Compilateur d'optimisation Microsoft (R) C/C++ version┬á19.44.35228 pour x64
+          Copyright (C) Microsoft Corporation. Tous droits r├®serv├®s.
+          cl /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_5d614.dir\\Debug\\\\" /scanDependencies "cmTC_5d614.dir\\Debug\\\\" /Fo"cmTC_5d614.dir\\Debug\\\\" /Fd"cmTC_5d614.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\CheckFunctionExists.cxx"
+          CheckFunctionExists.cxx
+        ClCompile:
+          Compilation...
+          C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_5d614.dir\\Debug\\\\" /Fo"cmTC_5d614.dir\\Debug\\\\" /Fd"cmTC_5d614.dir\\Debug\\vc143.pdb" /sourceDependencies "cmTC_5d614.dir\\Debug\\.d.json" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\CheckFunctionExists.cxx"
+          Compilateur d'optimisation Microsoft (R) C/C++ version┬á19.44.35228 pour x64
+          Copyright (C) Microsoft Corporation. Tous droits r├®serv├®s.
+          cl /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_5d614.dir\\Debug\\\\" /Fo"cmTC_5d614.dir\\Debug\\\\" /Fd"cmTC_5d614.dir\\Debug\\vc143.pdb" /sourceDependencies "cmTC_5d614.dir\\Debug\\.d.json" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\CheckFunctionExists.cxx"
+          CheckFunctionExists.cxx
+        Link:
+          C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\Debug\\cmTC_5d614.exe" /INCREMENTAL /ILK:"cmTC_5d614.dir\\Debug\\cmTC_5d614.ilk" /NOLOGO pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-9300fd/Debug/cmTC_5d614.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-9300fd/Debug/cmTC_5d614.lib" /MACHINE:X64  /machine:x64 cmTC_5d614.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: impossible d'ouvrir le fichier 'pthreads.lib' [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\cmTC_5d614.vcxproj]
+        G├®n├®ration du projet "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\cmTC_5d614.vcxproj" termin├®e (cibles par d├®faut) -- ├ëCHEC.
+        
+        ├ëCHEC de la build.
+        
+        "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\cmTC_5d614.vcxproj" (cible par d├®faut) (1) ->
+        (Link cible) -> 
+          LINK : fatal error LNK1104: impossible d'ouvrir le fichier 'pthreads.lib' [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-9300fd\\cmTC_5d614.vcxproj]
+        
+            0 Avertissement(s)
+            1 Erreur(s)
+        
+        Temps ├®coul├® 00:00:02.18
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CheckLibraryExists.cmake:78 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/FindThreads.cmake:112 (CHECK_LIBRARY_EXISTS)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/FindThreads.cmake:176 (_threads_check_lib)"
+      - "C:/vcpkg/scripts/buildsystems/vcpkg.cmake:939 (_find_package)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)"
+      - "C:/vcpkg/installed/x64-windows/share/wxwidgets/wxWidgetsConfig.cmake:224 (find_dependency)"
+      - "C:/vcpkg/installed/x64-windows/share/wxwidgets/vcpkg-cmake-wrapper.cmake:55 (_find_package)"
+      - "C:/vcpkg/scripts/buildsystems/vcpkg.cmake:893 (include)"
+      - "CMakeLists.txt:9 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthread"
+    directories:
+      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-gafiva"
+      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-gafiva"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      VCPKG_INSTALLED_DIR: "C:/vcpkg/installed"
+      VCPKG_PREFER_SYSTEM_LIBS: "OFF"
+      VCPKG_TARGET_TRIPLET: "x64-windows"
+      Z_VCPKG_ROOT_DIR: "C:/vcpkg"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREAD_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-gafiva'
+        
+        Run Build Command(s): C:/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_b6b82.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Version MSBuild 17.14.51+25f168cee pour .NET Framework
+        La g├®n├®ration a d├®marr├® 16/08/2026 05:39:17.
+        
+        Projet "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\cmTC_b6b82.vcxproj" sur le n┼ôud 1 (cibles par d├®faut).
+        PrepareForBuild:
+          Cr├®ation du r├®pertoire "cmTC_b6b82.dir\\Debug\\".
+          La sortie structur├®e est activ├®e. La mise en forme du compilateur diagnostics refl├¿te la hi├®rarchie des erreurs. Pour plus dÔÇÖinformations, consultez https://aka.ms/cpp/structured-output.
+          Cr├®ation du r├®pertoire "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\Debug\\".
+          Cr├®ation du r├®pertoire "cmTC_b6b82.dir\\Debug\\cmTC_b6b82.tlog\\".
+        InitializeBuildStatus:
+          Cr├®ation de "cmTC_b6b82.dir\\Debug\\cmTC_b6b82.tlog\\unsuccessfulbuild", car "AlwaysCreate" a ├®t├® sp├®cifi├®.
+          Mise ├á jour de l'horodatage "cmTC_b6b82.dir\\Debug\\cmTC_b6b82.tlog\\unsuccessfulbuild".
+        SetModuleDependencies:
+          Cr├®ation du r├®pertoire "cmTC_b6b82.dir\\Debug\\cmTC_b6b82_MD.tlog\\".
+          Analyse des sources ├á la recherche des d├®pendances de module...
+          C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_b6b82.dir\\Debug\\\\" /scanDependencies "cmTC_b6b82.dir\\Debug\\\\" /Fo"cmTC_b6b82.dir\\Debug\\\\" /Fd"cmTC_b6b82.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\CheckFunctionExists.cxx"
+          Compilateur d'optimisation Microsoft (R) C/C++ version┬á19.44.35228 pour x64
+          Copyright (C) Microsoft Corporation. Tous droits r├®serv├®s.
+          cl /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_b6b82.dir\\Debug\\\\" /scanDependencies "cmTC_b6b82.dir\\Debug\\\\" /Fo"cmTC_b6b82.dir\\Debug\\\\" /Fd"cmTC_b6b82.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\CheckFunctionExists.cxx"
+          CheckFunctionExists.cxx
+        ClCompile:
+          Compilation...
+          C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_b6b82.dir\\Debug\\\\" /Fo"cmTC_b6b82.dir\\Debug\\\\" /Fd"cmTC_b6b82.dir\\Debug\\vc143.pdb" /sourceDependencies "cmTC_b6b82.dir\\Debug\\.d.json" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\CheckFunctionExists.cxx"
+          Compilateur d'optimisation Microsoft (R) C/C++ version┬á19.44.35228 pour x64
+          Copyright (C) Microsoft Corporation. Tous droits r├®serv├®s.
+          cl /c /Zi /W1 /WX- /diagnostics:column /FS /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /ifcOutput "cmTC_b6b82.dir\\Debug\\\\" /Fo"cmTC_b6b82.dir\\Debug\\\\" /Fd"cmTC_b6b82.dir\\Debug\\vc143.pdb" /sourceDependencies "cmTC_b6b82.dir\\Debug\\.d.json" /external:W1 /Gd /TP /errorReport:queue "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\CheckFunctionExists.cxx"
+          CheckFunctionExists.cxx
+        Link:
+          C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\Debug\\cmTC_b6b82.exe" /INCREMENTAL /ILK:"cmTC_b6b82.dir\\Debug\\cmTC_b6b82.ilk" /NOLOGO pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-gafiva/Debug/cmTC_b6b82.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/CMakeScratch/TryCompile-gafiva/Debug/cmTC_b6b82.lib" /MACHINE:X64  /machine:x64 cmTC_b6b82.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: impossible d'ouvrir le fichier 'pthread.lib' [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\cmTC_b6b82.vcxproj]
+        G├®n├®ration du projet "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\cmTC_b6b82.vcxproj" termin├®e (cibles par d├®faut) -- ├ëCHEC.
+        
+        ├ëCHEC de la build.
+        
+        "C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\cmTC_b6b82.vcxproj" (cible par d├®faut) (1) ->
+        (Link cible) -> 
+          LINK : fatal error LNK1104: impossible d'ouvrir le fichier 'pthread.lib' [C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\windows-vcpkg-debug\\CMakeFiles\\CMakeScratch\\TryCompile-gafiva\\cmTC_b6b82.vcxproj]
+        
+            0 Avertissement(s)
+            1 Erreur(s)
+        
+        Temps ├®coul├® 00:00:02.17
+        
+      exitCode: 1
+...

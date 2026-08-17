@@ -7,6 +7,8 @@ import { SocialRelationship } from './entities/social-relationship.entity';
 import { SocialProfileSettingsEntity } from './entities/social-profile-settings.entity';
 import { SocialService } from './services/social.service';
 import { SocialProfileSettingsService } from './services/social-profile-settings.service';
+import { SocialProfileService } from './services/social-profile.service';
+import { SocialRelationshipService } from './services/social-relationship.service';
 import { SocialWsHandler } from './ws/social-ws.handler';
 import { SocialWsRegistrar } from './ws/social-ws.registrar';
 
@@ -22,6 +24,8 @@ import { SocialWsRegistrar } from './ws/social-ws.registrar';
   ],
   providers: [
     SocialProfileSettingsService,
+    SocialProfileService,
+    SocialRelationshipService,
     SocialService,
     SocialWsHandler,
     SocialWsRegistrar,

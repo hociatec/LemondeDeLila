@@ -12,8 +12,6 @@ import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { WsJwtAuthService } from '../../common/ws/ws-jwt-auth.service';
 import type {
   RoomPayload,
-  RoomPlayer,
-  RoomBotState,
 } from '../dto/room-response.dto';
 import type { RoomFocusIntent } from '../dto/room-focus-intent.dto';
 import type { RoomIntent, RoomStartWizardIntent } from '../dto/room-intent.dto';
@@ -32,6 +30,54 @@ import {
   listVisibleSpectators,
   mergePlayers,
 } from './room-roster';
+import { RoomChatStore, type RoomChatMessage } from './room-chat-state';
+import {
+  buildRoomSnapshot,
+  collectRoomAnnouncementMessages,
+  type RoomSnapshot,
+} from './room-announcement.helpers';
+import {
+  buildBotJoinedMessage,
+  buildBotLeftMessage,
+  buildPlayerBecamePlayerMessage,
+  buildPlayerBecameSpectatorMessage,
+  buildPlayerJoinedMessage,
+  buildPlayerLeftMessage,
+} from './room-announcement-message.helpers';
+import { emitRoomAnnouncementDiff } from './room-announcement-diff.helpers';
+import {
+  addBotToRoomPayload,
+  removeBotFromRoomPayload,
+} from './room-bot-payload.helpers';
+import {
+  extractTraceMeta,
+  isImmediateAckAction,
+  mapIntentToLegacyCommand,
+} from './room-command.helpers';
+import {
+  addSocketToRoomMembership,
+  hasUserConnectionsInRoom,
+  removeSocketFromRoomMembership,
+} from './room-socket-membership.helpers';
+import { RoomSocketHeartbeat } from './room-heartbeat.helpers';
+import {
+  ensureUserIsOnTable,
+  requireOwnerActionState,
+  requireTargetUserId,
+  requireValidRoomId,
+} from './room-admin.helpers';
+import { buildRoomInfoMessage } from './room-info.helpers';
+import {
+  buildRoomRoleAnnouncementMessage,
+  buildRoomRoleClientMessage,
+  resolveSpectatorIntent,
+  resolveTruthyFlag,
+} from './room-role.helpers';
+import { buildCreatedRoomState } from './room-created-state.helpers';
+import {
+  parseRoomCreateRequest,
+  parseRoomJoinRequest,
+} from './room-request.helpers';
 
 type AuthedClient = {
   socket: WebSocket;
@@ -45,23 +91,6 @@ type ClientMeta = AuthedClient & {
   role: ClientRole;
   silent: boolean;
   isAdmin: boolean;
-};
-
-type RoomChatMessage = {
-  seq: number;
-  userId: number;
-  username: string;
-  message: string;
-  createdAt: string;
-};
-
-type RoomSnapshot = {
-  players: Map<number, string>;
-  spectators: Map<number, string>;
-  bots: Map<number, string>;
-  ownerId: number | null;
-  ownerName: string;
-  isPrivate: boolean;
 };
 
 type RoomWithOptionalRuntimeFields = {
@@ -80,22 +109,12 @@ export class RoomGateway
   private readonly rooms = new Map<number, Set<WebSocket>>();
   private readonly silentRooms = new Map<number, Set<WebSocket>>();
   private readonly logger = new Logger(RoomGateway.name);
-  private readonly heartbeats = new Map<WebSocket, NodeJS.Timeout>();
-  private readonly lastPong = new WeakMap<WebSocket, number>();
-  private readonly pingIntervalMs = 25_000;
-  private readonly lastChatSentAt = new WeakMap<WebSocket, number>();
+  private readonly heartbeat = new RoomSocketHeartbeat(25_000);
   private readonly messageQueueByClient = new WeakMap<
     WebSocket,
     Promise<void>
   >();
-
-  private readonly roomChat = new Map<
-    number,
-    { nextSeq: number; messages: RoomChatMessage[] }
-  >();
-  private readonly roomChatLimit = 120;
-  private readonly chatCooldownMs = 350;
-  private readonly chatMaxLength = 300;
+  private readonly roomChat = new RoomChatStore();
   private readonly lastRoomStatusByRoomId = new Map<number, string>();
   private readonly lastRoomSnapshotByRoomId = new Map<number, RoomSnapshot>();
   private readonly participantDisconnectGraceMs = 60_000;
@@ -126,7 +145,7 @@ export class RoomGateway
     // Permet à l'admin (via RoomService) de forcer la suppression d'une room
     // en déconnectant tous les clients WS connectés à cette table.
     this.roomsService.setRoomDeletedNotifier(async (roomId: number) => {
-      this.roomChat.delete(roomId);
+      this.roomChat.clearRoom(roomId);
       this.forceDisconnectRoomClients(roomId);
     });
 
@@ -340,15 +359,21 @@ export class RoomGateway
     }
     const initialMeta = this.clients.get(client);
     if (initialMeta?.silent) {
-      if (!this.silentRooms.has(targetRoomId)) {
-        this.silentRooms.set(targetRoomId, new Set());
-      }
-      this.silentRooms.get(targetRoomId)!.add(client);
+      addSocketToRoomMembership(
+        this.rooms,
+        this.silentRooms,
+        targetRoomId,
+        client,
+        true,
+      );
     } else {
-      if (!this.rooms.has(targetRoomId)) {
-        this.rooms.set(targetRoomId, new Set());
-      }
-      this.rooms.get(targetRoomId)!.add(client);
+      addSocketToRoomMembership(
+        this.rooms,
+        this.silentRooms,
+        targetRoomId,
+        client,
+        false,
+      );
     }
     this.realtimeTracker.setSocketParticipantRoom(
       client,
@@ -358,36 +383,7 @@ export class RoomGateway
     );
 
     // Heartbeat : ping régulier pour maintenir la connexion et détecter les resets silencieux.
-    this.lastPong.set(client, Date.now());
-    client.on('pong', () => this.lastPong.set(client, Date.now()));
-    const hb = setInterval(() => {
-      try {
-        if (client.readyState !== WebSocket.OPEN) {
-          clearInterval(hb);
-          this.heartbeats.delete(client);
-          return;
-        }
-        const last = this.lastPong.get(client) ?? Date.now();
-        if (Date.now() - last > this.pingIntervalMs * 2) {
-          clearInterval(hb);
-          this.heartbeats.delete(client);
-          try {
-            client.terminate();
-          } catch {
-            try {
-              client.close();
-            } catch {
-              /* ignore */
-            }
-          }
-          return;
-        }
-        client.ping();
-      } catch {
-        // ignore
-      }
-    }, this.pingIntervalMs);
-    this.heartbeats.set(client, hb);
+    this.heartbeat.start(client);
 
     client.on('message', (raw) => this.handleMessage(client, raw));
     client.on('error', () => client.close());
@@ -414,11 +410,7 @@ export class RoomGateway
     this.realtimeTracker.clearSocket(client);
     this.clients.delete(client);
     this.messageQueueByClient.delete(client);
-    const hb = this.heartbeats.get(client);
-    if (hb) {
-      clearInterval(hb);
-      this.heartbeats.delete(client);
-    }
+    this.heartbeat.stop(client);
     // Sur déconnexion on ne veut jamais "supprimer" une table par erreur.
     // Si l'état de la table est indéterminé (ex: DB temporairement indisponible),
     // on traite la déconnexion comme un simple disconnect (disconnectOnly=true),
@@ -433,30 +425,14 @@ export class RoomGateway
       }
     }
     if (meta) {
-      const set = this.rooms.get(meta.roomId);
-      let remainingConnections = 0;
-      if (set) {
-        set.delete(client);
-        if (set.size === 0) {
-          this.rooms.delete(meta.roomId);
-          remainingConnections = 0;
-        } else {
-          remainingConnections = set.size;
-        }
-      }
-      const silentSet = this.silentRooms.get(meta.roomId);
-      let remainingSilentConnections = 0;
-      if (silentSet) {
-        silentSet.delete(client);
-        if (silentSet.size === 0) {
-          this.silentRooms.delete(meta.roomId);
-          remainingSilentConnections = 0;
-        } else {
-          remainingSilentConnections = silentSet.size;
-        }
-      }
-      const remainingTotalConnections =
-        remainingConnections + remainingSilentConnections;
+      const {
+        remainingTotalConnections,
+      } = removeSocketFromRoomMembership(
+        this.rooms,
+        this.silentRooms,
+        meta.roomId,
+        client,
+      );
       const userStillConnected = this.hasUserConnections(
         meta.roomId,
         meta.userId,
@@ -788,7 +764,7 @@ export class RoomGateway
     }
 
     const previousSnapshot = this.lastRoomSnapshotByRoomId.get(roomId);
-    const nextSnapshot = this.buildRoomSnapshot(payload);
+    const nextSnapshot = buildRoomSnapshot(payload);
     await this.emitRoomAnnouncementsFromDiff(
       roomId,
       previousSnapshot,
@@ -928,7 +904,7 @@ export class RoomGateway
       }
       this.lastRoomSnapshotByRoomId.set(
         roomId,
-        this.buildRoomSnapshot(payload),
+        buildRoomSnapshot(payload),
       );
       this.lastRoomStatusByRoomId.set(roomId, nextStatus);
     } catch (err) {
@@ -986,6 +962,14 @@ export class RoomGateway
   private async sendError(client: WebSocket, message: string) {
     if (client.readyState !== WebSocket.OPEN) return;
     client.send(JSON.stringify({ type: 'error', payload: { message } }));
+  }
+
+  private sendRoomError(client: WebSocket, roomId: number, message: string) {
+    this.safeSend(client, {
+      type: 'error',
+      roomId,
+      payload: { message },
+    });
   }
 
   private safeSend(client: WebSocket, payload: unknown) {
@@ -1063,7 +1047,7 @@ export class RoomGateway
       throw new Error('intentId requis');
     }
 
-    const legacyType = RoomGateway.mapIntentToLegacyCommand(intentId);
+    const legacyType = mapIntentToLegacyCommand(intentId);
     if (!legacyType) {
       throw new Error(`Intent inconnu: ${intentId}`);
     }
@@ -1108,11 +1092,11 @@ export class RoomGateway
     payload: unknown,
     receivedAtMs: number,
   ): void {
-    if (!RoomGateway.isImmediateAckAction(type)) {
+    if (!isImmediateAckAction(type)) {
       return;
     }
 
-    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    const trace = extractTraceMeta(payload, receivedAtMs);
     this.safeSend(client, {
       type: 'room.ack',
       roomId: meta.roomId,
@@ -1123,48 +1107,6 @@ export class RoomGateway
         clientToServerMs: trace.clientToServerMs,
       },
     });
-  }
-
-  private static isImmediateAckAction(type: string | undefined): boolean {
-    return (
-      type === 'room.start' ||
-      type === 'room.reset' ||
-      type === 'bot.add' ||
-      type === 'bot.remove' ||
-      type === 'room.toggle-privacy' ||
-      type === 'room.kick' ||
-      type === 'room.ban' ||
-      type === 'room.set-owner' ||
-      type === 'room.set-ambience'
-    );
-  }
-
-  private static mapIntentToLegacyCommand(intentId: string): string {
-    switch (intentId) {
-      case 'room.leave':
-      case 'room.chat.send':
-      case 'room.chat.history':
-      case 'room.start':
-      case 'room.reset':
-      case 'room.set-role':
-      case 'room.kick':
-      case 'room.ban':
-      case 'room.set-owner':
-      case 'room.set-ambience':
-      case 'room.toggle-privacy':
-      case 'room.info':
-      case 'room.ping':
-      case 'bot.add':
-      case 'bot.remove':
-      case 'room.create':
-      case 'room.join':
-        return intentId;
-      case 'room.toggle-role':
-      case 'room.role.toggle':
-        return 'room.set-role';
-      default:
-        return '';
-    }
   }
 
   private async executeLegacyRoomCommand(
@@ -1250,35 +1192,16 @@ export class RoomGateway
     try {
       const enabled = await this.isRoomChatEnabled(roomId);
       if (!enabled) return;
-      const state = this.getRoomChatState(roomId);
-      if (state.messages.length === 0) return;
+      const messages = this.roomChat.getHistory(roomId);
+      if (messages.length === 0) return;
       this.safeSend(client, {
         type: 'room.chat.history',
         roomId,
-        payload: { messages: state.messages },
+        payload: { messages },
       });
     } catch {
       // best effort
     }
-  }
-
-  private getRoomChatState(roomId: number): {
-    nextSeq: number;
-    messages: RoomChatMessage[];
-  } {
-    const existing = this.roomChat.get(roomId);
-    if (existing) return existing;
-    const created = { nextSeq: 1, messages: [] as RoomChatMessage[] };
-    this.roomChat.set(roomId, created);
-    return created;
-  }
-
-  private normalizeChatMessage(raw: unknown): string {
-    if (typeof raw !== 'string') return '';
-    const trimmed = raw.replace(/\r?\n/g, ' ').trim();
-    if (!trimmed) return '';
-    if (trimmed.length <= this.chatMaxLength) return trimmed;
-    return trimmed.slice(0, this.chatMaxLength).trim();
   }
 
   private async isRoomChatEnabled(roomId: number): Promise<boolean> {
@@ -1315,56 +1238,23 @@ export class RoomGateway
     }
 
     const now = Date.now();
-    const lastAt = this.lastChatSentAt.get(client) ?? 0;
-    if (now - lastAt < this.chatCooldownMs) {
+    if (!this.roomChat.tryConsumeCooldown(client, now)) {
       await this.sendError(client, 'Trop rapide. Attendez un instant.');
       return;
     }
-    this.lastChatSentAt.set(client, now);
 
-    const message = this.normalizeChatMessage(this.asRecord(data).message);
+    const message = this.roomChat.normalizeMessage(this.asRecord(data).message);
     if (!message) {
       return;
     }
 
-    const state = this.getRoomChatState(meta.roomId);
-    const chatMessage: RoomChatMessage = {
-      seq: state.nextSeq++,
+    const chatMessage = this.roomChat.appendMessage(meta.roomId, {
       userId: meta.userId,
       username: meta.username,
       message,
-      createdAt: new Date().toISOString(),
-    };
-    state.messages.push(chatMessage);
-    while (state.messages.length > this.roomChatLimit) {
-      state.messages.shift();
-    }
+    });
 
     await this.broadcast(meta.roomId, 'room.chat.message', chatMessage);
-  }
-
-  private extractTraceMeta(
-    payload: unknown,
-    receivedAtMs: number,
-  ): { traceId: string | null; clientToServerMs: number | null } {
-    const row = this.asRecord(payload);
-    const trace = this.asRecord(row._trace);
-    const traceId =
-      typeof trace.id === 'string' ? String(trace.id) : undefined;
-    const sentAtMs =
-      typeof trace.sentAtMs === 'number' ? Number(trace.sentAtMs) : undefined;
-
-    const id =
-      typeof traceId === 'string' && traceId.trim().length > 0
-        ? traceId.trim()
-        : null;
-
-    const c2s =
-      typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
-        ? Math.max(0, receivedAtMs - sentAtMs)
-        : null;
-
-    return { traceId: id, clientToServerMs: c2s };
   }
 
   private async handleRoomInfo(client: WebSocket, meta: ClientMeta) {
@@ -1380,19 +1270,7 @@ export class RoomGateway
     );
     state.room.counts.spectators = state.room.spectators.length;
 
-    const gameName = state.manifest?.name || state.room.gameType || 'Jeu';
-    const visibility = state.room.isPrivate ? 'privée' : 'publique';
-    const mode = meta.role === 'spectator' ? 'spectateur' : 'joueur';
-
-    const players =
-      state.room.counts.players || state.room.players?.length || 0;
-    const spectators =
-      state.room.counts.spectators || state.room.spectators?.length || 0;
-    const bots = state.room.bots?.length || 0;
-    const total = players + spectators + bots;
-    const peopleLabel = total === 1 ? 'personne' : 'personnes';
-
-    const message = `${gameName}. Table ${visibility}. Mode ${mode}. ${total} ${peopleLabel} sur la table.`;
+    const message = buildRoomInfoMessage(state, meta.role);
 
     this.safeSend(client, {
       type: 'room.info',
@@ -1401,178 +1279,28 @@ export class RoomGateway
     });
   }
 
-  private buildRoomSnapshot(payload: RoomPayload): RoomSnapshot {
-    const room = payload.room;
-    return {
-      players: RoomGateway.buildPlayerMap(room.players),
-      spectators: RoomGateway.buildPlayerMap(room.spectators),
-      bots: RoomGateway.buildBotMap(room.bots),
-      ownerId: room.owner?.id ?? null,
-      ownerName: (room.owner?.username ?? '').trim(),
-      isPrivate: Boolean(room.isPrivate),
-    };
-  }
-
-  private static buildPlayerMap(players?: RoomPlayer[]): Map<number, string> {
-    const map = new Map<number, string>();
-    if (!players) {
-      return map;
-    }
-
-    for (const player of players) {
-      if (!player || !Number.isFinite(player.id) || player.id <= 0) {
-        continue;
-      }
-      map.set(player.id, (player.username ?? '').trim());
-    }
-
-    return map;
-  }
-
-  private static buildBotMap(bots?: RoomBotState[]): Map<number, string> {
-    const map = new Map<number, string>();
-    if (!bots) {
-      return map;
-    }
-
-    for (const bot of bots) {
-      if (!bot || !Number.isFinite(bot.id) || bot.id <= 0) {
-        continue;
-      }
-      map.set(bot.id, (bot.name ?? '').trim());
-    }
-
-    return map;
-  }
-
   private async emitRoomAnnouncementsFromDiff(
     roomId: number,
     previous: RoomSnapshot | undefined,
     next: RoomSnapshot,
   ): Promise<void> {
-    if (!previous) {
+    const messages = collectRoomAnnouncementMessages(previous, next);
+    if (!previous || messages.length > 0) {
+      for (const message of messages) {
+        await this.broadcastRoomAnnouncement(roomId, message);
+      }
       return;
     }
 
-    const roleSwitchIds = new Set<number>();
-    for (const id of previous.players.keys()) {
-      if (next.spectators.has(id)) {
-        roleSwitchIds.add(id);
-      }
+    if (!previous) {
+      return;
     }
-    for (const id of previous.spectators.keys()) {
-      if (next.players.has(id)) {
-        roleSwitchIds.add(id);
-      }
-    }
-
-    // Role switches (spectator <-> player) are common when a user joins a room from another interface.
-    // Keep an explicit announcement so other players understand what happened.
-    for (const id of roleSwitchIds) {
-      if (previous.spectators.has(id) && next.players.has(id)) {
-        const username =
-          next.players.get(id) ?? previous.spectators.get(id) ?? '';
-        await this.broadcastRoomAnnouncement(
-          roomId,
-          RoomGateway.buildPlayerBecamePlayerMessage(username),
-        );
-      } else if (previous.players.has(id) && next.spectators.has(id)) {
-        const username =
-          next.spectators.get(id) ?? previous.players.get(id) ?? '';
-        await this.broadcastRoomAnnouncement(
-          roomId,
-          RoomGateway.buildPlayerBecameSpectatorMessage(username),
-        );
-      }
-    }
-
-    await this.emitPlayerDiff(
+    await emitRoomAnnouncementDiff({
       roomId,
-      previous.players,
-      next.players,
-      false,
-      roleSwitchIds,
-    );
-    await this.emitPlayerDiff(
-      roomId,
-      previous.spectators,
-      next.spectators,
-      true,
-      roleSwitchIds,
-    );
-    await this.emitBotDiff(roomId, previous.bots, next.bots);
-
-    if (
-      previous.ownerId !== next.ownerId ||
-      previous.ownerName !== next.ownerName
-    ) {
-      const message =
-        next.ownerName.length === 0
-          ? 'Propriétaire : aucun.'
-          : `Nouveau propriétaire : ${next.ownerName}.`;
-      await this.broadcastRoomAnnouncement(roomId, message);
-    }
-
-    if (previous.isPrivate !== next.isPrivate) {
-      const message = next.isPrivate ? 'Table privée.' : 'Table publique.';
-      await this.broadcastRoomAnnouncement(roomId, message);
-    }
-  }
-
-  private async emitPlayerDiff(
-    roomId: number,
-    previous: Map<number, string>,
-    next: Map<number, string>,
-    spectator: boolean,
-    roleSwitchIds: Set<number>,
-  ): Promise<void> {
-    for (const [id, username] of next.entries()) {
-      if (roleSwitchIds.has(id)) {
-        continue;
-      }
-      if (!previous.has(id)) {
-        await this.broadcastRoomAnnouncement(
-          roomId,
-          RoomGateway.buildPlayerJoinedMessage(username, spectator),
-        );
-      }
-    }
-
-    for (const [id, username] of previous.entries()) {
-      if (roleSwitchIds.has(id)) {
-        continue;
-      }
-      if (!next.has(id)) {
-        await this.broadcastRoomAnnouncement(
-          roomId,
-          RoomGateway.buildPlayerLeftMessage(username, spectator),
-        );
-      }
-    }
-  }
-
-  private async emitBotDiff(
-    roomId: number,
-    previous: Map<number, string>,
-    next: Map<number, string>,
-  ): Promise<void> {
-    for (const [id, name] of next.entries()) {
-      if (!previous.has(id)) {
-        await this.broadcastRoomAnnouncement(
-          roomId,
-          RoomGateway.buildBotJoinedMessage(name),
-        );
-      }
-    }
-
-    for (const [id, name] of previous.entries()) {
-      if (!next.has(id)) {
-        await this.broadcastRoomAnnouncement(
-          roomId,
-          RoomGateway.buildBotLeftMessage(name),
-        );
-      }
-    }
+      previous,
+      next,
+      announce: (message) => this.broadcastRoomAnnouncement(roomId, message),
+    });
   }
 
   private async broadcastRoomAnnouncement(
@@ -1594,46 +1322,6 @@ export class RoomGateway
     } satisfies RoomIntent);
   }
 
-  private static buildPlayerJoinedMessage(
-    name: string,
-    spectator: boolean,
-  ): string {
-    return `${RoomGateway.formatPlayerName(name)}${spectator ? ' (spectateur)' : ''} a rejoint la table.`;
-  }
-
-  private static buildPlayerBecamePlayerMessage(name: string): string {
-    return `${RoomGateway.formatPlayerName(name)} est passé en mode joueur.`;
-  }
-
-  private static buildPlayerBecameSpectatorMessage(name: string): string {
-    return `${RoomGateway.formatPlayerName(name)} est passé en mode spectateur.`;
-  }
-
-  private static buildPlayerLeftMessage(
-    name: string,
-    spectator: boolean,
-  ): string {
-    return `${RoomGateway.formatPlayerName(name)}${spectator ? ' (spectateur)' : ''} a quitté la table.`;
-  }
-
-  private static buildBotJoinedMessage(name: string): string {
-    return `${RoomGateway.formatBotName(name)} a rejoint la table.`;
-  }
-
-  private static buildBotLeftMessage(name: string): string {
-    return `${RoomGateway.formatBotName(name)} a quitté la table.`;
-  }
-
-  private static formatPlayerName(name: string): string {
-    const trimmed = (name ?? '').trim();
-    return trimmed.length > 0 ? trimmed : 'Un joueur';
-  }
-
-  private static formatBotName(name: string): string {
-    const trimmed = (name ?? '').trim();
-    return trimmed.length > 0 ? trimmed : 'Un bot';
-  }
-
   private async handleRoomLeave(client: WebSocket, meta: ClientMeta) {
     const roomId = meta.roomId;
     if (!Number.isFinite(roomId) || roomId <= 0) {
@@ -1644,48 +1332,18 @@ export class RoomGateway
     const userId = meta.userId;
     const wasParticipant = meta.role === 'participant';
 
-    const activeSet = meta.silent
-      ? this.silentRooms.get(roomId)
-      : this.rooms.get(roomId);
-    let remainingInActiveSet = 0;
-    if (activeSet) {
-      activeSet.delete(client);
-      if (activeSet.size === 0) {
-        if (meta.silent) {
-          this.silentRooms.delete(roomId);
-        } else {
-          this.rooms.delete(roomId);
-        }
-        remainingInActiveSet = 0;
-      } else {
-        remainingInActiveSet = activeSet.size;
-      }
-    }
-    const otherSet = meta.silent
-      ? this.rooms.get(roomId)
-      : this.silentRooms.get(roomId);
-    const remainingInOtherSet = otherSet?.size ?? 0;
-    const remainingTotalConnections =
-      remainingInActiveSet + remainingInOtherSet;
+    const { remainingTotalConnections } = removeSocketFromRoomMembership(
+      this.rooms,
+      this.silentRooms,
+      roomId,
+      client,
+    );
     const userStillConnected = this.hasUserConnections(roomId, userId);
 
     // Empêche handleDisconnect de rappeler leaveRoom quand on ferme le socket après un leave explicite.
-    meta.role = 'spectator';
-    meta.roomId = 0;
-    meta.silent = false;
+    this.resetClientRoomState(meta);
 
-    let leftPayload: RoomPayload | null = null;
-    try {
-      leftPayload = await this.roomsService.getRoomPayload(roomId);
-      this.applySpectators(roomId, leftPayload);
-      this.safeSend(client, {
-        type: 'room.left',
-        roomId,
-        payload: leftPayload,
-      });
-    } catch {
-      this.safeSend(client, { type: 'room.deleted', roomId });
-    }
+    await this.sendRoomLeftOrDeleted(client, roomId);
 
     // Do not block on DB leave logic; allow the client to re-join instantly.
     (async () => {
@@ -1729,7 +1387,7 @@ export class RoomGateway
     payload: unknown,
     receivedAtMs: number,
   ) {
-    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    const trace = extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.start.total',
       async () => {
@@ -1772,7 +1430,7 @@ export class RoomGateway
     payload: unknown,
     receivedAtMs: number,
   ) {
-    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    const trace = extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.reset.total',
       async () => {
@@ -1846,7 +1504,7 @@ export class RoomGateway
     payload: unknown,
     receivedAtMs: number,
   ) {
-    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    const trace = extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.togglePrivacy.total',
       async () => {
@@ -1887,7 +1545,7 @@ export class RoomGateway
     payload: unknown,
     receivedAtMs: number,
   ) {
-    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    const trace = extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.bot.add.total',
       async () => {
@@ -1898,14 +1556,7 @@ export class RoomGateway
         });
         const updated = await this.tryUpdateRoomPayload(
           meta.roomId,
-          (payload) => {
-            payload.room.bots = payload.room.bots ?? [];
-            if (!payload.room.bots.some((b) => b.id === bot.id)) {
-              payload.room.bots.push({ id: bot.id, name: bot.name });
-            }
-            payload.generatedAt = new Date().toISOString();
-            return payload;
-          },
+          (payload) => addBotToRoomPayload(payload, bot),
         );
         if (!updated) {
           await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
@@ -1921,7 +1572,7 @@ export class RoomGateway
     payload: unknown,
     receivedAtMs: number,
   ) {
-    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    const trace = extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.bot.remove.total',
       async () => {
@@ -1946,13 +1597,7 @@ export class RoomGateway
         });
         const updated = await this.tryUpdateRoomPayload(
           meta.roomId,
-          (payload) => {
-            payload.room.bots = (payload.room.bots ?? []).filter(
-              (b) => b.id !== bot.id,
-            );
-            payload.generatedAt = new Date().toISOString();
-            return payload;
-          },
+          (payload) => removeBotFromRoomPayload(payload, bot.id),
         );
         if (!updated) {
           await this.roomsService.invalidateRoomPayloadCache(meta.roomId);
@@ -1988,14 +1633,11 @@ export class RoomGateway
     const hasSpectatorFlag =
       Object.prototype.hasOwnProperty.call(row, 'spectator');
     const spectatorRaw = row.spectator;
-    const spectator = hasSpectatorFlag
-      ? spectatorRaw === true ||
-        spectatorRaw === 1 ||
-        spectatorRaw === '1' ||
-        spectatorRaw === 'true' ||
-        spectatorRaw === 'yes' ||
-        spectatorRaw === 'y'
-      : meta.role !== 'spectator';
+    const spectator = resolveSpectatorIntent(
+      spectatorRaw,
+      hasSpectatorFlag,
+      meta.role,
+    );
 
     if (spectator) {
       // On se retire des participants (sans fermer la connexion) pour ne pas être compté comme joueur.
@@ -2040,15 +1682,13 @@ export class RoomGateway
       roomId: meta.roomId,
       payload: {
         spectator,
-        message: spectator
-          ? 'Mode spectateur activé.'
-          : 'Mode spectateur désactivé.',
+        message: buildRoomRoleClientMessage(spectator),
       },
     });
     await this.broadcastRoomIntent(meta.roomId, {
       type: 'announcement',
       payload: {
-        message: spectator ? 'Mode spectateur.' : 'Mode joueur.',
+        message: buildRoomRoleAnnouncementMessage(spectator),
       },
     } satisfies RoomIntent);
 
@@ -2061,24 +1701,13 @@ export class RoomGateway
     payload: unknown,
     receivedAtMs: number,
   ) {
-    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    const trace = extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.create.total',
       async () => {
         const row = this.asRecord(payload);
-        const gameType =
-          typeof row.gameType === 'string' ? String(row.gameType) : '';
-        const name =
-          typeof row.name === 'string' ? String(row.name) : null;
-        const maxPlayersRaw = row.maxPlayers ?? row.max ?? null;
-        const maxPlayers =
-          typeof maxPlayersRaw === 'number'
-            ? maxPlayersRaw
-            : Number.isFinite(parseInt(String(maxPlayersRaw ?? ''), 10))
-              ? parseInt(String(maxPlayersRaw ?? ''), 10)
-              : null;
-        const isPrivate =
-          typeof row.isPrivate === 'boolean' ? row.isPrivate : false;
+        const { gameType, name, maxPlayers, isPrivate } =
+          parseRoomCreateRequest(row);
         const room = await this.roomsService.createRoom(
           meta.userId,
           gameType,
@@ -2091,55 +1720,31 @@ export class RoomGateway
         const previousRoomId = meta.roomId;
         const previousRole = meta.role;
         if (previousRoomId !== room.id) {
-          const previousSet = this.rooms.get(previousRoomId);
-          if (previousSet) {
-            previousSet.delete(client);
-            if (previousSet.size === 0) {
-              this.rooms.delete(previousRoomId);
-            }
-          }
-          if (!this.rooms.has(room.id)) {
-            this.rooms.set(room.id, new Set());
-          }
-          this.rooms.get(room.id)!.add(client);
+          removeSocketFromRoomMembership(
+            this.rooms,
+            this.silentRooms,
+            previousRoomId,
+            client,
+          );
+          addSocketToRoomMembership(
+            this.rooms,
+            this.silentRooms,
+            room.id,
+            client,
+            false,
+          );
         }
         meta.roomId = room.id;
         meta.role = 'participant';
         this.realtimeTracker.setSocketParticipantRoom(client, room.id);
 
         const manifest = await this.catalog.getGame(room.gameType);
-        const state = {
-          manifest: manifest
-            ? {
-                id: manifest.id,
-                name: manifest.name,
-                minPlayers: manifest.minPlayers ?? 2,
-                maxPlayers: manifest.maxPlayers ?? room.maxPlayers,
-                chatEnabled: manifest.chatEnabled !== false,
-                chatSoundsEnabled: manifest.chatSoundsEnabled !== false,
-              }
-            : null,
-          room: {
-            id: room.id,
-            name: room.name,
-            isPrivate: room.isPrivate,
-            maxPlayers: room.maxPlayers,
-            status: room.status,
-            gameType: room.gameType,
-            startedAt: room.startedAt ? room.startedAt.toISOString() : null,
-            counts: { players: 1, spectators: 0 },
-            owner: { id: meta.userId, username: meta.username },
-            players: [
-              {
-                id: meta.userId,
-                username: meta.username,
-              } satisfies RoomPlayer,
-            ],
-            spectators: [],
-            bots: [],
-          },
-          generatedAt: new Date().toISOString(),
-        };
+        const state = buildCreatedRoomState({
+          manifest,
+          room,
+          userId: meta.userId,
+          username: meta.username,
+        });
         const message = {
           type: 'room.created',
           roomId: room.id,
@@ -2171,35 +1776,12 @@ export class RoomGateway
     payload: unknown,
     receivedAtMs: number,
   ) {
-    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    const trace = extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.join.total',
       async () => {
         const row = this.asRecord(payload);
-        const roomId = Number(row.roomId ?? row.room ?? 0);
-        const spectatorRaw = row.spectator;
-        const spectator =
-          spectatorRaw === true ||
-          spectatorRaw === 1 ||
-          spectatorRaw === '1' ||
-          spectatorRaw === 'true' ||
-          spectatorRaw === 'yes' ||
-          spectatorRaw === 'y';
-        const silentRaw = row.silent;
-        const hiddenRaw = row.hidden;
-        const silent =
-          silentRaw === true ||
-          silentRaw === 1 ||
-          silentRaw === '1' ||
-          silentRaw === 'true' ||
-          silentRaw === 'yes' ||
-          silentRaw === 'y' ||
-          hiddenRaw === true ||
-          hiddenRaw === 1 ||
-          hiddenRaw === '1' ||
-          hiddenRaw === 'true' ||
-          hiddenRaw === 'yes' ||
-          hiddenRaw === 'y';
+        const { roomId, spectator, silent } = parseRoomJoinRequest(row);
 
         if (!Number.isFinite(roomId) || roomId <= 0) {
           throw new Error('roomId invalide');
@@ -2265,32 +1847,19 @@ export class RoomGateway
         // - we stay in the same room but change silent/normal mode
         // (otherwise the socket may end up in the wrong set and not receive updates).
         if (previousRoomId !== roomId || previousSilent !== effectiveSilent) {
-          const previousSet = this.rooms.get(previousRoomId);
-          if (previousSet) {
-            previousSet.delete(client);
-            if (previousSet.size === 0) {
-              this.rooms.delete(previousRoomId);
-            }
-          }
-          const previousSilentSet = this.silentRooms.get(previousRoomId);
-          if (previousSilentSet) {
-            previousSilentSet.delete(client);
-            if (previousSilentSet.size === 0) {
-              this.silentRooms.delete(previousRoomId);
-            }
-          }
-
-          if (effectiveSilent) {
-            if (!this.silentRooms.has(roomId)) {
-              this.silentRooms.set(roomId, new Set());
-            }
-            this.silentRooms.get(roomId)!.add(client);
-          } else {
-            if (!this.rooms.has(roomId)) {
-              this.rooms.set(roomId, new Set());
-            }
-            this.rooms.get(roomId)!.add(client);
-          }
+          removeSocketFromRoomMembership(
+            this.rooms,
+            this.silentRooms,
+            previousRoomId,
+            client,
+          );
+          addSocketToRoomMembership(
+            this.rooms,
+            this.silentRooms,
+            roomId,
+            client,
+            effectiveSilent,
+          );
         }
 
         meta.roomId = roomId;
@@ -2363,38 +1932,34 @@ export class RoomGateway
     payload: unknown,
     ban: boolean,
   ): Promise<void> {
-    const roomId = meta.roomId;
-    if (!Number.isFinite(roomId) || roomId <= 0) {
-      throw new Error('roomId invalide');
-    }
-
-    const row = this.asRecord(payload);
-    const targetRaw = row.userId ?? row.id ?? row.targetUserId;
-    const targetUserId = Number(targetRaw);
-    if (!Number.isFinite(targetUserId) || targetUserId <= 0) {
-      throw new Error('userId invalide');
-    }
+    const roomId = requireValidRoomId(meta.roomId);
+    const targetUserId = requireTargetUserId(this.asRecord(payload), [
+      'userId',
+      'id',
+      'targetUserId',
+    ]);
     if (targetUserId === meta.userId) {
       throw new Error('Impossible de se cibler soi-meme');
     }
 
-    const state = await this.roomsService.getRoomPayload(roomId);
+    const state = requireOwnerActionState(
+      await this.roomsService.getRoomPayload(roomId),
+      meta.userId,
+      'Seul le proprietaire peut effectuer cette action',
+    );
     const ownerId = state?.room?.owner?.id ?? 0;
-    if (ownerId !== meta.userId) {
-      throw new Error('Seul le proprietaire peut effectuer cette action');
-    }
     if (ownerId === targetUserId) {
       throw new Error('Impossible de cibler le proprietaire');
     }
 
-    const spectators = listVisibleSpectators(this.clients.values(), roomId);
-    const isOnTable =
-      (state?.room?.players?.some((p) => p?.id === targetUserId) ?? false) ||
-      spectators.some((s) => s?.id === targetUserId) ||
-      this.hasUserConnections(roomId, targetUserId);
-    if (!isOnTable) {
-      throw new Error('Utilisateur introuvable sur la table');
-    }
+    ensureUserIsOnTable(
+      state,
+      targetUserId,
+      listVisibleSpectators(this.clients.values(), roomId).map(
+        (spectator) => spectator?.id ?? 0,
+      ),
+      this.hasUserConnections(roomId, targetUserId),
+    );
 
     if (ban) {
       this.roomsService.ban(roomId, targetUserId);
@@ -2421,35 +1986,30 @@ export class RoomGateway
     meta: ClientMeta,
     payload: unknown,
   ): Promise<void> {
-    const roomId = meta.roomId;
-    if (!Number.isFinite(roomId) || roomId <= 0) {
-      throw new Error('roomId invalide');
-    }
-
-    const row = this.asRecord(payload);
-    const targetRaw = row.userId ?? row.id ?? row.newOwnerId;
-    const newOwnerId = Number(targetRaw);
-    if (!Number.isFinite(newOwnerId) || newOwnerId <= 0) {
-      throw new Error('userId invalide');
-    }
+    const roomId = requireValidRoomId(meta.roomId);
+    const newOwnerId = requireTargetUserId(this.asRecord(payload), [
+      'userId',
+      'id',
+      'newOwnerId',
+    ]);
     if (newOwnerId === meta.userId) {
       return;
     }
 
-    const state = await this.roomsService.getRoomPayload(roomId);
-    const ownerId = state?.room?.owner?.id ?? 0;
-    if (ownerId !== meta.userId) {
-      throw new Error('Seul le proprietaire peut changer le proprietaire');
-    }
+    const state = requireOwnerActionState(
+      await this.roomsService.getRoomPayload(roomId),
+      meta.userId,
+      'Seul le proprietaire peut changer le proprietaire',
+    );
 
-    const spectators = listVisibleSpectators(this.clients.values(), roomId);
-    const isOnTable =
-      (state?.room?.players?.some((p) => p?.id === newOwnerId) ?? false) ||
-      spectators.some((s) => s?.id === newOwnerId) ||
-      this.hasUserConnections(roomId, newOwnerId);
-    if (!isOnTable) {
-      throw new Error('Utilisateur introuvable sur la table');
-    }
+    ensureUserIsOnTable(
+      state,
+      newOwnerId,
+      listVisibleSpectators(this.clients.values(), roomId).map(
+        (spectator) => spectator?.id ?? 0,
+      ),
+      this.hasUserConnections(roomId, newOwnerId),
+    );
 
     await this.roomsService.setOwner(roomId, meta.userId, newOwnerId);
     await this.sendRoomState(roomId);
@@ -2473,11 +2033,7 @@ export class RoomGateway
       }
 
       try {
-        this.safeSend(socket, {
-          type: 'error',
-          roomId,
-          payload: { message },
-        });
+        this.sendRoomError(socket, roomId, message);
       } catch {
         // ignore
       }
@@ -2489,21 +2045,8 @@ export class RoomGateway
       a?.delete(socket);
       b?.delete(socket);
 
-      meta.role = 'spectator';
-      meta.roomId = 0;
-      meta.silent = false;
-
-      try {
-        const leftPayload = await this.roomsService.getRoomPayload(roomId);
-        this.applySpectators(roomId, leftPayload);
-        this.safeSend(socket, {
-          type: 'room.left',
-          roomId,
-          payload: leftPayload,
-        });
-      } catch {
-        this.safeSend(socket, { type: 'room.deleted', roomId });
-      }
+      this.resetClientRoomState(meta);
+      await this.sendRoomLeftOrDeleted(socket, roomId);
     }
 
     if (a && a.size === 0) this.rooms.delete(roomId);
@@ -2519,21 +2062,13 @@ export class RoomGateway
   }
 
   private hasUserConnections(roomId: number, userId: number): boolean {
-    const set = this.rooms.get(roomId);
-    if (set) {
-      for (const socket of set.values()) {
-        const meta = this.clients.get(socket);
-        if (meta?.userId === userId && meta.roomId === roomId) return true;
-      }
-    }
-    const silentSet = this.silentRooms.get(roomId);
-    if (silentSet) {
-      for (const socket of silentSet.values()) {
-        const meta = this.clients.get(socket);
-        if (meta?.userId === userId && meta.roomId === roomId) return true;
-      }
-    }
-    return false;
+    return hasUserConnectionsInRoom(
+      this.rooms,
+      this.silentRooms,
+      this.clients,
+      roomId,
+      userId,
+    );
   }
 
   private async handleSetAmbience(
@@ -2542,7 +2077,7 @@ export class RoomGateway
     payload: unknown,
     receivedAtMs: number,
   ) {
-    const trace = this.extractTraceMeta(payload, receivedAtMs);
+    const trace = extractTraceMeta(payload, receivedAtMs);
     await this.perf.measure(
       'ws.room.setAmbience.total',
       async () => {
@@ -2675,6 +2210,29 @@ export class RoomGateway
       return started && this.invites.canSpectate(roomId, userId);
     } catch {
       return false;
+    }
+  }
+
+  private resetClientRoomState(meta: ClientMeta): void {
+    meta.role = 'spectator';
+    meta.roomId = 0;
+    meta.silent = false;
+  }
+
+  private async sendRoomLeftOrDeleted(
+    socket: WebSocket,
+    roomId: number,
+  ): Promise<void> {
+    try {
+      const leftPayload = await this.roomsService.getRoomPayload(roomId);
+      this.applySpectators(roomId, leftPayload);
+      this.safeSend(socket, {
+        type: 'room.left',
+        roomId,
+        payload: leftPayload,
+      });
+    } catch {
+      this.safeSend(socket, { type: 'room.deleted', roomId });
     }
   }
 

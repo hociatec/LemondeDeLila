@@ -41,7 +41,7 @@ using client_win.Modules.Vault.ViewModels;
 
 namespace client_win.Modules.Game.Shell.Services;
 
-public sealed class GameTableOpener : IGameTableOpener
+public sealed partial class GameTableOpener : IGameTableOpener
 {
     private readonly ILogger<GameTableOpener> _logger;
     private readonly ClientConfiguration _config;
@@ -124,124 +124,6 @@ public sealed class GameTableOpener : IGameTableOpener
 
     private IAnnouncementService AnnouncementService => _announcementService ?? throw new InvalidOperationException("Le service d'annonces n'est pas disponible.");
 
-    private sealed class TableAmbienceFileDto
-    {
-        public TableAmbienceItemDto[]? Items { get; set; }
-    }
-
-    private sealed class TableAmbienceItemDto
-    {
-        public string? SoundId { get; set; }
-        public string? Name { get; set; }
-        public bool? Enabled { get; set; }
-    }
-
-    public void InvalidateTableAmbienceLabelsCache()
-    {
-        lock (_tableAmbienceLabelsCacheGate)
-        {
-            _tableAmbienceLabelsCache = null;
-            _tableAmbienceLabelsCacheUntil = DateTimeOffset.MinValue;
-            _tableAmbienceLabelsInFlight = null;
-        }
-    }
-
-    private async Task<Dictionary<string, string>> FetchTableAmbienceLabelsAsync(CancellationToken cancellationToken)
-    {
-        Dictionary<string, string>? cached = null;
-        Task<Dictionary<string, string>>? inFlight = null;
-        lock (_tableAmbienceLabelsCacheGate)
-        {
-            if (_tableAmbienceLabelsCache != null && DateTimeOffset.UtcNow < _tableAmbienceLabelsCacheUntil)
-            {
-                cached = new Dictionary<string, string>(_tableAmbienceLabelsCache, StringComparer.OrdinalIgnoreCase);
-            }
-            else if (_tableAmbienceLabelsInFlight != null)
-            {
-                inFlight = _tableAmbienceLabelsInFlight;
-            }
-            else
-            {
-                _tableAmbienceLabelsInFlight = FetchTableAmbienceLabelsCoreAsync(cancellationToken);
-                inFlight = _tableAmbienceLabelsInFlight;
-            }
-        }
-
-        if (cached != null)
-        {
-            return cached;
-        }
-
-        var fetched = await (inFlight ?? FetchTableAmbienceLabelsCoreAsync(cancellationToken)).ConfigureAwait(false);
-        lock (_tableAmbienceLabelsCacheGate)
-        {
-            if (ReferenceEquals(_tableAmbienceLabelsInFlight, inFlight))
-            {
-                _tableAmbienceLabelsInFlight = null;
-            }
-
-            if (fetched.Count > 0)
-            {
-                _tableAmbienceLabelsCache = new Dictionary<string, string>(fetched, StringComparer.OrdinalIgnoreCase);
-                _tableAmbienceLabelsCacheUntil = DateTimeOffset.UtcNow.AddMinutes(2);
-                return new Dictionary<string, string>(_tableAmbienceLabelsCache, StringComparer.OrdinalIgnoreCase);
-            }
-
-            if (_tableAmbienceLabelsCache != null)
-            {
-                return new Dictionary<string, string>(_tableAmbienceLabelsCache, StringComparer.OrdinalIgnoreCase);
-            }
-
-            _tableAmbienceLabelsCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            _tableAmbienceLabelsCacheUntil = DateTimeOffset.UtcNow.AddSeconds(20);
-            return new Dictionary<string, string>(_tableAmbienceLabelsCache, StringComparer.OrdinalIgnoreCase);
-        }
-    }
-
-    private async Task<Dictionary<string, string>> FetchTableAmbienceLabelsCoreAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var endpoint = new Uri(_config.HttpBase, "sounds/table-ambiences");
-            using var req = new HttpRequestMessage(HttpMethod.Get, endpoint);
-            using var res = await HttpClientProvider.Shared
-                .SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
-            if (!res.IsSuccessStatusCode)
-            {
-                return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            }
-
-            var json = await res.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var dto = JsonSerializer.Deserialize<TableAmbienceFileDto>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            var items = dto?.Items ?? Array.Empty<TableAmbienceItemDto>();
-
-            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var it in items)
-            {
-                if (it?.Enabled == false)
-                {
-                    continue;
-                }
-                var id = (it?.SoundId ?? string.Empty).Trim();
-                var name = (it?.Name ?? string.Empty).Trim();
-                if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(name))
-                {
-                    continue;
-                }
-                map[id] = name;
-            }
-            return map;
-        }
-        catch
-        {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-    }
-
     public async Task OpenAsync(CatalogGame game, object returnContent)
     {
         if (game == null) throw new ArgumentNullException(nameof(game));
@@ -282,54 +164,7 @@ public sealed class GameTableOpener : IGameTableOpener
         await OpenExistingAsync(roomId, returnContent, spectator: false).ConfigureAwait(true);
     }
 
-    private enum RosterEntryKind
-    {
-        Player,
-        Spectator,
-        Bot
-    }
 
-    private sealed record RosterEntry(int Id, string Name, RosterEntryKind Kind);
-
-    private static IReadOnlyList<RosterEntry> BuildRoster(IRoomSession session)
-    {
-        var room = session?.LastRoomState?.Room;
-        if (room == null)
-        {
-            return Array.Empty<RosterEntry>();
-        }
-
-        var byKey = new Dictionary<string, RosterEntry>(StringComparer.Ordinal);
-
-        foreach (var p in room.Players ?? new List<RoomUserDto>())
-        {
-            if (p == null || p.Id <= 0) continue;
-            var name = (p.Username ?? string.Empty).Trim();
-            if (name.Length == 0) continue;
-            byKey[$"user:{p.Id}"] = new RosterEntry(p.Id, name, RosterEntryKind.Player);
-        }
-
-        foreach (var s in room.Spectators ?? new List<RoomUserDto>())
-        {
-            if (s == null || s.Id <= 0) continue;
-            var name = (s.Username ?? string.Empty).Trim();
-            if (name.Length == 0) continue;
-            byKey[$"user:{s.Id}"] = new RosterEntry(s.Id, name, RosterEntryKind.Spectator);
-        }
-
-        foreach (var b in room.Bots ?? new List<RoomBotDto>())
-        {
-            if (b == null || b.Id <= 0) continue;
-            var name = (b.Name ?? string.Empty).Trim();
-            if (name.Length == 0) continue;
-            byKey[$"bot:{b.Id}"] = new RosterEntry(b.Id, name, RosterEntryKind.Bot);
-        }
-
-        return byKey.Values
-            .OrderBy(x => x.Kind)
-            .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-    }
 
     private async Task InvitePlayerAsync(IRoomSession session)
     {
@@ -594,68 +429,6 @@ public sealed class GameTableOpener : IGameTableOpener
                 silent: silent,
                 vaultSnapshotId: vaultSnapshotId)
             .ConfigureAwait(true);
-    }
-
-    private void TryApplyTableAmbiencePrefsForSnapshot(string? vaultSnapshotId)
-    {
-        var id = (vaultSnapshotId ?? string.Empty).Trim();
-        if (id.Length == 0)
-        {
-            return;
-        }
-
-        try
-        {
-            var state = _options.Current;
-            var map = state.TableAmbiencePrefsByVaultSnapshotId;
-            if (map == null || !map.TryGetValue(id, out var prefs) || prefs == null)
-            {
-                return;
-            }
-
-            var nextEnabled = prefs.Enabled;
-            var nextVolume = Math.Max(0, Math.Min(100, prefs.Volume));
-            if (state.SoundTableAmbience == nextEnabled && state.SoundTableAmbienceVolume == nextVolume)
-            {
-                return;
-            }
-
-            state.SoundTableAmbience = nextEnabled;
-            state.SoundTableAmbienceVolume = nextVolume;
-            _options.Update(state);
-        }
-        catch
-        {
-            // best-effort
-        }
-    }
-
-    private void TryPersistTableAmbiencePrefsForSnapshot(string? vaultSnapshotId)
-    {
-        var id = (vaultSnapshotId ?? string.Empty).Trim();
-        if (id.Length == 0)
-        {
-            return;
-        }
-
-        try
-        {
-            var state = _options.Current;
-            state.TableAmbiencePrefsByVaultSnapshotId ??= new();
-
-            var enabled = state.SoundTableAmbience;
-            var volume = Math.Max(0, Math.Min(100, state.SoundTableAmbienceVolume));
-            state.TableAmbiencePrefsByVaultSnapshotId[id] = new OptionsState.TableAmbienceSnapshotPrefs
-            {
-                Enabled = enabled,
-                Volume = volume
-            };
-            _options.Update(state);
-        }
-        catch
-        {
-            // best-effort
-        }
     }
 
     private async Task OpenDeferredAsync(
