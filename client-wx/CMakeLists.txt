@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 3.28)
 
 project(lemonde_de_lila_wx VERSION 1.2.651.0 LANGUAGES CXX)
 
@@ -131,9 +131,10 @@ if(BUILD_TESTING)
     if(EXISTS "${NETWORK_PROTOCOL_TEST}")
         add_executable(lemonde_de_lila_wx_tests
             tests/NetworkProtocolTests.cpp
-            src/shared/network/realtime/RealtimeProtocol.cpp
-            src/modules/chat/infrastructure/ChatProtocol.cpp
-            src/modules/chat/application/ChatMessageStore.cpp
+            src/shared/security/SecurityUtils.cpp
+            src/shared/text/Encoding.cpp
+            src/shared/logging/Logger.cpp
+            src/shared/persistence/JsonFileStorage.cpp
         )
 
         target_include_directories(lemonde_de_lila_wx_tests PRIVATE
@@ -143,6 +144,10 @@ if(BUILD_TESTING)
         target_link_libraries(lemonde_de_lila_wx_tests PRIVATE
             nlohmann_json::nlohmann_json
         )
+
+        if(WIN32)
+            target_link_libraries(lemonde_de_lila_wx_tests PRIVATE winhttp)
+        endif()
 
         if(MSVC)
             target_compile_options(lemonde_de_lila_wx_tests PRIVATE

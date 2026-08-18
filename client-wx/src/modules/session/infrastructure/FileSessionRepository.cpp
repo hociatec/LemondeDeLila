@@ -3,6 +3,7 @@
 #include "shared/data/JsonReaders.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/persistence/JsonFileStorage.h"
+#include "shared/security/SecurityUtils.h"
 
 #include <nlohmann/json.hpp>
 
@@ -26,9 +27,16 @@ domain::Session ParseSession(const nlohmann::json& document)
     session.username = lila::shared::data::json::ReadOptionalString(
         document,
         lila::shared::contracts::session::UsernameField.data());
-    session.token = lila::shared::data::json::ReadOptionalString(
+
+    std::string protectedOrRawToken = lila::shared::data::json::ReadOptionalString(
         document,
         lila::shared::contracts::session::TokenField.data());
+    session.token = lila::shared::security::UnprotectSecret(protectedOrRawToken);
+
+    session.expiresAt = lila::shared::data::json::ReadOptionalInteger(
+        document,
+        "expiresAt");
+
     return session;
 }
 }
@@ -66,24 +74,26 @@ void FileSessionRepository::Save(const domain::Session& session)
     }
 
     const wxString path = lila::shared::persistence::JsonFileStorage::ResolvePath("session.json");
+    const std::string protectedToken = lila::shared::security::ProtectSecret(session.token);
+
     const nlohmann::json document = {
         {std::string(lila::shared::contracts::session::UserIdField), session.userId},
         {std::string(lila::shared::contracts::session::UsernameField), session.username},
-        {std::string(lila::shared::contracts::session::TokenField), session.token}
+        {std::string(lila::shared::contracts::session::TokenField), protectedToken},
+        {"expiresAt", session.expiresAt}
     };
 
     lila::shared::persistence::JsonFileStorage::Write(
         path,
         document,
         lila::shared::errors::InvalidSessionSaveFailed);
+
+    lila::shared::security::HardenFilePermissions(path.ToStdString());
 }
 
 void FileSessionRepository::Clear()
 {
     const wxString path = lila::shared::persistence::JsonFileStorage::ResolvePath("session.json");
-    lila::shared::persistence::JsonFileStorage::Remove(
-        path,
-        lila::shared::errors::FileSessionDeleteFailed);
+    lila::shared::security::SecureDeleteFile(path.ToStdString());
 }
 }
-

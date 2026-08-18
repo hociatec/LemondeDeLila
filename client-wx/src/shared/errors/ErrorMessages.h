@@ -1,8 +1,12 @@
 ﻿#pragma once
 
+#include "shared/text/UiTexts.h"
+
 #include <string>
 
 namespace lila::shared::errors {
+
+using namespace lila::shared::text::ui;
 
 inline std::string WithDetails(const char* message, const std::string& details)
 {

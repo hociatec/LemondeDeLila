@@ -1,4 +1,5 @@
 #include "shared/concurrency/BackgroundExecutor.h"
+#include "shared/logging/Logger.h"
 
 #include <algorithm>
 #include <condition_variable>
@@ -13,13 +14,15 @@ namespace lila::shared::concurrency
 {
 namespace
 {
+static constexpr std::size_t MaxQueueCapacity = 256;
+
 class BackgroundWorkerPool final
 {
 public:
     BackgroundWorkerPool()
     {
         const unsigned int hardwareThreads = std::thread::hardware_concurrency();
-        const std::size_t workerCount = std::clamp<std::size_t>(hardwareThreads == 0 ? 2U : hardwareThreads, 2U, 4U);
+        const std::size_t workerCount = std::clamp<std::size_t>(hardwareThreads == 0 ? 2U : hardwareThreads, 2U, 8U);
         workers_.reserve(workerCount);
         for (std::size_t index = 0; index < workerCount; ++index)
         {
@@ -43,6 +46,13 @@ public:
             std::lock_guard lock(mutex_);
             if (stopping_)
             {
+                stopSource->request_stop();
+                return;
+            }
+
+            if (queue_.size() >= MaxQueueCapacity)
+            {
+                lila::shared::logging::LogWarning("BackgroundExecutor", "Queue capacity reached. Dropping job.");
                 stopSource->request_stop();
                 return;
             }
