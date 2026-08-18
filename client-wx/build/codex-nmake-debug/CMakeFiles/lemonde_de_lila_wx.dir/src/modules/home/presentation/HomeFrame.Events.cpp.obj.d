@@ -522,7 +522,6 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/tooltip.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/frame.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/AuthenticationResult.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/array
 C:/vcpkg/installed/x64-windows/include/wx/checkbox.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -611,3 +610,6 @@ C:/vcpkg/installed/x64-windows/include/wx/image.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/bitmap.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/anybutton.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/button.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h

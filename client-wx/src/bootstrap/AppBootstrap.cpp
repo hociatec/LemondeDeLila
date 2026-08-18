@@ -1,3 +1,4 @@
+﻿#include "shared/text/Encoding.h"
 #include "bootstrap/AppBootstrap.h"
 
 #include "app/navigation/AppNavigator.h"
@@ -98,7 +99,7 @@ bool AppBootstrap::Start()
     catch (const std::exception& error)
     {
         wxMessageBox(
-            wxString::FromUTF8(error.what()),
+            lila::shared::text::FromUtf8(error.what()),
             wxString(L"Erreur de démarrage"),
             wxOK | wxICON_ERROR);
         return false;

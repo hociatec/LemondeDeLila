@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -12,6 +13,12 @@
 class wxButton;
 class wxListBox;
 class wxTextCtrl;
+
+
+namespace lila::shared::concurrency
+{
+class BackgroundTaskHandle;
+}
 
 namespace lila::modules::chat::application
 {
@@ -30,6 +37,8 @@ class SessionStore;
 
 namespace lila::modules::chat::presentation
 {
+class ChatFocusController;
+
 class ChatFrame final : public wxFrame
 {
 public:
@@ -53,6 +62,7 @@ private:
         const std::function<void()>& action,
         const std::function<void()>& onSuccess = {});
     void OpenChat();
+    void PresentConnectionError(const std::string& message);
     void RefreshHistory();
     void UpdateStatus(const wxString& message, bool isError = false);
     void ShowAccessibleErrorDialog(const wxString& message, const wxString& title);
@@ -62,7 +72,9 @@ private:
     void CancelEdit();
     void HandleEscape();
     void HandleHistoryActivation();
-    void FocusHistoryAction(bool isReverse);
+    void HandleHistoryClick();
+    void HandleEditSelected();
+    void HandleDeleteSelected();
     bool ConfirmClose();
     void InvalidateOpenChatRequest();
     void RequestCloseToSession();
@@ -89,5 +101,7 @@ private:
     std::optional<std::string> selectedActionMessageId_;
     std::vector<domain::ChatMessage> visibleMessages_;
     std::optional<std::string> pendingEditMessageId_;
+    std::unique_ptr<ChatFocusController> focusController_;
+    std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> openChatTask_;
 };
 }

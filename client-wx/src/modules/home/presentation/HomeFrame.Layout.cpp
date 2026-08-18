@@ -1,3 +1,4 @@
+#include "shared/text/Encoding.h"
 #include "modules/home/presentation/HomeFrame.h"
 
 #include <wx/checkbox.h>
@@ -21,7 +22,7 @@ void HomeFrame::BuildLayout()
 
     auto* headerPanel = new lila::shared::accessibility::NonFocusablePanel(rootPanel_, 0);
     auto* headerSizer = new wxBoxSizer(wxVERTICAL);
-    titleLabel_ = new wxStaticText(headerPanel, wxID_ANY, wxString::FromUTF8(shared::config::AppConfig::AppTitle.data()));
+    titleLabel_ = new wxStaticText(headerPanel, wxID_ANY, lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()));
     subtitleLabel_ = new wxStaticText(headerPanel, wxID_ANY, "Connexion ou inscription");
     headerSizer->AddStretchSpacer();
     headerSizer->Add(titleLabel_, 0, wxALIGN_CENTER | wxBOTTOM, 4);
@@ -45,7 +46,7 @@ void HomeFrame::BuildLayout()
     auto* footerLabel = new wxStaticText(
         footerPanel,
         wxID_ANY,
-        wxString::FromUTF8("Inspir" "\xC3\xA9" " du module Home WPF : navigation Landing/Login/Register et banni" "\xC3\xA8" "res d'" "\xC3\xA9" "tat."));
+        lila::shared::text::FromUtf8("Inspir" "\xC3\xA9" " du module Home WPF : navigation Landing/Login/Register et banni" "\xC3\xA8" "res d'" "\xC3\xA9" "tat."));
     footerSizer->AddStretchSpacer();
     footerSizer->Add(footerLabel, 0, wxALIGN_CENTER);
     footerSizer->AddStretchSpacer();
@@ -67,7 +68,7 @@ void HomeFrame::BuildLandingPage()
     auto* sizer = new wxBoxSizer(wxVERTICAL);
     auto* intro = new wxStaticText(landingPage_, wxID_ANY, "Bienvenue, choisissez une action pour continuer.");
     landingLoginButton_ = new lila::shared::accessibility::ActionButton(landingPage_, wxID_ANY, "Se connecter");
-    landingRegisterButton_ = new lila::shared::accessibility::ActionButton(landingPage_, wxID_ANY, wxString::FromUTF8("Cr" "\xC3\xA9" "er un compte"));
+    landingRegisterButton_ = new lila::shared::accessibility::ActionButton(landingPage_, wxID_ANY, lila::shared::text::FromUtf8("Cr" "\xC3\xA9" "er un compte"));
     landingQuitButton_ = new lila::shared::accessibility::ActionButton(landingPage_, wxID_ANY, "Quitter");
     auto* row = new wxBoxSizer(wxHORIZONTAL);
     row->Add(landingRegisterButton_, 0);
@@ -94,7 +95,7 @@ void HomeFrame::BuildLoginPage()
     loginShowPasswordCheck_ = new wxCheckBox(loginPage_, wxID_ANY, "Afficher le mot de passe");
     loginRememberMeCheck_ = new wxCheckBox(loginPage_, wxID_ANY, "Se souvenir de moi");
     loginSubmitButton_ = new lila::shared::accessibility::ActionButton(loginPage_, wxID_ANY, "Connexion");
-    loginRegisterButton_ = new lila::shared::accessibility::ActionButton(loginPage_, wxID_ANY, wxString::FromUTF8("Cr" "\xC3\xA9" "er un compte"));
+    loginRegisterButton_ = new lila::shared::accessibility::ActionButton(loginPage_, wxID_ANY, lila::shared::text::FromUtf8("Cr" "\xC3\xA9" "er un compte"));
     loginQuitButton_ = new lila::shared::accessibility::ActionButton(loginPage_, wxID_ANY, "Quitter");
     auto* checks = new wxBoxSizer(wxHORIZONTAL);
     checks->Add(loginShowPasswordCheck_, 0);
@@ -127,7 +128,7 @@ void HomeFrame::BuildRegisterPage()
 {
     registerPage_ = new lila::shared::accessibility::NonFocusablePanel(pages_);
     auto* sizer = new wxBoxSizer(wxVERTICAL);
-    auto* title = new wxStaticText(registerPage_, wxID_ANY, wxString::FromUTF8("Cr" "\xC3\xA9" "er un compte"));
+    auto* title = new wxStaticText(registerPage_, wxID_ANY, lila::shared::text::FromUtf8("Cr" "\xC3\xA9" "er un compte"));
     auto* usernameLabel = new wxStaticText(registerPage_, wxID_ANY, "Nom d'utilisateur");
     registerUsernameInput_ = new wxTextCtrl(registerPage_, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
     auto* emailLabel = new wxStaticText(registerPage_, wxID_ANY, "Adresse email");
@@ -142,7 +143,7 @@ void HomeFrame::BuildRegisterPage()
     registerPasswordInput_ = new wxTextCtrl(registerPage_, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PASSWORD | wxTE_PROCESS_ENTER);
     registerPasswordTextInput_ = new wxTextCtrl(registerPage_, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
     registerShowPasswordCheck_ = new wxCheckBox(registerPage_, wxID_ANY, "Afficher le mot de passe");
-    registerSubmitButton_ = new lila::shared::accessibility::ActionButton(registerPage_, wxID_ANY, wxString::FromUTF8("Cr" "\xC3\xA9" "er le compte"));
+    registerSubmitButton_ = new lila::shared::accessibility::ActionButton(registerPage_, wxID_ANY, lila::shared::text::FromUtf8("Cr" "\xC3\xA9" "er le compte"));
     registerBackButton_ = new lila::shared::accessibility::ActionButton(registerPage_, wxID_ANY, "Retour");
     auto* row = new wxBoxSizer(wxHORIZONTAL);
     row->Add(registerSubmitButton_, 0);

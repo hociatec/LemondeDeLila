@@ -1,10 +1,16 @@
-﻿#include "modules/social/presentation/SocialFrame.h"
+#include "shared/text/Encoding.h"
+#include "modules/social/presentation/SocialFrame.h"
+#include "modules/social/presentation/SocialFocusController.h"
+#include "modules/social/presentation/SocialActionController.h"
+#include "modules/social/presentation/SocialView.h"
+#include "modules/social/presentation/SocialLoadController.h"
+#include "modules/social/presentation/SocialSectionPresenter.h"
+#include "modules/social/presentation/SocialProfileMapper.h"
 
 #include <array>
 #include <memory>
 #include <string>
 #include <span>
-#include <unordered_set>
 
 #include <wx/button.h>
 #include <wx/choice.h>
@@ -26,219 +32,162 @@ namespace
 {
 const auto* kProfileUnavailableStatus = lila::shared::errors::SocialProfileUnavailable;
 
-template <typename T, typename Formatter>
-void PopulateList(lila::shared::ui::controls::VerticalMenu& list, const std::vector<T>& items, const Formatter& formatter)
-{
-    std::vector<lila::shared::ui::controls::VerticalMenuItem> menuItems;
-    menuItems.reserve(items.size());
-    for (std::size_t index = 0; index < items.size(); ++index)
-    {
-        menuItems.push_back({std::to_string(index), formatter(items[index])});
-    }
-
-    list.SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{menuItems.data(), menuItems.size()});
-}
-
-std::vector<domain::SocialUser> MergeFriendsAndBlockedUsers(
-    std::vector<domain::SocialUser> friends,
-    const std::vector<domain::SocialUser>& blockedUsers)
-{
-    std::unordered_set<int> friendIds;
-    friendIds.reserve(friends.size());
-    for (const auto& friendUser : friends)
-    {
-        if (friendUser.id > 0)
-        {
-            friendIds.insert(friendUser.id);
-        }
-    }
-
-    for (const auto& blockedUser : blockedUsers)
-    {
-        if (blockedUser.id <= 0 || blockedUser.since.empty() || friendIds.contains(blockedUser.id))
-        {
-            continue;
-        }
-
-        friends.push_back(blockedUser);
-        friendIds.insert(blockedUser.id);
-    }
-
-    return friends;
-}
 
 }
 
-void SocialFrame::SetSection(Section section, bool restoreFocus)
+void SocialFrame::SetSection(SocialSection section)
 {
-    if (section != currentSection_)
+    if (section != navigationState_.currentSection)
     {
-        StoreSectionSelection(currentSection_);
+        sectionPresenter_->StoreSelection(navigationState_.currentSection);
     }
 
-    currentSection_ = section;
-    lastMenuIndex_ = SectionToMenuIndex(section);
-    if (menu_ != nullptr)
+    navigationState_.EnterSection(section, SocialPresentationModel::SectionToMenuIndex(section));
+    if (view_->menu != nullptr)
     {
-        menu_->SetSelectedIndex(lastMenuIndex_);
+        view_->menu->SetSelectedIndex(navigationState_.lastMenuIndex);
     }
 
     switch (section)
     {
-    case Section::Friends:
+    case SocialSection::Friends:
         LoadFriends();
         break;
-    case Section::IncomingRequests:
+    case SocialSection::IncomingRequests:
         LoadIncomingRequests();
         break;
-    case Section::OutgoingRequests:
+    case SocialSection::OutgoingRequests:
         LoadOutgoingRequests();
         break;
-    case Section::Blocked:
+    case SocialSection::Blocked:
         LoadBlockedUsers();
         break;
-    case Section::Profile:
-        SyncSectionVisibility();
-        SyncProfileControls();
+    case SocialSection::Profile:
+        sectionPresenter_->ShowCurrentSection();
+        sectionPresenter_->SyncProfileControls();
         break;
     }
 
-    currentScreen_ = Screen::Section;
-    static_cast<void>(restoreFocus);
 }
 
 void SocialFrame::UpdateStatus(const wxString& message, bool isError)
 {
-    if (statusLabel_ == nullptr)
+    if (view_->statusLabel == nullptr)
     {
         return;
     }
 
-    statusLabel_->SetLabel(message);
-    statusLabel_->SetForegroundColour(isError ? wxColour(255, 170, 170) : lila::shared::ui::Theme::Accent());
-    statusLabel_->Wrap(GetClientSize().GetWidth() - 80);
-    statusLabel_->GetParent()->Layout();
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*statusLabel_, message);
+    view_->statusLabel->SetLabel(message);
+    view_->statusLabel->SetForegroundColour(isError ? wxColour(255, 170, 170) : lila::shared::ui::Theme::Accent());
+    view_->statusLabel->Wrap(GetClientSize().GetWidth() - 80);
+    view_->statusLabel->GetParent()->Layout();
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*view_->statusLabel, message);
 }
 
 void SocialFrame::RefreshCurrentSection()
 {
-    if (currentScreen_ != Screen::Section)
+    if (navigationState_.currentScreen == Screen::Section)
     {
-        return;
-    }
-
-    switch (currentSection_)
-    {
-    case Section::Friends:
-        LoadFriends();
-        return;
-    case Section::IncomingRequests:
-        LoadIncomingRequests();
-        return;
-    case Section::OutgoingRequests:
-        LoadOutgoingRequests();
-        return;
-    case Section::Blocked:
-        LoadBlockedUsers();
-        return;
-    case Section::Profile:
-        LoadProfile(profileTargetUserId_);
-        return;
+        RefreshSection(navigationState_.currentSection);
     }
 }
 
-void SocialFrame::RefreshAllCaches()
+void SocialFrame::RefreshSection(SocialSection section)
 {
-    friends_ = socialService_.LoadFriends();
-    incomingRequests_ = socialService_.LoadIncomingRequests();
-    outgoingRequests_ = socialService_.LoadOutgoingRequests();
-    blockedUsers_ = socialService_.LoadBlockedUsers();
+    switch (section)
+    {
+    case SocialSection::Friends:
+        LoadFriends();
+        return;
+    case SocialSection::IncomingRequests:
+        LoadIncomingRequests();
+        return;
+    case SocialSection::OutgoingRequests:
+        LoadOutgoingRequests();
+        return;
+    case SocialSection::Blocked:
+        LoadBlockedUsers();
+        return;
+    case SocialSection::Profile:
+        LoadProfile(navigationState_.profileTargetUserId);
+        return;
+    }
 }
 
 void SocialFrame::LoadFriends()
 {
-    auto results = std::make_shared<std::vector<domain::SocialUser>>();
-    auto blockedResults = std::make_shared<std::vector<domain::SocialUser>>();
+    auto snapshot = std::make_shared<SocialLoadController::FriendsSnapshot>();
+    auto* loader = loadController_.get();
     RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::SocialLoadFriendsBusy),
-        [this, results, blockedResults]()
+        lila::shared::text::FromUtf8(lila::shared::errors::SocialLoadFriendsBusy),
+        [loader, snapshot]()
         {
-            *results = socialService_.LoadFriends();
-            *blockedResults = socialService_.LoadBlockedUsers();
+            *snapshot = loader->LoadFriends();
         },
-        [this, results, blockedResults]()
+        [this, snapshot]()
         {
-            friends_ = std::move(*results);
-            blockedUsers_ = std::move(*blockedResults);
-            friends_ = MergeFriendsAndBlockedUsers(std::move(friends_), blockedUsers_);
-            PopulateList(*friendsList_, friends_, [this](const domain::SocialUser& user) { return BuildUserLabel(user); });
-            RestoreSectionSelection(*friendsList_, Section::Friends);
+            dataStore_.ReplaceFriends(std::move(snapshot->friends), std::move(snapshot->blockedUsers));
+            const auto& friends = dataStore_.Friends();
+            sectionPresenter_->PopulateSection(SocialSection::Friends);
 
-            SyncSectionVisibility();
-            SyncSelectionState();
-            UpdateStatus(BuildSectionStatus(Section::Friends, friends_.size()));
-            if (currentSection_ == Section::Friends)
+            sectionPresenter_->ShowCurrentSection();
+            sectionPresenter_->SyncSelectionState();
+            UpdateStatus(SocialPresentationModel::BuildSectionStatus(SocialSection::Friends, friends.size()));
+            if (navigationState_.currentSection == SocialSection::Friends)
             {
-                FocusCurrentScreen();
+                focusController_->FocusCurrentScreen();
             }
         });
 }
 
 void SocialFrame::LoadIncomingRequests()
 {
-    auto results = std::make_shared<std::vector<domain::SocialFriendRequest>>();
-    auto blockedResults = std::make_shared<std::vector<domain::SocialUser>>();
+    auto snapshot = std::make_shared<SocialLoadController::RequestsSnapshot>();
+    auto* loader = loadController_.get();
     RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::SocialLoadIncomingRequestsBusy),
-        [this, results, blockedResults]()
+        lila::shared::text::FromUtf8(lila::shared::errors::SocialLoadIncomingRequestsBusy),
+        [loader, snapshot]()
         {
-            *results = socialService_.LoadIncomingRequests();
-            *blockedResults = socialService_.LoadBlockedUsers();
+            *snapshot = loader->LoadIncomingRequests();
         },
-        [this, results, blockedResults]()
+        [this, snapshot]()
         {
-            incomingRequests_ = std::move(*results);
-            blockedUsers_ = std::move(*blockedResults);
-            PopulateList(*incomingRequestsList_, incomingRequests_, [this](const domain::SocialFriendRequest& request)
-            { return BuildRequestLabel(request, true); });
-            RestoreSectionSelection(*incomingRequestsList_, Section::IncomingRequests);
+            dataStore_.ReplaceIncomingRequests(std::move(snapshot->requests), std::move(snapshot->blockedUsers));
+            const auto& requests = dataStore_.IncomingRequests();
+            sectionPresenter_->PopulateSection(SocialSection::IncomingRequests);
 
-            SyncSectionVisibility();
-            SyncSelectionState();
-            UpdateStatus(BuildSectionStatus(Section::IncomingRequests, incomingRequests_.size()));
-            if (currentSection_ == Section::IncomingRequests)
+            sectionPresenter_->ShowCurrentSection();
+            sectionPresenter_->SyncSelectionState();
+            UpdateStatus(SocialPresentationModel::BuildSectionStatus(SocialSection::IncomingRequests, requests.size()));
+            if (navigationState_.currentSection == SocialSection::IncomingRequests)
             {
-                FocusCurrentScreen();
+                focusController_->FocusCurrentScreen();
             }
         });
 }
 
 void SocialFrame::LoadOutgoingRequests()
 {
-    auto results = std::make_shared<std::vector<domain::SocialFriendRequest>>();
-    auto blockedResults = std::make_shared<std::vector<domain::SocialUser>>();
+    auto snapshot = std::make_shared<SocialLoadController::RequestsSnapshot>();
+    auto* loader = loadController_.get();
     RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::SocialLoadOutgoingRequestsBusy),
-        [this, results, blockedResults]()
+        lila::shared::text::FromUtf8(lila::shared::errors::SocialLoadOutgoingRequestsBusy),
+        [loader, snapshot]()
         {
-            *results = socialService_.LoadOutgoingRequests();
-            *blockedResults = socialService_.LoadBlockedUsers();
+            *snapshot = loader->LoadOutgoingRequests();
         },
-        [this, results, blockedResults]()
+        [this, snapshot]()
         {
-            outgoingRequests_ = std::move(*results);
-            blockedUsers_ = std::move(*blockedResults);
-            PopulateList(*outgoingRequestsList_, outgoingRequests_, [this](const domain::SocialFriendRequest& request)
-            { return BuildRequestLabel(request, false); });
-            RestoreSectionSelection(*outgoingRequestsList_, Section::OutgoingRequests);
+            dataStore_.ReplaceOutgoingRequests(std::move(snapshot->requests), std::move(snapshot->blockedUsers));
+            const auto& requests = dataStore_.OutgoingRequests();
+            sectionPresenter_->PopulateSection(SocialSection::OutgoingRequests);
 
-            SyncSectionVisibility();
-            SyncSelectionState();
-            UpdateStatus(BuildSectionStatus(Section::OutgoingRequests, outgoingRequests_.size()));
-            if (currentSection_ == Section::OutgoingRequests)
+            sectionPresenter_->ShowCurrentSection();
+            sectionPresenter_->SyncSelectionState();
+            UpdateStatus(SocialPresentationModel::BuildSectionStatus(SocialSection::OutgoingRequests, requests.size()));
+            if (navigationState_.currentSection == SocialSection::OutgoingRequests)
             {
-                FocusCurrentScreen();
+                focusController_->FocusCurrentScreen();
             }
         });
 }
@@ -246,690 +195,144 @@ void SocialFrame::LoadOutgoingRequests()
 void SocialFrame::LoadBlockedUsers()
 {
     auto results = std::make_shared<std::vector<domain::SocialUser>>();
+    auto* loader = loadController_.get();
     RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::SocialLoadBlockedUsersBusy),
-        [this, results]()
+        lila::shared::text::FromUtf8(lila::shared::errors::SocialLoadBlockedUsersBusy),
+        [loader, results]()
         {
-            *results = socialService_.LoadBlockedUsers();
+            *results = loader->LoadBlockedUsers();
         },
         [this, results]()
         {
-            blockedUsers_ = std::move(*results);
-            PopulateList(*blockedUsersList_, blockedUsers_, [this](const domain::SocialUser& user) { return BuildUserLabel(user); });
-            RestoreSectionSelection(*blockedUsersList_, Section::Blocked);
+            dataStore_.ReplaceBlockedUsers(std::move(*results));
+            const auto& blockedUsers = dataStore_.BlockedUsers();
+            sectionPresenter_->PopulateSection(SocialSection::Blocked);
 
-            SyncSectionVisibility();
-            SyncSelectionState();
-            UpdateStatus(BuildSectionStatus(Section::Blocked, blockedUsers_.size()));
-            if (currentSection_ == Section::Blocked)
+            sectionPresenter_->ShowCurrentSection();
+            sectionPresenter_->SyncSelectionState();
+            UpdateStatus(SocialPresentationModel::BuildSectionStatus(SocialSection::Blocked, blockedUsers.size()));
+            if (navigationState_.currentSection == SocialSection::Blocked)
             {
-                FocusCurrentScreen();
+                focusController_->FocusCurrentScreen();
             }
         });
 }
 
 void SocialFrame::LoadProfile(std::optional<int> userId)
 {
-    profileTargetUserId_ = userId;
-    profileEditorMode_ = ProfileEditorMode::Menu;
+    navigationState_.BeginProfile(userId);
     auto result = std::make_shared<std::optional<domain::SocialProfile>>();
+    auto* loader = loadController_.get();
     RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::SocialProfileLoading),
-        [this, result, userId]()
+        lila::shared::text::FromUtf8(lila::shared::errors::SocialProfileLoading),
+        [loader, result, userId]()
         {
-            *result = socialService_.LoadProfile(userId);
+            *result = loader->LoadProfile(userId);
         },
         [this, result]()
         {
-            currentProfile_ = *result;
-            SyncSectionVisibility();
-            SyncProfileControls();
+            dataStore_.ReplaceProfile(std::move(*result));
+            sectionPresenter_->ShowCurrentSection();
+            sectionPresenter_->SyncProfileControls();
 
-            if (!currentProfile_.has_value())
+            const auto& profile = dataStore_.Profile();
+            if (!profile.has_value())
             {
-                UpdateStatus(wxString::FromUTF8(kProfileUnavailableStatus), true);
+                UpdateStatus(lila::shared::text::FromUtf8(kProfileUnavailableStatus), true);
                 return;
             }
 
-            profileTitleLabel_->SetLabel(currentProfile_->isOwner
-                ? wxString::FromUTF8(lila::shared::errors::SocialMenuProfile)
-                : wxString::FromUTF8(currentProfile_->user.username));
+            view_->profileTitleLabel->SetLabel(profile->isOwner
+                ? lila::shared::text::FromUtf8(lila::shared::errors::SocialMenuProfile)
+                : lila::shared::text::FromUtf8(profile->user.username));
 
-            if (!currentProfile_->isOwner && !currentProfile_->canView)
-            {
-                UpdateStatus(wxString::FromUTF8(lila::shared::errors::SocialProfilePrivate));
-            }
-            else
-            {
-                UpdateStatus(wxString::FromUTF8(lila::shared::errors::SocialProfileLoaded));
-            }
+            UpdateStatus(lila::shared::text::FromUtf8(
+                !profile->isOwner && !profile->canView
+                    ? lila::shared::errors::SocialProfilePrivate
+                    : lila::shared::errors::SocialProfileLoaded));
 
-            if (currentSection_ == Section::Profile)
+            if (navigationState_.currentSection == SocialSection::Profile)
             {
-                FocusCurrentScreen();
+                focusController_->FocusCurrentScreen();
             }
         });
 }
 
+void SocialFrame::OpenProfile(int userId)
+{
+    navigationState_.RememberProfileReturnSection();
+    LoadProfile(userId);
+    SetSection(SocialSection::Profile);
+}
+
 void SocialFrame::SaveProfile()
 {
-    if (!currentProfile_.has_value() || !currentProfile_->isOwner)
+    const auto& currentProfile = dataStore_.Profile();
+    if (!currentProfile.has_value() || !currentProfile->isOwner)
     {
-        UpdateStatus(wxString::FromUTF8(lila::shared::errors::SocialOnlyOwnProfileEditable), true);
+        UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::SocialOnlyOwnProfileEditable), true);
         return;
     }
 
-    domain::SocialProfileUpdate update;
-    update.bio = profileBioCtrl_->GetValue().ToUTF8().data();
-    update.victoryMessage = profileVictoryCtrl_->GetValue().ToUTF8().data();
-    update.defeatMessage = profileDefeatCtrl_->GetValue().ToUTF8().data();
+    const domain::SocialProfileUpdate update = SocialProfileMapper::BuildUpdate(
+        lila::shared::text::ToUtf8(view_->profileBioCtrl->GetValue()),
+        lila::shared::text::ToUtf8(view_->profileVictoryCtrl->GetValue()),
+        lila::shared::text::ToUtf8(view_->profileDefeatCtrl->GetValue()),
+        view_->profileVisibilityChoice->GetSelection());
 
-    switch (profileVisibilityChoice_->GetSelection())
-    {
-    case 0:
-        update.visibility = std::string(lila::shared::contracts::social::SocialVisibilityPublic);
-        break;
-    case 1:
-        update.visibility = std::string(lila::shared::contracts::social::SocialVisibilityFriends);
-        break;
-    case 2:
-        update.visibility = std::string(lila::shared::contracts::social::SocialVisibilityPrivate);
-        break;
-    default:
-        update.visibility = std::string(lila::shared::contracts::social::SocialVisibilityPublic);
-        break;
-    }
-
-    auto result = std::make_shared<std::optional<domain::SocialProfile>>();
-    RunBackgroundTask(
-            wxString::FromUTF8(lila::shared::errors::SocialSaveProfileBusy),
-        [this, result, update]()
+    actionController_->SaveProfile(
+        update,
+        [this](std::optional<domain::SocialProfile> savedProfile)
         {
-            *result = socialService_.SaveProfile(update);
-        },
-        [this, result]()
-        {
-            currentProfile_ = *result;
-            profileEditorMode_ = ProfileEditorMode::Menu;
-            SyncProfileControls();
-            ShowActionFeedback(wxString::FromUTF8(lila::shared::errors::SocialProfileUpdated));
-            if (currentSection_ == Section::Profile)
+            dataStore_.ReplaceProfile(std::move(savedProfile));
+            navigationState_.profileEditorMode = ProfileEditorMode::Menu;
+            sectionPresenter_->SyncProfileControls();
+            ShowActionFeedback(lila::shared::text::FromUtf8(lila::shared::errors::SocialProfileUpdated));
+            if (navigationState_.currentSection == SocialSection::Profile)
             {
-                FocusCurrentScreen();
+                focusController_->FocusCurrentScreen();
             }
         });
 }
 
 void SocialFrame::StartProfileEdit(ProfileEditorMode mode)
 {
-    profileEditorMode_ = mode;
-    SyncProfileControls();
-    FocusCurrentScreen();
+    navigationState_.profileEditorMode = mode;
+    sectionPresenter_->SyncProfileControls();
+    focusController_->FocusCurrentScreen();
 }
 
 void SocialFrame::ExitProfileEditMode()
 {
-    profileEditorMode_ = ProfileEditorMode::Menu;
-    SyncProfileEditorVisibility();
-    if (profileMenu_ != nullptr)
+    navigationState_.profileEditorMode = ProfileEditorMode::Menu;
+    sectionPresenter_->SyncProfileEditorVisibility();
+    if (view_->profileMenu != nullptr)
     {
-        profileMenu_->FocusSelectedItem();
+        view_->profileMenu->FocusSelectedItem();
     }
-    SyncProfileControls();
+    sectionPresenter_->SyncProfileControls();
 }
 
 bool SocialFrame::TryExitProfile()
 {
-    if (profileEditorMode_ != ProfileEditorMode::Menu)
+    if (navigationState_.profileEditorMode != ProfileEditorMode::Menu)
     {
         ExitProfileEditMode();
         return true;
     }
 
-    if (returnSectionFromProfile_.has_value())
+    if (navigationState_.returnSectionFromProfile.has_value())
     {
-        const Section section = *returnSectionFromProfile_;
-        returnSectionFromProfile_.reset();
-        profileTargetUserId_.reset();
-        SetSection(section, true);
+        const SocialSection section = *navigationState_.returnSectionFromProfile;
+        navigationState_.returnSectionFromProfile.reset();
+        navigationState_.profileTargetUserId.reset();
+        SetSection(section);
         return true;
     }
 
     return false;
 }
 
-void SocialFrame::ShowOnlySectionPanel(wxWindow* targetPanel)
-{
-    if (sectionBook_ == nullptr || targetPanel == nullptr)
-    {
-        return;
-    }
 
-    const std::array<wxWindow*, 5> panels = {
-        friendsPanel_,
-        incomingRequestsPanel_,
-        outgoingRequestsPanel_,
-        blockedPanel_,
-        profilePanel_,
-    };
 
-    for (std::size_t index = 0; index < panels.size(); ++index)
-    {
-        if (panels[index] == nullptr)
-        {
-            continue;
-        }
-
-        if (panels[index] == targetPanel)
-        {
-            sectionBook_->SetSelection(index);
-            sectionBook_->Layout();
-            Layout();
-            return;
-        }
-    }
 }
-
-void SocialFrame::SyncSectionVisibility()
-{
-    switch (currentSection_)
-    {
-    case Section::Friends:
-        ShowOnlySectionPanel(friendsPanel_);
-        return;
-    case Section::IncomingRequests:
-        ShowOnlySectionPanel(incomingRequestsPanel_);
-        return;
-    case Section::OutgoingRequests:
-        ShowOnlySectionPanel(outgoingRequestsPanel_);
-        return;
-    case Section::Blocked:
-        ShowOnlySectionPanel(blockedPanel_);
-        return;
-    case Section::Profile:
-        ShowOnlySectionPanel(profilePanel_);
-        SyncProfileEditorVisibility();
-        return;
-    }
-}
-
-void SocialFrame::SyncProfileEditorVisibility()
-{
-    profileEditorMenuPanel_->Show(profileEditorMode_ == ProfileEditorMode::Menu);
-    profileBioEditorPanel_->Show(profileEditorMode_ == ProfileEditorMode::Bio);
-    profileVictoryEditorPanel_->Show(profileEditorMode_ == ProfileEditorMode::VictoryMessage);
-    profileDefeatEditorPanel_->Show(profileEditorMode_ == ProfileEditorMode::DefeatMessage);
-    profileVisibilityEditorPanel_->Show(profileEditorMode_ == ProfileEditorMode::Visibility);
-    profilePanel_->Layout();
-}
-
-void SocialFrame::SyncProfileControls()
-{
-    if (!currentProfile_.has_value())
-    {
-        profileTitleLabel_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileTitle));
-        profileInfoCtrl_->SetValue(wxEmptyString);
-        profileBioCtrl_->SetValue(wxEmptyString);
-        profileVictoryCtrl_->SetValue(wxEmptyString);
-        profileDefeatCtrl_->SetValue(wxEmptyString);
-        profileVisibilityChoice_->SetSelection(0);
-        profileMenu_->Show(false);
-        profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSave));
-        profileSaveButton_->Show(false);
-        profileSaveButton_->Enable(false);
-        SyncProfileEditorVisibility();
-        return;
-    }
-
-    const auto& profile = *currentProfile_;
-    profileTitleLabel_->SetLabel(profile.isOwner ? wxString::FromUTF8(lila::shared::errors::SocialMenuProfile) : wxString::FromUTF8(profile.user.username));
-    profileInfoCtrl_->SetValue(BuildProfileInfoText(profile));
-    profileBioCtrl_->SetValue(wxString::FromUTF8(profile.bio));
-    profileVictoryCtrl_->SetValue(wxString::FromUTF8(profile.victoryMessage));
-    profileDefeatCtrl_->SetValue(wxString::FromUTF8(profile.defeatMessage));
-
-    if (profile.visibility == lila::shared::contracts::social::SocialVisibilityFriends)
-    {
-        profileVisibilityChoice_->SetSelection(1);
-    }
-    else if (profile.visibility == lila::shared::contracts::social::SocialVisibilityPrivate)
-    {
-        profileVisibilityChoice_->SetSelection(2);
-    }
-    else
-    {
-        profileVisibilityChoice_->SetSelection(0);
-    }
-
-    profileMenu_->Show(profile.isOwner);
-    if (!profile.isOwner || profileEditorMode_ == ProfileEditorMode::Menu)
-    {
-        profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSave));
-        profileSaveButton_->Show(false);
-        profileSaveButton_->Enable(false);
-    }
-    else
-    {
-        switch (profileEditorMode_)
-        {
-        case ProfileEditorMode::Bio:
-            profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSaveBio));
-            break;
-        case ProfileEditorMode::VictoryMessage:
-            profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSaveMessage));
-            break;
-        case ProfileEditorMode::DefeatMessage:
-            profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSaveMessage));
-            break;
-        case ProfileEditorMode::Visibility:
-            profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSaveVisibility));
-            break;
-        case ProfileEditorMode::Menu:
-            profileSaveButton_->SetLabel(wxString::FromUTF8(lila::shared::errors::SocialProfileSave));
-            break;
-        }
-
-        profileSaveButton_->Show(true);
-        profileSaveButton_->Enable(true);
-    }
-
-    profileCancelButton_->Enable(true);
-    SyncProfileEditorVisibility();
-    profilePanel_->Layout();
-}
-
-void SocialFrame::SyncSelectionState()
-{
-    const bool hasFriends = friendsList_->GetItemCount() > 0;
-    const bool hasIncomingRequests = incomingRequestsList_->GetItemCount() > 0;
-    const bool hasOutgoingRequests = outgoingRequestsList_->GetItemCount() > 0;
-    const bool hasBlockedUsers = blockedUsersList_->GetItemCount() > 0;
-    const std::size_t friendSelection = friendsList_->GetSelectedIndex();
-    const std::size_t incomingSelection = incomingRequestsList_->GetSelectedIndex();
-    const std::size_t outgoingSelection = outgoingRequestsList_->GetSelectedIndex();
-    const std::size_t blockedSelection = blockedUsersList_->GetSelectedIndex();
-
-    friendsList_->Show(hasFriends);
-    emptyFriendsCtrl_->Show(!hasFriends);
-    incomingRequestsList_->Show(hasIncomingRequests);
-    emptyIncomingRequestsCtrl_->Show(!hasIncomingRequests);
-    outgoingRequestsList_->Show(hasOutgoingRequests);
-    emptyOutgoingRequestsCtrl_->Show(!hasOutgoingRequests);
-    blockedUsersList_->Show(hasBlockedUsers);
-    emptyBlockedUsersCtrl_->Show(!hasBlockedUsers);
-
-    const bool canActOnFriends = hasFriends && friendSelection < friends_.size();
-    if (friendsActionsMenu_ != nullptr && friendsActionsMenu_->GetFirstButton() != nullptr)
-    {
-        friendsActionsMenu_->GetFirstButton()->Enable(canActOnFriends);
-
-        const bool blockedFriend = friendSelection < friends_.size() && IsBlockedUser(friends_[friendSelection].id);
-        const std::array<lila::shared::ui::controls::VerticalMenuItem, 3> menuItems = {{
-            {"view-profile", wxString::FromUTF8(lila::shared::errors::SocialProfileActionView)},
-            {"remove-friend", wxString::FromUTF8(lila::shared::errors::SocialProfileActionRemoveFriend)},
-            {"block-friend", blockedFriend ? wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblock)
-                                          : wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlock)},
-        }};
-        const std::size_t selectedAction = friendsActionsMenu_->GetSelectedIndex();
-        friendsActionsMenu_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{menuItems.data(), menuItems.size()});
-        if (selectedAction < friendsActionsMenu_->GetItemCount())
-        {
-            friendsActionsMenu_->SetSelectedIndex(selectedAction);
-        }
-    }
-
-    const bool canActOnIncoming = hasIncomingRequests && incomingSelection < incomingRequests_.size();
-    if (incomingActionsMenu_ != nullptr && incomingActionsMenu_->GetFirstButton() != nullptr)
-    {
-        incomingActionsMenu_->GetFirstButton()->Enable(canActOnIncoming);
-
-        const bool blockedSender = incomingSelection < incomingRequests_.size() &&
-            IsBlockedUser(incomingRequests_[incomingSelection].requester.id);
-        const std::array<lila::shared::ui::controls::VerticalMenuItem, 4> menuItems = {{
-            {"accept-request", wxString::FromUTF8(lila::shared::errors::SocialProfileActionAccept)},
-            {"reject-request", wxString::FromUTF8(lila::shared::errors::SocialProfileActionReject)},
-            {"view-profile", wxString::FromUTF8(lila::shared::errors::SocialProfileActionView)},
-            {"block-user", blockedSender ? wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblock)
-                                         : wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlock)},
-        }};
-        const std::size_t selectedAction = incomingActionsMenu_->GetSelectedIndex();
-        incomingActionsMenu_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{menuItems.data(), menuItems.size()});
-        if (selectedAction < incomingActionsMenu_->GetItemCount())
-        {
-            incomingActionsMenu_->SetSelectedIndex(selectedAction);
-        }
-    }
-
-    const bool canActOnOutgoing = hasOutgoingRequests && outgoingSelection < outgoingRequests_.size();
-    if (outgoingActionsMenu_ != nullptr && outgoingActionsMenu_->GetFirstButton() != nullptr)
-    {
-        outgoingActionsMenu_->GetFirstButton()->Enable(canActOnOutgoing);
-
-        const bool blockedReceiver = outgoingSelection < outgoingRequests_.size() &&
-            IsBlockedUser(outgoingRequests_[outgoingSelection].addressee.id);
-        const std::array<lila::shared::ui::controls::VerticalMenuItem, 3> menuItems = {{
-            {"cancel-request", wxString::FromUTF8(lila::shared::errors::SocialProfileActionCancel)},
-            {"view-profile", wxString::FromUTF8(lila::shared::errors::SocialProfileActionView)},
-            {"block-user", blockedReceiver ? wxString::FromUTF8(lila::shared::errors::SocialProfileActionUnblock)
-                                          : wxString::FromUTF8(lila::shared::errors::SocialProfileActionBlock)},
-        }};
-        const std::size_t selectedAction = outgoingActionsMenu_->GetSelectedIndex();
-        outgoingActionsMenu_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{menuItems.data(), menuItems.size()});
-        if (selectedAction < outgoingActionsMenu_->GetItemCount())
-        {
-            outgoingActionsMenu_->SetSelectedIndex(selectedAction);
-        }
-    }
-
-    const bool canUnblock = hasBlockedUsers && blockedSelection < blockedUsers_.size();
-    if (blockedActionsMenu_ != nullptr && blockedActionsMenu_->GetFirstButton() != nullptr)
-    {
-        blockedActionsMenu_->GetFirstButton()->Enable(canUnblock);
-    }
-
-    friendsPanel_->Layout();
-    incomingRequestsPanel_->Layout();
-    outgoingRequestsPanel_->Layout();
-    blockedPanel_->Layout();
-}
-
-bool SocialFrame::IsBlockedUser(int userId) const
-{
-    for (const auto& user : blockedUsers_)
-    {
-        if (user.id == userId)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-std::optional<int> SocialFrame::GetSelectedUserId() const
-{
-    switch (currentSection_)
-    {
-    case Section::Friends:
-    {
-        const std::size_t selection = friendsList_->GetSelectedIndex();
-        if (selection >= friends_.size() || friendsList_->GetItemCount() == 0)
-        {
-            return std::nullopt;
-        }
-        return friends_[selection].id;
-    }
-    case Section::IncomingRequests:
-    {
-        const std::size_t selection = incomingRequestsList_->GetSelectedIndex();
-        if (selection >= incomingRequests_.size() || incomingRequestsList_->GetItemCount() == 0)
-        {
-            return std::nullopt;
-        }
-        return incomingRequests_[selection].requester.id;
-    }
-    case Section::OutgoingRequests:
-    {
-        const std::size_t selection = outgoingRequestsList_->GetSelectedIndex();
-        if (selection >= outgoingRequests_.size() || outgoingRequestsList_->GetItemCount() == 0)
-        {
-            return std::nullopt;
-        }
-        return outgoingRequests_[selection].addressee.id;
-    }
-    case Section::Blocked:
-    {
-        const std::size_t selection = blockedUsersList_->GetSelectedIndex();
-        if (selection >= blockedUsers_.size() || blockedUsersList_->GetItemCount() == 0)
-        {
-            return std::nullopt;
-        }
-        return blockedUsers_[selection].id;
-    }
-    case Section::Profile:
-        return profileTargetUserId_;
-    }
-
-    return std::nullopt;
-}
-
-wxString SocialFrame::BuildUserLabel(const domain::SocialUser& user) const
-{
-    if (user.id <= 0)
-    {
-        return wxString::FromUTF8(lila::shared::errors::SocialProfileUnknownUser);
-    }
-
-    wxString label = wxString::FromUTF8(user.username.empty() ? lila::shared::errors::SocialProfileUnknownUser : user.username);
-    if (!user.blockedAt.empty() && user.since.empty())
-    {
-        label += wxString::FromUTF8(lila::shared::errors::SocialProfileBlockedSuffix);
-    }
-    return label;
-}
-
-wxString SocialFrame::BuildRequestLabel(const domain::SocialFriendRequest& request, bool incoming) const
-{
-    const std::string name = incoming ? request.requester.username : request.addressee.username;
-    wxString label = wxString::FromUTF8(name.empty() ? lila::shared::errors::SocialProfileUnknownUser : name);
-    if (!request.createdAt.empty())
-    {
-        label += wxString::FromUTF8(lila::shared::errors::SocialProfileAt);
-        label += wxString::FromUTF8(request.createdAt);
-    }
-    return label;
-}
-
-wxString SocialFrame::BuildProfileInfoText(const domain::SocialProfile& profile) const
-{
-    wxString text;
-    text << wxString::FromUTF8(lila::shared::errors::SocialProfileVisibilityPrefix)
-         << wxString::FromUTF8(VisibilityToFrench(profile.visibility)) << '\n';
-
-    if (!profile.createdAt.empty())
-    {
-        text << wxString::FromUTF8(lila::shared::errors::SocialProfileCreatedAt) << wxString::FromUTF8(profile.createdAt) << '\n';
-    }
-    if (!profile.updatedAt.empty())
-    {
-        text << wxString::FromUTF8(lila::shared::errors::SocialProfileUpdatedAt) << wxString::FromUTF8(profile.updatedAt) << '\n';
-    }
-
-    if (profile.isOwner || profile.canView)
-    {
-        text << wxString::FromUTF8(lila::shared::errors::SocialProfileBioText)
-             << wxString::FromUTF8(profile.bio.empty() ? lila::shared::errors::SocialProfileEmptyText : profile.bio)
-             << "\n\n";
-        text << wxString::FromUTF8(lila::shared::errors::SocialProfileVictoryText)
-             << wxString::FromUTF8(profile.victoryMessage.empty() ? lila::shared::errors::SocialProfileEmptyText : profile.victoryMessage)
-             << "\n\n";
-        text << wxString::FromUTF8(lila::shared::errors::SocialProfileDefeatText)
-             << wxString::FromUTF8(profile.defeatMessage.empty() ? lila::shared::errors::SocialProfileEmptyText : profile.defeatMessage);
-    }
-    else
-    {
-        text << wxString::FromUTF8(lila::shared::errors::SocialProfilePrivateText);
-    }
-
-    return text;
-}
-
-std::string SocialFrame::VisibilityToFrench(const std::string& value)
-{
-    if (value == lila::shared::contracts::social::SocialVisibilityFriends)
-    {
-        return lila::shared::errors::SocialProfileVisibilityFriends;
-    }
-    if (value == lila::shared::contracts::social::SocialVisibilityPrivate)
-    {
-        return lila::shared::errors::SocialProfileVisibilityPrivate;
-    }
-    return lila::shared::errors::SocialProfileVisibilityPublic;
-}
-
-std::optional<SocialFrame::Section> SocialFrame::MenuIndexToSection(std::size_t index)
-{
-    switch (index)
-    {
-    case 1:
-        return Section::Friends;
-    case 2:
-        return Section::IncomingRequests;
-    case 3:
-        return Section::OutgoingRequests;
-    case 4:
-        return Section::Blocked;
-    case 5:
-        return Section::Profile;
-    default:
-        return std::nullopt;
-    }
-}
-
-std::size_t SocialFrame::SectionToMenuIndex(Section section)
-{
-    switch (section)
-    {
-    case Section::Friends:
-        return 1;
-    case Section::IncomingRequests:
-        return 2;
-    case Section::OutgoingRequests:
-        return 3;
-    case Section::Blocked:
-        return 4;
-    case Section::Profile:
-        return 5;
-    }
-
-    return 1;
-}
-
-wxString SocialFrame::BuildSectionStatus(Section section, std::size_t count)
-{
-    const auto buildResultsStatus = [](std::size_t resultCount)
-    {
-        return resultCount == 0
-            ? wxString::FromUTF8(lila::shared::errors::SocialSectionResultsEmpty)
-            : wxString::Format(wxString::FromUTF8(lila::shared::errors::SocialSectionResultsCount), resultCount);
-    };
-
-    switch (section)
-    {
-    case Section::Friends:
-        return buildResultsStatus(count);
-    case Section::IncomingRequests:
-        return buildResultsStatus(count);
-    case Section::OutgoingRequests:
-        return buildResultsStatus(count);
-    case Section::Blocked:
-        return buildResultsStatus(count);
-    case Section::Profile:
-        return wxString::FromUTF8(lila::shared::errors::SocialProfileLoaded);
-    }
-
-    return wxString::FromUTF8(lila::shared::errors::SocialFrameHeader);
-}
-
-std::optional<int> SocialFrame::GetStoredSectionSelection(Section section) const
-{
-    return lastSectionSelection_[SectionIndex(section)];
-}
-
-void SocialFrame::StoreSectionSelection(Section section)
-{
-    if (section == Section::Profile)
-    {
-        return;
-    }
-
-    int selection = -1;
-    switch (section)
-    {
-    case Section::Friends:
-        if (friendsList_ != nullptr)
-        {
-            if (friendsList_ != nullptr && friendsList_->GetItemCount() > 0)
-            {
-                selection = static_cast<int>(friendsList_->GetSelectedIndex());
-            }
-        }
-        break;
-    case Section::IncomingRequests:
-        if (incomingRequestsList_ != nullptr)
-        {
-            if (incomingRequestsList_ != nullptr && incomingRequestsList_->GetItemCount() > 0)
-            {
-                selection = static_cast<int>(incomingRequestsList_->GetSelectedIndex());
-            }
-        }
-        break;
-    case Section::OutgoingRequests:
-        if (outgoingRequestsList_ != nullptr)
-        {
-            if (outgoingRequestsList_ != nullptr && outgoingRequestsList_->GetItemCount() > 0)
-            {
-                selection = static_cast<int>(outgoingRequestsList_->GetSelectedIndex());
-            }
-        }
-        break;
-    case Section::Blocked:
-        if (blockedUsersList_ != nullptr)
-        {
-            if (blockedUsersList_ != nullptr && blockedUsersList_->GetItemCount() > 0)
-            {
-                selection = static_cast<int>(blockedUsersList_->GetSelectedIndex());
-            }
-        }
-        break;
-    case Section::Profile:
-        break;
-    }
-
-    if (selection < 0)
-    {
-        lastSectionSelection_[SectionIndex(section)] = std::nullopt;
-        return;
-    }
-
-    lastSectionSelection_[SectionIndex(section)] = selection;
-}
-
-void SocialFrame::RestoreSectionSelection(lila::shared::ui::controls::VerticalMenu& list, Section section)
-{
-    const auto previousSelection = GetStoredSectionSelection(section);
-    const std::size_t count = list.GetItemCount();
-    if (previousSelection.has_value() && *previousSelection >= 0 && static_cast<std::size_t>(*previousSelection) < count)
-    {
-        list.SetSelectedIndex(static_cast<std::size_t>(*previousSelection));
-        return;
-    }
-
-    if (count > 0)
-    {
-        list.SetSelectedIndex(0);
-    }
-}
-
-std::size_t SocialFrame::SectionIndex(Section section)
-{
-    switch (section)
-    {
-    case Section::Friends:
-        return 0;
-    case Section::IncomingRequests:
-        return 1;
-    case Section::OutgoingRequests:
-        return 2;
-    case Section::Blocked:
-        return 3;
-    case Section::Profile:
-        return 4;
-    }
-
-    return 0;
-}
-}
-
-
-

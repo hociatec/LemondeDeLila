@@ -279,6 +279,7 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/fcntl.h
 C:/vcpkg/installed/x64-windows/include/wx/convauto.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/persistence/AtomicFileWriter.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
 C:/vcpkg/installed/x64-windows/include/wx/filename.h
 C:/vcpkg/installed/x64-windows/include/wx/datetime.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h

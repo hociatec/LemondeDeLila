@@ -97,6 +97,9 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/StringUtils.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/UrlUtils.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/memory
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/typeinfo
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_typeinfo.h

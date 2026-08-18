@@ -1,4 +1,4 @@
-#include "shared/ui/controls/VerticalMenu.h"
+﻿#include "shared/ui/controls/VerticalMenu.h"
 
 #include "shared/errors/ErrorMessages.h"
 
@@ -10,6 +10,8 @@
 #include <wx/window.h>
 
 #include "shared/ui/Theme.h"
+#include "shared/accessibility/NavigationController.h"
+#include "shared/accessibility/AccessibleMenu.h"
 
 namespace lila::shared::ui::controls
 {
@@ -152,6 +154,13 @@ void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
         0,
         nullptr,
         wxLB_SINGLE | wxBORDER_NONE);
+    lila::shared::accessibility::ConfigureListBoxAsAccessibleMenu(
+        *listBox_,
+        wxString(L"Menu"),
+        [this](std::size_t index)
+        {
+            OnListActivated(index);
+        });
     for (const auto& item : items)
     {
         if (listBox_ != nullptr)
@@ -187,6 +196,16 @@ void VerticalMenu::BindListEvents()
     }
 
     listBox_->Bind(
+        wxEVT_SET_FOCUS,
+        [this](wxFocusEvent& event)
+        {
+            if (!GetName().empty())
+            {
+                listBox_->SetName(GetName());
+            }
+            event.Skip();
+        });
+    listBox_->Bind(
         wxEVT_LISTBOX,
         [this](wxCommandEvent& event)
         {
@@ -217,6 +236,10 @@ void VerticalMenu::BindListEvents()
 
 void VerticalMenu::OnListSelectionChanged(wxCommandEvent& event)
 {
+    if (listBox_ != nullptr && !GetName().empty())
+    {
+        listBox_->SetName(GetName());
+    }
     const int selected = event.GetInt();
     if (selected < 0 || static_cast<std::size_t>(selected) >= itemCount_)
     {
@@ -247,6 +270,12 @@ void VerticalMenu::OnListKeyDown(wxKeyEvent& event)
         return;
     }
 
+    using Navigator = lila::shared::accessibility::NavigationController;
+    if (tabNavigationEnabled_ && Navigator::HandleDirectedTab(event, backwardTabTarget_, forwardTabTarget_))
+    {
+        return;
+    }
+
     const int key = event.GetKeyCode();
     switch (key)
     {
@@ -274,38 +303,6 @@ void VerticalMenu::OnListKeyDown(wxKeyEvent& event)
         }
         event.Skip(false);
         return;
-    case WXK_TAB:
-        if (!tabNavigationEnabled_)
-        {
-            return;
-        }
-
-        if (event.ShiftDown())
-        {
-            if (backwardTabTarget_ != nullptr)
-            {
-                backwardTabTarget_->SetFocus();
-                return;
-            }
-
-            if (itemCount_ > 0)
-            {
-                FocusIndex(selectedIndex_ == 0 ? itemCount_ - 1 : selectedIndex_ - 1);
-            }
-            return;
-        }
-
-        if (forwardTabTarget_ != nullptr)
-        {
-            forwardTabTarget_->SetFocus();
-            return;
-        }
-
-        if (itemCount_ > 0)
-        {
-            FocusIndex((selectedIndex_ + 1) % itemCount_);
-        }
-        return;
     default:
         event.Skip();
         return;
@@ -321,6 +318,10 @@ void VerticalMenu::FocusIndex(std::size_t index)
 
     selectedIndex_ = index;
     listBox_->SetSelection(static_cast<int>(index));
+    if (!GetName().empty())
+    {
+        listBox_->SetName(GetName());
+    }
     listBox_->SetFocus();
     UpdateVisualSelection();
     NotifySelectionChanged();

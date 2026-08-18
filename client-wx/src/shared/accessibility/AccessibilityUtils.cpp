@@ -1,4 +1,4 @@
-#include "shared/accessibility/AccessibilityUtils.h"
+﻿#include "shared/accessibility/AccessibilityUtils.h"
 
 #include <wx/string.h>
 #include <wx/window.h>

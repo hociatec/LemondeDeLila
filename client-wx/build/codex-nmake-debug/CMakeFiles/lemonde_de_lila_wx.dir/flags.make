@@ -6,5 +6,5 @@ CXX_DEFINES = -DWXUSINGDLL -D__WXMSW__ -DwxUSE_GUI=1
 
 CXX_INCLUDES = -IC:\wamp64\www\lemondeDeLila\client-wx\src -IC:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\generated -external:IC:\vcpkg\installed\x64-windows\lib\mswud -external:IC:\vcpkg\installed\x64-windows\include -external:W0
 
-CXX_FLAGS = /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -std:c++20 -MDd -Zi /W4 /permissive-
+CXX_FLAGS = /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -std:c++20 -MDd -Zi /W4 /permissive- /utf-8
 

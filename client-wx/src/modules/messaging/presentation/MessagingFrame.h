@@ -1,8 +1,8 @@
 #pragma once
 
 #include <functional>
-#include <array>
 #include <optional>
+#include <memory>
 #include <vector>
 
 #include <wx/frame.h>
@@ -10,13 +10,9 @@
 #include "modules/messaging/domain/MessagingBox.h"
 #include "modules/messaging/domain/MessagingMessage.h"
 #include "modules/messaging/domain/MessagingUser.h"
+#include "modules/messaging/presentation/MessagingSelectionMemory.h"
+#include "modules/messaging/presentation/MessagingNavigationState.h"
 
-class wxButton;
-class wxListBox;
-class wxPanel;
-class wxSimplebook;
-class wxStaticText;
-class wxTextCtrl;
 class wxWindow;
 
 namespace lila::modules::messaging::application
@@ -31,6 +27,11 @@ class VerticalMenu;
 
 namespace lila::modules::messaging::presentation
 {
+class MessagingView;
+class MessagingActionController;
+class MessagingMailboxController;
+class MessagingFocusController;
+
 class MessagingFrame final : public wxFrame
 {
 public:
@@ -41,22 +42,13 @@ public:
         lila::modules::messaging::application::MessagingService& messagingService,
         CloseRequestedHandler onCloseRequested,
         ExitRequestedHandler onExitRequested);
-    ~MessagingFrame() override = default;
+    ~MessagingFrame() override;
 
 private:
-    enum class Screen
-    {
-        Menu,
-        List,
-        Detail,
-        Compose,
-    };
+    using Screen = MessagingNavigationState::Screen;
 
-    void BuildLayout();
-    void ApplyTheme();
     void BindEvents();
     void SetScreen(Screen screen);
-    void FocusCurrentScreen();
     void UpdateStatus(const wxString& message, bool isError = false);
     void RunBackgroundTask(
         const wxString& busyMessage,
@@ -71,8 +63,6 @@ private:
     void OpenDetail();
     void OpenCompose(std::optional<domain::MessagingUser> recipient, Screen returnScreen);
     void CloseCompose();
-    void FocusComposeControl(bool reverse);
-    void BindListActivation();
     void SaveCurrentBoxSelection();
     void RestoreCurrentBoxSelection();
     void LoadBox(domain::MessagingBox box, bool preserveSelection = false);
@@ -83,47 +73,18 @@ private:
     void ReplyToSelectedMessage();
     void MarkSelectedMessageRead();
     [[nodiscard]] std::optional<domain::MessagingMessage> GetSelectedMessage() const;
-    [[nodiscard]] wxString BuildMessageLabel(const domain::MessagingMessage& message) const;
-    [[nodiscard]] wxString BuildMessageDetail(const domain::MessagingMessage& message) const;
-    static wxString BoxTitle(domain::MessagingBox box);
-    [[nodiscard]] std::size_t GetBoxIndex(domain::MessagingBox box) const;
 
-    lila::modules::messaging::application::MessagingService& messagingService_;
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
-    Screen currentScreen_ = Screen::Menu;
-    Screen screenBeforeCompose_ = Screen::Menu;
-    domain::MessagingBox currentBox_ = domain::MessagingBox::Inbox;
-    std::optional<std::string> selectedMessageId_;
-    std::optional<domain::MessagingUser> composeRecipient_;
-    std::size_t lastMenuIndex_ = 0;
     bool isBusy_ = false;
+    MessagingNavigationState navigationState_;
     std::vector<domain::MessagingMessage> boxMessages_;
 
-    wxStaticText* statusLabel_ = nullptr;
-    lila::shared::ui::controls::VerticalMenu* menu_ = nullptr;
-    wxSimplebook* screenBook_ = nullptr;
-    wxPanel* menuPanel_ = nullptr;
-    wxPanel* listPanel_ = nullptr;
-    wxPanel* detailPanel_ = nullptr;
-    wxPanel* composePanel_ = nullptr;
+    MessagingView* view_ = nullptr;
 
-    wxStaticText* listTitleLabel_ = nullptr;
-    wxListBox* messagesList_ = nullptr;
-    wxTextCtrl* emptyMessagesCtrl_ = nullptr;
-
-    wxTextCtrl* detailCtrl_ = nullptr;
-    wxButton* replyButton_ = nullptr;
-    wxButton* deleteButton_ = nullptr;
-    wxButton* restoreButton_ = nullptr;
-    wxButton* purgeButton_ = nullptr;
-
-    wxTextCtrl* recipientCtrl_ = nullptr;
-    wxTextCtrl* subjectCtrl_ = nullptr;
-    wxTextCtrl* bodyCtrl_ = nullptr;
-    wxButton* sendComposeButton_ = nullptr;
-    wxButton* cancelComposeButton_ = nullptr;
-
-    std::array<std::optional<std::string>, 3> lastBoxSelection_;
+    MessagingSelectionMemory selectionMemory_;
+    std::unique_ptr<MessagingActionController> actionController_;
+    std::unique_ptr<MessagingMailboxController> mailboxController_;
+    std::unique_ptr<MessagingFocusController> focusController_;
 };
 }

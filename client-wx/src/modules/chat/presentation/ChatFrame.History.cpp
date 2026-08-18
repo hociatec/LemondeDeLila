@@ -1,3 +1,4 @@
+#include "shared/text/Encoding.h"
 #include "modules/chat/presentation/ChatFrame.h"
 
 #include <algorithm>
@@ -61,10 +62,6 @@ void ChatFrame::RefreshHistory()
         }
 
         historyList_->SetSelection(selection);
-        if (!historyList_->HasFocus() && !inputCtrl_->HasFocus())
-        {
-            historyList_->SetFocus();
-        }
     }
 
     SyncActionState();
@@ -105,16 +102,16 @@ wxString ChatFrame::BuildMessageLabel(const domain::ChatMessage& message) const
     const wxDateTime timestamp(static_cast<time_t>(message.timestampUtc));
     const wxString timeLabel = timestamp.IsValid()
         ? timestamp.Format("%H:%M")
-        : wxString::FromUTF8(lila::shared::errors::ChatTimeFormatUnknown);
-    const wxString userLabel = wxString::FromUTF8(message.user.empty() ? lila::shared::errors::ChatUnknownUser : message.user);
-    const wxString textLabel = wxString::FromUTF8(message.text);
+        : lila::shared::text::FromUtf8(lila::shared::errors::ChatTimeFormatUnknown);
+    const wxString userLabel = lila::shared::text::FromUtf8(message.user.empty() ? lila::shared::errors::ChatUnknownUser : message.user);
+    const wxString textLabel = lila::shared::text::FromUtf8(message.text);
 
     wxString label;
     label << timeLabel << wxString(L" - ") << userLabel << wxString(L" : ") << textLabel;
 
     if (message.isMine && CanActOnMessage(message))
     {
-        label << wxString::FromUTF8(lila::shared::errors::ChatEditableSuffix);
+        label << lila::shared::text::FromUtf8(lila::shared::errors::ChatEditableSuffix);
     }
 
     return label;
@@ -131,14 +128,19 @@ void ChatFrame::SyncActionState()
         && CanActOnMessage(*selectedMessage);
     const bool canAct = selectedMessageIsActionReady;
 
-    historyList_->Enable(hasMessages);
-    editMessageButton_->Enable(canAct);
-    deleteMessageButton_->Enable(canAct);
-    inputCtrl_->Enable(chatService_.State() == domain::ChatState::Connected);
+    historyList_->Enable(hasMessages && !isBusy_);
+    editMessageButton_->Enable(canAct && !isBusy_);
+    deleteMessageButton_->Enable(canAct && !isBusy_);
+
+    // Keep the text control enabled so it remains visible/focusable to keyboard
+    // and screen-reader users while the connection is being established.
+    // Read-only state prevents sending/editing until the service is ready.
+    inputCtrl_->Enable(true);
+    inputCtrl_->SetEditable(!isBusy_ && chatService_.State() == domain::ChatState::Connected);
 
     if (!editing)
     {
-        inputCtrl_->SetHint(wxString::FromUTF8(lila::shared::errors::ChatInputHint));
+        inputCtrl_->SetHint(lila::shared::text::FromUtf8(lila::shared::errors::ChatInputHint));
     }
 
     if (!hasMessages)
@@ -149,7 +151,7 @@ void ChatFrame::SyncActionState()
 
     if (emptyHistoryCtrl_->IsShown())
     {
-        emptyHistoryCtrl_->SetValue(wxString::FromUTF8(lila::shared::errors::ChatNoMessage));
+        emptyHistoryCtrl_->SetValue(lila::shared::text::FromUtf8(lila::shared::errors::ChatNoMessage));
     }
 }
 }

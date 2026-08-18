@@ -1,12 +1,16 @@
-﻿#include "modules/chat/presentation/ChatFrame.h"
+#include "shared/text/Encoding.h"
+#include "modules/chat/presentation/ChatFrame.h"
+#include "modules/chat/presentation/ChatFocusController.h"
+#include "modules/chat/presentation/ChatEventBinder.h"
+#include "modules/chat/presentation/ChatEventBinder.inl"
+#include "modules/chat/presentation/ChatErrorResolver.h"
+
 
 #include <wx/button.h>
 #include <wx/event.h>
 #include <wx/listbox.h>
 #include <wx/msgdlg.h>
 #include <wx/textctrl.h>
-#include <wx/app.h>
-#include <wx/weakref.h>
 
 #include "modules/chat/application/ChatService.h"
 #include "modules/options/application/OptionsStore.h"
@@ -16,72 +20,6 @@
 
 namespace lila::modules::chat::presentation
 {
-namespace
-{
-std::string BuildServerErrorMessage(const std::optional<lila::modules::chat::domain::ChatServerError>& serverError)
-{
-    if (!serverError.has_value())
-    {
-        return {};
-    }
-
-    const auto serverMessage = lila::shared::text::TrimCopy(serverError->message);
-    const auto serverReason = lila::shared::text::TrimCopy(serverError->reason);
-    if (serverMessage.empty())
-    {
-        return serverReason;
-    }
-
-    if (serverReason.empty())
-    {
-        return serverMessage;
-    }
-
-    return serverMessage + " : " + serverReason;
-}
-
-std::string ResolveChatErrorMessage(
-    const std::string& baseMessage,
-    const std::optional<lila::modules::chat::domain::ChatServerError>& serverError)
-{
-    const auto trimmedBase = lila::shared::text::TrimCopy(baseMessage);
-    const bool baseContainsUnexpected =
-        trimmedBase.find(lila::shared::errors::UnexpectedError) != std::string::npos;
-    const bool isBaseUnhelpful = trimmedBase.empty() ||
-        baseContainsUnexpected ||
-        trimmedBase == lila::shared::errors::UnexpectedError ||
-        trimmedBase == lila::shared::errors::ChatErrorMessage;
-    const auto serverMessage = BuildServerErrorMessage(serverError);
-    if (!serverMessage.empty() && isBaseUnhelpful)
-    {
-        return lila::shared::errors::WithDetails(
-            lila::shared::errors::ChatConnectionFailed,
-            serverMessage);
-    }
-
-    const bool startsWithConnectionFailure =
-        trimmedBase.rfind(lila::shared::errors::ChatConnectionFailed, 0) == 0 ||
-        trimmedBase.rfind(lila::shared::errors::ChatReconnectionInterrupted, 0) == 0;
-    if (!serverMessage.empty() && startsWithConnectionFailure)
-    {
-        return lila::shared::errors::WithDetails(
-            lila::shared::errors::ChatConnectionFailed,
-            serverMessage);
-    }
-
-    if (!isBaseUnhelpful)
-    {
-        return trimmedBase;
-    }
-
-    return serverMessage.empty()
-        ? trimmedBase
-        : lila::shared::errors::WithDetails(
-            lila::shared::errors::ChatConnectionFailed,
-            serverMessage);
-}
-}
-
 void ChatFrame::RunChatAction(
     const wxString& busyMessage,
     const std::function<void()>& action,
@@ -89,7 +27,7 @@ void ChatFrame::RunChatAction(
 {
     if (isBusy_)
     {
-        UpdateStatus(wxString::FromUTF8(lila::shared::errors::ActionInProgress), true);
+        UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ActionInProgress), true);
         return;
     }
 
@@ -108,7 +46,7 @@ void ChatFrame::RunChatAction(
             weakSelf->SetBusyState(false);
             if (!errorMessage.empty())
             {
-                weakSelf->UpdateStatus(wxString::FromUTF8(errorMessage), true);
+                weakSelf->UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
                 return;
             }
 
@@ -121,181 +59,96 @@ void ChatFrame::RunChatAction(
 
 void ChatFrame::BindEvents()
 {
-    inputCtrl_->Bind(
-        wxEVT_TEXT_ENTER,
-        [this](wxCommandEvent&)
-        {
-            SendInput();
-        });
-    historyList_->Bind(
-        wxEVT_LISTBOX,
-        [this](wxCommandEvent&)
-        {
-            selectedActionMessageId_.reset();
-            isHistoryActionMode_ = false;
-            SyncActionState();
-        });
-    historyList_->Bind(
-        wxEVT_LEFT_UP,
-        [this](wxMouseEvent& event)
-        {
-            const int selection = historyList_->GetSelection();
-            if (selection == wxNOT_FOUND
-                || static_cast<std::size_t>(selection) >= visibleMessages_.size()
-                || !CanActOnMessage(visibleMessages_[static_cast<std::size_t>(selection)]))
+    ChatEventBinder::Bind(
+        *this,
+        ChatEventBinder::Widgets{*inputCtrl_, *historyList_, *editMessageButton_, *deleteMessageButton_},
+        ChatEventBinder::Handlers{
+            [this]() { SendInput(); },
+            [this]()
             {
                 selectedActionMessageId_.reset();
                 isHistoryActionMode_ = false;
-            }
-            else
+                SyncActionState();
+            },
+            [this]() { HandleHistoryClick(); },
+            [this]() { HandleHistoryActivation(); },
+            [this]() { HandleEditSelected(); },
+            [this]() { HandleDeleteSelected(); },
+            [this]() { HandleEscape(); },
+            [this]()
             {
-                selectedActionMessageId_ = visibleMessages_[static_cast<std::size_t>(selection)].id;
-                isHistoryActionMode_ = true;
-            }
+                if (isReturningToSession_)
+                {
+                    isReturningToSession_ = false;
+                    return;
+                }
+                if (onExitRequested_)
+                {
+                    onExitRequested_();
+                }
+            }});
+    focusController_->BindNavigation(*this, [this]() { return isHistoryActionMode_; });
+}
 
-            SyncActionState();
-            event.Skip();
-        });
-    historyList_->Bind(
-        wxEVT_LISTBOX_DCLICK,
-        [this](wxCommandEvent&)
+void ChatFrame::HandleHistoryClick()
+{
+    const int selection = historyList_->GetSelection();
+    if (selection == wxNOT_FOUND
+        || static_cast<std::size_t>(selection) >= visibleMessages_.size()
+        || !CanActOnMessage(visibleMessages_[static_cast<std::size_t>(selection)]))
+    {
+        selectedActionMessageId_.reset();
+        isHistoryActionMode_ = false;
+    }
+    else
+    {
+        selectedActionMessageId_ = visibleMessages_[static_cast<std::size_t>(selection)].id;
+        isHistoryActionMode_ = true;
+    }
+    SyncActionState();
+}
+
+void ChatFrame::HandleEditSelected()
+{
+    const auto message = GetSelectedMessage();
+    if (!message.has_value() || !CanActOnMessage(*message)
+        || !selectedActionMessageId_.has_value() || selectedActionMessageId_.value() != message->id)
+    {
+        return;
+    }
+
+    isHistoryActionMode_ = false;
+    BeginEdit(*message);
+}
+
+void ChatFrame::HandleDeleteSelected()
+{
+    const auto message = GetSelectedMessage();
+    if (!message.has_value() || !CanActOnMessage(*message)
+        || !selectedActionMessageId_.has_value() || selectedActionMessageId_.value() != message->id)
+    {
+        return;
+    }
+
+    const int confirmation = wxMessageBox(
+        lila::shared::text::FromUtf8(lila::shared::errors::ChatDeleteConfirm),
+        lila::shared::text::FromUtf8(lila::shared::errors::ChatFrameHeader),
+        wxYES_NO | wxNO_DEFAULT | wxICON_WARNING,
+        this);
+    if (confirmation != wxYES)
+    {
+        return;
+    }
+
+    isHistoryActionMode_ = false;
+    const std::string messageId = message->id;
+    RunChatAction(
+        lila::shared::text::FromUtf8(lila::shared::errors::ChatDeleteBusy),
+        [this, messageId]() { chatService_.Delete(messageId); },
+        [this]()
         {
-            HandleHistoryActivation();
-        });
-    editMessageButton_->Bind(
-        wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-        {
-            const auto message = GetSelectedMessage();
-            if (!message.has_value() || !CanActOnMessage(*message))
-            {
-                return;
-            }
-
-            if (!selectedActionMessageId_.has_value() || selectedActionMessageId_.value() != message->id)
-            {
-                return;
-            }
-
-            isHistoryActionMode_ = false;
-            BeginEdit(*message);
-        });
-    deleteMessageButton_->Bind(
-        wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-        {
-            const auto message = GetSelectedMessage();
-            if (!message.has_value() || !CanActOnMessage(*message))
-            {
-                return;
-            }
-
-            if (!selectedActionMessageId_.has_value() || selectedActionMessageId_.value() != message->id)
-            {
-                return;
-            }
-
-            const int confirmation = wxMessageBox(
-                wxString::FromUTF8(lila::shared::errors::ChatDeleteConfirm),
-                wxString::FromUTF8(lila::shared::errors::ChatFrameHeader),
-                wxYES_NO | wxNO_DEFAULT | wxICON_WARNING,
-                this);
-            if (confirmation == wxYES)
-            {
-                isHistoryActionMode_ = false;
-                const std::string messageId = message->id;
-                RunChatAction(
-                    wxString::FromUTF8(lila::shared::errors::ChatDeleteBusy),
-                    [this, messageId]()
-                    {
-                        chatService_.Delete(messageId);
-                    },
-                    [this]()
-                    {
-                        CancelEdit();
-                        UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatDeleted));
-                });
-            }
-        });
-    inputCtrl_->Bind(
-        wxEVT_CHAR_HOOK,
-        [this](wxKeyEvent& event)
-        {
-            if (event.GetKeyCode() == WXK_ESCAPE)
-            {
-                HandleEscape();
-                return;
-            }
-            if (event.GetKeyCode() == WXK_TAB && pendingEditMessageId_.has_value())
-            {
-                return;
-            }
-            event.Skip();
-        });
-
-    historyList_->Bind(
-        wxEVT_CHAR_HOOK,
-        [this](wxKeyEvent& event)
-        {
-            if (event.GetKeyCode() == WXK_ESCAPE)
-            {
-                HandleEscape();
-                return;
-            }
-
-            if (event.GetKeyCode() == WXK_RETURN || event.GetKeyCode() == WXK_NUMPAD_ENTER)
-            {
-                HandleHistoryActivation();
-                return;
-            }
-
-            event.Skip();
-        });
-
-    Bind(
-        wxEVT_CHAR_HOOK,
-        [this](wxKeyEvent& event)
-        {
-            if (event.GetKeyCode() == WXK_TAB && pendingEditMessageId_.has_value())
-            {
-                return;
-            }
-
-            if (event.GetKeyCode() == WXK_TAB && isHistoryActionMode_)
-            {
-                FocusHistoryAction(event.ShiftDown());
-                return;
-            }
-
-            if (event.GetKeyCode() == WXK_ESCAPE)
-            {
-                HandleEscape();
-                return;
-            }
-
-            event.Skip();
-        });
-
-    Bind(
-        wxEVT_CLOSE_WINDOW,
-        [this](wxCloseEvent& event)
-        {
-            if (event.CanVeto())
-            {
-                event.Veto();
-            }
-
-            event.Skip(false);
-            if (isReturningToSession_)
-            {
-                isReturningToSession_ = false;
-                return;
-            }
-
-            if (onExitRequested_)
-            {
-                onExitRequested_();
-            }
+            CancelEdit();
+            UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ChatDeleted));
         });
 }
 
@@ -313,9 +166,14 @@ void ChatFrame::SetBusyState(bool isBusy, const wxString& statusMessage)
         RefreshHistory();
     }
 
-    historyList_->Enable(!isBusy);
-    emptyHistoryCtrl_->Enable(!isBusy);
-    inputCtrl_->Enable(!isBusy && chatService_.State() == domain::ChatState::Connected);
+    historyList_->Enable(!isBusy && !visibleMessages_.empty());
+    // Read-only history placeholder remains keyboard reachable while connecting.
+    emptyHistoryCtrl_->Enable(true);
+
+    // Do not disable the composer: a disabled wxTextCtrl is skipped by Tab and
+    // accessibility tools, which made the history appear to be the first control.
+    inputCtrl_->Enable(true);
+    inputCtrl_->SetEditable(!isBusy && chatService_.State() == domain::ChatState::Connected);
     if (isBusy)
     {
         editMessageButton_->Enable(false);
@@ -326,7 +184,7 @@ void ChatFrame::SetBusyState(bool isBusy, const wxString& statusMessage)
         SyncActionState();
     }
 
-    historyList_->SetFocus();
+    focusController_->FocusComposer();
 }
 
 void ChatFrame::OpenChat()
@@ -336,102 +194,76 @@ void ChatFrame::OpenChat()
         return;
     }
 
-    SetBusyState(true, wxString::FromUTF8(lila::shared::errors::ChatConnecting));
+    SetBusyState(true, lila::shared::text::FromUtf8(lila::shared::errors::ChatConnecting));
+    focusController_->FocusComposer();
     InvalidateOpenChatRequest();
     const std::size_t requestId = activeOpenChatRequestId_;
-    wxWeakRef<ChatFrame> weakSelf(this);
-    lila::shared::ui::RunDetachedBackgroundTask(
-        [weakSelf, requestId]()
+    auto* service = &chatService_;
+
+    openChatTask_ = lila::shared::ui::RunBackgroundTaskWithResult<bool>(
+        this,
+        [service]() { return service->Open(); },
+        [this, requestId](std::string errorMessage, std::optional<bool> connectedResult)
         {
-            bool connected = false;
-            std::string errorMessage;
-            if (wxTheApp == nullptr)
+            if (activeOpenChatRequestId_ != requestId)
             {
                 return;
             }
+            openChatTask_.reset();
+            SetBusyState(false);
 
-            if (weakSelf)
+            if (!errorMessage.empty())
             {
-                try
-                {
-                    connected = weakSelf->chatService_.Open();
-                }
-                catch (const std::exception& error)
-                {
-                    errorMessage = error.what();
-                }
-                catch (...)
-                {
-                    errorMessage = lila::shared::ui::UnexpectedErrorMessage;
-                }
+                PresentConnectionError(ChatErrorResolver::Resolve(errorMessage, chatService_.LastServerError()));
+                return;
             }
 
-            wxTheApp->CallAfter(
-                [weakSelf, connected, requestId, errorMessage = std::move(errorMessage)]() mutable
-                {
-                    if (!weakSelf)
-                    {
-                        return;
-                    }
+            const bool connected = connectedResult.value_or(false);
+            if (!connected)
+            {
+                const auto statusMessage = lila::shared::text::TrimCopy(chatService_.StatusMessage());
+                const std::string fallbackMessage = lila::shared::errors::WithDetails(
+                    lila::shared::errors::ChatConnectionFailed,
+                    lila::shared::errors::UnexpectedError);
+                PresentConnectionError(ChatErrorResolver::Resolve(
+                    statusMessage.empty() ? fallbackMessage : statusMessage,
+                    chatService_.LastServerError()));
+                return;
+            }
 
-                    if (weakSelf->activeOpenChatRequestId_ != requestId)
-                    {
-                        return;
-                    }
-
-                    weakSelf->SetBusyState(false);
-                    if (!errorMessage.empty())
-                    {
-                        const auto serverError = weakSelf->chatService_.LastServerError();
-                        const std::string resolvedMessage = ResolveChatErrorMessage(errorMessage, serverError);
-                        const std::string safeMessage = resolvedMessage.empty()
-                            ? lila::shared::errors::WithDetails(
-                                  lila::shared::errors::ChatConnectionFailed,
-                                  lila::shared::errors::UnexpectedError)
-                            : resolvedMessage;
-                        weakSelf->UpdateStatus(wxString::FromUTF8(safeMessage), true);
-                        if (weakSelf->statusLabel_ != nullptr)
-                        {
-                            weakSelf->statusLabel_->SetFocus();
-                        }
-                        wxBell();
-                        weakSelf->ShowAccessibleErrorDialog(
-                            wxString::FromUTF8(safeMessage),
-                            wxString::FromUTF8(lila::shared::errors::ChatFrameHeader));
-
-                        return;
-                    }
-
-                    if (!connected)
-                    {
-                        const auto statusMessage = lila::shared::text::TrimCopy(weakSelf->chatService_.StatusMessage());
-                        const std::string fallbackMessage = lila::shared::errors::WithDetails(
-                            lila::shared::errors::ChatConnectionFailed,
-                            lila::shared::errors::UnexpectedError);
-                        const auto serverError = weakSelf->chatService_.LastServerError();
-                        const std::string resolvedMessage =
-                            ResolveChatErrorMessage(statusMessage.empty() ? fallbackMessage : statusMessage, serverError);
-                        weakSelf->UpdateStatus(wxString::FromUTF8(resolvedMessage), true);
-                        if (weakSelf->statusLabel_ != nullptr)
-                        {
-                            weakSelf->statusLabel_->SetFocus();
-                        }
-                        wxBell();
-                        weakSelf->ShowAccessibleErrorDialog(
-                            wxString::FromUTF8(resolvedMessage),
-                            wxString::FromUTF8(lila::shared::errors::ChatFrameHeader));
-                        return;
-                    }
-
-                    weakSelf->RefreshHistory();
-                    weakSelf->SyncActionState();
-                    weakSelf->inputCtrl_->SetFocus();
-                });
+            RefreshHistory();
+            SyncActionState();
+            focusController_->FocusComposer();
         });
+}
+
+void ChatFrame::PresentConnectionError(const std::string& message)
+{
+    const std::string safeMessage = message.empty()
+        ? lila::shared::errors::WithDetails(
+            lila::shared::errors::ChatConnectionFailed,
+            lila::shared::errors::UnexpectedError)
+        : message;
+    UpdateStatus(lila::shared::text::FromUtf8(safeMessage), true);
+    if (statusLabel_ != nullptr)
+    {
+        statusLabel_->SetFocus();
+    }
+    wxBell();
+    ShowAccessibleErrorDialog(
+        lila::shared::text::FromUtf8(safeMessage),
+        lila::shared::text::FromUtf8(lila::shared::errors::ChatFrameHeader));
 }
 
 void ChatFrame::SendInput()
 {
+    if (isBusy_ || chatService_.State() != domain::ChatState::Connected || !inputCtrl_->IsEditable())
+    {
+        UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ChatNotConnected), true);
+        focusController_->FocusComposer();
+        return;
+    }
+
     wxString trimmedValue = inputCtrl_->GetValue();
     trimmedValue.Trim(true).Trim(false);
     if (trimmedValue.empty())
@@ -439,33 +271,33 @@ void ChatFrame::SendInput()
         return;
     }
 
-    const std::string payload = trimmedValue.ToUTF8().data();
+    const std::string payload = lila::shared::text::ToUtf8(trimmedValue);
     if (pendingEditMessageId_.has_value())
     {
         const std::string messageId = *pendingEditMessageId_;
         RunChatAction(
-            wxString::FromUTF8(lila::shared::errors::ChatEditBusy),
+            lila::shared::text::FromUtf8(lila::shared::errors::ChatEditBusy),
             [this, messageId, payload]()
             {
                 chatService_.Edit(messageId, payload);
             },
             [this]()
             {
-                UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatEdited));
+                UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ChatEdited));
                 CancelEdit();
             });
     }
     else
     {
         RunChatAction(
-            wxString::FromUTF8(lila::shared::errors::ChatSendBusy),
+            lila::shared::text::FromUtf8(lila::shared::errors::ChatSendBusy),
             [this, payload]()
             {
                 chatService_.Send(payload);
             },
             [this]()
             {
-                UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatSent));
+                UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ChatSent));
                 inputCtrl_->Clear();
             });
     }
@@ -486,8 +318,8 @@ void ChatFrame::CancelEdit()
 
     pendingEditMessageId_.reset();
     inputCtrl_->Clear();
-    inputCtrl_->SetHint(wxString::FromUTF8(lila::shared::errors::ChatEditHint));
-    UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatEditAborted));
+    inputCtrl_->SetHint(lila::shared::text::FromUtf8(lila::shared::errors::ChatEditHint));
+    UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ChatEditAborted));
     SyncActionState();
 }
 
@@ -498,7 +330,7 @@ void ChatFrame::HandleEscape()
     if (pendingEditMessageId_.has_value())
     {
         CancelEdit();
-        inputCtrl_->SetFocus();
+        focusController_->FocusComposer();
         return;
     }
 
@@ -523,45 +355,7 @@ void ChatFrame::HandleHistoryActivation()
     isHistoryActionMode_ = true;
     SyncActionState();
 
-    if (editMessageButton_ != nullptr)
-    {
-        editMessageButton_->SetFocus();
-    }
-}
-
-void ChatFrame::FocusHistoryAction(bool isReverse)
-{
-    if (!isHistoryActionMode_ || !selectedActionMessageId_.has_value())
-    {
-        return;
-    }
-
-    wxWindow* actionControls[2] = {editMessageButton_, deleteMessageButton_};
-    int currentIndex = 0;
-    wxWindow* focusedWindow = FindFocus();
-    for (std::size_t index = 0; index < 2; ++index)
-    {
-        if (focusedWindow == actionControls[index])
-        {
-            currentIndex = static_cast<int>(index);
-            break;
-        }
-    }
-
-    int nextIndex;
-    if (isReverse)
-    {
-        nextIndex = (currentIndex + 1) % 2;
-    }
-    else
-    {
-        nextIndex = (currentIndex + 1) % 2;
-    }
-
-    if (actionControls[nextIndex] != nullptr)
-    {
-        actionControls[nextIndex]->SetFocus();
-    }
+    focusController_->FocusFirstHistoryAction();
 }
 
 bool ChatFrame::ConfirmClose()
@@ -572,8 +366,8 @@ bool ChatFrame::ConfirmClose()
     }
 
     const int answer = wxMessageBox(
-        wxString::FromUTF8(lila::shared::errors::ChatCloseConfirmation),
-        wxString::FromUTF8(lila::shared::errors::ChatFrameHeader),
+        lila::shared::text::FromUtf8(lila::shared::errors::ChatCloseConfirmation),
+        lila::shared::text::FromUtf8(lila::shared::errors::ChatFrameHeader),
         wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION,
         this);
     return answer == wxYES;
@@ -583,10 +377,10 @@ void ChatFrame::BeginEdit(const domain::ChatMessage& message)
 {
     isHistoryActionMode_ = false;
     pendingEditMessageId_ = message.id;
-    inputCtrl_->SetValue(wxString::FromUTF8(message.text));
-    inputCtrl_->SetFocus();
+    inputCtrl_->SetValue(lila::shared::text::FromUtf8(message.text));
+    focusController_->FocusComposer();
     inputCtrl_->SelectAll();
-    UpdateStatus(wxString::FromUTF8(lila::shared::errors::ChatEditMode));
+    UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ChatEditMode));
     SyncActionState();
 }
 }

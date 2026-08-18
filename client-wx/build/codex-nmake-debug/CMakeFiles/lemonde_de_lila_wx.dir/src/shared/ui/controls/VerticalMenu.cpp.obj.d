@@ -519,3 +519,7 @@ C:/vcpkg/installed/x64-windows/include/wx/sizer.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/Theme.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibleMenu.h

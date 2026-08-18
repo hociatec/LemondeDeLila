@@ -15,17 +15,12 @@ namespace lila::shared::ui {
 
 inline constexpr const char* UnexpectedErrorMessage = lila::shared::errors::UnexpectedError;
 
-inline void RunDetachedBackgroundTask(std::function<void()> worker)
-{
-    static_cast<void>(lila::shared::concurrency::RunAsync(std::move(worker)));
-}
-
-inline void RunBackgroundTask(
+inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunBackgroundTask(
     wxWindow* owner,
     std::function<void()> worker,
     std::function<void(std::string)> completion)
 {
-    static_cast<void>(lila::shared::concurrency::RunAsync(
+    return lila::shared::concurrency::RunAsync(
         [worker = std::move(worker)](std::stop_token)
         {
             worker();
@@ -47,16 +42,16 @@ inline void RunBackgroundTask(
 
                     completion(std::move(errorMessage));
                 });
-        }));
+        });
 }
 
 template <typename TResult>
-inline void RunBackgroundTaskWithResult(
+inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunBackgroundTaskWithResult(
     wxWindow* owner,
     std::function<TResult()> worker,
     std::function<void(std::string, std::optional<TResult>)> completion)
 {
-    static_cast<void>(lila::shared::concurrency::RunAsync<TResult>(
+    return lila::shared::concurrency::RunAsync<TResult>(
         [worker = std::move(worker)](std::stop_token)
         {
             return worker();
@@ -83,7 +78,7 @@ inline void RunBackgroundTaskWithResult(
 
                     completion(std::move(errorMessage), std::move(result));
                 });
-        }));
+        });
 }
 
 }

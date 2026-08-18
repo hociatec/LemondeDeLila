@@ -1,6 +1,7 @@
 #include "app/Application.h"
 
 #include "bootstrap/AppBootstrap.h"
+#include "shared/concurrency/BackgroundExecutor.h"
 
 namespace lila::app
 {
@@ -24,6 +25,7 @@ bool Application::OnInit()
 
 int Application::OnExit()
 {
+    lila::shared::concurrency::ShutdownBackgroundExecutor();
     bootstrap_.reset();
     return wxApp::OnExit();
 }

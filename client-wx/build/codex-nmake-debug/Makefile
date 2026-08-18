@@ -499,19 +499,6 @@ lemonde_de_lila_wx\fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\build
 .PHONY : lemonde_de_lila_wx\fast
 
-#=============================================================================
-# Target rules for targets named lemonde_de_lila_wx_tests
-
-# Build rule for target.
-lemonde_de_lila_wx_tests: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 /nologo -$(MAKEFLAGS) lemonde_de_lila_wx_tests
-.PHONY : lemonde_de_lila_wx_tests
-
-# fast build rule for target.
-lemonde_de_lila_wx_tests\fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\build
-.PHONY : lemonde_de_lila_wx_tests\fast
-
 src\app\Application.obj: src\app\Application.cpp.obj
 .PHONY : src\app\Application.obj
 
@@ -1256,6 +1243,30 @@ src\modules\messaging\presentation\MessagingFrame.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\presentation\MessagingFrame.cpp.s
 .PHONY : src\modules\messaging\presentation\MessagingFrame.cpp.s
 
+src\modules\messaging\presentation\MessagingPresentationModel.obj: src\modules\messaging\presentation\MessagingPresentationModel.cpp.obj
+.PHONY : src\modules\messaging\presentation\MessagingPresentationModel.obj
+
+# target to build an object file
+src\modules\messaging\presentation\MessagingPresentationModel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\presentation\MessagingPresentationModel.cpp.obj
+.PHONY : src\modules\messaging\presentation\MessagingPresentationModel.cpp.obj
+
+src\modules\messaging\presentation\MessagingPresentationModel.i: src\modules\messaging\presentation\MessagingPresentationModel.cpp.i
+.PHONY : src\modules\messaging\presentation\MessagingPresentationModel.i
+
+# target to preprocess a source file
+src\modules\messaging\presentation\MessagingPresentationModel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\presentation\MessagingPresentationModel.cpp.i
+.PHONY : src\modules\messaging\presentation\MessagingPresentationModel.cpp.i
+
+src\modules\messaging\presentation\MessagingPresentationModel.s: src\modules\messaging\presentation\MessagingPresentationModel.cpp.s
+.PHONY : src\modules\messaging\presentation\MessagingPresentationModel.s
+
+# target to generate assembly for a file
+src\modules\messaging\presentation\MessagingPresentationModel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\presentation\MessagingPresentationModel.cpp.s
+.PHONY : src\modules\messaging\presentation\MessagingPresentationModel.cpp.s
+
 src\modules\options\application\OptionsStore.obj: src\modules\options\application\OptionsStore.cpp.obj
 .PHONY : src\modules\options\application\OptionsStore.obj
 
@@ -1814,7 +1825,6 @@ src\shared\network\realtime\RealtimeProtocol.obj: src\shared\network\realtime\Re
 # target to build an object file
 src\shared\network\realtime\RealtimeProtocol.cpp.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj
 .PHONY : src\shared\network\realtime\RealtimeProtocol.cpp.obj
 
 src\shared\network\realtime\RealtimeProtocol.i: src\shared\network\realtime\RealtimeProtocol.cpp.i
@@ -1823,7 +1833,6 @@ src\shared\network\realtime\RealtimeProtocol.i: src\shared\network\realtime\Real
 # target to preprocess a source file
 src\shared\network\realtime\RealtimeProtocol.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProtocol.cpp.i
 .PHONY : src\shared\network\realtime\RealtimeProtocol.cpp.i
 
 src\shared\network\realtime\RealtimeProtocol.s: src\shared\network\realtime\RealtimeProtocol.cpp.s
@@ -1832,7 +1841,6 @@ src\shared\network\realtime\RealtimeProtocol.s: src\shared\network\realtime\Real
 # target to generate assembly for a file
 src\shared\network\realtime\RealtimeProtocol.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProtocol.cpp.s
 .PHONY : src\shared\network\realtime\RealtimeProtocol.cpp.s
 
 src\shared\network\websocket\WinHttpWebSocketClient.obj: src\shared\network\websocket\WinHttpWebSocketClient.cpp.obj
@@ -1955,30 +1963,6 @@ src\shared\ui\controls\VerticalMenu.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.cpp.s
 .PHONY : src\shared\ui\controls\VerticalMenu.cpp.s
 
-tests\NetworkProtocolTests.obj: tests\NetworkProtocolTests.cpp.obj
-.PHONY : tests\NetworkProtocolTests.obj
-
-# target to build an object file
-tests\NetworkProtocolTests.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\tests\NetworkProtocolTests.cpp.obj
-.PHONY : tests\NetworkProtocolTests.cpp.obj
-
-tests\NetworkProtocolTests.i: tests\NetworkProtocolTests.cpp.i
-.PHONY : tests\NetworkProtocolTests.i
-
-# target to preprocess a source file
-tests\NetworkProtocolTests.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\tests\NetworkProtocolTests.cpp.i
-.PHONY : tests\NetworkProtocolTests.cpp.i
-
-tests\NetworkProtocolTests.s: tests\NetworkProtocolTests.cpp.s
-.PHONY : tests\NetworkProtocolTests.s
-
-# target to generate assembly for a file
-tests\NetworkProtocolTests.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\tests\NetworkProtocolTests.cpp.s
-.PHONY : tests\NetworkProtocolTests.cpp.s
-
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -2018,7 +2002,6 @@ help:
 	@echo ... NightlyTest
 	@echo ... NightlyUpdate
 	@echo ... lemonde_de_lila_wx
-	@echo ... lemonde_de_lila_wx_tests
 	@echo ... src/app/Application.obj
 	@echo ... src/app/Application.i
 	@echo ... src/app/Application.s
@@ -2112,6 +2095,9 @@ help:
 	@echo ... src/modules/messaging/presentation/MessagingFrame.obj
 	@echo ... src/modules/messaging/presentation/MessagingFrame.i
 	@echo ... src/modules/messaging/presentation/MessagingFrame.s
+	@echo ... src/modules/messaging/presentation/MessagingPresentationModel.obj
+	@echo ... src/modules/messaging/presentation/MessagingPresentationModel.i
+	@echo ... src/modules/messaging/presentation/MessagingPresentationModel.s
 	@echo ... src/modules/options/application/OptionsStore.obj
 	@echo ... src/modules/options/application/OptionsStore.i
 	@echo ... src/modules/options/application/OptionsStore.s
@@ -2199,9 +2185,6 @@ help:
 	@echo ... src/shared/ui/controls/VerticalMenu.obj
 	@echo ... src/shared/ui/controls/VerticalMenu.i
 	@echo ... src/shared/ui/controls/VerticalMenu.s
-	@echo ... tests/NetworkProtocolTests.obj
-	@echo ... tests/NetworkProtocolTests.i
-	@echo ... tests/NetworkProtocolTests.s
 .PHONY : help
 
 

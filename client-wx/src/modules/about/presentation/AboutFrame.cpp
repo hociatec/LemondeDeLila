@@ -1,3 +1,4 @@
+﻿#include "shared/text/Encoding.h"
 #include "modules/about/presentation/AboutFrame.h"
 
 #include <utility>
@@ -35,7 +36,7 @@ AboutFrame::AboutFrame(
           wxID_ANY,
           wxString::Format(
               wxString(L"À propos - %s"),
-              wxString::FromUTF8(shared::config::AppConfig::AppTitle.data())),
+              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data())),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
           wxDEFAULT_FRAME_STYLE),
@@ -336,10 +337,10 @@ void AboutFrame::BuildRootMenuItems()
 void AboutFrame::BuildInfoItems()
 {
     const lila::shared::ui::controls::VerticalMenuItem infoItems[] = {
-        {"name", wxString::Format(L"Nom : %s", wxString::FromUTF8(shared::config::AppConfig::AppTitle.data()))},
-        {"version", wxString::Format(L"Version actuelle : %s", wxString::FromUTF8(shared::config::AppConfig::ResolveClientVersion()))},
+        {"name", wxString::Format(L"Nom : %s", lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()))},
+        {"version", wxString::Format(L"Version actuelle : %s", lila::shared::text::FromUtf8(shared::config::AppConfig::ResolveClientVersion()))},
         {"updated", wxString::Format(L"Dernière mise à jour locale : %s", ResolveLocalUpdatedAt())},
-        {"user", wxString::Format(L"Connecté en tant que : %s", wxString::FromUTF8(sessionStore_.Current().username))}};
+        {"user", wxString::Format(L"Connecté en tant que : %s", lila::shared::text::FromUtf8(sessionStore_.Current().username))}};
     itemsList_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>(infoItems, 4));
     if (itemsList_->GetItemCount() > 0)
     {

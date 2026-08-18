@@ -61,6 +61,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/lemonde_de_lila_wx.dir/src/modules/messaging/presentation/MessagingFrame.Events.cpp.obj.d"
   "CMakeFiles/lemonde_de_lila_wx.dir/src/modules/messaging/presentation/MessagingFrame.cpp.obj"
   "CMakeFiles/lemonde_de_lila_wx.dir/src/modules/messaging/presentation/MessagingFrame.cpp.obj.d"
+  "CMakeFiles/lemonde_de_lila_wx.dir/src/modules/messaging/presentation/MessagingPresentationModel.cpp.obj"
+  "CMakeFiles/lemonde_de_lila_wx.dir/src/modules/messaging/presentation/MessagingPresentationModel.cpp.obj.d"
   "CMakeFiles/lemonde_de_lila_wx.dir/src/modules/options/application/OptionsStore.cpp.obj"
   "CMakeFiles/lemonde_de_lila_wx.dir/src/modules/options/application/OptionsStore.cpp.obj.d"
   "CMakeFiles/lemonde_de_lila_wx.dir/src/modules/options/infrastructure/FileOptionsRepository.cpp.obj"

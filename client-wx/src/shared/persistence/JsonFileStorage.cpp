@@ -1,6 +1,7 @@
 #include "shared/persistence/JsonFileStorage.h"
 #include "shared/persistence/AtomicFileWriter.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/text/Encoding.h"
 
 #include <stdexcept>
 
@@ -14,7 +15,7 @@ namespace
 {
 wxString ResolveDataPath(const char* fileName)
 {
-    wxFileName fileNameWithPath(wxStandardPaths::Get().GetUserLocalDataDir(), fileName);
+    wxFileName fileNameWithPath(wxStandardPaths::Get().GetUserLocalDataDir(), lila::shared::text::FromUtf8(fileName));
     if (!fileNameWithPath.DirExists())
     {
         fileNameWithPath.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
@@ -44,15 +45,23 @@ bool JsonFileStorage::ReadIfExists(const wxString& path, nlohmann::json& content
         throw std::runtime_error(lila::shared::errors::JsonFileOpenFailed);
     }
 
-    wxString raw;
-    if (!file.ReadAll(&raw))
+    const wxFileOffset length = file.Length();
+    if (length < 0)
     {
         throw std::runtime_error(lila::shared::errors::JsonFileReadFailed);
     }
 
+    std::string raw(static_cast<std::size_t>(length), '\0');
+    if (!raw.empty() && file.Read(raw.data(), raw.size()) != raw.size())
+    {
+        throw std::runtime_error(lila::shared::errors::JsonFileReadFailed);
+    }
+
+    // JSON files are UTF-8 bytes. Never round-trip them through wxString or the
+    // process locale, otherwise accented characters can be corrupted.
     try
     {
-        content = nlohmann::json::parse(raw.ToStdString());
+        content = nlohmann::json::parse(raw);
     }
     catch (const nlohmann::json::exception& error)
     {

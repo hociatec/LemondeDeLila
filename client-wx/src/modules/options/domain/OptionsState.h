@@ -17,7 +17,6 @@ struct OptionsState final
 
     bool muteAll = false;
     bool confirmExit = false;
-    bool repairBrokenAccents = true;
     bool enableBetaGames = false;
 
     bool soundAmbience = true;
@@ -42,6 +41,8 @@ struct OptionsState final
     int adminChatModerationLoadLimit = 200;
 
     std::string currentVersion = "unknown";
+
+    [[nodiscard]] bool operator==(const OptionsState&) const = default;
 
     void Normalize()
     {

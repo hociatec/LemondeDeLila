@@ -27,7 +27,6 @@ domain::OptionsState ParseOptions(const nlohmann::json& document)
         document,
         "confirmExit",
         lila::shared::data::json::ReadOptionalBool(document, "confirmLogout", state.confirmExit));
-    state.repairBrokenAccents = lila::shared::data::json::ReadOptionalBool(document, "repairBrokenAccents", state.repairBrokenAccents);
     state.enableBetaGames = lila::shared::data::json::ReadOptionalBool(document, "enableBetaGames", state.enableBetaGames);
     state.soundAmbience = lila::shared::data::json::ReadOptionalBool(document, "soundAmbience", state.soundAmbience);
     state.soundAppLaunch = lila::shared::data::json::ReadOptionalBool(document, "soundAppLaunch", state.soundAppLaunch);
@@ -83,7 +82,6 @@ void FileOptionsRepository::Save(const domain::OptionsState& state) const
         {"showNavigationStatus", state.showNavigationStatus},
         {"muteAll", state.muteAll},
         {"confirmExit", state.confirmExit},
-        {"repairBrokenAccents", state.repairBrokenAccents},
         {"enableBetaGames", state.enableBetaGames},
         {"soundAmbience", state.soundAmbience},
         {"soundAppLaunch", state.soundAppLaunch},

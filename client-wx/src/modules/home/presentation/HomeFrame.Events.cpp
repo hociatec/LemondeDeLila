@@ -1,12 +1,11 @@
 #include "modules/home/presentation/HomeFrame.h"
 
-#include <array>
-
 #include <wx/checkbox.h>
 #include <wx/event.h>
 #include <wx/textctrl.h>
 
 #include "shared/accessibility/ActionButton.h"
+#include "shared/accessibility/NavigationController.h"
 
 namespace lila::modules::home::presentation
 {
@@ -30,40 +29,18 @@ void HomeFrame::BindEvents()
     loginShowPasswordCheck_->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { ToggleLoginPasswordMode(); });
     registerShowPasswordCheck_->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { ToggleRegisterPasswordMode(); });
 
-    const auto bindLandingNavigation = [this](lila::shared::accessibility::ActionButton& button, std::size_t index)
-    {
-        button.Bind(
-            wxEVT_CHAR_HOOK,
-            [this, index](wxKeyEvent& event)
-            {
-                static const std::array<lila::shared::accessibility::ActionButton*, 3> buttons = {
-                    landingLoginButton_,
-                    landingRegisterButton_,
-                    landingQuitButton_,
-                };
+    using Navigator = lila::shared::accessibility::NavigationController;
+    Navigator::BindVerticalNavigation(
+        *this,
+        [this]()
+        {
+            Navigator::Scope scope;
+            scope.Add({landingLoginButton_, landingRegisterButton_, landingQuitButton_});
+            return scope;
+        },
+        {},
+        Navigator::Boundary::Wrap);
 
-                switch (event.GetKeyCode())
-                {
-                case WXK_TAB:
-                    return;
-                case WXK_UP:
-                case WXK_NUMPAD_UP:
-                    buttons[index == 0 ? buttons.size() - 1 : index - 1]->SetFocus();
-                    return;
-                case WXK_DOWN:
-                case WXK_NUMPAD_DOWN:
-                    buttons[(index + 1) % buttons.size()]->SetFocus();
-                    return;
-                default:
-                    event.Skip();
-                    return;
-                }
-            });
-    };
-
-    bindLandingNavigation(*landingLoginButton_, 0);
-    bindLandingNavigation(*landingRegisterButton_, 1);
-    bindLandingNavigation(*landingQuitButton_, 2);
 }
 
 void HomeFrame::OnShowLogin(wxCommandEvent& event)

@@ -1,23 +1,27 @@
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialFrame.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals_core.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sal.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/concurrencysal.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vadefs.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xkeycheck.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_sanitizer_annotate_container.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iosfwd
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/crtdbg.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_new_debug.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_new.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/crtdefs.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/use_ansi.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstddef
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stddef.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtr1common
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdint
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdint.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdio
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stdio.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wstdio.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_stdio_config.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstring
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/string.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_memory.h
@@ -25,49 +29,7 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_memcpy_
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/errno.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_string.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wstring.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/type_traits
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/intrin0.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/intrin0.inl.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic_wait.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdlib
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_math.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stdlib.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_malloc.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_search.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wstdlib.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/limits.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xthreads.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/climits
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wtime.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/exception
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/malloc.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_exception.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/eh.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_terminate.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/tuple
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/compare
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/concepts
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_iter_core.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/utility
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/initializer_list
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/typeinfo
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_typeinfo.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xmemory
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/limits
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cfloat
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/float.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cwchar
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdio
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stdio.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wstdio.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_stdio_config.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/wchar.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wconio.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wctype.h
@@ -75,9 +37,12 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wdirect
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wio.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_share.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wprocess.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wstdlib.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wtime.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/sys/stat.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/sys/types.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/intrin.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/intrin0.inl.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/setjmp.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/immintrin.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/wmmintrin.h
@@ -88,28 +53,46 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/pmmintrin.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/emmintrin.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xmmintrin.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mmintrin.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/malloc.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_malloc.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/zmmintrin.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ammintrin.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/new
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtr1common
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xutility
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/unordered_map
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xhash
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_iter_core.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/utility
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/initializer_list
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstddef
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stddef.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/type_traits
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdint
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdint.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/compare
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/concepts
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/climits
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/limits.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdlib
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_math.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stdlib.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_search.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xmemory
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/limits
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cfloat
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/float.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/intrin0.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/new
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/exception
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_exception.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/eh.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_terminate.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/tuple
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_sanitizer_annotate_container.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/array
-C:/vcpkg/installed/x64-windows/include/wx/frame.h
-C:/vcpkg/installed/x64-windows/include/wx/toplevel.h
-C:/vcpkg/installed/x64-windows/include/wx/nonownedwnd.h
-C:/vcpkg/installed/x64-windows/include/wx/window.h
-C:/vcpkg/installed/x64-windows/include/wx/event.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
+C:/vcpkg/installed/x64-windows/include/wx/string.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/platform.h
 C:/vcpkg/installed/x64-windows/include/wx/compiler.h
@@ -126,13 +109,10 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/assert.h
 C:/vcpkg/installed/x64-windows/include/wx/chartype.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/tchar.h
 C:/vcpkg/installed/x64-windows/include/wx/features.h
-C:/vcpkg/installed/x64-windows/include/wx/object.h
-C:/vcpkg/installed/x64-windows/include/wx/string.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdarg.h
 C:/vcpkg/installed/x64-windows/include/wx/wxcrtbase.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/wctype.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/io.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_io.h
 C:/vcpkg/installed/x64-windows/include/wx/strvararg.h
@@ -142,17 +122,13 @@ C:/vcpkg/installed/x64-windows/include/wx/buffer.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/iosfwrap.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iosfwd
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/fontenc.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/unichar.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
 C:/vcpkg/installed/x64-windows/include/wx/stringops.h
 C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
 C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
@@ -160,6 +136,31 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
 C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/typeinfo
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_typeinfo.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/unordered_map
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xhash
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic_wait.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xthreads.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/memory
+C:/vcpkg/installed/x64-windows/include/wx/frame.h
+C:/vcpkg/installed/x64-windows/include/wx/toplevel.h
+C:/vcpkg/installed/x64-windows/include/wx/nonownedwnd.h
+C:/vcpkg/installed/x64-windows/include/wx/window.h
+C:/vcpkg/installed/x64-windows/include/wx/event.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/object.h
 C:/vcpkg/installed/x64-windows/include/wx/xti.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/rtti.h
@@ -481,7 +482,6 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/language.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/memory
 C:/vcpkg/installed/x64-windows/include/wx/validate.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -527,8 +527,19 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialFriendRequ
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialUser.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialProfile.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialDataStore.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSection.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialPresentationModel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSelectionMemory.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/array
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialNavigationState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialView.inl
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialView.h
+C:/vcpkg/installed/x64-windows/include/wx/panel.h
+C:/vcpkg/installed/x64-windows/include/wx/containr.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/button.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -585,10 +596,6 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/ctrlsub.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/choice.h
-C:/vcpkg/installed/x64-windows/include/wx/panel.h
-C:/vcpkg/installed/x64-windows/include/wx/containr.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/simplebook.h
 C:/vcpkg/installed/x64-windows/include/wx/compositebookctrl.h
 C:/vcpkg/installed/x64-windows/include/wx/bookctrl.h
@@ -651,4 +658,20 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NonFocusablePanel
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibilityUtils.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/Theme.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/MenuBlueprint.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialView.Layout.inl
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialView.ListSections.inl
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialView.Profile.inl
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialView.Theme.inl
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialPresentationModel.inl
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSelectionMemory.inl
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialDataStore.inl
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/unordered_set
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialActionController.inl
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialActionController.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/SocialService.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/ISocialGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSectionPresenter.inl
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSectionPresenter.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialProfileMapper.h

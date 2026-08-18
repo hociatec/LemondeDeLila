@@ -1,13 +1,19 @@
+#include "shared/text/Encoding.h"
 #include "modules/messaging/presentation/MessagingFrame.h"
+#include "modules/messaging/presentation/MessagingActionController.h"
+#include "modules/messaging/presentation/MessagingMailboxController.h"
+#include "modules/messaging/presentation/MessagingFocusController.h"
+#include "modules/messaging/presentation/MessagingEventBinder.h"
+#include "modules/messaging/presentation/MessagingEventBinder.inl"
+#include "modules/messaging/presentation/MessagingView.h"
+#include "modules/messaging/presentation/MessagingPresentationModel.h"
 
 #include <algorithm>
 #include <array>
-#include <ctime>
 #include <memory>
 #include <vector>
 
 #include <wx/button.h>
-#include <wx/datetime.h>
 #include <wx/event.h>
 #include <wx/listbox.h>
 #include <wx/msgdlg.h>
@@ -18,313 +24,69 @@
 #include "shared/ui/controls/VerticalMenu.h"
 #include "shared/ui/navigation/MenuBlueprint.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/accessibility/FocusNavigation.h"
 
 namespace lila::modules::messaging::presentation
 {
-void MessagingFrame::FocusComposeControl(bool reverse)
-{
-    const std::array<wxWindow*, 5> controls = {
-        recipientCtrl_,
-        subjectCtrl_,
-        bodyCtrl_,
-        sendComposeButton_,
-        cancelComposeButton_};
-
-    int currentIndex = 0;
-    const wxWindow* focused = wxWindow::FindFocus();
-    for (std::size_t index = 0; index < controls.size(); ++index)
-    {
-        if (controls[index] == focused)
-        {
-            currentIndex = static_cast<int>(index);
-            break;
-        }
-    }
-
-    const int direction = reverse ? -1 : 1;
-    const int count = static_cast<int>(controls.size());
-    const int nextIndex = (currentIndex + direction + count) % count;
-    if (controls[static_cast<std::size_t>(nextIndex)] != nullptr)
-    {
-        controls[static_cast<std::size_t>(nextIndex)]->SetFocus();
-    }
-}
-
 void MessagingFrame::BindEvents()
 {
-    if (menu_ == nullptr)
-    {
-        return;
-    }
-
-    lila::shared::ui::navigation::BindMenuHandlers(
-        *menu_,
-        [this](std::size_t index)
-        {
-            lastMenuIndex_ = index;
-        },
-        [this](std::size_t index)
-        {
-            OpenSelectedMenu(index);
-        });
-
-    BindListActivation();
-
-    replyButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { ReplyToSelectedMessage(); });
-    deleteButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { DeleteSelectedMessage(); });
-    restoreButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { RestoreSelectedMessage(); });
-    purgeButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { PurgeSelectedMessage(); });
-    sendComposeButton_->Bind(
-        wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-        {
-            SendComposedMessage();
-        });
-    cancelComposeButton_->Bind(
-        wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-        {
-            CloseCompose();
-        });
-    bodyCtrl_->Bind(
-        wxEVT_CHAR_HOOK,
-        [this](wxKeyEvent& event)
-        {
-            const int key = event.GetKeyCode();
-            if (!isBusy_ && (key == WXK_RETURN || key == WXK_NUMPAD_ENTER) && !event.ShiftDown() && !event.ControlDown())
+    MessagingEventBinder::Bind(
+        *this,
+        *view_,
+        navigationState_,
+        *focusController_,
+        MessagingEventBinder::Handlers{
+            [this](std::size_t index) { navigationState_.lastMenuIndex = index; },
+            [this](std::size_t index) { OpenSelectedMenu(index); },
+            [this]() { SyncSelectionState(); },
+            [this]() { OpenDetail(); },
+            [this]() { ReplyToSelectedMessage(); },
+            [this]() { DeleteSelectedMessage(); },
+            [this]() { RestoreSelectedMessage(); },
+            [this]() { PurgeSelectedMessage(); },
+            [this]() { SendComposedMessage(); },
+            [this]() { return !isBusy_; },
+            [this]() { CloseCompose(); },
+            [this]() { SetScreen(Screen::Menu); },
+            [this]() { SetScreen(Screen::List); },
+            [this]()
             {
-                SendComposedMessage();
-                return;
-            }
-
-            event.Skip();
-        });
-
-    const auto bindComposeTabLoop = [this](wxWindow* control)
-    {
-        control->Bind(
-            wxEVT_CHAR_HOOK,
-            [this](wxKeyEvent& event)
-            {
-                if (event.GetKeyCode() != WXK_TAB)
+                if (onCloseRequested_)
                 {
-                    event.Skip();
-                    return;
+                    onCloseRequested_();
                 }
-
-                if (currentScreen_ != Screen::Compose)
+            },
+            [this]()
+            {
+                if (onExitRequested_)
                 {
-                    event.Skip();
-                    return;
+                    onExitRequested_();
                 }
-
-                FocusComposeControl(event.ShiftDown());
-            });
-    };
-
-    bindComposeTabLoop(recipientCtrl_);
-    bindComposeTabLoop(subjectCtrl_);
-    bindComposeTabLoop(bodyCtrl_);
-    bindComposeTabLoop(sendComposeButton_);
-    bindComposeTabLoop(cancelComposeButton_);
-
-    Bind(
-        wxEVT_CHAR_HOOK,
-        [this](wxKeyEvent& event)
-        {
-            const int key = event.GetKeyCode();
-        if (key == WXK_ESCAPE)
-        {
-            switch (currentScreen_)
-            {
-                case Screen::Menu:
-                    if (onCloseRequested_)
-                    {
-                        onCloseRequested_();
-                    }
-                    return;
-                case Screen::List:
-                    SetScreen(Screen::Menu);
-                    return;
-                case Screen::Detail:
-                    SetScreen(Screen::List);
-                    return;
-                case Screen::Compose:
-                    CloseCompose();
-                    return;
-            }
-        }
-
-        if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
-        {
-            if (currentScreen_ == Screen::Menu && menu_ != nullptr)
-            {
-                OpenSelectedMenu(menu_->GetSelectedIndex());
-                return;
-            }
-
-            if (currentScreen_ == Screen::List)
-            {
-                OpenDetail();
-                return;
-            }
-        }
-
-        if (key == WXK_TAB && currentScreen_ == Screen::Detail)
-        {
-            std::vector<wxWindow*> controls;
-            if (detailCtrl_ != nullptr)
-                {
-                    controls.push_back(detailCtrl_);
-                }
-                if (replyButton_ != nullptr && replyButton_->IsShown())
-                {
-                    controls.push_back(replyButton_);
-                }
-                if (deleteButton_ != nullptr && deleteButton_->IsShown())
-                {
-                    controls.push_back(deleteButton_);
-                }
-                if (restoreButton_ != nullptr && restoreButton_->IsShown())
-                {
-                    controls.push_back(restoreButton_);
-                }
-                if (purgeButton_ != nullptr && purgeButton_->IsShown())
-                {
-                    controls.push_back(purgeButton_);
-                }
-
-                if (controls.empty())
-                {
-                    return;
-                }
-
-                int currentIndex = 0;
-                const wxWindow* focused = wxWindow::FindFocus();
-                for (std::size_t index = 0; index < controls.size(); ++index)
-                {
-                    if (controls[index] == focused)
-                    {
-                        currentIndex = static_cast<int>(index);
-                        break;
-                    }
-                }
-
-                const bool reverse = event.ShiftDown();
-                const int count = static_cast<int>(controls.size());
-                const int direction = reverse ? -1 : 1;
-                const int nextIndex = (currentIndex + direction + count) % count;
-                controls[static_cast<std::size_t>(nextIndex)]->SetFocus();
-                return;
-            }
-
-            if (key == WXK_TAB && currentScreen_ == Screen::Compose)
-            {
-                FocusComposeControl(event.ShiftDown());
-                return;
-            }
-
-            if (key == WXK_TAB)
-            {
-                return;
-            }
-
-            event.Skip();
-        });
-
-    Bind(
-        wxEVT_CLOSE_WINDOW,
-        [this](wxCloseEvent& event)
-        {
-            if (event.CanVeto())
-            {
-                event.Veto();
-            }
-
-            if (onExitRequested_)
-            {
-                onExitRequested_();
-            }
-        });
-}
-
-void MessagingFrame::FocusCurrentScreen()
-{
-    switch (currentScreen_)
-    {
-    case Screen::Menu:
-        if (menu_ != nullptr)
-        {
-            menu_->SetSelectedIndex(lastMenuIndex_);
-            menu_->FocusSelectedItem();
-        }
-        return;
-    case Screen::List:
-        if (messagesList_->GetCount() > 0)
-        {
-            if (messagesList_->GetSelection() == wxNOT_FOUND)
-            {
-                messagesList_->SetSelection(0);
-                SyncSelectionState();
-            }
-
-            if (wxWindow::FindFocus() != messagesList_)
-            {
-                messagesList_->SetFocus();
-            }
-        }
-        else
-        {
-            if (wxWindow::FindFocus() != emptyMessagesCtrl_)
-            {
-                emptyMessagesCtrl_->SetFocus();
-            }
-        }
-        return;
-    case Screen::Detail:
-        detailCtrl_->SetFocus();
-        return;
-    case Screen::Compose:
-        recipientCtrl_->SetFocus();
-        return;
-    }
+            }});
 }
 
 void MessagingFrame::RefreshCurrentBox(bool preserveSelection)
 {
-    LoadBox(currentBox_, preserveSelection);
+    LoadBox(navigationState_.currentBox, preserveSelection);
 }
 
 void MessagingFrame::OpenSelectedMenu(std::size_t selectedMenuIndex)
 {
-    lastMenuIndex_ = selectedMenuIndex;
-
+    navigationState_.lastMenuIndex = selectedMenuIndex;
     if (selectedMenuIndex == 0)
     {
         OpenCompose(std::nullopt, Screen::Menu);
         return;
     }
 
-    if (selectedMenuIndex == 1)
+    const auto box = domain::MessagingBoxFromMenuIndex(selectedMenuIndex);
+    if (!box.has_value())
     {
-        currentBox_ = domain::MessagingBox::Inbox;
-        LoadBox(currentBox_, false);
         return;
     }
 
-    if (selectedMenuIndex == 2)
-    {
-        currentBox_ = domain::MessagingBox::Outbox;
-        LoadBox(currentBox_, false);
-        return;
-    }
-
-    if (selectedMenuIndex == 3)
-    {
-        currentBox_ = domain::MessagingBox::Deleted;
-        LoadBox(currentBox_, false);
-        return;
-    }
+    navigationState_.SelectBox(*box);
+    LoadBox(navigationState_.currentBox, false);
 }
 
 void MessagingFrame::OpenDetail()
@@ -344,318 +106,153 @@ void MessagingFrame::OpenDetail()
 
 void MessagingFrame::OpenCompose(std::optional<domain::MessagingUser> recipient, Screen returnScreen)
 {
-    screenBeforeCompose_ = returnScreen;
-    composeRecipient_ = recipient;
-    recipientCtrl_->SetValue(recipient.has_value() ? wxString::FromUTF8(recipient->username) : wxString());
-    subjectCtrl_->SetValue(wxEmptyString);
-    bodyCtrl_->SetValue(wxEmptyString);
+    navigationState_.screenBeforeCompose = returnScreen;
+    view_->recipientCtrl->SetValue(recipient.has_value() ? lila::shared::text::FromUtf8(recipient->username) : wxString());
+    view_->subjectCtrl->SetValue(wxEmptyString);
+    view_->bodyCtrl->SetValue(wxEmptyString);
     SetScreen(Screen::Compose);
 }
 
 void MessagingFrame::CloseCompose()
 {
-    composeRecipient_.reset();
-    recipientCtrl_->SetValue(wxEmptyString);
-    subjectCtrl_->SetValue(wxEmptyString);
-    bodyCtrl_->SetValue(wxEmptyString);
-    SetScreen(screenBeforeCompose_);
-}
-
-void MessagingFrame::BindListActivation()
-{
-    messagesList_->Bind(
-        wxEVT_LISTBOX,
-        [this](wxCommandEvent&)
-        {
-            const auto selected = GetSelectedMessage();
-            selectedMessageId_ = selected.has_value() ? std::optional<std::string>(selected->id) : std::nullopt;
-            SyncSelectionState();
-        });
-
-    messagesList_->Bind(
-        wxEVT_LISTBOX_DCLICK,
-        [this](wxCommandEvent&)
-        {
-            OpenDetail();
-        });
-
-    messagesList_->Bind(
-        wxEVT_CHAR_HOOK,
-        [this](wxKeyEvent& event)
-        {
-            const int key = event.GetKeyCode();
-            if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
-            {
-                OpenDetail();
-                return;
-            }
-
-            if (key == WXK_DELETE)
-            {
-                if (currentBox_ == domain::MessagingBox::Deleted)
-                {
-                    PurgeSelectedMessage();
-                }
-                else
-                {
-                    DeleteSelectedMessage();
-                }
-                return;
-            }
-
-            event.Skip();
-        });
-    messagesList_->Bind(
-        wxEVT_KEY_DOWN,
-        [this](wxKeyEvent& event)
-        {
-            const int key = event.GetKeyCode();
-            if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
-            {
-                OpenDetail();
-                return;
-            }
-
-            if (key == WXK_DELETE)
-            {
-                if (currentBox_ == domain::MessagingBox::Deleted)
-                {
-                    PurgeSelectedMessage();
-                }
-                else
-                {
-                    DeleteSelectedMessage();
-                }
-                return;
-            }
-
-            event.Skip();
-        });
+    view_->recipientCtrl->SetValue(wxEmptyString);
+    view_->subjectCtrl->SetValue(wxEmptyString);
+    view_->bodyCtrl->SetValue(wxEmptyString);
+    SetScreen(navigationState_.screenBeforeCompose);
 }
 
 void MessagingFrame::LoadBox(domain::MessagingBox box, bool preserveSelection)
 {
+    if (preserveSelection && box == navigationState_.currentBox)
+    {
+        SaveCurrentBoxSelection();
+    }
+    else if (!preserveSelection)
+    {
+        selectionMemory_.Clear(box);
+    }
+
     auto results = std::make_shared<std::vector<domain::MessagingMessage>>();
-    const auto previousSelection = selectedMessageId_;
     RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::MessagingLoadMessagesBusy),
+        lila::shared::text::FromUtf8(lila::shared::errors::MessagingLoadMessagesBusy),
         [this, results, box]()
         {
-            *results = messagingService_.LoadBox(box);
+            *results = mailboxController_->LoadBox(box);
         },
-        [this, results, box, preserveSelection, previousSelection]()
+        [this, results, box]()
         {
-            const wxString title = BoxTitle(box);
-            currentBox_ = box;
+            navigationState_.currentBox = box;
             boxMessages_ = std::move(*results);
-            messagesList_->Clear();
+            view_->messagesList->Clear();
 
             for (const auto& message : boxMessages_)
             {
-                messagesList_->Append(BuildMessageLabel(message));
+                view_->messagesList->Append(MessagingPresentationModel::BuildMessageLabel(message));
             }
 
-            listTitleLabel_->SetLabel(title);
-            selectedMessageId_ = preserveSelection ? previousSelection : std::nullopt;
-
-            if (selectedMessageId_.has_value())
+            view_->listTitleLabel->SetLabel(MessagingPresentationModel::BoxTitle(box));
+            const auto restoreIndex = selectionMemory_.ResolveIndex(box, boxMessages_);
+            if (restoreIndex.has_value())
             {
-                for (std::size_t index = 0; index < boxMessages_.size(); ++index)
-                {
-                    if (boxMessages_[index].id == *selectedMessageId_)
-                    {
-                        messagesList_->SetSelection(static_cast<int>(index));
-                        break;
-                    }
-                }
+                view_->messagesList->SetSelection(static_cast<int>(*restoreIndex));
+                selectionMemory_.Store(box, boxMessages_[*restoreIndex].id);
             }
 
-            if (messagesList_->GetSelection() == wxNOT_FOUND && !boxMessages_.empty())
-            {
-                messagesList_->SetSelection(0);
-                selectedMessageId_ = boxMessages_.front().id;
-            }
-
-    if (boxMessages_.empty())
-    {
-                UpdateStatus(wxString::FromUTF8(lila::shared::errors::MessagingLoadResultsEmpty));
-    }
-    else
-    {
-                UpdateStatus(
-                    wxString::Format(
-                        wxString::FromUTF8(lila::shared::errors::MessagingLoadResultsCount),
-                        boxMessages_.size()));
-    }
-
+            UpdateStatus(MessagingPresentationModel::BuildLoadStatus(boxMessages_.size()));
             SetScreen(Screen::List);
         });
 }
 
 void MessagingFrame::SendComposedMessage()
 {
-    wxString recipientName = recipientCtrl_->GetValue();
+    wxString recipientName = view_->recipientCtrl->GetValue();
     recipientName.Trim(true).Trim(false);
-    wxString subject = subjectCtrl_->GetValue();
+    wxString subject = view_->subjectCtrl->GetValue();
     subject.Trim(true).Trim(false);
-    wxString body = bodyCtrl_->GetValue();
+    wxString body = view_->bodyCtrl->GetValue();
     body.Trim(true).Trim(false);
 
     if (recipientName.empty())
     {
-        UpdateStatus(wxString::FromUTF8(lila::shared::errors::MessagingRecipientRequired), true);
-        recipientCtrl_->SetFocus();
+        UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::MessagingRecipientRequired), true);
+        view_->recipientCtrl->SetFocus();
         return;
     }
 
     if (body.empty())
     {
-        UpdateStatus(wxString::FromUTF8(lila::shared::errors::MessagingBodyRequired), true);
-        bodyCtrl_->SetFocus();
+        UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::MessagingBodyRequired), true);
+        view_->bodyCtrl->SetFocus();
         return;
     }
 
-    auto recipient = std::make_shared<std::optional<domain::MessagingUser>>();
-    auto sentMessage = std::make_shared<std::optional<domain::MessagingMessage>>();
+    auto result = std::make_shared<MessagingMailboxController::SendResult>();
+    auto* mailbox = mailboxController_.get();
     RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::MessagingSendBusy),
-        [this, recipient, sentMessage, recipientName, subject, body]()
+        lila::shared::text::FromUtf8(lila::shared::errors::MessagingSendBusy),
+        [mailbox, result, recipientName, subject, body]()
         {
-            *recipient = messagingService_.SearchUser(recipientName.ToUTF8().data());
-            if (!recipient->has_value())
+            *result = mailbox->SendToUser(
+                lila::shared::text::ToUtf8(recipientName),
+                lila::shared::text::ToUtf8(body),
+                subject.empty() ? std::optional<std::string>() : std::optional<std::string>(lila::shared::text::ToUtf8(subject)));
+            if (!result->recipient.has_value())
             {
                 throw std::runtime_error(lila::shared::errors::MessagingRecipientNotFound);
             }
-
-            *sentMessage = messagingService_.Send(
-                (*recipient)->id,
-                body.ToUTF8().data(),
-                subject.empty() ? std::optional<std::string>() : std::optional<std::string>(subject.ToUTF8().data()));
         },
-        [this, recipient, sentMessage]()
+        [this, result]()
         {
-            if (!recipient->has_value() || !sentMessage->has_value())
+            if (!result->recipient.has_value() || !result->message.has_value())
             {
-                UpdateStatus(wxString::FromUTF8(lila::shared::errors::MessagingSendFailed), true);
+                UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::MessagingSendFailed), true);
                 return;
             }
 
-            const wxString userLabel = wxString::FromUTF8((*recipient)->username);
+            const wxString userLabel = lila::shared::text::FromUtf8(result->recipient->username);
             const wxString confirmation = wxString::Format(
-                wxString::FromUTF8(lila::shared::errors::MessagingSentToUser),
+                lila::shared::text::FromUtf8(lila::shared::errors::MessagingSentToUser),
                 userLabel);
             UpdateStatus(confirmation);
             wxMessageBox(
                 confirmation,
-                wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
+                lila::shared::text::FromUtf8(lila::shared::errors::MessagingFrameHeader),
                 wxOK | wxICON_INFORMATION,
                 this);
-            if (currentBox_ != domain::MessagingBox::Outbox)
+            if (navigationState_.currentBox != domain::MessagingBox::Outbox)
             {
-                currentBox_ = domain::MessagingBox::Outbox;
+                navigationState_.currentBox = domain::MessagingBox::Outbox;
             }
             CloseCompose();
-            LoadBox(currentBox_, false);
+            LoadBox(navigationState_.currentBox, false);
         });
 }
 
 void MessagingFrame::DeleteSelectedMessage()
 {
     const auto message = GetSelectedMessage();
-    if (!message.has_value())
+    if (message.has_value())
     {
-        return;
+        actionController_->Mutate(MessagingActionController::Mutation::Delete, message->id);
     }
-
-    if (wxMessageBox(
-            wxString::FromUTF8(lila::shared::errors::MessagingDeleteConfirm),
-            wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
-            wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION,
-            this) != wxYES)
-    {
-        return;
-    }
-
-    RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::MessagingDeleteBusy),
-        [this, message]()
-        {
-            static_cast<void>(messagingService_.Delete(message->id));
-        },
-        [this]()
-        {
-            const wxString confirmation = wxString::FromUTF8(lila::shared::errors::MessagingDeletedMessage);
-            UpdateStatus(confirmation);
-            wxMessageBox(
-                confirmation,
-                wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
-                wxOK | wxICON_INFORMATION,
-                this);
-            RefreshCurrentBox(false);
-        });
 }
 
 void MessagingFrame::RestoreSelectedMessage()
 {
     const auto message = GetSelectedMessage();
-    if (!message.has_value())
+    if (message.has_value())
     {
-        return;
+        actionController_->Mutate(MessagingActionController::Mutation::Restore, message->id);
     }
-
-    RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::MessagingRestoreBusy),
-        [this, message]()
-        {
-            static_cast<void>(messagingService_.Restore(message->id));
-        },
-        [this]()
-        {
-            const wxString confirmation = wxString::FromUTF8(lila::shared::errors::MessagingRestoredMessage);
-            UpdateStatus(confirmation);
-            wxMessageBox(
-                confirmation,
-                wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
-                wxOK | wxICON_INFORMATION,
-                this);
-            RefreshCurrentBox(false);
-        });
 }
 
 void MessagingFrame::PurgeSelectedMessage()
 {
     const auto message = GetSelectedMessage();
-    if (!message.has_value())
+    if (message.has_value())
     {
-        return;
+        actionController_->Mutate(MessagingActionController::Mutation::Purge, message->id);
     }
-
-    if (wxMessageBox(
-            wxString::FromUTF8(lila::shared::errors::MessagingPurgeConfirm),
-            wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
-            wxYES_NO | wxNO_DEFAULT | wxICON_WARNING,
-            this) != wxYES)
-    {
-        return;
-    }
-
-    RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::MessagingPurgeBusy),
-        [this, message]()
-        {
-            static_cast<void>(messagingService_.Purge(message->id));
-        },
-        [this]()
-        {
-            const wxString confirmation = wxString::FromUTF8(lila::shared::errors::MessagingPurgedMessage);
-            UpdateStatus(confirmation);
-            wxMessageBox(
-                confirmation,
-                wxString::FromUTF8(lila::shared::errors::MessagingFrameHeader),
-                wxOK | wxICON_INFORMATION,
-                this);
-            RefreshCurrentBox(false);
-        });
 }
 
 void MessagingFrame::ReplyToSelectedMessage()
@@ -668,11 +265,7 @@ void MessagingFrame::ReplyToSelectedMessage()
 
     const domain::MessagingUser recipient = message->isSent ? message->recipient : message->sender;
     OpenCompose(recipient, Screen::Detail);
-    const wxString subject = wxString::FromUTF8(message->subject);
-    subjectCtrl_->SetValue(
-        subject.StartsWith(wxString::FromUTF8(lila::shared::errors::MessagingReplyPrefix))
-            ? subject
-            : wxString::FromUTF8(lila::shared::errors::MessagingReplyPrefix) + subject);
+    view_->subjectCtrl->SetValue(MessagingPresentationModel::BuildReplySubject(*message));
 }
 
 void MessagingFrame::MarkSelectedMessageRead()
@@ -683,17 +276,12 @@ void MessagingFrame::MarkSelectedMessageRead()
         return;
     }
 
-    RunBackgroundTask(
-        wxString::FromUTF8(lila::shared::errors::MessagingMarkReadBusy),
-        [this, message]()
-        {
-            messagingService_.MarkRead(message->id);
-        });
+    actionController_->MarkRead(message->id);
 }
 
 std::optional<domain::MessagingMessage> MessagingFrame::GetSelectedMessage() const
 {
-    const int selection = messagesList_->GetSelection();
+    const int selection = view_->messagesList->GetSelection();
     if (selection == wxNOT_FOUND || static_cast<std::size_t>(selection) >= boxMessages_.size())
     {
         return std::nullopt;
@@ -702,82 +290,32 @@ std::optional<domain::MessagingMessage> MessagingFrame::GetSelectedMessage() con
     return boxMessages_[static_cast<std::size_t>(selection)];
 }
 
-wxString MessagingFrame::BuildMessageLabel(const domain::MessagingMessage& message) const
-{
-    const wxDateTime timestamp(static_cast<time_t>(message.createdAtUtc));
-    const wxString timeLabel = timestamp.IsValid()
-        ? timestamp.Format("%d/%m %H:%M")
-        : wxString::FromUTF8(lila::shared::errors::MessagingUnknownUser);
-    const wxString userLabel = wxString::FromUTF8(message.isSent ? message.recipient.username : message.sender.username);
-    const wxString subject = wxString::FromUTF8(message.subject.empty() ? lila::shared::errors::MessagingNoSubject : message.subject);
-    return timeLabel + wxString::FromUTF8(lila::shared::errors::MessagingSubjectSeparator) + userLabel
-           + wxString::FromUTF8(lila::shared::errors::MessagingSubjectSeparator) + subject;
-}
-
-wxString MessagingFrame::BuildMessageDetail(const domain::MessagingMessage& message) const
-{
-    const wxDateTime timestamp(static_cast<time_t>(message.createdAtUtc));
-    wxString text;
-    text << wxString::FromUTF8(lila::shared::errors::MessagingLabelSubject)
-         << wxString::FromUTF8(message.subject.empty() ? lila::shared::errors::MessagingNoSubject : message.subject)
-         << wxString::FromUTF8(lila::shared::errors::MessagingLabelFrom)
-         << wxString::FromUTF8(message.sender.username)
-         << wxString::FromUTF8(lila::shared::errors::MessagingLabelTo)
-         << wxString::FromUTF8(message.recipient.username)
-         << wxString::FromUTF8(lila::shared::errors::MessagingLabelDate)
-         << (timestamp.IsValid() ? timestamp.Format("%d/%m/%Y %H:%M") : wxString::FromUTF8(lila::shared::errors::MessagingUnknownUser))
-         << wxString::FromUTF8(lila::shared::errors::MessagingLabelContent)
-         << wxString::FromUTF8(message.text);
-    return text;
-}
-
 void MessagingFrame::SaveCurrentBoxSelection()
 {
-    if (messagesList_->GetSelection() == wxNOT_FOUND || boxMessages_.empty())
+    const int selected = view_->messagesList->GetSelection();
+    if (selected < 0 || static_cast<std::size_t>(selected) >= boxMessages_.size())
     {
+        if (boxMessages_.empty())
+        {
+            selectionMemory_.Clear(navigationState_.currentBox);
+        }
         return;
     }
 
-    const std::size_t index = GetBoxIndex(currentBox_);
-    if (index >= lastBoxSelection_.size())
-    {
-        return;
-    }
-
-    const int selected = messagesList_->GetSelection();
-    if (selected >= 0 && static_cast<std::size_t>(selected) < boxMessages_.size())
-    {
-        lastBoxSelection_[index] = boxMessages_[static_cast<std::size_t>(selected)].id;
-    }
+    selectionMemory_.Store(navigationState_.currentBox, boxMessages_[static_cast<std::size_t>(selected)].id);
 }
 
 void MessagingFrame::RestoreCurrentBoxSelection()
 {
-    const std::size_t index = GetBoxIndex(currentBox_);
-    if (index >= lastBoxSelection_.size())
+    const auto index = selectionMemory_.ResolveIndex(navigationState_.currentBox, boxMessages_);
+    if (index.has_value())
     {
-        return;
-    }
-
-    if (!lastBoxSelection_[index].has_value())
-    {
-        return;
-    }
-
-    const std::string& messageId = *lastBoxSelection_[index];
-    for (std::size_t i = 0; i < boxMessages_.size(); ++i)
-    {
-        if (boxMessages_[i].id == messageId)
-        {
-            messagesList_->SetSelection(static_cast<int>(i));
-            return;
-        }
-    }
-
-    if (!boxMessages_.empty())
-    {
-        messagesList_->SetSelection(0);
+        view_->messagesList->SetSelection(static_cast<int>(*index));
     }
 }
+
 }
 
+
+#include "modules/messaging/presentation/MessagingActionController.inl"
+#include "modules/messaging/presentation/MessagingFocusController.inl"

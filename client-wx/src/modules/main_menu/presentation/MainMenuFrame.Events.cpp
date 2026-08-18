@@ -1,4 +1,4 @@
-#include "modules/main_menu/presentation/MainMenuFrame.h"
+﻿#include "modules/main_menu/presentation/MainMenuFrame.h"
 
 #include <wx/event.h>
 #include <wx/msgdlg.h>

@@ -1,3 +1,4 @@
+﻿#include "shared/text/Encoding.h"
 #include "modules/main_menu/presentation/MainMenuFrame.h"
 
 #include <string>
@@ -32,11 +33,11 @@ void MainMenuFrame::BuildLayout()
         wxID_ANY,
         wxString::Format(
             "Bienvenue, %s",
-            wxString::FromUTF8(sessionStore_.Current().username)));
+            lila::shared::text::FromUtf8(sessionStore_.Current().username)));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*titleLabel_, wxString(L"Menu principal"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *welcomeLabel_,
-        wxString::Format(wxString(L"Bienvenue, %s"), wxString::FromUTF8(sessionStore_.Current().username)));
+        wxString::Format(wxString(L"Bienvenue, %s"), lila::shared::text::FromUtf8(sessionStore_.Current().username)));
     headerSizer->Add(titleLabel_, 0, wxALIGN_CENTER_HORIZONTAL);
     headerSizer->Add(welcomeLabel_, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 6);
     headerPanel->SetSizer(headerSizer);
@@ -75,10 +76,10 @@ void MainMenuFrame::BuildLayout()
         wxID_ANY,
         wxString::Format(
             "Version %s",
-            wxString::FromUTF8(shared::config::AppConfig::ResolveClientVersion())));
+            lila::shared::text::FromUtf8(shared::config::AppConfig::ResolveClientVersion())));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *versionLabel_,
-        wxString::Format(wxString(L"Version %s"), wxString::FromUTF8(shared::config::AppConfig::ResolveClientVersion())));
+        wxString::Format(wxString(L"Version %s"), lila::shared::text::FromUtf8(shared::config::AppConfig::ResolveClientVersion())));
     footerSizer->AddStretchSpacer();
     footerSizer->Add(statusLabel_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 20);
     footerSizer->Add(versionLabel_, 0, wxALIGN_CENTER_VERTICAL);

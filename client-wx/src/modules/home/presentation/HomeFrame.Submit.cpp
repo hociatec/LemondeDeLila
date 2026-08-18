@@ -1,3 +1,4 @@
+﻿#include "shared/text/Encoding.h"
 #include "modules/home/presentation/HomeFrame.h"
 #include "shared/ui/BackgroundTask.h"
 #include "shared/errors/ErrorMessages.h"
@@ -80,25 +81,25 @@ void HomeFrame::OnLoginSubmit(wxCommandEvent& event)
 
     if (isBusy_)
     {
-        SetStatus(wxString::FromUTF8(lila::shared::errors::ActionInProgress), true);
+        SetStatus(lila::shared::text::FromUtf8(lila::shared::errors::ActionInProgress), true);
         return;
     }
 
     user::domain::LoginCredentials credentials;
-    credentials.username = loginUsernameInput_->GetValue().ToStdString();
+    credentials.username = lila::shared::text::ToUtf8(loginUsernameInput_->GetValue());
     credentials.password = loginShowPasswordCheck_->GetValue()
-        ? loginPasswordTextInput_->GetValue().ToStdString()
-        : loginPasswordInput_->GetValue().ToStdString();
+        ? lila::shared::text::ToUtf8(loginPasswordTextInput_->GetValue())
+        : lila::shared::text::ToUtf8(loginPasswordInput_->GetValue());
 
     if (const auto validationError = application::HomeAuthValidator::ValidateLogin(credentials.username, credentials.password))
     {
-        SetStatus(wxString::FromUTF8(*validationError), true);
+        SetStatus(lila::shared::text::FromUtf8(*validationError), true);
         return;
     }
 
     const bool rememberSession = loginRememberMeCheck_->GetValue();
-    SetBusyState(true, wxString::FromUTF8("Connexion au serveur..."));
-    SetStatus(wxString::FromUTF8("Authentification..."));
+    SetBusyState(true, lila::shared::text::FromUtf8("Connexion au serveur..."));
+    SetStatus(lila::shared::text::FromUtf8("Authentification..."));
 
     auto result = std::make_shared<std::optional<user::domain::AuthenticationResult>>();
     wxWeakRef<HomeFrame> weakSelf(this);
@@ -119,7 +120,7 @@ void HomeFrame::OnLoginSubmit(wxCommandEvent& event)
             weakSelf->SetBusyState(false);
             if (!errorMessage.empty() || !result.has_value())
             {
-                weakSelf->SetStatus(wxString::FromUTF8(lila::shared::errors::AuthenticationFailed), true);
+                weakSelf->SetStatus(lila::shared::text::FromUtf8(lila::shared::errors::AuthenticationFailed), true);
                 return;
             }
 
@@ -128,18 +129,18 @@ void HomeFrame::OnLoginSubmit(wxCommandEvent& event)
             {
                 weakSelf->SetStatus(
                     loginResult.message.empty()
-                        ? wxString::FromUTF8(lila::shared::errors::AuthenticationFailed)
+                        ? lila::shared::text::FromUtf8(lila::shared::errors::AuthenticationFailed)
                         : wxString::Format(
                             wxString(L"%s %s"),
-                            wxString::FromUTF8(lila::shared::errors::AuthenticationFailed),
-                            wxString::FromUTF8(loginResult.message)),
+                            lila::shared::text::FromUtf8(lila::shared::errors::AuthenticationFailed),
+                            lila::shared::text::FromUtf8(loginResult.message)),
                     true);
                 return;
             }
 
             auto forwardedResult = loginResult;
             forwardedResult.rememberSession = rememberSession;
-            weakSelf->SetStatus(wxString::FromUTF8("Chargement des données..."));
+            weakSelf->SetStatus(lila::shared::text::FromUtf8("Chargement des données..."));
             if (weakSelf->onLoginSucceeded_)
             {
                 weakSelf->onLoginSucceeded_(forwardedResult);
@@ -153,28 +154,28 @@ void HomeFrame::OnRegisterSubmit(wxCommandEvent& event)
 
     if (isBusy_)
     {
-        SetStatus(wxString::FromUTF8(lila::shared::errors::ActionInProgress), true);
+        SetStatus(lila::shared::text::FromUtf8(lila::shared::errors::ActionInProgress), true);
         return;
     }
 
     user::domain::RegisterRequest request;
-    request.username = registerUsernameInput_->GetValue().ToStdString();
-    request.email = registerEmailInput_->GetValue().ToStdString();
+    request.username = lila::shared::text::ToUtf8(registerUsernameInput_->GetValue());
+    request.email = lila::shared::text::ToUtf8(registerEmailInput_->GetValue());
     request.password = registerShowPasswordCheck_->GetValue()
-        ? registerPasswordTextInput_->GetValue().ToStdString()
-        : registerPasswordInput_->GetValue().ToStdString();
+        ? lila::shared::text::ToUtf8(registerPasswordTextInput_->GetValue())
+        : lila::shared::text::ToUtf8(registerPasswordInput_->GetValue());
 
     if (const auto validationError = application::HomeAuthValidator::ValidateRegistration(
             request.username,
             request.email,
             request.password))
     {
-        SetStatus(wxString::FromUTF8(*validationError), true);
+        SetStatus(lila::shared::text::FromUtf8(*validationError), true);
         return;
     }
 
-    SetBusyState(true, wxString::FromUTF8("Connexion au serveur..."));
-    SetStatus(wxString::FromUTF8("Authentification..."));
+    SetBusyState(true, lila::shared::text::FromUtf8("Connexion au serveur..."));
+    SetStatus(lila::shared::text::FromUtf8("Authentification..."));
 
     auto result = std::make_shared<std::optional<user::domain::RegistrationResult>>();
     wxWeakRef<HomeFrame> weakSelf(this);
@@ -195,7 +196,7 @@ void HomeFrame::OnRegisterSubmit(wxCommandEvent& event)
             weakSelf->SetBusyState(false);
             if (!errorMessage.empty() || !result.has_value())
             {
-                weakSelf->SetStatus(wxString::FromUTF8(lila::shared::errors::RegistrationFailed), true);
+                weakSelf->SetStatus(lila::shared::text::FromUtf8(lila::shared::errors::RegistrationFailed), true);
                 return;
             }
 
@@ -204,19 +205,19 @@ void HomeFrame::OnRegisterSubmit(wxCommandEvent& event)
             {
                 weakSelf->SetStatus(
                     registrationResult.message.empty()
-                        ? wxString::FromUTF8(lila::shared::errors::RegistrationFailed)
-                        : wxString::FromUTF8(registrationResult.message),
+                        ? lila::shared::text::FromUtf8(lila::shared::errors::RegistrationFailed)
+                        : lila::shared::text::FromUtf8(registrationResult.message),
                     true);
                 return;
             }
 
-            weakSelf->SetStatus(wxString::FromUTF8("Chargement des données..."));
-            weakSelf->loginUsernameInput_->SetValue(wxString::FromUTF8(registrationResult.username));
+            weakSelf->SetStatus(lila::shared::text::FromUtf8("Chargement des données..."));
+            weakSelf->loginUsernameInput_->SetValue(lila::shared::text::FromUtf8(registrationResult.username));
             weakSelf->loginPasswordInput_->Clear();
             weakSelf->loginPasswordTextInput_->Clear();
             weakSelf->registerPasswordInput_->Clear();
             weakSelf->registerPasswordTextInput_->Clear();
-            weakSelf->SetStatus(wxString::FromUTF8("Compte créé, vous pouvez vous connecter."));
+            weakSelf->SetStatus(lila::shared::text::FromUtf8("Compte créé, vous pouvez vous connecter."));
             weakSelf->ShowPage(Page::Login);
         });
 }

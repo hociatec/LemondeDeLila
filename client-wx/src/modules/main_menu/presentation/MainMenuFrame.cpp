@@ -1,4 +1,5 @@
-﻿#include "modules/main_menu/presentation/MainMenuFrame.h"
+#include "shared/text/Encoding.h"
+#include "modules/main_menu/presentation/MainMenuFrame.h"
 
 #include <algorithm>
 #include <wx/stattext.h>
@@ -34,7 +35,7 @@ MainMenuFrame::MainMenuFrame(
           wxID_ANY,
           wxString::Format(
               "Menu principal - %s",
-              wxString::FromUTF8(shared::config::AppConfig::AppTitle.data())),
+              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data())),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
       wxDEFAULT_FRAME_STYLE),

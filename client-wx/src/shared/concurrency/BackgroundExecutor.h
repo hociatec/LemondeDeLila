@@ -1,13 +1,13 @@
 #pragma once
 
+#include <exception>
 #include <functional>
 #include <memory>
 #include <optional>
 #include <stop_token>
 #include <string>
-#include <thread>
 #include <utility>
-#include <exception>
+
 #include "shared/errors/ErrorMessages.h"
 
 namespace lila::shared::concurrency
@@ -21,16 +21,18 @@ public:
 
 private:
     std::shared_ptr<std::stop_source> stopSource_;
-
-    friend std::shared_ptr<BackgroundTaskHandle> RunAsync(
-        std::function<void(std::stop_token)> worker,
-        std::function<void(std::string)> completion);
-
-    template <typename TResult>
-    friend std::shared_ptr<BackgroundTaskHandle> RunAsync(
-        std::function<TResult(std::stop_token)> worker,
-        std::function<void(std::string, std::optional<TResult>)> completion);
 };
+
+namespace detail
+{
+void SubmitBackgroundWork(
+    std::shared_ptr<std::stop_source> stopSource,
+    std::function<void()> work);
+}
+
+// Stops accepting work, requests cooperative cancellation for queued/running work,
+// and joins the shared workers. Call this before destroying services captured by jobs.
+void ShutdownBackgroundExecutor();
 
 [[nodiscard]] std::shared_ptr<BackgroundTaskHandle> RunAsync(
     std::function<void(std::stop_token)> worker,
@@ -43,7 +45,9 @@ template <typename TResult>
 {
     auto stopSource = std::make_shared<std::stop_source>();
     const auto handle = std::make_shared<BackgroundTaskHandle>(stopSource);
-    std::thread(
+
+    detail::SubmitBackgroundWork(
+        stopSource,
         [worker = std::move(worker), stopSource, completion = std::move(completion)]() mutable
         {
             std::string errorMessage;
@@ -64,12 +68,11 @@ template <typename TResult>
                 errorMessage = lila::shared::errors::UnexpectedError;
             }
 
-            if (completion != nullptr)
+            if (completion != nullptr && !stopSource->stop_requested())
             {
                 completion(std::move(errorMessage), std::move(result));
             }
-        })
-        .detach();
+        });
 
     return handle;
 }

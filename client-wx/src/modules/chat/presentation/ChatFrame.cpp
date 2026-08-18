@@ -1,4 +1,6 @@
-﻿#include "modules/chat/presentation/ChatFrame.h"
+#include "shared/text/Encoding.h"
+#include "modules/chat/presentation/ChatFrame.h"
+#include "modules/chat/presentation/ChatFocusController.h"
 
 #include <string>
 #include <utility>
@@ -8,8 +10,10 @@
 #include "modules/session/application/SessionStore.h"
 #include "shared/config/AppConfig.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/concurrency/BackgroundExecutor.h"
 
 #include <wx/dialog.h>
+#include <wx/msgdlg.h>
 #include <wx/textctrl.h>
 
 namespace
@@ -24,14 +28,15 @@ namespace lila::modules::chat::presentation
 ChatFrame::ChatFrame(
     lila::modules::chat::application::ChatService& chatService,
     lila::modules::options::application::OptionsStore& optionsStore,
-    lila::modules::session::application::SessionStore& sessionStore,    CloseRequestedHandler onCloseRequested,
+    lila::modules::session::application::SessionStore& sessionStore,
+    CloseRequestedHandler onCloseRequested,
     ExitRequestedHandler onExitRequested)
     : wxFrame(
           nullptr,
           wxID_ANY,
           wxString::Format(
-              wxString::FromUTF8(lila::shared::errors::ChatFrameTitle),
-              wxString::FromUTF8(shared::config::AppConfig::AppTitle.data())),
+              lila::shared::text::FromUtf8(lila::shared::errors::ChatFrameTitle),
+              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data())),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
           wxDEFAULT_FRAME_STYLE),
@@ -43,6 +48,8 @@ ChatFrame::ChatFrame(
 {
     BuildLayout();
     ApplyTheme();
+    focusController_ = std::make_unique<ChatFocusController>(
+        *inputCtrl_, *historyList_, *emptyHistoryCtrl_, *editMessageButton_, *deleteMessageButton_);
     BindEvents();
 
     chatService_.SetStatusChangedHandler(
@@ -51,7 +58,7 @@ ChatFrame::ChatFrame(
             CallAfter(
                 [this, message, isError]()
                 {
-                    UpdateStatus(wxString::FromUTF8(message), isError);
+                    UpdateStatus(lila::shared::text::FromUtf8(message), isError);
                     SyncActionState();
                 });
         });
@@ -83,6 +90,11 @@ ChatFrame::~ChatFrame()
 void ChatFrame::InvalidateOpenChatRequest()
 {
     ++activeOpenChatRequestId_;
+    if (openChatTask_ != nullptr)
+    {
+        openChatTask_->RequestCancel();
+        openChatTask_.reset();
+    }
 }
 
 void ChatFrame::RequestCloseToSession()
@@ -97,12 +109,12 @@ void ChatFrame::RequestCloseToSession()
 void ChatFrame::ShowAccessibleErrorDialog(const wxString& message, const wxString& title)
 {
     const wxString safeMessage = message.empty()
-        ? wxString::FromUTF8(lila::shared::errors::UnexpectedError)
+        ? lila::shared::text::FromUtf8(lila::shared::errors::UnexpectedError)
         : message;
     wxMessageDialog dialog(
         this,
         safeMessage,
-        title.empty() ? wxString::FromUTF8(lila::shared::errors::ChatFrameHeader) : title,
+        title.empty() ? lila::shared::text::FromUtf8(lila::shared::errors::ChatFrameHeader) : title,
         wxOK | wxICON_WARNING | wxSTAY_ON_TOP | wxCENTRE);
     dialog.SetEscapeId(wxID_OK);
     dialog.ShowModal();

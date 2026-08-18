@@ -110,7 +110,6 @@ void AppNavigator::ShowChat(std::size_t selectedIndex)
         chatService_,
         optionsStore_,
         sessionStore_,
-        wsTicketProvider_,
         [this]()
         {
             ShowSession(lastMainMenuSelection_);
@@ -199,7 +198,6 @@ void AppNavigator::ShowOptions(std::size_t selectedIndex)
     lastMainMenuSelection_ = selectedIndex;
     auto* window = new modules::options::presentation::OptionsFrame(
         optionsStore_,
-        sessionStore_,
         [this]()
         {
             ShowSession(lastMainMenuSelection_);

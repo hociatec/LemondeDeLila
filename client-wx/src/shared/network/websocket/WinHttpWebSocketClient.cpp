@@ -3,6 +3,9 @@
 #include "shared/text/Encoding.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/contracts/BackendWsContracts.h"
+#ifdef _WIN32
+#include "shared/network/winhttp/WinHttpHandle.h"
+#endif
 
 #include <array>
 #include <cstdint>
@@ -91,56 +94,23 @@ ParsedEndpoint ParseEndpoint(const std::string& endpoint)
     return parsed;
 }
 
-class WinHttpHandle final
+DWORD QueryResponseStatusCode(HINTERNET requestHandle)
 {
-public:
-    WinHttpHandle() = default;
-    explicit WinHttpHandle(HINTERNET handle) : handle_(handle) {}
-    ~WinHttpHandle()
+    DWORD statusCode = 0;
+    DWORD statusCodeSize = sizeof(statusCode);
+    if (!WinHttpQueryHeaders(
+            requestHandle,
+            WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+            WINHTTP_HEADER_NAME_BY_INDEX,
+            &statusCode,
+            &statusCodeSize,
+            WINHTTP_NO_HEADER_INDEX))
     {
-        Reset();
+        throw std::runtime_error(lila::shared::errors::WinHttpHandshakeResponseFailed);
     }
 
-    WinHttpHandle(const WinHttpHandle&) = delete;
-    WinHttpHandle& operator=(const WinHttpHandle&) = delete;
-
-    WinHttpHandle(WinHttpHandle&& other) noexcept : handle_(other.Release()) {}
-
-    WinHttpHandle& operator=(WinHttpHandle&& other) noexcept
-    {
-        if (this != &other)
-        {
-            Reset(other.Release());
-        }
-
-        return *this;
-    }
-
-    [[nodiscard]] HINTERNET Get() const
-    {
-        return handle_;
-    }
-
-    [[nodiscard]] HINTERNET Release()
-    {
-        HINTERNET released = handle_;
-        handle_ = nullptr;
-        return released;
-    }
-
-    void Reset(HINTERNET handle = nullptr)
-    {
-        if (handle_ != nullptr)
-        {
-            WinHttpCloseHandle(handle_);
-        }
-
-        handle_ = handle;
-    }
-
-private:
-    HINTERNET handle_ = nullptr;
-};
+    return statusCode;
+}
 
 std::string ReceiveMessage(HINTERNET webSocketHandle)
 {
@@ -235,9 +205,9 @@ namespace lila::shared::network::websocket
 struct WinHttpWebSocketClient::NativeState
 {
 #ifdef _WIN32
-    WinHttpHandle session;
-    WinHttpHandle connection;
-    WinHttpHandle webSocket;
+    lila::shared::network::winhttp::Handle session;
+    lila::shared::network::winhttp::Handle connection;
+    lila::shared::network::winhttp::Handle webSocket;
 #endif
     std::string endpoint;
     WebSocketHeaders headers;
@@ -295,7 +265,7 @@ void WinHttpWebSocketClient::Connect(const std::string& endpoint, const WebSocke
     }
 
     const DWORD requestFlags = parsed.secure ? WINHTTP_FLAG_SECURE : 0;
-    WinHttpHandle request(WinHttpOpenRequest(
+    lila::shared::network::winhttp::Handle request(WinHttpOpenRequest(
         state_->connection.Get(),
         L"GET",
         parsed.path.c_str(),
@@ -341,6 +311,15 @@ void WinHttpWebSocketClient::Connect(const std::string& endpoint, const WebSocke
         throw std::runtime_error(lila::shared::errors::WithDetails(lila::shared::errors::WinHttpHandshakeResponseFailed, endpoint));
     }
 
+    const DWORD responseStatusCode = QueryResponseStatusCode(request.Get());
+    if (responseStatusCode != HTTP_STATUS_SWITCH_PROTOCOLS)
+    {
+        Close();
+        throw std::runtime_error(lila::shared::errors::WithDetails(
+            lila::shared::errors::WinHttpUpgradeUnexpectedStatus,
+            std::to_string(responseStatusCode)));
+    }
+
     state_->webSocket.Reset(WinHttpWebSocketCompleteUpgrade(request.Get(), 0));
     if (state_->webSocket.Get() == nullptr)
     {
@@ -348,7 +327,9 @@ void WinHttpWebSocketClient::Connect(const std::string& endpoint, const WebSocke
         throw std::runtime_error(lila::shared::errors::WinHttpUpgradeFailed);
     }
 
-    (void)request.Release();
+    // The upgraded WebSocket has its own HINTERNET handle. The HTTP request
+    // remains a distinct WinHTTP handle and is closed automatically here by
+    // the RAII wrapper when this scope ends.
     state_->endpoint = endpoint;
     state_->headers = headers;
 #else

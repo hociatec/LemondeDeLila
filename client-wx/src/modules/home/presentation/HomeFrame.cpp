@@ -1,3 +1,4 @@
+#include "shared/text/Encoding.h"
 #include "modules/home/presentation/HomeFrame.h"
 
 #include "modules/user/application/LoginUseCase.h"
@@ -19,7 +20,7 @@ HomeFrame::HomeFrame(
     : wxFrame(
           nullptr,
           wxID_ANY,
-          wxString::FromUTF8(shared::config::AppConfig::AppTitle.data()),
+          lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
           wxDEFAULT_FRAME_STYLE & ~wxRESIZE_BORDER & ~wxMAXIMIZE_BOX),

@@ -2,6 +2,7 @@
 #include "AppBuildInfo.h"
 #include "shared/contracts/BackendWsContracts.h"
 #include "shared/text/StringUtils.h"
+#include "shared/network/UrlUtils.h"
 
 #include <cstdlib>
 #include <memory>
@@ -10,23 +11,6 @@ namespace lila::shared::config
 {
 namespace
 {
-std::string ExtractOrigin(const std::string& endpoint)
-{
-    const std::size_t schemeSeparator = endpoint.find("://");
-    if (schemeSeparator == std::string::npos)
-    {
-        return endpoint;
-    }
-
-    const std::size_t pathStart = endpoint.find('/', schemeSeparator + 3);
-    if (pathStart == std::string::npos)
-    {
-        return endpoint;
-    }
-
-    return endpoint.substr(0, pathStart);
-}
-
 std::string ReadEnvironmentVariable(const char* name)
 {
 #ifdef _MSC_VER
@@ -59,7 +43,7 @@ std::string AppConfig::ResolveBackendApiWs()
 
 std::string AppConfig::ResolvePresenceWs()
 {
-    return ExtractOrigin(ResolveBackendApiWs()) + std::string(lila::shared::contracts::ws::PresencePath);
+    return lila::shared::network::ExtractOrigin(ResolveBackendApiWs()) + std::string(lila::shared::contracts::ws::PresencePath);
 }
 
 std::string AppConfig::ResolveClientVersion()
