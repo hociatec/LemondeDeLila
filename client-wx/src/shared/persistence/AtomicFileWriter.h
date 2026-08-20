@@ -1,36 +1,54 @@
 #pragma once
 
+#include <filesystem>
+#include <fstream>
 #include <stdexcept>
 #include <string>
 
-#include <wx/ffile.h>
-#include <wx/filefn.h>
-
-namespace lila::shared::persistence {
-
+namespace lila::shared::persistence
+{
 inline void WriteTextAtomically(
-    const wxString& path,
+    const std::filesystem::path& path,
     const std::string& content,
     const char* errorMessage)
 {
-    const wxString temporaryPath = path + ".tmp";
-    wxFFile temporaryFile(temporaryPath, "wb");
-    if (!temporaryFile.IsOpened() || !temporaryFile.Write(content))
+    const std::filesystem::path temporaryPath = path.string() + ".tmp";
+
+    std::ofstream temporaryFile(temporaryPath, std::ios::binary | std::ios::trunc);
+    if (!temporaryFile.is_open())
     {
-        if (temporaryFile.IsOpened())
-        {
-            temporaryFile.Close();
-        }
-        wxRemoveFile(temporaryPath);
+        std::error_code removeError;
+        std::filesystem::remove(temporaryPath, removeError);
         throw std::runtime_error(errorMessage);
     }
 
-    temporaryFile.Close();
-    if (!wxRenameFile(temporaryPath, path, true))
+    temporaryFile.write(content.data(), static_cast<std::streamsize>(content.size()));
+    if (!temporaryFile.good())
     {
-        wxRemoveFile(temporaryPath);
+        temporaryFile.close();
+        std::error_code removeError;
+        std::filesystem::remove(temporaryPath, removeError);
+        throw std::runtime_error(errorMessage);
+    }
+
+    temporaryFile.close();
+
+    std::error_code renameError;
+    std::filesystem::rename(temporaryPath, path, renameError);
+    if (!renameError)
+    {
+        return;
+    }
+
+    std::error_code removeExistingError;
+    std::filesystem::remove(path, removeExistingError);
+    renameError.clear();
+    std::filesystem::rename(temporaryPath, path, renameError);
+    if (renameError)
+    {
+        std::error_code removeTempError;
+        std::filesystem::remove(temporaryPath, removeTempError);
         throw std::runtime_error(errorMessage);
     }
 }
-
 }

@@ -33,6 +33,11 @@ wxString FromUtf8(const char* value)
     return FromUtf8(std::string_view(value));
 }
 
+wxString FromUtf8(const lila::shared::text::ui::UiTextRef& value)
+{
+    return FromUtf8(std::string_view(value));
+}
+
 std::string ToUtf8(const wxString& value)
 {
     if (value.empty())

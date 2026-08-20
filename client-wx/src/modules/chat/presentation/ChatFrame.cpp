@@ -10,6 +10,7 @@
 #include "modules/session/application/SessionStore.h"
 #include "shared/config/AppConfig.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/text/UiTexts.h"
 #include "shared/concurrency/BackgroundExecutor.h"
 
 #include <wx/dialog.h>
@@ -35,8 +36,8 @@ ChatFrame::ChatFrame(
           nullptr,
           wxID_ANY,
           wxString::Format(
-              lila::shared::text::FromUtf8(lila::shared::errors::ChatFrameTitle),
-              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data())),
+              lila::shared::text::FromUtf8(lila::shared::text::ui::ChatFrameTitle),
+              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()).wc_str()),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
           wxDEFAULT_FRAME_STYLE),
@@ -52,7 +53,8 @@ ChatFrame::ChatFrame(
         *inputCtrl_, *historyList_, *emptyHistoryCtrl_, *editMessageButton_, *deleteMessageButton_);
     BindEvents();
 
-    chatService_.SetStatusChangedHandler(
+    eventHandlers_ = std::make_shared<application::ChatService::EventHandlers>();
+    eventHandlers_->onStatusChanged =
         [this](const std::string& message, bool isError)
         {
             CallAfter(
@@ -61,8 +63,8 @@ ChatFrame::ChatFrame(
                     UpdateStatus(lila::shared::text::FromUtf8(message), isError);
                     SyncActionState();
                 });
-        });
-    chatService_.SetMessagesChangedHandler(
+        };
+    eventHandlers_->onMessagesChanged =
         [this]()
         {
             CallAfter(
@@ -70,7 +72,8 @@ ChatFrame::ChatFrame(
                 {
                     RefreshHistory();
                 });
-        });
+        };
+    chatService_.AttachEventHandlers(eventHandlers_);
 
     CentreOnScreen();
     CallAfter(
@@ -83,8 +86,8 @@ ChatFrame::ChatFrame(
 ChatFrame::~ChatFrame()
 {
     InvalidateOpenChatRequest();
-    chatService_.SetStatusChangedHandler({});
-    chatService_.SetMessagesChangedHandler({});
+    eventHandlers_.reset();
+    chatService_.AttachEventHandlers({});
 }
 
 void ChatFrame::InvalidateOpenChatRequest()
@@ -114,7 +117,7 @@ void ChatFrame::ShowAccessibleErrorDialog(const wxString& message, const wxStrin
     wxMessageDialog dialog(
         this,
         safeMessage,
-        title.empty() ? lila::shared::text::FromUtf8(lila::shared::errors::ChatFrameHeader) : title,
+        title.empty() ? lila::shared::text::FromUtf8(lila::shared::text::ui::ChatFrameHeader) : title,
         wxOK | wxICON_WARNING | wxSTAY_ON_TOP | wxCENTRE);
     dialog.SetEscapeId(wxID_OK);
     dialog.ShowModal();

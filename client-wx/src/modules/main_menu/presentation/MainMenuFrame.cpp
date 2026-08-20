@@ -11,6 +11,7 @@
 #include "modules/session/application/SessionStore.h"
 #include "shared/config/AppConfig.h"
 #include "shared/accessibility/AccessibilityUtils.h"
+#include "shared/logging/Logger.h"
 #include "shared/ui/controls/VerticalMenu.h"
 
 namespace
@@ -33,9 +34,7 @@ MainMenuFrame::MainMenuFrame(
     : wxFrame(
           nullptr,
           wxID_ANY,
-          wxString::Format(
-              "Menu principal - %s",
-              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data())),
+          wxString(L"Menu principal - ") + lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
       wxDEFAULT_FRAME_STYLE),
@@ -47,29 +46,40 @@ MainMenuFrame::MainMenuFrame(
       onOpenOptionsRequested_(std::move(onOpenOptionsRequested)),
       onLogoutRequested_(std::move(onLogoutRequested))
 {
+    lila::shared::logging::LogInfo("MainMenu", "Constructor: begin.");
     BuildLayout();
+    lila::shared::logging::LogInfo("MainMenu", "Constructor: BuildLayout done.");
     ApplyTheme();
+    lila::shared::logging::LogInfo("MainMenu", "Constructor: ApplyTheme done.");
     BindEvents();
+    lila::shared::logging::LogInfo("MainMenu", "Constructor: BindEvents done.");
     if (menu_ != nullptr)
     {
+        lila::shared::logging::LogInfo("MainMenu", "Constructor: menu setup begin.");
         menu_->SetTabNavigationEnabled(false);
         const auto itemCount = menu_->GetItemCount();
         if (itemCount > 0)
         {
             const auto boundedIndex = std::min(initialSelectedIndex, static_cast<std::size_t>(itemCount - 1));
+            lila::shared::logging::LogInfo("MainMenu", "Constructor: SetSelectedIndex.");
             menu_->SetSelectedIndex(boundedIndex);
+            lila::shared::logging::LogInfo("MainMenu", "Constructor: OnMenuSelectionChanged.");
             OnMenuSelectionChanged(boundedIndex);
         }
     }
+    lila::shared::logging::LogInfo("MainMenu", "Constructor: CallAfter registration.");
     CallAfter(
         [this]()
         {
             if (menu_ != nullptr)
             {
+                lila::shared::logging::LogInfo("MainMenu", "Constructor: CallAfter SetFocus.");
                 menu_->SetFocus();
             }
         });
+    lila::shared::logging::LogInfo("MainMenu", "Constructor: CentreOnScreen.");
     CentreOnScreen();
+    lila::shared::logging::LogInfo("MainMenu", "Constructor: end.");
 }
 
 void MainMenuFrame::SetStatus(const wxString& message)

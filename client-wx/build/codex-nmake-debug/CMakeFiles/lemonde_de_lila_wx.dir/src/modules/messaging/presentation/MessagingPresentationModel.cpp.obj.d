@@ -1,4 +1,3 @@
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingPresentationModel.inl
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals_core.h
@@ -145,6 +144,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingPresentationModel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingBox.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
@@ -152,6 +153,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingMessage.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
 C:/vcpkg/installed/x64-windows/include/wx/datetime.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/longlong.h
@@ -168,3 +170,13 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/CountStatusText.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h

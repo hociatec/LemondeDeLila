@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <optional>
 #include <span>
-#include <string>
 
 #include "modules/messaging/domain/MessagingBox.h"
 #include "modules/messaging/domain/MessagingMessage.h"
@@ -14,14 +13,14 @@ namespace lila::modules::messaging::presentation
 class MessagingSelectionMemory final
 {
 public:
-    void Store(domain::MessagingBox box, std::optional<std::string> messageId);
+    void Store(domain::MessagingBox box, std::optional<lila::shared::domain::MessageId> messageId);
     void Clear(domain::MessagingBox box);
-    [[nodiscard]] const std::optional<std::string>& Get(domain::MessagingBox box) const;
+    [[nodiscard]] const std::optional<lila::shared::domain::MessageId>& Get(domain::MessagingBox box) const;
     [[nodiscard]] std::optional<std::size_t> ResolveIndex(
         domain::MessagingBox box,
         std::span<const domain::MessagingMessage> messages) const;
 
 private:
-    std::array<std::optional<std::string>, domain::MessagingBoxCount> selectedIds_{};
+    std::array<std::optional<lila::shared::domain::MessageId>, domain::MessagingBoxCount> selectedIds_{};
 };
 }

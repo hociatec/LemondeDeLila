@@ -60,6 +60,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.31.6/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.31.6/CMakeRCCompiler.cmake"
   "CMakeFiles/3.31.6/CMakeSystem.cmake"
+  "C:/wamp64/www/lemondeDeLila/client-wx/resources/texts.fr.json"
   "C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppBuildInfo.h.in"
   )
 
@@ -73,6 +74,7 @@ set(CMAKE_MAKEFILE_OUTPUTS
 set(CMAKE_MAKEFILE_PRODUCTS
   "DartConfiguration.tcl"
   "generated/AppBuildInfo.h"
+  "resources/texts.fr.json"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
@@ -106,5 +108,8 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/ContinuousCoverage.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousMemCheck.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousSubmit.dir/DependInfo.cmake"
+  "CMakeFiles/generate_protocol_fields.dir/DependInfo.cmake"
   "CMakeFiles/lemonde_de_lila_wx.dir/DependInfo.cmake"
+  "CMakeFiles/lemonde_de_lila_wx_tests.dir/DependInfo.cmake"
+  "CMakeFiles/lemonde_de_lila_wx_parser_fuzz.dir/DependInfo.cmake"
   )

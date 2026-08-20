@@ -8,6 +8,7 @@
 
 #include <wx/frame.h>
 
+#include "modules/chat/application/ChatService.h"
 #include "modules/chat/domain/ChatMessage.h"
 
 class wxButton;
@@ -18,11 +19,6 @@ class wxTextCtrl;
 namespace lila::shared::concurrency
 {
 class BackgroundTaskHandle;
-}
-
-namespace lila::modules::chat::application
-{
-class ChatService;
 }
 
 namespace lila::modules::options::application
@@ -101,6 +97,7 @@ private:
     std::optional<std::string> selectedActionMessageId_;
     std::vector<domain::ChatMessage> visibleMessages_;
     std::optional<std::string> pendingEditMessageId_;
+    std::shared_ptr<lila::modules::chat::application::ChatService::EventHandlers> eventHandlers_;
     std::unique_ptr<ChatFocusController> focusController_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> openChatTask_;
 };

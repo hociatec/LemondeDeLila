@@ -15,6 +15,9 @@ public:
         const wxSize& size = wxDefaultSize,
         long style = 0);
 
+    [[nodiscard]] static bool ShouldActivateOnKeyCode(int keyCode) noexcept;
+    [[nodiscard]] static bool ShouldPreserveArrowNavigation(int keyCode) noexcept;
+
 private:
     void OnCharHook(wxKeyEvent& event);
 };

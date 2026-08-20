@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "shared/errors/ErrorMessages.h"
+#include "shared/text/UiTexts.h"
 
 namespace lila::modules::user::domain
 {
@@ -16,7 +16,7 @@ struct RegistrationResult
     {
         RegistrationResult result;
         result.success = true;
-        result.message = lila::shared::errors::RegistrationSuccessMessage;
+        result.message = lila::shared::text::ui::RegistrationSuccessMessage.str();
         result.username = std::move(resolvedUsername);
         return result;
     }

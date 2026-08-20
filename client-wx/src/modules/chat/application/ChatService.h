@@ -4,7 +4,7 @@
 #include <mutex>
 #include <optional>
 #include <string>
-#include <thread>
+#include <memory>
 #include <vector>
 
 #include "modules/chat/application/ChatMessageStore.h"
@@ -12,6 +12,7 @@
 #include "modules/chat/domain/ChatServerError.h"
 #include "modules/chat/domain/ChatState.h"
 #include "modules/chat/application/IChatGateway.h"
+#include "shared/concurrency/BackgroundExecutor.h"
 #include "shared/errors/ErrorMessages.h"
 
 namespace lila::modules::options::application
@@ -34,8 +35,11 @@ namespace lila::modules::chat::application
 class ChatService final
 {
 public:
-    using StatusChangedHandler = std::function<void(const std::string& message, bool isError)>;
-    using MessagesChangedHandler = std::function<void()>;
+    struct EventHandlers final
+    {
+        std::function<void(const std::string& message, bool isError)> onStatusChanged;
+        std::function<void()> onMessagesChanged;
+    };
 
     ChatService(
         IChatGateway& gateway,
@@ -50,8 +54,7 @@ public:
     void Edit(const std::string& messageId, const std::string& text);
     void Delete(const std::string& messageId);
 
-    void SetStatusChangedHandler(StatusChangedHandler handler);
-    void SetMessagesChangedHandler(MessagesChangedHandler handler);
+    void AttachEventHandlers(std::shared_ptr<EventHandlers> handlers);
 
     [[nodiscard]] std::vector<domain::ChatMessage> Messages() const;
     [[nodiscard]] std::string StatusMessage() const;
@@ -60,10 +63,14 @@ public:
     [[nodiscard]] std::optional<domain::ChatServerError> LastServerError() const;
 
 private:
+    void StopReceiveLoop() noexcept;
     void StartReceiveLoop();
-    void ReceiveLoop();
-    void ProcessIncomingMessage(const std::string& rawJson);
-    void HandleIncomingError(const std::string& message, const domain::ChatServerError* detailedError = nullptr);
+    void ReceiveLoop(std::stop_token stopToken);
+    void ProcessIncomingMessage(const std::string& rawJson, bool fatalError);
+    void HandleIncomingError(
+        const std::string& message,
+        const domain::ChatServerError* detailedError,
+        bool fatalError);
     void UpsertMessage(domain::ChatMessage message);
     void RemoveMessageById(const std::string& messageId);
     void SetState(domain::ChatState state);
@@ -80,9 +87,8 @@ private:
     std::string statusMessage_ = lila::shared::errors::ChatClosed;
     domain::ChatState state_ = domain::ChatState::Disconnected;
     std::optional<domain::ChatServerError> lastServerError_;
-    StatusChangedHandler onStatusChanged_;
-    MessagesChangedHandler onMessagesChanged_;
-    std::thread receiveThread_;
-    bool stopRequested_ = false;
+    std::weak_ptr<EventHandlers> eventHandlers_;
+    std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> receiveTask_;
+    int reconnectAttempt_ = 0;
 };
 }

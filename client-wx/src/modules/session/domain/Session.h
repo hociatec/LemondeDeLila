@@ -1,5 +1,6 @@
 #pragma once
 
+#include "shared/domain/DomainTypes.h"
 #include "shared/security/SecurityUtils.h"
 
 #include <cstdint>
@@ -10,9 +11,10 @@ namespace lila::modules::session::domain
 {
 struct Session
 {
-    std::int64_t userId = 0;
+    lila::shared::domain::UserId userId{};
     std::string username;
     std::string token;
+    std::string refreshToken;
     std::int64_t expiresAt = 0;
 
     ~Session()
@@ -21,19 +23,69 @@ struct Session
     }
 
     Session() = default;
-    Session(const Session& other) = default;
-    Session& operator=(const Session& other) = default;
-    Session(Session&& other) noexcept = default;
-    Session& operator=(Session&& other) noexcept = default;
+    Session(const Session& other)
+        : userId(other.userId),
+          username(other.username),
+          token(other.token),
+          refreshToken(other.refreshToken),
+          expiresAt(other.expiresAt)
+    {
+    }
+
+    Session& operator=(const Session& other)
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        ClearSecret();
+        userId = other.userId;
+        username = other.username;
+        token = other.token;
+        refreshToken = other.refreshToken;
+        expiresAt = other.expiresAt;
+        return *this;
+    }
+
+    Session(Session&& other) noexcept
+        : userId(other.userId),
+          username(std::move(other.username)),
+          token(std::move(other.token)),
+          refreshToken(std::move(other.refreshToken)),
+          expiresAt(other.expiresAt)
+    {
+        other.ClearSecret();
+        other.expiresAt = 0;
+    }
+
+    Session& operator=(Session&& other) noexcept
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        ClearSecret();
+        userId = other.userId;
+        username = std::move(other.username);
+        token = std::move(other.token);
+        refreshToken = std::move(other.refreshToken);
+        expiresAt = other.expiresAt;
+        other.ClearSecret();
+        other.expiresAt = 0;
+        return *this;
+    }
 
     void ClearSecret()
     {
         lila::shared::security::SecureWipeString(token);
+        lila::shared::security::SecureWipeString(refreshToken);
     }
 
     [[nodiscard]] bool IsAuthenticated() const
     {
-        if (userId <= 0 || username.empty() || token.empty())
+        if (!userId.IsValid() || username.empty() || token.empty())
         {
             return false;
         }

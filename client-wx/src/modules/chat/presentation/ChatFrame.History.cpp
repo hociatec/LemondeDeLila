@@ -10,7 +10,9 @@
 #include <wx/textctrl.h>
 
 #include "modules/chat/application/ChatService.h"
+#include "modules/chat/presentation/ChatMessageActions.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/text/UiTexts.h"
 
 namespace lila::modules::chat::presentation
 {
@@ -81,20 +83,10 @@ std::optional<domain::ChatMessage> ChatFrame::GetSelectedMessage() const
 
 bool ChatFrame::CanActOnMessage(const domain::ChatMessage& message) const
 {
-    if (!message.isMine || message.id.empty())
-    {
-        return false;
-    }
-
-    const int editWindowSeconds = chatService_.EditWindowSeconds();
-    if (editWindowSeconds <= 0)
-    {
-        return false;
-    }
-
-    const std::time_t now = std::time(nullptr);
-    const auto age = static_cast<long long>(now - message.timestampUtc);
-    return age >= 0 && age <= editWindowSeconds;
+    return ChatMessageActions::CanActOnMessage(
+        message,
+        chatService_.EditWindowSeconds(),
+        std::time(nullptr));
 }
 
 wxString ChatFrame::BuildMessageLabel(const domain::ChatMessage& message) const
@@ -102,8 +94,11 @@ wxString ChatFrame::BuildMessageLabel(const domain::ChatMessage& message) const
     const wxDateTime timestamp(static_cast<time_t>(message.timestampUtc));
     const wxString timeLabel = timestamp.IsValid()
         ? timestamp.Format("%H:%M")
-        : lila::shared::text::FromUtf8(lila::shared::errors::ChatTimeFormatUnknown);
-    const wxString userLabel = lila::shared::text::FromUtf8(message.user.empty() ? lila::shared::errors::ChatUnknownUser : message.user);
+        : lila::shared::text::FromUtf8(lila::shared::text::ui::ChatTimeFormatUnknown);
+    const std::string_view userText = message.user.empty()
+        ? std::string_view(lila::shared::text::ui::ChatUnknownUser)
+        : std::string_view(message.user);
+    const wxString userLabel = lila::shared::text::FromUtf8(userText);
     const wxString textLabel = lila::shared::text::FromUtf8(message.text);
 
     wxString label;
@@ -111,7 +106,7 @@ wxString ChatFrame::BuildMessageLabel(const domain::ChatMessage& message) const
 
     if (message.isMine && CanActOnMessage(message))
     {
-        label << lila::shared::text::FromUtf8(lila::shared::errors::ChatEditableSuffix);
+        label << lila::shared::text::FromUtf8(lila::shared::text::ui::ChatEditableSuffix);
     }
 
     return label;
@@ -140,7 +135,7 @@ void ChatFrame::SyncActionState()
 
     if (!editing)
     {
-        inputCtrl_->SetHint(lila::shared::text::FromUtf8(lila::shared::errors::ChatInputHint));
+        inputCtrl_->SetHint(lila::shared::text::FromUtf8(lila::shared::text::ui::ChatInputHint));
     }
 
     if (!hasMessages)
@@ -151,7 +146,7 @@ void ChatFrame::SyncActionState()
 
     if (emptyHistoryCtrl_->IsShown())
     {
-        emptyHistoryCtrl_->SetValue(lila::shared::text::FromUtf8(lila::shared::errors::ChatNoMessage));
+        emptyHistoryCtrl_->SetValue(lila::shared::text::FromUtf8(lila::shared::text::ui::ChatNoMessage));
     }
 }
 }

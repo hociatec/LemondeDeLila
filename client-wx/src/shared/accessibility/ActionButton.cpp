@@ -4,6 +4,38 @@
 
 namespace lila::shared::accessibility
 {
+bool ActionButton::ShouldActivateOnKeyCode(int keyCode) noexcept
+{
+    switch (keyCode)
+    {
+    case WXK_RETURN:
+    case WXK_NUMPAD_ENTER:
+    case WXK_SPACE:
+    case WXK_NUMPAD_SPACE:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool ActionButton::ShouldPreserveArrowNavigation(int keyCode) noexcept
+{
+    switch (keyCode)
+    {
+    case WXK_LEFT:
+    case WXK_RIGHT:
+    case WXK_UP:
+    case WXK_DOWN:
+    case WXK_NUMPAD_LEFT:
+    case WXK_NUMPAD_RIGHT:
+    case WXK_NUMPAD_UP:
+    case WXK_NUMPAD_DOWN:
+        return true;
+    default:
+        return false;
+    }
+}
+
 ActionButton::ActionButton(
     wxWindow* parent,
     wxWindowID id,
@@ -18,32 +50,22 @@ ActionButton::ActionButton(
 
 void ActionButton::OnCharHook(wxKeyEvent& event)
 {
-    switch (event.GetKeyCode())
+    const int keyCode = event.GetKeyCode();
+    if (ShouldActivateOnKeyCode(keyCode))
     {
-    case WXK_RETURN:
-    case WXK_NUMPAD_ENTER:
-    case WXK_SPACE:
-    case WXK_NUMPAD_SPACE:
         // Keep standard button activation behavior accessible for keyboard users.
-    {
         wxCommandEvent clickEvent(wxEVT_BUTTON, GetId());
         clickEvent.SetEventObject(this);
         ProcessWindowEvent(clickEvent);
         return;
     }
-    case WXK_LEFT:
-    case WXK_RIGHT:
-    case WXK_UP:
-    case WXK_DOWN:
-    case WXK_NUMPAD_LEFT:
-    case WXK_NUMPAD_RIGHT:
-    case WXK_NUMPAD_UP:
-    case WXK_NUMPAD_DOWN:
-        event.Skip();
-        return;
-    default:
+
+    if (ShouldPreserveArrowNavigation(keyCode))
+    {
         event.Skip();
         return;
     }
+
+    event.Skip();
 }
 }

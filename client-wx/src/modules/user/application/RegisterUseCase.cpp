@@ -1,6 +1,6 @@
 ﻿#include "modules/user/application/RegisterUseCase.h"
 #include "shared/errors/ErrorMessages.h"
-
+#include "shared/text/UiTexts.h"
 #include "shared/text/StringUtils.h"
 
 namespace lila::modules::user::application
@@ -18,17 +18,17 @@ domain::RegistrationResult RegisterUseCase::Execute(const domain::RegisterReques
 
     if (normalized.username.empty())
     {
-        return domain::RegistrationResult::Fail(lila::shared::errors::RegisterInputUsernameRequired);
+        return domain::RegistrationResult::Fail(lila::shared::text::ui::RegisterInputUsernameRequired);
     }
 
     if (normalized.email.empty())
     {
-        return domain::RegistrationResult::Fail(lila::shared::errors::RegisterInputEmailRequired);
+        return domain::RegistrationResult::Fail(lila::shared::text::ui::RegisterInputEmailRequired);
     }
 
     if (normalized.password.empty())
     {
-        return domain::RegistrationResult::Fail(lila::shared::errors::RegisterInputPasswordRequired);
+        return domain::RegistrationResult::Fail(lila::shared::text::ui::RegisterInputPasswordRequired);
     }
 
     return authenticationService_.Register(normalized);

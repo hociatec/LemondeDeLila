@@ -35,7 +35,7 @@ void AccessibilityUtils::SetAccessibleStatus(wxWindow& control, const wxString& 
         return;
     }
 
-    SetAccessibleName(control, message, wxString::Format(wxString(L"État : %s"), message));
+    SetAccessibleName(control, message, wxString(L"État : ") + message);
 }
 
 void AccessibilityUtils::SetAccessibleName(wxWindow& control, const wxString& name, const wxString& description)
@@ -44,4 +44,3 @@ void AccessibilityUtils::SetAccessibleName(wxWindow& control, const wxString& na
     control.SetHelpText(description);
 }
 }
-

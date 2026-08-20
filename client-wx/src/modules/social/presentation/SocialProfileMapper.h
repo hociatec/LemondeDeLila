@@ -1,40 +1,37 @@
 #pragma once
 
-#include <string>
-#include <string_view>
 #include <utility>
 
 #include "modules/social/domain/SocialProfile.h"
-#include "shared/contracts/BackendWsContracts.h"
 
 namespace lila::modules::social::presentation
 {
 class SocialProfileMapper final
 {
 public:
-    static int ChoiceIndexFromVisibility(std::string_view visibility) noexcept
+    static int ChoiceIndexFromVisibility(lila::shared::domain::ProfileVisibility visibility) noexcept
     {
-        if (visibility == lila::shared::contracts::social::SocialVisibilityFriends)
+        if (visibility == lila::shared::domain::ProfileVisibility::Friends)
         {
             return 1;
         }
-        if (visibility == lila::shared::contracts::social::SocialVisibilityPrivate)
+        if (visibility == lila::shared::domain::ProfileVisibility::Private)
         {
             return 2;
         }
         return 0;
     }
 
-    static std::string VisibilityFromChoiceIndex(int choiceIndex)
+    static lila::shared::domain::ProfileVisibility VisibilityFromChoiceIndex(int choiceIndex)
     {
         switch (choiceIndex)
         {
         case 1:
-            return std::string(lila::shared::contracts::social::SocialVisibilityFriends);
+            return lila::shared::domain::ProfileVisibility::Friends;
         case 2:
-            return std::string(lila::shared::contracts::social::SocialVisibilityPrivate);
+            return lila::shared::domain::ProfileVisibility::Private;
         default:
-            return std::string(lila::shared::contracts::social::SocialVisibilityPublic);
+            return lila::shared::domain::ProfileVisibility::Public;
         }
     }
 

@@ -27,6 +27,7 @@
 #include "shared/accessibility/AccessibilityUtils.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/config/AppConfig.h"
+#include "shared/text/UiTexts.h"
 #include "shared/ui/Theme.h"
 #include "shared/ui/controls/VerticalMenu.h"
 #include "shared/ui/navigation/MenuBlueprint.h"
@@ -49,8 +50,8 @@ MessagingFrame::MessagingFrame(
           nullptr,
           wxID_ANY,
           wxString::Format(
-              lila::shared::text::FromUtf8(lila::shared::errors::MessagingFrameTitle),
-              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data())),
+              lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingFrameTitle),
+              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()).wc_str()),
       wxDefaultPosition,
       wxSize(WindowWidth, WindowHeight),
       wxDEFAULT_FRAME_STYLE),
@@ -76,7 +77,7 @@ MessagingFrame::MessagingFrame(
                 const long style = wxYES_NO | wxNO_DEFAULT | (warning ? wxICON_WARNING : wxICON_QUESTION);
                 return wxMessageBox(
                     lila::shared::text::FromUtf8(confirmationMessage),
-                    lila::shared::text::FromUtf8(lila::shared::errors::MessagingFrameHeader),
+                    lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingFrameHeader),
                     style,
                     this) == wxYES;
             },
@@ -86,7 +87,7 @@ MessagingFrame::MessagingFrame(
                 UpdateStatus(text);
                 wxMessageBox(
                     text,
-                    lila::shared::text::FromUtf8(lila::shared::errors::MessagingFrameHeader),
+                    lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingFrameHeader),
                     wxOK | wxICON_INFORMATION,
                     this);
             },
@@ -103,7 +104,7 @@ MessagingFrame::MessagingFrame(
     }
 
     SetScreen(Screen::Menu);
-    UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::KeyboardNavigationHint));
+    UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::KeyboardNavigationHint));
     CentreOnScreen();
     CallAfter(
         [this]()
@@ -220,7 +221,7 @@ void MessagingFrame::SyncSelectionState()
     const auto selected = GetSelectedMessage();
     if (!selected.has_value())
     {
-        view_->detailCtrl->SetValue(lila::shared::text::FromUtf8(lila::shared::errors::MessagingNoMessage));
+        view_->detailCtrl->SetValue(lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingNoMessage));
         view_->replyButton->Show(false);
         view_->deleteButton->Show(false);
         view_->restoreButton->Show(false);
@@ -268,6 +269,3 @@ void MessagingFrame::SetScreen(Screen screen)
 
 }
 
-#include "modules/messaging/presentation/MessagingView.inl"
-#include "modules/messaging/presentation/MessagingSelectionMemory.inl"
-#include "modules/messaging/presentation/MessagingActionController.inl"

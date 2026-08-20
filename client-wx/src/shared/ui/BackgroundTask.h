@@ -9,57 +9,29 @@
 #include <wx/window.h>
 
 #include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/errors/ErrorMessages.h"
+#include "shared/logging/Logger.h"
 
-namespace lila::shared::ui {
-
+namespace lila::shared::ui
+{
 inline constexpr const char* UnexpectedErrorMessage = lila::shared::errors::UnexpectedError;
 
 inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunBackgroundTask(
     wxWindow* owner,
     std::function<void()> worker,
-    std::function<void(std::string)> completion)
+    std::function<void(std::string)> completion,
+    const char* failureMessage = UnexpectedErrorMessage,
+    lila::shared::concurrency::BackgroundTaskPriority priority = lila::shared::concurrency::BackgroundTaskPriority::Normal)
 {
     return lila::shared::concurrency::RunAsync(
-        [worker = std::move(worker)](std::stop_token)
+        std::move(worker),
+        [owner = wxWeakRef<wxWindow>(owner), completion = std::move(completion)](
+            std::optional<lila::shared::errors::AppError> error) mutable
         {
-            worker();
-        },
-        [owner = wxWeakRef<wxWindow>(owner), completion = std::move(completion)](std::string errorMessage) mutable
-        {
-            if (wxTheApp == nullptr)
+            if (error.has_value() && !error->DiagnosticDetails().empty())
             {
-                return;
+                lila::shared::logging::LogError("BackgroundTask", error->DiagnosticDetails());
             }
 
-            wxTheApp->CallAfter(
-                [owner, completion = std::move(completion), errorMessage = std::move(errorMessage)]() mutable
-                {
-                    if (!owner || !completion)
-                    {
-                        return;
-                    }
-
-                    completion(std::move(errorMessage));
-                });
-        });
-}
-
-template <typename TResult>
-inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunBackgroundTaskWithResult(
-    wxWindow* owner,
-    std::function<TResult()> worker,
-    std::function<void(std::string, std::optional<TResult>)> completion)
-{
-    return lila::shared::concurrency::RunAsync<TResult>(
-        [worker = std::move(worker)](std::stop_token)
-        {
-            return worker();
-        },
-        [owner = wxWeakRef<wxWindow>(owner), completion = std::move(completion)](
-            std::string errorMessage,
-            std::optional<TResult> result) mutable
-        {
             if (wxTheApp == nullptr)
             {
                 return;
@@ -68,7 +40,51 @@ inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunBackg
             wxTheApp->CallAfter(
                 [owner,
                  completion = std::move(completion),
-                 errorMessage = std::move(errorMessage),
+                 userMessage = error.has_value() ? error->UserMessage() : std::string()]() mutable
+                {
+                    if (!owner || !completion)
+                    {
+                        return;
+                    }
+
+                    completion(std::move(userMessage));
+                });
+        },
+        priority,
+        failureMessage);
+}
+
+template <typename TResult>
+inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunBackgroundTaskWithResult(
+    wxWindow* owner,
+    std::function<TResult()> worker,
+    std::function<void(std::string, std::optional<TResult>)> completion,
+    const char* failureMessage = UnexpectedErrorMessage,
+    lila::shared::concurrency::BackgroundTaskPriority priority = lila::shared::concurrency::BackgroundTaskPriority::Normal)
+{
+    return lila::shared::concurrency::RunAsync<TResult>(
+        [worker = std::move(worker)](std::stop_token)
+        {
+            return worker();
+        },
+        [owner = wxWeakRef<wxWindow>(owner), completion = std::move(completion)](
+            std::optional<lila::shared::errors::AppError> error,
+            std::optional<TResult> result) mutable
+        {
+            if (error.has_value() && !error->DiagnosticDetails().empty())
+            {
+                lila::shared::logging::LogError("BackgroundTask", error->DiagnosticDetails());
+            }
+
+            if (wxTheApp == nullptr)
+            {
+                return;
+            }
+
+            wxTheApp->CallAfter(
+                [owner,
+                 completion = std::move(completion),
+                 userMessage = error.has_value() ? error->UserMessage() : std::string(),
                  result = std::move(result)]() mutable
                 {
                     if (!owner || !completion)
@@ -76,9 +92,10 @@ inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunBackg
                         return;
                     }
 
-                    completion(std::move(errorMessage), std::move(result));
+                    completion(std::move(userMessage), std::move(result));
                 });
-        });
+        },
+        priority,
+        failureMessage);
 }
-
 }

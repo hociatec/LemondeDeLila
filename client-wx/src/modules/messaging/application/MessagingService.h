@@ -8,7 +8,7 @@
 #include "modules/messaging/domain/MessagingMessage.h"
 #include "modules/messaging/domain/MessagingUser.h"
 #include "modules/messaging/application/IMessagingGateway.h"
-#include "shared/contracts/BackendWsContracts.h"
+#include "modules/messaging/infrastructure/MessagingProtocolFields.h"
 
 namespace lila::modules::messaging::application
 {
@@ -19,10 +19,10 @@ public:
 
     [[nodiscard]] std::vector<domain::MessagingMessage> LoadBox(
         domain::MessagingBox box,
-        int limit = lila::shared::contracts::messaging::DefaultPageLimit) const;
+        int limit = lila::modules::messaging::infrastructure::fields::DefaultPageLimit) const;
     [[nodiscard]] std::vector<domain::MessagingMessage> LoadConversation(
         int userId,
-        int limit = lila::shared::contracts::messaging::DefaultPageLimit) const;
+        int limit = lila::modules::messaging::infrastructure::fields::DefaultPageLimit) const;
     [[nodiscard]] std::optional<domain::MessagingMessage> Send(
         int recipientId,
         const std::string& text,

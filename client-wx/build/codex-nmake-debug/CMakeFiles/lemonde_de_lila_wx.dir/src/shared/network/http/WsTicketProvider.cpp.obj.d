@@ -94,8 +94,12 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/NetworkPolicy.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/UrlUtils.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/WebSocketConstants.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
@@ -225,6 +229,7 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/ordered_map.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/AppError.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
 C:/vcpkg/installed/x64-windows/include/wx/string.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -267,6 +272,10 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
 C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeProtocolFields.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/Logger.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/winhttp/WinHttpHandle.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/um/windows.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/shared/winapifamily.h

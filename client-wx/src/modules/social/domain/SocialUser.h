@@ -1,17 +1,17 @@
 #pragma once
 
-#include <string>
+#include "shared/domain/DomainTypes.h"
 
 namespace lila::modules::social::domain
 {
 struct SocialUser final
 {
-    int id = 0;
+    lila::shared::domain::UserId id{};
     std::string username;
     std::string avatar;
     std::string since;
     std::string createdAt;
     std::string blockedAt;
-    std::string profileVisibility;
+    lila::shared::domain::ProfileVisibility profileVisibility = lila::shared::domain::ProfileVisibility::Public;
 };
 }

@@ -1,11 +1,11 @@
 #pragma once
+#include <wx/listbox.h>
 #include <wx/panel.h>
+#include <wx/simplebook.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
 
 class wxButton;
-class wxListBox;
-class wxSimplebook;
-class wxStaticText;
-class wxTextCtrl;
 
 namespace lila::shared::ui::controls { class VerticalMenu; }
 

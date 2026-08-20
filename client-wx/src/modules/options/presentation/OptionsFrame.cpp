@@ -4,7 +4,6 @@
 #include "modules/options/presentation/OptionsEditorController.h"
 #include "modules/options/presentation/OptionsFocusController.h"
 #include "modules/options/presentation/OptionsEventBinder.h"
-#include "modules/options/presentation/OptionsEventBinder.inl"
 
 #include <utility>
 
@@ -23,6 +22,8 @@
 #include "shared/accessibility/AccessibilityUtils.h"
 #include "shared/accessibility/NonFocusablePanel.h"
 #include "shared/config/AppConfig.h"
+#include "shared/errors/ErrorMessages.h"
+#include "shared/logging/Logger.h"
 #include "shared/ui/controls/VerticalMenu.h"
 #include "shared/ui/navigation/MenuBlueprint.h"
 #include "shared/ui/Theme.h"
@@ -44,9 +45,7 @@ OptionsFrame::OptionsFrame(
     : wxFrame(
           nullptr,
           wxID_ANY,
-          wxString::Format(
-              wxString(L"Options - %s"),
-              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data())),
+          wxString(L"Options - ") + lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
           wxDEFAULT_FRAME_STYLE),
@@ -160,7 +159,8 @@ void OptionsFrame::ApplyState(const domain::OptionsState& state, bool persist, c
         }
         catch (const std::exception& error)
         {
-            UpdateStatus(lila::shared::text::FromUtf8(error.what()), true);
+            lila::shared::logging::LogError("Options", error.what());
+            UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::OptionsSaveFailed), true);
         }
 
         return;
@@ -235,9 +235,3 @@ void OptionsFrame::UpdateStatus(const wxString& message, bool isError)
 }
 
 }
-
-
-#include "modules/options/presentation/OptionsView.inl"
-
-
-#include "modules/options/presentation/OptionsFocusController.inl"

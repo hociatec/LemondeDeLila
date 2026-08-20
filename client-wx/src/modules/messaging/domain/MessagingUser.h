@@ -1,12 +1,12 @@
 #pragma once
 
-#include <string>
+#include "shared/domain/DomainTypes.h"
 
 namespace lila::modules::messaging::domain
 {
 struct MessagingUser final
 {
-    int id = 0;
+    lila::shared::domain::UserId id{};
     std::string username;
 };
 }

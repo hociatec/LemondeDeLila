@@ -3,8 +3,10 @@
 #include "shared/network/UrlUtils.h"
 #include "shared/data/JsonReaders.h"
 #include "shared/text/Encoding.h"
-#include "shared/contracts/BackendWsContracts.h"
+#include "shared/network/WebSocketConstants.h"
+#include "shared/network/realtime/RealtimeProtocolFields.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/logging/Logger.h"
 #ifdef _WIN32
 #include "shared/network/winhttp/WinHttpHandle.h"
 #endif
@@ -124,20 +126,21 @@ std::string ReadTicketErrorMessage(const std::string& responseBody)
             return {};
         }
 
-        const auto messageIterator = response.find(std::string(lila::shared::contracts::realtime::MessageField));
+        const auto messageIterator = response.find(std::string(lila::shared::network::realtime::fields::Message));
         if (messageIterator != response.end() && messageIterator->is_string())
         {
             return messageIterator->get<std::string>();
         }
 
-        const auto errorIterator = response.find(std::string(lila::shared::contracts::realtime::ErrorField));
+        const auto errorIterator = response.find(std::string(lila::shared::network::realtime::fields::Error));
         if (errorIterator != response.end() && errorIterator->is_string())
         {
             return errorIterator->get<std::string>();
         }
     }
-    catch (...)
+    catch (const std::exception& error)
     {
+        lila::shared::logging::LogWarning("WsTicketProvider", error.what());
     }
 
     return {};
@@ -211,9 +214,9 @@ std::string RequestTicketFromUrl(const std::string& url, const std::string& bear
     }
 
     const std::wstring authorization =
-        lila::shared::text::Utf8ToWide(std::string(lila::shared::contracts::ws::AuthorizationHeader))
+        lila::shared::text::Utf8ToWide(std::string(lila::shared::network::ws::AuthorizationHeader))
         + L": "
-        + lila::shared::text::Utf8ToWide(std::string(lila::shared::contracts::ws::AuthorizationScheme))
+        + lila::shared::text::Utf8ToWide(std::string(lila::shared::network::ws::AuthorizationScheme))
         + lila::shared::text::Utf8ToWide(bearerToken)
         + L"\r\n";
     if (!WinHttpAddRequestHeaders(
@@ -279,8 +282,8 @@ std::string WsTicketProvider::GetTicket(const std::string& scope, const std::str
 
     const std::string origin = lila::shared::network::WebSocketOriginToHttp(backendApiWsEndpoint_);
     const std::array<std::string, 2> candidates = {{
-        origin + std::string(lila::shared::contracts::ws::WsTicketPath) + scope,
-        origin + std::string(lila::shared::contracts::ws::WsTicketApiPath) + scope,
+        origin + std::string(lila::shared::network::ws::WsTicketPath) + scope,
+        origin + std::string(lila::shared::network::ws::WsTicketApiPath) + scope,
     }};
 
     std::string lastErrorMessage = lila::shared::errors::WsTicketUnavailable;
@@ -290,7 +293,7 @@ std::string WsTicketProvider::GetTicket(const std::string& scope, const std::str
         {
             const auto responseBody = RequestTicketFromUrl(url, bearerToken);
             const auto document = lila::shared::data::json::ParseDocument(responseBody, lila::shared::errors::WsTicketResponseInvalid);
-            const auto iterator = document.find(std::string(lila::shared::contracts::ws::WsTicketResponseField));
+            const auto iterator = document.find(std::string(lila::shared::network::ws::WsTicketResponseField));
             if (iterator != document.end() && iterator->is_string())
             {
                 const std::string ticket = iterator->get<std::string>();
@@ -337,9 +340,6 @@ unsigned long lila::shared::network::http::WsTicketRequestError::StatusCode() co
 {
     return statusCode_;
 }
-
-
-
 
 
 

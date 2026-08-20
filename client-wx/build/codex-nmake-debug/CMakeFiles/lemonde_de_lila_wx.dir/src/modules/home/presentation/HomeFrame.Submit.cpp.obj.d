@@ -144,6 +144,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/home/presentation/HomeFrame.h
 C:/vcpkg/installed/x64-windows/include/wx/frame.h
 C:/vcpkg/installed/x64-windows/include/wx/toplevel.h
@@ -522,7 +524,11 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/tooltip.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/frame.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/AuthenticationResult.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/BackgroundTask.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
@@ -551,6 +557,14 @@ C:/vcpkg/installed/x64-windows/include/wx/generic/logg.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/app.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/concurrency/BackgroundExecutor.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/AppError.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/Logger.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
@@ -583,7 +597,6 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/share.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocale

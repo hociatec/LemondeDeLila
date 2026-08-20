@@ -10,9 +10,18 @@ struct UserId
 {
     std::int64_t value = 0;
 
+    UserId() = default;
+    UserId(std::int64_t rawValue) : value(rawValue) {}
+    UserId& operator=(std::int64_t rawValue)
+    {
+        value = rawValue;
+        return *this;
+    }
+
     bool operator==(const UserId& other) const { return value == other.value; }
     bool operator!=(const UserId& other) const { return value != other.value; }
     bool operator<(const UserId& other) const { return value < other.value; }
+    operator std::int64_t() const { return value; }
     [[nodiscard]] bool IsValid() const { return value > 0; }
 };
 
@@ -20,8 +29,19 @@ struct MessageId
 {
     std::string value;
 
+    MessageId() = default;
+    MessageId(std::string rawValue) : value(std::move(rawValue)) {}
+    MessageId(const char* rawValue) : value(rawValue == nullptr ? "" : rawValue) {}
+    MessageId& operator=(std::string rawValue)
+    {
+        value = std::move(rawValue);
+        return *this;
+    }
+
     bool operator==(const MessageId& other) const { return value == other.value; }
     bool operator!=(const MessageId& other) const { return value != other.value; }
+    operator const std::string&() const { return value; }
+    [[nodiscard]] bool empty() const { return value.empty(); }
     [[nodiscard]] bool IsValid() const { return !value.empty(); }
 };
 

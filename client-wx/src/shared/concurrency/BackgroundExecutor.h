@@ -1,17 +1,33 @@
 #pragma once
 
-#include <exception>
+#include <cstddef>
 #include <functional>
+#include <exception>
 #include <memory>
 #include <optional>
 #include <stop_token>
 #include <string>
 #include <utility>
 
+#include "shared/errors/AppError.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/logging/Logger.h"
 
 namespace lila::shared::concurrency
 {
+enum class BackgroundTaskPriority
+{
+    High,
+    Normal,
+    Low
+};
+
+struct BackgroundExecutorOptions final
+{
+    std::size_t workerCount = 0;
+    std::size_t queueCapacity = 256;
+};
+
 class BackgroundTaskHandle final
 {
 public:
@@ -23,35 +39,57 @@ private:
     std::shared_ptr<std::stop_source> stopSource_;
 };
 
-namespace detail
+class BackgroundExecutor final
 {
-void SubmitBackgroundWork(
-    std::shared_ptr<std::stop_source> stopSource,
-    std::function<void()> work);
-}
+public:
+    explicit BackgroundExecutor(BackgroundExecutorOptions options = {});
+    ~BackgroundExecutor();
 
-// Stops accepting work, requests cooperative cancellation for queued/running work,
-// and joins the shared workers. Call this before destroying services captured by jobs.
-void ShutdownBackgroundExecutor();
+    BackgroundExecutor(const BackgroundExecutor&) = delete;
+    BackgroundExecutor& operator=(const BackgroundExecutor&) = delete;
+
+    void Submit(
+        std::shared_ptr<std::stop_source> stopSource,
+        BackgroundTaskPriority priority,
+        std::function<void()> work);
+    void Shutdown();
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> impl_;
+};
+
+void InstallBackgroundExecutor(BackgroundExecutor& executor);
+void UninstallBackgroundExecutor();
+[[nodiscard]] BackgroundExecutor& CurrentBackgroundExecutor();
 
 [[nodiscard]] std::shared_ptr<BackgroundTaskHandle> RunAsync(
     std::function<void(std::stop_token)> worker,
-    std::function<void(std::string)> completion = {});
+    std::function<void(std::optional<lila::shared::errors::AppError>)> completion = {},
+    BackgroundTaskPriority priority = BackgroundTaskPriority::Normal,
+    std::string userMessageOnFailure = lila::shared::errors::UnexpectedError);
 
 template <typename TResult>
 [[nodiscard]] inline std::shared_ptr<BackgroundTaskHandle> RunAsync(
     std::function<TResult(std::stop_token)> worker,
-    std::function<void(std::string, std::optional<TResult>)> completion)
+    std::function<void(std::optional<lila::shared::errors::AppError>, std::optional<TResult>)> completion,
+    BackgroundTaskPriority priority = BackgroundTaskPriority::Normal,
+    std::string userMessageOnFailure = lila::shared::errors::UnexpectedError)
 {
     auto stopSource = std::make_shared<std::stop_source>();
     const auto handle = std::make_shared<BackgroundTaskHandle>(stopSource);
 
-    detail::SubmitBackgroundWork(
+    CurrentBackgroundExecutor().Submit(
         stopSource,
-        [worker = std::move(worker), stopSource, completion = std::move(completion)]() mutable
+        priority,
+        [worker = std::move(worker),
+         stopSource,
+         completion = std::move(completion),
+         userMessageOnFailure = std::move(userMessageOnFailure)]() mutable
         {
-            std::string errorMessage;
+            std::optional<lila::shared::errors::AppError> error;
             std::optional<TResult> result;
+
             try
             {
                 if (!stopSource->stop_requested())
@@ -59,18 +97,14 @@ template <typename TResult>
                     result = worker(stopSource->get_token());
                 }
             }
-            catch (const std::exception& error)
+            catch (const std::exception& exception)
             {
-                errorMessage = error.what();
-            }
-            catch (...)
-            {
-                errorMessage = lila::shared::errors::UnexpectedError;
+                error = lila::shared::errors::ToAppError(exception, userMessageOnFailure);
             }
 
             if (completion != nullptr && !stopSource->stop_requested())
             {
-                completion(std::move(errorMessage), std::move(result));
+                completion(std::move(error), std::move(result));
             }
         });
 
@@ -79,5 +113,7 @@ template <typename TResult>
 
 [[nodiscard]] std::shared_ptr<BackgroundTaskHandle> RunAsync(
     std::function<void()> worker,
-    std::function<void(std::string)> completion = {});
+    std::function<void(std::optional<lila::shared::errors::AppError>)> completion = {},
+    BackgroundTaskPriority priority = BackgroundTaskPriority::Normal,
+    std::string userMessageOnFailure = lila::shared::errors::UnexpectedError);
 }

@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "shared/errors/ErrorMessages.h"
+#include "shared/text/UiTexts.h"
 
 namespace lila::modules::user::domain
 {
@@ -19,7 +19,7 @@ struct AuthenticationResult
     {
         AuthenticationResult result;
         result.success = true;
-        result.message = lila::shared::errors::AuthenticationSuccessMessage;
+        result.message = lila::shared::text::ui::AuthenticationSuccessMessage.str();
         result.token = std::move(resolvedToken);
         result.userId = resolvedUserId;
         result.username = std::move(resolvedUsername);

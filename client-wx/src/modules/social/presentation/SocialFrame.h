@@ -18,6 +18,7 @@
 #include "modules/social/presentation/SocialSelectionMemory.h"
 #include "modules/social/presentation/SocialNavigationState.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/text/UiTexts.h"
 
 class wxButton;
 class wxChoice;
@@ -75,7 +76,7 @@ private:
     void OpenProfile(int userId);
     void RefreshSection(SocialSection section);
     void SetScreen(Screen screen);
-    void ShowActionFeedback(const wxString& message, const wxString& title = lila::shared::text::FromUtf8(lila::shared::errors::SocialFrameHeader));
+    void ShowActionFeedback(const wxString& message, const wxString& title = lila::shared::text::FromUtf8(lila::shared::text::ui::SocialFrameHeader));
     void RunBackgroundTask(
         const wxString& busyMessage,
         const std::function<void()>& worker,

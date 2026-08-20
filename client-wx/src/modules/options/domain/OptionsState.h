@@ -44,6 +44,20 @@ struct AdminOptions
     [[nodiscard]] bool operator==(const AdminOptions&) const = default;
 };
 
+struct RuntimeOptions
+{
+    std::optional<std::string> currentVersion;
+
+    [[nodiscard]] bool operator==(const RuntimeOptions&) const = default;
+};
+
+struct InternalOptions
+{
+    AdminOptions admin;
+
+    [[nodiscard]] bool operator==(const InternalOptions&) const = default;
+};
+
 struct GeneralOptions
 {
     bool restoreSessionOnStartup = true;
@@ -56,19 +70,19 @@ struct GeneralOptions
 
 struct OptionsState final
 {
-    static constexpr int SchemaVersion = 2;
+    static constexpr int SchemaVersion = 3;
     static constexpr int MinimumVolume = 0;
     static constexpr int MaximumVolume = 100;
     static constexpr int MinimumModerationLoadLimit = 1;
     static constexpr int MaximumModerationLoadLimit = 1000;
 
     int schemaVersion = SchemaVersion;
-    std::optional<std::string> currentVersion;
 
     GeneralOptions general;
     AudioOptions audio;
     ChatOptions chat;
-    AdminOptions admin;
+    InternalOptions internal;
+    RuntimeOptions runtime;
 
     // Flat direct fields forwarding to sub-structures for backward compatibility
     bool& restoreSessionOnStartup = general.restoreSessionOnStartup;
@@ -93,17 +107,19 @@ struct OptionsState final
     int& soundTableAmbienceVolume = audio.soundTableAmbienceVolume;
     bool& chatEnabled = chat.chatEnabled;
     bool& confirmChatExit = chat.confirmChatExit;
-    int& adminChatModerationLoadLimit = admin.adminChatModerationLoadLimit;
+    std::optional<std::string>& currentVersion = runtime.currentVersion;
+    AdminOptions& admin = internal.admin;
+    int& adminChatModerationLoadLimit = internal.admin.adminChatModerationLoadLimit;
 
     OptionsState() = default;
 
     OptionsState(const OptionsState& other)
         : schemaVersion(other.schemaVersion),
-          currentVersion(other.currentVersion),
           general(other.general),
           audio(other.audio),
           chat(other.chat),
-          admin(other.admin)
+          internal(other.internal),
+          runtime(other.runtime)
     {
     }
 
@@ -112,22 +128,22 @@ struct OptionsState final
         if (this != &other)
         {
             schemaVersion = other.schemaVersion;
-            currentVersion = other.currentVersion;
             general = other.general;
             audio = other.audio;
             chat = other.chat;
-            admin = other.admin;
+            internal = other.internal;
+            runtime = other.runtime;
         }
         return *this;
     }
 
     OptionsState(OptionsState&& other) noexcept
         : schemaVersion(other.schemaVersion),
-          currentVersion(std::move(other.currentVersion)),
           general(std::move(other.general)),
           audio(std::move(other.audio)),
           chat(std::move(other.chat)),
-          admin(std::move(other.admin))
+          internal(std::move(other.internal)),
+          runtime(std::move(other.runtime))
     {
     }
 
@@ -136,11 +152,11 @@ struct OptionsState final
         if (this != &other)
         {
             schemaVersion = other.schemaVersion;
-            currentVersion = std::move(other.currentVersion);
             general = std::move(other.general);
             audio = std::move(other.audio);
             chat = std::move(other.chat);
-            admin = std::move(other.admin);
+            internal = std::move(other.internal);
+            runtime = std::move(other.runtime);
         }
         return *this;
     }
@@ -148,11 +164,11 @@ struct OptionsState final
     [[nodiscard]] bool operator==(const OptionsState& other) const
     {
         return schemaVersion == other.schemaVersion &&
-               currentVersion == other.currentVersion &&
                general == other.general &&
                audio == other.audio &&
                chat == other.chat &&
-               admin == other.admin;
+               internal == other.internal &&
+               runtime == other.runtime;
     }
 
     void Normalize()
@@ -165,8 +181,8 @@ struct OptionsState final
         audio.soundSelectVolume = std::clamp(audio.soundSelectVolume, MinimumVolume, MaximumVolume);
         audio.soundChatMessagesVolume = std::clamp(audio.soundChatMessagesVolume, MinimumVolume, MaximumVolume);
         audio.soundTableAmbienceVolume = std::clamp(audio.soundTableAmbienceVolume, MinimumVolume, MaximumVolume);
-        admin.adminChatModerationLoadLimit = std::clamp(
-            admin.adminChatModerationLoadLimit,
+        internal.admin.adminChatModerationLoadLimit = std::clamp(
+            internal.admin.adminChatModerationLoadLimit,
             MinimumModerationLoadLimit,
             MaximumModerationLoadLimit);
     }

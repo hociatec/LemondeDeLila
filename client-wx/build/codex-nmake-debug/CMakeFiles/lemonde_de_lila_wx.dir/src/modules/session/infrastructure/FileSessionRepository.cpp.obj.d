@@ -78,6 +78,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mmintrin.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/zmmintrin.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ammintrin.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/Session.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_sanitizer_annotate_container.hpp
@@ -94,14 +95,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/tuple
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
-C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/typeinfo
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_typeinfo.h
@@ -113,6 +106,17 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/SecurityUtils.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/infrastructure/SessionStorageFields.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
+C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iterator
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/memory
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
@@ -120,8 +124,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic_wait.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xthreads.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
 C:/vcpkg/installed/x64-windows/include/nlohmann/adl_serializer.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/abi_macros.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/conversions/from_json.hpp
@@ -224,62 +226,10 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/ordered_map.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/AppError.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/persistence/JsonFileStorage.h
-C:/vcpkg/installed/x64-windows/include/wx/string.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/platform.h
-C:/vcpkg/installed/x64-windows/include/wx/compiler.h
-C:/vcpkg/installed/x64-windows/lib/mswud/wx/setup.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/libraries.h
-C:/vcpkg/installed/x64-windows/include/wx/chkconf.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/chkconf.h
-C:/vcpkg/installed/x64-windows/include/wx/version.h
-C:/vcpkg/installed/x64-windows/include/wx/cpp.h
-C:/vcpkg/installed/x64-windows/include/wx/dlimpexp.h
-C:/vcpkg/installed/x64-windows/include/wx/types.h
-C:/vcpkg/installed/x64-windows/include/wx/debug.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/assert.h
-C:/vcpkg/installed/x64-windows/include/wx/chartype.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/tchar.h
-C:/vcpkg/installed/x64-windows/include/wx/features.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdarg.h
-C:/vcpkg/installed/x64-windows/include/wx/wxcrtbase.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/wctype.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/io.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_io.h
-C:/vcpkg/installed/x64-windows/include/wx/strvararg.h
-C:/vcpkg/installed/x64-windows/include/wx/strconv.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/buffer.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/iosfwrap.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/vcpkg/installed/x64-windows/include/wx/fontenc.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/unichar.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/stringops.h
-C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
-C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
-C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/vcpkg/installed/x64-windows/include/wx/ffile.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/filefn.h
-C:/vcpkg/installed/x64-windows/include/wx/arrstr.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/dynarray.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/vector.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
-C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/direct.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/dos.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/fcntl.h
-C:/vcpkg/installed/x64-windows/include/wx/convauto.h

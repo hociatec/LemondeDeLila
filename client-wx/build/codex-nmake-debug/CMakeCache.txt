@@ -212,6 +212,24 @@ CTEST_SUBMIT_RETRY_DELAY:STRING=5
 //Maximum time allowed before CTest will kill the test.
 DART_TESTING_TIMEOUT:STRING=1500
 
+//Source canonique des événements WebSocket du backend
+LILA_BACKEND_WS_EVENTS_FILE:FILEPATH=C:/wamp64/www/lemondeDeLila/client-wx/../backend/src/common/ws/ws-events.ts
+
+//Enable AddressSanitizer where supported
+LILA_ENABLE_ASAN:BOOL=OFF
+
+//Enable clang-tidy during compilation
+LILA_ENABLE_CLANG_TIDY:BOOL=OFF
+
+//Enable cppcheck during compilation
+LILA_ENABLE_CPPCHECK:BOOL=OFF
+
+//Enable ThreadSanitizer where supported
+LILA_ENABLE_TSAN:BOOL=OFF
+
+//Enable UndefinedBehaviorSanitizer where supported
+LILA_ENABLE_UBSAN:BOOL=OFF
+
 //Command to build the project
 MAKECOMMAND:STRING="C:\Program Files\CMake\bin\cmake.exe" --build . --config "${CTEST_CONFIGURATION_TYPE}"
 

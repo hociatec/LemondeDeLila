@@ -1,5 +1,5 @@
 ﻿#include "modules/user/infrastructure/remote/JwtLoginClaimsParser.h"
-#include "shared/contracts/BackendWsContracts.h"
+#include "modules/user/infrastructure/remote/UserAuthFields.h"
 #include "shared/data/JsonReaders.h"
 #include "shared/errors/ErrorMessages.h"
 
@@ -123,10 +123,10 @@ JwtLoginClaims JwtLoginClaimsParser::Parse(const std::string& token)
     JwtLoginClaims claims;
     claims.username = lila::shared::data::json::ReadRequiredString(
         payloadJson,
-        lila::shared::contracts::user::UsernameField.data());
+        lila::modules::user::infrastructure::remote::fields::Username.data());
     claims.userId = lila::shared::data::json::ReadRequiredInteger(
         payloadJson,
-        lila::shared::contracts::user::JwtUserIdField.data());
+        lila::modules::user::infrastructure::remote::fields::JwtUserId.data());
     return claims;
 }
 

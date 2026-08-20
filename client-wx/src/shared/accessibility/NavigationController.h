@@ -83,6 +83,49 @@ public:
         Wrap,
     };
 
+    [[nodiscard]] static bool IsTabKey(int keyCode) noexcept
+    {
+        return keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB;
+    }
+
+    [[nodiscard]] static bool IsVerticalKey(int keyCode) noexcept
+    {
+        return keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP || keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN;
+    }
+
+    [[nodiscard]] static std::size_t ComputeTargetIndex(
+        std::size_t itemCount,
+        std::size_t currentIndex,
+        Direction direction,
+        Boundary boundary = Boundary::Wrap) noexcept
+    {
+        if (itemCount == 0)
+        {
+            return 0;
+        }
+
+        if (currentIndex >= itemCount)
+        {
+            return direction == Direction::Backward ? itemCount - 1 : 0;
+        }
+
+        if (direction == Direction::Backward)
+        {
+            if (currentIndex > 0)
+            {
+                return currentIndex - 1;
+            }
+            return boundary == Boundary::Wrap ? itemCount - 1 : 0;
+        }
+
+        if (currentIndex + 1 < itemCount)
+        {
+            return currentIndex + 1;
+        }
+
+        return boundary == Boundary::Wrap ? 0 : itemCount - 1;
+    }
+
     [[nodiscard]] static bool IsFocusable(const wxWindow* window)
     {
         return window != nullptr && window->IsShown() && window->IsEnabled() && window->AcceptsFocus();
@@ -162,30 +205,8 @@ public:
             return direction == Direction::Backward ? Focus(controls.back()) : Focus(controls.front());
         }
 
-        std::size_t index = static_cast<std::size_t>(std::distance(controls.begin(), current));
-        std::size_t target = index;
-        if (direction == Direction::Backward)
-        {
-            if (index > 0)
-            {
-                target = index - 1;
-            }
-            else if (boundary == Boundary::Wrap)
-            {
-                target = controls.size() - 1;
-            }
-        }
-        else
-        {
-            if (index + 1 < controls.size())
-            {
-                target = index + 1;
-            }
-            else if (boundary == Boundary::Wrap)
-            {
-                target = 0;
-            }
-        }
+        const std::size_t index = static_cast<std::size_t>(std::distance(controls.begin(), current));
+        const std::size_t target = ComputeTargetIndex(controls.size(), index, direction, boundary);
 
         return Focus(controls[target]);
     }
@@ -240,7 +261,7 @@ public:
 
     static bool HandleTab(wxKeyEvent& event, const Scope& scope, Boundary boundary = Boundary::Wrap)
     {
-        if (event.GetKeyCode() != WXK_TAB && event.GetKeyCode() != WXK_NUMPAD_TAB)
+        if (!IsTabKey(event.GetKeyCode()))
         {
             return false;
         }
@@ -272,7 +293,7 @@ public:
             wxEVT_CHAR_HOOK,
             [scopeProvider = std::move(scopeProvider), enabled = std::move(enabled), boundary](wxKeyEvent& event)
             {
-                if (event.GetKeyCode() != WXK_TAB && event.GetKeyCode() != WXK_NUMPAD_TAB)
+                if (!IsTabKey(event.GetKeyCode()))
                 {
                     event.Skip();
                     return;
@@ -300,7 +321,7 @@ public:
             wxEVT_CHAR_HOOK,
             [scopeProvider = std::move(scopeProvider), owner, enabled = std::move(enabled)](wxKeyEvent& event)
             {
-                if (event.GetKeyCode() != WXK_TAB && event.GetKeyCode() != WXK_NUMPAD_TAB)
+                if (!IsTabKey(event.GetKeyCode()))
                 {
                     event.Skip();
                     return;
@@ -329,7 +350,7 @@ public:
             [scopeProvider = std::move(scopeProvider), enabled = std::move(enabled), boundary](wxKeyEvent& event)
             {
                 const int key = event.GetKeyCode();
-                if (key != WXK_UP && key != WXK_NUMPAD_UP && key != WXK_DOWN && key != WXK_NUMPAD_DOWN)
+                if (!IsVerticalKey(key))
                 {
                     event.Skip();
                     return;
@@ -348,7 +369,7 @@ public:
     }
     static bool HandleDirectedTab(wxKeyEvent& event, wxWindow* backwardTarget, wxWindow* forwardTarget)
     {
-        if (event.GetKeyCode() != WXK_TAB && event.GetKeyCode() != WXK_NUMPAD_TAB)
+        if (!IsTabKey(event.GetKeyCode()))
         {
             return false;
         }

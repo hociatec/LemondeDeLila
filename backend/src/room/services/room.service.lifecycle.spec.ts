@@ -1,6 +1,9 @@
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { RoomService } from './room.service';
+import { RoomAdminMaintenanceService } from './room-admin-maintenance.service';
+import { RoomLifecycleService } from './room-lifecycle.service';
+import { RoomMembershipService } from './room-membership.service';
 import {
   PresenceService,
   type PresenceBroadcastPlayer,
@@ -19,8 +22,11 @@ type Fixture = {
     catalog: any;
     stats: any;
     tracker: any;
-    config: any;
-    redisFactory: any;
+    adminMaintenance: any;
+    lifecycle: any;
+    membership: any;
+    roomPayloadCache: any;
+    runtimeState: any;
     txRoomRepo: any;
     txParticipantRepo: any;
   };
@@ -150,16 +156,49 @@ function createFixture(): Fixture {
     countActivePlayers: jest.fn().mockReturnValue(0),
   } as any;
 
-  const config = {
-    get: jest.fn((key: string) => {
-      if (key === 'ROOM_PAYLOAD_CACHE_TTL_SECONDS') return 15;
-      if (key === 'RESTORED_ROOM_GRACE_MS') return 180_000;
-      return null;
-    }),
+  const runtimeState = {
+    getRoomDeletedNotifiers: jest.fn(() => []),
+    clearRoomBans: jest.fn(),
+    notifyLobbyChanged: jest.fn(),
+    setRealtimeNotifier: jest.fn(),
+    addRoomDeletedNotifier: jest.fn(),
+    setLobbyNotifier: jest.fn(),
+    notifyRoomStateUpdated: jest.fn(),
+    isBanned: jest.fn().mockReturnValue(false),
+    ban: jest.fn(),
+    unban: jest.fn(),
+    getLobbyNotifier: jest.fn(),
   } as any;
 
-  const redisFactory = {
-    create: jest.fn(),
+  const adminMaintenance = new RoomAdminMaintenanceService(
+    rooms,
+    tracker,
+    runtimeState,
+  ) as any;
+  const lifecycle = new RoomLifecycleService(
+    rooms,
+    participants,
+    vaultSnapshots,
+    catalog,
+    stats,
+    runtimeState,
+  ) as any;
+  const membership = new RoomMembershipService(
+    rooms,
+    participants,
+    vaultSnapshots,
+    botService,
+    presence,
+    catalog,
+    stats,
+    runtimeState,
+  ) as any;
+
+  const roomPayloadCache = {
+    prime: jest.fn().mockResolvedValue(undefined),
+    invalidate: jest.fn().mockResolvedValue(undefined),
+    update: jest.fn().mockResolvedValue(null),
+    getOrLoad: jest.fn(),
   } as any;
 
   const service = new RoomService(
@@ -172,8 +211,11 @@ function createFixture(): Fixture {
     catalog,
     stats,
     tracker,
-    config,
-    redisFactory,
+    adminMaintenance,
+    lifecycle,
+    membership,
+    roomPayloadCache,
+    runtimeState,
   );
 
   return {
@@ -188,8 +230,11 @@ function createFixture(): Fixture {
       catalog,
       stats,
       tracker,
-      config,
-      redisFactory,
+      adminMaintenance,
+      lifecycle,
+      membership,
+      roomPayloadCache,
+      runtimeState,
       txRoomRepo,
       txParticipantRepo,
     },
@@ -210,22 +255,13 @@ function createPresenceService(participantsFind: jest.Mock) {
     recordMessageForBroadcast: jest.fn(),
     getRecentNormalizedMessages: jest.fn(),
   } as any;
-  const chatSettings = {
-    getChatHistoryLimit: jest.fn(() => 50),
-    getEditWindowSeconds: jest.fn(() => 60),
-  } as any;
   const participants = {
     find: participantsFind,
-  } as any;
-  const users = {
-    findOne: jest.fn(),
   } as any;
 
   return new PresenceService(
     chat,
-    chatSettings,
     participants,
-    users,
     new PresenceTransportStub(),
   );
 }

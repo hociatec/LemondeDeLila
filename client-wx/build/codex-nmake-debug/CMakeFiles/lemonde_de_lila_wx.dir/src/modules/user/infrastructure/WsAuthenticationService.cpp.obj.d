@@ -92,7 +92,14 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/tuple
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/LoginCredentials.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/RegisterRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/RegistrationResult.h
@@ -202,7 +209,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ranges
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_int128.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ranges_to.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/string_utils.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/byte_container_with_subtype.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/hash.hpp
@@ -230,3 +236,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h

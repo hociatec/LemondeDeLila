@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-#include "shared/contracts/BackendWsContracts.h"
+#include "shared/network/WebSocketConstants.h"
 #include "shared/errors/ErrorMessages.h"
 
 namespace lila::shared::network
@@ -24,17 +24,17 @@ inline std::string ExtractOrigin(const std::string& endpoint)
 inline std::string WebSocketOriginToHttp(const std::string& endpoint)
 {
     const std::string origin = ExtractOrigin(endpoint);
-    const std::string wssScheme(lila::shared::contracts::ws::WssScheme);
-    const std::string wsScheme(lila::shared::contracts::ws::WsScheme);
+    const std::string wssScheme(lila::shared::network::ws::WssScheme);
+    const std::string wsScheme(lila::shared::network::ws::WsScheme);
 
     if (origin.rfind(wssScheme, 0) == 0)
     {
-        return std::string(lila::shared::contracts::ws::HttpsScheme) + origin.substr(wssScheme.size());
+        return std::string(lila::shared::network::ws::HttpsScheme) + origin.substr(wssScheme.size());
     }
 
     if (origin.rfind(wsScheme, 0) == 0)
     {
-        return std::string(lila::shared::contracts::ws::HttpScheme) + origin.substr(wsScheme.size());
+        return std::string(lila::shared::network::ws::HttpScheme) + origin.substr(wsScheme.size());
     }
 
     throw std::runtime_error(lila::shared::errors::WsTicketSchemaUnsupported);

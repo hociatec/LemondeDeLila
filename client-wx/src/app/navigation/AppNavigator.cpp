@@ -19,6 +19,7 @@
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/user/application/LoginUseCase.h"
 #include "modules/user/application/RegisterUseCase.h"
+#include "shared/logging/Logger.h"
 
 namespace lila::app::navigation
 {
@@ -44,19 +45,25 @@ AppNavigator::AppNavigator(
 
 bool AppNavigator::Start()
 {
+    lila::shared::logging::LogInfo("Navigator", "Start() begin.");
+    lila::shared::logging::LogInfo(
+        "Navigator",
+        std::string("restoreSessionOnStartup=") + (optionsStore_.Current().restoreSessionOnStartup ? "true" : "false"));
     if (optionsStore_.Current().restoreSessionOnStartup && sessionStore_.Restore())
     {
+        lila::shared::logging::LogInfo("Navigator", "Stored session restored. Opening main menu.");
         ShowSession();
         return true;
     }
 
-    sessionStore_.SyncPersistence(false);
+    lila::shared::logging::LogInfo("Navigator", "No stored session restored. Opening home.");
     ShowHome();
     return true;
 }
 
 void AppNavigator::ShowHome()
 {
+    lila::shared::logging::LogInfo("Navigator", "ShowHome(): constructing HomeFrame.");
     auto* window = new modules::home::presentation::HomeFrame(
         loginUseCase_,
         registerUseCase_,
@@ -69,13 +76,16 @@ void AppNavigator::ShowHome()
 
 void AppNavigator::ShowSession(std::size_t selectedIndex)
 {
+    lila::shared::logging::LogInfo("Navigator", "ShowSession(): begin.");
     lastMainMenuSelection_ = selectedIndex;
     if (!sessionStore_.HasActiveSession())
     {
+        lila::shared::logging::LogWarning("Navigator", "ShowSession(): no active session, fallback to home.");
         ShowHome();
         return;
     }
 
+    lila::shared::logging::LogInfo("Navigator", "ShowSession(): constructing MainMenuFrame.");
     auto* window = new modules::main_menu::presentation::MainMenuFrame(
         sessionStore_,
         optionsStore_,
@@ -221,17 +231,21 @@ void AppNavigator::CloseApplication()
 
 void AppNavigator::ReplaceWindow(wxFrame* nextWindow)
 {
+    lila::shared::logging::LogInfo("Navigator", "ReplaceWindow(): begin.");
     wxFrame* windowToReplace = currentWindow_;
     currentWindow_ = nextWindow;
 
     if (currentWindow_ != nullptr)
     {
+        lila::shared::logging::LogInfo("Navigator", "ReplaceWindow(): Show(true).");
         currentWindow_->Show(true);
+        lila::shared::logging::LogInfo("Navigator", "ReplaceWindow(): Raise().");
         currentWindow_->Raise();
     }
 
     if (windowToReplace != nullptr)
     {
+        lila::shared::logging::LogInfo("Navigator", "ReplaceWindow(): Destroy old window.");
         windowToReplace->Destroy();
     }
 }
@@ -253,4 +267,3 @@ void AppNavigator::OnLogoutRequested(std::size_t selectedIndex)
     ShowHome();
 }
 }
-

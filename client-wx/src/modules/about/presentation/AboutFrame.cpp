@@ -34,9 +34,7 @@ AboutFrame::AboutFrame(
     : wxFrame(
           nullptr,
           wxID_ANY,
-          wxString::Format(
-              wxString(L"À propos - %s"),
-              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data())),
+          wxString(L"À propos - ") + lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
           wxDEFAULT_FRAME_STYLE),

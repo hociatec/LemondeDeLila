@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "modules/chat/domain/ChatMessage.h"
-#include "shared/contracts/BackendWsContracts.h"
+#include "modules/chat/infrastructure/ChatProtocolFields.h"
 
 namespace lila::modules::chat::application
 {
@@ -28,6 +28,6 @@ private:
 
     mutable std::mutex mutex_;
     Messages messages_;
-    int editWindowSeconds_ = lila::shared::contracts::chat::DefaultHistoryLoadLimit;
+    int editWindowSeconds_ = lila::modules::chat::infrastructure::fields::DefaultHistoryLoadLimit;
 };
 }

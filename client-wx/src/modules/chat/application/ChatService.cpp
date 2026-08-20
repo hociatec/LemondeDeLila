@@ -24,16 +24,10 @@ ChatService::~ChatService()
     Close();
 }
 
-void ChatService::SetStatusChangedHandler(StatusChangedHandler handler)
+void ChatService::AttachEventHandlers(std::shared_ptr<EventHandlers> handlers)
 {
     std::scoped_lock lock(mutex_);
-    onStatusChanged_ = std::move(handler);
-}
-
-void ChatService::SetMessagesChangedHandler(MessagesChangedHandler handler)
-{
-    std::scoped_lock lock(mutex_);
-    onMessagesChanged_ = std::move(handler);
+    eventHandlers_ = std::move(handlers);
 }
 
 std::vector<domain::ChatMessage> ChatService::Messages() const
@@ -72,32 +66,32 @@ void ChatService::SetState(domain::ChatState state)
 
 void ChatService::SetStatus(std::string message, bool isError)
 {
-    StatusChangedHandler handler;
+    std::shared_ptr<EventHandlers> handlers;
     std::string deliveredMessage;
     {
         std::scoped_lock lock(mutex_);
         statusMessage_ = std::move(message);
         deliveredMessage = statusMessage_;
-        handler = onStatusChanged_;
+        handlers = eventHandlers_.lock();
     }
 
-    if (handler)
+    if (handlers && handlers->onStatusChanged)
     {
-        handler(deliveredMessage, isError);
+        handlers->onStatusChanged(deliveredMessage, isError);
     }
 }
 
 void ChatService::NotifyMessagesChanged()
 {
-    MessagesChangedHandler handler;
+    std::shared_ptr<EventHandlers> handlers;
     {
         std::scoped_lock lock(mutex_);
-        handler = onMessagesChanged_;
+        handlers = eventHandlers_.lock();
     }
 
-    if (handler)
+    if (handlers && handlers->onMessagesChanged)
     {
-        handler();
+        handlers->onMessagesChanged();
     }
 }
 }

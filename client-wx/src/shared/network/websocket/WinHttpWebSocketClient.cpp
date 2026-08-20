@@ -1,204 +1,21 @@
 #include "shared/network/websocket/WinHttpWebSocketClient.h"
+#include "shared/network/websocket/WinHttpWebSocketInternals.h"
 #include "shared/network/NetworkPolicy.h"
-#include "shared/text/Encoding.h"
 #include "shared/errors/ErrorMessages.h"
-#include "shared/contracts/BackendWsContracts.h"
+#include "shared/network/WebSocketConstants.h"
+#include "shared/text/Encoding.h"
 #ifdef _WIN32
 #include "shared/network/winhttp/WinHttpHandle.h"
 #endif
 
-#include <array>
-#include <cstdint>
-#include <map>
 #include <stdexcept>
 #include <string>
 #include <utility>
-#include <vector>
 
 #ifdef _WIN32
 #include <windows.h>
 #include <winhttp.h>
 #endif
-
-namespace
-{
-#ifdef _WIN32
-struct ParsedEndpoint
-{
-    std::wstring host;
-    std::wstring path;
-    std::wstring query;
-    INTERNET_PORT port = 0;
-    bool secure = false;
-};
-
-std::string NormalizeEndpointForWinHttp(const std::string& endpoint)
-{
-    if (endpoint.rfind(std::string(lila::shared::contracts::ws::WsScheme), 0) == 0)
-    {
-        return std::string(lila::shared::contracts::ws::HttpScheme) +
-            endpoint.substr(std::string(lila::shared::contracts::ws::WsScheme).size());
-    }
-
-    if (endpoint.rfind(std::string(lila::shared::contracts::ws::WssScheme), 0) == 0)
-    {
-        return std::string(lila::shared::contracts::ws::HttpsScheme) +
-            endpoint.substr(std::string(lila::shared::contracts::ws::WssScheme).size());
-    }
-
-    return endpoint;
-}
-
-ParsedEndpoint ParseEndpoint(const std::string& endpoint)
-{
-    const bool secure =
-        endpoint.rfind(std::string(lila::shared::contracts::ws::WssScheme), 0) == 0 ||
-        endpoint.rfind(std::string(lila::shared::contracts::ws::HttpsScheme), 0) == 0;
-    const auto normalizedEndpoint = NormalizeEndpointForWinHttp(endpoint);
-    const auto endpointWide = lila::shared::text::Utf8ToWide(normalizedEndpoint);
-    URL_COMPONENTS components{};
-    std::array<wchar_t, 256> hostBuffer{};
-    std::array<wchar_t, 2048> pathBuffer{};
-    std::array<wchar_t, 1024> queryBuffer{};
-
-    components.dwStructSize = sizeof(components);
-    components.lpszHostName = hostBuffer.data();
-    components.dwHostNameLength = static_cast<DWORD>(hostBuffer.size());
-    components.lpszUrlPath = pathBuffer.data();
-    components.dwUrlPathLength = static_cast<DWORD>(pathBuffer.size());
-    components.lpszExtraInfo = queryBuffer.data();
-    components.dwExtraInfoLength = static_cast<DWORD>(queryBuffer.size());
-
-    if (!WinHttpCrackUrl(endpointWide.c_str(), 0, 0, &components))
-    {
-        throw std::runtime_error(lila::shared::errors::WinHttpEndpointParseFailed);
-    }
-
-    ParsedEndpoint parsed;
-    parsed.host.assign(components.lpszHostName, components.dwHostNameLength);
-    parsed.path.assign(components.lpszUrlPath, components.dwUrlPathLength);
-    parsed.query.assign(components.lpszExtraInfo, components.dwExtraInfoLength);
-    parsed.port = components.nPort;
-    parsed.secure = secure;
-
-    if (parsed.path.empty())
-    {
-        parsed.path = L"/";
-    }
-
-    if (!parsed.query.empty())
-    {
-        parsed.path += parsed.query;
-    }
-
-    return parsed;
-}
-
-DWORD QueryResponseStatusCode(HINTERNET requestHandle)
-{
-    DWORD statusCode = 0;
-    DWORD statusCodeSize = sizeof(statusCode);
-    if (!WinHttpQueryHeaders(
-            requestHandle,
-            WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
-            WINHTTP_HEADER_NAME_BY_INDEX,
-            &statusCode,
-            &statusCodeSize,
-            WINHTTP_NO_HEADER_INDEX))
-    {
-        throw std::runtime_error(lila::shared::errors::WinHttpHandshakeResponseFailed);
-    }
-
-    return statusCode;
-}
-
-std::string ReceiveMessage(HINTERNET webSocketHandle)
-{
-    std::vector<char> payload;
-    payload.reserve(4096);
-    std::array<std::uint8_t, 4096> buffer{};
-
-    auto buildCloseErrorMessage = [](HINTERNET webSocketHandle) -> std::string
-    {
-        USHORT closeStatus = 0;
-        std::array<char, WINHTTP_WEB_SOCKET_MAX_CLOSE_REASON_LENGTH> closeReason{};
-        DWORD reasonLength = 0;
-
-        const DWORD queryResult = WinHttpWebSocketQueryCloseStatus(
-            webSocketHandle,
-            &closeStatus,
-            closeReason.data(),
-            static_cast<DWORD>(closeReason.size()),
-            &reasonLength);
-
-        if (queryResult != NO_ERROR)
-        {
-            return lila::shared::errors::WinHttpSocketClosed;
-        }
-
-        if (reasonLength == 0)
-        {
-            return std::string(lila::shared::errors::WinHttpSocketClosed) + " (close status "
-                + std::to_string(closeStatus) + ").";
-        }
-
-        return std::string(closeReason.data(), reasonLength);
-    };
-
-    while (true)
-    {
-        DWORD bytesRead = 0;
-        WINHTTP_WEB_SOCKET_BUFFER_TYPE bufferType = WINHTTP_WEB_SOCKET_UTF8_FRAGMENT_BUFFER_TYPE;
-
-        const DWORD result = WinHttpWebSocketReceive(
-            webSocketHandle,
-            buffer.data(),
-            static_cast<DWORD>(buffer.size()),
-            &bytesRead,
-            &bufferType);
-
-        if (result != NO_ERROR)
-        {
-            throw std::runtime_error(lila::shared::errors::WinHttpReceiveFailed);
-        }
-
-        if (bufferType == WINHTTP_WEB_SOCKET_CLOSE_BUFFER_TYPE)
-        {
-            throw std::runtime_error(buildCloseErrorMessage(webSocketHandle));
-        }
-
-        payload.insert(payload.end(), buffer.begin(), buffer.begin() + bytesRead);
-
-        if (bufferType == WINHTTP_WEB_SOCKET_UTF8_MESSAGE_BUFFER_TYPE ||
-            bufferType == WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE)
-        {
-            break;
-        }
-    }
-
-    return std::string(payload.begin(), payload.end());
-}
-
-std::wstring BuildHeadersBlock(const lila::shared::network::websocket::WebSocketHeaders& headers)
-{
-    std::wstring block;
-    for (const auto& [key, value] : headers)
-    {
-        if (key.empty() || value.empty())
-        {
-            continue;
-        }
-
-        block += lila::shared::text::Utf8ToWide(key);
-        block += L": ";
-        block += lila::shared::text::Utf8ToWide(value);
-        block += L"\r\n";
-    }
-
-    return block;
-}
-#endif
-}
 
 namespace lila::shared::network::websocket
 {
@@ -233,7 +50,7 @@ void WinHttpWebSocketClient::Connect(const std::string& endpoint, const WebSocke
 
     Close();
 
-    const auto parsed = ParseEndpoint(endpoint);
+    const auto parsed = detail::ParseEndpoint(endpoint);
     const auto userAgent = lila::shared::text::Utf8ToWide(std::string(lila::shared::network::UserAgent));
 
     state_->session.Reset(WinHttpOpen(
@@ -285,7 +102,7 @@ void WinHttpWebSocketClient::Connect(const std::string& endpoint, const WebSocke
         throw std::runtime_error(lila::shared::errors::WinHttpUpgradeFailed);
     }
 
-    const auto headersBlock = BuildHeadersBlock(headers);
+    const auto headersBlock = detail::BuildHeadersBlock(headers);
     if (!headersBlock.empty())
     {
         if (!WinHttpAddRequestHeaders(
@@ -311,7 +128,7 @@ void WinHttpWebSocketClient::Connect(const std::string& endpoint, const WebSocke
         throw std::runtime_error(lila::shared::errors::WithDetails(lila::shared::errors::WinHttpHandshakeResponseFailed, endpoint));
     }
 
-    const DWORD responseStatusCode = QueryResponseStatusCode(request.Get());
+    const DWORD responseStatusCode = detail::QueryResponseStatusCode(request.Get());
     if (responseStatusCode != HTTP_STATUS_SWITCH_PROTOCOLS)
     {
         Close();
@@ -389,7 +206,9 @@ void WinHttpWebSocketClient::Send(const std::string& payload)
     if (sendResult != NO_ERROR)
     {
         Close();
-        throw std::runtime_error(lila::shared::errors::RealtimeSendFailed);
+        throw std::runtime_error(lila::shared::errors::WithDetails(
+            lila::shared::errors::RealtimeSendFailed,
+            "code WinHTTP " + std::to_string(sendResult)));
     }
 #else
     (void)payload;
@@ -407,10 +226,11 @@ std::string WinHttpWebSocketClient::Receive()
 
     try
     {
-        return ReceiveMessage(state_->webSocket.Get());
+        return detail::ReceiveMessage(state_->webSocket.Get());
     }
-    catch (...)
+    catch (const std::exception& exception)
     {
+        (void)exception;
         Close();
         throw;
     }
@@ -429,4 +249,3 @@ std::string WinHttpWebSocketClient::SendAndReceive(
     return Receive();
 }
 }
-

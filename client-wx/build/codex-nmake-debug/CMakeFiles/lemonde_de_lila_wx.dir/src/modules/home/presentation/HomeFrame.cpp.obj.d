@@ -144,6 +144,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/home/presentation/HomeFrame.h
 C:/vcpkg/installed/x64-windows/include/wx/frame.h
 C:/vcpkg/installed/x64-windows/include/wx/toplevel.h
@@ -522,7 +524,11 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/tooltip.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/frame.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/AuthenticationResult.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/application/LoginUseCase.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/IAuthenticationService.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/LoginCredentials.h
@@ -530,4 +536,5 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/RegisterRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/RegistrationResult.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/application/RegisterUseCase.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppConfig.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/contracts/BackendWsContracts.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h

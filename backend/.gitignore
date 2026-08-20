@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist.locked-*/
+coverage/
+logs/
+data/client-updates/
+keys/*.pem
+*.log
+.tmp-eslint-*.json
+
+.env
+.env.local
+.env.*.local

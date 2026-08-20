@@ -4,12 +4,13 @@
 #include <string>
 
 #include "modules/messaging/domain/MessagingUser.h"
+#include "shared/domain/DomainTypes.h"
 
 namespace lila::modules::messaging::domain
 {
 struct MessagingMessage final
 {
-    std::string id;
+    lila::shared::domain::MessageId id;
     MessagingUser sender;
     MessagingUser recipient;
     std::string subject;

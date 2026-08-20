@@ -1,4 +1,4 @@
-﻿#include "shared/text/Encoding.h"
+#include "shared/text/Encoding.h"
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/social/presentation/SocialActionController.h"
 #include "modules/social/presentation/SocialLoadController.h"
@@ -22,6 +22,8 @@
 
 #include "modules/social/application/SocialService.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/logging/Logger.h"
+#include "shared/text/UiTexts.h"
 #include "shared/config/AppConfig.h"
 #include "shared/ui/controls/VerticalMenu.h"
 
@@ -45,8 +47,8 @@ SocialFrame::SocialFrame(
           nullptr,
           wxID_ANY,
           wxString::Format(
-              lila::shared::text::FromUtf8(lila::shared::errors::SocialFrameTitle),
-              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data())),
+              lila::shared::text::FromUtf8(lila::shared::text::ui::SocialFrameTitle),
+              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()).wc_str()),
           wxDefaultPosition,
           wxSize(WindowWidth, WindowHeight),
           wxDEFAULT_FRAME_STYLE),
@@ -78,7 +80,7 @@ SocialFrame::SocialFrame(
             },
             [this]()
             {
-                UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::SocialSelectPlayerToAct), true);
+                UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::SocialSelectPlayerToAct), true);
             },
             [this](const char* message)
             {
@@ -127,7 +129,7 @@ SocialFrame::SocialFrame(
     }
 
     SetScreen(Screen::Menu);
-    UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::KeyboardNavigationHint));
+    UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::KeyboardNavigationHint));
     CentreOnScreen();
     CallAfter(
         [this]()
@@ -144,7 +146,8 @@ void SocialFrame::RunUiAction(const std::function<void()>& action)
     }
     catch (const std::exception& error)
     {
-        UpdateStatus(lila::shared::text::FromUtf8(error.what()), true);
+        lila::shared::logging::LogError("Social", error.what());
+        UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::UnexpectedError), true);
     }
 }
 
@@ -208,4 +211,3 @@ void SocialFrame::ApplyBusyState()
     // le lecteur d'écran annonce alors "indisponible" sur les écrans sociaux.
 }
 }
-

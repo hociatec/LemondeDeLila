@@ -4,6 +4,7 @@
 #include <optional>
 #include <vector>
 
+#include "shared/domain/DomainTypes.h"
 #include "modules/social/domain/SocialFriendRequest.h"
 #include "modules/social/domain/SocialProfile.h"
 #include "modules/social/domain/SocialUser.h"
@@ -36,7 +37,7 @@ public:
     [[nodiscard]] const std::vector<domain::SocialFriendRequest>& OutgoingRequests() const;
     [[nodiscard]] const std::vector<domain::SocialUser>& BlockedUsers() const;
     [[nodiscard]] const std::optional<domain::SocialProfile>& Profile() const;
-    [[nodiscard]] bool IsBlocked(int userId) const;
+    [[nodiscard]] bool IsBlocked(lila::shared::domain::UserId userId) const;
     [[nodiscard]] std::optional<int> UserIdAt(SocialSection section, std::size_t index) const;
 
 private:

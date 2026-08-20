@@ -12,6 +12,7 @@
 #include "shared/accessibility/AccessibilityUtils.h"
 #include "shared/ui/Theme.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/text/UiTexts.h"
 
 namespace lila::modules::chat::presentation
 {
@@ -25,15 +26,15 @@ void ChatFrame::BuildLayout()
     auto* titleLabel = new wxStaticText(
         headerPanel,
         wxID_ANY,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatFrameHeader));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatFrameHeader));
     auto* subtitleLabel = new wxStaticText(
         headerPanel,
         wxID_ANY,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatFrameSubtitle));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatFrameSubtitle));
     statusLabel_ = new wxTextCtrl(
         headerPanel,
         wxID_ANY,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatFrameOpeningMessage),
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatFrameOpeningMessage),
         wxDefaultPosition,
         wxDefaultSize,
         wxTE_READONLY | wxTE_CENTER | wxBORDER_NONE);
@@ -47,12 +48,12 @@ void ChatFrame::BuildLayout()
     auto* historyLabel = new wxStaticText(
         contentPanel,
         wxID_ANY,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatMessagesHeader));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatMessagesHeader));
     historyList_ = new wxListBox(contentPanel, wxID_ANY);
     emptyHistoryCtrl_ = new wxTextCtrl(
         contentPanel,
         wxID_ANY,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatNoMessage),
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatNoMessage),
         wxDefaultPosition,
         wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
@@ -69,18 +70,18 @@ void ChatFrame::BuildLayout()
     editMessageButton_ = new wxButton(
         contentPanel,
         wxID_ANY,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatEditMessageAction));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatEditMessageAction));
     deleteMessageButton_ = new wxButton(
         contentPanel,
         wxID_ANY,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatDeleteMessageAction));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatDeleteMessageAction));
     historyActionSizer->Add(editMessageButton_, 0, wxRIGHT, 10);
     historyActionSizer->Add(deleteMessageButton_, 0);
 
     auto* inputLabel = new wxStaticText(
         contentPanel,
         wxID_ANY,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatYourMessageHint));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatYourMessageHint));
     inputCtrl_ = new wxTextCtrl(
         contentPanel,
         wxID_ANY,
@@ -147,19 +148,19 @@ void ChatFrame::ApplyTheme()
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*statusLabel_, statusLabel_->GetValue());
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *historyList_,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatMessagesListAccessible));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatMessagesListAccessible));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *emptyHistoryCtrl_,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatMessagesEmptyAccessible));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatMessagesEmptyAccessible));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *editMessageButton_,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatEditMessageAction));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatEditMessageAction));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *deleteMessageButton_,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatDeleteMessageAction));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatDeleteMessageAction));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *inputCtrl_,
-        lila::shared::text::FromUtf8(lila::shared::errors::ChatInputHintAccessible));
+        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatInputHintAccessible));
 }
 
 void ChatFrame::UpdateStatus(const wxString& message, bool isError)
@@ -172,6 +173,3 @@ void ChatFrame::UpdateStatus(const wxString& message, bool isError)
     Layout();
 }
 }
-
-// Focus policy compiled from an existing Chat unit.
-#include "modules/chat/presentation/ChatFocusController.inl"

@@ -6,11 +6,12 @@
 #include "modules/session/application/SessionStore.h"
 #include "modules/chat/infrastructure/ChatProtocol.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/logging/Logger.h"
 #include <sstream>
 
 namespace lila::modules::chat::application
 {
-void ChatService::ProcessIncomingMessage(const std::string& rawJson)
+void ChatService::ProcessIncomingMessage(const std::string& rawJson, bool fatalError)
 {
     const auto event =
         protocol_.ParseEvent(rawJson, sessionStore_.Current().userId, std::time(nullptr));
@@ -42,21 +43,30 @@ void ChatService::ProcessIncomingMessage(const std::string& rawJson)
     case infrastructure::ChatEventType::Error:
         if (event.error.has_value())
         {
-            HandleIncomingError(event.error->message, &*event.error);
+            HandleIncomingError(event.error->message, &*event.error, fatalError);
         }
         return;
     }
 }
 
-void ChatService::HandleIncomingError(const std::string& message, const domain::ChatServerError* detailedError)
+void ChatService::HandleIncomingError(
+    const std::string& message,
+    const domain::ChatServerError* detailedError,
+    bool fatalError)
 {
     {
         std::scoped_lock lock(mutex_);
         lastServerError_ =
             detailedError != nullptr ? std::optional<domain::ChatServerError>(*detailedError) : std::nullopt;
     }
-    SetState(domain::ChatState::Error);
-    SetStatus(message.empty() ? lila::shared::errors::ChatErrorMessage : message, true);
+    if (fatalError)
+    {
+        SetState(domain::ChatState::Error);
+    }
+    const std::string statusMessage =
+        message.empty() ? lila::shared::errors::ChatErrorMessage : message;
+    lila::shared::logging::LogWarning("Chat", "Erreur reçue du serveur : " + statusMessage);
+    SetStatus(statusMessage, true);
 }
 
 void ChatService::UpsertMessage(domain::ChatMessage message)

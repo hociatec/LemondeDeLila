@@ -1,4 +1,11 @@
 import { RoomGateway } from './room.gateway';
+import { RoomGatewayActionsService } from './room-gateway-actions.service';
+import { RoomGatewayCommandService } from './room-gateway-command.service';
+import { RoomGatewayConnectionService } from './room-gateway-connection.service';
+import { RoomGatewayLifecycleService } from './room-gateway-lifecycle.service';
+import { RoomGatewayPresenceService } from './room-gateway-presence.service';
+import { RoomGatewaySessionService } from './room-gateway-session.service';
+import { RoomGatewayStateService } from './room-gateway-state.service';
 
 type GatewayFixture = {
   gateway: any;
@@ -143,18 +150,44 @@ function createGatewayFixture(): GatewayFixture {
   const sounds: any = {
     listTableAmbiencesWithFilter: jest.fn().mockResolvedValue({ items: [] }),
   };
+  const lifecycle = new RoomGatewayLifecycleService(
+    roomsService,
+    catalog,
+    perf,
+    realtimeTracker,
+  ) as any;
+  const actions = new RoomGatewayActionsService(
+    roomsService,
+    botService,
+    perf,
+    realtimeTracker,
+  ) as any;
+  const commands = new RoomGatewayCommandService() as any;
+  const connection = new RoomGatewayConnectionService(
+    roomsService,
+    auth,
+    clientUpdates,
+    wsTickets,
+  ) as any;
+  const presence = new RoomGatewayPresenceService(roomsService) as any;
+  const state = new RoomGatewayStateService(roomsService) as any;
+  const session = new RoomGatewaySessionService(roomsService) as any;
 
   const gateway = new RoomGateway(
     roomsService,
     botService,
-    auth,
     catalog,
     perf,
     invites,
-    clientUpdates,
-    wsTickets,
     realtimeTracker,
     sounds,
+    actions,
+    commands,
+    connection,
+    lifecycle,
+    presence,
+    state,
+    session,
   ) as any;
 
   gateway.broadcastRoomPayload = jest.fn().mockResolvedValue(undefined);

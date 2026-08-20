@@ -1,6 +1,7 @@
 ﻿#include "shared/ui/controls/VerticalMenu.h"
 
 #include "shared/errors/ErrorMessages.h"
+#include "shared/text/UiTexts.h"
 
 #include <stdexcept>
 
@@ -12,14 +13,18 @@
 #include "shared/ui/Theme.h"
 #include "shared/accessibility/NavigationController.h"
 #include "shared/accessibility/AccessibleMenu.h"
+#include "shared/logging/Logger.h"
 
 namespace lila::shared::ui::controls
 {
 VerticalMenu::VerticalMenu(wxWindow* parent, std::span<const VerticalMenuItem> items)
     : wxPanel(parent, wxID_ANY)
 {
+    lila::shared::logging::LogInfo("VerticalMenu", "Constructor: begin.");
     BuildLayout(items);
+    lila::shared::logging::LogInfo("VerticalMenu", "Constructor: BuildLayout done.");
     ApplyTheme();
+    lila::shared::logging::LogInfo("VerticalMenu", "Constructor: ApplyTheme done.");
 }
 
 void VerticalMenu::SetSelectionChangedHandler(SelectionChangedHandler handler)
@@ -42,7 +47,7 @@ void VerticalMenu::SetSelectedIndex(std::size_t index)
 
     if (index >= itemCount_)
     {
-        throw std::out_of_range(lila::shared::errors::VerticalMenuIndexOutOfRange);
+        throw std::out_of_range(lila::shared::text::ui::VerticalMenuIndexOutOfRange.str());
     }
 
     FocusIndex(index);
@@ -145,6 +150,7 @@ void VerticalMenu::ApplyTheme()
 
 void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
 {
+    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: begin.");
     sizer_ = new wxBoxSizer(wxVERTICAL);
     listBox_ = new wxListBox(
         this,
@@ -154,6 +160,7 @@ void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
         0,
         nullptr,
         wxLB_SINGLE | wxBORDER_NONE);
+    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: listBox created.");
     lila::shared::accessibility::ConfigureListBoxAsAccessibleMenu(
         *listBox_,
         wxString(L"Menu"),
@@ -161,6 +168,7 @@ void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
         {
             OnListActivated(index);
         });
+    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: accessible menu configured.");
     for (const auto& item : items)
     {
         if (listBox_ != nullptr)
@@ -168,6 +176,7 @@ void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
             listBox_->Append(item.label);
         }
     }
+    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: items appended.");
 
     itemCount_ = items.size();
     if (itemCount_ > 0)
@@ -181,10 +190,13 @@ void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
     }
 
     SetSizer(sizer_);
+    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: sizer attached.");
     BindListEvents();
+    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: events bound.");
     if (itemCount_ > 0)
     {
         listBox_->SetSelection(0);
+        lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: initial selection set.");
     }
 }
 
@@ -311,8 +323,10 @@ void VerticalMenu::OnListKeyDown(wxKeyEvent& event)
 
 void VerticalMenu::FocusIndex(std::size_t index)
 {
+    lila::shared::logging::LogInfo("VerticalMenu", "FocusIndex: begin.");
     if (index >= itemCount_ || listBox_ == nullptr)
     {
+        lila::shared::logging::LogWarning("VerticalMenu", "FocusIndex: invalid index or null listBox.");
         return;
     }
 
@@ -325,6 +339,7 @@ void VerticalMenu::FocusIndex(std::size_t index)
     listBox_->SetFocus();
     UpdateVisualSelection();
     NotifySelectionChanged();
+    lila::shared::logging::LogInfo("VerticalMenu", "FocusIndex: end.");
 }
 
 void VerticalMenu::NotifySelectionChanged()
@@ -345,4 +360,3 @@ void VerticalMenu::UpdateVisualSelection()
     listBox_->Refresh();
 }
 }
-

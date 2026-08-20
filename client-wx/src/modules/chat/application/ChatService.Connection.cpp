@@ -1,19 +1,70 @@
-﻿#include "modules/chat/application/ChatService.h"
+#include "modules/chat/application/ChatService.h"
 
+#include <algorithm>
+#include <chrono>
 #include <stdexcept>
 #include <string>
 #include <thread>
 
 #include "modules/chat/infrastructure/ChatProtocol.h"
+#include "modules/chat/infrastructure/ChatProtocolFields.h"
 #include "modules/options/application/OptionsStore.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/network/http/WsTicketProvider.h"
 #include "shared/config/AppConfig.h"
-#include "shared/contracts/BackendWsContracts.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/logging/Logger.h"
+#include "shared/network/http/WsTicketProvider.h"
 
 namespace lila::modules::chat::application
 {
+namespace
+{
+std::chrono::milliseconds ResolveReconnectDelay(int reconnectAttempt)
+{
+    const int initialDelayMs = std::max(1, lila::shared::config::AppConfig::ResolveChatReconnectInitialDelayMs());
+    const int maxDelayMs = std::max(initialDelayMs, lila::shared::config::AppConfig::ResolveChatReconnectMaxDelayMs());
+
+    int delay = initialDelayMs;
+    for (int index = 0; index < reconnectAttempt; ++index)
+    {
+        delay = std::min(maxDelayMs, delay * 2);
+    }
+
+    return std::chrono::milliseconds(delay);
+}
+
+bool WaitForDelay(std::stop_token stopToken, std::chrono::milliseconds delay)
+{
+    constexpr auto PollStep = std::chrono::milliseconds(100);
+    auto remaining = delay;
+    while (remaining.count() > 0)
+    {
+        if (stopToken.stop_requested())
+        {
+            return true;
+        }
+
+        const auto sleepDuration = std::min(PollStep, remaining);
+        std::this_thread::sleep_for(sleepDuration);
+        remaining -= sleepDuration;
+    }
+
+    return stopToken.stop_requested();
+}
+}
+
+void ChatService::StopReceiveLoop() noexcept
+{
+    if (receiveTask_ == nullptr)
+    {
+        return;
+    }
+
+    receiveTask_->RequestCancel();
+    gateway_.Interrupt();
+    receiveTask_.reset();
+}
+
 bool ChatService::Open()
 {
     Close();
@@ -34,9 +85,9 @@ bool ChatService::Open()
     {
         {
             std::scoped_lock lock(mutex_);
-            messagesStore_.LoadHistory({}, lila::shared::contracts::chat::DefaultHistoryLoadLimit);
+            messagesStore_.LoadHistory({}, lila::modules::chat::infrastructure::fields::DefaultHistoryLoadLimit);
             lastServerError_.reset();
-            stopRequested_ = false;
+            reconnectAttempt_ = 0;
         }
 
         SetState(domain::ChatState::Connecting);
@@ -47,7 +98,7 @@ bool ChatService::Open()
         SetState(domain::ChatState::Connected);
 
         SetStatus(lila::shared::errors::ChatLoadingData, false);
-        ProcessIncomingMessage(gateway_.Receive());
+        ProcessIncomingMessage(gateway_.Receive(), true);
         if (State() == domain::ChatState::Error)
         {
             Close();
@@ -98,20 +149,16 @@ bool ChatService::Open()
 
 void ChatService::Close()
 {
+    StopReceiveLoop();
+
     bool shouldNotifyClosed = true;
     {
         std::scoped_lock lock(mutex_);
         shouldNotifyClosed = state_ != domain::ChatState::Error;
-        stopRequested_ = true;
         messagesStore_.Clear();
     }
 
     gateway_.Close();
-
-    if (receiveThread_.joinable())
-    {
-        receiveThread_.join();
-    }
 
     SetState(domain::ChatState::Disconnected);
     if (shouldNotifyClosed)
@@ -133,7 +180,12 @@ void ChatService::Send(const std::string& text)
     }
     catch (const std::exception& exception)
     {
-        SetStatus(lila::shared::errors::WithDetails(lila::shared::errors::ChatSendFailed, exception.what()), true);
+        const std::string failure = lila::shared::errors::WithDetails(
+            lila::shared::errors::ChatSendFailed,
+            exception.what());
+        lila::shared::logging::LogError("Chat", failure);
+        SetStatus(failure, true);
+        throw std::runtime_error(failure);
     }
 }
 
@@ -150,7 +202,12 @@ void ChatService::Edit(const std::string& messageId, const std::string& text)
     }
     catch (const std::exception& exception)
     {
-        SetStatus(lila::shared::errors::WithDetails(lila::shared::errors::ChatEditFailed, exception.what()), true);
+        const std::string failure = lila::shared::errors::WithDetails(
+            lila::shared::errors::ChatEditFailed,
+            exception.what());
+        lila::shared::logging::LogError("Chat", failure);
+        SetStatus(failure, true);
+        throw std::runtime_error(failure);
     }
 }
 
@@ -167,75 +224,95 @@ void ChatService::Delete(const std::string& messageId)
     }
     catch (const std::exception& exception)
     {
-        SetStatus(lila::shared::errors::WithDetails(lila::shared::errors::ChatDeleteFailed, exception.what()), true);
+        const std::string failure = lila::shared::errors::WithDetails(
+            lila::shared::errors::ChatDeleteFailed,
+            exception.what());
+        lila::shared::logging::LogError("Chat", failure);
+        SetStatus(failure, true);
+        throw std::runtime_error(failure);
     }
 }
 
 void ChatService::StartReceiveLoop()
 {
-    receiveThread_ = std::thread(
-        [this]()
+    receiveTask_ = lila::shared::concurrency::RunAsync(
+        [this](std::stop_token stopToken)
         {
-            ReceiveLoop();
-        });
+            ReceiveLoop(stopToken);
+        },
+        {},
+        lila::shared::concurrency::BackgroundTaskPriority::High,
+        lila::shared::errors::ChatReconnectionInterrupted);
 }
 
-void ChatService::ReceiveLoop()
+void ChatService::ReceiveLoop(std::stop_token stopToken)
 {
     while (true)
     {
+        if (stopToken.stop_requested())
         {
-            std::scoped_lock lock(mutex_);
-            if (stopRequested_)
-            {
-                break;
-            }
+            break;
         }
 
         try
         {
-            ProcessIncomingMessage(gateway_.Receive());
+            ProcessIncomingMessage(gateway_.Receive(), false);
+            reconnectAttempt_ = 0;
         }
-        catch (const std::exception&)
+        catch (const std::exception& receiveError)
         {
+            lila::shared::logging::LogWarning(
+                "Chat",
+                lila::shared::errors::WithDetails(
+                    lila::shared::errors::ChatReconnecting,
+                    receiveError.what()));
+            if (stopToken.stop_requested())
             {
-                std::scoped_lock lock(mutex_);
-                if (stopRequested_)
-                {
-                    break;
-                }
+                break;
             }
 
             SetState(domain::ChatState::Reconnecting);
             SetStatus(lila::shared::errors::ChatReconnecting, false);
-            try
+
+            while (!stopToken.stop_requested())
             {
-                gateway_.Close();
-                gateway_.Open(sessionStore_.Current().token, shared::config::AppConfig::ResolveClientVersion());
-                SetState(domain::ChatState::Connected);
-                SetStatus(lila::shared::errors::ChatReconnected, false);
-                continue;
-            }
-            catch (const lila::shared::network::http::WsTicketRequestError& reconnectError)
-            {
-                SetState(domain::ChatState::Error);
-                sessionStore_.Clear();
-                SetStatus(
-                    std::string(lila::shared::errors::ChatReconnectionInterrupted)
-                    + " " + lila::shared::errors::ChatReconnectionTicketRejected
-                    + " " + std::to_string(reconnectError.StatusCode())
-                    + ").",
-                    true);
-                break;
-            }
-            catch (const std::exception& reconnectError)
-            {
-                SetState(domain::ChatState::Error);
-                SetStatus(lila::shared::errors::WithDetails(
-                    lila::shared::errors::ChatReconnectionInterrupted,
-                    reconnectError.what()),
-                    true);
-                break;
+                if (WaitForDelay(stopToken, ResolveReconnectDelay(reconnectAttempt_)))
+                {
+                    return;
+                }
+
+                try
+                {
+                    gateway_.Close();
+                    gateway_.Open(sessionStore_.Current().token, shared::config::AppConfig::ResolveClientVersion());
+                    SetState(domain::ChatState::Connected);
+                    SetStatus(lila::shared::errors::ChatReconnected, false);
+                    reconnectAttempt_ = 0;
+                    break;
+                }
+                catch (const lila::shared::network::http::WsTicketRequestError& reconnectError)
+                {
+                    SetState(domain::ChatState::Error);
+                    sessionStore_.Clear();
+                    SetStatus(
+                        std::string(lila::shared::errors::ChatReconnectionInterrupted)
+                        + " " + lila::shared::errors::ChatReconnectionTicketRejected
+                        + " " + std::to_string(reconnectError.StatusCode())
+                        + ").",
+                        true);
+                    return;
+                }
+                catch (const std::exception& reconnectError)
+                {
+                    ++reconnectAttempt_;
+                    lila::shared::logging::LogWarning(
+                        "Chat",
+                        lila::shared::errors::WithDetails(
+                            lila::shared::errors::ChatReconnectionInterrupted,
+                            reconnectError.what()));
+                    SetState(domain::ChatState::Reconnecting);
+                    SetStatus(lila::shared::errors::ChatReconnecting, false);
+                }
             }
         }
     }
@@ -248,6 +325,12 @@ void ChatService::SendRawJson(const std::string& payload)
         throw std::runtime_error(lila::shared::errors::ChatNotConnected);
     }
 
+    lila::shared::logging::LogDebug(
+        "Chat",
+        "Envoi d'une trame WebSocket de " + std::to_string(payload.size()) + " octets.");
     gateway_.Send(payload);
+    lila::shared::logging::LogDebug(
+        "Chat",
+        "WinHttpWebSocketSend a accepté la trame (sans accusé de réception applicatif).");
 }
 }

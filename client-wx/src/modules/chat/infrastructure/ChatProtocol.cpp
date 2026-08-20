@@ -1,8 +1,11 @@
 #include "modules/chat/infrastructure/ChatProtocol.h"
-#include "shared/contracts/BackendWsContracts.h"
+#include "modules/chat/infrastructure/ChatProtocolFields.h"
+#include "shared/network/WsMessageTypes.h"
+#include "shared/network/realtime/RealtimeProtocolFields.h"
 #include "shared/data/JsonReaders.h"
 #include "shared/data/DateTime.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/logging/Logger.h"
 
 #include <ctime>
 #include <stdexcept>
@@ -18,19 +21,21 @@ using lila::modules::chat::infrastructure::ChatEventType;
 
 using lila::shared::data::json::ReadOptionalInteger;
 using lila::shared::data::json::ReadOptionalString;
+using lila::shared::data::json::ReadRequiredInteger;
+using lila::shared::data::json::ReadRequiredString;
 
 bool IsChatEventType(const std::string& type)
 {
-    return type == std::string(lila::shared::contracts::chat::HistoryEvent) ||
-        type == std::string(lila::shared::contracts::chat::MessageEvent) ||
-        type == std::string(lila::shared::contracts::chat::MessageUpdatedEvent) ||
-        type == std::string(lila::shared::contracts::chat::MessageDeletedEvent) ||
-        type == std::string(lila::shared::contracts::chat::ErrorEvent);
+    return type == std::string(lila::shared::network::ws::types::chat::History) ||
+        type == std::string(lila::shared::network::ws::types::chat::Message) ||
+        type == std::string(lila::shared::network::ws::types::chat::MessageUpdated) ||
+        type == std::string(lila::shared::network::ws::types::chat::MessageDeleted) ||
+        type == std::string(lila::shared::network::ws::types::chat::Error);
 }
 
 const nlohmann::json* FindPayloadObject(const nlohmann::json& root)
 {
-    const auto payloadIterator = root.find(std::string(lila::shared::contracts::chat::PayloadField));
+    const auto payloadIterator = root.find(std::string(lila::modules::chat::infrastructure::fields::Payload));
     if (payloadIterator == root.end() || payloadIterator->is_null())
     {
         return &root;
@@ -46,7 +51,7 @@ const nlohmann::json* FindPayloadObject(const nlohmann::json& root)
 
 const nlohmann::json* FindPayloadObjectOrRoot(const nlohmann::json& root)
 {
-    const auto payloadIterator = root.find(std::string(lila::shared::contracts::chat::PayloadField));
+    const auto payloadIterator = root.find(std::string(lila::modules::chat::infrastructure::fields::Payload));
     if (payloadIterator == root.end() || payloadIterator->is_null())
     {
         return &root;
@@ -85,13 +90,13 @@ const nlohmann::json* FindErrorContainer(
     const nlohmann::json& root,
     const nlohmann::json& payload)
 {
-    const auto errorIterator = root.find(std::string(lila::shared::contracts::realtime::ErrorField));
+    const auto errorIterator = root.find(std::string(lila::shared::network::realtime::fields::Error));
     if (errorIterator != root.end() && errorIterator->is_object())
     {
         return &(*errorIterator);
     }
 
-    const auto payloadErrorIterator = payload.find(std::string(lila::shared::contracts::realtime::ErrorField));
+    const auto payloadErrorIterator = payload.find(std::string(lila::shared::network::realtime::fields::Error));
     if (payloadErrorIterator != payload.end() && payloadErrorIterator->is_object())
     {
         return &(*payloadErrorIterator);
@@ -114,29 +119,21 @@ lila::modules::chat::domain::ChatMessage ParseChatMessage(
     std::time_t nowUtc)
 {
     lila::modules::chat::domain::ChatMessage message;
-    message.id = lila::shared::data::json::ReadOptionalString(
-        payload, lila::shared::contracts::chat::IdField.data());
-    message.text = lila::shared::data::json::ReadOptionalString(
-        payload, lila::shared::contracts::chat::TextField.data());
-    if (message.text.empty())
+    message.id = ReadRequiredString(
+        payload, lila::modules::chat::infrastructure::fields::Id.data());
+    message.text = ReadRequiredString(
+        payload, lila::modules::chat::infrastructure::fields::Text.data());
+    const auto userIterator = payload.find(std::string(lila::modules::chat::infrastructure::fields::User));
+    if (userIterator == payload.end() || !userIterator->is_object())
     {
-        message.text = ReadOptionalString(payload, lila::shared::contracts::chat::MessageField.data());
+        throw std::runtime_error(lila::shared::errors::ChatActionInvalidPayload);
     }
 
-    if (payload.contains(std::string(lila::shared::contracts::chat::UserField)) &&
-        payload[std::string(lila::shared::contracts::chat::UserField)].is_object())
-    {
-        const auto& user = payload[std::string(lila::shared::contracts::chat::UserField)];
-        message.user = ReadOptionalString(user, lila::shared::contracts::chat::UsernameField.data());
-        message.userId = ReadOptionalInteger(user, lila::shared::contracts::chat::IdField.data());
-    }
-    else
-    {
-        message.user = ReadOptionalString(payload, lila::shared::contracts::chat::FromField.data());
-    }
+    message.user = ReadRequiredString(*userIterator, lila::modules::chat::infrastructure::fields::Username.data());
+    message.userId = ReadRequiredInteger(*userIterator, lila::modules::chat::infrastructure::fields::Id.data());
 
     message.timestampUtc = lila::shared::data::datetime::ParseIsoTimestamp(
-        ReadOptionalString(payload, lila::shared::contracts::chat::CreatedAtField.data()))
+        ReadRequiredString(payload, lila::modules::chat::infrastructure::fields::CreatedAt.data()))
                               .value_or(nowUtc);
     message.isMine = message.userId != 0 && message.userId == currentUserId;
     return message;
@@ -148,25 +145,25 @@ namespace lila::modules::chat::infrastructure
 std::string ChatProtocol::BuildSendPayload(const std::string& text) const
 {
     return nlohmann::json({
-        {std::string(lila::shared::contracts::chat::TypeField), lila::shared::contracts::chat::SendEvent},
-        {std::string(lila::shared::contracts::chat::TextField), text},
+        {std::string(lila::modules::chat::infrastructure::fields::Type), lila::shared::network::ws::types::chat::Send},
+        {std::string(lila::modules::chat::infrastructure::fields::Text), text},
     }).dump();
 }
 
 std::string ChatProtocol::BuildEditPayload(const std::string& messageId, const std::string& text) const
 {
     return nlohmann::json({
-        {std::string(lila::shared::contracts::chat::TypeField), lila::shared::contracts::chat::EditEvent},
-        {std::string(lila::shared::contracts::chat::MessageIdField), messageId},
-        {std::string(lila::shared::contracts::chat::TextField), text},
+        {std::string(lila::modules::chat::infrastructure::fields::Type), lila::shared::network::ws::types::chat::Edit},
+        {std::string(lila::modules::chat::infrastructure::fields::MessageId), messageId},
+        {std::string(lila::modules::chat::infrastructure::fields::Text), text},
     }).dump();
 }
 
 std::string ChatProtocol::BuildDeletePayload(const std::string& messageId) const
 {
     return nlohmann::json({
-        {std::string(lila::shared::contracts::chat::TypeField), lila::shared::contracts::chat::DeleteEvent},
-        {std::string(lila::shared::contracts::chat::MessageIdField), messageId},
+        {std::string(lila::modules::chat::infrastructure::fields::Type), lila::shared::network::ws::types::chat::Delete},
+        {std::string(lila::modules::chat::infrastructure::fields::MessageId), messageId},
     }).dump();
 }
 
@@ -180,20 +177,24 @@ ChatEvent ChatProtocol::ParseEvent(const std::string& rawJson, int currentUserId
             return BuildErrorEvent(lila::shared::errors::ChatEventDataInvalid);
         }
 
-        const std::string type = ReadOptionalString(root, lila::shared::contracts::chat::TypeField.data());
+        const std::string type = ReadRequiredString(root, lila::modules::chat::infrastructure::fields::Type.data());
         if (!IsChatEventType(type))
         {
-            return BuildErrorEvent(lila::shared::errors::ChatEventDataInvalid);
+            // The presence socket can carry events unrelated to the chat.
+            // They are valid for the socket and must not disable the composer.
+            ChatEvent event;
+            event.type = ChatEventType::Ignored;
+            return event;
         }
 
-        if (type == lila::shared::contracts::chat::HistoryEvent)
+        if (type == lila::shared::network::ws::types::chat::History)
         {
             ChatEvent event;
             event.type = ChatEventType::History;
-            event.editWindowSeconds = ReadOptionalInteger(
-                root, lila::shared::contracts::chat::EditWindowSecondsField.data());
+            event.editWindowSeconds = ReadRequiredInteger(
+                root, lila::modules::chat::infrastructure::fields::EditWindowSeconds.data());
             const auto& messagesIterator =
-                RequireArrayField(root, lila::shared::contracts::chat::MessagesField.data(), lila::shared::errors::ChatMessagesMustBeArray);
+                RequireArrayField(root, lila::modules::chat::infrastructure::fields::Messages.data(), lila::shared::errors::ChatMessagesMustBeArray);
             for (const auto& item : messagesIterator)
             {
                 if (!item.is_object())
@@ -207,8 +208,8 @@ ChatEvent ChatProtocol::ParseEvent(const std::string& rawJson, int currentUserId
         }
 
         if (
-            type == lila::shared::contracts::chat::MessageEvent ||
-            type == lila::shared::contracts::chat::MessageUpdatedEvent)
+            type == lila::shared::network::ws::types::chat::Message ||
+            type == lila::shared::network::ws::types::chat::MessageUpdated)
         {
             const auto* payload = FindPayloadObject(root);
             if (!payload->is_object())
@@ -222,7 +223,7 @@ ChatEvent ChatProtocol::ParseEvent(const std::string& rawJson, int currentUserId
             return event;
         }
 
-        if (type == lila::shared::contracts::chat::MessageDeletedEvent)
+        if (type == lila::shared::network::ws::types::chat::MessageDeleted)
         {
             const auto* payload = FindPayloadObject(root);
             if (!payload->is_object())
@@ -232,7 +233,7 @@ ChatEvent ChatProtocol::ParseEvent(const std::string& rawJson, int currentUserId
 
             ChatEvent event;
             event.type = ChatEventType::MessageDeleted;
-            event.deletedMessageId = ReadOptionalString(*payload, lila::shared::contracts::chat::IdField.data());
+            event.deletedMessageId = ReadRequiredString(*payload, lila::modules::chat::infrastructure::fields::Id.data());
             return event;
         }
 
@@ -243,32 +244,32 @@ ChatEvent ChatProtocol::ParseEvent(const std::string& rawJson, int currentUserId
         domain::ChatServerError serverError;
         serverError.message = ReadOptionalString(
             *errorContainer,
-            lila::shared::contracts::chat::ErrorMessageField.data());
+            lila::modules::chat::infrastructure::fields::ErrorMessage.data());
         serverError.reason = ReadOptionalString(
             *errorContainer,
-            lila::shared::contracts::chat::ErrorReasonField.data());
+            lila::modules::chat::infrastructure::fields::ErrorReason.data());
         if (serverError.message.empty())
         {
             serverError.message = ReadOptionalString(
                 *payload,
-                lila::shared::contracts::chat::ErrorMessageField.data());
+                lila::modules::chat::infrastructure::fields::ErrorMessage.data());
         }
         if (serverError.message.empty())
         {
             serverError.message = ReadOptionalString(
                 *payload,
-                lila::shared::contracts::realtime::ErrorField.data());
+                lila::shared::network::realtime::fields::Error.data());
         }
         if (serverError.reason.empty())
         {
             serverError.reason = ReadOptionalString(
                 *payload,
-                lila::shared::contracts::chat::ErrorReasonField.data());
+                lila::modules::chat::infrastructure::fields::ErrorReason.data());
         }
         serverError.untilUtc = lila::shared::data::datetime::ParseIsoTimestamp(
             ReadOptionalString(
                 *errorContainer,
-                lila::shared::contracts::chat::ErrorUntilField.data()));
+                lila::modules::chat::infrastructure::fields::ErrorUntil.data()));
         if (serverError.message.empty())
         {
             serverError.message = lila::shared::errors::ChatErrorMessage;
@@ -277,8 +278,9 @@ ChatEvent ChatProtocol::ParseEvent(const std::string& rawJson, int currentUserId
         event.error = serverError;
         return event;
     }
-    catch (const std::exception&)
+    catch (const std::exception& error)
     {
+        lila::shared::logging::LogWarning("ChatProtocol", error.what());
         return BuildErrorEvent(lila::shared::errors::ChatEventDataInvalid);
     }
 }

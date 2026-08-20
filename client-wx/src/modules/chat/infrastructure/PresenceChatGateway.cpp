@@ -2,10 +2,9 @@
 
 #include <utility>
 
-#include "shared/contracts/BackendWsContracts.h"
+#include "shared/network/WebSocketConstants.h"
 #include "shared/network/http/WsTicketProvider.h"
 #include "shared/network/websocket/IWebSocketClient.h"
-#include "shared/network/websocket/WinHttpWebSocketClient.h"
 
 namespace lila::modules::chat::infrastructure
 {
@@ -19,36 +18,30 @@ PresenceChatGateway::PresenceChatGateway(
 {
 }
 
-PresenceChatGateway::PresenceChatGateway(
-    std::string endpoint,
-    lila::shared::network::websocket::WinHttpWebSocketClient& webSocketClient,
-    lila::shared::network::http::WsTicketProvider& ticketProvider)
-    : PresenceChatGateway(
-          std::move(endpoint),
-          static_cast<lila::shared::network::websocket::IWebSocketClient&>(webSocketClient),
-          ticketProvider)
-{
-}
-
 void PresenceChatGateway::Open(const std::string& bearerToken, const std::string& clientVersion)
 {
     const std::string ticket = ticketProvider_.GetTicket(
-        std::string(lila::shared::contracts::ws::WsTicketScopePresence),
+        std::string(lila::shared::network::ws::WsTicketScopePresence),
         bearerToken);
     lila::shared::network::websocket::WebSocketHeaders headers;
     headers.emplace(
-        std::string(lila::shared::contracts::ws::AuthorizationHeader),
-        std::string(lila::shared::contracts::ws::AuthorizationScheme) + bearerToken);
+        std::string(lila::shared::network::ws::AuthorizationHeader),
+        std::string(lila::shared::network::ws::AuthorizationScheme) + bearerToken);
     headers.emplace(
-        std::string(lila::shared::contracts::ws::ClientVersionHeader),
+        std::string(lila::shared::network::ws::ClientVersionHeader),
         clientVersion);
     headers.emplace(
-        std::string(lila::shared::contracts::ws::WsTicketHeader),
+        std::string(lila::shared::network::ws::WsTicketHeader),
         ticket);
     webSocketClient_.Connect(endpoint_, headers);
 }
 
 void PresenceChatGateway::Close()
+{
+    webSocketClient_.Close();
+}
+
+void PresenceChatGateway::Interrupt()
 {
     webSocketClient_.Close();
 }

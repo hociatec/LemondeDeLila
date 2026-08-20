@@ -1,0 +1,389 @@
+2026-08-20 13:47:25.699 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 13:47:25.701 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 13:47:25.701 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 13:47:25.701 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 13:47:25.702 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 13:47:25.702 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 13:47:25.702 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 13:47:25.713 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 13:47:25.714 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 13:47:25.714 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 13:47:25.715 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 13:47:25.715 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 13:47:25.715 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 13:47:25.716 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 13:47:25.716 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 13:47:25.811 [INFO ] [Startup] Bootstrap terminé avec succès.
+2026-08-20 13:47:33.937 [ERROR] [BackgroundTask] Chargement des amis impossible. : Ticket WS refusé par l'API (HTTP 401). Token invalide. Le jeton d'authentification est invalide ou expiré.
+2026-08-20 15:21:30.953 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 15:21:30.955 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 15:21:30.955 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 15:21:30.956 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 15:21:30.957 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 15:21:30.957 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 15:21:30.958 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 15:21:30.960 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 15:21:30.961 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 15:21:30.962 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 15:21:30.962 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 15:21:30.962 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 15:21:30.963 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 15:21:30.963 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 15:21:30.964 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 15:21:30.975 [ERROR] [Startup] Exception SEH 0xC0000005 à l'étape 'Démarrage de l'écran principal', instruction=00007FF6D2F3EB8E, opération=lecture, adresse visée=FFFFFFFFFFFFFFFF.
+2026-08-20 15:21:34.418 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 15:21:34.419 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 15:21:34.419 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 15:21:34.420 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 15:21:34.420 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 15:21:34.421 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 15:21:34.421 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 15:21:34.423 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 15:21:34.423 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 15:21:34.423 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 15:21:34.424 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 15:21:34.424 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 15:21:34.424 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 15:21:34.425 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 15:21:34.425 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 15:21:34.428 [ERROR] [Startup] Exception SEH 0xC0000005 à l'étape 'Démarrage de l'écran principal', instruction=00007FF6D2F3EB8E, opération=lecture, adresse visée=FFFFFFFFFFFFFFFF.
+2026-08-20 15:40:02.732 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 15:40:02.734 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 15:40:02.734 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 15:40:02.734 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 15:40:02.735 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 15:40:02.735 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 15:40:02.735 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 15:40:02.737 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 15:40:02.738 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 15:40:02.738 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 15:40:02.738 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 15:40:02.739 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 15:40:02.739 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 15:40:02.739 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 15:40:02.739 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 15:40:02.749 [ERROR] [Startup] Exception SEH 0xC0000005 à l'étape 'Démarrage de l'écran principal', instruction=00007FF6D2F3EB8E, opération=lecture, adresse visée=FFFFFFFFFFFFFFFF.
+2026-08-20 15:43:42.887 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 15:43:42.888 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 15:43:42.889 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 15:43:42.889 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 15:43:42.889 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 15:43:42.890 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 15:43:42.890 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 15:43:42.892 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 15:43:42.892 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 15:43:42.893 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 15:43:42.893 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 15:43:42.893 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 15:43:42.894 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 15:43:42.894 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 15:43:42.894 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 15:43:42.904 [ERROR] [Startup] Exception SEH 0xC0000005 à l'étape 'Démarrage de l'écran principal', instruction=00007FF7ECA1EB8E, opération=lecture, adresse visée=FFFFFFFFFFFFFFFF.
+2026-08-20 15:47:17.249 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 15:47:17.250 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 15:47:17.250 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 15:47:17.251 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 15:47:17.251 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 15:47:17.251 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 15:47:17.252 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 15:47:17.254 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 15:47:17.254 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 15:47:17.254 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 15:47:17.255 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 15:47:17.255 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 15:47:17.255 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 15:47:17.256 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 15:47:17.256 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 15:47:17.265 [ERROR] [Startup] Exception SEH 0xC0000005 à l'étape 'Démarrage de l'écran principal', instruction=00007FF77560EB8E, opération=lecture, adresse visée=FFFFFFFFFFFFFFFF.
+2026-08-20 15:48:41.118 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 15:48:41.119 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 15:48:41.119 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 15:48:41.120 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 15:48:41.120 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 15:48:41.120 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 15:48:41.121 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 15:48:41.123 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 15:48:41.123 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 15:48:41.123 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 15:48:41.124 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 15:48:41.124 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 15:48:41.124 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 15:48:41.125 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 15:48:41.125 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 15:48:41.129 [ERROR] [Startup] Exception SEH 0xC0000005 à l'étape 'Démarrage de l'écran principal', instruction=00007FF7333BEB8E, opération=lecture, adresse visée=FFFFFFFFFFFFFFFF.
+2026-08-20 15:49:49.724 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 15:49:49.724 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 15:49:49.725 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 15:49:49.725 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 15:49:49.726 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 15:49:49.726 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 15:49:49.726 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 15:49:49.729 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 15:49:49.729 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 15:49:49.730 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 15:49:49.730 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 15:49:49.730 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 15:49:49.731 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 15:49:49.731 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 15:49:49.731 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 15:49:49.875 [INFO ] [Startup] Bootstrap terminé avec succès.
+2026-08-20 15:50:27.696 [DEBUG] [Chat] Envoi d'une trame WebSocket de 32 octets.
+2026-08-20 15:50:27.697 [DEBUG] [Chat] WinHttpWebSocketSend a accepté la trame (sans accusé de réception applicatif).
+2026-08-20 15:52:36.935 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 15:52:36.936 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 15:52:36.936 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 15:52:36.937 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 15:52:36.937 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 15:52:36.938 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 15:52:36.938 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 15:52:36.949 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 15:52:36.950 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 15:52:36.950 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 15:52:36.951 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 15:52:36.951 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 15:52:36.951 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 15:52:36.951 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 15:52:36.952 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 15:52:36.952 [INFO ] [Navigator] Start() begin.
+2026-08-20 15:52:36.952 [INFO ] [Navigator] restoreSessionOnStartup=true
+2026-08-20 15:52:36.954 [INFO ] [Navigator] No stored session restored. Opening home.
+2026-08-20 15:52:36.954 [INFO ] [Navigator] ShowHome(): constructing HomeFrame.
+2026-08-20 15:52:37.035 [INFO ] [Navigator] ReplaceWindow(): begin.
+2026-08-20 15:52:37.035 [INFO ] [Navigator] ReplaceWindow(): Show(true).
+2026-08-20 15:52:37.079 [INFO ] [Navigator] ReplaceWindow(): Raise().
+2026-08-20 15:52:37.080 [INFO ] [Startup] Bootstrap terminé avec succès.
+2026-08-20 15:52:45.134 [INFO ] [Navigator] ShowSession(): begin.
+2026-08-20 15:52:45.134 [INFO ] [Navigator] ShowSession(): constructing MainMenuFrame.
+2026-08-20 15:52:45.137 [INFO ] [MainMenu] Constructor: begin.
+2026-08-20 15:52:45.142 [INFO ] [VerticalMenu] Constructor: begin.
+2026-08-20 15:52:45.142 [INFO ] [VerticalMenu] BuildLayout: begin.
+2026-08-20 15:52:45.147 [INFO ] [VerticalMenu] BuildLayout: listBox created.
+2026-08-20 15:52:45.147 [INFO ] [VerticalMenu] BuildLayout: accessible menu configured.
+2026-08-20 15:52:45.150 [INFO ] [VerticalMenu] BuildLayout: items appended.
+2026-08-20 15:52:45.151 [INFO ] [VerticalMenu] BuildLayout: sizer attached.
+2026-08-20 15:52:45.151 [INFO ] [VerticalMenu] BuildLayout: events bound.
+2026-08-20 15:52:45.152 [INFO ] [VerticalMenu] BuildLayout: initial selection set.
+2026-08-20 15:52:45.152 [INFO ] [VerticalMenu] Constructor: BuildLayout done.
+2026-08-20 15:52:45.152 [INFO ] [VerticalMenu] Constructor: ApplyTheme done.
+2026-08-20 15:52:45.156 [INFO ] [MainMenu] Constructor: BuildLayout done.
+2026-08-20 15:52:45.159 [INFO ] [MainMenu] Constructor: ApplyTheme done.
+2026-08-20 15:52:45.159 [INFO ] [MainMenu] Constructor: BindEvents done.
+2026-08-20 15:52:45.159 [INFO ] [MainMenu] Constructor: menu setup begin.
+2026-08-20 15:52:45.160 [INFO ] [MainMenu] Constructor: SetSelectedIndex.
+2026-08-20 15:52:45.160 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 15:52:45.167 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 15:52:45.167 [INFO ] [MainMenu] Constructor: OnMenuSelectionChanged.
+2026-08-20 15:52:45.168 [INFO ] [MainMenu] Constructor: CallAfter registration.
+2026-08-20 15:52:45.168 [INFO ] [MainMenu] Constructor: CentreOnScreen.
+2026-08-20 15:52:45.169 [INFO ] [MainMenu] Constructor: end.
+2026-08-20 15:52:45.169 [INFO ] [Navigator] ReplaceWindow(): begin.
+2026-08-20 15:52:45.170 [INFO ] [Navigator] ReplaceWindow(): Show(true).
+2026-08-20 15:52:45.178 [INFO ] [Navigator] ReplaceWindow(): Raise().
+2026-08-20 15:52:45.178 [INFO ] [Navigator] ReplaceWindow(): Destroy old window.
+2026-08-20 15:52:45.179 [INFO ] [MainMenu] Constructor: CallAfter SetFocus.
+2026-08-20 15:52:46.706 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 15:52:46.711 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 15:52:47.217 [INFO ] [Navigator] ReplaceWindow(): begin.
+2026-08-20 15:52:47.217 [INFO ] [Navigator] ReplaceWindow(): Show(true).
+2026-08-20 15:52:47.242 [INFO ] [Navigator] ReplaceWindow(): Raise().
+2026-08-20 15:52:47.243 [INFO ] [Navigator] ReplaceWindow(): Destroy old window.
+2026-08-20 15:52:56.848 [DEBUG] [Chat] Envoi d'une trame WebSocket de 53 octets.
+2026-08-20 15:52:56.849 [DEBUG] [Chat] WinHttpWebSocketSend a accepté la trame (sans accusé de réception applicatif).
+2026-08-20 15:52:58.106 [INFO ] [Navigator] ShowSession(): begin.
+2026-08-20 15:52:58.107 [INFO ] [Navigator] ShowSession(): constructing MainMenuFrame.
+2026-08-20 15:52:58.107 [WARN ] [Chat] Reconnexion au serveur... : Réception temps réel échouée.
+2026-08-20 15:52:58.108 [INFO ] [MainMenu] Constructor: begin.
+2026-08-20 15:52:58.115 [INFO ] [VerticalMenu] Constructor: begin.
+2026-08-20 15:52:58.115 [INFO ] [VerticalMenu] BuildLayout: begin.
+2026-08-20 15:52:58.117 [INFO ] [VerticalMenu] BuildLayout: listBox created.
+2026-08-20 15:52:58.118 [INFO ] [VerticalMenu] BuildLayout: accessible menu configured.
+2026-08-20 15:52:58.120 [INFO ] [VerticalMenu] BuildLayout: items appended.
+2026-08-20 15:52:58.120 [INFO ] [VerticalMenu] BuildLayout: sizer attached.
+2026-08-20 15:52:58.121 [INFO ] [VerticalMenu] BuildLayout: events bound.
+2026-08-20 15:52:58.121 [INFO ] [VerticalMenu] BuildLayout: initial selection set.
+2026-08-20 15:52:58.121 [INFO ] [VerticalMenu] Constructor: BuildLayout done.
+2026-08-20 15:52:58.122 [INFO ] [VerticalMenu] Constructor: ApplyTheme done.
+2026-08-20 15:52:58.125 [INFO ] [MainMenu] Constructor: BuildLayout done.
+2026-08-20 15:52:58.128 [INFO ] [MainMenu] Constructor: ApplyTheme done.
+2026-08-20 15:52:58.128 [INFO ] [MainMenu] Constructor: BindEvents done.
+2026-08-20 15:52:58.129 [INFO ] [MainMenu] Constructor: menu setup begin.
+2026-08-20 15:52:58.129 [INFO ] [MainMenu] Constructor: SetSelectedIndex.
+2026-08-20 15:52:58.129 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 15:52:58.137 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 15:52:58.138 [INFO ] [MainMenu] Constructor: OnMenuSelectionChanged.
+2026-08-20 15:52:58.138 [INFO ] [MainMenu] Constructor: CallAfter registration.
+2026-08-20 15:52:58.139 [INFO ] [MainMenu] Constructor: CentreOnScreen.
+2026-08-20 15:52:58.139 [INFO ] [MainMenu] Constructor: end.
+2026-08-20 15:52:58.140 [INFO ] [Navigator] ReplaceWindow(): begin.
+2026-08-20 15:52:58.140 [INFO ] [Navigator] ReplaceWindow(): Show(true).
+2026-08-20 15:52:58.148 [INFO ] [Navigator] ReplaceWindow(): Raise().
+2026-08-20 15:52:58.149 [INFO ] [Navigator] ReplaceWindow(): Destroy old window.
+2026-08-20 15:52:58.154 [INFO ] [MainMenu] Constructor: CallAfter SetFocus.
+2026-08-20 15:59:36.401 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 15:59:36.402 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 15:59:36.402 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 15:59:36.402 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 15:59:36.403 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 15:59:36.404 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 15:59:36.404 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 15:59:36.406 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 15:59:36.406 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 15:59:36.407 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 15:59:36.407 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 15:59:36.407 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 15:59:36.408 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 15:59:36.408 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 15:59:36.408 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 15:59:36.409 [INFO ] [Navigator] Start() begin.
+2026-08-20 15:59:36.409 [INFO ] [Navigator] restoreSessionOnStartup=true
+2026-08-20 15:59:36.412 [INFO ] [Navigator] No stored session restored. Opening home.
+2026-08-20 15:59:36.412 [INFO ] [Navigator] ShowHome(): constructing HomeFrame.
+2026-08-20 15:59:36.487 [INFO ] [Navigator] ReplaceWindow(): begin.
+2026-08-20 15:59:36.488 [INFO ] [Navigator] ReplaceWindow(): Show(true).
+2026-08-20 15:59:36.528 [INFO ] [Navigator] ReplaceWindow(): Raise().
+2026-08-20 15:59:36.529 [INFO ] [Startup] Bootstrap terminé avec succès.
+2026-08-20 16:31:22.747 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-20 16:31:22.748 [INFO ] [Startup] Étape: Création des transports réseau
+2026-08-20 16:31:22.748 [INFO ] [Startup] Étape: Création du fournisseur de tickets
+2026-08-20 16:31:22.749 [INFO ] [Startup] Étape: Création du client temps-réel
+2026-08-20 16:31:22.749 [INFO ] [Startup] Étape: Création du client temps-réel authentifié
+2026-08-20 16:31:22.749 [INFO ] [Startup] Étape: Création des services d'authentification
+2026-08-20 16:31:22.750 [INFO ] [Startup] Étape: Chargement des options
+2026-08-20 16:31:22.752 [INFO ] [Startup] Étape: Création du store de session
+2026-08-20 16:31:22.753 [INFO ] [Startup] Étape: Création du gateway chat
+2026-08-20 16:31:22.753 [INFO ] [Startup] Étape: Création du protocole chat
+2026-08-20 16:31:22.753 [INFO ] [Startup] Étape: Création du service chat
+2026-08-20 16:31:22.754 [INFO ] [Startup] Étape: Création du service messagerie
+2026-08-20 16:31:22.754 [INFO ] [Startup] Étape: Création du service social
+2026-08-20 16:31:22.754 [INFO ] [Startup] Étape: Création du navigateur
+2026-08-20 16:31:22.755 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-20 16:31:22.755 [INFO ] [Navigator] Start() begin.
+2026-08-20 16:31:22.755 [INFO ] [Navigator] restoreSessionOnStartup=true
+2026-08-20 16:31:22.756 [INFO ] [Navigator] No stored session restored. Opening home.
+2026-08-20 16:31:22.757 [INFO ] [Navigator] ShowHome(): constructing HomeFrame.
+2026-08-20 16:31:22.837 [INFO ] [Navigator] ReplaceWindow(): begin.
+2026-08-20 16:31:22.837 [INFO ] [Navigator] ReplaceWindow(): Show(true).
+2026-08-20 16:31:22.873 [INFO ] [Navigator] ReplaceWindow(): Raise().
+2026-08-20 16:31:22.874 [INFO ] [Startup] Bootstrap terminé avec succès.
+2026-08-20 16:31:26.923 [INFO ] [Navigator] ShowSession(): begin.
+2026-08-20 16:31:26.924 [INFO ] [Navigator] ShowSession(): constructing MainMenuFrame.
+2026-08-20 16:31:26.926 [INFO ] [MainMenu] Constructor: begin.
+2026-08-20 16:31:26.933 [INFO ] [VerticalMenu] Constructor: begin.
+2026-08-20 16:31:26.934 [INFO ] [VerticalMenu] BuildLayout: begin.
+2026-08-20 16:31:26.938 [INFO ] [VerticalMenu] BuildLayout: listBox created.
+2026-08-20 16:31:26.939 [INFO ] [VerticalMenu] BuildLayout: accessible menu configured.
+2026-08-20 16:31:26.941 [INFO ] [VerticalMenu] BuildLayout: items appended.
+2026-08-20 16:31:26.942 [INFO ] [VerticalMenu] BuildLayout: sizer attached.
+2026-08-20 16:31:26.942 [INFO ] [VerticalMenu] BuildLayout: events bound.
+2026-08-20 16:31:26.943 [INFO ] [VerticalMenu] BuildLayout: initial selection set.
+2026-08-20 16:31:26.943 [INFO ] [VerticalMenu] Constructor: BuildLayout done.
+2026-08-20 16:31:26.944 [INFO ] [VerticalMenu] Constructor: ApplyTheme done.
+2026-08-20 16:31:26.949 [INFO ] [MainMenu] Constructor: BuildLayout done.
+2026-08-20 16:31:26.953 [INFO ] [MainMenu] Constructor: ApplyTheme done.
+2026-08-20 16:31:26.953 [INFO ] [MainMenu] Constructor: BindEvents done.
+2026-08-20 16:31:26.954 [INFO ] [MainMenu] Constructor: menu setup begin.
+2026-08-20 16:31:26.954 [INFO ] [MainMenu] Constructor: SetSelectedIndex.
+2026-08-20 16:31:26.954 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:31:26.963 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:31:26.963 [INFO ] [MainMenu] Constructor: OnMenuSelectionChanged.
+2026-08-20 16:31:26.964 [INFO ] [MainMenu] Constructor: CallAfter registration.
+2026-08-20 16:31:26.964 [INFO ] [MainMenu] Constructor: CentreOnScreen.
+2026-08-20 16:31:26.966 [INFO ] [MainMenu] Constructor: end.
+2026-08-20 16:31:26.966 [INFO ] [Navigator] ReplaceWindow(): begin.
+2026-08-20 16:31:26.967 [INFO ] [Navigator] ReplaceWindow(): Show(true).
+2026-08-20 16:31:26.974 [INFO ] [Navigator] ReplaceWindow(): Raise().
+2026-08-20 16:31:26.974 [INFO ] [Navigator] ReplaceWindow(): Destroy old window.
+2026-08-20 16:31:26.976 [INFO ] [MainMenu] Constructor: CallAfter SetFocus.
+2026-08-20 16:31:28.716 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:31:28.722 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:31:29.119 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:31:29.124 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:05.407 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:05.411 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:05.698 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:05.702 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:05.969 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:05.974 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:06.573 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:06.578 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:06.940 [INFO ] [VerticalMenu] Constructor: begin.
+2026-08-20 16:32:06.941 [INFO ] [VerticalMenu] BuildLayout: begin.
+2026-08-20 16:32:06.944 [INFO ] [VerticalMenu] BuildLayout: listBox created.
+2026-08-20 16:32:06.945 [INFO ] [VerticalMenu] BuildLayout: accessible menu configured.
+2026-08-20 16:32:06.946 [INFO ] [VerticalMenu] BuildLayout: items appended.
+2026-08-20 16:32:06.947 [INFO ] [VerticalMenu] BuildLayout: sizer attached.
+2026-08-20 16:32:06.948 [INFO ] [VerticalMenu] BuildLayout: events bound.
+2026-08-20 16:32:06.948 [INFO ] [VerticalMenu] BuildLayout: initial selection set.
+2026-08-20 16:32:06.949 [INFO ] [VerticalMenu] Constructor: BuildLayout done.
+2026-08-20 16:32:06.950 [INFO ] [VerticalMenu] Constructor: ApplyTheme done.
+2026-08-20 16:32:07.043 [INFO ] [Navigator] ReplaceWindow(): begin.
+2026-08-20 16:32:07.043 [INFO ] [Navigator] ReplaceWindow(): Show(true).
+2026-08-20 16:32:07.057 [INFO ] [Navigator] ReplaceWindow(): Raise().
+2026-08-20 16:32:07.058 [INFO ] [Navigator] ReplaceWindow(): Destroy old window.
+2026-08-20 16:32:07.060 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:07.066 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:07.067 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:07.070 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:07.520 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:07.523 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:09.204 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:09.206 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:09.971 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:09.973 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:10.205 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:10.208 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:20.886 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:20.890 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:20.891 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:20.893 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:21.558 [INFO ] [Navigator] ShowSession(): begin.
+2026-08-20 16:32:21.559 [INFO ] [Navigator] ShowSession(): constructing MainMenuFrame.
+2026-08-20 16:32:21.561 [INFO ] [MainMenu] Constructor: begin.
+2026-08-20 16:32:21.570 [INFO ] [VerticalMenu] Constructor: begin.
+2026-08-20 16:32:21.570 [INFO ] [VerticalMenu] BuildLayout: begin.
+2026-08-20 16:32:21.573 [INFO ] [VerticalMenu] BuildLayout: listBox created.
+2026-08-20 16:32:21.573 [INFO ] [VerticalMenu] BuildLayout: accessible menu configured.
+2026-08-20 16:32:21.577 [INFO ] [VerticalMenu] BuildLayout: items appended.
+2026-08-20 16:32:21.577 [INFO ] [VerticalMenu] BuildLayout: sizer attached.
+2026-08-20 16:32:21.578 [INFO ] [VerticalMenu] BuildLayout: events bound.
+2026-08-20 16:32:21.578 [INFO ] [VerticalMenu] BuildLayout: initial selection set.
+2026-08-20 16:32:21.579 [INFO ] [VerticalMenu] Constructor: BuildLayout done.
+2026-08-20 16:32:21.579 [INFO ] [VerticalMenu] Constructor: ApplyTheme done.
+2026-08-20 16:32:21.585 [INFO ] [MainMenu] Constructor: BuildLayout done.
+2026-08-20 16:32:21.591 [INFO ] [MainMenu] Constructor: ApplyTheme done.
+2026-08-20 16:32:21.591 [INFO ] [MainMenu] Constructor: BindEvents done.
+2026-08-20 16:32:21.591 [INFO ] [MainMenu] Constructor: menu setup begin.
+2026-08-20 16:32:21.592 [INFO ] [MainMenu] Constructor: SetSelectedIndex.
+2026-08-20 16:32:21.592 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:21.600 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:21.601 [INFO ] [MainMenu] Constructor: OnMenuSelectionChanged.
+2026-08-20 16:32:21.602 [INFO ] [MainMenu] Constructor: CallAfter registration.
+2026-08-20 16:32:21.602 [INFO ] [MainMenu] Constructor: CentreOnScreen.
+2026-08-20 16:32:21.603 [INFO ] [MainMenu] Constructor: end.
+2026-08-20 16:32:21.604 [INFO ] [Navigator] ReplaceWindow(): begin.
+2026-08-20 16:32:21.604 [INFO ] [Navigator] ReplaceWindow(): Show(true).
+2026-08-20 16:32:21.612 [INFO ] [Navigator] ReplaceWindow(): Raise().
+2026-08-20 16:32:21.613 [INFO ] [Navigator] ReplaceWindow(): Destroy old window.
+2026-08-20 16:32:21.614 [INFO ] [MainMenu] Constructor: CallAfter SetFocus.
+2026-08-20 16:32:22.271 [INFO ] [VerticalMenu] Constructor: begin.
+2026-08-20 16:32:22.272 [INFO ] [VerticalMenu] BuildLayout: begin.
+2026-08-20 16:32:22.274 [INFO ] [VerticalMenu] BuildLayout: listBox created.
+2026-08-20 16:32:22.274 [INFO ] [VerticalMenu] BuildLayout: accessible menu configured.
+2026-08-20 16:32:22.276 [INFO ] [VerticalMenu] BuildLayout: items appended.
+2026-08-20 16:32:22.276 [INFO ] [VerticalMenu] BuildLayout: sizer attached.
+2026-08-20 16:32:22.277 [INFO ] [VerticalMenu] BuildLayout: events bound.
+2026-08-20 16:32:22.277 [INFO ] [VerticalMenu] BuildLayout: initial selection set.
+2026-08-20 16:32:22.277 [INFO ] [VerticalMenu] Constructor: BuildLayout done.
+2026-08-20 16:32:22.278 [INFO ] [VerticalMenu] Constructor: ApplyTheme done.
+2026-08-20 16:32:22.349 [INFO ] [Navigator] ReplaceWindow(): begin.
+2026-08-20 16:32:22.349 [INFO ] [Navigator] ReplaceWindow(): Show(true).
+2026-08-20 16:32:22.360 [INFO ] [Navigator] ReplaceWindow(): Raise().
+2026-08-20 16:32:22.361 [INFO ] [Navigator] ReplaceWindow(): Destroy old window.
+2026-08-20 16:32:22.363 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:22.369 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:22.369 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:22.371 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:22.707 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:22.709 [INFO ] [VerticalMenu] FocusIndex: end.
+2026-08-20 16:32:22.980 [INFO ] [VerticalMenu] FocusIndex: begin.
+2026-08-20 16:32:22.982 [INFO ] [VerticalMenu] FocusIndex: end.

@@ -1,6 +1,12 @@
 #pragma once
+#include <wx/button.h>
+#include <wx/choice.h>
 #include <wx/panel.h>
-class wxButton; class wxChoice; class wxSimplebook; class wxStaticText; class wxTextCtrl; class wxWindow;
+#include <wx/simplebook.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
+
+class wxWindow;
 namespace lila::shared::ui::controls { class VerticalMenu; }
 namespace lila::modules::social::presentation {
 class SocialView final : public wxPanel {

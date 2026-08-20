@@ -1,6 +1,6 @@
 #include "modules/social/application/SocialService.h"
 
-#include "shared/contracts/BackendWsContracts.h"
+#include "modules/social/infrastructure/SocialProtocolFields.h"
 
 namespace lila::modules::social::application
 {
@@ -16,12 +16,12 @@ std::vector<domain::SocialUser> SocialService::LoadFriends() const
 
 std::vector<domain::SocialFriendRequest> SocialService::LoadIncomingRequests() const
 {
-    return api_.GetRequests(std::string(lila::shared::contracts::social::DirectionIncoming));
+    return api_.GetRequests(std::string(lila::modules::social::infrastructure::fields::DirectionIncoming));
 }
 
 std::vector<domain::SocialFriendRequest> SocialService::LoadOutgoingRequests() const
 {
-    return api_.GetRequests(std::string(lila::shared::contracts::social::DirectionOutgoing));
+    return api_.GetRequests(std::string(lila::modules::social::infrastructure::fields::DirectionOutgoing));
 }
 
 std::vector<domain::SocialUser> SocialService::LoadBlockedUsers() const

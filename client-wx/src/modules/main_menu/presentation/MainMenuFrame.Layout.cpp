@@ -22,6 +22,9 @@ namespace lila::modules::main_menu::presentation
 {
 void MainMenuFrame::BuildLayout()
 {
+    const wxString username = lila::shared::text::FromUtf8(sessionStore_.Current().username);
+    const wxString version = lila::shared::text::FromUtf8(shared::config::AppConfig::ResolveClientVersion());
+
     auto* root = new lila::shared::accessibility::NonFocusablePanel(this);
     auto* rootSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -31,13 +34,11 @@ void MainMenuFrame::BuildLayout()
     welcomeLabel_ = new wxStaticText(
         headerPanel,
         wxID_ANY,
-        wxString::Format(
-            "Bienvenue, %s",
-            lila::shared::text::FromUtf8(sessionStore_.Current().username)));
+        wxString(L"Bienvenue, ") + username);
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*titleLabel_, wxString(L"Menu principal"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *welcomeLabel_,
-        wxString::Format(wxString(L"Bienvenue, %s"), lila::shared::text::FromUtf8(sessionStore_.Current().username)));
+        wxString(L"Bienvenue, ") + username);
     headerSizer->Add(titleLabel_, 0, wxALIGN_CENTER_HORIZONTAL);
     headerSizer->Add(welcomeLabel_, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 6);
     headerPanel->SetSizer(headerSizer);
@@ -74,12 +75,10 @@ void MainMenuFrame::BuildLayout()
     versionLabel_ = new wxStaticText(
         footerPanel,
         wxID_ANY,
-        wxString::Format(
-            "Version %s",
-            lila::shared::text::FromUtf8(shared::config::AppConfig::ResolveClientVersion())));
+        wxString(L"Version ") + version);
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *versionLabel_,
-        wxString::Format(wxString(L"Version %s"), lila::shared::text::FromUtf8(shared::config::AppConfig::ResolveClientVersion())));
+        wxString(L"Version ") + version);
     footerSizer->AddStretchSpacer();
     footerSizer->Add(statusLabel_, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 20);
     footerSizer->Add(versionLabel_, 0, wxALIGN_CENTER_VERTICAL);

@@ -1,5 +1,5 @@
 #include "modules/session/infrastructure/FileSessionRepository.h"
-#include "shared/contracts/BackendWsContracts.h"
+#include "modules/session/infrastructure/SessionStorageFields.h"
 #include "shared/data/JsonReaders.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/persistence/JsonFileStorage.h"
@@ -21,17 +21,20 @@ domain::Session ParseSession(const nlohmann::json& document)
     EnsureObject(document, lila::shared::errors::InvalidSessionFile);
 
     domain::Session session;
-    session.userId = lila::shared::data::json::ReadOptionalInteger(
-        document,
-        lila::shared::contracts::session::UserIdField.data());
+    session.userId = lila::shared::domain::UserId{
+        lila::shared::data::json::ReadOptionalInteger(
+            document,
+            lila::modules::session::infrastructure::fields::UserId.data())};
     session.username = lila::shared::data::json::ReadOptionalString(
         document,
-        lila::shared::contracts::session::UsernameField.data());
+        lila::modules::session::infrastructure::fields::Username.data());
 
     std::string protectedOrRawToken = lila::shared::data::json::ReadOptionalString(
         document,
-        lila::shared::contracts::session::TokenField.data());
+        lila::modules::session::infrastructure::fields::Token.data());
     session.token = lila::shared::security::UnprotectSecret(protectedOrRawToken);
+    session.refreshToken = lila::shared::security::UnprotectSecret(
+        lila::shared::data::json::ReadOptionalString(document, "refreshToken"));
 
     session.expiresAt = lila::shared::data::json::ReadOptionalInteger(
         document,
@@ -43,7 +46,7 @@ domain::Session ParseSession(const nlohmann::json& document)
 
 std::optional<domain::Session> FileSessionRepository::Load() const
 {
-    const wxString path = lila::shared::persistence::JsonFileStorage::ResolvePath("session.json");
+    const auto path = lila::shared::persistence::JsonFileStorage::ResolvePath("session.json");
     nlohmann::json document;
     try
     {
@@ -73,13 +76,14 @@ void FileSessionRepository::Save(const domain::Session& session)
         throw std::invalid_argument(lila::shared::errors::InvalidSessionUnauthenticated);
     }
 
-    const wxString path = lila::shared::persistence::JsonFileStorage::ResolvePath("session.json");
+    const auto path = lila::shared::persistence::JsonFileStorage::ResolvePath("session.json");
     const std::string protectedToken = lila::shared::security::ProtectSecret(session.token);
 
     const nlohmann::json document = {
-        {std::string(lila::shared::contracts::session::UserIdField), session.userId},
-        {std::string(lila::shared::contracts::session::UsernameField), session.username},
-        {std::string(lila::shared::contracts::session::TokenField), protectedToken},
+        {std::string(lila::modules::session::infrastructure::fields::UserId), session.userId.value},
+        {std::string(lila::modules::session::infrastructure::fields::Username), session.username},
+        {std::string(lila::modules::session::infrastructure::fields::Token), protectedToken},
+        {"refreshToken", session.refreshToken.empty() ? std::string{} : lila::shared::security::ProtectSecret(session.refreshToken)},
         {"expiresAt", session.expiresAt}
     };
 
@@ -88,12 +92,12 @@ void FileSessionRepository::Save(const domain::Session& session)
         document,
         lila::shared::errors::InvalidSessionSaveFailed);
 
-    lila::shared::security::HardenFilePermissions(path.ToStdString());
+    lila::shared::security::HardenFilePermissions(path.string());
 }
 
 void FileSessionRepository::Clear()
 {
-    const wxString path = lila::shared::persistence::JsonFileStorage::ResolvePath("session.json");
-    lila::shared::security::SecureDeleteFile(path.ToStdString());
+    const auto path = lila::shared::persistence::JsonFileStorage::ResolvePath("session.json");
+    lila::shared::security::SecureDeleteFile(path.string());
 }
 }

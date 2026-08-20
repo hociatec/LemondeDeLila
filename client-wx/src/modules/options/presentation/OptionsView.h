@@ -2,16 +2,16 @@
 #include <cstddef>
 #include <functional>
 #include <vector>
+#include <wx/button.h>
+#include <wx/checkbox.h>
 #include <wx/panel.h>
+#include <wx/simplebook.h>
+#include <wx/slider.h>
+#include <wx/stattext.h>
 
 #include "modules/options/domain/OptionsState.h"
 
 class wxBoxSizer;
-class wxButton;
-class wxCheckBox;
-class wxSimplebook;
-class wxSlider;
-class wxStaticText;
 class wxWindow;
 
 namespace lila::shared::ui::controls { class VerticalMenu; }

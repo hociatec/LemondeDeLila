@@ -1,64 +1,55 @@
 #include "shared/persistence/JsonFileStorage.h"
-#include "shared/persistence/AtomicFileWriter.h"
+
+#include "shared/config/AppDataPaths.h"
 #include "shared/errors/ErrorMessages.h"
-#include "shared/text/Encoding.h"
+#include "shared/persistence/AtomicFileWriter.h"
 
+#include <filesystem>
+#include <fstream>
 #include <stdexcept>
-
-#include <wx/filefn.h>
-#include <wx/filename.h>
-#include <wx/stdpaths.h>
-
-#include <nlohmann/json.hpp>
+#include <string>
 
 namespace
 {
-wxString ResolveDataPath(const char* fileName)
-{
-    wxFileName fileNameWithPath(wxStandardPaths::Get().GetUserLocalDataDir(), lila::shared::text::FromUtf8(fileName));
-    if (!fileNameWithPath.DirExists())
-    {
-        fileNameWithPath.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
-    }
-
-    return fileNameWithPath.GetFullPath();
-}
+constexpr std::uintmax_t MaxJsonFileSizeBytes = 1024 * 1024;
 }
 
 namespace lila::shared::persistence
 {
-wxString JsonFileStorage::ResolvePath(const char* fileName)
+std::filesystem::path JsonFileStorage::ResolvePath(const char* fileName)
 {
-    return ResolveDataPath(fileName);
+    return lila::shared::config::AppDataPaths::ResolveUserLocalFile(fileName);
 }
 
-bool JsonFileStorage::ReadIfExists(const wxString& path, nlohmann::json& content)
+bool JsonFileStorage::ReadIfExists(const std::filesystem::path& path, nlohmann::json& content)
 {
-    if (!wxFileExists(path))
+    if (!std::filesystem::exists(path))
     {
         return false;
     }
 
-    wxFFile file(path, "rb");
-    if (!file.IsOpened())
+    const auto length = std::filesystem::file_size(path);
+    if (length > MaxJsonFileSizeBytes)
+    {
+        throw std::runtime_error(lila::shared::errors::JsonFileTooLarge);
+    }
+
+    std::ifstream file(path, std::ios::binary);
+    if (!file.is_open())
     {
         throw std::runtime_error(lila::shared::errors::JsonFileOpenFailed);
     }
 
-    const wxFileOffset length = file.Length();
-    if (length < 0)
-    {
-        throw std::runtime_error(lila::shared::errors::JsonFileReadFailed);
-    }
-
     std::string raw(static_cast<std::size_t>(length), '\0');
-    if (!raw.empty() && file.Read(raw.data(), raw.size()) != raw.size())
+    if (!raw.empty())
     {
-        throw std::runtime_error(lila::shared::errors::JsonFileReadFailed);
+        file.read(raw.data(), static_cast<std::streamsize>(raw.size()));
+        if (!file.good() && !file.eof())
+        {
+            throw std::runtime_error(lila::shared::errors::JsonFileReadFailed);
+        }
     }
 
-    // JSON files are UTF-8 bytes. Never round-trip them through wxString or the
-    // process locale, otherwise accented characters can be corrupted.
     try
     {
         content = nlohmann::json::parse(raw);
@@ -71,7 +62,7 @@ bool JsonFileStorage::ReadIfExists(const wxString& path, nlohmann::json& content
     return true;
 }
 
-nlohmann::json JsonFileStorage::ReadRequired(const wxString& path, const char* parseErrorMessage)
+nlohmann::json JsonFileStorage::ReadRequired(const std::filesystem::path& path, const char* parseErrorMessage)
 {
     nlohmann::json content;
     if (!ReadIfExists(path, content))
@@ -82,22 +73,22 @@ nlohmann::json JsonFileStorage::ReadRequired(const wxString& path, const char* p
     return content;
 }
 
-void JsonFileStorage::Write(const wxString& path, const nlohmann::json& content, const char* errorMessage)
+void JsonFileStorage::Write(const std::filesystem::path& path, const nlohmann::json& content, const char* errorMessage)
 {
     WriteTextAtomically(path, content.dump(2), errorMessage);
 }
 
-void JsonFileStorage::Remove(const wxString& path, const char* errorMessage)
+void JsonFileStorage::Remove(const std::filesystem::path& path, const char* errorMessage)
 {
-    if (!wxFileExists(path))
+    std::error_code errorCode;
+    if (!std::filesystem::exists(path, errorCode))
     {
         return;
     }
 
-    if (!wxRemoveFile(path))
+    if (!std::filesystem::remove(path, errorCode))
     {
         throw std::runtime_error(errorMessage);
     }
 }
 }
-

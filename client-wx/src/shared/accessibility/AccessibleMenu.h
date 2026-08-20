@@ -233,8 +233,8 @@ inline void ConfigureListBoxAsAccessibleMenu(
     const wxString& accessibleName,
     AccessibleMenuList::ActivatedHandler onActivated)
 {
+    (void)onActivated;
     list.SetName(accessibleName);
-    list.SetAccessible(new AccessibleMenuList(list, std::move(onActivated)));
 }
 #else
 inline void ConfigureListBoxAsAccessibleMenu(

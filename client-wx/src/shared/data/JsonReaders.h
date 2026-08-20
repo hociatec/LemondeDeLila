@@ -5,6 +5,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "shared/errors/AppError.h"
 #include "shared/errors/ErrorMessages.h"
 
 namespace lila::shared::data::json {
@@ -17,7 +18,11 @@ inline nlohmann::json ParseDocument(const std::string& raw, const char* context)
     }
     catch (const nlohmann::json::exception& error)
     {
-        throw std::runtime_error(lila::shared::errors::WithDetails(context, error.what()));
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(
+                lila::shared::errors::ErrorCode::JsonCorrupted,
+                context,
+                lila::shared::errors::WithDetails(context, error.what())));
     }
 }
 
@@ -34,9 +39,11 @@ inline std::string ReadOptionalString(
 
     if (!iterator->is_string())
     {
-        throw std::runtime_error(
+        const std::string message =
             std::string(lila::shared::errors::JsonFieldNamePrefix) + fieldName
-            + lila::shared::errors::JsonFieldTypeStringSuffix);
+            + lila::shared::errors::JsonFieldTypeStringSuffix;
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(lila::shared::errors::ErrorCode::JsonCorrupted, message, message));
     }
 
     return iterator->get<std::string>();
@@ -52,9 +59,11 @@ inline int ReadOptionalInteger(const nlohmann::json& source, const char* fieldNa
 
     if (!iterator->is_number_integer())
     {
-        throw std::runtime_error(
+        const std::string message =
             std::string(lila::shared::errors::JsonFieldNamePrefix) + fieldName
-            + lila::shared::errors::JsonFieldTypeIntegerSuffix);
+            + lila::shared::errors::JsonFieldTypeIntegerSuffix;
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(lila::shared::errors::ErrorCode::JsonCorrupted, message, message));
     }
 
     return iterator->get<int>();
@@ -70,9 +79,11 @@ inline bool ReadOptionalBool(const nlohmann::json& source, const char* fieldName
 
     if (!iterator->is_boolean())
     {
-        throw std::runtime_error(
+        const std::string message =
             std::string(lila::shared::errors::JsonFieldNamePrefix) + fieldName
-            + lila::shared::errors::JsonFieldTypeBooleanSuffix);
+            + lila::shared::errors::JsonFieldTypeBooleanSuffix;
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(lila::shared::errors::ErrorCode::JsonCorrupted, message, message));
     }
 
     return iterator->get<bool>();
@@ -82,7 +93,8 @@ inline void EnsureObjectOrNull(const nlohmann::json& source, const char* message
 {
     if (!source.is_object() && !source.is_null())
     {
-        throw std::runtime_error(message);
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(lila::shared::errors::ErrorCode::JsonCorrupted, message, message));
     }
 }
 
@@ -90,7 +102,8 @@ inline void EnsureObject(const nlohmann::json& source, const char* message)
 {
     if (!source.is_object())
     {
-        throw std::runtime_error(message);
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(lila::shared::errors::ErrorCode::JsonCorrupted, message, message));
     }
 }
 
@@ -99,9 +112,11 @@ inline std::string ReadRequiredString(const nlohmann::json& source, const char* 
     const auto iterator = source.find(fieldName);
     if (iterator == source.end() || !iterator->is_string())
     {
-        throw std::runtime_error(
+        const std::string message =
             std::string(lila::shared::errors::JsonFieldNameRequiredPrefix) + fieldName
-            + lila::shared::errors::JsonFieldTypeStringRequiredSuffix);
+            + lila::shared::errors::JsonFieldTypeStringRequiredSuffix;
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(lila::shared::errors::ErrorCode::JsonCorrupted, message, message));
     }
 
     return iterator->get<std::string>();
@@ -112,12 +127,29 @@ inline int ReadRequiredInteger(const nlohmann::json& source, const char* fieldNa
     const auto iterator = source.find(fieldName);
     if (iterator == source.end() || !iterator->is_number_integer())
     {
-        throw std::runtime_error(
+        const std::string message =
             std::string(lila::shared::errors::JsonFieldNameRequiredPrefix) + fieldName
-            + lila::shared::errors::JsonFieldTypeIntegerRequiredSuffix);
+            + lila::shared::errors::JsonFieldTypeIntegerRequiredSuffix;
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(lila::shared::errors::ErrorCode::JsonCorrupted, message, message));
     }
 
     return iterator->get<int>();
+}
+
+inline bool ReadRequiredBool(const nlohmann::json& source, const char* fieldName)
+{
+    const auto iterator = source.find(fieldName);
+    if (iterator == source.end() || !iterator->is_boolean())
+    {
+        const std::string message =
+            std::string(lila::shared::errors::JsonFieldNameRequiredPrefix) + fieldName
+            + lila::shared::errors::JsonFieldTypeBooleanSuffix;
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(lila::shared::errors::ErrorCode::JsonCorrupted, message, message));
+    }
+
+    return iterator->get<bool>();
 }
 
 }
