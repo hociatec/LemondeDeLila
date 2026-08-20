@@ -599,3 +599,6 @@ C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/textctrl.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h

@@ -13,6 +13,42 @@
 
 namespace lila::modules::home::presentation
 {
+lila::shared::accessibility::NavigationController::Scope HomeFrame::BuildCurrentTabScope() const
+{
+    using Navigator = lila::shared::accessibility::NavigationController;
+    Navigator::Scope scope;
+
+    switch (currentPage_)
+    {
+    case Page::Landing:
+        scope.Add({landingLoginButton_, landingRegisterButton_, landingQuitButton_});
+        break;
+    case Page::Login:
+        scope.Add({
+            loginUsernameInput_,
+            loginPasswordInput_,
+            loginPasswordTextInput_,
+            loginShowPasswordCheck_,
+            loginRememberMeCheck_,
+            loginSubmitButton_,
+            loginRegisterButton_,
+            loginQuitButton_});
+        break;
+    case Page::Register:
+        scope.Add({
+            registerUsernameInput_,
+            registerEmailInput_,
+            registerPasswordInput_,
+            registerPasswordTextInput_,
+            registerShowPasswordCheck_,
+            registerSubmitButton_,
+            registerBackButton_});
+        break;
+    }
+
+    return scope;
+}
+
 void HomeFrame::ShowPage(Page page)
 {
     currentPage_ = page;

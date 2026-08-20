@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { BoardModule } from '../board/board.module';
-import { BotModule } from '../bot/bot.module';
+import { BotModule } from '../bot/module/bot.module';
 import { DeckPoliciesModule } from '../deck-policies/deck-policies.module';
 import { GridModule } from '../grid/grid.module';
 import { RandomModule } from '../random/random.module';

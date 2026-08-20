@@ -1,11 +1,10 @@
 #include "shared/text/Encoding.h"
 #include "modules/messaging/presentation/MessagingFrame.h"
 #include "modules/messaging/presentation/MessagingActionController.h"
-#include "modules/messaging/presentation/MessagingMailboxController.h"
+#include "modules/messaging/presentation/MessagingComposeController.h"
 #include "modules/messaging/presentation/MessagingView.h"
 #include "modules/messaging/presentation/MessagingPresentationModel.h"
-
-#include <memory>
+#include "modules/messaging/presentation/MessagingScreenCoordinator.h"
 
 #include <wx/msgdlg.h>
 #include <wx/textctrl.h>
@@ -17,67 +16,31 @@ namespace lila::modules::messaging::presentation
 {
 void MessagingFrame::SendComposedMessage()
 {
-    wxString recipientName = view_->recipientCtrl->GetValue();
+    const auto compose = view_->Compose();
+    wxString recipientName = compose.recipientCtrl->GetValue();
     recipientName.Trim(true).Trim(false);
-    wxString subject = view_->subjectCtrl->GetValue();
+    wxString subject = compose.subjectCtrl->GetValue();
     subject.Trim(true).Trim(false);
-    wxString body = view_->bodyCtrl->GetValue();
+    wxString body = compose.bodyCtrl->GetValue();
     body.Trim(true).Trim(false);
 
     if (recipientName.empty())
     {
         UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingRecipientRequired), true);
-        view_->recipientCtrl->SetFocus();
+        compose.recipientCtrl->SetFocus();
         return;
     }
 
     if (body.empty())
     {
         UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingBodyRequired), true);
-        view_->bodyCtrl->SetFocus();
+        compose.bodyCtrl->SetFocus();
         return;
     }
-
-    auto result = std::make_shared<MessagingMailboxController::SendResult>();
-    auto* mailbox = mailboxController_.get();
-    RunBackgroundTask(
-        lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingSendBusy),
-        [mailbox, result, recipientName, subject, body]()
-        {
-            *result = mailbox->SendToUser(
-                lila::shared::text::ToUtf8(recipientName),
-                lila::shared::text::ToUtf8(body),
-                subject.empty() ? std::optional<std::string>() : std::optional<std::string>(lila::shared::text::ToUtf8(subject)));
-            if (!result->recipient.has_value())
-            {
-                throw std::runtime_error(lila::shared::errors::MessagingRecipientNotFound);
-            }
-        },
-        [this, result]()
-        {
-            if (!result->recipient.has_value() || !result->message.has_value())
-            {
-                UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::MessagingSendFailed), true);
-                return;
-            }
-
-            const wxString userLabel = lila::shared::text::FromUtf8(result->recipient->username);
-            const wxString confirmation = wxString::Format(
-                lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingSentToUser),
-                userLabel);
-            UpdateStatus(confirmation);
-            wxMessageBox(
-                confirmation,
-                lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingFrameHeader),
-                wxOK | wxICON_INFORMATION,
-                this);
-            if (navigationState_.currentBox != domain::MessagingBox::Outbox)
-            {
-                navigationState_.currentBox = domain::MessagingBox::Outbox;
-            }
-            CloseCompose();
-            LoadBox(navigationState_.currentBox, false);
-        });
+    composeController_->Send(MessagingComposeController::SendPayload{
+        lila::shared::text::ToUtf8(recipientName),
+        subject.empty() ? std::optional<std::string>() : std::optional<std::string>(lila::shared::text::ToUtf8(subject)),
+        lila::shared::text::ToUtf8(body)});
 }
 
 void MessagingFrame::DeleteSelectedMessage()
@@ -115,9 +78,9 @@ void MessagingFrame::ReplyToSelectedMessage()
         return;
     }
 
-    const domain::MessagingUser recipient = message->isSent ? message->recipient : message->sender;
+    const domain::MessagingUser recipient = MessagingComposeController::ResolveReplyRecipient(*message);
     OpenCompose(recipient, Screen::Detail);
-    view_->subjectCtrl->SetValue(MessagingPresentationModel::BuildReplySubject(*message));
+    view_->Compose().subjectCtrl->SetValue(MessagingPresentationModel::BuildReplySubject(*message));
 }
 
 void MessagingFrame::MarkSelectedMessageRead()

@@ -533,8 +533,11 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/Messagi
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/array
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingNavigationState.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingFocusController.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingEventBinder.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingScreenCoordinator.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingMailboxLoader.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingView.h
 C:/vcpkg/installed/x64-windows/include/wx/listbox.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h

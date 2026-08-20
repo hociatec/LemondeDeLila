@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { requireAdmin } from '../../../../common/ws/ws-auth';
 import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { BugReportCommentsService } from '../../../../bug-reports/bug-report-comments.service';
+import { AdminBugReportCommentsService } from '../../../application/use-cases/admin-bug-reports/admin-bug-report-comments.service';
 import { WS_EVENTS } from '../../../../common/ws/ws-events';
 import {
   AdminBugReportCommentAddWsDto,
@@ -13,7 +13,7 @@ import {
 export class AdminBugReportCommentsWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
-    private readonly comments: BugReportCommentsService,
+    private readonly comments: AdminBugReportCommentsService,
   ) {}
 
   async list(session: WsSession, payload: any) {
@@ -22,31 +22,22 @@ export class AdminBugReportCommentsWsHandler {
       AdminBugReportCommentsListWsDto,
       payload,
     );
-    const items = await this.comments.listByReportId(dto.reportId);
+    const items = await this.comments.list(dto.reportId);
     return { type: WS_EVENTS.admin.bugReports.commentsList, payload: { items } };
   }
 
   async add(session: WsSession, payload: any) {
     const user = requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportCommentAddWsDto, payload);
-    const reportId = dto.reportId.trim();
-    const comment = await this.comments.add({
-      reportId,
+    const result = await this.comments.add({
+      reportId: dto.reportId,
       content: dto.content,
       createdByUserId: user.id,
       createdByUsername: user.username,
     });
-    if (!comment) {
-      throw new BadRequestException('Rapport introuvable');
-    }
-    const counts = await this.comments.countByReportIds([reportId]);
     return {
       type: WS_EVENTS.admin.bugReports.commentsAdd,
-      payload: {
-        comment,
-        reportId,
-        commentsCount: counts[reportId] ?? 0,
-      },
+      payload: result,
     };
   }
 }

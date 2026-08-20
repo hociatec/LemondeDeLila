@@ -32,6 +32,7 @@ public:
     void ShowCurrentSection();
     void SyncProfileEditorVisibility();
     void SyncProfileControls();
+    void SyncSectionActionVisibility();
     void SyncSelectionState();
     [[nodiscard]] std::optional<int> GetSelectedUserId() const;
 

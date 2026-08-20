@@ -1,11 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { requireAdmin } from '../../../../common/ws/ws-auth';
 import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { BugReportsService } from '../../../../bug-reports/bug-reports.service';
-import { BugReportCommentsService } from '../../../../bug-reports/bug-report-comments.service';
-import type { BugReportEntity } from '../../../../bug-reports/entities/bug-report.entity';
 import { WS_EVENTS } from '../../../../common/ws/ws-events';
+import { AdminBugReportsService } from '../../../application/use-cases/admin-bug-reports/admin-bug-reports.service';
 import {
   AdminBugReportCreateWsDto,
   AdminBugReportIdWsDto,
@@ -18,14 +16,13 @@ import {
 export class AdminBugReportsWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
-    private readonly reports: BugReportsService,
-    private readonly comments: BugReportCommentsService,
+    private readonly bugReports: AdminBugReportsService,
   ) {}
 
   async create(session: WsSession, payload: any) {
     const user = requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportCreateWsDto, payload);
-    const report = await this.reports.create({
+    const report = await this.bugReports.create({
       subject: dto.subject,
       content: dto.content,
       createdByUserId: user.id,
@@ -37,41 +34,28 @@ export class AdminBugReportsWsHandler {
   async list(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminBugReportsListWsDto, payload ?? {});
-    const items = await this.reports.list();
-    const counts = await this.comments.countByReportIds(items.map((r) => r.id));
-    const withCounts = items.map((r: BugReportEntity) => ({
-      ...r,
-      commentsCount: counts[r.id] ?? 0,
-    }));
-    return { type: WS_EVENTS.admin.bugReports.list, payload: { items: withCounts } };
+    const items = await this.bugReports.list();
+    return { type: WS_EVENTS.admin.bugReports.list, payload: { items } };
   }
 
   async get(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportIdWsDto, payload);
-    const report = await this.reports.get(dto.id);
-    if (!report) {
-      throw new BadRequestException('Rapport introuvable');
-    }
-    const counts = await this.comments.countByReportIds([report.id]);
+    const report = await this.bugReports.get(dto.id);
     return {
       type: WS_EVENTS.admin.bugReports.get,
-      payload: {
-        report: { ...report, commentsCount: counts[report.id] ?? 0 },
-      },
+      payload: { report },
     };
   }
 
   async update(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportUpdateWsDto, payload);
-    const report = await this.reports.update(dto.id, {
+    const report = await this.bugReports.update({
+      id: dto.id,
       subject: dto.subject,
       content: dto.content,
     });
-    if (!report) {
-      throw new BadRequestException('Rapport introuvable');
-    }
     return { type: WS_EVENTS.admin.bugReports.update, payload: { report } };
   }
 
@@ -81,25 +65,20 @@ export class AdminBugReportsWsHandler {
       AdminBugReportUpdateStatusWsDto,
       payload,
     );
-    const report = await this.reports.updateStatus(dto.id, dto.status);
-    if (!report) {
-      throw new BadRequestException('Rapport introuvable');
-    }
-    return { type: WS_EVENTS.admin.bugReports.updateStatus, payload: { report } };
+    const report = await this.bugReports.updateStatus({
+      id: dto.id,
+      status: dto.status,
+    });
+    return {
+      type: WS_EVENTS.admin.bugReports.updateStatus,
+      payload: { report },
+    };
   }
 
   async delete(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportIdWsDto, payload);
-    const ok = await this.reports.delete(dto.id);
-    if (!ok) {
-      throw new BadRequestException('Rapport introuvable');
-    }
-    return { type: WS_EVENTS.admin.bugReports.delete, payload: { removed: true } };
+    const result = await this.bugReports.delete(dto.id);
+    return { type: WS_EVENTS.admin.bugReports.delete, payload: result };
   }
 }
-
-
-
-
-

@@ -98,11 +98,17 @@ add_executable(lemonde_de_lila_wx WIN32
     src/bootstrap/AppRuntime.cpp
 
     src/modules/about/presentation/AboutFrame.cpp
+    src/modules/about/presentation/AboutFrame.Events.cpp
+    src/modules/about/presentation/AboutFrame.Layout.cpp
+    src/modules/about/presentation/AboutPageContentBuilder.cpp
+    src/modules/about/presentation/AboutPageCoordinator.cpp
 
     src/modules/chat/application/ChatService.cpp
     src/modules/chat/application/ChatService.Connection.cpp
     src/modules/chat/application/ChatService.Messages.cpp
+    src/modules/chat/application/ChatService.Reconnect.cpp
     src/modules/chat/application/ChatMessageStore.cpp
+    src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
     src/modules/chat/infrastructure/ChatProtocol.cpp
     src/modules/chat/infrastructure/PresenceChatGateway.cpp
     src/modules/chat/presentation/ChatEventBinder.cpp
@@ -116,11 +122,14 @@ add_executable(lemonde_de_lila_wx WIN32
 
     src/modules/messaging/application/MessagingService.cpp
     src/modules/messaging/infrastructure/MessagingApi.cpp
+    src/modules/messaging/infrastructure/MessagingPayloadCodec.cpp
     src/modules/messaging/presentation/MessagingActionController.cpp
+    src/modules/messaging/presentation/MessagingComposeController.cpp
     src/modules/messaging/presentation/MessagingEventBinder.cpp
     src/modules/messaging/presentation/MessagingFocusController.cpp
     src/modules/messaging/presentation/MessagingPresentationModel.cpp
     src/modules/messaging/presentation/MessagingSelectionMemory.cpp
+    src/modules/messaging/presentation/MessagingMailboxLoader.cpp
     src/modules/messaging/presentation/MessagingView.cpp
     src/modules/messaging/presentation/MessagingView.Menu.cpp
     src/modules/messaging/presentation/MessagingView.Detail.cpp
@@ -130,9 +139,12 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/messaging/presentation/MessagingFrame.Mailbox.cpp
     src/modules/messaging/presentation/MessagingFrame.Actions.cpp
     src/modules/messaging/presentation/MessagingFrame.Events.cpp
+    src/modules/messaging/presentation/MessagingFrame.State.cpp
+    src/modules/messaging/presentation/MessagingScreenCoordinator.cpp
 
     src/modules/social/application/SocialService.cpp
     src/modules/social/infrastructure/SocialApi.cpp
+    src/modules/social/infrastructure/SocialPayloadCodec.cpp
     src/modules/social/presentation/SocialActionController.cpp
     src/modules/social/presentation/SocialDataStore.cpp
     src/modules/social/presentation/SocialEventRouter.cpp
@@ -143,8 +155,8 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/social/presentation/SocialFrame.Menu.cpp
     src/modules/social/presentation/SocialFocusController.cpp
     src/modules/social/presentation/SocialFrame.Navigation.cpp
-    src/modules/social/presentation/SocialFrame.Loads.cpp
     src/modules/social/presentation/SocialPresentationModel.cpp
+    src/modules/social/presentation/SocialSectionCoordinator.cpp
     src/modules/social/presentation/SocialFrame.Profile.cpp
     src/modules/social/presentation/SocialSelectionMemory.cpp
     src/modules/social/presentation/SocialSectionPresenter.Core.cpp
@@ -166,12 +178,18 @@ add_executable(lemonde_de_lila_wx WIN32
 
     src/modules/options/application/OptionsStore.cpp
     src/modules/options/infrastructure/FileOptionsRepository.cpp
+    src/modules/options/infrastructure/OptionsJsonDocumentCodec.cpp
+    src/modules/options/infrastructure/OptionsJsonSchemaMigrator.cpp
+    src/modules/options/infrastructure/OptionsStateJsonMapper.cpp
     src/modules/options/presentation/OptionsEventBinder.cpp
     src/modules/options/presentation/OptionsFrame.cpp
     src/modules/options/presentation/OptionsFocusController.cpp
+    src/modules/options/presentation/OptionsSectionCoordinator.cpp
     src/modules/options/presentation/OptionsView.cpp
     src/modules/options/presentation/OptionsView.Layout.cpp
     src/modules/options/presentation/OptionsView.State.cpp
+    src/modules/options/presentation/OptionsViewPagesBuilder.cpp
+    src/modules/options/presentation/OptionsViewStateAdapter.cpp
     src/modules/options/presentation/OptionsView.Pages.cpp
     src/modules/options/presentation/OptionsView.Theme.cpp
 
@@ -192,6 +210,7 @@ add_executable(lemonde_de_lila_wx WIN32
 
     src/shared/accessibility/ActionButton.cpp
     src/shared/accessibility/AccessibilityUtils.cpp
+    src/shared/accessibility/NavigationController.cpp
 
     src/shared/config/AppConfig.cpp
     src/shared/config/AppDataPaths.cpp
@@ -200,6 +219,7 @@ add_executable(lemonde_de_lila_wx WIN32
     src/shared/network/realtime/RealtimeApiClient.cpp
     src/shared/network/realtime/RealtimeProtocol.cpp
     src/shared/network/http/WsTicketProvider.cpp
+    src/shared/network/http/WsTicketTransport.cpp
     src/shared/network/websocket/WinHttpWebSocketClient.cpp
     src/shared/network/websocket/WinHttpWebSocketInternals.cpp
 
@@ -274,15 +294,22 @@ if(BUILD_TESTING)
             src/modules/chat/application/ChatService.cpp
             src/modules/chat/application/ChatService.Connection.cpp
             src/modules/chat/application/ChatService.Messages.cpp
+            src/modules/chat/application/ChatService.Reconnect.cpp
             src/modules/chat/application/ChatMessageStore.cpp
+            src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
             src/modules/chat/infrastructure/ChatProtocol.cpp
             src/modules/options/application/OptionsStore.cpp
+            src/modules/options/infrastructure/OptionsJsonDocumentCodec.cpp
+            src/modules/options/infrastructure/OptionsJsonSchemaMigrator.cpp
+            src/modules/options/infrastructure/OptionsStateJsonMapper.cpp
             src/modules/session/application/SessionStore.cpp
             src/shared/concurrency/BackgroundExecutor.cpp
             src/shared/accessibility/ActionButton.cpp
+            src/shared/accessibility/NavigationController.cpp
             src/shared/config/AppConfig.cpp
             src/shared/config/AppDataPaths.cpp
             src/shared/network/http/WsTicketProvider.cpp
+            src/shared/network/http/WsTicketTransport.cpp
             src/shared/network/realtime/RealtimeProtocol.cpp
             src/shared/security/SecurityUtils.cpp
             src/shared/text/Encoding.cpp
@@ -344,6 +371,7 @@ if(BUILD_TESTING)
 
         add_executable(lemonde_de_lila_wx_parser_fuzz
             tests/ParserFuzzHarness.cpp
+            src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
             src/modules/chat/infrastructure/ChatProtocol.cpp
             src/shared/config/AppConfig.cpp
             src/shared/network/realtime/RealtimeProtocol.cpp

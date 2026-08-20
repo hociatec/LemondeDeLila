@@ -566,6 +566,9 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/generic/msgdlgg.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/msgdlg.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/about/presentation/AboutFrame.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/application/ChatService.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
@@ -600,6 +603,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/Logger.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/presentation/ChatFrame.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/home/presentation/HomeFrame.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/main_menu/presentation/MainMenuFrame.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/application/MessagingService.h
@@ -619,6 +623,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/application/OptionsSto
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsRepository.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/presentation/OptionsFrame.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/presentation/OptionsNavigationState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/application/SessionStore.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/ISessionRepository.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/Session.h

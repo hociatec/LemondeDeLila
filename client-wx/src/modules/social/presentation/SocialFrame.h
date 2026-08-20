@@ -43,6 +43,7 @@ namespace lila::modules::social::presentation
 class SocialActionController;
 class SocialLoadController;
 class SocialFocusController;
+class SocialSectionCoordinator;
 class SocialSectionPresenter;
 class SocialView;
 
@@ -76,6 +77,7 @@ private:
     void OpenProfile(int userId);
     void RefreshSection(SocialSection section);
     void SetScreen(Screen screen);
+    void ApplyNavigationState();
     void ShowActionFeedback(const wxString& message, const wxString& title = lila::shared::text::FromUtf8(lila::shared::text::ui::SocialFrameHeader));
     void RunBackgroundTask(
         const wxString& busyMessage,
@@ -91,15 +93,10 @@ private:
     void RunUiAction(const std::function<void()>& action);
     void UpdateStatus(const wxString& message, bool isError = false);
     void RefreshCurrentSection();
-    void LoadFriends();
-    void LoadIncomingRequests();
-    void LoadOutgoingRequests();
-    void LoadBlockedUsers();
-    void LoadProfile(std::optional<int> userId = std::nullopt);
     void SaveProfile();
     void StartProfileEdit(ProfileEditorMode mode);
-    void ExitProfileEditMode();
-    bool TryExitProfile();
+    void OpenCurrentSectionActionMenu();
+    void CloseCurrentSectionActionMenu();
 
     OpenMessagingRequestedHandler onOpenMessagingRequested_;
     CloseRequestedHandler onCloseRequested_;
@@ -112,6 +109,7 @@ private:
     std::unique_ptr<SocialActionController> actionController_;
     std::unique_ptr<SocialLoadController> loadController_;
     std::unique_ptr<SocialFocusController> focusController_;
+    std::unique_ptr<SocialSectionCoordinator> sectionCoordinator_;
     std::unique_ptr<SocialSectionPresenter> sectionPresenter_;
 
     SocialView* view_ = nullptr;

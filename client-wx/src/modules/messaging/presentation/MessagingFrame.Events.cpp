@@ -2,6 +2,7 @@
 #include "modules/messaging/presentation/MessagingFrame.h"
 #include "modules/messaging/presentation/MessagingFocusController.h"
 #include "modules/messaging/presentation/MessagingEventBinder.h"
+#include "modules/messaging/presentation/MessagingScreenCoordinator.h"
 #include "modules/messaging/presentation/MessagingView.h"
 
 namespace lila::modules::messaging::presentation
@@ -25,8 +26,7 @@ void MessagingFrame::BindEvents()
             [this]() { SendComposedMessage(); },
             [this]() { return !isBusy_; },
             [this]() { CloseCompose(); },
-            [this]() { SetScreen(Screen::Menu); },
-            [this]() { SetScreen(Screen::List); },
+            [this]() { return NavigateBack(); },
             [this]()
             {
                 if (onCloseRequested_)
@@ -43,4 +43,3 @@ void MessagingFrame::BindEvents()
             }});
 }
 }
-

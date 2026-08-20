@@ -98,9 +98,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/infrastructure/OptionsJsonDocumentCodec.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonApiHelpers.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/typeinfo
@@ -131,6 +128,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/valarray
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/exceptions.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/value_t.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_scope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/detected.hpp
@@ -225,6 +223,7 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/ordered_map.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/AppError.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h

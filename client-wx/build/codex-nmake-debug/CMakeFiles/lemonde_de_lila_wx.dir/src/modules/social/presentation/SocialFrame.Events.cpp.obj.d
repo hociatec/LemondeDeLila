@@ -535,6 +535,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialPres
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSelectionMemory.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/array
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialNavigationState.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h

@@ -11,8 +11,38 @@ namespace lila::shared::ui::controls { class VerticalMenu; }
 namespace lila::modules::social::presentation {
 class SocialView final : public wxPanel {
 public:
+    struct ShellControls final {
+        wxStaticText* titleLabel;
+        wxStaticText* subtitleLabel;
+        wxStaticText* statusLabel;
+        lila::shared::ui::controls::VerticalMenu* menu;
+        wxSimplebook* sectionBook;
+    };
+    struct SectionControls final {
+        lila::shared::ui::controls::VerticalMenu* list;
+        wxTextCtrl* emptyControl;
+        lila::shared::ui::controls::VerticalMenu* actionsMenu;
+    };
+    struct ProfileControls final {
+        wxStaticText* profileTitleLabel;
+        wxTextCtrl* profileInfoCtrl;
+        lila::shared::ui::controls::VerticalMenu* profileMenu;
+        wxTextCtrl* profileBioCtrl;
+        wxTextCtrl* profileVictoryCtrl;
+        wxTextCtrl* profileDefeatCtrl;
+        wxChoice* profileVisibilityChoice;
+        wxButton* profileSaveButton;
+        wxButton* profileCancelButton;
+    };
+
     explicit SocialView(wxWindow* parent);
     void ApplyTheme();
+    [[nodiscard]] ShellControls Shell() const noexcept;
+    [[nodiscard]] SectionControls FriendsSection() const noexcept;
+    [[nodiscard]] SectionControls IncomingSection() const noexcept;
+    [[nodiscard]] SectionControls OutgoingSection() const noexcept;
+    [[nodiscard]] SectionControls BlockedSection() const noexcept;
+    [[nodiscard]] ProfileControls Profile() const noexcept;
     wxStaticText* titleLabel = nullptr;
     wxStaticText* subtitleLabel = nullptr;
     wxStaticText* statusLabel = nullptr;

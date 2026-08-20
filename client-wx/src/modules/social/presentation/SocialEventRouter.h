@@ -17,7 +17,7 @@ public:
     struct Handlers
     {
         std::function<void()> handleEscape;
-        std::function<void()> activateSelectedMenu;
+        std::function<void()> closeSectionActionMenu;
         std::function<void()> activateProfileEditorSelection;
         std::function<void(const std::string&)> reportError;
         std::function<void()> beginClosing;

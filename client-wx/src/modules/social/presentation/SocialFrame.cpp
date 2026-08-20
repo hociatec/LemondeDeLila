@@ -3,6 +3,7 @@
 #include "modules/social/presentation/SocialActionController.h"
 #include "modules/social/presentation/SocialLoadController.h"
 #include "modules/social/presentation/SocialFocusController.h"
+#include "modules/social/presentation/SocialSectionCoordinator.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialView.h"
 #include "shared/ui/BackgroundTask.h"
@@ -66,7 +67,26 @@ SocialFrame::SocialFrame(
     sectionPresenter_ = std::make_unique<SocialSectionPresenter>(
         *this, *view_, dataStore_, navigationState_, selectionMemory_);
     focusController_ = std::make_unique<SocialFocusController>(
-        *this, *view_, navigationState_, dataStore_, [this]() { sectionPresenter_->SyncSelectionState(); });
+        *view_, navigationState_, [this]() { sectionPresenter_->SyncSelectionState(); });
+    sectionCoordinator_ = std::make_unique<SocialSectionCoordinator>(
+        *loadController_,
+        dataStore_,
+        navigationState_,
+        *sectionPresenter_,
+        *view_,
+        SocialSectionCoordinator::Callbacks{
+            [this](const wxString& busyMessage, const std::function<void()>& worker, const std::function<void()>& onSuccess)
+            {
+                RunBackgroundTask(busyMessage, worker, onSuccess);
+            },
+            [this](const wxString& message, bool isError)
+            {
+                UpdateStatus(message, isError);
+            },
+            [this]()
+            {
+                focusController_->FocusCurrentScreen();
+            }});
     actionController_ = std::make_unique<SocialActionController>(
         socialService,
         SocialActionController::Callbacks{
@@ -92,40 +112,47 @@ SocialFrame::SocialFrame(
             }});
     BindEvents();
 
-    if (view_->menu != nullptr && view_->menu->GetItemCount() > 0)
+    const auto shell = view_->Shell();
+    const auto profile = view_->Profile();
+    const auto friends = view_->FriendsSection();
+    const auto incoming = view_->IncomingSection();
+    const auto outgoing = view_->OutgoingSection();
+    const auto blocked = view_->BlockedSection();
+
+    if (shell.menu != nullptr && shell.menu->GetItemCount() > 0)
     {
-        view_->menu->SetTabNavigationEnabled(false);
-        if (navigationState_.lastMenuIndex >= view_->menu->GetItemCount())
+        shell.menu->SetTabNavigationEnabled(false);
+        if (navigationState_.lastMenuIndex >= shell.menu->GetItemCount())
         {
             navigationState_.lastMenuIndex = 0;
         }
 
-        view_->menu->SetSelectedIndex(navigationState_.lastMenuIndex);
+        shell.menu->SetSelectedIndexSilently(navigationState_.lastMenuIndex);
     }
 
-    if (view_->profileMenu != nullptr)
+    if (profile.profileMenu != nullptr)
     {
-        view_->profileMenu->SetTabNavigationEnabled(false);
+        profile.profileMenu->SetTabNavigationEnabled(false);
     }
 
-    if (view_->friendsActionsMenu != nullptr)
+    if (friends.actionsMenu != nullptr)
     {
-        view_->friendsActionsMenu->SetTabNavigationEnabled(false);
+        friends.actionsMenu->SetTabNavigationEnabled(false);
     }
 
-    if (view_->incomingActionsMenu != nullptr)
+    if (incoming.actionsMenu != nullptr)
     {
-        view_->incomingActionsMenu->SetTabNavigationEnabled(false);
+        incoming.actionsMenu->SetTabNavigationEnabled(false);
     }
 
-    if (view_->outgoingActionsMenu != nullptr)
+    if (outgoing.actionsMenu != nullptr)
     {
-        view_->outgoingActionsMenu->SetTabNavigationEnabled(false);
+        outgoing.actionsMenu->SetTabNavigationEnabled(false);
     }
 
-    if (view_->blockedActionsMenu != nullptr)
+    if (blocked.actionsMenu != nullptr)
     {
-        view_->blockedActionsMenu->SetTabNavigationEnabled(false);
+        blocked.actionsMenu->SetTabNavigationEnabled(false);
     }
 
     SetScreen(Screen::Menu);

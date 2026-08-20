@@ -528,6 +528,9 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/checkbox.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -616,6 +619,3 @@ C:/vcpkg/installed/x64-windows/include/wx/image.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/bitmap.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/anybutton.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/button.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h

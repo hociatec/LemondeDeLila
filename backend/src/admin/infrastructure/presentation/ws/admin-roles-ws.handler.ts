@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { requireAdmin } from '../../../../common/ws/ws-auth';
 import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { AdminCatalogInvalidationService } from '../../../application/services/admin-catalog-invalidation.service';
-import { RoleDefinitionsService } from '../../../application/services/role-definitions.service';
+import { AdminRolesService } from '../../../application/use-cases/admin-roles/admin-roles.service';
 import { WS_EVENTS } from '../../../../common/ws/ws-events';
 import {
   AdminRoleDefinitionCreateWsDto,
@@ -16,29 +15,23 @@ import {
 export class AdminRolesWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
-    private readonly roleDefinitions: RoleDefinitionsService,
-    private readonly catalogInvalidation: AdminCatalogInvalidationService,
+    private readonly roles: AdminRolesService,
   ) {}
 
   async rolesList(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminRolesListWsDto, payload ?? {});
-    const definitions = await this.roleDefinitions.list();
     return {
       type: WS_EVENTS.admin.roles.list,
-      payload: {
-        roles: definitions.map((d) => d.name),
-        definitions,
-      },
+      payload: await this.roles.list(),
     };
   }
 
   async rolesDefinitionsList(session: WsSession) {
     requireAdmin(session);
-    const definitions = await this.roleDefinitions.list();
     return {
       type: WS_EVENTS.admin.roles.definitions,
-      payload: { definitions },
+      payload: await this.roles.listDefinitions(),
     };
   }
 
@@ -48,13 +41,10 @@ export class AdminRolesWsHandler {
       AdminRoleDefinitionCreateWsDto,
       payload,
     );
-    await this.roleDefinitions.create({
-      name: dto.name,
-      description: dto.description,
-      permissions: dto.permissions,
-    });
-    await this.catalogInvalidation.notifyCatalogInvalidated(admin.id);
-    return this.rolesDefinitionsList(session);
+    return {
+      type: WS_EVENTS.admin.roles.definitions,
+      payload: await this.roles.create(admin.id, dto),
+    };
   }
 
   async roleDefinitionUpdate(session: WsSession, payload: any) {
@@ -63,13 +53,10 @@ export class AdminRolesWsHandler {
       AdminRoleDefinitionUpdateWsDto,
       payload,
     );
-    await this.roleDefinitions.update(dto.name, {
-      name: dto.newName,
-      description: dto.description,
-      permissions: dto.permissions,
-    });
-    await this.catalogInvalidation.notifyCatalogInvalidated(admin.id);
-    return this.rolesDefinitionsList(session);
+    return {
+      type: WS_EVENTS.admin.roles.definitions,
+      payload: await this.roles.update(admin.id, dto),
+    };
   }
 
   async roleDefinitionDelete(session: WsSession, payload: any) {
@@ -78,9 +65,10 @@ export class AdminRolesWsHandler {
       AdminRoleDefinitionDeleteWsDto,
       payload,
     );
-    await this.roleDefinitions.delete(dto.name);
-    await this.catalogInvalidation.notifyCatalogInvalidated(admin.id);
-    return this.rolesDefinitionsList(session);
+    return {
+      type: WS_EVENTS.admin.roles.definitions,
+      payload: await this.roles.delete(admin.id, dto.name),
+    };
   }
 }
 

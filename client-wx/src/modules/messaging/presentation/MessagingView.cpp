@@ -17,6 +17,26 @@ MessagingView::MessagingView(wxWindow* parent)
     BuildLayout();
 }
 
+MessagingView::ShellControls MessagingView::Shell() const noexcept
+{
+    return {statusLabel, menu, screenBook};
+}
+
+MessagingView::ListControls MessagingView::List() const noexcept
+{
+    return {listTitleLabel, messagesList, emptyMessagesCtrl};
+}
+
+MessagingView::DetailControls MessagingView::Detail() const noexcept
+{
+    return {detailCtrl, replyButton, deleteButton, restoreButton, purgeButton};
+}
+
+MessagingView::ComposeControls MessagingView::Compose() const noexcept
+{
+    return {recipientCtrl, subjectCtrl, bodyCtrl, sendComposeButton, cancelComposeButton};
+}
+
 void MessagingView::BuildLayout()
 {
     auto* rootSizer = new wxBoxSizer(wxVERTICAL);

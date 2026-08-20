@@ -5,6 +5,7 @@
 #include <wx/frame.h>
 
 #include "modules/user/domain/AuthenticationResult.h"
+#include "shared/accessibility/NavigationController.h"
 
 class wxCheckBox;
 class wxPanel;
@@ -51,6 +52,7 @@ private:
     void ApplyTheme();
     void BindEvents();
     void ShowPage(Page page);
+    [[nodiscard]] lila::shared::accessibility::NavigationController::Scope BuildCurrentTabScope() const;
     void SetStatus(const wxString& message, bool isError = false);
     void FocusCurrentPagePrimaryField();
     void ToggleLoginPasswordMode();

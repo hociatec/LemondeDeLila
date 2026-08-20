@@ -19,9 +19,28 @@ namespace lila::modules::social::presentation
 {
 namespace
 {
+using Navigator = lila::shared::accessibility::NavigationController;
+
 bool IsSameWindow(wxWindow* left, wxWindow* right)
 {
     return left != nullptr && right != nullptr && left == right;
+}
+
+wxWindow* CurrentActionMenuContainer(SocialView& view, SocialSection section)
+{
+    const auto friends = view.FriendsSection();
+    const auto incoming = view.IncomingSection();
+    const auto outgoing = view.OutgoingSection();
+    const auto blocked = view.BlockedSection();
+    switch (section)
+    {
+    case SocialSection::Friends: return friends.actionsMenu;
+    case SocialSection::IncomingRequests: return incoming.actionsMenu;
+    case SocialSection::OutgoingRequests: return outgoing.actionsMenu;
+    case SocialSection::Blocked: return blocked.actionsMenu;
+    case SocialSection::Profile: return view.Profile().profileMenu;
+    }
+    return nullptr;
 }
 }
 
@@ -39,77 +58,10 @@ void SocialEventRouter::BindRootEvents(
             try
             {
                 const int key = event.GetKeyCode();
-                using Screen = SocialNavigationState::Screen;
-                using ProfileEditorMode = SocialNavigationState::ProfileEditorMode;
-
-                if (key == WXK_ESCAPE)
+                static_cast<void>(navigationState);
+                if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
                 {
-                    const wxWindow* focused = wxWindow::FindFocus();
-                    if (navigationState.currentSection != SocialSection::Profile || navigationState.profileEditorMode != ProfileEditorMode::Menu)
-                    {
-                        wxWindow* currentActionControl = focusController.CurrentSectionActionControl();
-                        if (focused != nullptr && focused == currentActionControl)
-                        {
-                            wxWindow* sectionList = focusController.CurrentSectionList();
-                            if (lila::shared::accessibility::NavigationController::Focus(sectionList))
-                            {
-                                return;
-                            }
-                        }
-                    }
-
-                    if (handlers.handleEscape)
-                    {
-                        handlers.handleEscape();
-                    }
-                    return;
-                }
-
-                if ((key == WXK_RETURN || key == WXK_NUMPAD_ENTER) && navigationState.currentScreen == Screen::Section)
-                {
-                    wxWindow* focused = wxWindow::FindFocus();
-                    if (navigationState.currentSection == SocialSection::Profile && navigationState.profileEditorMode == ProfileEditorMode::Menu &&
-                        focused != nullptr && focused->GetParent() == view.profileMenu)
-                    {
-                        if (handlers.activateProfileEditorSelection)
-                        {
-                            handlers.activateProfileEditorSelection();
-                        }
-                        return;
-                    }
-
-                    wxWindow* firstButton = nullptr;
-                    switch (navigationState.currentSection)
-                    {
-                    case SocialSection::Friends:
-                        if (view.friendsList != nullptr) firstButton = view.friendsList->GetFirstButton();
-                        break;
-                    case SocialSection::IncomingRequests:
-                        if (view.incomingRequestsList != nullptr) firstButton = view.incomingRequestsList->GetFirstButton();
-                        break;
-                    case SocialSection::OutgoingRequests:
-                        if (view.outgoingRequestsList != nullptr) firstButton = view.outgoingRequestsList->GetFirstButton();
-                        break;
-                    case SocialSection::Blocked:
-                        if (view.blockedUsersList != nullptr) firstButton = view.blockedUsersList->GetFirstButton();
-                        break;
-                    case SocialSection::Profile:
-                        break;
-                    }
-
-                    if (IsSameWindow(focused, firstButton))
-                    {
-                        focusController.FocusCurrentSectionActionMenu();
-                        return;
-                    }
-                }
-
-                if ((key == WXK_RETURN || key == WXK_NUMPAD_ENTER) && navigationState.currentScreen == Screen::Menu)
-                {
-                    if (handlers.activateSelectedMenu)
-                    {
-                        handlers.activateSelectedMenu();
-                    }
+                    event.Skip();
                     return;
                 }
             }
@@ -124,6 +76,29 @@ void SocialEventRouter::BindRootEvents(
             }
 
             event.Skip();
+        });
+
+    Navigator::BindEscapeNavigation(
+        frame,
+        [&view, &navigationState, &focusController, handlers]()
+        {
+            if (navigationState.currentScreen == SocialNavigationState::Screen::Section &&
+                navigationState.currentSection != SocialSection::Profile &&
+                navigationState.sectionActionMenuActive)
+            {
+                if (handlers.closeSectionActionMenu)
+                {
+                    handlers.closeSectionActionMenu();
+                    return true;
+                }
+            }
+
+            if (handlers.handleEscape)
+            {
+                handlers.handleEscape();
+                return true;
+            }
+            return false;
         });
 
     focusController.BindNavigation(frame);

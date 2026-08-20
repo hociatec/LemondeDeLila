@@ -70,7 +70,7 @@ void SocialFrame::BindFriendsEvents()
             RunUiAction(
                 [this]()
                 {
-                    focusController_->FocusCurrentSectionActionMenu();
+                    OpenCurrentSectionActionMenu();
                 });
         });
 }
@@ -101,7 +101,7 @@ void SocialFrame::BindIncomingRequestsEvents()
             RunUiAction(
                 [this]()
                 {
-                    focusController_->FocusCurrentSectionActionMenu();
+                    OpenCurrentSectionActionMenu();
                 });
         });
 }
@@ -132,7 +132,7 @@ void SocialFrame::BindOutgoingRequestsEvents()
             RunUiAction(
                 [this]()
                 {
-                    focusController_->FocusCurrentSectionActionMenu();
+                    OpenCurrentSectionActionMenu();
                 });
         });
 }
@@ -159,7 +159,7 @@ void SocialFrame::BindBlockedUsersEvents()
             RunUiAction(
                 [this]()
                 {
-                    focusController_->FocusCurrentSectionActionMenu();
+                    OpenCurrentSectionActionMenu();
                 });
         });
 }
@@ -176,13 +176,7 @@ void SocialFrame::BindProfileEvents()
         wxEVT_BUTTON,
         [this](wxCommandEvent&)
         {
-            if (navigationState_.profileEditorMode == ProfileEditorMode::Menu)
-            {
-                HandleEscape();
-                return;
-            }
-
-            ExitProfileEditMode();
+            HandleEscape();
         });
 }
 

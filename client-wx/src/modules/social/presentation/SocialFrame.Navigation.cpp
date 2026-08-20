@@ -1,6 +1,7 @@
 #include "shared/text/Encoding.h"
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/social/presentation/SocialFocusController.h"
+#include "modules/social/presentation/SocialSectionCoordinator.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialView.h"
 
@@ -14,79 +15,82 @@ namespace lila::modules::social::presentation
 {
 void SocialFrame::SetSection(SocialSection section)
 {
-    if (section != navigationState_.currentSection)
+    sectionCoordinator_->ActivateSection(section);
+}
+
+void SocialFrame::ApplyNavigationState()
+{
+    if (navigationState_.currentScreen == Screen::Menu)
     {
-        sectionPresenter_->StoreSelection(navigationState_.currentSection);
+        SetScreen(Screen::Menu);
+        return;
     }
 
-    navigationState_.EnterSection(section, SocialPresentationModel::SectionToMenuIndex(section));
     if (view_->menu != nullptr)
     {
-        view_->menu->SetSelectedIndex(navigationState_.lastMenuIndex);
+        view_->menu->SetSelectedIndexSilently(navigationState_.lastMenuIndex);
     }
 
-    switch (section)
+    sectionPresenter_->ShowCurrentSection();
+    if (navigationState_.currentSection == SocialSection::Profile)
     {
-    case SocialSection::Friends:
-        LoadFriends();
-        break;
-    case SocialSection::IncomingRequests:
-        LoadIncomingRequests();
-        break;
-    case SocialSection::OutgoingRequests:
-        LoadOutgoingRequests();
-        break;
-    case SocialSection::Blocked:
-        LoadBlockedUsers();
-        break;
-    case SocialSection::Profile:
-        sectionPresenter_->ShowCurrentSection();
         sectionPresenter_->SyncProfileControls();
-        break;
     }
+    else
+    {
+        sectionPresenter_->SyncSelectionState();
+    }
+
+    focusController_->FocusCurrentScreen();
+}
+
+void SocialFrame::OpenCurrentSectionActionMenu()
+{
+    if (navigationState_.currentScreen != Screen::Section ||
+        navigationState_.currentSection == SocialSection::Profile)
+    {
+        return;
+    }
+
+    navigationState_.sectionActionMenuActive = true;
+    sectionPresenter_->SyncSelectionState();
+    focusController_->FocusCurrentScreen();
+}
+
+void SocialFrame::CloseCurrentSectionActionMenu()
+{
+    if (!navigationState_.sectionActionMenuActive)
+    {
+        return;
+    }
+
+    navigationState_.sectionActionMenuActive = false;
+    sectionPresenter_->SyncSelectionState();
+    focusController_->FocusCurrentScreen();
 }
 
 void SocialFrame::UpdateStatus(const wxString& message, bool isError)
 {
-    if (view_->statusLabel == nullptr)
+    const auto shell = view_->Shell();
+    if (shell.statusLabel == nullptr)
     {
         return;
     }
 
-    view_->statusLabel->SetLabel(message);
-    view_->statusLabel->SetForegroundColour(isError ? wxColour(255, 170, 170) : lila::shared::ui::Theme::Accent());
-    view_->statusLabel->Wrap(GetClientSize().GetWidth() - 80);
-    view_->statusLabel->GetParent()->Layout();
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*view_->statusLabel, message);
+    shell.statusLabel->SetLabel(message);
+    shell.statusLabel->SetForegroundColour(isError ? wxColour(255, 170, 170) : lila::shared::ui::Theme::Accent());
+    shell.statusLabel->Wrap(GetClientSize().GetWidth() - 80);
+    shell.statusLabel->GetParent()->Layout();
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*shell.statusLabel, message);
 }
 
 void SocialFrame::RefreshCurrentSection()
 {
-    if (navigationState_.currentScreen == Screen::Section)
-    {
-        RefreshSection(navigationState_.currentSection);
-    }
+    sectionCoordinator_->RefreshCurrentSection();
 }
 
 void SocialFrame::RefreshSection(SocialSection section)
 {
-    switch (section)
-    {
-    case SocialSection::Friends:
-        LoadFriends();
-        return;
-    case SocialSection::IncomingRequests:
-        LoadIncomingRequests();
-        return;
-    case SocialSection::OutgoingRequests:
-        LoadOutgoingRequests();
-        return;
-    case SocialSection::Blocked:
-        LoadBlockedUsers();
-        return;
-    case SocialSection::Profile:
-        LoadProfile(navigationState_.profileTargetUserId);
-        return;
-    }
+    sectionCoordinator_->RefreshSection(section);
 }
 }

@@ -17,7 +17,9 @@ type Fixture = {
     participants: any;
     vaultSnapshots: any;
     users: any;
-    botService: any;
+    countRoomBotsUseCase: any;
+    addSystemBotToRoom: any;
+    removeAllRoomBots: any;
     presence: any;
     catalog: any;
     stats: any;
@@ -123,10 +125,16 @@ function createFixture(): Fixture {
     }),
   } as any;
 
-  const botService = {
-    countBotsForRoom: jest.fn().mockResolvedValue(0),
-    addBotSystem: jest.fn().mockResolvedValue(undefined),
-    removeAllBotsForRoom: jest.fn().mockResolvedValue(undefined),
+  const countRoomBotsUseCase = {
+    execute: jest.fn().mockResolvedValue(0),
+  } as any;
+
+  const addSystemBotToRoom = {
+    execute: jest.fn().mockResolvedValue(undefined),
+  } as any;
+
+  const removeAllRoomBots = {
+    execute: jest.fn().mockResolvedValue(undefined),
   } as any;
 
   const presence = {
@@ -187,7 +195,8 @@ function createFixture(): Fixture {
     rooms,
     participants,
     vaultSnapshots,
-    botService,
+    addSystemBotToRoom,
+    removeAllRoomBots,
     presence,
     catalog,
     stats,
@@ -206,8 +215,8 @@ function createFixture(): Fixture {
     participants,
     vaultSnapshots,
     users,
-    botService,
     presence,
+    countRoomBotsUseCase,
     catalog,
     stats,
     tracker,
@@ -225,7 +234,9 @@ function createFixture(): Fixture {
       participants,
       vaultSnapshots,
       users,
-      botService,
+      countRoomBotsUseCase,
+      addSystemBotToRoom,
+      removeAllRoomBots,
       presence,
       catalog,
       stats,
@@ -423,7 +434,7 @@ describe('RoomService lifecycle scenarios', () => {
     roomsById.set(10, buildRoom({ maxPlayers: 2 }));
     deps.participants.findOne.mockResolvedValueOnce(null);
     deps.participants.count.mockResolvedValueOnce(2);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(0);
 
     await expect(service.joinRoom(10, 2)).rejects.toThrow('Table pleine');
   });
@@ -434,7 +445,7 @@ describe('RoomService lifecycle scenarios', () => {
     roomsById.set(10, buildRoom({ maxPlayers: 4 }));
     deps.participants.findOne.mockResolvedValueOnce(null);
     deps.participants.count.mockResolvedValueOnce(1);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(0);
     jest.spyOn(service, 'leaveAllRoomsForUser').mockResolvedValue(undefined);
     jest
       .spyOn(service, 'invalidateRoomPayloadCache')
@@ -462,7 +473,7 @@ describe('RoomService lifecycle scenarios', () => {
       user: { id: 2, username: 'player' },
     });
     deps.participants.count.mockResolvedValueOnce(1);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(0);
     jest.spyOn(service, 'leaveAllRoomsForUser').mockResolvedValue(undefined);
     jest
       .spyOn(service, 'invalidateRoomPayloadCache')
@@ -484,7 +495,7 @@ describe('RoomService lifecycle scenarios', () => {
       user: { id: 2, username: 'player' },
     });
     deps.participants.count.mockResolvedValueOnce(2);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(0);
     jest.spyOn(service, 'leaveAllRoomsForUser').mockResolvedValue(undefined);
     jest
       .spyOn(service, 'invalidateRoomPayloadCache')
@@ -515,7 +526,7 @@ describe('RoomService lifecycle scenarios', () => {
     usersById.set(1, buildUser(1, 'owner'));
     roomsById.set(10, buildRoom({ owner: buildUser(1, 'owner') }));
     deps.participants.count.mockResolvedValueOnce(1);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(0);
 
     await expect(service.startRoom(10, 1)).rejects.toThrow(
       'Au moins deux participants sont requis',
@@ -532,7 +543,7 @@ describe('RoomService lifecycle scenarios', () => {
     });
     roomsById.set(10, room);
     deps.participants.count.mockResolvedValueOnce(1);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(1);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(1);
     deps.participants.find.mockResolvedValueOnce([
       { user: { id: 1, username: 'owner' } },
       { user: { id: 2, username: 'player2' } },
@@ -569,7 +580,7 @@ describe('RoomService lifecycle scenarios', () => {
     });
     roomsById.set(10, room);
     deps.participants.count.mockResolvedValueOnce(1);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(1);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(1);
     deps.participants.find.mockResolvedValueOnce([]);
     jest
       .spyOn(service, 'invalidateRoomPayloadCache')
@@ -591,7 +602,7 @@ describe('RoomService lifecycle scenarios', () => {
     });
     roomsById.set(10, room);
     deps.participants.count.mockResolvedValueOnce(1);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(1);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(1);
     jest
       .spyOn(service, 'invalidateRoomPayloadCache')
       .mockResolvedValue(undefined);
@@ -720,7 +731,7 @@ describe('RoomService lifecycle scenarios', () => {
         user: { id: 2, username: 'player2' },
       });
     deps.participants.count.mockResolvedValueOnce(1).mockResolvedValueOnce(1);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(0);
     jest
       .spyOn(service, 'invalidateRoomPayloadCache')
       .mockResolvedValue(undefined);
@@ -751,7 +762,7 @@ describe('RoomService lifecycle scenarios', () => {
       .mockResolvedValueOnce(1)
       .mockResolvedValueOnce(1)
       .mockResolvedValueOnce(1);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(0);
     jest
       .spyOn(service, 'invalidateRoomPayloadCache')
       .mockResolvedValue(undefined);
@@ -759,7 +770,7 @@ describe('RoomService lifecycle scenarios', () => {
     await service.leaveRoom(10, 1);
 
     expect(deps.stats.markQuit).toHaveBeenCalledWith(10, 1);
-    expect(deps.botService.addBotSystem).toHaveBeenCalledWith(10);
+    expect(deps.addSystemBotToRoom.execute).toHaveBeenCalledWith(10);
     expect(deps.rooms.delete).not.toHaveBeenCalled();
   });
 
@@ -779,7 +790,7 @@ describe('RoomService lifecycle scenarios', () => {
       leftAt: null,
     });
     deps.participants.count.mockResolvedValueOnce(1).mockResolvedValueOnce(1);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(0);
     jest
       .spyOn(service, 'invalidateRoomPayloadCache')
       .mockResolvedValue(undefined);
@@ -787,7 +798,7 @@ describe('RoomService lifecycle scenarios', () => {
     await service.leaveRoom(10, 1, { replaceWithBot: false });
 
     expect(deps.stats.markQuit).toHaveBeenCalledWith(10, 1);
-    expect(deps.botService.addBotSystem).not.toHaveBeenCalled();
+    expect(deps.addSystemBotToRoom.execute).not.toHaveBeenCalled();
     expect(deps.rooms.delete).not.toHaveBeenCalled();
   });
 
@@ -807,7 +818,7 @@ describe('RoomService lifecycle scenarios', () => {
       leftAt: null,
     });
     deps.participants.count.mockResolvedValueOnce(0).mockResolvedValueOnce(0);
-    deps.botService.countBotsForRoom.mockResolvedValueOnce(0);
+    deps.countRoomBotsUseCase.execute.mockResolvedValueOnce(0);
     jest
       .spyOn(service, 'invalidateRoomPayloadCache')
       .mockResolvedValue(undefined);
@@ -815,7 +826,7 @@ describe('RoomService lifecycle scenarios', () => {
     const result = await service.leaveRoom(10, 1);
 
     expect(result).toBeNull();
-    expect(deps.botService.removeAllBotsForRoom).toHaveBeenCalledWith(10);
+    expect(deps.removeAllRoomBots.execute).toHaveBeenCalledWith(10);
     expect(deps.rooms.delete).toHaveBeenCalledWith(10);
   });
 

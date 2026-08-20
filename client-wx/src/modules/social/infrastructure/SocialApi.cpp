@@ -1,26 +1,17 @@
-﻿#include "modules/social/infrastructure/SocialApi.h"
+#include "modules/social/infrastructure/SocialApi.h"
+#include "modules/social/infrastructure/SocialPayloadCodec.h"
 
-#include <stdexcept>
 #include <utility>
 
 #include "modules/session/application/SessionStore.h"
 #include "modules/social/infrastructure/SocialProtocolFields.h"
+#include "shared/errors/ErrorMessages.h"
 #include "shared/network/WsMessageTypes.h"
 #include "shared/network/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/realtime/AuthenticatedRealtimeApiHelpers.h"
-#include "shared/network/realtime/RealtimePayloadReaders.h"
-#include "shared/data/JsonApiHelpers.h"
-#include "shared/data/JsonReaders.h"
-#include "shared/errors/ErrorMessages.h"
 
 namespace lila::modules::social::infrastructure
 {
-using lila::shared::data::json::ReadOptionalBool;
-using lila::shared::data::json::ReadOptionalString;
-using lila::shared::data::json::ReadRequiredBool;
-using lila::shared::data::json::ReadRequiredString;
-using lila::shared::data::json::ReadRequiredObjectStrict;
-
 SocialApi::SocialApi(
     lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client,
     lila::modules::session::application::SessionStore& sessionStore)
@@ -33,7 +24,7 @@ std::vector<domain::SocialUser> SocialApi::GetFriends() const
 {
     const std::string event = std::string(lila::shared::network::ws::types::social::FriendsList);
     const auto response = Send(event, nlohmann::json::object(), lila::shared::errors::SocialLoadFriendsFailed);
-    return ReadUsersPayload(event, response.payload);
+    return codec::ReadUsersPayload(event, response.payload);
 }
 
 std::vector<domain::SocialFriendRequest> SocialApi::GetRequests(const std::string& direction) const
@@ -41,17 +32,16 @@ std::vector<domain::SocialFriendRequest> SocialApi::GetRequests(const std::strin
     const std::string event = std::string(lila::shared::network::ws::types::social::FriendsRequests);
     const auto response = Send(
         event,
-        {{std::string(lila::modules::social::infrastructure::fields::Direction),
-          direction}},
+        {{std::string(lila::modules::social::infrastructure::fields::Direction), direction}},
         lila::shared::errors::SocialLoadRequestsFailed);
-    return ReadRequestsPayload(event, response.payload);
+    return codec::ReadRequestsPayload(event, response.payload);
 }
 
 std::vector<domain::SocialUser> SocialApi::GetBlockedUsers() const
 {
     const std::string event = std::string(lila::shared::network::ws::types::social::FriendsBlocked);
     const auto response = Send(event, nlohmann::json::object(), lila::shared::errors::SocialLoadBlockedUsersFailed);
-    return ReadUsersPayload(event, response.payload);
+    return codec::ReadUsersPayload(event, response.payload);
 }
 
 bool SocialApi::RequestFriend(int userId) const
@@ -123,15 +113,7 @@ std::optional<domain::SocialProfile> SocialApi::GetProfile(std::optional<int> us
         std::move(payload),
         lila::shared::errors::SocialLoadProfileFailed);
 
-    return lila::shared::network::realtime::payload::ReadOptionalObjectPayload(
-        response.payload,
-        lila::modules::social::infrastructure::fields::ProfileItems,
-        lila::shared::errors::SocialResponsePayloadInvalidType,
-        lila::shared::errors::SocialProfileMustBeObject,
-        [](const nlohmann::json& profile)
-        {
-            return ReadProfile(profile);
-        });
+    return codec::ReadProfilePayload(response, lila::shared::errors::SocialProfileMustBeObject);
 }
 
 std::optional<domain::SocialProfile> SocialApi::UpdateProfile(const domain::SocialProfileUpdate& update) const
@@ -146,49 +128,7 @@ std::optional<domain::SocialProfile> SocialApi::UpdateProfile(const domain::Soci
         },
         lila::shared::errors::SocialUpdateProfileFailed);
 
-    return lila::shared::network::realtime::payload::ReadOptionalObjectPayload(
-        response.payload,
-        lila::modules::social::infrastructure::fields::ProfileItems,
-        lila::shared::errors::SocialResponsePayloadInvalidType,
-        lila::shared::errors::SocialProfileUpdatedMustBeObject,
-        [](const nlohmann::json& profile)
-        {
-            return ReadProfile(profile);
-        });
-}
-
-std::vector<domain::SocialUser> SocialApi::ReadUsersPayload(
-    const std::string& type,
-    const nlohmann::json& payload) const
-{
-    const std::string listError = lila::shared::errors::SocialListArrayPrefix + type + lila::shared::errors::SocialListArraySuffix;
-    return lila::shared::network::realtime::payload::ReadObjectArrayPayload<domain::SocialUser>(
-        payload,
-        lila::modules::social::infrastructure::fields::Items,
-        lila::shared::errors::SocialResponsePayloadInvalidType,
-        listError.c_str(),
-        lila::shared::errors::SocialEachUserMustBeObject,
-        [](const nlohmann::json& item)
-        {
-            return ReadUser(item);
-        });
-}
-
-std::vector<domain::SocialFriendRequest> SocialApi::ReadRequestsPayload(
-    const std::string& type,
-    const nlohmann::json& payload) const
-{
-    const std::string listError = lila::shared::errors::SocialListArrayPrefix + type + lila::shared::errors::SocialListArraySuffix;
-    return lila::shared::network::realtime::payload::ReadObjectArrayPayload<domain::SocialFriendRequest>(
-        payload,
-        lila::modules::social::infrastructure::fields::Items,
-        lila::shared::errors::SocialResponsePayloadInvalidType,
-        listError.c_str(),
-        lila::shared::errors::SocialEachRequestMustBeObject,
-        [](const nlohmann::json& item)
-        {
-            return ReadRequest(item);
-        });
+    return codec::ReadProfilePayload(response, lila::shared::errors::SocialProfileUpdatedMustBeObject);
 }
 
 std::vector<domain::SocialUser> SocialApi::SearchUsers(const std::string& query) const
@@ -197,68 +137,7 @@ std::vector<domain::SocialUser> SocialApi::SearchUsers(const std::string& query)
         std::string(lila::shared::network::ws::types::social::UserSearch),
         {{std::string(lila::modules::social::infrastructure::fields::Query), query}},
         lila::shared::errors::SocialSearchUsersFailed);
-    return ReadUsersPayload(std::string(lila::shared::network::ws::types::social::UserSearch), response.payload);
-}
-
-domain::SocialUser SocialApi::ReadUser(const nlohmann::json& source)
-{
-    domain::SocialUser user;
-    user.id = lila::shared::domain::UserId{
-        lila::shared::data::json::ReadRequiredInteger(
-            source, lila::modules::social::infrastructure::fields::SearchId.data())};
-    user.username = lila::shared::data::json::ReadRequiredString(
-        source, lila::modules::social::infrastructure::fields::SearchUsername.data());
-    user.avatar = ReadOptionalString(source, lila::modules::social::infrastructure::fields::SearchAvatar.data());
-    user.since = ReadOptionalString(source, lila::modules::social::infrastructure::fields::SearchSince.data());
-    user.createdAt = ReadOptionalString(source, lila::modules::social::infrastructure::fields::SearchCreatedAt.data());
-    user.blockedAt = ReadOptionalString(source, lila::modules::social::infrastructure::fields::SearchBlockedAt.data());
-    user.profileVisibility = lila::shared::domain::ProfileVisibilityFromString(
-        ReadOptionalString(
-            source,
-            lila::modules::social::infrastructure::fields::SearchProfileVisibility.data()));
-    return user;
-}
-
-domain::SocialFriendRequest SocialApi::ReadRequest(const nlohmann::json& source)
-{
-    domain::SocialFriendRequest request;
-    request.id = lila::shared::domain::UserId{
-        lila::shared::data::json::ReadRequiredInteger(
-            source, lila::modules::social::infrastructure::fields::SearchId.data())};
-    request.createdAt = ReadRequiredString(
-        source, lila::modules::social::infrastructure::fields::SocialCreatedAt.data());
-    request.requester = ReadUser(
-        ReadRequiredObjectStrict(
-            source,
-            lila::modules::social::infrastructure::fields::SocialRequester.data(),
-            lila::shared::errors::SocialEachRequestMustBeObject));
-    request.addressee = ReadUser(
-        ReadRequiredObjectStrict(
-            source,
-            lila::modules::social::infrastructure::fields::SocialAddressee.data(),
-            lila::shared::errors::SocialEachRequestMustBeObject));
-
-    return request;
-}
-
-domain::SocialProfile SocialApi::ReadProfile(const nlohmann::json& source)
-{
-    domain::SocialProfile profile;
-    profile.user = ReadUser(
-        ReadRequiredObjectStrict(
-            source,
-            lila::modules::social::infrastructure::fields::SocialProfile.data(),
-            lila::shared::errors::SocialProfileMustBeObject));
-    profile.bio = ReadRequiredString(source, lila::modules::social::infrastructure::fields::SocialBio.data());
-    profile.victoryMessage = ReadRequiredString(source, lila::modules::social::infrastructure::fields::SocialVictoryMessage.data());
-    profile.defeatMessage = ReadRequiredString(source, lila::modules::social::infrastructure::fields::SocialDefeatMessage.data());
-    profile.visibility = lila::shared::domain::ProfileVisibilityFromString(
-        ReadRequiredString(source, lila::modules::social::infrastructure::fields::SocialVisibility.data()));
-    profile.createdAt = ReadRequiredString(source, lila::modules::social::infrastructure::fields::SocialCreatedAt.data());
-    profile.updatedAt = ReadRequiredString(source, lila::modules::social::infrastructure::fields::SocialUpdatedAt.data());
-    profile.isOwner = ReadRequiredBool(source, lila::modules::social::infrastructure::fields::SocialIsOwner.data());
-    profile.canView = ReadRequiredBool(source, lila::modules::social::infrastructure::fields::SocialCanView.data());
-    return profile;
+    return codec::ReadUsersPayload(std::string(lila::shared::network::ws::types::social::UserSearch), response.payload);
 }
 
 lila::shared::network::realtime::RealtimeApiResponse SocialApi::Send(

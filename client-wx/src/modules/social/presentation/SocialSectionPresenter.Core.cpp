@@ -111,7 +111,7 @@ void SocialSectionPresenter::RestoreSelection(
     const auto selection = selectionMemory_.Restore(section, list.GetItemCount());
     if (selection.has_value())
     {
-        list.SetSelectedIndex(*selection);
+        list.SetSelectedIndexSilently(*selection);
     }
 }
 

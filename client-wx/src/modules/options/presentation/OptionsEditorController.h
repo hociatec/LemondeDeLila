@@ -41,21 +41,6 @@ public:
         return session_.HasUnsavedChanges(current);
     }
 
-    void EnterSection() noexcept
-    {
-        session_.EnterSection();
-    }
-
-    void LeaveSection() noexcept
-    {
-        session_.LeaveSection();
-    }
-
-    [[nodiscard]] bool IsInsideSection() const noexcept
-    {
-        return session_.isInsideSection;
-    }
-
 private:
     application::OptionsStore& store_;
     OptionsEditSession session_;

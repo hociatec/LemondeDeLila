@@ -9,7 +9,8 @@ import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { User } from '../../user/entities/user.entity';
 import { VaultRoomSnapshotEntity } from '../../vault/entities/vault-room-snapshot.entity';
-import { BotService } from '../../bot/services/bot.service';
+import { AddSystemBotToRoomService } from '../../bot/application/use-cases/bot-rooms/add-system-bot-to-room.service';
+import { RemoveAllRoomBotsService } from '../../bot/application/use-cases/bot-rooms/remove-all-room-bots.service';
 import { PresenceService } from '../../presence/services/presence.service';
 import { CatalogService } from '../../catalog/services/catalog.service';
 import { GameStatsService } from '../../stats/services/game-stats.service';
@@ -47,7 +48,8 @@ export class RoomMembershipService {
     private readonly rooms: Repository<Room>,
     private readonly participants: Repository<RoomParticipant>,
     private readonly vaultSnapshots: Repository<VaultRoomSnapshotEntity>,
-    private readonly botService: BotService,
+    private readonly addSystemBotToRoom: AddSystemBotToRoomService,
+    private readonly removeAllRoomBots: RemoveAllRoomBotsService,
     private readonly presenceService: PresenceService,
     private readonly catalog: CatalogService,
     private readonly stats: GameStatsService,
@@ -317,7 +319,7 @@ export class RoomMembershipService {
       try {
         const activeHumans = await context.countActiveHumans(room.id);
         if (activeHumans > 0) {
-          await this.botService.addBotSystem(room.id);
+          await this.addSystemBotToRoom.execute(room.id);
           await context.invalidateRoomPayloadCache(room.id);
         }
       } catch {
@@ -333,7 +335,7 @@ export class RoomMembershipService {
 
     let activeHumans = await context.countActiveHumans(room.id);
     if (activeHumans === 0) {
-      await this.botService.removeAllBotsForRoom(room.id);
+      await this.removeAllRoomBots.execute(room.id);
     }
     activeHumans = await context.countActiveHumans(room.id);
     const bots = await context.countBots(room.id);

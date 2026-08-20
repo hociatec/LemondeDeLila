@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import { BotService } from '../../bot/services/bot.service';
+import { AddBotToRoomService } from '../../bot/application/use-cases/bot-rooms/add-bot-to-room.service';
+import { GetLastRoomBotService } from '../../bot/application/use-cases/bot-rooms/get-last-room-bot.service';
+import { RemoveBotFromRoomService } from '../../bot/application/use-cases/bot-rooms/remove-bot-from-room.service';
+import { mapBotApplicationError } from '../../bot/infrastructure/errors/bot-error-http.mapper';
 import { PerfMetricsService } from '../../common/services/perf-metrics.service';
 import type { RoomIntent } from '../dto/room-intent.dto';
 import type { RoomPayload } from '../dto/room-response.dto';
@@ -54,7 +57,9 @@ type ActionsContext = {
 export class RoomGatewayActionsService {
   constructor(
     private readonly roomsService: RoomService,
-    private readonly botService: BotService,
+    private readonly addBotToRoom: AddBotToRoomService,
+    private readonly getLastRoomBot: GetLastRoomBotService,
+    private readonly removeBotFromRoom: RemoveBotFromRoomService,
     private readonly perf: PerfMetricsService,
     private readonly realtimeTracker: RoomRealtimeTrackerService,
   ) {}
@@ -69,7 +74,12 @@ export class RoomGatewayActionsService {
     await this.perf.measure(
       'ws.room.bot.add.total',
       async () => {
-        const bot = await this.botService.addBot(meta.roomId, meta.userId);
+        let bot;
+        try {
+          bot = await this.addBotToRoom.execute(meta.roomId, meta.userId);
+        } catch (error) {
+          throw mapBotApplicationError(error);
+        }
         await ctx.broadcast(meta.roomId, 'bot.added', {
           roomId: meta.roomId,
           bot: { id: bot.id, name: bot.name },
@@ -99,17 +109,22 @@ export class RoomGatewayActionsService {
         const row = ctx.asRecord(payload);
         let botId = Number(row.botId ?? row.id ?? -1);
         if (!Number.isFinite(botId) || botId <= 0) {
-          const last = await this.botService.getLastBotForRoom(meta.roomId);
+          const last = await this.getLastRoomBot.execute(meta.roomId);
           if (!last?.id) {
             throw new Error('Aucun bot a retirer');
           }
           botId = Number(last.id);
         }
-        const bot = await this.botService.removeBot(
-          meta.roomId,
-          meta.userId,
-          botId,
-        );
+        let bot;
+        try {
+          bot = await this.removeBotFromRoom.execute(
+            meta.roomId,
+            meta.userId,
+            botId,
+          );
+        } catch (error) {
+          throw mapBotApplicationError(error);
+        }
         await ctx.broadcast(meta.roomId, 'bot.removed', {
           roomId: meta.roomId,
           bot: { id: bot.id, name: bot.name },

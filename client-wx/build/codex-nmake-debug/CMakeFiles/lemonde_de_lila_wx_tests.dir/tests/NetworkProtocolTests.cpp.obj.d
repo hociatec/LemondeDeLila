@@ -433,8 +433,6 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/application/OptionsSto
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsRepository.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/infrastructure/OptionsJsonDocumentCodec.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonApiHelpers.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/adl_serializer.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/abi_macros.hpp

@@ -1,9 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { requireAdmin } from '../../../../common/ws/ws-auth';
 import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { RoomService } from '../../../../room/services/room.service';
-import { RoomMaintenanceSettingsService } from '../../../../room/services/room-maintenance-settings.service';
+import { AdminRoomsService } from '../../../application/use-cases/admin-rooms/admin-rooms.service';
 import { AdminRoomsCleanupWsDto } from './admin-rooms-cleanup.dto';
 import { AdminRoomsDestroyWsDto } from './admin-rooms-destroy.dto';
 import { AdminRoomsListWsDto } from './admin-rooms-list.dto';
@@ -17,46 +16,27 @@ import {
 export class AdminRoomsWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
-    private readonly rooms: RoomService,
-    private readonly roomSettings: RoomMaintenanceSettingsService,
+    private readonly rooms: AdminRoomsService,
   ) {}
 
   async roomsCleanup(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminRoomsCleanupWsDto, payload);
-    if (dto.confirm !== true) {
-      throw new BadRequestException('Confirmation requise.');
-    }
-    const res = await this.rooms.adminCleanupRooms({
-      includePrivate: dto.includePrivate === true,
-      includeStarted: dto.includeStarted === true,
-      olderThanMinutes: dto.olderThanMinutes,
-      limit: dto.limit,
-      dryRun: dto.dryRun === true,
-      excludeActivePlayers: true,
-    });
+    const res = await this.rooms.cleanup(dto);
     return { type: WS_EVENTS.admin.rooms.cleanup, payload: res };
   }
 
   async roomsList(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminRoomsListWsDto, payload ?? {});
-    const res = await this.rooms.adminListRooms({
-      limit: dto.limit,
-      includePrivate: dto.includePrivate !== false,
-      includeStarted: dto.includeStarted === true,
-      joinableOnly: dto.joinableOnly === true,
-    });
+    const res = await this.rooms.list(dto);
     return { type: WS_EVENTS.admin.rooms.list, payload: res };
   }
 
   async roomsDestroy(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminRoomsDestroyWsDto, payload);
-    if (dto.confirm !== true) {
-      throw new BadRequestException('Confirmation requise.');
-    }
-    const res = await this.rooms.adminDestroyRoom(dto.roomId);
+    const res = await this.rooms.destroy(dto);
     return { type: WS_EVENTS.admin.rooms.destroy, payload: res };
   }
 
@@ -65,14 +45,14 @@ export class AdminRoomsWsHandler {
     this.validator.validate(AdminRoomsSettingsGetWsDto, payload ?? {});
     return {
       type: WS_EVENTS.admin.rooms.settingsGet,
-      payload: this.roomSettings.get(),
+      payload: this.rooms.getSettings(),
     };
   }
 
   async roomsSettingsUpdate(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminRoomsSettingsUpdateWsDto, payload);
-    const updated = await this.roomSettings.update({
+    const updated = await this.rooms.updateSettings({
       autoCleanupEnabled:
         typeof dto.autoCleanupEnabled === 'boolean'
           ? dto.autoCleanupEnabled

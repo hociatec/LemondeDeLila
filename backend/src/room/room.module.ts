@@ -14,7 +14,7 @@ import { RoomGatewaySessionService } from './gateways/room-gateway-session.servi
 import { RoomGatewayStateService } from './gateways/room-gateway-state.service';
 import { User } from '../user/entities/user.entity';
 import { forwardRef } from '@nestjs/common';
-import { BotModule } from '../bot/bot.module';
+import { BotModule } from '../bot/module/bot.module';
 import { PresenceModule } from '../presence/presence.module';
 import { NotificationModule } from '../notification/notification.module';
 import { RoomInviteService } from './services/room-invite.service';

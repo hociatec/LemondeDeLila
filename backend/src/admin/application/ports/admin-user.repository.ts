@@ -15,6 +15,7 @@ export type ListAdminUsersFilters = {
 export interface AdminUserRepository {
   clearExpiredBans(now: Date): Promise<void>;
   clearExpiredChatBans(now: Date): Promise<void>;
+  listIds(): Promise<number[]>;
   list(filters: ListAdminUsersFilters): Promise<{
     items: AdminSafeUser[];
     total: number;

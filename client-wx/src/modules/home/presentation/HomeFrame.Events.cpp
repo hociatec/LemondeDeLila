@@ -30,6 +30,10 @@ void HomeFrame::BindEvents()
     registerShowPasswordCheck_->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { ToggleRegisterPasswordMode(); });
 
     using Navigator = lila::shared::accessibility::NavigationController;
+    Navigator::BindTabNavigation(
+        *this,
+        [this]() { return BuildCurrentTabScope(); });
+
     Navigator::BindVerticalNavigation(
         *this,
         [this]()

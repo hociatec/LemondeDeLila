@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ChatMessage } from './entities/chat-message.entity';
-import { ChatSettingsEntity } from './entities/chat-settings.entity';
-import { ChatService } from './services/chat.service';
-import { ChatSettingsService } from './services/chat-settings.service';
-import { ChatValidator } from './services/chat.validator';
+import {
+  CHAT_MODULE_EXPORTS,
+  CHAT_MODULE_IMPORTS,
+  CHAT_MODULE_PROVIDERS,
+} from './module/chat.module.definition';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ChatMessage, ChatSettingsEntity])],
-  providers: [ChatService, ChatSettingsService, ChatValidator],
-  exports: [ChatService, ChatSettingsService, ChatValidator],
+  imports: CHAT_MODULE_IMPORTS,
+  providers: CHAT_MODULE_PROVIDERS,
+  exports: CHAT_MODULE_EXPORTS,
 })
 export class ChatModule {}

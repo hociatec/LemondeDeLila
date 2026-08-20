@@ -49,12 +49,6 @@ public:
     void MarkRead(const std::string& messageId) const override;
 
 private:
-    [[nodiscard]] std::vector<domain::MessagingMessage> ReadMessagesPayload(
-        const lila::shared::network::realtime::RealtimeApiResponse& response) const;
-    [[nodiscard]] std::optional<domain::MessagingMessage> ReadMessagePayload(
-        const lila::shared::network::realtime::RealtimeApiResponse& response) const;
-    [[nodiscard]] static domain::MessagingMessage ReadMessage(const nlohmann::json& source);
-    [[nodiscard]] static domain::MessagingUser ReadUser(const nlohmann::json& source);
     [[nodiscard]] lila::shared::network::realtime::RealtimeApiResponse SendRequest(
         const std::string& type,
         nlohmann::json payload,

@@ -3,6 +3,7 @@
 #include "modules/social/presentation/SocialActionController.h"
 #include "modules/social/presentation/SocialFocusController.h"
 #include "modules/social/presentation/SocialProfileMapper.h"
+#include "modules/social/presentation/SocialSectionCoordinator.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialView.h"
 
@@ -18,9 +19,7 @@ namespace lila::modules::social::presentation
 {
 void SocialFrame::OpenProfile(int userId)
 {
-    navigationState_.RememberProfileReturnSection();
-    LoadProfile(userId);
-    SetSection(SocialSection::Profile);
+    sectionCoordinator_->OpenProfile(userId);
 }
 
 void SocialFrame::SaveProfile()
@@ -33,10 +32,10 @@ void SocialFrame::SaveProfile()
     }
 
     const domain::SocialProfileUpdate update = SocialProfileMapper::BuildUpdate(
-        lila::shared::text::ToUtf8(view_->profileBioCtrl->GetValue()),
-        lila::shared::text::ToUtf8(view_->profileVictoryCtrl->GetValue()),
-        lila::shared::text::ToUtf8(view_->profileDefeatCtrl->GetValue()),
-        view_->profileVisibilityChoice->GetSelection());
+        lila::shared::text::ToUtf8(view_->Profile().profileBioCtrl->GetValue()),
+        lila::shared::text::ToUtf8(view_->Profile().profileVictoryCtrl->GetValue()),
+        lila::shared::text::ToUtf8(view_->Profile().profileDefeatCtrl->GetValue()),
+        view_->Profile().profileVisibilityChoice->GetSelection());
 
     actionController_->SaveProfile(
         update,
@@ -55,39 +54,9 @@ void SocialFrame::SaveProfile()
 
 void SocialFrame::StartProfileEdit(ProfileEditorMode mode)
 {
+    navigationState_.PushCurrent();
     navigationState_.profileEditorMode = mode;
     sectionPresenter_->SyncProfileControls();
     focusController_->FocusCurrentScreen();
-}
-
-void SocialFrame::ExitProfileEditMode()
-{
-    navigationState_.profileEditorMode = ProfileEditorMode::Menu;
-    sectionPresenter_->SyncProfileEditorVisibility();
-    if (view_->profileMenu != nullptr)
-    {
-        view_->profileMenu->FocusSelectedItem();
-    }
-    sectionPresenter_->SyncProfileControls();
-}
-
-bool SocialFrame::TryExitProfile()
-{
-    if (navigationState_.profileEditorMode != ProfileEditorMode::Menu)
-    {
-        ExitProfileEditMode();
-        return true;
-    }
-
-    if (navigationState_.returnSectionFromProfile.has_value())
-    {
-        const SocialSection section = *navigationState_.returnSectionFromProfile;
-        navigationState_.returnSectionFromProfile.reset();
-        navigationState_.profileTargetUserId.reset();
-        SetSection(section);
-        return true;
-    }
-
-    return false;
 }
 }

@@ -3,8 +3,10 @@
 #include "modules/messaging/presentation/MessagingView.h"
 #include "modules/messaging/presentation/MessagingPresentationModel.h"
 #include "modules/messaging/presentation/MessagingActionController.h"
+#include "modules/messaging/presentation/MessagingComposeController.h"
 #include "modules/messaging/presentation/MessagingMailboxController.h"
 #include "modules/messaging/presentation/MessagingFocusController.h"
+#include "modules/messaging/presentation/MessagingScreenCoordinator.h"
 #include "shared/ui/BackgroundTask.h"
 
 #include <array>
@@ -65,6 +67,29 @@ MessagingFrame::MessagingFrame(
     view_->ApplyTheme();
     mailboxController_ = std::make_unique<MessagingMailboxController>(messagingService);
     focusController_ = std::make_unique<MessagingFocusController>(*view_, navigationState_, [this]() { SyncSelectionState(); });
+    screenCoordinator_ = std::make_unique<MessagingScreenCoordinator>(
+        *mailboxController_,
+        navigationState_,
+        selectionMemory_,
+        boxMessages_,
+        *view_,
+        MessagingScreenCoordinator::Callbacks{
+            [this](const wxString& busyMessage, const std::function<void()>& worker, const std::function<void()>& onSuccess)
+            {
+                RunBackgroundTask(busyMessage, worker, onSuccess);
+            },
+            [this](const wxString& message, bool isError)
+            {
+                UpdateStatus(message, isError);
+            },
+            [this](Screen screen)
+            {
+                SetScreen(screen);
+            },
+            [this]()
+            {
+                focusController_->FocusCurrentScreen();
+            }});
     actionController_ = std::make_unique<MessagingActionController>(
         messagingService,
         MessagingActionController::Callbacks{
@@ -95,12 +120,48 @@ MessagingFrame::MessagingFrame(
             {
                 RefreshCurrentBox(false);
             }});
+    composeController_ = std::make_unique<MessagingComposeController>(
+        *mailboxController_,
+        MessagingComposeController::Callbacks{
+            [this](const char* busyMessage, std::function<void()> worker, std::function<void()> onSuccess)
+            {
+                RunBackgroundTask(lila::shared::text::FromUtf8(busyMessage), worker, onSuccess);
+            },
+            [this](const char* statusMessage, bool isError)
+            {
+                UpdateStatus(lila::shared::text::FromUtf8(statusMessage), isError);
+            },
+            [this](const char* confirmationTemplate, const std::string& recipientName)
+            {
+                const wxString confirmation = wxString::Format(
+                    lila::shared::text::FromUtf8(confirmationTemplate),
+                    lila::shared::text::FromUtf8(recipientName));
+                UpdateStatus(confirmation);
+                wxMessageBox(
+                    confirmation,
+                    lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingFrameHeader),
+                    wxOK | wxICON_INFORMATION,
+                    this);
+            },
+            [this]()
+            {
+                if (navigationState_.currentBox != domain::MessagingBox::Outbox)
+                {
+                    navigationState_.currentBox = domain::MessagingBox::Outbox;
+                }
+                CloseCompose(true);
+            },
+            [this]()
+            {
+                LoadBox(navigationState_.currentBox, false);
+            }});
     BindEvents();
 
-    if (view_->menu != nullptr)
+    const auto shell = view_->Shell();
+    if (shell.menu != nullptr)
     {
-        view_->menu->SetTabNavigationEnabled(false);
-        view_->menu->SetSelectedIndex(navigationState_.lastMenuIndex);
+        shell.menu->SetTabNavigationEnabled(false);
+        shell.menu->SetSelectedIndexSilently(navigationState_.lastMenuIndex);
     }
 
     SetScreen(Screen::Menu);
@@ -112,160 +173,5 @@ MessagingFrame::MessagingFrame(
             focusController_->FocusCurrentScreen();
         });
 }
-
-
-
-
-
-void MessagingFrame::UpdateStatus(const wxString& message, bool isError)
-{
-    view_->statusLabel->SetLabel(message);
-    view_->statusLabel->SetForegroundColour(
-        isError ? lila::shared::ui::Theme::Error() : lila::shared::ui::Theme::Accent());
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*view_->statusLabel, message);
-    Layout();
-}
-
-void MessagingFrame::RunBackgroundTask(
-    const wxString& busyMessage,
-    const std::function<void()>& worker,
-    const std::function<void()>& onSuccess)
-{
-    if (isBusy_)
-    {
-        UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ActionInProgress), true);
-        return;
-    }
-
-    SetBusyState(true, busyMessage);
-    wxWeakRef<MessagingFrame> weakSelf(this);
-    lila::shared::ui::RunBackgroundTask(
-        this,
-        worker,
-        [weakSelf, onSuccess](std::string errorMessage) mutable
-        {
-            if (!weakSelf)
-            {
-                return;
-            }
-
-            weakSelf->SetBusyState(false);
-            if (!errorMessage.empty())
-            {
-                weakSelf->UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
-                return;
-            }
-
-            if (onSuccess)
-            {
-                onSuccess();
-            }
-        });
-}
-
-void MessagingFrame::SetBusyState(bool busy, const wxString& message)
-{
-    isBusy_ = busy;
-    if (busy && !message.empty())
-    {
-        UpdateStatus(message);
-    }
-
-    SyncBusyState();
-}
-
-void MessagingFrame::SyncBusyState()
-{
-    view_->sendComposeButton->Enable(!isBusy_);
-    view_->replyButton->Enable(!isBusy_ && view_->replyButton->IsShown());
-    view_->deleteButton->Enable(!isBusy_ && view_->deleteButton->IsShown());
-    view_->restoreButton->Enable(!isBusy_ && view_->restoreButton->IsShown());
-    view_->purgeButton->Enable(!isBusy_ && view_->purgeButton->IsShown());
-}
-
-void MessagingFrame::SyncPanels()
-{
-    switch (navigationState_.currentScreen)
-    {
-    case Screen::Menu:
-        view_->screenBook->SetSelection(0);
-        break;
-    case Screen::List:
-        view_->screenBook->SetSelection(1);
-        break;
-    case Screen::Detail:
-        view_->screenBook->SetSelection(2);
-        break;
-    case Screen::Compose:
-        view_->screenBook->SetSelection(3);
-        break;
-    }
-}
-
-void MessagingFrame::SyncSelectionState()
-{
-    const bool hasMessages = !boxMessages_.empty();
-    view_->messagesList->Show(hasMessages);
-    view_->emptyMessagesCtrl->Show(!hasMessages);
-
-    const int selection = view_->messagesList->GetSelection();
-    if (hasMessages && selection >= 0 && static_cast<std::size_t>(selection) < boxMessages_.size())
-    {
-        selectionMemory_.Store(navigationState_.currentBox, boxMessages_[static_cast<std::size_t>(selection)].id);
-    }
-    else if (!hasMessages)
-    {
-        selectionMemory_.Clear(navigationState_.currentBox);
-    }
-
-    const auto selected = GetSelectedMessage();
-    if (!selected.has_value())
-    {
-        view_->detailCtrl->SetValue(lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingNoMessage));
-        view_->replyButton->Show(false);
-        view_->deleteButton->Show(false);
-        view_->restoreButton->Show(false);
-        view_->purgeButton->Show(false);
-        return;
-    }
-
-    view_->detailCtrl->SetValue(MessagingPresentationModel::BuildMessageDetail(*selected));
-    const bool deleted = navigationState_.currentBox == domain::MessagingBox::Deleted;
-    view_->replyButton->Show(!deleted);
-    view_->deleteButton->Show(!deleted);
-    view_->restoreButton->Show(deleted);
-    view_->purgeButton->Show(deleted);
-}
-
-void MessagingFrame::SetScreen(Screen screen)
-{
-    if (navigationState_.currentScreen == Screen::List)
-    {
-        SaveCurrentBoxSelection();
-    }
-
-    if (screen == Screen::Menu)
-    {
-        if (view_->menu != nullptr)
-        {
-            view_->menu->SetSelectedIndex(navigationState_.lastMenuIndex);
-        }
-    }
-
-    if (screen == Screen::List)
-    {
-        RestoreCurrentBoxSelection();
-    }
-
-    navigationState_.Enter(screen);
-    SyncPanels();
-    SyncSelectionState();
-    CallAfter(
-        [this]()
-        {
-            focusController_->FocusCurrentScreen();
-        });
-}
-
 }
 

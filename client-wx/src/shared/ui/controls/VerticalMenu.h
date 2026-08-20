@@ -1,6 +1,8 @@
 #pragma once
 
+#include <chrono>
 #include <functional>
+#include <optional>
 #include <span>
 #include <string>
 
@@ -32,6 +34,7 @@ public:
     void SetSelectionChangedHandler(SelectionChangedHandler handler);
     void SetActivatedHandler(ActivatedHandler handler);
     void SetSelectedIndex(std::size_t index);
+    void SetSelectedIndexSilently(std::size_t index);
     void SetItems(std::span<const VerticalMenuItem> items);
     void FocusSelectedItem();
     void FocusFirstItem();
@@ -50,7 +53,7 @@ private:
     void OnListSelectionChanged(wxCommandEvent& event);
     void OnListActivated(std::size_t index);
     void OnListKeyDown(wxKeyEvent& event);
-    void FocusIndex(std::size_t index);
+    void FocusIndex(std::size_t index, bool notify = true);
     void NotifySelectionChanged();
     void UpdateVisualSelection();
 
@@ -63,5 +66,7 @@ private:
     bool tabNavigationEnabled_ = true;
     SelectionChangedHandler onSelectionChanged_;
     ActivatedHandler onActivated_;
+    std::optional<std::size_t> lastPointerActivatedIndex_;
+    std::chrono::steady_clock::time_point lastPointerActivationAt_{};
 };
 }

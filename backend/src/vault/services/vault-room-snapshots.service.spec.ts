@@ -126,8 +126,8 @@ describe('VaultRoomSnapshotsService', () => {
       findLatestActiveRoomForUser: jest.fn(async () => null),
     };
 
-    const bots = {
-      addBotSystem: jest.fn(async () => ({ id: 99, name: 'bot-system' })),
+    const addSystemBotToRoom = {
+      execute: jest.fn(async () => ({ id: 99, name: 'bot-system' })),
     };
 
     const engine = {
@@ -172,7 +172,7 @@ describe('VaultRoomSnapshotsService', () => {
       snapshots,
       roomBots,
       rooms as any,
-      bots as any,
+      addSystemBotToRoom as any,
       engine as any,
       registry as any,
       notifications as any,
@@ -194,7 +194,7 @@ describe('VaultRoomSnapshotsService', () => {
 
     const restored = await service.restore(1, firstSave.id);
     expect(restored.roomId).toBe(20);
-    expect(bots.addBotSystem).toHaveBeenCalledTimes(1);
+    expect(addSystemBotToRoom.execute).toHaveBeenCalledTimes(1);
     expect(engine.restoreInternalState).toHaveBeenCalledTimes(1);
     const restoredState = (engine.restoreInternalState as jest.Mock).mock
       .calls[0][2];

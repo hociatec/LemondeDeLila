@@ -27,6 +27,17 @@ void AccessibilityUtils::ConfigureLinearTabOrder(std::initializer_list<wxWindow*
     }
 }
 
+void AccessibilityUtils::SetSecondaryActionAvailability(wxWindow* control, bool available)
+{
+    if (control == nullptr)
+    {
+        return;
+    }
+
+    control->Show(available);
+    control->Enable(available);
+}
+
 void AccessibilityUtils::SetAccessibleStatus(wxWindow& control, const wxString& message)
 {
     if (message.empty())

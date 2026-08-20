@@ -7,6 +7,7 @@
 #include <wx/frame.h>
 
 #include "modules/options/domain/OptionsState.h"
+#include "modules/options/presentation/OptionsNavigationState.h"
 
 class wxCheckBox;
 class wxSlider;
@@ -28,6 +29,7 @@ namespace lila::modules::options::presentation
 class OptionsView;
 class OptionsEditorController;
 class OptionsFocusController;
+class OptionsSectionCoordinator;
 
 class OptionsFrame final : public wxFrame
 {
@@ -57,8 +59,10 @@ private:
 
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
+    OptionsNavigationState navigationState_;
     std::unique_ptr<OptionsEditorController> editorController_;
     std::unique_ptr<OptionsFocusController> focusController_;
+    std::unique_ptr<OptionsSectionCoordinator> sectionCoordinator_;
 
     OptionsView* view_ = nullptr;
 };

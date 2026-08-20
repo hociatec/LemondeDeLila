@@ -7,14 +7,30 @@
 #include "modules/chat/infrastructure/ChatProtocol.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/logging/Logger.h"
+#include <limits>
 #include <sstream>
 
 namespace lila::modules::chat::application
 {
 void ChatService::ProcessIncomingMessage(const std::string& rawJson, bool fatalError)
 {
+    int currentUserId = 0;
+    const auto sessionUserId = sessionStore_.Current().userId.value;
+    if (sessionUserId > static_cast<std::int64_t>(std::numeric_limits<int>::max()))
+    {
+        lila::shared::logging::LogWarning("Chat", "UserId hors plage int pour le protocole chat.");
+    }
+    else if (sessionUserId < static_cast<std::int64_t>(std::numeric_limits<int>::min()))
+    {
+        lila::shared::logging::LogWarning("Chat", "UserId negatif hors plage int pour le protocole chat.");
+    }
+    else
+    {
+        currentUserId = static_cast<int>(sessionUserId);
+    }
+
     const auto event =
-        protocol_.ParseEvent(rawJson, sessionStore_.Current().userId, std::time(nullptr));
+        protocol_.ParseEvent(rawJson, currentUserId, std::time(nullptr));
 
     switch (event.type)
     {

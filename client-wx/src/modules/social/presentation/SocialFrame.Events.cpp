@@ -22,7 +22,7 @@ void SocialFrame::BindEvents()
         *focusController_,
         SocialEventRouter::Handlers{
             [this]() { HandleEscape(); },
-            [this]() { ActivateSelectedMenu(); },
+            [this]() { CloseCurrentSectionActionMenu(); },
             [this]() { ActivateProfileEditorSelection(); },
             [this](const std::string& message) { UpdateStatus(lila::shared::text::FromUtf8(message), true); },
             [this]() { isClosing_ = true; },

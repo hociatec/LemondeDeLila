@@ -13,7 +13,7 @@ import { RoomParticipant } from '../entities/room-participant.entity';
 import { User } from '../../user/entities/user.entity';
 import { VaultRoomSnapshotEntity } from '../../vault/entities/vault-room-snapshot.entity';
 import { RoomPayload } from '../dto/room-response.dto';
-import { BotService } from '../../bot/services/bot.service';
+import { CountRoomBotsService } from '../../bot/application/use-cases/bot-rooms/count-room-bots.service';
 import { PresenceService } from '../../presence/services/presence.service';
 import { OPEN_ROOM_STATUSES } from '../constants/room-status.constants';
 import { CatalogService } from '../../catalog/services/catalog.service';
@@ -169,10 +169,9 @@ export class RoomService {
     @InjectRepository(VaultRoomSnapshotEntity)
     private readonly vaultSnapshots: Repository<VaultRoomSnapshotEntity>,
     @InjectRepository(User) private readonly users: Repository<User>,
-    @Inject(forwardRef(() => BotService))
-    private readonly botService: BotService,
     @Inject(forwardRef(() => PresenceService))
     private readonly presenceService: PresenceService,
+    private readonly countRoomBotsUseCase: CountRoomBotsService,
     private readonly catalog: CatalogService,
     private readonly stats: GameStatsService,
     private readonly realtimeTracker: RoomRealtimeTrackerService,
@@ -448,7 +447,7 @@ export class RoomService {
   }
 
   private async countBots(roomId: number): Promise<number> {
-    return this.botService.countBotsForRoom(roomId);
+    return this.countRoomBotsUseCase.execute(roomId);
   }
 
   /**

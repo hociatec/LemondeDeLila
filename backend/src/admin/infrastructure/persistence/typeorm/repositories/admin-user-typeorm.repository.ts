@@ -34,6 +34,16 @@ export class AdminUserTypeormRepository implements AdminUserRepository {
       .execute();
   }
 
+  async listIds(): Promise<number[]> {
+    const rows = await this.users
+      .createQueryBuilder('user')
+      .select('user.id', 'id')
+      .getRawMany<{ id: number }>();
+    return rows
+      .map((row) => Number(row.id))
+      .filter((id) => Number.isInteger(id) && id > 0);
+  }
+
   async list(
     filters: ListAdminUsersFilters,
   ): Promise<{ items: AdminSafeUser[]; total: number }> {

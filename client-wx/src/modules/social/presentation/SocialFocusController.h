@@ -20,10 +20,8 @@ public:
     using SelectionSyncHandler = std::function<void()>;
 
     SocialFocusController(
-        wxWindow& owner,
         SocialView& view,
         SocialNavigationState& navigationState,
-        const SocialDataStore& dataStore,
         SelectionSyncHandler onSelectionAdjusted);
 
     void BindNavigation(wxWindow& owner);
@@ -34,10 +32,8 @@ public:
     [[nodiscard]] wxWindow* CurrentSectionList() const;
 
 private:
-    wxWindow& owner_;
     SocialView& view_;
     SocialNavigationState& navigationState_;
-    const SocialDataStore& dataStore_;
     SelectionSyncHandler onSelectionAdjusted_;
 };
 }

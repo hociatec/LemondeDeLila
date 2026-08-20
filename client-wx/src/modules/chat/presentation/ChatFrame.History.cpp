@@ -13,6 +13,7 @@
 #include "modules/chat/presentation/ChatMessageActions.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/text/UiTexts.h"
+#include "shared/accessibility/AccessibilityUtils.h"
 
 namespace lila::modules::chat::presentation
 {
@@ -124,8 +125,12 @@ void ChatFrame::SyncActionState()
     const bool canAct = selectedMessageIsActionReady;
 
     historyList_->Enable(hasMessages && !isBusy_);
-    editMessageButton_->Enable(canAct && !isBusy_);
-    deleteMessageButton_->Enable(canAct && !isBusy_);
+    lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
+        editMessageButton_,
+        canAct && !isBusy_);
+    lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
+        deleteMessageButton_,
+        canAct && !isBusy_);
 
     // Keep the text control enabled so it remains visible/focusable to keyboard
     // and screen-reader users while the connection is being established.
@@ -140,8 +145,8 @@ void ChatFrame::SyncActionState()
 
     if (!hasMessages)
     {
-        editMessageButton_->Enable(false);
-        deleteMessageButton_->Enable(false);
+        lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(editMessageButton_, false);
+        lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(deleteMessageButton_, false);
     }
 
     if (emptyHistoryCtrl_->IsShown())

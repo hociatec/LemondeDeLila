@@ -17,17 +17,6 @@ public:
         return current != initialState;
     }
 
-    void EnterSection() noexcept
-    {
-        isInsideSection = true;
-    }
-
-    void LeaveSection() noexcept
-    {
-        isInsideSection = false;
-    }
-
     domain::OptionsState initialState;
-    bool isInsideSection = false;
 };
 }

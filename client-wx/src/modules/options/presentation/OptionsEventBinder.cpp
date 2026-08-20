@@ -12,6 +12,7 @@
 
 #include "modules/options/presentation/OptionsFocusController.h"
 #include "modules/options/presentation/OptionsView.h"
+#include "shared/accessibility/NavigationController.h"
 #include "shared/ui/controls/VerticalMenu.h"
 
 namespace lila::modules::options::presentation
@@ -82,10 +83,15 @@ void OptionsEventBinder::Bind(
     OptionsFocusController& focusController,
     Handlers handlers)
 {
-    if (view.sectionsMenu != nullptr)
+    const auto shell = view.Shell();
+    const auto general = view.GeneralControls();
+    const auto audio = view.AudioControls();
+    const auto chat = view.ChatControls();
+
+    if (shell.sectionsMenu != nullptr)
     {
-        view.sectionsMenu->SetSelectionChangedHandler([](std::size_t) {});
-        view.sectionsMenu->SetActivatedHandler(
+        shell.sectionsMenu->SetSelectionChangedHandler([](std::size_t) {});
+        shell.sectionsMenu->SetActivatedHandler(
             [activateSection = handlers.activateSection](std::size_t index)
             {
                 if (activateSection)
@@ -95,9 +101,9 @@ void OptionsEventBinder::Bind(
             });
     }
 
-    if (view.cancelButton != nullptr)
+    if (shell.cancelButton != nullptr)
     {
-        view.cancelButton->Bind(
+        shell.cancelButton->Bind(
             wxEVT_BUTTON,
             [cancelChanges = handlers.cancelChanges](wxCommandEvent&)
             {
@@ -109,18 +115,18 @@ void OptionsEventBinder::Bind(
     }
 
     const auto& changed = handlers.refreshUnsavedState;
-    BindCheckbox(view.restoreSessionCheckbox, false, view, focusController, changed);
-    BindCheckbox(view.showNavigationStatusCheckbox, false, view, focusController, changed);
-    BindCheckbox(view.confirmExitCheckbox, false, view, focusController, changed);
-    BindCheckbox(view.enableBetaGamesCheckbox, false, view, focusController, changed);
-    BindCheckbox(view.muteAllCheckbox, true, view, focusController, changed);
-    BindCheckbox(view.soundAmbienceCheckbox, true, view, focusController, changed);
-    BindCheckbox(view.soundAppLaunchCheckbox, true, view, focusController, changed);
-    BindCheckbox(view.soundNavigateCheckbox, true, view, focusController, changed);
-    BindCheckbox(view.soundSelectCheckbox, true, view, focusController, changed);
-    BindCheckbox(view.soundChatMessagesCheckbox, true, view, focusController, changed);
-    BindCheckbox(view.chatEnabledCheckbox, false, view, focusController, changed);
-    BindCheckbox(view.confirmChatExitCheckbox, false, view, focusController, changed);
+    BindCheckbox(general.restoreSessionCheckbox, false, view, focusController, changed);
+    BindCheckbox(general.showNavigationStatusCheckbox, false, view, focusController, changed);
+    BindCheckbox(general.confirmExitCheckbox, false, view, focusController, changed);
+    BindCheckbox(general.enableBetaGamesCheckbox, false, view, focusController, changed);
+    BindCheckbox(audio.muteAllCheckbox, true, view, focusController, changed);
+    BindCheckbox(audio.soundAmbienceCheckbox, true, view, focusController, changed);
+    BindCheckbox(audio.soundAppLaunchCheckbox, true, view, focusController, changed);
+    BindCheckbox(audio.soundNavigateCheckbox, true, view, focusController, changed);
+    BindCheckbox(audio.soundSelectCheckbox, true, view, focusController, changed);
+    BindCheckbox(audio.soundChatMessagesCheckbox, true, view, focusController, changed);
+    BindCheckbox(chat.chatEnabledCheckbox, false, view, focusController, changed);
+    BindCheckbox(chat.confirmChatExitCheckbox, false, view, focusController, changed);
 
     const auto bindSliderIfReady = [&changed](wxSlider* slider, wxStaticText* label, const wxString& prefix)
     {
@@ -129,29 +135,22 @@ void OptionsEventBinder::Bind(
             BindSlider(*slider, *label, prefix, changed);
         }
     };
-    bindSliderIfReady(view.soundMenuAmbienceSlider, view.soundMenuAmbienceValueLabel, wxString(L"Ambiance (menu)"));
-    bindSliderIfReady(view.soundTavernAmbienceSlider, view.soundTavernAmbienceValueLabel, wxString(L"Ambiance (taverne)"));
-    bindSliderIfReady(view.soundAppLaunchSlider, view.soundAppLaunchValueLabel, wxString(L"Lancement de l'application"));
-    bindSliderIfReady(view.soundNavigateSlider, view.soundNavigateValueLabel, wxString(L"Navigation"));
-    bindSliderIfReady(view.soundSelectSlider, view.soundSelectValueLabel, wxString(L"Sélection"));
-    bindSliderIfReady(view.soundChatMessagesSlider, view.soundChatMessagesValueLabel, wxString(L"Messages du chat"));
+    bindSliderIfReady(audio.soundMenuAmbienceSlider, audio.soundMenuAmbienceValueLabel, wxString(L"Ambiance (menu)"));
+    bindSliderIfReady(audio.soundTavernAmbienceSlider, audio.soundTavernAmbienceValueLabel, wxString(L"Ambiance (taverne)"));
+    bindSliderIfReady(audio.soundAppLaunchSlider, audio.soundAppLaunchValueLabel, wxString(L"Lancement de l'application"));
+    bindSliderIfReady(audio.soundNavigateSlider, audio.soundNavigateValueLabel, wxString(L"Navigation"));
+    bindSliderIfReady(audio.soundSelectSlider, audio.soundSelectValueLabel, wxString(L"Selection"));
+    bindSliderIfReady(audio.soundChatMessagesSlider, audio.soundChatMessagesValueLabel, wxString(L"Messages du chat"));
 
-    frame.Bind(
-        wxEVT_CHAR_HOOK,
-        [&focusController, handlers](wxKeyEvent& event)
+    lila::shared::accessibility::NavigationController::BindEscapeNavigation(
+        frame,
+        [handlers]()
         {
-            const int keyCode = event.GetKeyCode();
-            if (keyCode == WXK_ESCAPE)
+            if (handlers.handleEscape)
             {
-                if (handlers.handleEscape)
-                {
-                    handlers.handleEscape();
-                }
-                event.Skip(false);
-                return;
+                handlers.handleEscape();
             }
-
-            event.Skip();
+            return true;
         });
 
     focusController.BindNavigation(frame, handlers.isInsideSection);

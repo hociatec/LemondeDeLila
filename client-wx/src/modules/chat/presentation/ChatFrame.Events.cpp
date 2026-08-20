@@ -14,6 +14,7 @@ void ChatFrame::BindEvents()
             [this]() { SendInput(); },
             [this]()
             {
+                ClearNavigationHistory();
                 selectedActionMessageId_.reset();
                 isHistoryActionMode_ = false;
                 SyncActionState();

@@ -1,12 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Injectable } from '@nestjs/common';
 import { requireAdmin } from '../../../../common/ws/ws-auth';
 import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { ChatService } from '../../../../chat/services/chat.service';
-import { ChatSettingsService } from '../../../../chat/services/chat-settings.service';
-import { User } from '../../../../user/entities/user.entity';
+import { AdminChatService } from '../../../application/use-cases/admin-chat/admin-chat.service';
+import { AdminChatModerationService } from '../../../application/use-cases/admin-chat/admin-chat-moderation.service';
 import { WS_EVENTS } from '../../../../common/ws/ws-events';
 import {
   AdminChatBanWsDto,
@@ -22,38 +19,14 @@ import {
 export class AdminChatWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
-    private readonly chat: ChatService,
-    private readonly chatSettings: ChatSettingsService,
-    @InjectRepository(User) private readonly userRepo: Repository<User>,
+    private readonly chat: AdminChatService,
+    private readonly moderation: AdminChatModerationService,
   ) {}
 
   async chatMessages(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminChatMessagesWsDto, payload);
-    const rows = await this.chat.adminListMessages(
-      dto.limit ?? this.chatSettings.getChatHistoryLimit(),
-      dto.includeDeleted ?? false,
-    );
-    const messages = rows.map((m) => ({
-      id: m.messageId,
-      text: m.message,
-      createdAt:
-        m.createdAt instanceof Date
-          ? m.createdAt.toISOString()
-          : new Date().toISOString(),
-      deletedAt: m.deletedAt ? m.deletedAt.toISOString() : null,
-      user: {
-        id: m.user?.id ?? null,
-        username: m.user?.username ?? null,
-        avatar: m.user?.avatar ?? null,
-        chatBannedUntil: m.user?.chatBannedUntil
-          ? m.user.chatBannedUntil instanceof Date
-            ? m.user.chatBannedUntil.toISOString()
-            : null
-          : null,
-        chatBanReason: m.user?.chatBanReason ?? null,
-      },
-    }));
+    const messages = await this.chat.listMessages(dto);
     return { type: WS_EVENTS.admin.chat.messages, payload: { messages } };
   }
 
@@ -62,14 +35,14 @@ export class AdminChatWsHandler {
     this.validator.validate(AdminChatSettingsGetWsDto, payload ?? {});
     return {
       type: WS_EVENTS.admin.chat.settingsGet,
-      payload: this.chatSettings.getSettings(),
+      payload: this.chat.getSettings(),
     };
   }
 
   async chatSettingsUpdate(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminChatSettingsUpdateWsDto, payload);
-    const updated = await this.chatSettings.updateSettings({
+    const updated = await this.chat.updateSettings({
       chatHistoryLimit: dto.chatHistoryLimit,
       editWindowSeconds: dto.editWindowSeconds,
     });
@@ -79,57 +52,47 @@ export class AdminChatWsHandler {
   async chatDelete(session: WsSession, payload: any) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminChatDeleteWsDto, payload);
-    const ok = await this.chat.adminDeleteMessage(dto.messageId);
-    return { type: WS_EVENTS.admin.chat.delete, payload: { ok } };
+    return {
+      type: WS_EVENTS.admin.chat.delete,
+      payload: await this.chat.deleteMessage(dto.messageId),
+    };
   }
 
   async chatClear(session: WsSession, payload: any) {
     requireAdmin(session);
     this.validator.validate(AdminChatClearWsDto, payload);
-    const deleted = await this.chat.adminClearAll();
-    return { type: WS_EVENTS.admin.chat.clear, payload: { deleted } };
+    return {
+      type: WS_EVENTS.admin.chat.clear,
+      payload: await this.chat.clearMessages(),
+    };
   }
 
   async chatBan(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminChatBanWsDto, payload);
-    const user = await this.userRepo.findOne({ where: { id: dto.id } });
-    if (!user) {
-      throw new BadRequestException('Utilisateur introuvable');
-    }
-
-    const days =
-      dto.durationDays && dto.durationDays > 0 ? dto.durationDays : 3650;
-    const until = new Date(Date.now() + days * 24 * 60 * 60_000);
-    user.chatBannedUntil = until;
-    user.chatBanReason = (dto.reason || '').trim() || null;
-    await this.userRepo.save(user);
+    const result = await this.moderation.ban({
+      userId: dto.id,
+      reason: dto.reason,
+      durationDays: dto.durationDays,
+      byUserId: admin.id,
+    });
 
     return {
       type: WS_EVENTS.admin.chat.ban,
-      payload: {
-        ok: true,
-        userId: user.id,
-        chatBannedUntil: until.toISOString(),
-        chatBanReason: user.chatBanReason,
-        byUserId: admin.id,
-      },
+      payload: result,
     };
   }
 
   async chatUnban(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminChatUnbanWsDto, payload);
-    const user = await this.userRepo.findOne({ where: { id: dto.id } });
-    if (!user) {
-      throw new BadRequestException('Utilisateur introuvable');
-    }
-    user.chatBannedUntil = null;
-    user.chatBanReason = null;
-    await this.userRepo.save(user);
+    const result = await this.moderation.unban({
+      userId: dto.id,
+      byUserId: admin.id,
+    });
     return {
       type: WS_EVENTS.admin.chat.unban,
-      payload: { ok: true, userId: user.id, byUserId: admin.id },
+      payload: result,
     };
   }
 }

@@ -27,8 +27,7 @@ public:
         std::function<void()> sendCompose;
         std::function<bool()> canSendCompose;
         std::function<void()> closeCompose;
-        std::function<void()> showMenu;
-        std::function<void()> showList;
+        std::function<bool()> goBack;
         std::function<void()> closeFrame;
         std::function<void()> exitFrame;
     };

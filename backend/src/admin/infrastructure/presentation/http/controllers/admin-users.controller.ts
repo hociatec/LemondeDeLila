@@ -10,32 +10,43 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { AdminUsersService } from '../../../../../application/services/admin-users.service';
+import type {
+  CreateAdminUserCommand,
+  ListAdminUsersQuery,
+  UpdateAdminUserCommand,
+} from '../../../../application/use-cases/admin-users/admin-users.commands';
+import { AdminUserRolesUpdateService } from '../../../../application/use-cases/admin-users/admin-user-roles-update.service';
+import { AdminUsersCommandService } from '../../../../application/use-cases/admin-users/admin-users-command.service';
+import { AdminUsersQueryService } from '../../../../application/use-cases/admin-users/admin-users-query.service';
 import { AdminCreateUserDto } from '../dto/admin-create-user.dto';
 import { AdminUpdateUserDto } from '../dto/admin-update-user.dto';
 import { AdminListUsersDto } from '../dto/admin-list-users.dto';
 import { AdminBanUserDto } from '../dto/admin-ban-user.dto';
-import { HttpJwtGuard } from '../../../../common/guards/http-jwt.guard';
-import { AdminRoleGuard } from '../../../../common/guards/admin-role.guard';
+import { HttpJwtGuard } from '../../../../../common/guards/http-jwt.guard';
+import { AdminRoleGuard } from '../../../../../common/guards/admin-role.guard';
 
 @Controller('api/admin/users')
 @UseGuards(HttpJwtGuard, AdminRoleGuard)
 export class AdminUsersController {
-  constructor(private readonly adminUsers: AdminUsersService) {}
+  constructor(
+    private readonly adminUsersQueries: AdminUsersQueryService,
+    private readonly adminUsersCommands: AdminUsersCommandService,
+    private readonly adminUserRolesUpdate: AdminUserRolesUpdateService,
+  ) {}
 
   @Get()
   async list(@Query() query: AdminListUsersDto) {
-    return this.adminUsers.list(query);
+    return this.adminUsersQueries.list(this.toListQuery(query));
   }
 
   @Get(':id')
   async get(@Param('id', ParseIntPipe) id: number) {
-    return this.adminUsers.get(id);
+    return this.adminUsersQueries.get(id);
   }
 
   @Post()
   async create(@Body() body: AdminCreateUserDto) {
-    return this.adminUsers.create(body);
+    return this.adminUsersCommands.create(this.toCreateCommand(body));
   }
 
   @Patch(':id')
@@ -43,17 +54,17 @@ export class AdminUsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: AdminUpdateUserDto,
   ) {
-    return this.adminUsers.update(id, body);
+    return this.adminUsersCommands.update(id, this.toUpdateCommand(body));
   }
 
   @Post(':id/reset-password')
   async resetPassword(@Param('id', ParseIntPipe) id: number) {
-    return this.adminUsers.resetPassword(id);
+    return this.adminUsersCommands.resetPassword(id);
   }
 
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number) {
-    return this.adminUsers.delete(id);
+    return this.adminUsersCommands.delete(id);
   }
 
   @Post(':id/ban')
@@ -61,7 +72,7 @@ export class AdminUsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: AdminBanUserDto,
   ) {
-    return this.adminUsers.ban(
+    return this.adminUsersCommands.ban(
       id,
       body.reason,
       body.durationDays,
@@ -71,7 +82,43 @@ export class AdminUsersController {
 
   @Post(':id/unban')
   async unban(@Param('id', ParseIntPipe) id: number) {
-    return this.adminUsers.unban(id);
+    return this.adminUsersCommands.unban(id);
+  }
+
+  private toListQuery(query: AdminListUsersDto): ListAdminUsersQuery {
+    return {
+      search: query.search,
+      role: query.role,
+      status: query.status,
+      createdAfter: query.createdAfter,
+      createdBefore: query.createdBefore,
+      page: query.page,
+      limit: query.limit,
+    };
+  }
+
+  private toCreateCommand(body: AdminCreateUserDto): CreateAdminUserCommand {
+    return {
+      email: body.email,
+      username: body.username,
+      password: body.password,
+      roles: body.roles,
+      avatar: body.avatar,
+      emailVerified: body.emailVerified,
+    };
+  }
+
+  private toUpdateCommand(body: AdminUpdateUserDto): UpdateAdminUserCommand {
+    return {
+      email: body.email,
+      username: body.username,
+      password: body.password,
+      roles: body.roles,
+      avatar: body.avatar,
+      emailVerified: body.emailVerified,
+      bannedUntil: body.bannedUntil,
+      banReason: body.banReason,
+    };
   }
 }
 

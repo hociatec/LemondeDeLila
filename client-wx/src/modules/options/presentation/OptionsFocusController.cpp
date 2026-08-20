@@ -15,33 +15,37 @@ using Navigator = lila::shared::accessibility::NavigationController;
 
 Navigator::Scope BuildSectionScope(OptionsView& view, int sectionIndex)
 {
+    const auto general = view.GeneralControls();
+    const auto audio = view.AudioControls();
+    const auto chat = view.ChatControls();
+
     Navigator::Scope scope;
     switch (sectionIndex)
     {
     case 0:
         scope.Add({
-            view.confirmExitCheckbox,
-            view.restoreSessionCheckbox,
-            view.showNavigationStatusCheckbox,
-            view.enableBetaGamesCheckbox});
+            general.confirmExitCheckbox,
+            general.restoreSessionCheckbox,
+            general.showNavigationStatusCheckbox,
+            general.enableBetaGamesCheckbox});
         break;
     case 1:
         scope.Add({
-            view.muteAllCheckbox,
-            view.soundAmbienceCheckbox,
-            view.soundMenuAmbienceSlider,
-            view.soundTavernAmbienceSlider,
-            view.soundAppLaunchCheckbox,
-            view.soundAppLaunchSlider,
-            view.soundNavigateCheckbox,
-            view.soundNavigateSlider,
-            view.soundSelectCheckbox,
-            view.soundSelectSlider,
-            view.soundChatMessagesCheckbox,
-            view.soundChatMessagesSlider});
+            audio.muteAllCheckbox,
+            audio.soundAmbienceCheckbox,
+            audio.soundMenuAmbienceSlider,
+            audio.soundTavernAmbienceSlider,
+            audio.soundAppLaunchCheckbox,
+            audio.soundAppLaunchSlider,
+            audio.soundNavigateCheckbox,
+            audio.soundNavigateSlider,
+            audio.soundSelectCheckbox,
+            audio.soundSelectSlider,
+            audio.soundChatMessagesCheckbox,
+            audio.soundChatMessagesSlider});
         break;
     case 2:
-        scope.Add({view.chatEnabledCheckbox, view.confirmChatExitCheckbox});
+        scope.Add({chat.chatEnabledCheckbox, chat.confirmChatExitCheckbox});
         break;
     default:
         break;
@@ -51,6 +55,7 @@ Navigator::Scope BuildSectionScope(OptionsView& view, int sectionIndex)
 
 Navigator::Scope BuildSoundPairScope(OptionsView& view, wxWindow* focused)
 {
+    const auto audio = view.AudioControls();
     const auto makeIfContains = [focused](std::initializer_list<wxWindow*> controls)
     {
         Navigator::Scope scope;
@@ -59,11 +64,11 @@ Navigator::Scope BuildSoundPairScope(OptionsView& view, wxWindow* focused)
     };
 
     for (const auto& controls : {
-             std::initializer_list<wxWindow*>{view.soundAmbienceCheckbox, view.soundMenuAmbienceSlider, view.soundTavernAmbienceSlider},
-             std::initializer_list<wxWindow*>{view.soundAppLaunchCheckbox, view.soundAppLaunchSlider},
-             std::initializer_list<wxWindow*>{view.soundNavigateCheckbox, view.soundNavigateSlider},
-             std::initializer_list<wxWindow*>{view.soundSelectCheckbox, view.soundSelectSlider},
-             std::initializer_list<wxWindow*>{view.soundChatMessagesCheckbox, view.soundChatMessagesSlider}})
+             std::initializer_list<wxWindow*>{audio.soundAmbienceCheckbox, audio.soundMenuAmbienceSlider, audio.soundTavernAmbienceSlider},
+             std::initializer_list<wxWindow*>{audio.soundAppLaunchCheckbox, audio.soundAppLaunchSlider},
+             std::initializer_list<wxWindow*>{audio.soundNavigateCheckbox, audio.soundNavigateSlider},
+             std::initializer_list<wxWindow*>{audio.soundSelectCheckbox, audio.soundSelectSlider},
+             std::initializer_list<wxWindow*>{audio.soundChatMessagesCheckbox, audio.soundChatMessagesSlider}})
     {
         Navigator::Scope scope = makeIfContains(controls);
         if (!scope.Empty())
@@ -88,7 +93,8 @@ void OptionsFocusController::BindNavigation(wxWindow& owner, std::function<bool(
         owner,
         [this]()
         {
-            if (view_.sectionBook == nullptr || view_.sectionBook->GetSelection() != 1)
+            const auto shell = view_.Shell();
+            if (shell.sectionBook == nullptr || shell.sectionBook->GetSelection() != 1)
             {
                 return Navigator::Scope{};
             }
@@ -100,11 +106,12 @@ void OptionsFocusController::BindNavigation(wxWindow& owner, std::function<bool(
         owner,
         [this]()
         {
-            if (view_.sectionBook == nullptr)
+            const auto shell = view_.Shell();
+            if (shell.sectionBook == nullptr)
             {
                 return Navigator::Scope{};
             }
-            return BuildSectionScope(view_, view_.sectionBook->GetSelection());
+            return BuildSectionScope(view_, shell.sectionBook->GetSelection());
         },
         [isInsideSection]()
         {
@@ -120,11 +127,12 @@ void OptionsFocusController::BindNavigation(wxWindow& owner, std::function<bool(
 
 bool OptionsFocusController::FocusNextSectionControl()
 {
-    if (view_.sectionBook == nullptr)
+    const auto shell = view_.Shell();
+    if (shell.sectionBook == nullptr)
     {
         return false;
     }
-    Navigator::Scope section = BuildSectionScope(view_, view_.sectionBook->GetSelection());
+    Navigator::Scope section = BuildSectionScope(view_, shell.sectionBook->GetSelection());
     return Navigator::Move(section, Navigator::Direction::Forward, Navigator::Boundary::Clamp);
 }
 }

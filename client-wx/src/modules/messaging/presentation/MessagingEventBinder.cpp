@@ -12,6 +12,7 @@
 #include "modules/messaging/presentation/MessagingFocusController.h"
 #include "modules/messaging/presentation/MessagingNavigationState.h"
 #include "modules/messaging/presentation/MessagingView.h"
+#include "shared/accessibility/NavigationController.h"
 #include "shared/ui/controls/VerticalMenu.h"
 #include "shared/ui/navigation/MenuBlueprint.h"
 
@@ -35,13 +36,17 @@ void MessagingEventBinder::Bind(
     MessagingFocusController& focusController,
     Handlers handlers)
 {
-    if (view.menu == nullptr)
+    const auto shell = view.Shell();
+    const auto list = view.List();
+    const auto detail = view.Detail();
+    const auto compose = view.Compose();
+    if (shell.menu == nullptr)
     {
         return;
     }
 
     lila::shared::ui::navigation::BindMenuHandlers(
-        *view.menu,
+        *shell.menu,
         [selectionChanged = handlers.menuSelectionChanged](std::size_t index)
         {
             if (selectionChanged)
@@ -57,8 +62,8 @@ void MessagingEventBinder::Bind(
             }
         });
 
-    view.messagesList->Bind(wxEVT_LISTBOX, [syncSelection = handlers.syncSelection](wxCommandEvent&) { Invoke(syncSelection); });
-    view.messagesList->Bind(wxEVT_LISTBOX_DCLICK, [openDetail = handlers.openDetail](wxCommandEvent&) { Invoke(openDetail); });
+    list.messagesList->Bind(wxEVT_LISTBOX, [syncSelection = handlers.syncSelection](wxCommandEvent&) { Invoke(syncSelection); });
+    list.messagesList->Bind(wxEVT_LISTBOX_DCLICK, [openDetail = handlers.openDetail](wxCommandEvent&) { Invoke(openDetail); });
 
     const auto listKeyHandler = [&navigationState, handlers](wxKeyEvent& event)
     {
@@ -82,17 +87,16 @@ void MessagingEventBinder::Bind(
         }
         event.Skip();
     };
-    view.messagesList->Bind(wxEVT_CHAR_HOOK, listKeyHandler);
-    view.messagesList->Bind(wxEVT_KEY_DOWN, listKeyHandler);
+    list.messagesList->Bind(wxEVT_CHAR_HOOK, listKeyHandler);
 
-    view.replyButton->Bind(wxEVT_BUTTON, [reply = handlers.reply](wxCommandEvent&) { Invoke(reply); });
-    view.deleteButton->Bind(wxEVT_BUTTON, [deleteMessage = handlers.deleteMessage](wxCommandEvent&) { Invoke(deleteMessage); });
-    view.restoreButton->Bind(wxEVT_BUTTON, [restoreMessage = handlers.restoreMessage](wxCommandEvent&) { Invoke(restoreMessage); });
-    view.purgeButton->Bind(wxEVT_BUTTON, [purgeMessage = handlers.purgeMessage](wxCommandEvent&) { Invoke(purgeMessage); });
-    view.sendComposeButton->Bind(wxEVT_BUTTON, [sendCompose = handlers.sendCompose](wxCommandEvent&) { Invoke(sendCompose); });
-    view.cancelComposeButton->Bind(wxEVT_BUTTON, [closeCompose = handlers.closeCompose](wxCommandEvent&) { Invoke(closeCompose); });
+    detail.replyButton->Bind(wxEVT_BUTTON, [reply = handlers.reply](wxCommandEvent&) { Invoke(reply); });
+    detail.deleteButton->Bind(wxEVT_BUTTON, [deleteMessage = handlers.deleteMessage](wxCommandEvent&) { Invoke(deleteMessage); });
+    detail.restoreButton->Bind(wxEVT_BUTTON, [restoreMessage = handlers.restoreMessage](wxCommandEvent&) { Invoke(restoreMessage); });
+    detail.purgeButton->Bind(wxEVT_BUTTON, [purgeMessage = handlers.purgeMessage](wxCommandEvent&) { Invoke(purgeMessage); });
+    compose.sendComposeButton->Bind(wxEVT_BUTTON, [sendCompose = handlers.sendCompose](wxCommandEvent&) { Invoke(sendCompose); });
+    compose.cancelComposeButton->Bind(wxEVT_BUTTON, [closeCompose = handlers.closeCompose](wxCommandEvent&) { Invoke(closeCompose); });
 
-    view.bodyCtrl->Bind(
+    compose.bodyCtrl->Bind(
         wxEVT_CHAR_HOOK,
         [sendCompose = handlers.sendCompose, canSendCompose = handlers.canSendCompose](wxKeyEvent& event)
         {
@@ -106,41 +110,17 @@ void MessagingEventBinder::Bind(
             event.Skip();
         });
 
-    frame.Bind(
-        wxEVT_CHAR_HOOK,
-        [&view, &navigationState, &focusController, handlers](wxKeyEvent& event)
+    lila::shared::accessibility::NavigationController::BindEscapeNavigation(
+        frame,
+        [&navigationState, handlers]()
         {
-            const int key = event.GetKeyCode();
-            using Screen = MessagingNavigationState::Screen;
-            if (key == WXK_ESCAPE)
+            if (navigationState.currentScreen == MessagingNavigationState::Screen::Menu)
             {
-                switch (navigationState.currentScreen)
-                {
-                case Screen::Menu: Invoke(handlers.closeFrame); return;
-                case Screen::List: Invoke(handlers.showMenu); return;
-                case Screen::Detail: Invoke(handlers.showList); return;
-                case Screen::Compose: Invoke(handlers.closeCompose); return;
-                }
+                Invoke(handlers.closeFrame);
+                return true;
             }
 
-            if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
-            {
-                if (navigationState.currentScreen == Screen::Menu && view.menu != nullptr)
-                {
-                    if (handlers.openMenu)
-                    {
-                        handlers.openMenu(view.menu->GetSelectedIndex());
-                    }
-                    return;
-                }
-                if (navigationState.currentScreen == Screen::List)
-                {
-                    Invoke(handlers.openDetail);
-                    return;
-                }
-            }
-
-            event.Skip();
+            return handlers.goBack ? handlers.goBack() : false;
         });
 
     focusController.BindNavigation(frame);

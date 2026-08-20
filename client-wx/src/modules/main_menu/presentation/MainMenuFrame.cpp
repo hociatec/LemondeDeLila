@@ -61,8 +61,8 @@ MainMenuFrame::MainMenuFrame(
         if (itemCount > 0)
         {
             const auto boundedIndex = std::min(initialSelectedIndex, static_cast<std::size_t>(itemCount - 1));
-            lila::shared::logging::LogInfo("MainMenu", "Constructor: SetSelectedIndex.");
-            menu_->SetSelectedIndex(boundedIndex);
+            lila::shared::logging::LogInfo("MainMenu", "Constructor: SetSelectedIndexSilently.");
+            menu_->SetSelectedIndexSilently(boundedIndex);
             lila::shared::logging::LogInfo("MainMenu", "Constructor: OnMenuSelectionChanged.");
             OnMenuSelectionChanged(boundedIndex);
         }
@@ -73,8 +73,8 @@ MainMenuFrame::MainMenuFrame(
         {
             if (menu_ != nullptr)
             {
-                lila::shared::logging::LogInfo("MainMenu", "Constructor: CallAfter SetFocus.");
-                menu_->SetFocus();
+                lila::shared::logging::LogInfo("MainMenu", "Constructor: CallAfter FocusSelectedItem.");
+                menu_->FocusSelectedItem();
             }
         });
     lila::shared::logging::LogInfo("MainMenu", "Constructor: CentreOnScreen.");

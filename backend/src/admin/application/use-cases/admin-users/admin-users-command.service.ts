@@ -1,33 +1,31 @@
 import {
-  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import bcryptImport from 'bcrypt';
-import { randomBytes } from 'crypto';
 import {
   ADMIN_USER_REPOSITORY,
   type AdminUserRepository,
 } from '../../ports/admin-user.repository';
-import type { AdminSafeUser, AdminUser } from '../../../domain/models/admin-user.model';
+import type {
+  AdminSafeUser,
+  AdminUser,
+} from '../../../domain/models/admin-user.model';
 import type {
   CreateAdminUserCommand,
   UpdateAdminUserCommand,
 } from './admin-users.commands';
-
-type BcryptApi = {
-  hash(input: string, rounds: number): Promise<string>;
-};
-
-const bcrypt = bcryptImport as unknown as BcryptApi;
+import { AdminUserBanPolicyService } from './admin-user-ban-policy.service';
+import { AdminUserPasswordService } from './admin-user-password.service';
 
 @Injectable()
 export class AdminUsersCommandService {
   constructor(
     @Inject(ADMIN_USER_REPOSITORY)
     private readonly users: AdminUserRepository,
+    private readonly passwords: AdminUserPasswordService,
+    private readonly bans: AdminUserBanPolicyService,
   ) {}
 
   async create(body: CreateAdminUserCommand) {
@@ -35,8 +33,9 @@ export class AdminUsersCommandService {
     await this.ensureEmailAvailable(email);
     await this.ensureUsernameAvailable(body.username);
 
-    const password = body.password?.trim() || this.generatePassword();
-    const hash = await bcrypt.hash(password, 10);
+    const password =
+      body.password?.trim() || this.passwords.generateTemporaryPassword();
+    const hash = await this.passwords.hashPassword(password);
     const roles = body.roles?.length ? body.roles : ['ROLE_USER'];
 
     const saved = await this.users.create({
@@ -51,6 +50,7 @@ export class AdminUsersCommandService {
       chatBannedUntil: null,
       chatBanReason: null,
     });
+
     return {
       user: this.omitPassword(saved),
       temporaryPassword: body.password ? undefined : password,
@@ -59,6 +59,7 @@ export class AdminUsersCommandService {
 
   async update(id: number, body: UpdateAdminUserCommand): Promise<AdminSafeUser> {
     const user = await this.requireUser(id);
+
     if (body.email && body.email.toLowerCase() !== user.email.toLowerCase()) {
       await this.ensureEmailAvailable(body.email.toLowerCase(), id);
       user.email = body.email.toLowerCase();
@@ -77,7 +78,7 @@ export class AdminUsersCommandService {
       user.banReason =
         body.banReason === null || body.banReason === undefined
           ? null
-          : sanitizeBanReason(body.banReason);
+          : this.bans.sanitizeReason(body.banReason);
     }
     if (body.avatar !== undefined) {
       user.avatar = body.avatar;
@@ -86,19 +87,17 @@ export class AdminUsersCommandService {
       user.emailVerified = body.emailVerified;
     }
     if (body.password) {
-      if (!body.password.trim()) {
-        throw new BadRequestException('Mot de passe vide');
-      }
-      user.password = await bcrypt.hash(body.password, 10);
+      user.password = await this.passwords.hashPassword(body.password);
     }
+
     const saved = await this.users.save(user);
     return this.omitPassword(saved);
   }
 
   async resetPassword(id: number) {
     const user = await this.requireUser(id);
-    const password = this.generatePassword();
-    user.password = await bcrypt.hash(password, 10);
+    const password = this.passwords.generateTemporaryPassword();
+    user.password = await this.passwords.hashPassword(password);
     const saved = await this.users.save(user);
     return { user: this.omitPassword(saved), temporaryPassword: password };
   }
@@ -110,24 +109,8 @@ export class AdminUsersCommandService {
     bannedUntil?: string | null,
   ) {
     const user = await this.requireUser(id);
-    if (!reason || !reason.trim()) {
-      throw new BadRequestException('Motif requis');
-    }
-    let until: Date | null = null;
-    if (bannedUntil) {
-      const parsed = new Date(bannedUntil);
-      if (Number.isNaN(parsed.getTime())) {
-        throw new BadRequestException('Date de fin invalide');
-      }
-      until = parsed;
-    } else if (durationDays && durationDays > 0) {
-      until = new Date();
-      until.setDate(until.getDate() + durationDays);
-    } else {
-      throw new BadRequestException('Durée ou date de fin requise');
-    }
-    user.bannedUntil = until;
-    user.banReason = sanitizeBanReason(reason);
+    user.bannedUntil = this.bans.resolveBannedUntil(durationDays, bannedUntil);
+    user.banReason = this.bans.sanitizeReason(reason);
     const saved = await this.users.save(user);
     return { user: this.omitPassword(saved) };
   }
@@ -157,22 +140,15 @@ export class AdminUsersCommandService {
   private async ensureEmailAvailable(email: string, excludeId?: number) {
     const existing = await this.users.findByEmail(email);
     if (existing && existing.id !== excludeId) {
-      throw new ConflictException('Email déjà utilisé');
+      throw new ConflictException('Email dÃ©jÃ  utilisÃ©');
     }
   }
 
   private async ensureUsernameAvailable(username: string, excludeId?: number) {
     const existing = await this.users.findByUsername(username);
     if (existing && existing.id !== excludeId) {
-      throw new ConflictException("Nom d'utilisateur déjà utilisé");
+      throw new ConflictException("Nom d'utilisateur dÃ©jÃ  utilisÃ©");
     }
-  }
-
-  private generatePassword(): string {
-    return randomBytes(6)
-      .toString('base64')
-      .replace(/[^a-zA-Z0-9]/g, '')
-      .slice(0, 10);
   }
 
   private omitPassword(user: AdminUser): AdminSafeUser {
@@ -180,13 +156,4 @@ export class AdminUsersCommandService {
     void password;
     return safe;
   }
-}
-
-function sanitizeBanReason(reason: string): string {
-  const raw = (reason ?? '').toString();
-  const normalized = raw.replace(/\s+/g, ' ').trim();
-  if (!normalized) {
-    throw new BadRequestException('Motif requis');
-  }
-  return normalized.length > 255 ? normalized.substring(0, 255) : normalized;
 }

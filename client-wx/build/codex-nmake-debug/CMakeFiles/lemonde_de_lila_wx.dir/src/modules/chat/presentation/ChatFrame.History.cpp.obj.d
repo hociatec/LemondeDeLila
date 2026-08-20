@@ -556,6 +556,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/Logger.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
 C:/vcpkg/installed/x64-windows/include/wx/button.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -646,3 +647,4 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibilityUtils.h

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { requireAdmin } from '../../../../common/ws/ws-auth';
 import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PerfMetricsService } from '../../../../common/services/perf-metrics.service';
 import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
+import { AdminPerfService } from '../../../application/use-cases/admin-perf/admin-perf.service';
 import { AdminPerfSnapshotWsDto } from './admin-ws.dto';
 import { WS_EVENTS } from '../../../../common/ws/ws-events';
 
@@ -10,7 +10,7 @@ import { WS_EVENTS } from '../../../../common/ws/ws-events';
 export class AdminPerfWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
-    private readonly perf: PerfMetricsService,
+    private readonly perf: AdminPerfService,
   ) {}
 
   perfSnapshot(session: WsSession, payload: any) {

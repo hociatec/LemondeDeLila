@@ -3,6 +3,7 @@
 #include "shared/errors/ErrorMessages.h"
 #include "shared/text/UiTexts.h"
 
+#include <chrono>
 #include <stdexcept>
 
 #include <wx/event.h>
@@ -51,6 +52,22 @@ void VerticalMenu::SetSelectedIndex(std::size_t index)
     }
 
     FocusIndex(index);
+}
+
+void VerticalMenu::SetSelectedIndexSilently(std::size_t index)
+{
+    if (itemCount_ == 0)
+    {
+        selectedIndex_ = 0;
+        return;
+    }
+
+    if (index >= itemCount_)
+    {
+        throw std::out_of_range(lila::shared::text::ui::VerticalMenuIndexOutOfRange.str());
+    }
+
+    FocusIndex(index, false);
 }
 
 void VerticalMenu::SetItems(std::span<const VerticalMenuItem> items)
@@ -227,16 +244,34 @@ void VerticalMenu::BindListEvents()
         wxEVT_LISTBOX_DCLICK,
         [this](wxCommandEvent&)
         {
-            if (selectedIndex_ < itemCount_)
+            if (selectedIndex_ >= itemCount_)
             {
-                OnListActivated(selectedIndex_);
+                return;
             }
+
+            const auto now = std::chrono::steady_clock::now();
+            if (lastPointerActivatedIndex_.has_value() &&
+                *lastPointerActivatedIndex_ == selectedIndex_ &&
+                now - lastPointerActivationAt_ <= std::chrono::milliseconds(350))
+            {
+                return;
+            }
+
+            lastPointerActivatedIndex_ = std::nullopt;
+            lastPointerActivationAt_ = {};
+            OnListActivated(selectedIndex_);
         });
     listBox_->Bind(
-        wxEVT_KEY_DOWN,
-        [this](wxKeyEvent& event)
+        wxEVT_LEFT_UP,
+        [this](wxMouseEvent& event)
         {
-            OnListKeyDown(event);
+            if (selectedIndex_ < itemCount_)
+            {
+                lastPointerActivatedIndex_ = selectedIndex_;
+                lastPointerActivationAt_ = std::chrono::steady_clock::now();
+                OnListActivated(selectedIndex_);
+            }
+            event.Skip();
         });
     listBox_->Bind(
         wxEVT_CHAR_HOOK,
@@ -321,7 +356,7 @@ void VerticalMenu::OnListKeyDown(wxKeyEvent& event)
     }
 }
 
-void VerticalMenu::FocusIndex(std::size_t index)
+void VerticalMenu::FocusIndex(std::size_t index, bool notify)
 {
     lila::shared::logging::LogInfo("VerticalMenu", "FocusIndex: begin.");
     if (index >= itemCount_ || listBox_ == nullptr)
@@ -338,7 +373,10 @@ void VerticalMenu::FocusIndex(std::size_t index)
     }
     listBox_->SetFocus();
     UpdateVisualSelection();
-    NotifySelectionChanged();
+    if (notify)
+    {
+        NotifySelectionChanged();
+    }
     lila::shared::logging::LogInfo("VerticalMenu", "FocusIndex: end.");
 }
 

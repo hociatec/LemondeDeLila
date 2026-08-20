@@ -1,12 +1,18 @@
 import { Module } from '@nestjs/common';
-import { CatalogService } from './services/catalog.service';
-import { GameRegistryModule } from '../game/engine/game-registry.module';
-import { CatalogWsHandler } from './ws/catalog-ws.handler';
 import { CatalogWsRegistrar } from './ws/catalog-ws.registrar';
+import {
+  CATALOG_MODULE_EXPORTS,
+  CATALOG_MODULE_IMPORTS,
+  CATALOG_MODULE_PROVIDERS,
+} from './module/catalog.module.definition';
 
 @Module({
-  imports: [GameRegistryModule],
-  providers: [CatalogService, CatalogWsHandler, CatalogWsRegistrar],
-  exports: [CatalogService],
+  imports: CATALOG_MODULE_IMPORTS,
+  providers: CATALOG_MODULE_PROVIDERS,
+  exports: CATALOG_MODULE_EXPORTS,
 })
-export class CatalogModule {}
+export class CatalogModule {
+  constructor(private readonly wsRegistrar: CatalogWsRegistrar) {
+    void this.wsRegistrar;
+  }
+}

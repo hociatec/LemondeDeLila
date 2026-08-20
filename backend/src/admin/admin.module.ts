@@ -4,7 +4,7 @@ import {
   ADMIN_MODULE_CONTROLLERS,
   ADMIN_MODULE_IMPORTS,
   ADMIN_MODULE_PROVIDERS,
-} from './admin.module.definition';
+} from './module/admin.module.definition';
 
 @Module({
   imports: ADMIN_MODULE_IMPORTS,

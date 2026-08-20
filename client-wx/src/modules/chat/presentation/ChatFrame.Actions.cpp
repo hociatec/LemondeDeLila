@@ -67,6 +67,7 @@ void ChatFrame::SendInput()
 
 void ChatFrame::CancelEdit()
 {
+    ClearNavigationHistory();
     isHistoryActionMode_ = false;
     selectedActionMessageId_.reset();
 
@@ -87,10 +88,8 @@ void ChatFrame::HandleEscape()
 {
     InvalidateOpenChatRequest();
 
-    if (pendingEditMessageId_.has_value())
+    if (NavigateBack())
     {
-        CancelEdit();
-        focusController_->FocusComposer();
         return;
     }
 
@@ -106,10 +105,19 @@ void ChatFrame::HandleEscape()
 void ChatFrame::HandleHistoryClick()
 {
     const int selection = historyList_->GetSelection();
-    if (selection == wxNOT_FOUND
-        || static_cast<std::size_t>(selection) >= visibleMessages_.size()
-        || !CanActOnMessage(visibleMessages_[static_cast<std::size_t>(selection)]))
+    const bool shouldEnterActionMode =
+        selection != wxNOT_FOUND
+        && static_cast<std::size_t>(selection) < visibleMessages_.size()
+        && CanActOnMessage(visibleMessages_[static_cast<std::size_t>(selection)]);
+
+    if (shouldEnterActionMode && !isHistoryActionMode_)
     {
+        PushNavigationSnapshot();
+    }
+
+    if (!shouldEnterActionMode)
+    {
+        ClearNavigationHistory();
         selectedActionMessageId_.reset();
         isHistoryActionMode_ = false;
     }
@@ -129,6 +137,10 @@ void ChatFrame::HandleHistoryActivation()
         return;
     }
 
+    if (!isHistoryActionMode_)
+    {
+        PushNavigationSnapshot();
+    }
     selectedActionMessageId_ = message->id;
     isHistoryActionMode_ = true;
     SyncActionState();
@@ -197,6 +209,7 @@ bool ChatFrame::ConfirmClose()
 
 void ChatFrame::BeginEdit(const domain::ChatMessage& message)
 {
+    PushNavigationSnapshot();
     isHistoryActionMode_ = false;
     pendingEditMessageId_ = message.id;
     inputCtrl_->SetValue(lila::shared::text::FromUtf8(message.text));
@@ -204,5 +217,60 @@ void ChatFrame::BeginEdit(const domain::ChatMessage& message)
     inputCtrl_->SelectAll();
     UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::ChatEditMode));
     SyncActionState();
+}
+
+void ChatFrame::ClearNavigationHistory()
+{
+    navigationHistory_.Clear();
+}
+
+void ChatFrame::PushNavigationSnapshot()
+{
+    navigationHistory_.Push(NavigationSnapshot{
+        isHistoryActionMode_,
+        selectedActionMessageId_,
+        pendingEditMessageId_,
+    });
+}
+
+bool ChatFrame::NavigateBack()
+{
+    if (navigationHistory_.Empty())
+    {
+        return false;
+    }
+
+    const NavigationSnapshot snapshot = navigationHistory_.Pop();
+    ApplyNavigationSnapshot(snapshot);
+    return true;
+}
+
+void ChatFrame::ApplyNavigationSnapshot(const NavigationSnapshot& snapshot)
+{
+    const bool wasEditing = pendingEditMessageId_.has_value();
+
+    isHistoryActionMode_ = snapshot.isHistoryActionMode;
+    selectedActionMessageId_ = snapshot.selectedActionMessageId;
+    pendingEditMessageId_ = snapshot.pendingEditMessageId;
+
+    if (!pendingEditMessageId_.has_value())
+    {
+        inputCtrl_->Clear();
+        inputCtrl_->SetHint(lila::shared::text::FromUtf8(lila::shared::text::ui::ChatEditHint));
+    }
+
+    if (wasEditing && !pendingEditMessageId_.has_value())
+    {
+        UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::ChatEditAborted));
+    }
+
+    SyncActionState();
+    if (isHistoryActionMode_)
+    {
+        focusController_->FocusFirstHistoryAction();
+        return;
+    }
+
+    focusController_->FocusComposer();
 }
 }

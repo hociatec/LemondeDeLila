@@ -29,8 +29,10 @@ namespace lila::modules::messaging::presentation
 {
 class MessagingView;
 class MessagingActionController;
+class MessagingComposeController;
 class MessagingMailboxController;
 class MessagingFocusController;
+class MessagingScreenCoordinator;
 
 class MessagingFrame final : public wxFrame
 {
@@ -48,7 +50,8 @@ private:
     using Screen = MessagingNavigationState::Screen;
 
     void BindEvents();
-    void SetScreen(Screen screen);
+    void SetScreen(Screen screen, std::optional<Screen> previousScreen = std::nullopt);
+    bool NavigateBack(bool preserveCurrentBox = false);
     void UpdateStatus(const wxString& message, bool isError = false);
     void RunBackgroundTask(
         const wxString& busyMessage,
@@ -62,7 +65,7 @@ private:
     void OpenSelectedMenu(std::size_t selectedMenuIndex);
     void OpenDetail();
     void OpenCompose(std::optional<domain::MessagingUser> recipient, Screen returnScreen);
-    void CloseCompose();
+    void CloseCompose(bool preserveCurrentBox = false);
     void SaveCurrentBoxSelection();
     void RestoreCurrentBoxSelection();
     void LoadBox(domain::MessagingBox box, bool preserveSelection = false);
@@ -84,7 +87,9 @@ private:
 
     MessagingSelectionMemory selectionMemory_;
     std::unique_ptr<MessagingActionController> actionController_;
+    std::unique_ptr<MessagingComposeController> composeController_;
     std::unique_ptr<MessagingMailboxController> mailboxController_;
     std::unique_ptr<MessagingFocusController> focusController_;
+    std::unique_ptr<MessagingScreenCoordinator> screenCoordinator_;
 };
 }

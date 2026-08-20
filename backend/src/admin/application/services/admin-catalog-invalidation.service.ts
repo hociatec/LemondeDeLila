@@ -1,29 +1,40 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CatalogService } from '../../../catalog/services/catalog.service';
-import { GameRegistryService } from '../../../game/engine/services/game-registry.service';
-import { NotificationService } from '../../../notification/services/notification.service';
-import { User } from '../../../user/entities/user.entity';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  ADMIN_CATALOG_CACHE_PORT,
+  type AdminCatalogCachePort,
+} from '../ports/admin-catalog-cache.port';
+import {
+  ADMIN_GAME_REGISTRY_PORT,
+  type AdminGameRegistryPort,
+} from '../ports/admin-game-registry.port';
+import {
+  ADMIN_NOTIFICATION_PORT,
+  type AdminNotificationPort,
+} from '../ports/admin-notification.port';
+import {
+  ADMIN_USER_REPOSITORY,
+  type AdminUserRepository,
+} from '../ports/admin-user.repository';
 
 @Injectable()
 export class AdminCatalogInvalidationService {
   constructor(
-    private readonly registry: GameRegistryService,
-    private readonly catalog: CatalogService,
-    private readonly notifications: NotificationService,
-    @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @Inject(ADMIN_GAME_REGISTRY_PORT)
+    private readonly registry: AdminGameRegistryPort,
+    @Inject(ADMIN_CATALOG_CACHE_PORT)
+    private readonly catalog: AdminCatalogCachePort,
+    @Inject(ADMIN_NOTIFICATION_PORT)
+    private readonly notifications: AdminNotificationPort,
+    @Inject(ADMIN_USER_REPOSITORY)
+    private readonly users: AdminUserRepository,
   ) {}
 
   async notifyCatalogInvalidated(adminId: number) {
-    const ids = await this.userRepo
-      .createQueryBuilder('u')
-      .select(['u.id'])
-      .getMany();
+    const ids = await this.users.listIds();
 
     await Promise.all(
-      ids.map((u) =>
-        this.notifications.notifyUser(u.id, 'catalog.invalidate', {
+      ids.map((userId) =>
+        this.notifications.notifyUser(userId, 'catalog.invalidate', {
           byUserId: adminId,
           timestamp: new Date().toISOString(),
         }),

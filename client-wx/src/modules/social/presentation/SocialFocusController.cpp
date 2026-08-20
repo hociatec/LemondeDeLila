@@ -18,6 +18,13 @@ using Navigator = lila::shared::accessibility::NavigationController;
 using ProfileEditorMode = SocialNavigationState::ProfileEditorMode;
 using Screen = SocialNavigationState::Screen;
 
+bool IsExplicitTabNavigationContext(const SocialNavigationState& state) noexcept
+{
+    return state.currentScreen == Screen::Section &&
+           state.currentSection == SocialSection::Profile &&
+           state.profileEditorMode != ProfileEditorMode::Menu;
+}
+
 wxWindow* ListOrEmpty(lila::shared::ui::controls::VerticalMenu* list, wxWindow* emptyControl)
 {
     return list != nullptr && list->GetItemCount() > 0 ? list->GetFirstButton() : emptyControl;
@@ -25,49 +32,75 @@ wxWindow* ListOrEmpty(lila::shared::ui::controls::VerticalMenu* list, wxWindow* 
 
 Navigator::Scope BuildSectionScope(SocialView& view, const SocialNavigationState& state)
 {
+    const auto shell = view.Shell();
+    const auto friends = view.FriendsSection();
+    const auto incoming = view.IncomingSection();
+    const auto outgoing = view.OutgoingSection();
+    const auto blocked = view.BlockedSection();
+    const auto profile = view.Profile();
     Navigator::Scope scope;
     if (state.currentScreen == Screen::Menu)
     {
-        scope.Add([&view]() -> wxWindow* { return view.menu != nullptr ? view.menu->GetFirstButton() : nullptr; });
+        scope.Add([shell]() -> wxWindow* { return shell.menu != nullptr ? shell.menu->GetFirstButton() : nullptr; });
         return scope;
     }
 
     switch (state.currentSection)
     {
     case SocialSection::Friends:
-        scope.Add([&view] { return ListOrEmpty(view.friendsList, view.emptyFriendsCtrl); })
-             .Add([&view]() -> wxWindow* { return view.friendsActionsMenu != nullptr ? view.friendsActionsMenu->GetFirstButton() : nullptr; });
+        scope.Add([friends] { return ListOrEmpty(friends.list, friends.emptyControl); });
+        if (state.sectionActionMenuActive)
+        {
+            scope.Add([friends]() -> wxWindow* { return friends.actionsMenu != nullptr ? friends.actionsMenu->GetFirstButton() : nullptr; });
+        }
         break;
     case SocialSection::IncomingRequests:
-        scope.Add([&view] { return ListOrEmpty(view.incomingRequestsList, view.emptyIncomingRequestsCtrl); })
-             .Add([&view]() -> wxWindow* { return view.incomingActionsMenu != nullptr ? view.incomingActionsMenu->GetFirstButton() : nullptr; });
+        scope.Add([incoming] { return ListOrEmpty(incoming.list, incoming.emptyControl); });
+        if (state.sectionActionMenuActive)
+        {
+            scope.Add([incoming]() -> wxWindow* { return incoming.actionsMenu != nullptr ? incoming.actionsMenu->GetFirstButton() : nullptr; });
+        }
         break;
     case SocialSection::OutgoingRequests:
-        scope.Add([&view] { return ListOrEmpty(view.outgoingRequestsList, view.emptyOutgoingRequestsCtrl); })
-             .Add([&view]() -> wxWindow* { return view.outgoingActionsMenu != nullptr ? view.outgoingActionsMenu->GetFirstButton() : nullptr; });
+        scope.Add([outgoing] { return ListOrEmpty(outgoing.list, outgoing.emptyControl); });
+        if (state.sectionActionMenuActive)
+        {
+            scope.Add([outgoing]() -> wxWindow* { return outgoing.actionsMenu != nullptr ? outgoing.actionsMenu->GetFirstButton() : nullptr; });
+        }
         break;
     case SocialSection::Blocked:
-        scope.Add([&view] { return ListOrEmpty(view.blockedUsersList, view.emptyBlockedUsersCtrl); })
-             .Add([&view]() -> wxWindow* { return view.blockedActionsMenu != nullptr ? view.blockedActionsMenu->GetFirstButton() : nullptr; });
+        scope.Add([blocked] { return ListOrEmpty(blocked.list, blocked.emptyControl); });
+        if (state.sectionActionMenuActive)
+        {
+            scope.Add([blocked]() -> wxWindow* { return blocked.actionsMenu != nullptr ? blocked.actionsMenu->GetFirstButton() : nullptr; });
+        }
         break;
     case SocialSection::Profile:
         switch (state.profileEditorMode)
         {
         case ProfileEditorMode::Menu:
-            scope.Add([&view]() -> wxWindow* { return view.profileMenu != nullptr ? view.profileMenu->GetFirstButton() : view.profileInfoCtrl; })
-                 .Add(view.profileCancelButton);
+            scope.Add([profile]() -> wxWindow*
+            {
+                if (profile.profileMenu != nullptr && profile.profileMenu->IsShown())
+                {
+                    return profile.profileMenu->GetFirstButton();
+                }
+
+                return profile.profileInfoCtrl;
+            })
+                 .Add(profile.profileCancelButton);
             break;
         case ProfileEditorMode::Bio:
-            scope.Add({view.profileBioCtrl, view.profileSaveButton, view.profileCancelButton});
+            scope.Add({profile.profileBioCtrl, profile.profileSaveButton, profile.profileCancelButton});
             break;
         case ProfileEditorMode::VictoryMessage:
-            scope.Add({view.profileVictoryCtrl, view.profileSaveButton, view.profileCancelButton});
+            scope.Add({profile.profileVictoryCtrl, profile.profileSaveButton, profile.profileCancelButton});
             break;
         case ProfileEditorMode::DefeatMessage:
-            scope.Add({view.profileDefeatCtrl, view.profileSaveButton, view.profileCancelButton});
+            scope.Add({profile.profileDefeatCtrl, profile.profileSaveButton, profile.profileCancelButton});
             break;
         case ProfileEditorMode::Visibility:
-            scope.Add({view.profileVisibilityChoice, view.profileSaveButton, view.profileCancelButton});
+            scope.Add({profile.profileVisibilityChoice, profile.profileSaveButton, profile.profileCancelButton});
             break;
         }
         break;
@@ -77,12 +110,16 @@ Navigator::Scope BuildSectionScope(SocialView& view, const SocialNavigationState
 
 wxWindow* CurrentAction(SocialView& view, SocialSection section)
 {
+    const auto friends = view.FriendsSection();
+    const auto incoming = view.IncomingSection();
+    const auto outgoing = view.OutgoingSection();
+    const auto blocked = view.BlockedSection();
     switch (section)
     {
-    case SocialSection::Friends: return view.friendsActionsMenu != nullptr ? view.friendsActionsMenu->GetFirstButton() : nullptr;
-    case SocialSection::IncomingRequests: return view.incomingActionsMenu != nullptr ? view.incomingActionsMenu->GetFirstButton() : nullptr;
-    case SocialSection::OutgoingRequests: return view.outgoingActionsMenu != nullptr ? view.outgoingActionsMenu->GetFirstButton() : nullptr;
-    case SocialSection::Blocked: return view.blockedActionsMenu != nullptr ? view.blockedActionsMenu->GetFirstButton() : nullptr;
+    case SocialSection::Friends: return friends.actionsMenu != nullptr ? friends.actionsMenu->GetFirstButton() : nullptr;
+    case SocialSection::IncomingRequests: return incoming.actionsMenu != nullptr ? incoming.actionsMenu->GetFirstButton() : nullptr;
+    case SocialSection::OutgoingRequests: return outgoing.actionsMenu != nullptr ? outgoing.actionsMenu->GetFirstButton() : nullptr;
+    case SocialSection::Blocked: return blocked.actionsMenu != nullptr ? blocked.actionsMenu->GetFirstButton() : nullptr;
     case SocialSection::Profile: return nullptr;
     }
     return nullptr;
@@ -90,12 +127,16 @@ wxWindow* CurrentAction(SocialView& view, SocialSection section)
 
 wxWindow* CurrentList(SocialView& view, SocialSection section)
 {
+    const auto friends = view.FriendsSection();
+    const auto incoming = view.IncomingSection();
+    const auto outgoing = view.OutgoingSection();
+    const auto blocked = view.BlockedSection();
     switch (section)
     {
-    case SocialSection::Friends: return view.friendsList != nullptr ? view.friendsList->GetFirstButton() : nullptr;
-    case SocialSection::IncomingRequests: return view.incomingRequestsList != nullptr ? view.incomingRequestsList->GetFirstButton() : nullptr;
-    case SocialSection::OutgoingRequests: return view.outgoingRequestsList != nullptr ? view.outgoingRequestsList->GetFirstButton() : nullptr;
-    case SocialSection::Blocked: return view.blockedUsersList != nullptr ? view.blockedUsersList->GetFirstButton() : nullptr;
+    case SocialSection::Friends: return friends.list != nullptr ? friends.list->GetFirstButton() : nullptr;
+    case SocialSection::IncomingRequests: return incoming.list != nullptr ? incoming.list->GetFirstButton() : nullptr;
+    case SocialSection::OutgoingRequests: return outgoing.list != nullptr ? outgoing.list->GetFirstButton() : nullptr;
+    case SocialSection::Blocked: return blocked.list != nullptr ? blocked.list->GetFirstButton() : nullptr;
     case SocialSection::Profile: return nullptr;
     }
     return nullptr;
@@ -103,15 +144,11 @@ wxWindow* CurrentList(SocialView& view, SocialSection section)
 }
 
 SocialFocusController::SocialFocusController(
-    wxWindow& owner,
     SocialView& view,
     SocialNavigationState& navigationState,
-    const SocialDataStore& dataStore,
     SelectionSyncHandler onSelectionAdjusted)
-    : owner_(owner),
-      view_(view),
+    : view_(view),
       navigationState_(navigationState),
-      dataStore_(dataStore),
       onSelectionAdjusted_(std::move(onSelectionAdjusted))
 {
 }
@@ -121,28 +158,7 @@ void SocialFocusController::BindNavigation(wxWindow& owner)
     Navigator::BindTabNavigation(
         owner,
         [this]() { return BuildSectionScope(view_, navigationState_); },
-        [this]()
-        {
-            return navigationState_.currentSection == SocialSection::Profile &&
-                   navigationState_.profileEditorMode != ProfileEditorMode::Menu;
-        });
-
-    Navigator::BindBoundaryTabNavigation(
-        owner,
-        [this]() { return BuildSectionScope(view_, navigationState_); },
-        &owner_,
-        [this]()
-        {
-            if (navigationState_.currentScreen == Screen::Menu ||
-                navigationState_.currentSection == SocialSection::Friends ||
-                navigationState_.currentSection == SocialSection::Blocked ||
-                (navigationState_.currentSection == SocialSection::Profile && navigationState_.profileEditorMode == ProfileEditorMode::Menu))
-            {
-                return false;
-            }
-            return navigationState_.currentSection != SocialSection::Profile ||
-                (dataStore_.Profile().has_value() && dataStore_.Profile()->isOwner);
-        });
+        [this]() { return IsExplicitTabNavigationContext(navigationState_); });
 }
 
 void SocialFocusController::FocusCurrentSectionActionMenu()
@@ -158,8 +174,9 @@ void SocialFocusController::FocusCurrentScreen()
 {
     if (navigationState_.currentScreen == Screen::Menu)
     {
-        view_.menu->SetSelectedIndex(navigationState_.lastMenuIndex);
-        view_.menu->FocusSelectedItem();
+        const auto shell = view_.Shell();
+        shell.menu->SetSelectedIndexSilently(navigationState_.lastMenuIndex);
+        shell.menu->FocusSelectedItem();
         return;
     }
 
@@ -169,7 +186,7 @@ void SocialFocusController::FocusCurrentScreen()
         {
             if (list->GetSelectedIndex() >= list->GetItemCount())
             {
-                list->SetSelectedIndex(0);
+                list->SetSelectedIndexSilently(0);
                 if (onSelectionAdjusted_) onSelectionAdjusted_();
             }
             list->FocusSelectedItem();
@@ -180,10 +197,23 @@ void SocialFocusController::FocusCurrentScreen()
 
     switch (navigationState_.currentSection)
     {
-    case SocialSection::Friends: focusListOrEmpty(view_.friendsList, view_.emptyFriendsCtrl); return;
-    case SocialSection::IncomingRequests: focusListOrEmpty(view_.incomingRequestsList, view_.emptyIncomingRequestsCtrl); return;
-    case SocialSection::OutgoingRequests: focusListOrEmpty(view_.outgoingRequestsList, view_.emptyOutgoingRequestsCtrl); return;
-    case SocialSection::Blocked: focusListOrEmpty(view_.blockedUsersList, view_.emptyBlockedUsersCtrl); return;
+    case SocialSection::Friends:
+    case SocialSection::IncomingRequests:
+    case SocialSection::OutgoingRequests:
+    case SocialSection::Blocked:
+        if (navigationState_.sectionActionMenuActive && Navigator::Focus(CurrentSectionActionControl()))
+        {
+            return;
+        }
+        switch (navigationState_.currentSection)
+        {
+        case SocialSection::Friends: { const auto s = view_.FriendsSection(); focusListOrEmpty(s.list, s.emptyControl); return; }
+        case SocialSection::IncomingRequests: { const auto s = view_.IncomingSection(); focusListOrEmpty(s.list, s.emptyControl); return; }
+        case SocialSection::OutgoingRequests: { const auto s = view_.OutgoingSection(); focusListOrEmpty(s.list, s.emptyControl); return; }
+        case SocialSection::Blocked: { const auto s = view_.BlockedSection(); focusListOrEmpty(s.list, s.emptyControl); return; }
+        case SocialSection::Profile: break;
+        }
+        return;
     case SocialSection::Profile:
         static_cast<void>(Navigator::FocusFirst(BuildSectionScope(view_, navigationState_)));
         return;

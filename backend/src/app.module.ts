@@ -12,7 +12,7 @@ import { MessagingModule } from './messaging/messaging.module';
 import { PresenceModule } from './presence/presence.module';
 import { RoomModule } from './room/room.module';
 import { GameModule } from './game/game.module';
-import { BotModule } from './bot/bot.module';
+import { BotModule } from './bot/module/bot.module';
 import { AdminModule } from './admin/admin.module';
 import { SocialModule } from './social/social.module';
 import { WsRoutingModule } from './common/ws/ws-routing.module';
@@ -26,7 +26,7 @@ import { ClientUpdatesModule } from './client-updates/client-updates.module';
 import { SoundsModule } from './sounds/sounds.module';
 import { WsTicketModule } from './common/ws/ws-ticket.module';
 import { JwksModule } from './common/auth/jwks.module';
-import { BugReportsModule } from './bug-reports/bug-reports.module';
+import { BugReportsModule } from './bug-reports/module/bug-reports.module';
 import { RedisModule } from './common/redis/redis.module';
 import { VaultModule } from './vault/vault.module';
 

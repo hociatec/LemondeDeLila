@@ -46,15 +46,6 @@ public:
     [[nodiscard]] std::optional<domain::SocialProfile> UpdateProfile(const domain::SocialProfileUpdate& update) const override;
 
 private:
-    [[nodiscard]] std::vector<domain::SocialUser> ReadUsersPayload(
-        const std::string& type,
-        const nlohmann::json& payload) const;
-    [[nodiscard]] std::vector<domain::SocialFriendRequest> ReadRequestsPayload(
-        const std::string& type,
-        const nlohmann::json& payload) const;
-    [[nodiscard]] static domain::SocialUser ReadUser(const nlohmann::json& source);
-    [[nodiscard]] static domain::SocialFriendRequest ReadRequest(const nlohmann::json& source);
-    [[nodiscard]] static domain::SocialProfile ReadProfile(const nlohmann::json& source);
     [[nodiscard]] lila::shared::network::realtime::RealtimeApiResponse Send(
         const std::string& type,
         nlohmann::json payload,

@@ -59,7 +59,7 @@ void MessagingFocusController::FocusCurrentScreen()
     case Screen::Menu:
         if (view_.menu != nullptr)
         {
-            view_.menu->SetSelectedIndex(navigationState_.lastMenuIndex);
+            view_.menu->SetSelectedIndexSilently(navigationState_.lastMenuIndex);
             view_.menu->FocusSelectedItem();
         }
         return;

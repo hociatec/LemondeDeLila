@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { requireAdmin } from '../../../../common/ws/ws-auth';
 import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
 import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { NotificationService } from '../../../../notification/services/notification.service';
-import { User } from '../../../../user/entities/user.entity';
+import { AdminBroadcastService } from '../../../application/use-cases/admin-broadcast/admin-broadcast.service';
 import { AdminBroadcastWsDto } from './admin-ws.dto';
 import { WS_EVENTS } from '../../../../common/ws/ws-events';
 
@@ -13,34 +10,20 @@ import { WS_EVENTS } from '../../../../common/ws/ws-events';
 export class AdminBroadcastWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
-    private readonly notifications: NotificationService,
-    @InjectRepository(User) private readonly userRepo: Repository<User>,
+    private readonly broadcasts: AdminBroadcastService,
   ) {}
 
   async broadcast(session: WsSession, payload: any) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminBroadcastWsDto, payload);
-    const message = dto.message.trim();
-
-    const ids = await this.userRepo
-      .createQueryBuilder('u')
-      .select(['u.id'])
-      .getMany();
-
-    const payloadOut = {
-      message,
+    const result = await this.broadcasts.broadcast({
+      message: dto.message.trim(),
       fromUserId: admin.id,
       fromUsername: admin.username,
-      timestamp: new Date().toISOString(),
-    };
+      eventType: WS_EVENTS.admin.broadcast,
+    });
 
-    await Promise.all(
-      ids.map((u) =>
-        this.notifications.notifyUser(u.id, WS_EVENTS.admin.broadcast, payloadOut),
-      ),
-    );
-
-    return { type: WS_EVENTS.admin.broadcast, payload: { delivered: ids.length } };
+    return { type: WS_EVENTS.admin.broadcast, payload: result };
   }
 }
 

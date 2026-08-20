@@ -4,7 +4,8 @@ import { Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { VaultRoomSnapshotEntity } from '../entities/vault-room-snapshot.entity';
 import { RoomService } from '../../room/services/room.service';
-import { BotService } from '../../bot/services/bot.service';
+import { AddSystemBotToRoomService } from '../../bot/application/use-cases/bot-rooms/add-system-bot-to-room.service';
+import { mapBotApplicationError } from '../../bot/infrastructure/errors/bot-error-http.mapper';
 import { RoomBot } from '../../room/entities/room-bot.entity';
 import { GameEngineService } from '../../game/engine/services/game-engine.service';
 import { GameRegistryService } from '../../game/engine/services/game-registry.service';
@@ -22,7 +23,7 @@ export class VaultRoomSnapshotsService {
     @InjectRepository(RoomBot)
     private readonly roomBots: Repository<RoomBot>,
     private readonly rooms: RoomService,
-    private readonly bots: BotService,
+    private readonly addSystemBotToRoom: AddSystemBotToRoomService,
     private readonly engine: GameEngineService,
     private readonly registry: GameRegistryService,
     private readonly notifications: NotificationService,
@@ -334,7 +335,12 @@ export class VaultRoomSnapshotsService {
     const oldBots = snapshot.roster.bots ?? [];
     const botIdMap = new Map<number, number>();
     for (const b of oldBots) {
-      const added = await this.bots.addBotSystem(created.id);
+      let added;
+      try {
+        added = await this.addSystemBotToRoom.execute(created.id);
+      } catch (error) {
+        throw mapBotApplicationError(error);
+      }
       // Preserve names when possible.
       try {
         const desired = String(b?.name ?? '').trim();

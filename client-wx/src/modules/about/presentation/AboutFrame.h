@@ -1,9 +1,11 @@
 #pragma once
 
 #include <functional>
-#include <vector>
+#include <memory>
 
 #include <wx/frame.h>
+
+#include "shared/accessibility/NavigationController.h"
 
 class wxButton;
 namespace lila::shared::ui::controls
@@ -20,6 +22,8 @@ class SessionStore;
 
 namespace lila::modules::about::presentation
 {
+class AboutPageCoordinator;
+
 class AboutFrame final : public wxFrame
 {
 public:
@@ -30,40 +34,20 @@ public:
         lila::modules::session::application::SessionStore& sessionStore,
         CloseRequestedHandler onCloseRequested,
         ExitRequestedHandler onExitRequested);
+    ~AboutFrame() override;
 
 private:
-    enum class Page
-    {
-        Root,
-        Shortcuts,
-        Info,
-        ContactAdmin,
-    };
-
-    struct NavigationSnapshot final
-    {
-        Page page;
-        int selectedIndex = wxNOT_FOUND;
-    };
-
+    [[nodiscard]] lila::shared::accessibility::NavigationController::Scope BuildTabScope() const;
     void BuildLayout();
     void ApplyTheme();
     void BindEvents();
-    void ShowPage(Page page, bool pushCurrentToHistory = false, int restoreSelection = wxNOT_FOUND);
-    void BuildRootMenuItems();
-    void BuildInfoItems();
-    void FocusCurrentPage();
     void HandleEscape();
     void UpdateStatus(const wxString& message);
-    [[nodiscard]] NavigationSnapshot CaptureSnapshot() const;
-    void RestoreSnapshot(const NavigationSnapshot& snapshot);
-    [[nodiscard]] wxString BuildShortcutsText() const;
-    [[nodiscard]] wxString ResolveLocalUpdatedAt() const;
 
     lila::modules::session::application::SessionStore& sessionStore_;
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
-    Page currentPage_ = Page::Root;
+    std::unique_ptr<AboutPageCoordinator> pageCoordinator_;
     wxStaticText* titleLabel_ = nullptr;
     wxStaticText* detailsLabel_ = nullptr;
     wxStaticText* statusLabel_ = nullptr;
@@ -72,6 +56,7 @@ private:
     wxTextCtrl* contactMessageCtrl_ = nullptr;
     wxButton* sendContactButton_ = nullptr;
     wxButton* cancelContactButton_ = nullptr;
-    std::vector<NavigationSnapshot> navigationHistory_;
+
+    friend class AboutPageCoordinator;
 };
 }

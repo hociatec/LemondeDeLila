@@ -1,6 +1,7 @@
 #include "shared/text/Encoding.h"
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/social/presentation/SocialFocusController.h"
+#include "modules/social/presentation/SocialSectionCoordinator.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialView.h"
 #include "shared/errors/ErrorMessages.h"
@@ -23,7 +24,7 @@ void SocialFrame::SetScreen(Screen screen)
     }
     if (screen == Screen::Menu && view_->menu != nullptr)
     {
-        view_->menu->SetSelectedIndex(navigationState_.lastMenuIndex);
+        view_->Shell().menu->SetSelectedIndexSilently(navigationState_.lastMenuIndex);
     }
 
     focusController_->FocusCurrentScreen();
@@ -31,7 +32,7 @@ void SocialFrame::SetScreen(Screen screen)
 
 void SocialFrame::ActivateSelectedMenu()
 {
-    ActivateMenuIndex(view_->menu->GetSelectedIndex());
+    ActivateMenuIndex(view_->Shell().menu->GetSelectedIndex());
 }
 
 void SocialFrame::ActivateMenuIndex(std::size_t index)
@@ -54,10 +55,11 @@ void SocialFrame::ActivateMenuIndex(std::size_t index)
 
     if (*section == SocialSection::Profile)
     {
-        navigationState_.returnSectionFromProfile.reset();
-        LoadProfile(std::nullopt);
+        sectionCoordinator_->OpenOwnProfile();
+        return;
     }
 
+    navigationState_.PushCurrent();
     SetSection(*section);
 }
 
@@ -68,7 +70,7 @@ void SocialFrame::ActivateProfileEditorSelection()
         return;
     }
 
-    switch (view_->profileMenu->GetSelectedIndex())
+    switch (view_->Profile().profileMenu->GetSelectedIndex())
     {
     case 0:
         StartProfileEdit(ProfileEditorMode::Bio);
@@ -91,14 +93,9 @@ void SocialFrame::HandleEscape()
 {
     try
     {
-        if (navigationState_.currentScreen == Screen::Section)
+        if (navigationState_.GoBack())
         {
-            if (navigationState_.currentSection == SocialSection::Profile && TryExitProfile())
-            {
-                return;
-            }
-
-            SetScreen(Screen::Menu);
+            ApplyNavigationState();
             return;
         }
 

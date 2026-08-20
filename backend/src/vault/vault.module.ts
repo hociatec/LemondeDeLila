@@ -5,7 +5,7 @@ import { VaultRoomSnapshotsService } from './services/vault-room-snapshots.servi
 import { VaultWsHandler } from './ws/vault-ws.handler';
 import { VaultWsRegistrar } from './ws/vault-ws.registrar';
 import { RoomModule } from '../room/room.module';
-import { BotModule } from '../bot/bot.module';
+import { BotModule } from '../bot/module/bot.module';
 import { GameModule } from '../game/game.module';
 import { PresenceModule } from '../presence/presence.module';
 import { NotificationModule } from '../notification/notification.module';

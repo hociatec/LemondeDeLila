@@ -10,6 +10,7 @@
 
 #include "modules/chat/application/ChatService.h"
 #include "modules/chat/domain/ChatMessage.h"
+#include "shared/ui/navigation/NavigationStack.h"
 
 class wxButton;
 class wxListBox;
@@ -50,6 +51,13 @@ public:
     ~ChatFrame() override;
 
 private:
+    struct NavigationSnapshot final
+    {
+        bool isHistoryActionMode;
+        std::optional<std::string> selectedActionMessageId;
+        std::optional<std::string> pendingEditMessageId;
+    };
+
     void BuildLayout();
     void ApplyTheme();
     void BindEvents();
@@ -66,6 +74,7 @@ private:
     void SyncActionState();
     void SendInput();
     void CancelEdit();
+    void ClearNavigationHistory();
     void HandleEscape();
     void HandleHistoryActivation();
     void HandleHistoryClick();
@@ -77,6 +86,9 @@ private:
     [[nodiscard]] std::optional<domain::ChatMessage> GetSelectedMessage() const;
     [[nodiscard]] bool CanActOnMessage(const domain::ChatMessage& message) const;
     [[nodiscard]] wxString BuildMessageLabel(const domain::ChatMessage& message) const;
+    void PushNavigationSnapshot();
+    [[nodiscard]] bool NavigateBack();
+    void ApplyNavigationSnapshot(const NavigationSnapshot& snapshot);
     void BeginEdit(const domain::ChatMessage& message);
 
     lila::modules::chat::application::ChatService& chatService_;
@@ -97,6 +109,7 @@ private:
     std::optional<std::string> selectedActionMessageId_;
     std::vector<domain::ChatMessage> visibleMessages_;
     std::optional<std::string> pendingEditMessageId_;
+    lila::shared::ui::navigation::NavigationStack<NavigationSnapshot> navigationHistory_;
     std::shared_ptr<lila::modules::chat::application::ChatService::EventHandlers> eventHandlers_;
     std::unique_ptr<ChatFocusController> focusController_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> openChatTask_;

@@ -7,7 +7,6 @@
 } from '@nestjs/websockets';
 import { Server, WebSocket } from 'ws';
 import { RoomService } from '../services/room.service';
-import { BotService } from '../../bot/services/bot.service';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
 import type { RoomPayload } from '../dto/room-response.dto';
 import type { RoomIntent } from '../dto/room-intent.dto';
@@ -59,8 +58,6 @@ export class RoomGateway
 
   constructor(
     private readonly roomsService: RoomService,
-    @Inject(forwardRef(() => BotService))
-    private readonly botService: BotService,
     private readonly catalog: CatalogService,
     private readonly perf: PerfMetricsService,
     private readonly invites: RoomInviteService,
