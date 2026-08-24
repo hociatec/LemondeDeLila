@@ -24,6 +24,28 @@ namespace lila::modules::social::presentation
 namespace
 {
 const auto kProfileUnavailableStatus = lila::shared::text::ui::SocialProfileUnavailable;
+
+template <typename Result, typename Worker, typename Apply>
+void RunSectionLoad(
+    SocialSection section,
+    const wxString& busyMessage,
+    SocialSectionCoordinator::Callbacks& callbacks,
+    Worker&& worker,
+    Apply&& apply)
+{
+    auto result = std::make_shared<Result>();
+    callbacks.runBackgroundTask(
+        busyMessage,
+        [result, worker = std::forward<Worker>(worker)]() mutable
+        {
+            *result = worker();
+        },
+        [section, result, callbacks = callbacks, apply = std::forward<Apply>(apply)]() mutable
+        {
+            apply(std::move(*result));
+        },
+        false);
+}
 }
 
 SocialSectionCoordinator::SocialSectionCoordinator(
@@ -113,21 +135,23 @@ void SocialSectionCoordinator::OpenOwnProfile()
 
 void SocialSectionCoordinator::LoadFriends()
 {
-    auto snapshot = std::make_shared<SocialLoadController::FriendsSnapshot>();
-    callbacks_.runBackgroundTask(
+    RunSectionLoad<SocialLoadController::FriendsSnapshot>(
+        SocialSection::Friends,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadFriendsBusy),
-        [this, snapshot]()
+        callbacks_,
+        [this]()
         {
-            *snapshot = loadController_.LoadFriends();
+            return loadController_.LoadFriends();
         },
-        [this, snapshot]()
+        [this](SocialLoadController::FriendsSnapshot snapshot)
         {
-            dataStore_.ReplaceFriends(std::move(snapshot->friends), std::move(snapshot->blockedUsers));
+            dataStore_.ReplaceFriends(std::move(snapshot.friends), std::move(snapshot.blockedUsers));
             sectionPresenter_.PopulateSection(SocialSection::Friends);
             sectionPresenter_.ShowCurrentSection();
             sectionPresenter_.SyncSelectionState();
             callbacks_.updateStatus(
                 SocialPresentationModel::BuildSectionStatus(SocialSection::Friends, dataStore_.Friends().size()),
+                false,
                 false);
             FocusSectionIfVisible(SocialSection::Friends);
         });
@@ -135,16 +159,17 @@ void SocialSectionCoordinator::LoadFriends()
 
 void SocialSectionCoordinator::LoadIncomingRequests()
 {
-    auto snapshot = std::make_shared<SocialLoadController::RequestsSnapshot>();
-    callbacks_.runBackgroundTask(
+    RunSectionLoad<SocialLoadController::RequestsSnapshot>(
+        SocialSection::IncomingRequests,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadIncomingRequestsBusy),
-        [this, snapshot]()
+        callbacks_,
+        [this]()
         {
-            *snapshot = loadController_.LoadIncomingRequests();
+            return loadController_.LoadIncomingRequests();
         },
-        [this, snapshot]()
+        [this](SocialLoadController::RequestsSnapshot snapshot)
         {
-            dataStore_.ReplaceIncomingRequests(std::move(snapshot->requests), std::move(snapshot->blockedUsers));
+            dataStore_.ReplaceIncomingRequests(std::move(snapshot.requests), std::move(snapshot.blockedUsers));
             sectionPresenter_.PopulateSection(SocialSection::IncomingRequests);
             sectionPresenter_.ShowCurrentSection();
             sectionPresenter_.SyncSelectionState();
@@ -152,6 +177,7 @@ void SocialSectionCoordinator::LoadIncomingRequests()
                 SocialPresentationModel::BuildSectionStatus(
                     SocialSection::IncomingRequests,
                     dataStore_.IncomingRequests().size()),
+                false,
                 false);
             FocusSectionIfVisible(SocialSection::IncomingRequests);
         });
@@ -159,16 +185,17 @@ void SocialSectionCoordinator::LoadIncomingRequests()
 
 void SocialSectionCoordinator::LoadOutgoingRequests()
 {
-    auto snapshot = std::make_shared<SocialLoadController::RequestsSnapshot>();
-    callbacks_.runBackgroundTask(
+    RunSectionLoad<SocialLoadController::RequestsSnapshot>(
+        SocialSection::OutgoingRequests,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadOutgoingRequestsBusy),
-        [this, snapshot]()
+        callbacks_,
+        [this]()
         {
-            *snapshot = loadController_.LoadOutgoingRequests();
+            return loadController_.LoadOutgoingRequests();
         },
-        [this, snapshot]()
+        [this](SocialLoadController::RequestsSnapshot snapshot)
         {
-            dataStore_.ReplaceOutgoingRequests(std::move(snapshot->requests), std::move(snapshot->blockedUsers));
+            dataStore_.ReplaceOutgoingRequests(std::move(snapshot.requests), std::move(snapshot.blockedUsers));
             sectionPresenter_.PopulateSection(SocialSection::OutgoingRequests);
             sectionPresenter_.ShowCurrentSection();
             sectionPresenter_.SyncSelectionState();
@@ -176,6 +203,7 @@ void SocialSectionCoordinator::LoadOutgoingRequests()
                 SocialPresentationModel::BuildSectionStatus(
                     SocialSection::OutgoingRequests,
                     dataStore_.OutgoingRequests().size()),
+                false,
                 false);
             FocusSectionIfVisible(SocialSection::OutgoingRequests);
         });
@@ -183,21 +211,23 @@ void SocialSectionCoordinator::LoadOutgoingRequests()
 
 void SocialSectionCoordinator::LoadBlockedUsers()
 {
-    auto results = std::make_shared<std::vector<domain::SocialUser>>();
-    callbacks_.runBackgroundTask(
+    RunSectionLoad<std::vector<domain::SocialUser>>(
+        SocialSection::Blocked,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadBlockedUsersBusy),
-        [this, results]()
+        callbacks_,
+        [this]()
         {
-            *results = loadController_.LoadBlockedUsers();
+            return loadController_.LoadBlockedUsers();
         },
-        [this, results]()
+        [this](std::vector<domain::SocialUser> results)
         {
-            dataStore_.ReplaceBlockedUsers(std::move(*results));
+            dataStore_.ReplaceBlockedUsers(std::move(results));
             sectionPresenter_.PopulateSection(SocialSection::Blocked);
             sectionPresenter_.ShowCurrentSection();
             sectionPresenter_.SyncSelectionState();
             callbacks_.updateStatus(
                 SocialPresentationModel::BuildSectionStatus(SocialSection::Blocked, dataStore_.BlockedUsers().size()),
+                false,
                 false);
             FocusSectionIfVisible(SocialSection::Blocked);
         });
@@ -221,7 +251,7 @@ void SocialSectionCoordinator::LoadProfile(std::optional<int> userId)
 
             if (!dataStore_.Profile().has_value())
             {
-                callbacks_.updateStatus(lila::shared::text::FromUtf8(kProfileUnavailableStatus), true);
+                callbacks_.updateStatus(lila::shared::text::FromUtf8(kProfileUnavailableStatus), true, true);
                 return;
             }
 
@@ -231,9 +261,11 @@ void SocialSectionCoordinator::LoadProfile(std::optional<int> userId)
                     !dataStore_.Profile()->isOwner && !dataStore_.Profile()->canView
                         ? lila::shared::text::ui::SocialProfilePrivate
                         : lila::shared::text::ui::SocialProfileLoaded),
+                false,
                 false);
             FocusSectionIfVisible(SocialSection::Profile);
-        });
+        },
+        false);
 }
 
 void SocialSectionCoordinator::FocusSectionIfVisible(SocialSection section) const

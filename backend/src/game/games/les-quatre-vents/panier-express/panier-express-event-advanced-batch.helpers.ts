@@ -1,5 +1,5 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { PanierExpressMetadata } from './model/panier-express-state.entity';
+import { GameStateEntity } from '../../../application/models/game-state.model';
+import { PanierExpressMetadata } from './model/panier-express-state.model';
 import { toText } from './panier-express-state.helpers';
 
 export function applyAdvancedPanierExpressEventBatch(args: {
@@ -31,7 +31,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
-  ) => { meta: PanierExpressMetadata; value: T | undefined };
+  ) => { meta: PanierExpressMetadata; value: T | null };
   moveCircular: (
     length: number,
     currentPosition: number,
@@ -405,11 +405,17 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       next = {
         ...next,
         players: playersWithInventory.map((player) => {
-          if (player.id === args.playerId)
-            return { ...player, inventory: theirInventory };
-          if (player.id === targetId)
-            return { ...player, inventory: myInventory };
-          return player;
+          const normalized = {
+            ...player,
+            username: player.username ?? `Joueur ${player.id}`,
+          };
+          if (player.id === args.playerId) {
+            return { ...normalized, inventory: theirInventory };
+          }
+          if (player.id === targetId) {
+            return { ...normalized, inventory: myInventory };
+          }
+          return normalized;
         }),
       };
       next = args.appendLog(
@@ -441,13 +447,13 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       if (!discardedResult.discarded) {
         next = args.appendLog(
           next,
-          `[Panier Express] Chariot perce : aucun ingredient a defausser.`,
+          `[Panier Express] Chariot perce : aucun ingredient a défausser.`,
         );
         return addEffectLog('none');
       }
       next = args.appendLog(
         next,
-        `[Panier Express] Chariot perce : defausse "${args.formatCourseLabel(discardedResult.discarded)}".`,
+        `[Panier Express] Chariot perce : défausse "${args.formatCourseLabel(discardedResult.discarded)}".`,
       );
       return addEffectLog('discard_random', {
         card: discardedResult.discarded,
@@ -464,8 +470,8 @@ export function applyAdvancedPanierExpressEventBatch(args: {
         next = args.appendLog(
           next,
           discardedResult.discarded
-            ? `[Panier Express] ${args.playerName(args.state, args.playerId)} defausse "${args.formatCourseLabel(discardedResult.discarded)}".`
-            : `[Panier Express] Aucune carte a defausser.`,
+            ? `[Panier Express] ${args.playerName(args.state, args.playerId)} défausse "${args.formatCourseLabel(discardedResult.discarded)}".`
+            : `[Panier Express] Aucune carte a défausser.`,
         );
         return addEffectLog('discard_random', {
           discarded: discardedResult.discarded,
@@ -474,3 +480,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       return null;
   }
 }
+
+
+
+

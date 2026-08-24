@@ -1,9 +1,17 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GamePayloadValidationError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import { DAME_NATURE_CARD_BY_ID } from '../model/dame-nature-cards';
-import type { DameNatureMetadata } from '../model/dame-nature-state.entity';
-import { normalizeActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import type { DameNatureMetadata } from '../model/dame-nature-state.model';
 
 export type DameNatureActionType = 'ask_card' | 'pass';
 
@@ -60,18 +68,18 @@ export function validateAction(
   const type = normalizeActionType(action);
   const payload = (action?.payload ?? {}) as DameNatureActionPayload;
   if (type !== 'ask_card' && type !== 'pass') {
-    throw new Error(`Action inconnue : ${type}`);
+    throw new GameUnknownActionError(`Action inconnue : ${type}`);
   }
   if (actorId == null) {
-    throw new Error('Acteur requis.');
+    throw new GameActorRequiredError();
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas commencée.");
+    throw new GameStateViolationError("La partie n'est pas commencée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
 
   if (type === 'pass') {
@@ -80,25 +88,25 @@ export function validateAction(
 
   const cardId = String(payload.cardId ?? '').trim();
   if (!cardId) {
-    throw new Error('Carte manquante.');
+    throw new GamePayloadValidationError('Carte manquante.');
   }
   const target = payload.targetPlayerId;
   if (typeof target !== 'number') {
-    throw new Error('Cible requise.');
+    throw new GamePayloadValidationError('Cible requise.');
   }
   if (target === actorId) {
-    throw new Error('Impossible de demander à soi-même.');
+    throw new GameActionRejectedError('Impossible de demander à soi-même.');
   }
 
   const meta = getMeta(state);
   const targetHand = getPlayerHand(meta, target);
   if (!targetHand.includes(cardId)) {
-    throw new Error('La cible ne possède pas cette carte.');
+    throw new GameActionRejectedError('La cible ne possède pas cette carte.');
   }
 
   const definition = DAME_NATURE_CARD_BY_ID[cardId];
   if (!definition || definition.type !== 'family') {
-    throw new Error('Carte invalide pour cette action.');
+    throw new GamePayloadValidationError('Carte invalide pour cette action.');
   }
 
   return { type: 'ask_card', payload: { cardId, targetPlayerId: target } };

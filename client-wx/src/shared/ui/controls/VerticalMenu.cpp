@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include <stdexcept>
+#include <utility>
 
 #include <wx/event.h>
 #include <wx/listbox.h>
@@ -12,21 +13,22 @@
 #include <wx/window.h>
 
 #include "shared/ui/Theme.h"
+#include "shared/ui/controls/VerticalMenuEntry.h"
 #include "shared/accessibility/NavigationController.h"
 #include "shared/accessibility/AccessibleMenu.h"
 #include "shared/logging/Logger.h"
 
 namespace lila::shared::ui::controls
 {
-VerticalMenu::VerticalMenu(wxWindow* parent, std::span<const VerticalMenuItem> items)
-    : wxPanel(parent, wxID_ANY)
+VerticalMenu::VerticalMenu(wxWindow* parent, std::span<const VerticalMenuItem> items, VerticalMenuRole role)
+    : wxPanel(parent, wxID_ANY),
+      role_(role)
 {
-    lila::shared::logging::LogInfo("VerticalMenu", "Constructor: begin.");
     BuildLayout(items);
-    lila::shared::logging::LogInfo("VerticalMenu", "Constructor: BuildLayout done.");
     ApplyTheme();
-    lila::shared::logging::LogInfo("VerticalMenu", "Constructor: ApplyTheme done.");
 }
+
+VerticalMenu::~VerticalMenu() = default;
 
 void VerticalMenu::SetSelectionChangedHandler(SelectionChangedHandler handler)
 {
@@ -36,6 +38,11 @@ void VerticalMenu::SetSelectionChangedHandler(SelectionChangedHandler handler)
 void VerticalMenu::SetActivatedHandler(ActivatedHandler handler)
 {
     onActivated_ = std::move(handler);
+}
+
+void VerticalMenu::SetKeyHandler(KeyHandler handler)
+{
+    onKey_ = std::move(handler);
 }
 
 void VerticalMenu::SetSelectedIndex(std::size_t index)
@@ -67,27 +74,62 @@ void VerticalMenu::SetSelectedIndexSilently(std::size_t index)
         throw std::out_of_range(lila::shared::text::ui::VerticalMenuIndexOutOfRange.str());
     }
 
-    FocusIndex(index, false);
+    if (role_ == VerticalMenuRole::Entries)
+    {
+        selectedIndex_ = index;
+        UpdateVisualSelection();
+        return;
+    }
+
+    if (selectedIndex_ == index &&
+        listBox_ != nullptr &&
+        listBox_->GetSelection() == static_cast<int>(index))
+    {
+        return;
+    }
+
+    selectedIndex_ = index;
+    listBox_->SetSelection(static_cast<int>(index));
+    UpdateVisualSelection();
 }
 
 void VerticalMenu::SetItems(std::span<const VerticalMenuItem> items)
 {
+    if (role_ == VerticalMenuRole::Entries)
+    {
+        SetEntryItems(items);
+        return;
+    }
+
     if (listBox_ == nullptr)
     {
         return;
     }
 
+    bool unchanged = items.size() == itemCount_ && items.size() == itemIds_.size();
+    for (std::size_t index = 0; unchanged && index < items.size(); ++index)
+    {
+        unchanged = itemIds_[index] == items[index].id &&
+            listBox_->GetString(static_cast<unsigned int>(index)) == items[index].label;
+    }
+    if (unchanged)
+    {
+        return;
+    }
+
     listBox_->Clear();
+    itemIds_.clear();
+    itemIds_.reserve(items.size());
     for (const auto& item : items)
     {
         listBox_->Append(item.label);
+        itemIds_.push_back(item.id);
     }
 
     itemCount_ = items.size();
     if (itemCount_ > 0)
     {
         selectedIndex_ = 0;
-        listBox_->SetSelection(static_cast<int>(selectedIndex_));
     }
     else
     {
@@ -142,14 +184,44 @@ std::size_t VerticalMenu::GetItemCount() const
     return itemCount_;
 }
 
+std::string_view VerticalMenu::GetItemId(std::size_t index) const
+{
+    if (index >= itemIds_.size())
+    {
+        throw std::out_of_range(lila::shared::text::ui::VerticalMenuIndexOutOfRange.str());
+    }
+
+    return itemIds_[index];
+}
+
+std::optional<std::string_view> VerticalMenu::GetSelectedItemId() const
+{
+    if (selectedIndex_ >= itemIds_.size())
+    {
+        return std::nullopt;
+    }
+
+    return itemIds_[selectedIndex_];
+}
+
+wxWindow* VerticalMenu::GetSelectedControl() const
+{
+    if (role_ == VerticalMenuRole::Entries)
+    {
+        return selectedIndex_ < entries_.size() ? entries_[selectedIndex_] : nullptr;
+    }
+
+    return listBox_;
+}
+
 wxWindow* VerticalMenu::GetFirstButton() const
 {
-    return listBox_;
+    return entries_.empty() ? static_cast<wxWindow*>(listBox_) : entries_.front();
 }
 
 wxWindow* VerticalMenu::GetLastButton() const
 {
-    return listBox_;
+    return entries_.empty() ? static_cast<wxWindow*>(listBox_) : entries_.back();
 }
 
 void VerticalMenu::ApplyTheme()
@@ -163,12 +235,22 @@ void VerticalMenu::ApplyTheme()
         listBox_->SetForegroundColour(Theme::TextPrimary());
         listBox_->SetBackgroundColour(Theme::PanelBackground());
     }
+    for (auto* entry : entries_)
+    {
+        entry->ApplyTheme();
+    }
 }
 
 void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
 {
-    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: begin.");
     sizer_ = new wxBoxSizer(wxVERTICAL);
+    if (role_ == VerticalMenuRole::Entries)
+    {
+        SetSizer(sizer_);
+        BuildEntryLayout(items);
+        return;
+    }
+
     listBox_ = new wxListBox(
         this,
         wxID_ANY,
@@ -177,24 +259,37 @@ void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
         0,
         nullptr,
         wxLB_SINGLE | wxBORDER_NONE);
-    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: listBox created.");
-    lila::shared::accessibility::ConfigureListBoxAsAccessibleMenu(
-        *listBox_,
-        wxString(L"Menu"),
-        [this](std::size_t index)
-        {
-            OnListActivated(index);
-        });
-    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: accessible menu configured.");
+    const auto onActivated = [this](std::size_t index)
+    {
+        OnListActivated(index);
+    };
+    switch (role_)
+    {
+    case VerticalMenuRole::Menu:
+        lila::shared::accessibility::ConfigureListBoxAsAccessibleMenu(
+            *listBox_,
+            wxEmptyString,
+            onActivated);
+        break;
+    case VerticalMenuRole::List:
+        lila::shared::accessibility::ConfigureListBoxAsAccessibleList(
+            *listBox_,
+            wxEmptyString,
+            onActivated);
+        break;
+    case VerticalMenuRole::Entries:
+        break;
+    }
+    itemIds_.clear();
+    itemIds_.reserve(items.size());
     for (const auto& item : items)
     {
         if (listBox_ != nullptr)
         {
             listBox_->Append(item.label);
         }
+        itemIds_.push_back(item.id);
     }
-    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: items appended.");
-
     itemCount_ = items.size();
     if (itemCount_ > 0)
     {
@@ -207,13 +302,10 @@ void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
     }
 
     SetSizer(sizer_);
-    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: sizer attached.");
     BindListEvents();
-    lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: events bound.");
     if (itemCount_ > 0)
     {
         listBox_->SetSelection(0);
-        lila::shared::logging::LogInfo("VerticalMenu", "BuildLayout: initial selection set.");
     }
 }
 
@@ -228,10 +320,6 @@ void VerticalMenu::BindListEvents()
         wxEVT_SET_FOCUS,
         [this](wxFocusEvent& event)
         {
-            if (!GetName().empty())
-            {
-                listBox_->SetName(GetName());
-            }
             event.Skip();
         });
     listBox_->Bind(
@@ -283,10 +371,6 @@ void VerticalMenu::BindListEvents()
 
 void VerticalMenu::OnListSelectionChanged(wxCommandEvent& event)
 {
-    if (listBox_ != nullptr && !GetName().empty())
-    {
-        listBox_->SetName(GetName());
-    }
     const int selected = event.GetInt();
     if (selected < 0 || static_cast<std::size_t>(selected) >= itemCount_)
     {
@@ -318,14 +402,30 @@ void VerticalMenu::OnListKeyDown(wxKeyEvent& event)
     }
 
     using Navigator = lila::shared::accessibility::NavigationController;
-    if (tabNavigationEnabled_ && Navigator::HandleDirectedTab(event, backwardTabTarget_, forwardTabTarget_))
+    const int key = event.GetKeyCode();
+    if (onKey_ && onKey_(key))
     {
+        event.Skip(false);
+        return;
+    }
+    if (Navigator::IsTabKey(key))
+    {
+        if (tabNavigationEnabled_ && Navigator::HandleDirectedTab(event, backwardTabTarget_, forwardTabTarget_))
+        {
+            return;
+        }
+        event.Skip(false);
         return;
     }
 
-    const int key = event.GetKeyCode();
     switch (key)
     {
+    case WXK_LEFT:
+    case WXK_RIGHT:
+    case WXK_NUMPAD_LEFT:
+    case WXK_NUMPAD_RIGHT:
+        event.Skip(false);
+        return;
     case WXK_UP:
     case WXK_NUMPAD_UP:
         if (itemCount_ > 0 && selectedIndex_ > 0)
@@ -358,26 +458,35 @@ void VerticalMenu::OnListKeyDown(wxKeyEvent& event)
 
 void VerticalMenu::FocusIndex(std::size_t index, bool notify)
 {
-    lila::shared::logging::LogInfo("VerticalMenu", "FocusIndex: begin.");
-    if (index >= itemCount_ || listBox_ == nullptr)
+    if (index >= itemCount_)
     {
-        lila::shared::logging::LogWarning("VerticalMenu", "FocusIndex: invalid index or null listBox.");
+        lila::shared::logging::LogWarning("VerticalMenu", "FocusIndex: invalid index.");
         return;
     }
 
     selectedIndex_ = index;
-    listBox_->SetSelection(static_cast<int>(index));
-    if (!GetName().empty())
+    if (role_ == VerticalMenuRole::Entries)
     {
-        listBox_->SetName(GetName());
+        if (index >= entries_.size() || entries_[index] == nullptr)
+        {
+            return;
+        }
+        entries_[index]->SetFocus();
     }
-    listBox_->SetFocus();
+    else
+    {
+        if (listBox_ == nullptr)
+        {
+            return;
+        }
+        listBox_->SetSelection(static_cast<int>(index));
+        listBox_->SetFocus();
+    }
     UpdateVisualSelection();
     if (notify)
     {
         NotifySelectionChanged();
     }
-    lila::shared::logging::LogInfo("VerticalMenu", "FocusIndex: end.");
 }
 
 void VerticalMenu::NotifySelectionChanged()
@@ -390,11 +499,18 @@ void VerticalMenu::NotifySelectionChanged()
 
 void VerticalMenu::UpdateVisualSelection()
 {
-    if (listBox_ == nullptr)
+    if (role_ == VerticalMenuRole::Entries)
     {
+        for (auto* entry : entries_)
+        {
+            entry->Refresh();
+        }
         return;
     }
 
-    listBox_->Refresh();
+    if (listBox_ != nullptr)
+    {
+        listBox_->Refresh();
+    }
 }
 }

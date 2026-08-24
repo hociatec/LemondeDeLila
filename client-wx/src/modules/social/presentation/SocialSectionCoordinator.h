@@ -21,8 +21,8 @@ class SocialSectionCoordinator final
 public:
     struct Callbacks final
     {
-        std::function<void(const wxString&, const std::function<void()>&, const std::function<void()>&)> runBackgroundTask;
-        std::function<void(const wxString&, bool)> updateStatus;
+        std::function<void(const wxString&, const std::function<void()>&, const std::function<void()>&, bool)> runBackgroundTask;
+        std::function<void(const wxString&, bool, bool)> updateStatus;
         std::function<void()> focusCurrentScreen;
     };
 

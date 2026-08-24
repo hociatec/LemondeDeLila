@@ -1,19 +1,19 @@
-﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
+} from '../../../../domain/errors/public-api';
 import { PIRATES_GAME } from '../definitions/pirates-en-vadrouille.definition';
 import {
   isRollAlias,
   normalizeActionType,
-} from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+} from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
 import {
   getPendingChooseTargetActionsForPlayer,
   validatePendingChooseTargetActionForActor,
-} from '../../../../core/helpers/pending-actions-rulebook.helper';
+} from '../../../../application/helpers/pending-actions-rulebook.helper';
 import type { PiratesEnVadrouilleActionType } from '../definitions/pirates-en-vadrouille.definition';
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -74,7 +74,7 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃƒÂ©marrÃƒÂ©e.", {
       gameType: 'pirates-en-vadrouille',
     });
   }
@@ -131,3 +131,7 @@ export function validateAction(
   if (type === 'roll') return { type: 'roll', payload: action.payload ?? {} };
   return action;
 }
+
+
+
+

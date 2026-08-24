@@ -1,15 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
 import { AdminRolesService } from '../../../application/use-cases/admin-roles/admin-roles.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import {
   AdminRoleDefinitionCreateWsDto,
   AdminRoleDefinitionDeleteWsDto,
   AdminRoleDefinitionUpdateWsDto,
   AdminRolesListWsDto,
-} from './admin-ws.dto';
+} from './dto/admin-ws.dto';
 
 @Injectable()
 export class AdminRolesWsHandler {
@@ -18,7 +18,7 @@ export class AdminRolesWsHandler {
     private readonly roles: AdminRolesService,
   ) {}
 
-  async rolesList(session: WsSession, payload: any) {
+  async rolesList(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminRolesListWsDto, payload ?? {});
     return {
@@ -35,7 +35,7 @@ export class AdminRolesWsHandler {
     };
   }
 
-  async roleDefinitionCreate(session: WsSession, payload: any) {
+  async roleDefinitionCreate(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(
       AdminRoleDefinitionCreateWsDto,
@@ -47,7 +47,7 @@ export class AdminRolesWsHandler {
     };
   }
 
-  async roleDefinitionUpdate(session: WsSession, payload: any) {
+  async roleDefinitionUpdate(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(
       AdminRoleDefinitionUpdateWsDto,
@@ -59,7 +59,7 @@ export class AdminRolesWsHandler {
     };
   }
 
-  async roleDefinitionDelete(session: WsSession, payload: any) {
+  async roleDefinitionDelete(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(
       AdminRoleDefinitionDeleteWsDto,
@@ -71,6 +71,7 @@ export class AdminRolesWsHandler {
     };
   }
 }
+
 
 
 

@@ -8,6 +8,8 @@
 
 #include "shared/accessibility/AccessibilityUtils.h"
 #include "shared/accessibility/ActionButton.h"
+#include "shared/accessibility/FocusManager.h"
+#include "shared/accessibility/FocusCoordinator.h"
 #include "shared/accessibility/NonFocusablePanel.h"
 #include "shared/ui/Theme.h"
 
@@ -49,6 +51,18 @@ lila::shared::accessibility::NavigationController::Scope HomeFrame::BuildCurrent
     return scope;
 }
 
+void HomeFrame::PrepareForLogout()
+{
+    isBusy_ = false;
+    SetFormInteractivity(Page::Login, true);
+    loginPasswordInput_->Clear();
+    loginPasswordTextInput_->Clear();
+    SetStatus(wxEmptyString);
+    currentPage_ = Page::Login;
+    pages_->SetSelection(1);
+    Layout();
+}
+
 void HomeFrame::ShowPage(Page page)
 {
     currentPage_ = page;
@@ -67,10 +81,9 @@ void HomeFrame::ShowPage(Page page)
     }
 
     Layout();
-    CallAfter([this]()
-    {
-        FocusCurrentPagePrimaryField();
-    });
+    lila::shared::accessibility::FocusCoordinator::Schedule(
+        *this,
+        [this]() { return BuildFocusPlan(); });
 }
 
 void HomeFrame::SetStatus(const wxString& message, bool isError)
@@ -82,22 +95,34 @@ void HomeFrame::SetStatus(const wxString& message, bool isError)
     cardPanel_->Layout();
 }
 
-void HomeFrame::FocusCurrentPagePrimaryField()
+lila::shared::accessibility::FocusManager::Plan HomeFrame::BuildFocusPlan()
 {
+    lila::shared::accessibility::FocusManager::Plan plan;
+
     switch (currentPage_)
     {
     case Page::Landing:
-        landingLoginButton_->SetFocus();
+        plan.AddWindow(landingLoginButton_);
         break;
     case Page::Login:
-        loginUsernameInput_->SetFocus();
-        loginUsernameInput_->SelectAll();
+        plan.AddResolver(
+            [this]() -> wxWindow*
+            {
+                loginUsernameInput_->SelectAll();
+                return loginUsernameInput_;
+            });
         break;
     case Page::Register:
-        registerUsernameInput_->SetFocus();
-        registerUsernameInput_->SelectAll();
+        plan.AddResolver(
+            [this]() -> wxWindow*
+            {
+                registerUsernameInput_->SelectAll();
+                return registerUsernameInput_;
+            });
         break;
     }
+
+    return plan;
 }
 
 void HomeFrame::ToggleLoginPasswordMode()

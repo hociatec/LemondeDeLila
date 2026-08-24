@@ -1,10 +1,11 @@
-﻿#include "modules/main_menu/presentation/MainMenuFrame.h"
+#include "modules/main_menu/presentation/MainMenuFrame.h"
 
 #include <wx/event.h>
 #include <wx/msgdlg.h>
 
 #include "modules/main_menu/presentation/MainMenuContent.h"
 #include "modules/options/application/OptionsStore.h"
+#include "shared/ui/controls/VerticalMenu.h"
 #include "shared/ui/navigation/MenuBlueprint.h"
 
 namespace lila::modules::main_menu::presentation
@@ -20,10 +21,12 @@ void MainMenuFrame::BindEvents()
         *menu_,
         [this](std::size_t index)
         {
+            selectedMenuIndex_ = index;
             OnMenuSelectionChanged(index);
         },
         [this](std::size_t index)
         {
+            selectedMenuIndex_ = index;
             OnMenuActivated(index);
         });
 }
@@ -34,17 +37,12 @@ void MainMenuFrame::OnLogoutClicked(wxCommandEvent& event)
 
     if (onLogoutRequested_)
     {
-        if (menu_ == nullptr)
+        if (menu_ == nullptr || menu_->GetItemCount() == 0)
         {
             return;
         }
 
-        if (menu_->GetItemCount() == 0)
-        {
-            return;
-        }
-
-        onLogoutRequested_(menu_->GetSelectedIndex());
+        onLogoutRequested_(selectedMenuIndex_);
     }
 }
 
@@ -120,7 +118,10 @@ void MainMenuFrame::OnMenuActivated(std::size_t index)
         return;
     }
     case MainMenuAction::OpenCatalog:
-        SetStatus(wxString(entries[index].statusMessage.data()));
+        if (onOpenCatalogRequested_)
+        {
+            onOpenCatalogRequested_(index);
+        }
         return;
     }
 }

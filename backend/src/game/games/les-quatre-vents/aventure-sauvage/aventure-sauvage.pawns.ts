@@ -1,4 +1,4 @@
-import type { AventureSauvagePawn } from './model/aventure-sauvage-state.entity';
+import type { AventureSauvagePawn } from './model/aventure-sauvage-state.model';
 
 export const AVENTURE_SAUVAGE_PAWNS: AventureSauvagePawn[] = [
   {
@@ -73,3 +73,4 @@ const toText = (value: unknown): string => {
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   return '';
 };
+

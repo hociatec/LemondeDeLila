@@ -5,7 +5,6 @@
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/event.h>
-#include <wx/frame.h>
 #include <wx/slider.h>
 #include <wx/stattext.h>
 #include <wx/window.h>
@@ -78,7 +77,7 @@ void BindCheckbox(
 }
 
 void OptionsEventBinder::Bind(
-    wxFrame& frame,
+    wxWindow& owner,
     OptionsView& view,
     OptionsFocusController& focusController,
     Handlers handlers)
@@ -90,7 +89,14 @@ void OptionsEventBinder::Bind(
 
     if (shell.sectionsMenu != nullptr)
     {
-        shell.sectionsMenu->SetSelectionChangedHandler([](std::size_t) {});
+        shell.sectionsMenu->SetSelectionChangedHandler(
+            [selectSection = handlers.selectSection](std::size_t index)
+            {
+                if (selectSection)
+                {
+                    selectSection(index);
+                }
+            });
         shell.sectionsMenu->SetActivatedHandler(
             [activateSection = handlers.activateSection](std::size_t index)
             {
@@ -114,7 +120,7 @@ void OptionsEventBinder::Bind(
             });
     }
 
-    const auto& changed = handlers.refreshUnsavedState;
+    const auto& changed = handlers.saveState;
     BindCheckbox(general.restoreSessionCheckbox, false, view, focusController, changed);
     BindCheckbox(general.showNavigationStatusCheckbox, false, view, focusController, changed);
     BindCheckbox(general.confirmExitCheckbox, false, view, focusController, changed);
@@ -143,7 +149,7 @@ void OptionsEventBinder::Bind(
     bindSliderIfReady(audio.soundChatMessagesSlider, audio.soundChatMessagesValueLabel, wxString(L"Messages du chat"));
 
     lila::shared::accessibility::NavigationController::BindEscapeNavigation(
-        frame,
+        owner,
         [handlers]()
         {
             if (handlers.handleEscape)
@@ -153,21 +159,6 @@ void OptionsEventBinder::Bind(
             return true;
         });
 
-    focusController.BindNavigation(frame, handlers.isInsideSection);
-
-    frame.Bind(
-        wxEVT_CLOSE_WINDOW,
-        [onExitRequested = std::move(handlers.onExitRequested)](wxCloseEvent& event)
-        {
-            if (event.CanVeto())
-            {
-                event.Veto();
-            }
-            event.Skip(false);
-            if (onExitRequested && event.CanVeto())
-            {
-                onExitRequested();
-            }
-        });
+    focusController.BindNavigation(owner, handlers.isInsideSection);
 }
 }

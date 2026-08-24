@@ -1,30 +1,108 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../core/core.module';
-import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { EngineServicesModule } from '../../../engine/services/engine-services.module';
-import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
-import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
-import { AFondLesBallonsService } from './a-fond-les-ballons.service';
-import { AFondLesBallonsSetupService } from './setup/a-fond-les-ballons-setup.service';
-import { AFondLesBallonsActionService } from './actions/a-fond-les-ballons-action.service';
-import { AFondLesBallonsPresenterService } from './presenter/a-fond-les-ballons-presenter.service';
-import { AFondLesBallonsBotService } from './bots/a-fond-les-ballons-bot.service';
+import { GameCoreModule } from '../../../module/game-core.module';
+import { EngineServicesModule } from '../../../infrastructure/module/engine-services.module';
+import { SetupFlowModule } from '../../../application/modules/setup-flow.module';
+import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { GameCoreService } from '../../../application/services/game-core.service';
+import { RandomService } from '../../../application/services/random.service';
+import { TurnFlowService } from '../../../application/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../application/features/deck-policies/services/deck-policies.service';
+import { SetupFlowService } from '../../../application/services/setup-flow.service';
+import { BoardPayloadService } from '../../../application/services/board-payload.service';
+import { BotRunnerService } from '../../../application/services/bot-runner.service';
+import type { GameCatalogReader } from '../../../application/ports/game-catalog.reader';
+import { AFondLesBallonsService } from './application/services/a-fond-les-ballons.service';
+import { AFondLesBallonsSetupService } from './application/services/a-fond-les-ballons-setup.service';
+import { AFondLesBallonsActionService } from './application/services/a-fond-les-ballons-action.service';
+import { AFondLesBallonsPresenterService } from './application/services/a-fond-les-ballons-presenter.service';
+import { AFondLesBallonsBotService } from './application/services/a-fond-les-ballons-bot.service';
+
+const emptyCatalogReader: GameCatalogReader = {
+  listEntries: () => [],
+  loadJsonFile: () => null,
+  readTextFile: () => '',
+};
 
 @Module({
   imports: [
     GameCoreModule,
-    GameRegistryModule,
     EngineServicesModule,
     BoardGameDeckKitModule,
     SetupFlowModule,
   ],
   providers: [
-    AFondLesBallonsService,
-    AFondLesBallonsSetupService,
-    AFondLesBallonsActionService,
-    AFondLesBallonsPresenterService,
-    AFondLesBallonsBotService,
+    {
+      provide: AFondLesBallonsSetupService,
+      inject: [GameCoreService, RandomService, SetupFlowService],
+      useFactory: (
+        core: GameCoreService,
+        random: RandomService,
+        setupFlow: SetupFlowService,
+      ) =>
+        new AFondLesBallonsSetupService(
+          core,
+          random,
+          emptyCatalogReader as unknown as never,
+          setupFlow,
+        ),
+    },
+    {
+      provide: AFondLesBallonsActionService,
+      inject: [
+        GameCoreService,
+        RandomService,
+        TurnFlowService,
+        DeckPoliciesService,
+        SetupFlowService,
+      ],
+      useFactory: (
+        core: GameCoreService,
+        random: RandomService,
+        turns: TurnFlowService,
+        deckPolicies: DeckPoliciesService,
+        setupFlow: SetupFlowService,
+      ) =>
+        new AFondLesBallonsActionService(
+          core,
+          random,
+          turns,
+          deckPolicies,
+          setupFlow,
+        ),
+    },
+    {
+      provide: AFondLesBallonsPresenterService,
+      inject: [BoardPayloadService],
+      useFactory: (boardPayload: BoardPayloadService) =>
+        new AFondLesBallonsPresenterService(boardPayload),
+    },
+    {
+      provide: AFondLesBallonsBotService,
+      inject: [BotRunnerService],
+      useFactory: (botRunner: BotRunnerService) =>
+        new AFondLesBallonsBotService(botRunner),
+    },
+    {
+      provide: AFondLesBallonsService,
+      inject: [
+        AFondLesBallonsSetupService,
+        AFondLesBallonsActionService,
+        AFondLesBallonsPresenterService,
+        AFondLesBallonsBotService,
+      ],
+      useFactory: (
+        setup: AFondLesBallonsSetupService,
+        actions: AFondLesBallonsActionService,
+        presenter: AFondLesBallonsPresenterService,
+        bots: AFondLesBallonsBotService,
+      ) => new AFondLesBallonsService(setup, actions, presenter, bots),
+    },
   ],
   exports: [AFondLesBallonsService],
 })
 export class AFondLesBallonsModule {}
+
+
+
+
+

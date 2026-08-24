@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { MnemoQuizStoreService } from '../../../../game/games/vents-infinis/arche-de-mnemosyne/store/mnemo-quiz-store.service';
-import type { MnemoQuestionStatus } from '../../../../game/games/vents-infinis/arche-de-mnemosyne/model/mnemo-quiz.model';
+import { MnemoQuizStoreService } from '../../../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
+import type { MnemoQuestionStatus } from '../../../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
 
 @Injectable()
 export class AdminMnemoQuizPresenterService {

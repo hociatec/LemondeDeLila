@@ -1,9 +1,17 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GamePayloadValidationError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import { ENTRE_RITES_CARD_BY_ID } from '../model/entre-rites-cards';
-import type { EntreRitesMetadata } from '../model/entre-rites-state.entity';
-import { normalizeActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import type { EntreRitesMetadata } from '../model/entre-rites-state.model';
 
 type EntreRitesActionType = 'ask_card' | 'pass';
 
@@ -48,8 +56,8 @@ export function getAvailableActions(
   }
   const actions: GameSingleActionDto[] = [];
   const opponents = (Array.isArray(state.players) ? state.players : [])
-    .filter((p) => p?.id != null && p.id !== playerId)
-    .map((p) => p.id);
+    .filter((player) => player?.id != null && player.id !== playerId)
+    .map((player) => player.id);
 
   for (const opponentId of opponents) {
     const opponentHand = Array.isArray(meta.hands?.[opponentId])
@@ -82,18 +90,20 @@ export function validateAction(
   const type = requestedType as EntreRitesActionType;
   const payload = (action?.payload ?? {}) as EntreRitesActionPayload;
   if (type !== 'ask_card' && type !== 'pass') {
-    throw new Error(`Action inconnue : ${requestedType ?? 'unknown'}`);
+    throw new GameUnknownActionError(
+      `Action inconnue : ${requestedType ?? 'unknown'}`,
+    );
   }
   if (actorId == null) {
-    throw new Error('Acteur requis.');
+    throw new GameActorRequiredError();
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error('La partie n’est pas démarrée.');
+    throw new GameStateViolationError("La partie n’est pas démarrée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
   const meta = getMeta(state);
   const peace = meta.peaceTurnsRemaining ?? 0;
@@ -101,26 +111,28 @@ export function validateAction(
     return { type: 'pass', payload: {} };
   }
   if (peace > 0) {
-    throw new Error('La paix impose de passer ce tour.');
+    throw new GameActionRejectedError('La paix impose de passer ce tour.');
   }
 
   const targetId =
     typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
   const cardId = String(payload.cardId ?? '').trim();
   if (!cardId) {
-    throw new Error('Carte introuvable.');
+    throw new GamePayloadValidationError('Carte introuvable.');
   }
   if (targetId == null || targetId === actorId) {
-    throw new Error('Cible invalide.');
+    throw new GamePayloadValidationError('Cible invalide.');
   }
   const targetHand = Array.isArray(meta.hands?.[targetId])
     ? meta.hands[targetId]
     : [];
   if (!targetHand.includes(cardId)) {
-    throw new Error('La cible ne possède pas cette carte.');
+    throw new GameActionRejectedError('La cible ne possède pas cette carte.');
   }
   if (!hasFamilyExposure(meta, actorId, cardId)) {
-    throw new Error('Vous devez déjà détenir une carte de cette famille.');
+    throw new GameActionRejectedError(
+      'Vous devez déjà détenir une carte de cette famille.',
+    );
   }
 
   return { type: 'ask_card', payload: { cardId, targetPlayerId: targetId } };

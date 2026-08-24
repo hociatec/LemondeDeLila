@@ -1,8 +1,16 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.entity';
-import { normalizeActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GamePayloadValidationError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.model';
 
 type AbsurdissimesActionPayload = {
   cardId?: string | null;
@@ -70,59 +78,65 @@ export function validateAction(
 ): GameSingleActionDto {
   const type = normalizeActionType(action);
   if (type !== 'play_card' && type !== 'judge_pick') {
-    throw new Error(`Action inconnue: ${type}`);
+    throw new GameUnknownActionError(`Action inconnue: ${type}`);
   }
   if (actorId == null) {
-    throw new Error('Acteur requis');
+    throw new GameActorRequiredError('Acteur requis');
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas démarrée.");
+    throw new GameStateViolationError("La partie n'est pas démarrée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
   const meta = getMeta(state);
   if (meta.winnerId != null) {
-    throw new Error('La partie est terminée.');
+    throw new GameStateViolationError('La partie est terminée.');
   }
   const payload = (action.payload ?? {}) as AbsurdissimesActionPayload;
 
   if (type === 'play_card') {
     if (meta.roundStage !== 'play') {
-      throw new Error('Vous ne pouvez pas jouer une carte maintenant.');
+      throw new GameActionRejectedError(
+        'Vous ne pouvez pas jouer une carte maintenant.',
+      );
     }
     const remaining = meta.remainingPlayers ?? getPlayerIds(state.players);
     if (!remaining.includes(actorId)) {
-      throw new Error('Vous avez déjà joué cette manche.');
+      throw new GameActionRejectedError(
+        'Vous avez déjà joué cette manche.',
+      );
     }
     const cardId = String(payload.cardId ?? '').trim();
     if (!cardId) {
-      throw new Error('Carte invalide.');
+      throw new GamePayloadValidationError('Carte invalide.');
     }
     const hand = meta.blackHands?.[actorId] ?? [];
     if (!hand.includes(cardId)) {
-      throw new Error('Vous ne possédez pas cette carte.');
+      throw new GameActionRejectedError('Vous ne possédez pas cette carte.');
     }
     return { type: 'play_card', payload: { cardId } };
   }
 
   if (meta.roundStage !== 'judge') {
-    throw new Error('Vous ne pouvez pas choisir de gagnant maintenant.');
+    throw new GameActionRejectedError(
+      'Vous ne pouvez pas choisir de gagnant maintenant.',
+    );
   }
   const judgeId = getJudgeId(state, meta);
   if (judgeId !== actorId) {
-    throw new Error('Seul le juge peut choisir un gagnant.');
+    throw new GameActionRejectedError('Seul le juge peut choisir un gagnant.');
   }
   const winnerId =
     typeof payload.winnerId === 'number' ? payload.winnerId : null;
   if (winnerId == null) {
-    throw new Error('Sélection de gagnant invalide.');
+    throw new GamePayloadValidationError('Sélection de gagnant invalide.');
   }
   const submissions = meta.submissions ?? {};
   if (!(winnerId in submissions)) {
-    throw new Error('Aucune proposition pour ce joueur.');
+    throw new GameActionRejectedError('Aucune proposition pour ce joueur.');
   }
   return { type: 'judge_pick', payload: { winnerId } };
 }

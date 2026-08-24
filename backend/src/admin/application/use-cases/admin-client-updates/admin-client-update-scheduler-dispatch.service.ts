@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { parseVersion } from '../../../../common/utils/version.utils';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+import { parseVersion } from '../../../../common/utils/public-api';
 import type { AdminClientUpdatesPort } from '../../ports/admin-client-updates.port';
 import type { AdminNotificationPort } from '../../ports/admin-notification.port';
 import type { AdminClientUpdateScheduleCommand } from './admin-client-updates.types';
@@ -22,19 +21,15 @@ export class AdminClientUpdateSchedulerDispatchService {
 
     await Promise.all(
       input.recipientIds.map((userId) =>
-        input.notifications.notifyUser(
-          userId,
-          WS_EVENTS.clientUpdate.imminent,
-          {
-            message: input.imminentMessage,
-            etaSeconds,
-            scheduledAt: new Date(input.scheduledAtMs).toISOString(),
-            requiresAckDialog: true,
-            fromUserId: input.command.actor.id,
-            fromUsername: input.command.actor.username,
-            timestamp: new Date().toISOString(),
-          },
-        ),
+        input.notifications.notifyClientUpdateImminent(userId, {
+          message: input.imminentMessage,
+          etaSeconds,
+          scheduledAt: new Date(input.scheduledAtMs).toISOString(),
+          requiresAckDialog: true,
+          fromUserId: input.command.actor.id,
+          fromUsername: input.command.actor.username,
+          timestamp: new Date().toISOString(),
+        }),
       ),
     );
   }
@@ -66,7 +61,7 @@ export class AdminClientUpdateSchedulerDispatchService {
 
     await Promise.all(
       input.recipientIds.map((userId) =>
-        input.notifications.notifyUser(userId, WS_EVENTS.clientUpdate.required, {
+        input.notifications.notifyClientUpdateRequired(userId, {
           message:
             latest?.message ??
             'Une mise a jour du client est requise pour continuer.',

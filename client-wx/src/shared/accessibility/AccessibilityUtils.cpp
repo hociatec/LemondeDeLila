@@ -1,7 +1,11 @@
-﻿#include "shared/accessibility/AccessibilityUtils.h"
+#include "shared/accessibility/AccessibilityUtils.h"
 
 #include <wx/string.h>
 #include <wx/window.h>
+
+#ifdef __WXMSW__
+#include <windows.h>
+#endif
 
 namespace lila::shared::accessibility
 {
@@ -47,6 +51,21 @@ void AccessibilityUtils::SetAccessibleStatus(wxWindow& control, const wxString& 
     }
 
     SetAccessibleName(control, message, wxString(L"État : ") + message);
+}
+
+void AccessibilityUtils::AnnounceStatus(wxWindow& control, const wxString& message)
+{
+    SetAccessibleStatus(control, message);
+#ifdef __WXMSW__
+    if (control.GetHandle() != nullptr)
+    {
+        NotifyWinEvent(
+            EVENT_OBJECT_LIVEREGIONCHANGED,
+            reinterpret_cast<HWND>(control.GetHandle()),
+            OBJID_CLIENT,
+            CHILDID_SELF);
+    }
+#endif
 }
 
 void AccessibilityUtils::SetAccessibleName(wxWindow& control, const wxString& name, const wxString& description)

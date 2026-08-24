@@ -9,7 +9,7 @@ void ChatFrame::BindEvents()
 {
     ChatEventBinder::Bind(
         *this,
-        ChatEventBinder::Widgets{*inputCtrl_, *historyList_, *editMessageButton_, *deleteMessageButton_},
+        ChatEventBinder::Widgets{*inputCtrl_, *historyCtrl_, *editMessageButton_, *deleteMessageButton_},
         ChatEventBinder::Handlers{
             [this]() { SendInput(); },
             [this]()
@@ -36,6 +36,7 @@ void ChatFrame::BindEvents()
                     onExitRequested_();
                 }
             }});
+
     focusController_->BindNavigation(*this, [this]() { return isHistoryActionMode_; });
 }
 }

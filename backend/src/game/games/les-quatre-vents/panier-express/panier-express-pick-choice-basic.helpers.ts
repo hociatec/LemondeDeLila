@@ -1,5 +1,5 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { PanierExpressMetadata } from './model/panier-express-state.entity';
+import { GameStateEntity } from '../../../application/models/game-state.model';
+import { PanierExpressMetadata } from './model/panier-express-state.model';
 import {
   asRecord,
   stringEqualsInsensitive,
@@ -61,7 +61,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
-  ) => { meta: PanierExpressMetadata; value: T | undefined };
+  ) => { meta: PanierExpressMetadata; value: T | null };
   ensureMetadata: (state: GameStateEntity) => GameStateEntity;
   buildTiles: () => Array<{
     type?: string;
@@ -133,7 +133,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
     next = args.discardCourse(next, args.actorId, chosen);
     next = args.appendLog(
       next,
-      `[Panier Express] ${args.playerName(args.state, args.actorId)} defausse "${chosen}".`,
+      `[Panier Express] ${args.playerName(args.state, args.actorId)} défausse "${chosen}".`,
     );
     next = args.appendActionLog(next, args.actorId, 'event', {
       effect: 'discard',
@@ -323,7 +323,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
     }
     next = args.appendLog(
       next,
-      `[Panier Express] Echange spontane : ${args.playerName(args.state, args.actorId)} donne "${args.formatCourseLabel(give)}" a ${args.playerName(args.state, targetPlayerId)} et recoit "${args.formatCourseLabel(take)}" de ${args.playerName(args.state, targetPlayerId)}.`,
+      `[Panier Express] Échange spontané : ${args.playerName(args.state, args.actorId)} donne "${args.formatCourseLabel(give)}" à ${args.playerName(args.state, targetPlayerId)} et reçoit "${args.formatCourseLabel(take)}" de ${args.playerName(args.state, targetPlayerId)}.`,
     );
     next = args.appendActionLog(next, args.actorId, 'event', {
       event: 'echange-spontane',
@@ -560,7 +560,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
     if (!stringEqualsInsensitive(chosen, ingredient)) {
       return args.appendLog(
         args.state,
-        `[Panier Express] Le marchand souhaite "${args.formatCourseLabel(ingredient)}". Choisissez l'ingredient demande ou "Refuser".`,
+        `[Panier Express] Le marchand souhaite "${args.formatCourseLabel(ingredient)}". Choisissez l'ingrédient demandé ou "Refuser".`,
       );
     }
     return args.handleMerchantRequestAccept(args.state);
@@ -603,7 +603,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
     }
     next = args.appendLog(
       next,
-      `[Panier Express] Troc rapide : ${args.playerName(args.state, args.actorId)} donne "${args.formatCourseLabel(give)}" et recoit "${args.formatCourseLabel(take)}".`,
+      `[Panier Express] Troc rapide : ${args.playerName(args.state, args.actorId)} donne "${args.formatCourseLabel(give)}" et reçoit "${args.formatCourseLabel(take)}".`,
     );
     return args.advanceTurn(next);
   }
@@ -647,10 +647,14 @@ export function resolveBasicPanierExpressPickChoice(args: {
     }
     next = args.appendLog(
       next,
-      `[Panier Express] ${exchangeLabel} : ${args.playerName(args.state, args.actorId)} donne "${args.formatCourseLabel(give)}" a ${args.playerName(args.state, targetPlayerId)} et recoit "${args.formatCourseLabel(take)}".`,
+      `[Panier Express] ${exchangeLabel}: ${args.playerName(args.state, args.actorId)} donne "${args.formatCourseLabel(give)}" à ${args.playerName(args.state, targetPlayerId)} et reçoit "${args.formatCourseLabel(take)}".`,
     );
     return args.advanceTurn(next);
   }
 
   return null;
 }
+
+
+
+

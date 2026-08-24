@@ -1,5 +1,5 @@
-import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
-import { actionShortcut } from '../../../engine/shortcuts/shortcut-utils';
+import type { GameShortcutsBuilder } from '../../../models/game-shortcuts.model';
+import { actionShortcut } from '../../../application/helpers/shortcut-utils';
 
 export const buildLaParadeSucreeShortcuts: GameShortcutsBuilder = () => [
   actionShortcut('C', 'play_card'),

@@ -4,9 +4,10 @@ import {
   type AdminMaintenanceRuntimePort,
 } from '../../ports/admin-maintenance-runtime.port';
 import {
-  ADMIN_BACKEND_SERVICE,
+  ADMIN_MAINTENANCE_CONFIG,
   ADMIN_SERVICE_RE,
-} from './admin-maintenance.constants';
+  type AdminMaintenanceConfig,
+} from '../../ports/admin-maintenance-config.port';
 
 @Injectable()
 export class StartAdminBuildAndRestartBackendService {
@@ -15,22 +16,24 @@ export class StartAdminBuildAndRestartBackendService {
   constructor(
     @Inject(ADMIN_MAINTENANCE_RUNTIME_PORT)
     private readonly runtime: AdminMaintenanceRuntimePort,
+    @Inject(ADMIN_MAINTENANCE_CONFIG)
+    private readonly config: AdminMaintenanceConfig,
   ) {}
 
   execute() {
-    if (!ADMIN_SERVICE_RE.test(ADMIN_BACKEND_SERVICE)) {
+    if (!ADMIN_SERVICE_RE.test(this.config.backendService)) {
       throw new InternalServerErrorException({
-        message: `Service backend invalide: ${ADMIN_BACKEND_SERVICE}`,
+        message: `Service backend invalide: ${this.config.backendService}`,
       });
     }
 
     const chain = [
       `cd ${this.runtime.shQuote(this.backendCwd)}`,
       'npm run build',
-      `sudo -n systemctl restart ${this.runtime.shQuote(ADMIN_BACKEND_SERVICE)}`,
+      `sudo -n systemctl restart ${this.runtime.shQuote(this.config.backendService)}`,
     ].join(' && ');
 
     this.runtime.spawnDetached(['bash', '-lc', chain], { delayMs: 350 });
-    return { ok: true, service: ADMIN_BACKEND_SERVICE, scheduled: true };
+    return { ok: true, service: this.config.backendService, scheduled: true };
   }
 }

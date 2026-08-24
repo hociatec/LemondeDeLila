@@ -4,6 +4,10 @@ import {
   type RoleDefinitionRepository,
 } from '../../ports/role-definition.repository';
 import type { RoleDefinition } from '../../../domain/models/role-definition.model';
+import {
+  AdminRoleAlreadyExistsError,
+  AdminRoleNotFoundError,
+} from '../../../domain/errors/admin-domain.errors';
 
 @Injectable()
 export class AdminRoleDefinitionsCatalogService implements OnModuleInit {
@@ -33,7 +37,7 @@ export class AdminRoleDefinitionsCatalogService implements OnModuleInit {
   async create(definition: RoleDefinition): Promise<void> {
     const current = await this.list();
     if (current.some((role) => role.name === definition.name)) {
-      throw new Error(`Le role '${definition.name}' existe deja.`);
+      throw new AdminRoleAlreadyExistsError(definition.name);
     }
     await this.roles.insert({
       name: definition.name,
@@ -50,14 +54,14 @@ export class AdminRoleDefinitionsCatalogService implements OnModuleInit {
     await this.ensureSeeded();
     const current = await this.roles.findByName(name);
     if (!current) {
-      throw new Error(`Role '${name}' introuvable.`);
+      throw new AdminRoleNotFoundError(name);
     }
 
     const nextName = update.name ?? current.name;
     if (nextName !== name) {
       const existing = await this.roles.findByName(nextName);
       if (existing) {
-        throw new Error(`Le role '${nextName}' existe deja.`);
+        throw new AdminRoleAlreadyExistsError(nextName);
       }
     }
 
@@ -73,7 +77,7 @@ export class AdminRoleDefinitionsCatalogService implements OnModuleInit {
     await this.ensureSeeded();
     const deleted = await this.roles.delete(name);
     if (!deleted) {
-      throw new Error(`Role '${name}' introuvable.`);
+      throw new AdminRoleNotFoundError(name);
     }
     this.cache = null;
   }

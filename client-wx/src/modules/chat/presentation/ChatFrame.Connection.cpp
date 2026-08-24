@@ -1,10 +1,10 @@
 #include "shared/text/Encoding.h"
 #include "modules/chat/presentation/ChatFrame.h"
+#include "shared/accessibility/FocusCoordinator.h"
 #include "modules/chat/presentation/ChatErrorResolver.h"
 #include "modules/chat/presentation/ChatFocusController.h"
 
 #include <wx/button.h>
-#include <wx/listbox.h>
 #include <wx/textctrl.h>
 
 #include "modules/chat/application/ChatService.h"
@@ -66,8 +66,7 @@ void ChatFrame::SetBusyState(bool isBusy, const wxString& statusMessage)
         RefreshHistory();
     }
 
-    historyList_->Enable(!isBusy && !visibleMessages_.empty());
-    emptyHistoryCtrl_->Enable(true);
+    historyCtrl_->Enable(true);
     inputCtrl_->Enable(true);
     inputCtrl_->SetEditable(!isBusy && chatService_.State() == domain::ChatState::Connected);
     if (isBusy)
@@ -80,7 +79,7 @@ void ChatFrame::SetBusyState(bool isBusy, const wxString& statusMessage)
         SyncActionState();
     }
 
-    focusController_->FocusComposer();
+    static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposerPlan()));
 }
 
 void ChatFrame::OpenChat()
@@ -91,7 +90,7 @@ void ChatFrame::OpenChat()
     }
 
     SetBusyState(true, lila::shared::text::FromUtf8(lila::shared::text::ui::ChatConnecting));
-    focusController_->FocusComposer();
+    static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposerPlan()));
     InvalidateOpenChatRequest();
     const std::size_t requestId = activeOpenChatRequestId_;
     auto* service = &chatService_;
@@ -129,7 +128,7 @@ void ChatFrame::OpenChat()
 
             RefreshHistory();
             SyncActionState();
-            focusController_->FocusComposer();
+            static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposerPlan()));
         });
 }
 
@@ -141,10 +140,6 @@ void ChatFrame::PresentConnectionError(const std::string& message)
             lila::shared::errors::UnexpectedError)
         : message;
     UpdateStatus(lila::shared::text::FromUtf8(safeMessage), true);
-    if (statusLabel_ != nullptr)
-    {
-        statusLabel_->SetFocus();
-    }
     wxBell();
     ShowAccessibleErrorDialog(
         lila::shared::text::FromUtf8(safeMessage),

@@ -45,6 +45,35 @@ std::string BuildEnvelope(const RealtimeApiRequest& request, const std::string& 
     return envelope.dump();
 }
 
+bool IsResponseForRequest(
+    const std::string& rawJson,
+    const std::string& expectedRequestId,
+    const std::string& expectedType)
+{
+    nlohmann::json decoded;
+    try
+    {
+        decoded = lila::shared::data::json::ParseDocument(
+            rawJson, lila::shared::errors::InvalidRealtimeResponse);
+    }
+    catch (const std::exception& error)
+    {
+        throw RealtimeProtocolError(error.what());
+    }
+    if (!decoded.is_object())
+        throw RealtimeProtocolError(lila::shared::errors::InvalidRealtimeResponse);
+
+    const auto requestId = lila::shared::data::json::ReadOptionalString(
+        decoded, lila::shared::network::realtime::fields::RequestId.data());
+    if (!requestId.empty()) return requestId == expectedRequestId;
+
+    // Legacy responses may not carry a request id. Unsolicited events use a
+    // different type, so they remain distinguishable from the awaited reply.
+    const auto type = lila::shared::data::json::ReadOptionalString(
+        decoded, lila::shared::network::realtime::fields::Type.data());
+    return !expectedType.empty() && type == expectedType;
+}
+
 RealtimeApiResponse ParseResponse(
     const std::string& rawJson,
     const std::string& expectedRequestId,

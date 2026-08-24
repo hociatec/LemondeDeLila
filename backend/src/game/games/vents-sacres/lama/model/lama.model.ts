@@ -7,7 +7,7 @@ export type LamaRoundStep =
   | 'round_pause';
 
 export type LamaMetadata = {
-  rng?: Record<string, any>;
+  rng?: Record<string, unknown>;
   ownerPlayerId: number | null;
   loseAtScore: number | null;
   roundPauseSeconds: number | null;

@@ -1,10 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import { CreateBotNameService } from '../../../../bot/application/use-cases/bot-names/create-bot-name.service';
-import { DeleteBotNameService } from '../../../../bot/application/use-cases/bot-names/delete-bot-name.service';
-import { ListBotNamesService } from '../../../../bot/application/use-cases/bot-names/list-bot-names.service';
-import { UpdateBotNameService } from '../../../../bot/application/use-cases/bot-names/update-bot-name.service';
-import { mapBotApplicationError } from '../../../../bot/infrastructure/errors/bot-error-http.mapper';
-import { BotSettingsService } from '../../../../game/modules/bot/services/bot-settings.service';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import {
+  BotApplicationError,
+  CreateBotNameService,
+  DeleteBotNameService,
+  ListBotNamesService,
+  UpdateBotNameService,
+} from '../../../../bot/public-api';
+import { BotSettingsService } from '../../../../game/public-api';
+
+function mapBotApplicationError(error: unknown): unknown {
+  if (!(error instanceof BotApplicationError)) {
+    return error;
+  }
+
+  switch (error.code) {
+    case 'BOT_ROOM_NOT_FOUND':
+    case 'BOT_NOT_FOUND':
+      return new NotFoundException(error.message);
+    case 'BOT_ROOM_OWNER_REQUIRED':
+      return new UnauthorizedException(error.message);
+    default:
+      return new BadRequestException(error.message);
+  }
+}
 
 @Injectable()
 export class AdminBotsService {

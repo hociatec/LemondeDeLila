@@ -1,0 +1,511 @@
+import { PanierExpressService } from './panier-express.service';
+import { createPanierExpressTestingModule } from '../../infrastructure/tests/panier-express-test-harness';
+
+function makeStartedState(
+  game: PanierExpressService,
+  players: any[],
+  currentPlayerId: number,
+) {
+  const state: any = game.hydrateInitialState({
+    players,
+    status: 'running',
+  } as any);
+  state.status = 'started';
+  state.turn = { currentPlayerId, direction: 1 };
+  state.turnIndex = Math.max(
+    0,
+    players.findIndex((p: any) => p.id === currentPlayerId),
+  );
+  state.pending = null;
+  // RNG deterministe pour les picks.
+  state.metadata = { ...(state.metadata ?? {}), rng: { seed: 1, counter: 0 } };
+  return state;
+}
+
+describe('PanierExpress pending scenarios', () => {
+  let game: PanierExpressService;
+
+  beforeAll(async () => {
+    const moduleRef = await createPanierExpressTestingModule();
+    game = moduleRef.get(PanierExpressService);
+  });
+
+  it('tirage chanceux: consomme 3 cartes du deck bonus et expose offered', () => {
+    const state = makeStartedState(
+      game,
+      [
+        { id: 1, username: 'A', inventory: [], basket: [], shoppingList: [] },
+        { id: 2, username: 'B', inventory: [], basket: [], shoppingList: [] },
+      ],
+      1,
+    );
+
+    state.metadata.decks.events = {
+      deck: ['tirage-chanceux'],
+      discards: [],
+    };
+    state.metadata.decks['courses-bonus'] = {
+      deck: ['amande', 'noix', 'pomme', 'banane'],
+      discards: [],
+    };
+
+    const mid = (game as any).applyEvent(state, 1);
+    expect(mid.pending?.type).toBe('draw');
+
+    const after = game.applyActions(mid, [
+      { type: 'draw', meta: { actorId: 1 } } as any,
+    ]);
+
+    expect(after.pending?.type).toBe('pick');
+    expect(after.pending?.data?.kind).toBe('event.tirage_chanceux');
+    expect(after.pending?.choices).toEqual(['amande', 'noix', 'pomme']);
+    expect(after.pending?.data?.offered).toEqual(['amande', 'noix', 'pomme']);
+    expect((after as any).metadata?.decks?.['courses-bonus']?.deck).toEqual([
+      'banane',
+    ]);
+  });
+
+  it('bot: rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©sout un tirage chanceux en 1 pick_choice (anti-boucle)', () => {
+    const state = makeStartedState(
+      game,
+      [
+        {
+          id: 1,
+          username: 'Nuggets',
+          isBot: true,
+          inventory: [],
+          basket: [],
+          shoppingList: [],
+        },
+        {
+          id: 2,
+          username: 'Humain',
+          inventory: [],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      1,
+    );
+
+    state.metadata.decks.events = {
+      deck: ['tirage-chanceux'],
+      discards: [],
+    };
+    state.metadata.decks['courses-bonus'] = {
+      deck: ['amande', 'noix', 'pomme'],
+      discards: [],
+    };
+
+    const afterEvent = (game as any).applyEvent(state, 1);
+    const botActions1 = game.getBotActions(afterEvent, 1);
+    expect(botActions1.map((a: any) => a.type)).toEqual(['draw']);
+    const mid = game.applyActions(afterEvent, botActions1 as any);
+
+    const botActions2 = game.getBotActions(mid, 1);
+    expect(botActions2.map((a: any) => a.type)).toEqual(['pick_choice']);
+
+    const after = game.applyActions(mid, botActions2 as any);
+    expect(after.pending).toBeNull();
+    expect(after.turn?.currentPlayerId).toBe(2);
+  });
+
+  it('producteur-genereux: 2 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©tapes (choix carte -> choix joueur)', () => {
+    const state = makeStartedState(
+      game,
+      [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['amande'],
+          basket: [],
+          shoppingList: [],
+        },
+        { id: 2, username: 'B', inventory: [], basket: [], shoppingList: [] },
+      ],
+      1,
+    );
+    state.pending = {
+      type: 'pick',
+      playerId: 1,
+      blocking: true,
+      label: 'x',
+      choices: ['amande'],
+      data: {
+        kind: 'event.producteur_genereux.choose_card',
+        cards: ['amande'],
+        targets: [{ playerId: 2, username: 'B' }],
+      },
+    };
+
+    const step1 = game.applyActions(state, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+    expect(step1.pending?.type).toBe('pick');
+    expect((step1.pending as any)?.data?.kind).toBe(
+      'event.producteur_genereux.choose_target',
+    );
+    expect((step1.pending as any)?.choices).toEqual(['B']);
+
+    const step2 = game.applyActions(step1 as any, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+    const a = (step2.players as any[]).find((p) => p.id === 1);
+    const b = (step2.players as any[]).find((p) => p.id === 2);
+    expect(a.inventory).not.toContain('amande');
+    expect(b.inventory).toContain('amande');
+    expect(step2.turn?.currentPlayerId).toBe(2);
+  });
+
+  it('panier-bonus: vole une carte unique au joueur cible', () => {
+    const state = makeStartedState(
+      game,
+      [
+        { id: 1, username: 'A', inventory: [], basket: [], shoppingList: [] },
+        {
+          id: 2,
+          username: 'B',
+          inventory: ['amande'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      1,
+    );
+    state.pending = {
+      type: 'pick',
+      playerId: 1,
+      blocking: true,
+      label: 'x',
+      choices: ['B'],
+      data: {
+        kind: 'event.panier_bonus.choose_target',
+        targets: [{ playerId: 2, username: 'B' }],
+      },
+    };
+
+    const after = game.applyActions(state, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+    const a = (after.players as any[]).find((p) => p.id === 1);
+    const b = (after.players as any[]).find((p) => p.id === 2);
+    expect(a.inventory).toContain('amande');
+    expect(b.inventory).not.toContain('amande');
+    expect(after.turn?.currentPlayerId).toBe(2);
+  });
+
+  it('ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©change spontanÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©: choix cible -> choix carte -> ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©change', () => {
+    const state = makeStartedState(
+      game,
+      [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['amande'],
+          basket: [],
+          shoppingList: [],
+        },
+        {
+          id: 2,
+          username: 'B',
+          inventory: ['noix'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      1,
+    );
+    state.pending = {
+      type: 'pick',
+      playerId: 1,
+      blocking: true,
+      label: 'x',
+      choices: ['B'],
+      data: {
+        kind: 'event.echange_spontane.choose_target',
+        targets: [{ playerId: 2, username: 'B' }],
+      },
+    };
+
+    const step1 = game.applyActions(state, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+    expect((step1.pending as any)?.data?.kind).toBe(
+      'event.echange_spontane.choose_give',
+    );
+    expect((step1.pending as any)?.choices).toEqual(['amande']);
+
+    const step2 = game.applyActions(step1 as any, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+    const a = (step2.players as any[]).find((p) => p.id === 1);
+    const b = (step2.players as any[]).find((p) => p.id === 2);
+    expect(a.inventory).toContain('noix');
+    expect(a.inventory).not.toContain('amande');
+    expect(b.inventory).toContain('amande');
+    expect(b.inventory).not.toContain('noix');
+    expect(step2.turn?.currentPlayerId).toBe(2);
+  });
+
+  it('conseil de voisinage: prend une carte utile et donne une carte en retour', () => {
+    const state = makeStartedState(
+      game,
+      [
+        // Met la carte prise dans le panier (pas l'inventaire) pour ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©viter
+        // le cas alÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©atoire oÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¹ elle serait redonnÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e immÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©diatement.
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['noix'],
+          basket: [],
+          shoppingList: ['amande'],
+        },
+        {
+          id: 2,
+          username: 'B',
+          inventory: ['amande'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      1,
+    );
+    state.pending = {
+      type: 'pick',
+      playerId: 1,
+      blocking: true,
+      label: 'x',
+      choices: ['B: amande'],
+      data: {
+        kind: 'event.conseil_voisinage.pick',
+        candidates: [{ targetPlayerId: 2, card: 'amande', label: 'B: amande' }],
+      },
+    };
+
+    const after = game.applyActions(state, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+    const a = (after.players as any[]).find((p) => p.id === 1);
+    const b = (after.players as any[]).find((p) => p.id === 2);
+    expect(a.basket).toContain('amande');
+    expect(b.inventory).toContain('noix');
+    expect(after.turn?.currentPlayerId).toBe(2);
+  });
+
+  it("ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©change de saison: ne propose que les fruits d'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© du joueur", () => {
+    const state = makeStartedState(
+      game,
+      [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['mangue', 'noisette', 'tomate'],
+          basket: [],
+          shoppingList: [],
+        },
+        {
+          id: 2,
+          username: 'B',
+          inventory: ['poireau'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      1,
+    );
+    state.pending = {
+      type: 'pick',
+      playerId: 1,
+      blocking: true,
+      label: 'x',
+      choices: ['B'],
+      data: {
+        kind: 'exchange.echange_saison.choose_target',
+        targets: [{ playerId: 2, username: 'B' }],
+      },
+    };
+
+    const after = game.applyActions(state, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+
+    expect(after.pending?.type).toBe('pick');
+    expect((after.pending as any)?.data?.kind).toBe(
+      'exchange.echange_saison.choose_give',
+    );
+    expect((after.pending as any)?.choices).toEqual(['mangue']);
+  });
+
+  it('ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©change devant: rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©sout le choix de carte avec le voisin', () => {
+    const state = makeStartedState(
+      game,
+      [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['amande'],
+          basket: [],
+          shoppingList: [],
+        },
+        {
+          id: 2,
+          username: 'B',
+          inventory: ['noix'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      1,
+    );
+    const pendingState: any = {
+      ...state,
+      pending: {
+        type: 'pick',
+        playerId: 1,
+        blocking: true,
+        label: 'Choisissez une carte ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©changer avec B, puis EntrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e.',
+        choices: ['amande'],
+        data: {
+          kind: 'exchange.voisin.choose_give',
+          targetPlayerId: 2,
+          exchangeLabel: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°change devant',
+        },
+      },
+    };
+
+    expect(pendingState.pending?.type).toBe('pick');
+    expect(pendingState.pending?.data?.kind).toBe(
+      'exchange.voisin.choose_give',
+    );
+    expect(pendingState.pending?.choices).toEqual(['amande']);
+
+    const after = game.applyActions(pendingState, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+
+    const a = (after.players as any[]).find((p) => p.id === 1);
+    const b = (after.players as any[]).find((p) => p.id === 2);
+    const logs = (after.log ?? []).map((entry: any) => String(entry.message));
+
+    expect(a.inventory).toEqual(['noix']);
+    expect(b.inventory).toEqual(['amande']);
+    expect(after.turn?.currentPlayerId).toBe(2);
+    expect(
+      logs.some(
+        (message) =>
+          message.includes('change devant:') &&
+          message.includes('donne "amande"') &&
+          message.includes('noix'),
+      ),
+    ).toBe(true);
+  });
+
+  it("ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©change stratÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©gique: l'offre affichÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e et le log d'acceptation dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©crivent les cartes ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©changÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©es", () => {
+    const state = makeStartedState(
+      game,
+      [
+        {
+          id: 1,
+          username: 'A',
+          inventory: ['amande'],
+          basket: [],
+          shoppingList: [],
+        },
+        {
+          id: 2,
+          username: 'B',
+          inventory: ['noix'],
+          basket: [],
+          shoppingList: [],
+        },
+      ],
+      1,
+    );
+    state.pending = {
+      type: 'pick',
+      playerId: 1,
+      blocking: true,
+      label: 'x',
+      choices: ['amande'],
+      data: {
+        kind: 'exchange.strategique.choose_give',
+        targetPlayerId: 2,
+        take: 'noix',
+        exchangeId: 'abc',
+      },
+    };
+
+    const confirmStep = game.applyActions(state, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 1 },
+      } as any,
+    ]);
+
+    expect(confirmStep.pending?.type).toBe('pick');
+    expect(String(confirmStep.pending?.label ?? '')).toContain(
+      'A vous propose "amande" contre "noix".',
+    );
+    expect(confirmStep.pending?.choices).toEqual(['Accepter', 'Refuser']);
+
+    const after = game.applyActions(confirmStep, [
+      {
+        type: 'pick_choice',
+        payload: { index: 0 },
+        meta: { actorId: 2 },
+      } as any,
+    ]);
+
+    const a = (after.players as any[]).find((p) => p.id === 1);
+    const b = (after.players as any[]).find((p) => p.id === 2);
+    const logs = (after.log ?? []).map((entry: any) => String(entry.message));
+    const aCards = [...(a.inventory ?? []), ...(a.basket ?? [])];
+    const bCards = [...(b.inventory ?? []), ...(b.basket ?? [])];
+
+    expect(aCards).toContain('noix');
+    expect(bCards).toContain('amande');
+    expect(
+      logs.some(
+        (message) =>
+          message.includes('change stratÃƒÂ©gique:') &&
+          message.includes('donne "amande"') &&
+          message.includes('noix'),
+      ),
+    ).toBe(true);
+  });
+});
+
+

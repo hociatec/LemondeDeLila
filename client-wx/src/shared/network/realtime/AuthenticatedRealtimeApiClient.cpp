@@ -23,13 +23,15 @@ AuthenticatedRealtimeApiClient::AuthenticatedRealtimeApiClient(
 
 RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
     const RealtimeApiRequest& request,
-    const std::string& bearerToken) const
+    const std::string& bearerToken,
+    std::stop_token stopToken) const
 {
     RealtimeApiResponse response;
     response.type = request.type;
 
     try
     {
+        std::scoped_lock requestLock(requestMutex_);
         websocket::WebSocketHeaders headers;
         if (!clientVersion_.empty())
         {
@@ -52,8 +54,17 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
 
         const std::string requestId = protocol::GenerateRequestId();
         const std::string envelope = protocol::BuildEnvelope(request, requestId);
-        const auto rawJson = webSocketClient_.SendAndReceive(endpoint_, envelope, headers);
-        return protocol::ParseResponse(rawJson, requestId, request.type);
+        webSocketClient_.Connect(endpoint_, headers);
+        if (stopToken.stop_requested()) throw std::runtime_error("WebSocket operation cancelled.");
+        webSocketClient_.Send(envelope);
+        std::stop_callback cancelReceive(stopToken, [this]() { webSocketClient_.Close(); });
+        while (!stopToken.stop_requested())
+        {
+            const auto rawJson = webSocketClient_.Receive();
+            if (!protocol::IsResponseForRequest(rawJson, requestId, request.type)) continue;
+            return protocol::ParseResponse(rawJson, requestId, request.type);
+        }
+        throw std::runtime_error("WebSocket operation cancelled.");
     }
     catch (const protocol::RealtimeProtocolError& exception)
     {

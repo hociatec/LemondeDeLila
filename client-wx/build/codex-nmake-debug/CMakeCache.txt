@@ -212,6 +212,10 @@ CTEST_SUBMIT_RETRY_DELAY:STRING=5
 //Maximum time allowed before CTest will kill the test.
 DART_TESTING_TIMEOUT:STRING=1500
 
+//Racine locale du backend utilisee pour regenerer les contrats
+// protocole
+LILA_BACKEND_ROOT:PATH=C:/wamp64/www/lemondeDeLila/client-wx/../backend
+
 //Source canonique des événements WebSocket du backend
 LILA_BACKEND_WS_EVENTS_FILE:FILEPATH=C:/wamp64/www/lemondeDeLila/client-wx/../backend/src/common/ws/ws-events.ts
 

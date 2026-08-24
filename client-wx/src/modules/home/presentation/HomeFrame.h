@@ -2,9 +2,9 @@
 
 #include <functional>
 
-#include <wx/frame.h>
-
 #include "modules/user/domain/AuthenticationResult.h"
+#include "shared/accessibility/FocusPlanView.h"
+#include "shared/accessibility/NonFocusablePanel.h"
 #include "shared/accessibility/NavigationController.h"
 
 class wxCheckBox;
@@ -27,15 +27,18 @@ class RegisterUseCase;
 
 namespace lila::modules::home::presentation
 {
-class HomeFrame final : public wxFrame
+class HomeFrame final : public lila::shared::accessibility::NonFocusablePanel, public lila::shared::accessibility::FocusPlanView
 {
 public:
     using LoginSucceededHandler = std::function<void(const lila::modules::user::domain::AuthenticationResult&)>;
 
     HomeFrame(
+        wxWindow* parent,
         lila::modules::user::application::LoginUseCase& loginUseCase,
         lila::modules::user::application::RegisterUseCase& registerUseCase,
         LoginSucceededHandler onLoginSucceeded);
+    void PrepareForLogout();
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:
     enum class Page
@@ -54,7 +57,6 @@ private:
     void ShowPage(Page page);
     [[nodiscard]] lila::shared::accessibility::NavigationController::Scope BuildCurrentTabScope() const;
     void SetStatus(const wxString& message, bool isError = false);
-    void FocusCurrentPagePrimaryField();
     void ToggleLoginPasswordMode();
     void ToggleRegisterPasswordMode();
     void OnShowLogin(wxCommandEvent& event);

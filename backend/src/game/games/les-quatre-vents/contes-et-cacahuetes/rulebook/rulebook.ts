@@ -1,13 +1,13 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   isRollActionType,
   normalizeActionType,
-} from '../../../../actions/action-service.helper';
+} from '../../../../application/helpers/action-service.helper';
 import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
-} from '../../../../core/helpers/pawn-pending-rulebook.helper';
+} from '../../../../application/helpers/pawn-pending-rulebook.helper';
 import {
   getPendingCardChoiceActionsForPlayer,
   getPendingChooseTargetActionsForPlayer,
@@ -19,12 +19,12 @@ import {
   validatePendingDrawActionForActor,
   validatePendingNumberChoiceActionForActor,
   validatePendingStringChoiceActionForActor,
-} from '../../../../core/helpers/pending-actions-rulebook.helper';
+} from '../../../../application/helpers/pending-actions-rulebook.helper';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+} from '../../../../domain/errors/public-api';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
 
 const GAME_TYPE = 'contes-et-cacahuetes';
 
@@ -121,14 +121,14 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started')
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃƒÂ©marrÃƒÂ©e.", {
       gameType: GAME_TYPE,
     });
 
   const pending = asPendingRecord(state.pending);
   if (pending) {
     if (Number(pending.playerId) !== actorId)
-      throw new PlayerActionError('Action réservée à un autre joueur.', {
+      throw new PlayerActionError('Action rÃƒÂ©servÃƒÂ©e ÃƒÂ  un autre joueur.', {
         gameType: GAME_TYPE,
       });
 
@@ -306,3 +306,7 @@ function asPendingRecord(value: unknown): {
   if (!value || typeof value !== 'object') return null;
   return value as { type?: unknown; playerId?: unknown };
 }
+
+
+
+

@@ -22,8 +22,10 @@ import { AdminCreateUserDto } from '../dto/admin-create-user.dto';
 import { AdminUpdateUserDto } from '../dto/admin-update-user.dto';
 import { AdminListUsersDto } from '../dto/admin-list-users.dto';
 import { AdminBanUserDto } from '../dto/admin-ban-user.dto';
-import { HttpJwtGuard } from '../../../../../common/guards/http-jwt.guard';
-import { AdminRoleGuard } from '../../../../../common/guards/admin-role.guard';
+import {
+  AdminRoleGuard,
+  HttpJwtGuard,
+} from '../../../../../common/auth/public-api';
 
 @Controller('api/admin/users')
 @UseGuards(HttpJwtGuard, AdminRoleGuard)

@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
 import { AdminChatService } from '../../../application/use-cases/admin-chat/admin-chat.service';
 import { AdminChatModerationService } from '../../../application/use-cases/admin-chat/admin-chat-moderation.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import {
   AdminChatBanWsDto,
   AdminChatClearWsDto,
@@ -13,7 +13,7 @@ import {
   AdminChatSettingsGetWsDto,
   AdminChatSettingsUpdateWsDto,
   AdminChatUnbanWsDto,
-} from './admin-ws.dto';
+} from './dto/admin-ws.dto';
 
 @Injectable()
 export class AdminChatWsHandler {
@@ -23,14 +23,14 @@ export class AdminChatWsHandler {
     private readonly moderation: AdminChatModerationService,
   ) {}
 
-  async chatMessages(session: WsSession, payload: any) {
+  async chatMessages(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminChatMessagesWsDto, payload);
     const messages = await this.chat.listMessages(dto);
     return { type: WS_EVENTS.admin.chat.messages, payload: { messages } };
   }
 
-  chatSettingsGet(session: WsSession, payload: any) {
+  chatSettingsGet(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminChatSettingsGetWsDto, payload ?? {});
     return {
@@ -39,7 +39,7 @@ export class AdminChatWsHandler {
     };
   }
 
-  async chatSettingsUpdate(session: WsSession, payload: any) {
+  async chatSettingsUpdate(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminChatSettingsUpdateWsDto, payload);
     const updated = await this.chat.updateSettings({
@@ -49,7 +49,7 @@ export class AdminChatWsHandler {
     return { type: WS_EVENTS.admin.chat.settingsUpdate, payload: updated };
   }
 
-  async chatDelete(session: WsSession, payload: any) {
+  async chatDelete(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminChatDeleteWsDto, payload);
     return {
@@ -58,7 +58,7 @@ export class AdminChatWsHandler {
     };
   }
 
-  async chatClear(session: WsSession, payload: any) {
+  async chatClear(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminChatClearWsDto, payload);
     return {
@@ -67,7 +67,7 @@ export class AdminChatWsHandler {
     };
   }
 
-  async chatBan(session: WsSession, payload: any) {
+  async chatBan(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminChatBanWsDto, payload);
     const result = await this.moderation.ban({
@@ -83,7 +83,7 @@ export class AdminChatWsHandler {
     };
   }
 
-  async chatUnban(session: WsSession, payload: any) {
+  async chatUnban(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminChatUnbanWsDto, payload);
     const result = await this.moderation.unban({
@@ -96,6 +96,7 @@ export class AdminChatWsHandler {
     };
   }
 }
+
 
 
 

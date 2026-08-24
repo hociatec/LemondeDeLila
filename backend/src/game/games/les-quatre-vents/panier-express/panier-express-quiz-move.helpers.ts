@@ -1,10 +1,10 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { GameSingleActionDto } from '../../../engine/dto/game-action.dto';
+import { GameStateEntity } from '../../../application/models/game-state.model';
+import { GameSingleActionDto } from '../../../models/game-action.model';
 import {
   PanierExpressMetadata,
   PanierExpressPlayer,
   PanierExpressTile,
-} from './model/panier-express-state.entity';
+} from './model/panier-express-state.model';
 
 export function handlePanierExpressAnswerQuiz(args: {
   state: GameStateEntity;
@@ -56,14 +56,14 @@ export function handlePanierExpressAnswerQuiz(args: {
   if (!answer) {
     return args.appendLog(
       args.state,
-      `[Panier Express] Quiz : réponse manquante pour ${args.playerName(args.state, playerId)}.`,
+      `[Panier Express] Quiz : rÃƒÆ’Ã‚Â©ponse manquante pour ${args.playerName(args.state, playerId)}.`,
     );
   }
 
   const result = args.validateAnswer(quizState, playerId, answer);
   const outcomeEntry = {
     correct: result.correct,
-    message: result.correct ? 'Bonne réponse !' : 'Mauvaise réponse !',
+    message: result.correct ? 'Bonne rÃƒÆ’Ã‚Â©ponse !' : 'Mauvaise rÃƒÆ’Ã‚Â©ponse !',
     timestamp: Date.now(),
   };
 
@@ -81,14 +81,14 @@ export function handlePanierExpressAnswerQuiz(args: {
   };
   next = args.appendLog(
     next,
-    `[Panier Express] Réponse ${result.correct ? 'correcte' : 'incorrecte'} pour ${args.playerName(args.state, playerId)}.`,
+    `[Panier Express] RÃƒÆ’Ã‚Â©ponse ${result.correct ? 'correcte' : 'incorrecte'} pour ${args.playerName(args.state, playerId)}.`,
   );
   next = args.appendActionLog(next, playerId, 'answer_quiz', {
     correct: result.correct,
   });
 
   if (result.correct) {
-    next = args.appendLog(next, '[Panier Express] Piochez un ingrédient.');
+    next = args.appendLog(next, '[Panier Express] Piochez un ingrÃƒÆ’Ã‚Â©dient.');
     next = args.queueCourseDraws(
       next,
       [{ playerId, standId: 'bonus' }],
@@ -130,7 +130,7 @@ export function applyPanierExpressMoveChoice(args: {
   if (args.state.pending) {
     return args.appendLog(
       args.state,
-      `[Panier Express] Un autre choix est déjà en attente.`,
+      `[Panier Express] Un autre choix est dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚Â  en attente.`,
     );
   }
 
@@ -140,7 +140,7 @@ export function applyPanierExpressMoveChoice(args: {
       type: 'pick',
       playerId: args.playerId,
       blocking: true,
-      label: `Choisissez : avancer ou reculer de ${steps} cases, puis Entrée.`,
+      label: `Choisissez : avancer ou reculer de ${steps} cases, puis EntrÃƒÆ’Ã‚Â©e.`,
       choices: [`Avancer (+${steps})`, `Reculer (-${steps})`],
       data: { kind: 'tile.move_choice', delta: steps },
     },
@@ -159,7 +159,7 @@ export function applyPanierExpressMoveToStandChoice(args: {
   if (args.state.pending) {
     return args.appendLog(
       args.state,
-      `[Panier Express] Un autre choix est déjà en attente.`,
+      `[Panier Express] Un autre choix est dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚Â  en attente.`,
     );
   }
 
@@ -237,3 +237,7 @@ export function updatePanierExpressPlayer(
     ),
   };
 }
+
+
+
+

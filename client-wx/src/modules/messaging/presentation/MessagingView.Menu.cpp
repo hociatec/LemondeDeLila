@@ -26,8 +26,11 @@ void MessagingView::BuildMenuScreen()
         {"outbox", lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingMenuOutbox), wxEmptyString},
         {"deleted", lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingMenuDeleted), wxEmptyString},
     }};
-    menu = new lila::shared::ui::controls::VerticalMenu(menuPanel, lila::shared::ui::navigation::BuildMenuItems(menuItems));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingPageMenu));
+    menu = new lila::shared::ui::controls::VerticalMenu(
+        menuPanel,
+        lila::shared::ui::navigation::BuildMenuItems(menuItems),
+        lila::shared::ui::controls::VerticalMenuRole::List);
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu, wxString(L"Messages"));
     sizer->Add(menu, 1, wxEXPAND);
     menuPanel->SetSizer(sizer);
 }
@@ -37,6 +40,7 @@ void MessagingView::BuildListScreen()
     listPanel = new wxPanel(screenBook);
     auto* sizer = new wxBoxSizer(wxVERTICAL);
     listTitleLabel = new wxStaticText(listPanel, wxID_ANY, MessagingPresentationModel::BoxTitle(domain::MessagingBox::Inbox));
+    listTitleLabel->Hide();
     messagesList = new wxListBox(listPanel, wxID_ANY);
     emptyMessagesCtrl = new wxTextCtrl(listPanel, wxID_ANY, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingNoMessage), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
     emptyMessagesCtrl->SetMinSize(wxSize(-1, 80));

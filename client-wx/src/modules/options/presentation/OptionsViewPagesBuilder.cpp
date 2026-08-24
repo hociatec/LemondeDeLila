@@ -28,15 +28,6 @@ void OptionsViewPagesBuilder::BuildGeneralPage(OptionsView& view, wxWindow* pare
     sizer->Add(view.showNavigationStatusCheckbox, 0, wxBOTTOM, 16);
     sizer->Add(view.enableBetaGamesCheckbox, 0);
 
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *view.restoreSessionCheckbox, wxString(L"Restaurer la session au demarrage"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *view.showNavigationStatusCheckbox, wxString(L"Annoncer l'etat de navigation"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *view.confirmExitCheckbox, wxString(L"Demander confirmation a la deconnexion"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *view.enableBetaGamesCheckbox, wxString(L"Activer les fonctionnalites beta"));
-    view.AddSectionSaveButton(parent, sizer);
     parent->SetSizer(sizer);
 }
 
@@ -95,12 +86,6 @@ void OptionsViewPagesBuilder::BuildSoundsPage(OptionsView& view, wxWindow* paren
     sizer->Add(soundBox, 1, wxEXPAND);
     parent->SetSizer(sizer);
 
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.muteAllCheckbox, wxString(L"Couper tous les sons"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundAmbienceCheckbox, wxString(L"Sons d'ambiance"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundAppLaunchCheckbox, wxString(L"Sons au lancement"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundNavigateCheckbox, wxString(L"Sons de navigation"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundSelectCheckbox, wxString(L"Sons de selection"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundChatMessagesCheckbox, wxString(L"Sons des messages de tchat"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundMenuAmbienceSlider, wxString(L"Volume ambiance menu"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundTavernAmbienceSlider, wxString(L"Volume ambiance table"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundAppLaunchSlider, wxString(L"Volume sons de lancement"));
@@ -113,7 +98,6 @@ void OptionsViewPagesBuilder::BuildSoundsPage(OptionsView& view, wxWindow* paren
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundNavigateValueLabel, wxString(L"Valeur actuelle sons de navigation"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundSelectValueLabel, wxString(L"Valeur actuelle sons de selection"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundChatMessagesValueLabel, wxString(L"Valeur actuelle sons de tchat"));
-    view.AddSectionSaveButton(parent, sizer);
 }
 
 void OptionsViewPagesBuilder::BuildChatPage(OptionsView& view, wxWindow* parent)
@@ -125,9 +109,5 @@ void OptionsViewPagesBuilder::BuildChatPage(OptionsView& view, wxWindow* parent)
     sizer->Add(view.confirmChatExitCheckbox, 0);
     parent->SetSizer(sizer);
 
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.chatEnabledCheckbox, wxString(L"Activer le tchat"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *view.confirmChatExitCheckbox, wxString(L"Confirmer la sortie du tchat"));
-    view.AddSectionSaveButton(parent, sizer);
 }
 }

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include <wx/button.h>
+#include <wx/window.h>
 #include <wx/textctrl.h>
 
 #include "modules/session/application/SessionStore.h"
@@ -49,20 +50,18 @@ lila::shared::accessibility::NavigationController::Scope AboutFrame::BuildTabSco
 }
 
 AboutFrame::AboutFrame(
+    wxWindow* parent,
     lila::modules::session::application::SessionStore& sessionStore,
     CloseRequestedHandler onCloseRequested,
     ExitRequestedHandler onExitRequested)
-    : wxFrame(
-          nullptr,
-          wxID_ANY,
-          wxString(L"À propos - ") + lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()),
-          wxDefaultPosition,
-          wxSize(WindowWidth, WindowHeight),
-          wxDEFAULT_FRAME_STYLE),
+    : lila::shared::accessibility::NonFocusablePanel(
+          parent,
+          0),
       sessionStore_(sessionStore),
       onCloseRequested_(std::move(onCloseRequested)),
       onExitRequested_(std::move(onExitRequested))
 {
+    SetMinSize(wxSize(WindowWidth, WindowHeight));
     BuildLayout();
     pageCoordinator_ = std::make_unique<AboutPageCoordinator>(
         *this,
@@ -85,12 +84,15 @@ AboutFrame::AboutFrame(
     {
         itemsList_->SetTabNavigationEnabled(false);
     }
-    pageCoordinator_->ShowPage(AboutPageCoordinator::Page::Root);
-    CentreOnScreen();
-    CallAfter(
-        [this]()
-        {
-            pageCoordinator_->FocusCurrentPage();
-        });
+    pageCoordinator_->InitializeRootPage();
+}
+
+lila::shared::accessibility::FocusManager::Plan AboutFrame::BuildFocusPlan()
+{
+    if (pageCoordinator_ != nullptr)
+    {
+        return pageCoordinator_->BuildCurrentPageFocusPlan();
+    }
+    return {};
 }
 }

@@ -1,3 +1,3 @@
-import { ClientUpdatesService } from '../services/client-updates.service';
+import { ClientUpdatesService } from '../application/use-cases/client-updates/client-updates.service';
 
 export const CLIENT_UPDATES_MODULE_EXPORTS = [ClientUpdatesService];

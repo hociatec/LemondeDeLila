@@ -1,5 +1,5 @@
-import { WsRouteRegistry } from '../../../../common/ws/ws-route-registry.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+﻿import { WsRouteRegistry } from '../../../../common/ws/application/services/ws-route-registry.service';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import { AdminWsRegistrar } from './admin-ws.registrar';
 
 function createHandlerStub() {
@@ -117,6 +117,7 @@ describe('AdminWsRegistrar', () => {
     expect(registry.has(WS_EVENTS.admin.quiz.mnemo.questionDelete)).toBe(true);
   });
 });
+
 
 
 

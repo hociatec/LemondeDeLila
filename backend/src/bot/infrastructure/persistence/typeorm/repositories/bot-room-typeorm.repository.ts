@@ -9,9 +9,9 @@ import type {
   BotManagedRoomRecord,
   BotRoomRecord,
 } from '../../../../application/models/bot-room.record';
-import { RoomBot } from '../../../../../room/entities/room-bot.entity';
-import { RoomParticipant } from '../../../../../room/entities/room-participant.entity';
-import { Room } from '../../../../../room/entities/room.entity';
+import { RoomBot } from '../../../../../room/infrastructure/persistence/typeorm/entities/room-bot.entity';
+import { RoomParticipant } from '../../../../../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
+import { Room } from '../../../../../room/infrastructure/persistence/typeorm/entities/room.entity';
 
 @Injectable()
 export class BotRoomTypeormRepository implements BotRoomRepository {
@@ -71,6 +71,13 @@ export class BotRoomTypeormRepository implements BotRoomRepository {
       order: { id: 'DESC' },
     });
     return row ? this.toBotRecord(row) : null;
+  }
+
+  async renameBot(botId: number, name: string): Promise<void> {
+    await this.bots.save({
+      id: botId,
+      name,
+    } as RoomBot);
   }
 
   async deleteBot(botId: number): Promise<void> {

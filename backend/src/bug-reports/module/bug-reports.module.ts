@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
+  type BugReportCommentRepository,
   BUG_REPORT_COMMENT_REPOSITORY,
   BUG_REPORT_REPOSITORY,
+  type BugReportRepository,
 } from '../application/ports/bug-report.repository';
 import { AddBugReportCommentService } from '../application/use-cases/bug-report-comments/add-bug-report-comment.service';
 import { CountBugReportCommentsService } from '../application/use-cases/bug-report-comments/count-bug-report-comments.service';
@@ -40,31 +42,41 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
     },
     {
       provide: ListBugReportsService,
-      useFactory: (repo: any, normalizer: BugReportStatusNormalizerService) =>
+      useFactory: (
+        repo: BugReportRepository,
+        normalizer: BugReportStatusNormalizerService,
+      ) =>
         new ListBugReportsService(repo, normalizer),
       inject: [BUG_REPORT_REPOSITORY, BugReportStatusNormalizerService],
     },
     {
       provide: GetBugReportService,
-      useFactory: (repo: any, normalizer: BugReportStatusNormalizerService) =>
+      useFactory: (
+        repo: BugReportRepository,
+        normalizer: BugReportStatusNormalizerService,
+      ) =>
         new GetBugReportService(repo, normalizer),
       inject: [BUG_REPORT_REPOSITORY, BugReportStatusNormalizerService],
     },
     {
       provide: CreateBugReportService,
-      useFactory: (repo: any) => new CreateBugReportService(repo),
+      useFactory: (repo: BugReportRepository) =>
+        new CreateBugReportService(repo),
       inject: [BUG_REPORT_REPOSITORY],
     },
     {
       provide: UpdateBugReportService,
-      useFactory: (repo: any, getBugReport: GetBugReportService) =>
+      useFactory: (
+        repo: BugReportRepository,
+        getBugReport: GetBugReportService,
+      ) =>
         new UpdateBugReportService(repo, getBugReport),
       inject: [BUG_REPORT_REPOSITORY, GetBugReportService],
     },
     {
       provide: UpdateBugReportStatusService,
       useFactory: (
-        repo: any,
+        repo: BugReportRepository,
         getBugReport: GetBugReportService,
         normalizer: BugReportStatusNormalizerService,
       ) => new UpdateBugReportStatusService(repo, getBugReport, normalizer),
@@ -76,22 +88,28 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
     },
     {
       provide: DeleteBugReportService,
-      useFactory: (repo: any) => new DeleteBugReportService(repo),
+      useFactory: (repo: BugReportRepository) =>
+        new DeleteBugReportService(repo),
       inject: [BUG_REPORT_REPOSITORY],
     },
     {
       provide: CountBugReportCommentsService,
-      useFactory: (repo: any) => new CountBugReportCommentsService(repo),
+      useFactory: (repo: BugReportCommentRepository) =>
+        new CountBugReportCommentsService(repo),
       inject: [BUG_REPORT_COMMENT_REPOSITORY],
     },
     {
       provide: ListBugReportCommentsService,
-      useFactory: (repo: any) => new ListBugReportCommentsService(repo),
+      useFactory: (repo: BugReportCommentRepository) =>
+        new ListBugReportCommentsService(repo),
       inject: [BUG_REPORT_COMMENT_REPOSITORY],
     },
     {
       provide: AddBugReportCommentService,
-      useFactory: (repo: any, reports: any) =>
+      useFactory: (
+        repo: BugReportCommentRepository,
+        reports: BugReportRepository,
+      ) =>
         new AddBugReportCommentService(repo, reports),
       inject: [BUG_REPORT_COMMENT_REPOSITORY, BUG_REPORT_REPOSITORY],
     },

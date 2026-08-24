@@ -11,6 +11,8 @@
 #include "modules/about/presentation/AboutFrame.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/accessibility/AccessibilityUtils.h"
+#include "shared/accessibility/FocusManager.h"
+#include "shared/accessibility/FocusCoordinator.h"
 #include "shared/config/AppConfig.h"
 #include "shared/ui/controls/VerticalMenu.h"
 
@@ -26,6 +28,14 @@ AboutPageCoordinator::AboutPageCoordinator(
 {
 }
 
+void AboutPageCoordinator::InitializeRootPage()
+{
+    currentPage_ = Page::Root;
+    ApplyPageContent(Page::Root, wxNOT_FOUND);
+    SyncPageVisibility(Page::Root);
+    frame_.Layout();
+}
+
 void AboutPageCoordinator::ShowPage(Page page, bool pushCurrentToHistory, int restoreSelection)
 {
     if (pushCurrentToHistory)
@@ -34,19 +44,12 @@ void AboutPageCoordinator::ShowPage(Page page, bool pushCurrentToHistory, int re
     }
 
     currentPage_ = page;
-    frame_.itemsList_->Hide();
-    frame_.shortcutsTextCtrl_->Hide();
-    frame_.contactMessageCtrl_->GetParent()->Hide();
-    frame_.detailsLabel_->SetLabel(wxEmptyString);
-
     ApplyPageContent(page, restoreSelection);
-
+    SyncPageVisibility(page);
     frame_.Layout();
-    frame_.CallAfter(
-        [this]()
-        {
-            FocusCurrentPage();
-        });
+    lila::shared::accessibility::FocusCoordinator::Schedule(
+        frame_,
+        [this]() { return BuildCurrentPageFocusPlan(); });
 }
 
 void AboutPageCoordinator::ActivateRootItem(std::size_t index)
@@ -70,21 +73,29 @@ void AboutPageCoordinator::ActivateRootItem(std::size_t index)
     }
 }
 
-void AboutPageCoordinator::FocusCurrentPage() const
+lila::shared::accessibility::FocusManager::Plan AboutPageCoordinator::BuildCurrentPageFocusPlan() const
 {
+    using FocusManager = lila::shared::accessibility::FocusManager;
+    FocusManager::Plan plan;
+
     switch (currentPage_)
     {
     case Page::Root:
     case Page::Info:
-        frame_.itemsList_->FocusSelectedItem();
+        if (frame_.itemsList_ != nullptr)
+        {
+            plan.AddWindow(frame_.itemsList_->GetSelectedControl());
+        }
         break;
     case Page::Shortcuts:
-        frame_.shortcutsTextCtrl_->SetFocus();
+        plan.AddWindow(frame_.shortcutsTextCtrl_);
         break;
     case Page::ContactAdmin:
-        frame_.contactMessageCtrl_->SetFocus();
+        plan.AddWindow(frame_.contactMessageCtrl_);
         break;
     }
+
+    return plan;
 }
 
 void AboutPageCoordinator::HandleEscape()
@@ -117,30 +128,45 @@ void AboutPageCoordinator::RestoreSnapshot(const NavigationSnapshot& snapshot)
     ShowPage(snapshot.page, false, snapshot.selectedIndex);
 }
 
+void AboutPageCoordinator::SyncPageVisibility(Page page) const
+{
+    if (frame_.itemsList_ != nullptr)
+    {
+        frame_.itemsList_->Show(page == Page::Root || page == Page::Info);
+    }
+
+    if (frame_.shortcutsTextCtrl_ != nullptr)
+    {
+        frame_.shortcutsTextCtrl_->Show(page == Page::Shortcuts);
+    }
+
+    if (frame_.contactMessageCtrl_ != nullptr && frame_.contactMessageCtrl_->GetParent() != nullptr)
+    {
+        frame_.contactMessageCtrl_->GetParent()->Show(page == Page::ContactAdmin);
+    }
+}
+
 void AboutPageCoordinator::ApplyPageContent(Page page, int restoreSelection)
 {
     AboutPageContent content;
+    frame_.detailsLabel_->SetLabel(wxEmptyString);
     switch (page)
     {
     case Page::Root:
         content = AboutPageContentBuilder::BuildRoot();
         BuildRootMenuItems();
-        frame_.itemsList_->Show();
         break;
     case Page::Shortcuts:
         content = AboutPageContentBuilder::BuildShortcuts();
         frame_.shortcutsTextCtrl_->SetValue(content.shortcutsText);
-        frame_.shortcutsTextCtrl_->Show();
         break;
     case Page::Info:
         content = AboutPageContentBuilder::BuildInfo(sessionStore_);
         BuildInfoItems();
-        frame_.itemsList_->Show();
         break;
     case Page::ContactAdmin:
         content = AboutPageContentBuilder::BuildContactAdmin();
         frame_.contactMessageCtrl_->SetValue(wxEmptyString);
-        frame_.contactMessageCtrl_->GetParent()->Show();
         break;
     }
 

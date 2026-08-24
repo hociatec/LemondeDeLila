@@ -1,30 +1,102 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../core/core.module';
-import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
-import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
-import { EngineServicesModule } from '../../../engine/services/engine-services.module';
-import { GaloponsEnsembleService } from './galopons-ensemble.service';
-import { GaloponsSetupService } from './setup/galopons-setup.service';
-import { GaloponsActionService } from './actions/galopons-action.service';
-import { GaloponsPresenterService } from './presenter/galopons-presenter.service';
-import { GaloponsBotService } from './bots/galopons-bot.service';
+import { GameCoreModule } from '../../../module/game-core.module';
+import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { SetupFlowModule } from '../../../application/modules/setup-flow.module';
+import { EngineServicesModule } from '../../../infrastructure/module/engine-services.module';
+import { GameCoreService } from '../../../application/services/game-core.service';
+import { GameContentLoaderService } from '../../../engine/public-api';
+import { RandomService } from '../../../application/services/random.service';
+import { SetupFlowService } from '../../../application/services/setup-flow.service';
+import { DeckPoliciesService } from '../../../application/features/deck-policies/services/deck-policies.service';
+import { TurnFlowService } from '../../../application/services/turn-flow.service';
+import { BoardPayloadService } from '../../../application/services/board-payload.service';
+import { BotRunnerService } from '../../../application/services/bot-runner.service';
+import { GaloponsEnsembleService } from './application/services/galopons-ensemble.service';
+import { GaloponsSetupService } from './application/services/galopons-setup.service';
+import { GaloponsActionService } from './application/services/galopons-action.service';
+import { GaloponsPresenterService } from './application/services/galopons-presenter.service';
+import { GaloponsBotService } from './application/services/galopons-bot.service';
 
 @Module({
   imports: [
     BoardGameDeckKitModule,
     GameCoreModule,
-    GameRegistryModule,
     EngineServicesModule,
     SetupFlowModule,
   ],
   providers: [
-    GaloponsEnsembleService,
-    GaloponsSetupService,
-    GaloponsActionService,
-    GaloponsPresenterService,
-    GaloponsBotService,
+    {
+      provide: GaloponsSetupService,
+      useFactory: (
+        core: GameCoreService,
+        contentLoader: GameContentLoaderService,
+        random: RandomService,
+        setupFlow: SetupFlowService,
+      ) => new GaloponsSetupService(core, contentLoader, random, setupFlow),
+      inject: [
+        GameCoreService,
+        GameContentLoaderService,
+        RandomService,
+        SetupFlowService,
+      ],
+    },
+    {
+      provide: GaloponsActionService,
+      useFactory: (
+        random: RandomService,
+        turns: TurnFlowService,
+        core: GameCoreService,
+        deckPolicies: DeckPoliciesService,
+        setupFlow: SetupFlowService,
+      ) =>
+        new GaloponsActionService(
+          random,
+          turns,
+          core,
+          deckPolicies,
+          setupFlow,
+        ),
+      inject: [
+        RandomService,
+        TurnFlowService,
+        GameCoreService,
+        DeckPoliciesService,
+        SetupFlowService,
+      ],
+    },
+    {
+      provide: GaloponsPresenterService,
+      useFactory: (boardPayload: BoardPayloadService) =>
+        new GaloponsPresenterService(boardPayload),
+      inject: [BoardPayloadService],
+    },
+    {
+      provide: GaloponsBotService,
+      useFactory: (botRunner: BotRunnerService) =>
+        new GaloponsBotService(botRunner),
+      inject: [BotRunnerService],
+    },
+    {
+      provide: GaloponsEnsembleService,
+      useFactory: (
+        setup: GaloponsSetupService,
+        actions: GaloponsActionService,
+        presenter: GaloponsPresenterService,
+        bots: GaloponsBotService,
+      ) => new GaloponsEnsembleService(setup, actions, presenter, bots),
+      inject: [
+        GaloponsSetupService,
+        GaloponsActionService,
+        GaloponsPresenterService,
+        GaloponsBotService,
+      ],
+    },
   ],
   exports: [GaloponsEnsembleService],
 })
 export class GaloponsEnsembleModule {}
+
+
+
+
+

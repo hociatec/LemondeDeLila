@@ -10,12 +10,14 @@
 #include "modules/session/application/SessionStore.h"
 #include "shared/config/AppConfig.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/accessibility/FocusCoordinator.h"
 #include "shared/text/UiTexts.h"
 #include "shared/concurrency/BackgroundExecutor.h"
 
 #include <wx/dialog.h>
 #include <wx/msgdlg.h>
 #include <wx/textctrl.h>
+#include <wx/window.h>
 
 namespace
 {
@@ -27,30 +29,26 @@ constexpr int WindowHeight = 760;
 namespace lila::modules::chat::presentation
 {
 ChatFrame::ChatFrame(
+    wxWindow* parent,
     lila::modules::chat::application::ChatService& chatService,
     lila::modules::options::application::OptionsStore& optionsStore,
     lila::modules::session::application::SessionStore& sessionStore,
     CloseRequestedHandler onCloseRequested,
     ExitRequestedHandler onExitRequested)
-    : wxFrame(
-          nullptr,
-          wxID_ANY,
-          wxString::Format(
-              lila::shared::text::FromUtf8(lila::shared::text::ui::ChatFrameTitle),
-              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()).wc_str()),
-          wxDefaultPosition,
-          wxSize(WindowWidth, WindowHeight),
-          wxDEFAULT_FRAME_STYLE),
+    : lila::shared::accessibility::NonFocusablePanel(
+          parent,
+          0),
       chatService_(chatService),
       optionsStore_(optionsStore),
       sessionStore_(sessionStore),
       onCloseRequested_(std::move(onCloseRequested)),
       onExitRequested_(std::move(onExitRequested))
 {
+    SetMinSize(wxSize(WindowWidth, WindowHeight));
     BuildLayout();
     ApplyTheme();
     focusController_ = std::make_unique<ChatFocusController>(
-        *inputCtrl_, *historyList_, *emptyHistoryCtrl_, *editMessageButton_, *deleteMessageButton_);
+        *inputCtrl_, *historyCtrl_, *editMessageButton_, *deleteMessageButton_);
     BindEvents();
 
     eventHandlers_ = std::make_shared<application::ChatService::EventHandlers>();
@@ -75,7 +73,6 @@ ChatFrame::ChatFrame(
         };
     chatService_.AttachEventHandlers(eventHandlers_);
 
-    CentreOnScreen();
     CallAfter(
         [this]()
         {
@@ -90,6 +87,34 @@ ChatFrame::~ChatFrame()
     chatService_.AttachEventHandlers({});
 }
 
+lila::shared::accessibility::FocusManager::Plan ChatFrame::BuildFocusPlan()
+{
+    if (focusController_ == nullptr)
+    {
+        return {};
+    }
+
+    if (isHistoryActionMode_)
+    {
+        return focusController_->BuildFirstHistoryActionPlan();
+    }
+
+    return focusController_->BuildComposerPlan();
+}
+
+void ChatFrame::ResetFocusToComposer()
+{
+    ClearNavigationHistory();
+    isHistoryActionMode_ = false;
+    selectedActionMessageId_.reset();
+    SyncActionState();
+    if (focusController_ != nullptr && IsShownOnScreen())
+    {
+        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(
+            focusController_->BuildComposerPlan()));
+    }
+}
+
 void ChatFrame::InvalidateOpenChatRequest()
 {
     ++activeOpenChatRequestId_;
@@ -102,6 +127,7 @@ void ChatFrame::InvalidateOpenChatRequest()
 
 void ChatFrame::RequestCloseToSession()
 {
+    ResetFocusToComposer();
     isReturningToSession_ = true;
     if (onCloseRequested_)
     {

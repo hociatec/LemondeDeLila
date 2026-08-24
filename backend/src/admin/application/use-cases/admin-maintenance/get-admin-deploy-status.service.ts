@@ -3,13 +3,18 @@ import {
   ADMIN_MAINTENANCE_RUNTIME_PORT,
   type AdminMaintenanceRuntimePort,
 } from '../../ports/admin-maintenance-runtime.port';
-import { ADMIN_DEPLOY_UNIT } from './admin-maintenance.constants';
+import {
+  ADMIN_MAINTENANCE_CONFIG,
+  type AdminMaintenanceConfig,
+} from '../../ports/admin-maintenance-config.port';
 
 @Injectable()
 export class GetAdminDeployStatusService {
   constructor(
     @Inject(ADMIN_MAINTENANCE_RUNTIME_PORT)
     private readonly runtime: AdminMaintenanceRuntimePort,
+    @Inject(ADMIN_MAINTENANCE_CONFIG)
+    private readonly config: AdminMaintenanceConfig,
   ) {}
 
   execute() {
@@ -18,17 +23,17 @@ export class GetAdminDeployStatusService {
       '-n',
       'systemctl',
       'show',
-      ADMIN_DEPLOY_UNIT,
+      this.config.deployUnit,
       '--no-pager',
       '--property=Id,ActiveState,SubState,Result,ExecMainStatus,ExecMainCode,ExecMainStartTimestamp,ExecMainExitTimestamp',
     ]);
     if (res.status !== 0) {
       throw new InternalServerErrorException({
-        message: `Impossible de lire le status systemd: ${ADMIN_DEPLOY_UNIT}`,
+        message: `Impossible de lire le status systemd: ${this.config.deployUnit}`,
         details: res,
       });
     }
     const props = this.runtime.parseSystemctlShow(res.stdout);
-    return { ok: true, unit: ADMIN_DEPLOY_UNIT, ...props };
+    return { ok: true, unit: this.config.deployUnit, ...props };
   }
 }

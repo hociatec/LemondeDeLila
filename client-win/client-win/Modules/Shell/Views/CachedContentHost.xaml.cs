@@ -31,6 +31,7 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
         public long LastAccessTicks { get; set; }
         public bool Cacheable { get; init; }
         public bool IsInHostGrid { get; set; }
+        public bool IsMaterialized { get; set; }
     }
 
     private readonly Dictionary<object, Entry> _entries = new(ReferenceEqualityComparer.Instance);
@@ -49,6 +50,8 @@ public partial class CachedContentHost : UserControl, ICurrentContentRootProvide
     private const int MaxCacheEntries = 10;
 
     private readonly Queue<object> _preloadQueue = new();
+    private readonly HashSet<object> _queuedPreloads = new(ReferenceEqualityComparer.Instance);
     private bool _preloadScheduled;
+    private bool _layoutRetryScheduled;
 
 }

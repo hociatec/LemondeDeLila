@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../engine/model/game-definition.model';
+import type { GameDefinition } from '../../../../application/models/game-definition.model';
 
 export type OlympiaActionType = 'draw_card' | 'play_card' | 'pass';
 export type OlympiaPhaseId = 'round';

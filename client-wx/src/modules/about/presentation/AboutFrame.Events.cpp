@@ -54,16 +54,6 @@ void AboutFrame::BindEvents()
             return true;
         });
 
-    Bind(
-        wxEVT_CLOSE_WINDOW,
-        [this](wxCloseEvent& event)
-        {
-            event.Skip(false);
-            if (onExitRequested_)
-            {
-                onExitRequested_();
-            }
-        });
 }
 
 void AboutFrame::HandleEscape()

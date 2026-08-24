@@ -1,6 +1,8 @@
 #pragma once
 
 #ifdef _WIN32
+#include <atomic>
+
 #include <windows.h>
 #include <winhttp.h>
 
@@ -26,27 +28,25 @@ public:
         return *this;
     }
 
-    [[nodiscard]] HINTERNET Get() const noexcept { return handle_; }
-    [[nodiscard]] explicit operator bool() const noexcept { return handle_ != nullptr; }
+    [[nodiscard]] HINTERNET Get() const noexcept { return handle_.load(std::memory_order_acquire); }
+    [[nodiscard]] explicit operator bool() const noexcept { return Get() != nullptr; }
 
     [[nodiscard]] HINTERNET Release() noexcept
     {
-        auto* released = handle_;
-        handle_ = nullptr;
-        return released;
+        return handle_.exchange(nullptr, std::memory_order_acq_rel);
     }
 
     void Reset(HINTERNET handle = nullptr) noexcept
     {
-        if (handle_ != nullptr)
+        auto* previous = handle_.exchange(handle, std::memory_order_acq_rel);
+        if (previous != nullptr)
         {
-            WinHttpCloseHandle(handle_);
+            WinHttpCloseHandle(previous);
         }
-        handle_ = handle;
     }
 
 private:
-    HINTERNET handle_ = nullptr;
+    std::atomic<HINTERNET> handle_{nullptr};
 };
 }
 #endif

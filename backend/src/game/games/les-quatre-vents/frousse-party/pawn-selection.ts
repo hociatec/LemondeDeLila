@@ -1,4 +1,4 @@
-﻿import type { PendingState } from '../../../core/entities/game-state.entity';
+import type { PendingState } from '../../../application/models/game-state.model';
 import type { FrousseMetadata } from './model/frousse.types';
 import { formatPawnChoiceLabel, resolvePawnId } from './pawns.utils';
 
@@ -45,3 +45,5 @@ function availablePawns(meta: FrousseMetadata, assigned: Set<string>) {
     return id != null && !assigned.has(id);
   });
 }
+
+

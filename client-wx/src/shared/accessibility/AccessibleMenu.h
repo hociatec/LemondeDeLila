@@ -7,21 +7,24 @@
 #include <wx/access.h>
 #include <wx/listbox.h>
 #include <wx/string.h>
+#include <wx/weakref.h>
 
 namespace lila::shared::accessibility
 {
 #if wxUSE_ACCESSIBILITY
-// Exposes a wxListBox used as an application navigation menu with menu/menu-item
-// semantics instead of the native list/list-item semantics. The underlying
-// wxListBox remains unchanged, so keyboard interaction and visual behaviour stay
-// native while screen readers receive the role that matches the UI contract.
-class AccessibleMenuList final : public wxAccessible
+class AccessibleListBox final : public wxAccessible
 {
 public:
     using ActivatedHandler = std::function<void(std::size_t)>;
 
-    AccessibleMenuList(wxListBox& list, ActivatedHandler onActivated)
-        : wxAccessible(&list), list_(list), onActivated_(std::move(onActivated))
+    enum class RoleMode
+    {
+        Menu,
+        List,
+    };
+
+    AccessibleListBox(wxListBox& list, ActivatedHandler onActivated, RoleMode roleMode)
+        : wxAccessible(&list), list_(&list), onActivated_(std::move(onActivated)), roleMode_(roleMode)
     {
     }
 
@@ -34,13 +37,13 @@ public:
 
         if (childId == wxACC_SELF)
         {
-            *role = wxROLE_SYSTEM_MENUPOPUP;
+            *role = roleMode_ == RoleMode::Menu ? wxROLE_SYSTEM_MENUPOPUP : wxROLE_SYSTEM_LIST;
             return wxACC_OK;
         }
 
         if (IsValidChild(childId))
         {
-            *role = wxROLE_SYSTEM_MENUITEM;
+            *role = roleMode_ == RoleMode::List ? wxROLE_SYSTEM_LISTITEM : wxROLE_SYSTEM_MENUITEM;
             return wxACC_OK;
         }
 
@@ -56,16 +59,18 @@ public:
 
         if (childId == wxACC_SELF)
         {
-            *name = list_.GetName();
+            wxListBox* list = List();
+            *name = list != nullptr ? list->GetName() : wxString();
             return wxACC_OK;
         }
 
-        if (!IsValidChild(childId))
+        wxListBox* list = List();
+        if (list == nullptr || !IsValidChild(childId))
         {
             return wxACC_INVALID_ARG;
         }
 
-        *name = list_.GetString(static_cast<unsigned int>(childId - 1));
+        *name = list->GetString(static_cast<unsigned int>(childId - 1));
         return wxACC_OK;
     }
 
@@ -94,7 +99,8 @@ public:
             return wxACC_INVALID_ARG;
         }
 
-        *childCount = static_cast<int>(list_.GetCount());
+        wxListBox* list = List();
+        *childCount = list != nullptr ? static_cast<int>(list->GetCount()) : 0;
         return wxACC_OK;
     }
 
@@ -108,37 +114,48 @@ public:
         if (childId == wxACC_SELF)
         {
             *state = wxACC_STATE_SYSTEM_FOCUSABLE;
-            if (!list_.IsEnabled())
+            wxListBox* list = List();
+            if (list == nullptr)
+            {
+                *state |= wxACC_STATE_SYSTEM_INVISIBLE;
+                return wxACC_OK;
+            }
+            if (!list->IsEnabled())
             {
                 *state |= wxACC_STATE_SYSTEM_UNAVAILABLE;
             }
-            if (!list_.IsShown())
+            if (!list->IsShownOnScreen())
             {
                 *state |= wxACC_STATE_SYSTEM_INVISIBLE;
             }
-            if (list_.HasFocus())
+            if (list->HasFocus())
             {
                 *state |= wxACC_STATE_SYSTEM_FOCUSED;
             }
             return wxACC_OK;
         }
 
-        if (!IsValidChild(childId))
+        wxListBox* list = List();
+        if (list == nullptr || !IsValidChild(childId))
         {
             return wxACC_INVALID_ARG;
         }
 
         *state = wxACC_STATE_SYSTEM_FOCUSABLE | wxACC_STATE_SYSTEM_SELECTABLE;
-        if (!list_.IsEnabled())
+        if (!list->IsEnabled())
         {
             *state |= wxACC_STATE_SYSTEM_UNAVAILABLE;
         }
+        if (!list->IsShownOnScreen())
+        {
+            *state |= wxACC_STATE_SYSTEM_INVISIBLE;
+        }
 
         const int itemIndex = childId - 1;
-        if (list_.GetSelection() == itemIndex)
+        if (list->GetSelection() == itemIndex)
         {
             *state |= wxACC_STATE_SYSTEM_SELECTED;
-            if (list_.HasFocus())
+            if (list->HasFocus())
             {
                 *state |= wxACC_STATE_SYSTEM_FOCUSED;
             }
@@ -154,27 +171,29 @@ public:
         }
 
         *child = nullptr;
-        if (!list_.HasFocus())
+        wxListBox* list = List();
+        if (list == nullptr || !list->HasFocus())
         {
             *childId = 0;
             return wxACC_OK;
         }
 
-        const int selection = list_.GetSelection();
+        const int selection = list->GetSelection();
         *childId = selection == wxNOT_FOUND ? wxACC_SELF : selection + 1;
         return wxACC_OK;
     }
 
     wxAccStatus DoDefaultAction(int childId) override
     {
-        if (!IsValidChild(childId))
+        wxListBox* list = List();
+        if (list == nullptr || !IsValidChild(childId))
         {
             return childId == wxACC_SELF ? wxACC_NOT_SUPPORTED : wxACC_INVALID_ARG;
         }
 
         const int itemIndex = childId - 1;
-        list_.SetSelection(itemIndex);
-        list_.SetFocus();
+        list->SetSelection(itemIndex);
+        list->SetFocus();
         if (onActivated_)
         {
             onActivated_(static_cast<std::size_t>(itemIndex));
@@ -184,7 +203,8 @@ public:
 
     wxAccStatus Select(int childId, wxAccSelectionFlags selectFlags) override
     {
-        if (!IsValidChild(childId))
+        wxListBox* list = List();
+        if (list == nullptr || !IsValidChild(childId))
         {
             return wxACC_INVALID_ARG;
         }
@@ -193,11 +213,11 @@ public:
         if ((selectFlags & wxACC_SEL_TAKESELECTION) != 0 ||
             (selectFlags & wxACC_SEL_TAKEFOCUS) != 0)
         {
-            list_.SetSelection(itemIndex);
+            list->SetSelection(itemIndex);
         }
         if ((selectFlags & wxACC_SEL_TAKEFOCUS) != 0)
         {
-            list_.SetFocus();
+            list->SetFocus();
         }
         return wxACC_OK;
     }
@@ -214,28 +234,50 @@ public:
             return childId == wxACC_SELF ? wxACC_NOT_SUPPORTED : wxACC_INVALID_ARG;
         }
 
+        if (roleMode_ == RoleMode::List)
+        {
+            return wxACC_NOT_SUPPORTED;
+        }
+
         *actionName = wxString(L"Ouvrir");
         return wxACC_OK;
     }
 
 private:
-    [[nodiscard]] bool IsValidChild(int childId) const noexcept
+    [[nodiscard]] wxListBox* List() const noexcept
     {
-        return childId > 0 && static_cast<unsigned int>(childId) <= list_.GetCount();
+        return list_.get();
     }
 
-    wxListBox& list_;
+    [[nodiscard]] bool IsValidChild(int childId) const noexcept
+    {
+        wxListBox* list = List();
+        return list != nullptr && childId > 0 && static_cast<unsigned int>(childId) <= list->GetCount();
+    }
+
+    wxWeakRef<wxListBox> list_;
     ActivatedHandler onActivated_;
+    RoleMode roleMode_;
 };
 
 inline void ConfigureListBoxAsAccessibleMenu(
     wxListBox& list,
     const wxString& accessibleName,
-    AccessibleMenuList::ActivatedHandler onActivated)
+    AccessibleListBox::ActivatedHandler onActivated)
 {
     list.SetName(accessibleName);
-    list.SetAccessible(new AccessibleMenuList(list, std::move(onActivated)));
+    list.SetAccessible(new AccessibleListBox(list, std::move(onActivated), AccessibleListBox::RoleMode::Menu));
 }
+
+inline void ConfigureListBoxAsAccessibleList(
+    wxListBox& list,
+    const wxString& accessibleName,
+    AccessibleListBox::ActivatedHandler onActivated)
+{
+    list.SetName(accessibleName);
+    list.SetAccessible(new AccessibleListBox(list, std::move(onActivated), AccessibleListBox::RoleMode::List));
+}
+
 #else
 inline void ConfigureListBoxAsAccessibleMenu(
     wxListBox& list,
@@ -245,5 +287,15 @@ inline void ConfigureListBoxAsAccessibleMenu(
     (void)onActivated;
     list.SetName(accessibleName);
 }
+
+inline void ConfigureListBoxAsAccessibleList(
+    wxListBox& list,
+    const wxString& accessibleName,
+    std::function<void(std::size_t)> onActivated)
+{
+    (void)onActivated;
+    list.SetName(accessibleName);
+}
+
 #endif
 }

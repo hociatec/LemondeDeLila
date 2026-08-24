@@ -1,13 +1,13 @@
 import {
   GameStateEntity,
   PendingState,
-} from '../../../core/entities/game-state.entity';
-import { TileEffectRegistryService } from '../../../modules/effects/services/tile-effect-registry.service';
-import { StandEffectRegistryService } from '../../../modules/effects/services/stand-effect-registry.service';
+} from '../../../application/models/game-state.model';
+import { TileEffectRegistryService } from '../../../application/features/effects/services/tile-effect-registry.service';
+import { StandEffectRegistryService } from '../../../application/features/effects/services/stand-effect-registry.service';
 import {
   PanierExpressMetadata,
   PanierExpressTile,
-} from './model/panier-express-state.entity';
+} from './model/panier-express-state.model';
 import { toText } from './panier-express-state.helpers';
 
 export function getPanierExpressStandLabel(
@@ -127,7 +127,7 @@ export function applyPanierExpressMerchantRequest(args: {
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
-  ) => { meta: PanierExpressMetadata; value: T | undefined };
+  ) => { meta: PanierExpressMetadata; value: T | null };
   formatCourseLabel: (ingredient: string) => string;
   playerName: (state: GameStateEntity, playerId: number) => string;
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
@@ -326,3 +326,9 @@ export function registerPanierExpressStandHandlers(args: {
     );
   });
 }
+
+
+
+
+
+

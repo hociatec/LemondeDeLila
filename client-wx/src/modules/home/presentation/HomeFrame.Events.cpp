@@ -1,8 +1,8 @@
 #include "modules/home/presentation/HomeFrame.h"
 
 #include <wx/checkbox.h>
-#include <wx/event.h>
 #include <wx/textctrl.h>
+#include <wx/window.h>
 
 #include "shared/accessibility/ActionButton.h"
 #include "shared/accessibility/NavigationController.h"
@@ -71,6 +71,9 @@ void HomeFrame::OnShowLanding(wxCommandEvent& event)
 void HomeFrame::OnQuit(wxCommandEvent& event)
 {
     (void)event;
-    Close(true);
+    if (wxWindow* top = wxGetTopLevelParent(this))
+    {
+        top->Close(true);
+    }
 }
 }

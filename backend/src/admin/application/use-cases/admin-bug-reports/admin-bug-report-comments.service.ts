@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AddBugReportCommentService } from '../../../../bug-reports/application/use-cases/bug-report-comments/add-bug-report-comment.service';
-import { CountBugReportCommentsService } from '../../../../bug-reports/application/use-cases/bug-report-comments/count-bug-report-comments.service';
-import { ListBugReportCommentsService } from '../../../../bug-reports/application/use-cases/bug-report-comments/list-bug-report-comments.service';
+import { AddBugReportCommentService } from '../../../../bug-reports/public-api';
+import { CountBugReportCommentsService } from '../../../../bug-reports/public-api';
+import { ListBugReportCommentsService } from '../../../../bug-reports/public-api';
 
 @Injectable()
 export class AdminBugReportCommentsService {

@@ -23,3 +23,4 @@ export function toUnknownArray(value: unknown): unknown[] {
 export function stringEqualsInsensitive(left: string, right: string): boolean {
   return left.localeCompare(right, 'fr', { sensitivity: 'base' }) === 0;
 }
+

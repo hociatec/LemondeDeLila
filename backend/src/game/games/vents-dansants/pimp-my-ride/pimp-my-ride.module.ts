@@ -1,16 +1,14 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../core/core.module';
-import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
-import { PimpMyRideActionService } from './actions/pimp-my-ride-action.service';
-import { PimpMyRideSetupService } from './setup/pimp-my-ride-setup.service';
-import { PimpMyRidePresenterService } from './presenter/pimp-my-ride-presenter.service';
-import { PimpMyRideBotService } from './bots/pimp-my-ride-bot.service';
-import { PimpMyRidePhaseService } from './phases/pimp-my-ride-phase.service';
-import { PimpMyRideService } from './pimp-my-ride.service';
+import { GameCoreModule } from '../../../module/game-core.module';
+import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { PimpMyRideActionService } from './application/services/pimp-my-ride-action.service';
+import { PimpMyRideSetupService } from './application/services/pimp-my-ride-setup.service';
+import { PimpMyRidePresenterService } from './application/services/pimp-my-ride-presenter.service';
+import { PimpMyRideBotService } from './application/services/pimp-my-ride-bot.service';
+import { PimpMyRidePhaseService } from './application/services/pimp-my-ride-phase.service';
+import { PimpMyRideService } from './application/services/pimp-my-ride.service';
 
 @Module({
-  imports: [BoardGameDeckKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     PimpMyRideService,
     PimpMyRideSetupService,
@@ -22,3 +20,8 @@ import { PimpMyRideService } from './pimp-my-ride.service';
   exports: [PimpMyRideService],
 })
 export class PimpMyRideModule {}
+
+
+
+
+

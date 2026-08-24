@@ -2,7 +2,7 @@ import type {
   WonderGood,
   WonderInventory,
   WonderPrices,
-} from './le-marche-des-merveilles-state.entity';
+} from './le-marche-des-merveilles-state.model';
 
 export const WONDER_GOODS: WonderGood[] = [
   'gemmes',
@@ -62,3 +62,4 @@ export function inventoryValue(
     0,
   );
 }
+

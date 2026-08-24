@@ -4,7 +4,6 @@
 
 #include "modules/social/presentation/SocialSection.h"
 
-class wxFrame;
 class wxWindow;
 
 namespace lila::shared::ui::controls { class VerticalMenu; }
@@ -20,7 +19,7 @@ class SocialSectionPresenter final
 {
 public:
     SocialSectionPresenter(
-        wxFrame& owner,
+        wxWindow& owner,
         SocialView& view,
         SocialDataStore& dataStore,
         SocialNavigationState& navigationState,
@@ -39,7 +38,7 @@ public:
 private:
     void ShowOnlySectionPanel(wxWindow* targetPanel);
 
-    wxFrame& owner_;
+    wxWindow& owner_;
     SocialView& view_;
     SocialDataStore& dataStore_;
     SocialNavigationState& navigationState_;

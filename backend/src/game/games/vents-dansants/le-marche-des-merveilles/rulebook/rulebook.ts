@@ -1,7 +1,15 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { normalizeActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GamePayloadValidationError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   GOOD_LABELS,
   PROTECT_COST,
@@ -12,7 +20,7 @@ import {
 import type {
   LeMarcheDesMerveillesMetadata,
   WonderGood,
-} from '../model/le-marche-des-merveilles-state.entity';
+} from '../model/le-marche-des-merveilles-state.model';
 
 type MarketActionPayload = {
   good?: string | null;
@@ -81,17 +89,17 @@ export function validateAction(
 ): GameSingleActionDto {
   const type = normalizeActionType(action);
   if (!actorId) {
-    throw new Error('Acteur requis.');
+    throw new GameActorRequiredError();
   }
   if (!isStartedState(state)) {
-    throw new Error("La partie n'est pas active.");
+    throw new GameStateViolationError("La partie n'est pas active.");
   }
   if (state.turn?.currentPlayerId !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
   const normalized = normalizeMarketAction(state, action, actorId);
   if (!normalized) {
-    throw new Error(`Action inconnue : ${type}`);
+    throw new GameUnknownActionError(`Action inconnue : ${type}`);
   }
 
   const meta = getMeta(state);
@@ -107,37 +115,47 @@ export function validateAction(
       normalizedType === 'rumor') &&
     !good
   ) {
-    throw new Error('Marchandise manquante.');
+    throw new GamePayloadValidationError('Marchandise manquante.');
   }
   if (normalizedType === 'buy' && good && coins < (meta.prices?.[good] ?? 0)) {
-    throw new Error(`Pas assez de pieces pour acheter ${GOOD_LABELS[good]}.`);
+    throw new GameActionRejectedError(
+      `Pas assez de pieces pour acheter ${GOOD_LABELS[good]}.`,
+    );
   }
   if (normalizedType === 'sell' && good && inventory[good] <= 0) {
-    throw new Error(`Vous ne possedez pas ${GOOD_LABELS[good]}.`);
+    throw new GameActionRejectedError(
+      `Vous ne possedez pas ${GOOD_LABELS[good]}.`,
+    );
   }
   if (normalizedType === 'rumor') {
     const direction = String(payload.direction ?? '').trim();
     if (direction !== 'up' && direction !== 'down') {
-      throw new Error('Rumeur invalide.');
+      throw new GamePayloadValidationError('Rumeur invalide.');
     }
     if (coins < RUMOR_COST) {
-      throw new Error('Pas assez de pieces pour lancer une rumeur.');
+      throw new GameActionRejectedError(
+        'Pas assez de pieces pour lancer une rumeur.',
+      );
     }
   }
   if (normalizedType === 'protect' && coins < PROTECT_COST) {
-    throw new Error('Pas assez de pieces pour proteger votre etal.');
+    throw new GameActionRejectedError(
+      'Pas assez de pieces pour proteger votre etal.',
+    );
   }
   if (normalizedType === 'steal_deal') {
     const targetPlayerId = Number(payload.targetPlayerId ?? 0);
     if (!good || targetPlayerId <= 0 || targetPlayerId === actorId) {
-      throw new Error('Cible invalide.');
+      throw new GamePayloadValidationError('Cible invalide.');
     }
     if (meta.protectedPlayers?.[targetPlayerId]) {
-      throw new Error('Cet etal est protege.');
+      throw new GameActionRejectedError('Cet etal est protege.');
     }
     const targetInventory = copyInventory(meta.inventories?.[targetPlayerId]);
     if (targetInventory[good] <= 0) {
-      throw new Error('La cible ne possede pas cette marchandise.');
+      throw new GameActionRejectedError(
+        'La cible ne possede pas cette marchandise.',
+      );
     }
   }
 

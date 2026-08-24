@@ -38,6 +38,7 @@ public partial class StableContentHost : UserControl
     private FrameworkElement? _observedCurrentRoot;
     private RoutedEventHandler? _observedCurrentRootLoadedHandler;
     private EventHandler? _observedCurrentRootLayoutUpdatedHandler;
+    private bool _layoutRetryScheduled;
 
     public StableContentHost()
     {
@@ -305,24 +306,37 @@ public partial class StableContentHost : UserControl
     {
         try
         {
-            var transitionId = _transitionId;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-            {
-                if (transitionId != _transitionId)
-                {
-                    return;
-                }
-
-                if (TryFocusAndMaybeFinalize())
-                {
-                    DetachCurrentRootObservers();
-                }
-            }));
+            ScheduleTransitionRetry(DispatcherPriority.Input);
         }
         catch
         {
             // ignore
         }
+    }
+
+    private void ScheduleTransitionRetry(DispatcherPriority priority)
+    {
+        if (_layoutRetryScheduled)
+        {
+            return;
+        }
+
+        _layoutRetryScheduled = true;
+        var transitionId = _transitionId;
+        _ = Dispatcher.BeginInvoke(priority, new Action(() =>
+        {
+            _layoutRetryScheduled = false;
+
+            if (transitionId != _transitionId)
+            {
+                return;
+            }
+
+            if (TryFocusAndMaybeFinalize())
+            {
+                DetachCurrentRootObservers();
+            }
+        }));
     }
 
     private void HookCurrentRootObservers()
@@ -342,8 +356,8 @@ public partial class StableContentHost : UserControl
 
             DetachCurrentRootObservers();
             _observedCurrentRoot = root;
-            _observedCurrentRootLoadedHandler = (_, _) => TryFocusAndMaybeFinalize();
-            _observedCurrentRootLayoutUpdatedHandler = (_, _) => TryFocusAndMaybeFinalize();
+            _observedCurrentRootLoadedHandler = (_, _) => ScheduleTransitionRetry(DispatcherPriority.Loaded);
+            _observedCurrentRootLayoutUpdatedHandler = (_, _) => ScheduleTransitionRetry(DispatcherPriority.Background);
             root.Loaded += _observedCurrentRootLoadedHandler;
             root.LayoutUpdated += _observedCurrentRootLayoutUpdatedHandler;
         }
@@ -379,6 +393,7 @@ public partial class StableContentHost : UserControl
             _observedCurrentRoot = null;
             _observedCurrentRootLoadedHandler = null;
             _observedCurrentRootLayoutUpdatedHandler = null;
+            _layoutRetryScheduled = false;
         }
     }
 

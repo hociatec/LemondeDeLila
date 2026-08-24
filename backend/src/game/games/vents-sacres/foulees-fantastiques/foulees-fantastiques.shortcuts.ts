@@ -1,5 +1,5 @@
-import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
-import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
+import type { GameShortcutsBuilder } from '../../../models/game-shortcuts.model';
+import { interfaceShortcut } from '../../../application/helpers/shortcut-utils';
 
 export const buildFouleesFantastiquesShortcuts: GameShortcutsBuilder = () => [
   interfaceShortcut('E', 'stable'),

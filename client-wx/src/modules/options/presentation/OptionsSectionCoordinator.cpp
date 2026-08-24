@@ -4,6 +4,8 @@
 #include <exception>
 #include <utility>
 
+#include <wx/simplebook.h>
+
 #include "modules/options/presentation/OptionsEditorController.h"
 #include "modules/options/presentation/OptionsFocusController.h"
 #include "modules/options/presentation/OptionsNavigationState.h"
@@ -30,6 +32,7 @@ OptionsSectionCoordinator::OptionsSectionCoordinator(
 
 void OptionsSectionCoordinator::ActivateSection(std::size_t index)
 {
+    focusTransition_.Remember(CurrentFocusScope());
     navigationState_.EnterSection(index);
     ApplyNavigationState();
 }
@@ -45,7 +48,13 @@ void OptionsSectionCoordinator::ApplyNavigationState()
     shell.sectionsMenu->SetSelectedIndexSilently(navigationState_.currentSectionIndex);
     if (!navigationState_.insideSection)
     {
-        shell.sectionsMenu->FocusSelectedItem();
+        focusTransition_.Schedule(
+            view_,
+            shell.sectionsPanel,
+            [this]()
+            {
+                return focusController_.BuildSectionMenuPlan(navigationState_.currentSectionIndex);
+            });
         return;
     }
 
@@ -60,8 +69,15 @@ void OptionsSectionCoordinator::ApplyNavigationState()
         return;
     }
 
-    shell.sectionBook->SetSelection(static_cast<int>(navigationState_.currentSectionIndex));
-    focusController_.FocusFirstSectionControl(navigationState_.currentSectionIndex);
+    shell.sectionBook->ChangeSelection(static_cast<int>(navigationState_.currentSectionIndex));
+    wxWindow* sectionPage = shell.sectionBook->GetPage(navigationState_.currentSectionIndex);
+    focusTransition_.Schedule(
+        view_,
+        sectionPage,
+        [this]()
+        {
+            return focusController_.BuildFirstSectionControlPlan(navigationState_.currentSectionIndex);
+        });
 }
 
 void OptionsSectionCoordinator::LoadState()
@@ -102,7 +118,7 @@ void OptionsSectionCoordinator::ApplyState(
 
 void OptionsSectionCoordinator::SaveState()
 {
-    ApplyState(view_.ReadState(editorController_.BaseState()), true, wxString(L"Options enregistrees."));
+    ApplyState(view_.ReadState(editorController_.BaseState()), true, wxString(L"Options enregistrees automatiquement."));
     RefreshUnsavedState();
 }
 
@@ -120,15 +136,16 @@ void OptionsSectionCoordinator::RefreshUnsavedState()
     view_.SetUnsavedChanges(hasUnsavedChanges);
     if (hasUnsavedChanges)
     {
-        callbacks_.updateStatus(wxString(L"Modifications en attente d'enregistrement."), false);
+        callbacks_.updateStatus(wxString(L"Modifications non enregistrees."), false);
         return;
     }
 
-    callbacks_.updateStatus(wxString(L"Aucune modification en attente."), false);
+    callbacks_.updateStatus(wxString(L"Les options sont enregistrees automatiquement."), false);
 }
 
 void OptionsSectionCoordinator::HandleEscape()
 {
+    focusTransition_.Remember(CurrentFocusScope());
     if (navigationState_.GoBack())
     {
         ApplyNavigationState();
@@ -139,5 +156,22 @@ void OptionsSectionCoordinator::HandleEscape()
     {
         callbacks_.onCloseRequested();
     }
+}
+
+wxWindow* OptionsSectionCoordinator::CurrentFocusScope() const
+{
+    const auto shell = view_.Shell();
+    if (!navigationState_.insideSection || shell.sectionBook == nullptr)
+    {
+        return shell.sectionsPanel;
+    }
+
+    const int pageCount = shell.sectionBook->GetPageCount();
+    if (navigationState_.currentSectionIndex >= static_cast<std::size_t>(pageCount))
+    {
+        return nullptr;
+    }
+
+    return shell.sectionBook->GetPage(navigationState_.currentSectionIndex);
 }
 }

@@ -2,7 +2,7 @@ import type {
   ZigEtZagMetadata,
   ZigEtZagPlayerPlay,
   ZigEtZagRoundState,
-} from './model/zig-et-zag-state.entity';
+} from './model/zig-et-zag-state.model';
 import { ZIG_ET_ZAG_CARD_BY_ID } from './model/zig-et-zag-cards';
 
 export function buildInitialRoundState(
@@ -97,7 +97,7 @@ export function getSelectableCards(
 
   // Robustness: some stores/serializers can round-trip number ids as strings.
   const waiting = (round.waitingPlayers ?? [])
-    .map((v: any) => {
+    .map((v) => {
       if (typeof v === 'number' && Number.isFinite(v)) return v;
       if (typeof v === 'string') {
         const n = Number(v.trim());
@@ -105,7 +105,7 @@ export function getSelectableCards(
       }
       return null;
     })
-    .filter((v: any): v is number => typeof v === 'number');
+    .filter((v): v is number => typeof v === 'number');
 
   if (!waiting.includes(playerId)) return [];
   return getPlayerHand(metadata, playerId).filter((cardId) =>
@@ -137,3 +137,4 @@ export function isCardAllowed(
     definition.allowedFamilies.includes(family)
   );
 }
+

@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 export type SeededRngState = {
   seed: number;
   counter: number;
@@ -65,7 +67,7 @@ export function ensureSeededRng(meta: RngMeta): SeededRngState {
   const seed =
     normalizeSeed(current?.seed) ??
     deriveSeedFromContext(meta) ??
-    Math.floor(Math.random() * 2 ** 32);
+    crypto.randomBytes(4).readUInt32BE(0);
   const counter = Math.max(0, normalizeSeed(current?.counter) ?? 0);
   return { seed, counter };
 }

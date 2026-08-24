@@ -6,6 +6,9 @@
 #include <wx/string.h>
 
 #include "modules/options/domain/OptionsState.h"
+#include "shared/accessibility/FocusTransition.h"
+
+class wxWindow;
 
 namespace lila::modules::options::presentation
 {
@@ -43,11 +46,13 @@ public:
 
 private:
     void ApplyNavigationState();
+    [[nodiscard]] wxWindow* CurrentFocusScope() const;
 
     OptionsEditorController& editorController_;
     OptionsFocusController& focusController_;
     OptionsNavigationState& navigationState_;
     OptionsView& view_;
     Callbacks callbacks_;
+    lila::shared::accessibility::FocusTransition focusTransition_;
 };
 }

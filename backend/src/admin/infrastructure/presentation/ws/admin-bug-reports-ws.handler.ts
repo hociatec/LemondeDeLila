@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import { AdminBugReportsService } from '../../../application/use-cases/admin-bug-reports/admin-bug-reports.service';
 import {
   AdminBugReportCreateWsDto,
@@ -10,7 +10,7 @@ import {
   AdminBugReportsListWsDto,
   AdminBugReportUpdateWsDto,
   AdminBugReportUpdateStatusWsDto,
-} from './admin-bug-reports.dto';
+} from './dto/admin-bug-reports.ws.dto';
 
 @Injectable()
 export class AdminBugReportsWsHandler {
@@ -19,7 +19,7 @@ export class AdminBugReportsWsHandler {
     private readonly bugReports: AdminBugReportsService,
   ) {}
 
-  async create(session: WsSession, payload: any) {
+  async create(session: WsSession, payload: unknown) {
     const user = requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportCreateWsDto, payload);
     const report = await this.bugReports.create({
@@ -31,14 +31,14 @@ export class AdminBugReportsWsHandler {
     return { type: WS_EVENTS.admin.bugReports.create, payload: { report } };
   }
 
-  async list(session: WsSession, payload: any) {
+  async list(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminBugReportsListWsDto, payload ?? {});
     const items = await this.bugReports.list();
     return { type: WS_EVENTS.admin.bugReports.list, payload: { items } };
   }
 
-  async get(session: WsSession, payload: any) {
+  async get(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportIdWsDto, payload);
     const report = await this.bugReports.get(dto.id);
@@ -48,7 +48,7 @@ export class AdminBugReportsWsHandler {
     };
   }
 
-  async update(session: WsSession, payload: any) {
+  async update(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportUpdateWsDto, payload);
     const report = await this.bugReports.update({
@@ -59,7 +59,7 @@ export class AdminBugReportsWsHandler {
     return { type: WS_EVENTS.admin.bugReports.update, payload: { report } };
   }
 
-  async updateStatus(session: WsSession, payload: any) {
+  async updateStatus(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(
       AdminBugReportUpdateStatusWsDto,
@@ -75,10 +75,11 @@ export class AdminBugReportsWsHandler {
     };
   }
 
-  async delete(session: WsSession, payload: any) {
+  async delete(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportIdWsDto, payload);
     const result = await this.bugReports.delete(dto.id);
     return { type: WS_EVENTS.admin.bugReports.delete, payload: result };
   }
 }
+

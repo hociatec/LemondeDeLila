@@ -65,6 +65,6 @@ export type CaMetadata = {
     cards: CaCard[];
     discard: CaCard[];
   };
-  pendingContext?: any;
+  pendingContext?: unknown;
   winnerId: number | null;
 };

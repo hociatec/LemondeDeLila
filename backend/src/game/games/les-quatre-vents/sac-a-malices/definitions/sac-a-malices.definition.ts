@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../engine/model/game-definition.model';
+import type { GameDefinition } from '../../../../application/models/game-definition.model';
 
 export type SacAMalicesGameId = 'sac-a-malices';
 export type SacAMalicesPhaseId = 'turn';
@@ -46,3 +46,4 @@ export const SAC_A_MALICES_GAME: GameDefinition<
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;
+

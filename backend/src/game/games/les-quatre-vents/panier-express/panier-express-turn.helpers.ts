@@ -1,10 +1,10 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { GameSingleActionDto } from '../../../engine/dto/game-action.dto';
+import { GameStateEntity } from '../../../application/models/game-state.model';
+import { GameSingleActionDto } from '../../../models/game-action.model';
 import {
   PanierExpressMetadata,
   PanierExpressPlayer,
   PanierExpressTile,
-} from './model/panier-express-state.entity';
+} from './model/panier-express-state.model';
 
 export function ensurePanierExpressStarted(args: {
   state: GameStateEntity;
@@ -100,7 +100,7 @@ export function finalizePanierExpressStarterAfterPawnSelection(args: {
   if (typeof starter?.id === 'number') {
     next = args.appendLog(
       next,
-      `[Panier Express] Début de partie : ${args.playerName(next, starter.id)} commence.`,
+      `[Panier Express] DÃƒÂ©but de partie : ${args.playerName(next, starter.id)} commence.`,
     );
   }
 
@@ -122,7 +122,7 @@ export function finalizePanierExpressStarterAfterPawnSelection(args: {
         withLogs,
         '[Panier Express] ' +
           label +
-          ' reçoit une liste de courses: ' +
+          ' reÃƒÂ§oit une liste de courses: ' +
           listLabel.join(', '),
       );
     });
@@ -150,7 +150,7 @@ export function startPanierExpressDrawPending(args: {
   if (args.state.pending) {
     return args.appendLog(
       args.state,
-      `[Panier Express] Une action est déjà en attente.`,
+      `[Panier Express] Une action est dÃƒÂ©jÃƒÂ  en attente.`,
     );
   }
 
@@ -173,7 +173,6 @@ export function queuePanierExpressCourseDraws(args: {
     pending: NonNullable<GameStateEntity['pending']>,
   ) => GameStateEntity;
   toDrawQueueEntries: (value: unknown) => Array<{
-    kind: string;
     playerId: number;
     standId?: string;
   }>;
@@ -208,7 +207,7 @@ export function queuePanierExpressCourseDraws(args: {
   if (args.state.pending) {
     return args.appendLog(
       args.state,
-      `[Panier Express] Une action est déjà en attente.`,
+      `[Panier Express] Une action est dÃƒÂ©jÃƒÂ  en attente.`,
     );
   }
 
@@ -295,7 +294,10 @@ export function movePanierExpressPlayer(args: {
     currentPosition: number,
     delta: number,
   ) => number;
-  tileAt: (tiles: PanierExpressTile[], index: number) => PanierExpressTile;
+  tileAt: (
+    tiles: PanierExpressTile[],
+    index: number,
+  ) => PanierExpressTile | undefined;
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
   playerName: (state: GameStateEntity, playerId: number) => string;
 }): GameStateEntity {
@@ -333,3 +335,7 @@ export function movePanierExpressPlayer(args: {
     `${args.playerName(args.state, args.playerId)} ${verb} de ${abs} ${plural}.`,
   );
 }
+
+
+
+

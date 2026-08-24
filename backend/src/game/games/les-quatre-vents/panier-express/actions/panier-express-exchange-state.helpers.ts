@@ -1,5 +1,9 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { PanierExpressUtils } from '../model/panier-express-utils.service';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { PanierExpressUtils } from '../application/services/panier-express-utils.service';
+import type {
+  PanierExpressMetadata,
+  PanierExpressPlayer,
+} from '../model/panier-express-state.model';
 
 export function removeOne(collection: string[], value: string): string[] {
   const copy = [...collection];
@@ -12,9 +16,9 @@ export function removeOne(collection: string[], value: string): string[] {
 
 function addCardToPlayer(
   utils: PanierExpressUtils,
-  player: any,
+  player: PanierExpressPlayer,
   card: string,
-): { player: any; kept: boolean; discarded: boolean } {
+): { player: PanierExpressPlayer; kept: boolean; discarded: boolean } {
   const trimmed = String(card ?? '').trim();
   if (!trimmed || !player) {
     return { player, kept: false, discarded: false };
@@ -78,16 +82,16 @@ export function addCardToPlayerState(
   if (!trimmed) return state;
   let kept = false;
   let discarded = false;
-  const players = (state.players ?? []).map((player: any) => {
+  const players = ((state.players ?? []) as PanierExpressPlayer[]).map((player) => {
     if (player.id !== playerId) return player;
     const result = addCardToPlayer(utils, player, trimmed);
     kept = result.kept;
     discarded = result.discarded;
     return result.player;
   });
-  const meta = (state.metadata ?? {}) as any;
+  const meta = (state.metadata ?? {}) as Partial<PanierExpressMetadata>;
   const currentDiscards = Array.isArray(meta?.discards?.courses)
-    ? meta.discards.courses.map((value: any) => String(value))
+    ? meta.discards.courses.map((value) => String(value))
     : [];
   return {
     ...state,
@@ -114,7 +118,7 @@ export function removeFromInventoryState(
 ): GameStateEntity {
   const trimmed = String(card ?? '').trim();
   if (!trimmed) return state;
-  const players = (state.players ?? []).map((player: any) => {
+  const players = ((state.players ?? []) as PanierExpressPlayer[]).map((player) => {
     if (player.id !== playerId) return player;
     const inventory = utils.toStringArray(player.inventory);
     return { ...player, inventory: removeOne(inventory, trimmed) };
@@ -129,7 +133,7 @@ export function setInventoryState(
   inventory: string[],
 ): GameStateEntity {
   const nextInventory = utils.toStringArray(inventory);
-  const players = (state.players ?? []).map((player: any) => {
+  const players = ((state.players ?? []) as PanierExpressPlayer[]).map((player) => {
     if (player.id !== playerId) return player;
     return { ...player, inventory: nextInventory };
   });
@@ -142,9 +146,9 @@ export function addToDiscardState(
 ): GameStateEntity {
   const trimmed = String(card ?? '').trim();
   if (!trimmed) return state;
-  const meta = (state.metadata ?? {}) as any;
+  const meta = (state.metadata ?? {}) as Partial<PanierExpressMetadata>;
   const current = Array.isArray(meta?.discards?.courses)
-    ? meta.discards.courses.map((value: any) => String(value))
+    ? meta.discards.courses.map((value) => String(value))
     : [];
   return {
     ...state,
@@ -163,7 +167,7 @@ export function setSkipTurns(
   playerId: number,
   turns: number,
 ): GameStateEntity {
-  const meta = (state.metadata ?? {}) as any;
+  const meta = (state.metadata ?? {}) as Partial<PanierExpressMetadata>;
   const current = meta?.statuses?.skipTurn?.[playerId] ?? 0;
   const nextCount = Math.max(current, Math.max(1, turns || 1));
   return {
@@ -180,3 +184,7 @@ export function setSkipTurns(
     },
   };
 }
+
+
+
+

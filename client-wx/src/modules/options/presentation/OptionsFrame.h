@@ -4,8 +4,9 @@
 #include <cstddef>
 #include <memory>
 #include <vector>
-#include <wx/frame.h>
 
+#include "shared/accessibility/FocusPlanView.h"
+#include "shared/accessibility/NonFocusablePanel.h"
 #include "modules/options/domain/OptionsState.h"
 #include "modules/options/presentation/OptionsNavigationState.h"
 
@@ -31,17 +32,19 @@ class OptionsEditorController;
 class OptionsFocusController;
 class OptionsSectionCoordinator;
 
-class OptionsFrame final : public wxFrame
+class OptionsFrame final : public lila::shared::accessibility::NonFocusablePanel, public lila::shared::accessibility::FocusPlanView
 {
 public:
     using CloseRequestedHandler = std::function<void()>;
     using ExitRequestedHandler = std::function<void()>;
 
     OptionsFrame(
+        wxWindow* parent,
         application::OptionsStore& optionsStore,
         CloseRequestedHandler onCloseRequested,
         ExitRequestedHandler onExitRequested);
     ~OptionsFrame() override;
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:
     void ActivateSection(std::size_t index);

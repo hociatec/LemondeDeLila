@@ -20,14 +20,6 @@ void OptionsView::WriteState(const domain::OptionsState& state)
 
 void OptionsView::SetUnsavedChanges(bool hasUnsavedChanges)
 {
-    for (wxButton* button : sectionSaveButtons)
-    {
-        if (button != nullptr)
-        {
-            button->Enable(hasUnsavedChanges);
-        }
-    }
-
     if (cancelButton != nullptr)
     {
         cancelButton->Enable(hasUnsavedChanges);

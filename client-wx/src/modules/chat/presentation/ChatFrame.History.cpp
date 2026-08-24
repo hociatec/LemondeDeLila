@@ -6,7 +6,6 @@
 
 #include <wx/button.h>
 #include <wx/datetime.h>
-#include <wx/listbox.h>
 #include <wx/textctrl.h>
 
 #include "modules/chat/application/ChatService.h"
@@ -34,37 +33,39 @@ void ChatFrame::RefreshHistory()
         isHistoryActionMode_ = false;
     }
 
-    historyList_->Clear();
+    wxString historyText;
+    messageStartPositions_.clear();
+    messageStartPositions_.reserve(visibleMessages_.size());
     for (const auto& message : visibleMessages_)
     {
-        historyList_->Append(BuildMessageLabel(message));
+        if (!historyText.empty()) historyText += wxString(L"\n");
+        messageStartPositions_.push_back(static_cast<long>(historyText.length()));
+        historyText += BuildMessageLabel(message);
     }
 
     if (visibleMessages_.empty())
     {
-        historyList_->SetSelection(wxNOT_FOUND);
-        emptyHistoryCtrl_->Show(true);
-        historyList_->Show(false);
+        historyCtrl_->SetValue(lila::shared::text::FromUtf8(lila::shared::text::ui::ChatNoMessage));
+        historyCtrl_->SetInsertionPointEnd();
     }
     else
     {
-        emptyHistoryCtrl_->Show(false);
-        historyList_->Show(true);
-
-        int selection = 0;
+        historyCtrl_->SetValue(historyText);
+        long insertionPoint = historyCtrl_->GetLastPosition();
         if (previousMessage.has_value())
         {
             for (std::size_t index = 0; index < visibleMessages_.size(); ++index)
             {
                 if (!previousMessage->id.empty() && visibleMessages_[index].id == previousMessage->id)
                 {
-                    selection = static_cast<int>(index);
+                    insertionPoint = messageStartPositions_[index] +
+                        static_cast<long>(BuildMessageLabel(visibleMessages_[index]).length());
                     break;
                 }
             }
         }
-
-        historyList_->SetSelection(selection);
+        historyCtrl_->SetInsertionPoint(insertionPoint);
+        historyCtrl_->ShowPosition(insertionPoint);
     }
 
     SyncActionState();
@@ -73,13 +74,18 @@ void ChatFrame::RefreshHistory()
 
 std::optional<domain::ChatMessage> ChatFrame::GetSelectedMessage() const
 {
-    const int selection = historyList_->GetSelection();
-    if (selection == wxNOT_FOUND || static_cast<std::size_t>(selection) >= visibleMessages_.size())
+    if (visibleMessages_.empty() || messageStartPositions_.size() != visibleMessages_.size())
     {
         return std::nullopt;
     }
 
-    return visibleMessages_[static_cast<std::size_t>(selection)];
+    const long insertionPoint = historyCtrl_->GetInsertionPoint();
+    const auto next = std::upper_bound(
+        messageStartPositions_.begin(), messageStartPositions_.end(), insertionPoint);
+    const std::size_t index = next == messageStartPositions_.begin()
+        ? 0
+        : static_cast<std::size_t>(std::distance(messageStartPositions_.begin(), next) - 1);
+    return visibleMessages_[index];
 }
 
 bool ChatFrame::CanActOnMessage(const domain::ChatMessage& message) const
@@ -124,7 +130,7 @@ void ChatFrame::SyncActionState()
         && CanActOnMessage(*selectedMessage);
     const bool canAct = selectedMessageIsActionReady;
 
-    historyList_->Enable(hasMessages && !isBusy_);
+    historyCtrl_->Enable(true);
     lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
         editMessageButton_,
         canAct && !isBusy_);
@@ -149,9 +155,5 @@ void ChatFrame::SyncActionState()
         lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(deleteMessageButton_, false);
     }
 
-    if (emptyHistoryCtrl_->IsShown())
-    {
-        emptyHistoryCtrl_->SetValue(lila::shared::text::FromUtf8(lila::shared::text::ui::ChatNoMessage));
-    }
 }
 }

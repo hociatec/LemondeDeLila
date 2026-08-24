@@ -3,13 +3,18 @@ import {
   ADMIN_MAINTENANCE_RUNTIME_PORT,
   type AdminMaintenanceRuntimePort,
 } from '../../ports/admin-maintenance-runtime.port';
-import { ADMIN_BACKEND_SERVICE } from './admin-maintenance.constants';
+import {
+  ADMIN_MAINTENANCE_CONFIG,
+  type AdminMaintenanceConfig,
+} from '../../ports/admin-maintenance-config.port';
 
 @Injectable()
 export class GetAdminBackendServiceStatusService {
   constructor(
     @Inject(ADMIN_MAINTENANCE_RUNTIME_PORT)
     private readonly runtime: AdminMaintenanceRuntimePort,
+    @Inject(ADMIN_MAINTENANCE_CONFIG)
+    private readonly config: AdminMaintenanceConfig,
   ) {}
 
   execute() {
@@ -18,17 +23,17 @@ export class GetAdminBackendServiceStatusService {
       '-n',
       'systemctl',
       'show',
-      ADMIN_BACKEND_SERVICE,
+      this.config.backendService,
       '--no-pager',
       '--property=Id,ActiveState,SubState,Result,ExecMainStatus,ExecMainCode,ExecMainStartTimestamp,ExecMainExitTimestamp',
     ]);
     if (res.status !== 0) {
       throw new InternalServerErrorException({
-        message: `Impossible de lire le status systemd: ${ADMIN_BACKEND_SERVICE}`,
+        message: `Impossible de lire le status systemd: ${this.config.backendService}`,
         details: res,
       });
     }
     const props = this.runtime.parseSystemctlShow(res.stdout);
-    return { ok: true, unit: ADMIN_BACKEND_SERVICE, ...props };
+    return { ok: true, unit: this.config.backendService, ...props };
   }
 }

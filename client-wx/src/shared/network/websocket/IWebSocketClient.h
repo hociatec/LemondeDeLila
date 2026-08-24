@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <stop_token>
 #include <string>
 
 namespace lila::shared::network::websocket
@@ -17,6 +18,10 @@ public:
     [[nodiscard]] virtual bool IsConnectedTo(const std::string& endpoint, const WebSocketHeaders& headers = {}) const = 0;
     virtual void Send(const std::string& payload) = 0;
     [[nodiscard]] virtual std::string Receive() = 0;
-    [[nodiscard]] virtual std::string SendAndReceive(const std::string& endpoint, const std::string& payload, const WebSocketHeaders& headers = {}) = 0;
+    [[nodiscard]] virtual std::string SendAndReceive(
+        const std::string& endpoint,
+        const std::string& payload,
+        const WebSocketHeaders& headers = {},
+        std::stop_token stopToken = {}) = 0;
 };
 }

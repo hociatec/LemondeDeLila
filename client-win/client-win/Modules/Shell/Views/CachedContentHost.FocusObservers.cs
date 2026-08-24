@@ -7,6 +7,31 @@ namespace client_win.Modules.Shell.Views;
 
 public partial class CachedContentHost
 {
+    private void ScheduleTransitionRetry(DispatcherPriority priority)
+    {
+        if (_layoutRetryScheduled)
+        {
+            return;
+        }
+
+        _layoutRetryScheduled = true;
+        var transitionId = _transitionId;
+        _ = Dispatcher.BeginInvoke(priority, new Action(() =>
+        {
+            _layoutRetryScheduled = false;
+
+            if (transitionId != _transitionId || _current == null)
+            {
+                return;
+            }
+
+            if (TryFocusAndMaybeFinalize())
+            {
+                DetachCurrentRootObservers();
+            }
+        }));
+    }
+
     private void HookFocusReadyIfNeeded(DependencyObject root)
     {
         if (root is not IFocusReady ready)
@@ -38,19 +63,7 @@ public partial class CachedContentHost
     {
         try
         {
-            var transitionId = _transitionId;
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
-            {
-                if (transitionId != _transitionId)
-                {
-                    return;
-                }
-
-                if (TryFocusAndMaybeFinalize())
-                {
-                    DetachCurrentRootObservers();
-                }
-            }));
+            ScheduleTransitionRetry(DispatcherPriority.Input);
         }
         catch
         {
@@ -81,8 +94,8 @@ public partial class CachedContentHost
 
             DetachCurrentRootObservers();
             _observedCurrentRoot = root;
-            _observedCurrentRootLoadedHandler = (_, _) => TryFocusAndMaybeFinalize();
-            _observedCurrentRootLayoutUpdatedHandler = (_, _) => TryFocusAndMaybeFinalize();
+            _observedCurrentRootLoadedHandler = (_, _) => ScheduleTransitionRetry(DispatcherPriority.Loaded);
+            _observedCurrentRootLayoutUpdatedHandler = (_, _) => ScheduleTransitionRetry(DispatcherPriority.Background);
             root.Loaded += _observedCurrentRootLoadedHandler;
             root.LayoutUpdated += _observedCurrentRootLayoutUpdatedHandler;
         }
@@ -118,6 +131,7 @@ public partial class CachedContentHost
             _observedCurrentRoot = null;
             _observedCurrentRootLoadedHandler = null;
             _observedCurrentRootLayoutUpdatedHandler = null;
+            _layoutRetryScheduled = false;
         }
     }
 }

@@ -19,6 +19,7 @@ namespace lila::modules::social::presentation
 void SocialView::BuildProfileSection(wxWindow* parent)
 {
     profilePanel = new wxPanel(parent);
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*profilePanel, wxEmptyString, wxEmptyString);
     auto* rootSizer = new wxBoxSizer(wxVERTICAL);
     profileTitleLabel = new wxStaticText(profilePanel, wxID_ANY, lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuProfile));
     profileInfoCtrl = new wxTextCtrl(
@@ -35,15 +36,17 @@ void SocialView::BuildProfileSection(wxWindow* parent)
 
     profileEditorMenuPanel = new wxPanel(editorHost);
     auto* menuPanelSizer = new wxBoxSizer(wxVERTICAL);
-    static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 4> ProfileMenuItems = {{
+    static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 5> ProfileMenuItems = {{
         {"bio", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditBio), wxEmptyString},
         {"victory", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditVictory), wxEmptyString},
         {"defeat", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditDefeat), wxEmptyString},
         {"visibility", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditVisibility), wxEmptyString},
+        {"storybook", wxString(L"Livre des contes"), wxEmptyString},
     }};
     profileMenu = new lila::shared::ui::controls::VerticalMenu(
         profileEditorMenuPanel,
-        lila::shared::ui::navigation::BuildMenuItems(ProfileMenuItems));
+        lila::shared::ui::navigation::BuildMenuItems(ProfileMenuItems),
+        lila::shared::ui::controls::VerticalMenuRole::Entries);
     menuPanelSizer->Add(profileMenu, 1, wxEXPAND);
     profileEditorMenuPanel->SetSizer(menuPanelSizer);
 
@@ -98,6 +101,7 @@ void SocialView::BuildProfileSection(wxWindow* parent)
     buttonSizer->Add(profileSaveButton, 0, wxRIGHT, 10);
     buttonSizer->Add(profileCancelButton, 0);
 
+    profileTitleLabel->Hide();
     rootSizer->Add(profileTitleLabel, 0, wxBOTTOM, 10);
     rootSizer->Add(profileInfoCtrl, 0, wxEXPAND | wxBOTTOM, 12);
     rootSizer->Add(editorHost, 1, wxEXPAND | wxBOTTOM, 12);

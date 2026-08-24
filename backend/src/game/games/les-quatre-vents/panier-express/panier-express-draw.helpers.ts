@@ -1,8 +1,8 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
+import { GameStateEntity } from '../../../application/models/game-state.model';
 import {
   PanierExpressDeckPool,
   PanierExpressMetadata,
-} from './model/panier-express-state.entity';
+} from './model/panier-express-state.model';
 import { toText } from './panier-express-state.helpers';
 
 export function handlePanierExpressLuckyDraw(args: {
@@ -10,14 +10,14 @@ export function handlePanierExpressLuckyDraw(args: {
   playerId: number;
   getMetadata: (state: GameStateEntity) => PanierExpressMetadata;
   createMetaRng: (metadata: PanierExpressMetadata) => {
-    rng: unknown;
+    rng: () => number;
     getMeta: () => PanierExpressMetadata;
   };
   drawPool: (
     pool: PanierExpressDeckPool,
     deckKey: string,
-    rng: unknown,
-  ) => { pool: PanierExpressDeckPool; card: string | undefined };
+    rng: () => number,
+  ) => { pool: PanierExpressDeckPool; card: string | null | undefined };
   discardPool: (
     pool: PanierExpressDeckPool,
     deckKey: string,
@@ -96,14 +96,14 @@ export function handlePanierExpressGenerousProducerDraw(args: {
   ) => GameStateEntity;
   getMetadata: (state: GameStateEntity) => PanierExpressMetadata;
   createMetaRng: (metadata: PanierExpressMetadata) => {
-    rng: unknown;
+    rng: () => number;
     getMeta: () => PanierExpressMetadata;
   };
   drawPool: (
     pool: PanierExpressDeckPool,
     deckKey: string,
-    rng: unknown,
-  ) => { pool: PanierExpressDeckPool; card: string | undefined };
+    rng: () => number,
+  ) => { pool: PanierExpressDeckPool; card: string | null | undefined };
   discardPool: (
     pool: PanierExpressDeckPool,
     deckKey: string,
@@ -309,3 +309,7 @@ export function buildPanierExpressEventTargetChoices(
     .map((target) => toText(target.username).trim())
     .filter((name) => name.length > 0);
 }
+
+
+
+

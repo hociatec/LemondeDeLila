@@ -1,5 +1,11 @@
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GamePayloadValidationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
 import type {
   CorridorMetadata,
   CorridorPos,
@@ -8,11 +14,21 @@ import type {
 
 export type CorridorWall = { x: number; y: number; o: CorridorWallOrientation };
 
+type CorridorMovePayload = {
+  x?: number | string;
+  y?: number | string;
+};
+
+type CorridorPlaceWallPayload = CorridorMovePayload & {
+  o?: string;
+  orientation?: string;
+};
+
 export function getMetadata(state: GameStateEntity): CorridorMetadata {
   return (state.metadata ?? {}) as CorridorMetadata;
 }
 
-export function clampInt(n: any): number {
+export function clampInt(n: unknown): number {
   const v = Number(n);
   return Number.isFinite(v) ? Math.trunc(v) : 0;
 }
@@ -88,9 +104,9 @@ export function isEdgeBlocked(
     return true;
   }
 
-  // Mouvement vertical : vérifier mur horizontal entre les 2 rangées.
+  // Mouvement vertical : vÃƒÂ©rifier mur horizontal entre les 2 rangÃƒÂ©es.
   if (dy === 1) {
-    // vers le bas, frontière entre y=from.y et y=from.y+1 => wall y=from.y
+    // vers le bas, frontiÃƒÂ¨re entre y=from.y et y=from.y+1 => wall y=from.y
     const y = from.y;
     const x = from.x;
     return (
@@ -105,7 +121,7 @@ export function isEdgeBlocked(
     );
   }
 
-  // Mouvement horizontal : vérifier mur vertical entre les 2 colonnes.
+  // Mouvement horizontal : vÃƒÂ©rifier mur vertical entre les 2 colonnes.
   if (dx === 1) {
     const x = from.x;
     const y = from.y;
@@ -183,7 +199,7 @@ export function listLegalPawnMoves(
     results.push(step);
   }
 
-  // dédoublonnage
+  // dÃƒÂ©doublonnage
   const seen = new Set<string>();
   return results.filter((p) => {
     const k = key(p.x, p.y);
@@ -245,9 +261,9 @@ export function overlapsOrCrosses(
   const sets = wallSets(meta);
   const k = key(wall.x, wall.y);
   if (wall.o === 'h') {
-    // chevauchement (même spot) uniquement ; l'adjacence est autorisée (mur "collé").
+    // chevauchement (mÃƒÂªme spot) uniquement ; l'adjacence est autorisÃƒÂ©e (mur "collÃƒÂ©").
     if (sets.h.has(k)) return true;
-    // croisement avec mur vertical au même spot
+    // croisement avec mur vertical au mÃƒÂªme spot
     if (sets.v.has(k)) return true;
     return false;
   }
@@ -393,16 +409,16 @@ export function validateMoveAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): { to: CorridorPos; actorId: number } {
-  // Les bots ont des IDs négatifs dans l'état de jeu (GameCoreService),
+  // Les bots ont des IDs nÃƒÂ©gatifs dans l'ÃƒÂ©tat de jeu (GameCoreService),
   // donc on ne doit pas rejeter actorId <= 0 ici.
   if (actorId == null) {
-    throw new Error('Acteur requis');
+    throw new GameActorRequiredError('Acteur requis');
   }
   if ((action?.type ?? '').trim() !== 'corridor_move') {
-    throw new Error(`Action inconnue: ${action?.type ?? ''}`);
+    throw new GameUnknownActionError(`Action inconnue: ${action?.type ?? ''}`);
   }
 
-  const payload = (action.payload ?? {}) as any;
+  const payload = (action.payload ?? {}) as CorridorMovePayload;
   const x = clampInt(payload?.x);
   const y = clampInt(payload?.y);
 
@@ -410,7 +426,7 @@ export function validateMoveAction(
     (p) => p.x === x && p.y === y,
   );
   if (!legal) {
-    throw new Error('Déplacement illégal');
+    throw new GameActionRejectedError('DÃƒÂ©placement illÃƒÂ©gal');
   }
 
   return { to: { x, y }, actorId };
@@ -421,16 +437,16 @@ export function validatePlaceWallAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): { wall: CorridorWall; actorId: number } {
-  // Les bots ont des IDs négatifs dans l'état de jeu (GameCoreService),
+  // Les bots ont des IDs nÃƒÂ©gatifs dans l'ÃƒÂ©tat de jeu (GameCoreService),
   // donc on ne doit pas rejeter actorId <= 0 ici.
   if (actorId == null) {
-    throw new Error('Acteur requis');
+    throw new GameActorRequiredError('Acteur requis');
   }
   if ((action?.type ?? '').trim() !== 'corridor_place_wall') {
-    throw new Error(`Action inconnue: ${action?.type ?? ''}`);
+    throw new GameUnknownActionError(`Action inconnue: ${action?.type ?? ''}`);
   }
 
-  const payload = (action.payload ?? {}) as any;
+  const payload = (action.payload ?? {}) as CorridorPlaceWallPayload;
   const x = clampInt(payload?.x);
   const y = clampInt(payload?.y);
   const o = String(payload?.o ?? payload?.orientation ?? '')
@@ -442,26 +458,28 @@ export function validatePlaceWallAction(
       : o === 'h' || o === 'horizontal'
         ? 'h'
         : (() => {
-            throw new Error('Orientation invalide');
+            throw new GamePayloadValidationError('Orientation invalide');
           })();
 
   const meta = getMetadata(state);
   const remaining =
     (meta?.wallsRemainingByPlayerId ?? {})[String(actorId)] ?? 0;
   if (remaining <= 0) {
-    throw new Error('Aucun mur restant.');
+    throw new GameActionRejectedError('Aucun mur restant.');
   }
 
   const wall: CorridorWall = { x, y, o: orientation };
   if (!isWallPlacementInBounds(meta, wall)) {
-    throw new Error('Position de mur invalide.');
+    throw new GamePayloadValidationError('Position de mur invalide.');
   }
   if (overlapsOrCrosses(meta, wall)) {
-    throw new Error('Mur invalide (chevauchement/croisement).');
+    throw new GameActionRejectedError('Mur invalide (chevauchement/croisement).');
   }
   if (wouldBlockAllPaths(state, meta, wall)) {
-    throw new Error('Mur invalide (bloque un chemin).');
+    throw new GameActionRejectedError('Mur invalide (bloque un chemin).');
   }
 
   return { wall, actorId };
 }
+
+

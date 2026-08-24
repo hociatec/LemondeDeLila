@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include <wx/frame.h>
-
+#include "shared/accessibility/FocusPlanView.h"
+#include "shared/accessibility/NonFocusablePanel.h"
 #include "modules/messaging/domain/MessagingBox.h"
 #include "modules/messaging/domain/MessagingMessage.h"
 #include "modules/messaging/domain/MessagingUser.h"
@@ -34,17 +34,19 @@ class MessagingMailboxController;
 class MessagingFocusController;
 class MessagingScreenCoordinator;
 
-class MessagingFrame final : public wxFrame
+class MessagingFrame final : public lila::shared::accessibility::NonFocusablePanel, public lila::shared::accessibility::FocusPlanView
 {
 public:
     using CloseRequestedHandler = std::function<void()>;
     using ExitRequestedHandler = std::function<void()>;
 
     MessagingFrame(
+        wxWindow* parent,
         lila::modules::messaging::application::MessagingService& messagingService,
         CloseRequestedHandler onCloseRequested,
         ExitRequestedHandler onExitRequested);
     ~MessagingFrame() override;
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:
     using Screen = MessagingNavigationState::Screen;
@@ -61,6 +63,7 @@ private:
     void SyncBusyState();
     void SyncPanels();
     void SyncSelectionState();
+    void ScheduleFocusCurrentScreen();
     void RefreshCurrentBox(bool preserveSelection);
     void OpenSelectedMenu(std::size_t selectedMenuIndex);
     void OpenDetail();

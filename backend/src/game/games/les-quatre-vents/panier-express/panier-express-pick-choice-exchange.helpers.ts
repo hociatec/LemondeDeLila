@@ -1,5 +1,5 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { PanierExpressMetadata } from './model/panier-express-state.entity';
+import { GameStateEntity } from '../../../application/models/game-state.model';
+import { PanierExpressMetadata } from './model/panier-express-state.model';
 import {
   asRecord,
   toText,
@@ -92,7 +92,7 @@ export function resolvePanierExpressExchangePickChoice(args: {
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
-  ) => { meta: PanierExpressMetadata; value: T | undefined };
+  ) => { meta: PanierExpressMetadata; value: T | null };
   advanceTurn: (state: GameStateEntity) => GameStateEntity;
   queueCourseDraws: (
     state: GameStateEntity,
@@ -484,3 +484,7 @@ export function resolvePanierExpressExchangePickChoice(args: {
 
   return null;
 }
+
+
+
+

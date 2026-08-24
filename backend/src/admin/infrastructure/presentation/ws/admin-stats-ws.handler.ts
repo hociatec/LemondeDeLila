@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import { AdminStatsService } from '../../../application/use-cases/admin-stats/admin-stats.service';
 
 @Injectable()
@@ -16,3 +16,4 @@ export class AdminStatsWsHandler {
     };
   }
 }
+

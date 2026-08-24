@@ -6,8 +6,10 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { HttpJwtGuard } from '../../../../../common/guards/http-jwt.guard';
-import { AdminRoleGuard } from '../../../../../common/guards/admin-role.guard';
+import {
+  AdminRoleGuard,
+  HttpJwtGuard,
+} from '../../../../../common/auth/public-api';
 import { AdminMaintenanceGuard } from '../guards/admin-maintenance.guard';
 import { AdminDaemonReloadService } from '../../../../application/use-cases/admin-maintenance/admin-daemon-reload.service';
 import { AdminDryRunBuildService } from '../../../../application/use-cases/admin-maintenance/admin-dry-run-build.service';

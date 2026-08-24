@@ -1,3 +1,3 @@
-import { GameRegistryModule } from '../../game/engine/game-registry.module';
+import { GameRegistryModule } from '../../game/public-api';
 
 export const CATALOG_MODULE_IMPORTS = [GameRegistryModule];

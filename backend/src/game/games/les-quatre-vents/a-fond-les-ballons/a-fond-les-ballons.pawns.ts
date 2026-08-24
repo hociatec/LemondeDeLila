@@ -1,4 +1,4 @@
-import type { AFondLesBallonsPawn } from './model/a-fond-les-ballons-state.entity';
+import type { AFondLesBallonsPawn } from './model/a-fond-les-ballons-state.model';
 
 export const A_FOND_LES_BALLONS_PAWNS: AFondLesBallonsPawn[] = [
   {
@@ -80,3 +80,4 @@ const toText = (value: unknown): string => {
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   return '';
 };
+

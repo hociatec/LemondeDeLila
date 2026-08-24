@@ -16,45 +16,13 @@ SocialActionController::SocialActionController(
 {
 }
 
-void SocialActionController::ActivateFriend(
-    std::size_t actionIndex,
+void SocialActionController::ActivateSectionAction(
+    SocialSection section,
+    SocialActionId actionId,
     std::optional<int> userId,
     bool isBlocked) const
 {
-    if (actionIndex == 0)
-    {
-        OpenProfile(userId);
-        return;
-    }
-
-    if (!userId.has_value())
-    {
-        return;
-    }
-
-    if (actionIndex == 1)
-    {
-        auto* service = &socialService_;
-        Schedule(
-            lila::shared::text::ui::SocialProfileRemoveBusy,
-            [service, id = *userId]() { service->RemoveFriend(id); },
-            lila::shared::text::ui::SocialFriendRemoved,
-            SocialSection::Friends);
-        return;
-    }
-
-    if (actionIndex == 2)
-    {
-        ToggleBlock(*userId, isBlocked, SocialSection::Friends);
-    }
-}
-
-void SocialActionController::ActivateIncomingRequest(
-    std::size_t actionIndex,
-    std::optional<int> userId,
-    bool isBlocked) const
-{
-    if (actionIndex == 2)
+    if (actionId == SocialActionId::ViewProfile)
     {
         OpenProfile(userId);
         return;
@@ -66,80 +34,75 @@ void SocialActionController::ActivateIncomingRequest(
     }
 
     auto* service = &socialService_;
-    if (actionIndex == 0)
+    switch (section)
     {
-        Schedule(
-            lila::shared::text::ui::SocialProfileAcceptBusy,
-            [service, id = *userId]() { service->AcceptFriend(id); },
-            lila::shared::text::ui::SocialProfileAccepted,
-            SocialSection::IncomingRequests);
+    case SocialSection::Friends:
+        if (actionId == SocialActionId::RemoveFriend)
+        {
+            Schedule(
+                lila::shared::text::ui::SocialProfileRemoveBusy,
+                [service, id = *userId]() { service->RemoveFriend(id); },
+                lila::shared::text::ui::SocialFriendRemoved,
+                section);
+            return;
+        }
+        if (actionId == SocialActionId::ToggleBlock)
+        {
+            ToggleBlock(*userId, isBlocked, section);
+        }
+        return;
+    case SocialSection::IncomingRequests:
+        if (actionId == SocialActionId::AcceptRequest)
+        {
+            Schedule(
+                lila::shared::text::ui::SocialProfileAcceptBusy,
+                [service, id = *userId]() { service->AcceptFriend(id); },
+                lila::shared::text::ui::SocialProfileAccepted,
+                section);
+            return;
+        }
+        if (actionId == SocialActionId::RejectRequest)
+        {
+            Schedule(
+                lila::shared::text::ui::SocialProfileRejectBusy,
+                [service, id = *userId]() { service->RejectFriend(id); },
+                lila::shared::text::ui::SocialProfileRejected,
+                section);
+            return;
+        }
+        if (actionId == SocialActionId::ToggleBlock)
+        {
+            ToggleBlock(*userId, isBlocked, section);
+        }
+        return;
+    case SocialSection::OutgoingRequests:
+        if (actionId == SocialActionId::CancelRequest)
+        {
+            Schedule(
+                lila::shared::text::ui::SocialProfileCancelBusy,
+                [service, id = *userId]() { service->CancelRequest(id); },
+                lila::shared::text::ui::SocialProfileCanceled,
+                section);
+            return;
+        }
+        if (actionId == SocialActionId::ToggleBlock)
+        {
+            ToggleBlock(*userId, isBlocked, section);
+        }
+        return;
+    case SocialSection::Blocked:
+        if (actionId == SocialActionId::UnblockUser)
+        {
+            Schedule(
+                lila::shared::text::ui::SocialProfileActionUnblocked,
+                [service, id = *userId]() { service->UnblockUser(id); },
+                lila::shared::text::ui::SocialProfileUnblocked,
+                section);
+        }
+        return;
+    case SocialSection::Profile:
         return;
     }
-
-    if (actionIndex == 1)
-    {
-        Schedule(
-            lila::shared::text::ui::SocialProfileRejectBusy,
-            [service, id = *userId]() { service->RejectFriend(id); },
-            lila::shared::text::ui::SocialProfileRejected,
-            SocialSection::IncomingRequests);
-        return;
-    }
-
-    if (actionIndex == 3)
-    {
-        ToggleBlock(*userId, isBlocked, SocialSection::IncomingRequests);
-    }
-}
-
-void SocialActionController::ActivateOutgoingRequest(
-    std::size_t actionIndex,
-    std::optional<int> userId,
-    bool isBlocked) const
-{
-    if (actionIndex == 1)
-    {
-        OpenProfile(userId);
-        return;
-    }
-
-    if (!userId.has_value())
-    {
-        return;
-    }
-
-    if (actionIndex == 0)
-    {
-        auto* service = &socialService_;
-        Schedule(
-            lila::shared::text::ui::SocialProfileCancelBusy,
-            [service, id = *userId]() { service->CancelRequest(id); },
-            lila::shared::text::ui::SocialProfileCanceled,
-            SocialSection::OutgoingRequests);
-        return;
-    }
-
-    if (actionIndex == 2)
-    {
-        ToggleBlock(*userId, isBlocked, SocialSection::OutgoingRequests);
-    }
-}
-
-void SocialActionController::ActivateBlockedUser(
-    std::size_t actionIndex,
-    std::optional<int> userId) const
-{
-    if (actionIndex != 0 || !userId.has_value())
-    {
-        return;
-    }
-
-    auto* service = &socialService_;
-    Schedule(
-        lila::shared::text::ui::SocialProfileActionUnblocked,
-        [service, id = *userId]() { service->UnblockUser(id); },
-        lila::shared::text::ui::SocialProfileUnblocked,
-        SocialSection::Blocked);
 }
 
 void SocialActionController::SaveProfile(

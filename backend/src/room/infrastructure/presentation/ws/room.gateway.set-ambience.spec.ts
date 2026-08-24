@@ -1,0 +1,198 @@
+import { RoomGateway } from './room.gateway';
+import { RoomGatewayActionsService } from './room-gateway-actions.service';
+import { RoomGatewayCommandService } from './room-gateway-command.service';
+import { RoomGatewayConnectionService } from './room-gateway-connection.service';
+import { RoomGatewayLifecycleService } from './room-gateway-lifecycle.service';
+import { RoomGatewayLifecyclePresenter } from './room-gateway-lifecycle.presenter';
+import { RoomGatewayPresenceService } from './room-gateway-presence.service';
+import { RoomGatewaySessionService } from './room-gateway-session.service';
+import { RoomGatewaySessionPresenter } from './room-gateway-session.presenter';
+import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
+import { RoomGatewayStateService } from './room-gateway-state.service';
+import { RoomClientPolicyService } from '../../../application/services/room-client-policy.service';
+import { RoomJoinPolicyService } from '../../../application/services/room-join-policy.service';
+
+function createGateway() {
+  const roomsService: any = {
+    requireRoomForOwnerAction: jest.fn().mockResolvedValue({ id: 10 }),
+    saveRoom: jest.fn().mockResolvedValue(undefined),
+    invalidateRoomPayloadCache: jest.fn().mockResolvedValue(undefined),
+  };
+  const roomState: any = {
+    getRoomPayload: jest.fn(),
+    isBanned: jest.fn().mockReturnValue(false),
+    invalidateRoomPayloadCache: roomsService.invalidateRoomPayloadCache,
+    updateRoomPayloadCache: jest.fn().mockResolvedValue(null),
+    notifyRoomStateUpdated: jest.fn().mockResolvedValue(undefined),
+    primeRoomPayloadCache: jest.fn().mockResolvedValue(undefined),
+  };
+  const addBotToRoom: any = { execute: jest.fn() };
+  const getLastRoomBot: any = { execute: jest.fn() };
+  const removeBotFromRoom: any = { execute: jest.fn() };
+  const auth: any = {};
+  const catalog: any = {};
+  const perf: any = {
+    measure: jest
+      .fn()
+      .mockImplementation(async (_name: string, fn: any) => fn()),
+  };
+  const invites: any = {};
+  const clientUpdates: any = {};
+  const wsTickets: any = {};
+  const realtimeTracker: any = {};
+  const sounds: any = {
+    listTableAmbiencesWithFilter: jest.fn().mockResolvedValue({
+      items: [{ soundId: 'TableAmbience1', name: 'A1', enabled: true }],
+    }),
+  };
+  const joinPolicy = new RoomJoinPolicyService();
+  const clientPolicy = new RoomClientPolicyService();
+  const lifecyclePresenter = new RoomGatewayLifecyclePresenter();
+  const sessionPresenter = new RoomGatewaySessionPresenter();
+  const statePresenter = new RoomGatewayStatePresenter();
+  const lifecycle = new RoomGatewayLifecycleService(
+    roomsService,
+    roomsService,
+    roomState,
+    catalog,
+    perf,
+    realtimeTracker,
+    joinPolicy,
+    lifecyclePresenter,
+  ) as any;
+  const actions = new RoomGatewayActionsService(
+    roomsService,
+    roomsService,
+    roomState,
+    addBotToRoom,
+    getLastRoomBot,
+    removeBotFromRoom,
+    perf,
+    realtimeTracker,
+  ) as any;
+  const commands = new RoomGatewayCommandService() as any;
+  const connection = new RoomGatewayConnectionService(
+    roomsService,
+    roomState,
+    auth,
+    clientUpdates,
+    wsTickets,
+    joinPolicy,
+    lifecyclePresenter,
+  ) as any;
+  const presence = new RoomGatewayPresenceService(
+    roomsService,
+    roomState,
+  ) as any;
+  const state = new RoomGatewayStateService(
+    roomState,
+    clientPolicy,
+    statePresenter,
+  ) as any;
+  const session = new RoomGatewaySessionService(
+    clientPolicy,
+    roomState,
+    sessionPresenter,
+  ) as any;
+  const roomEvents = {
+    onRoomStateUpdated: jest.fn(),
+    onRoomDeleted: jest.fn(),
+  };
+
+  const gateway = new RoomGateway(
+    catalog,
+    perf,
+    invites,
+    realtimeTracker,
+    sounds,
+    actions,
+    commands,
+    connection,
+    lifecycle,
+    presence,
+    statePresenter,
+    state,
+    session,
+    roomEvents,
+  ) as any;
+
+  gateway.sendError = jest.fn().mockResolvedValue(undefined);
+  gateway.tryUpdateRoomPayload = jest.fn().mockResolvedValue(true);
+  gateway.sendRoomState = jest.fn().mockResolvedValue(undefined);
+
+  return { gateway, roomsService, sounds };
+}
+
+describe('RoomGateway.handleSetAmbience', () => {
+  it('accepts an active table ambience and persists it', async () => {
+    const { gateway, roomsService, sounds } = createGateway();
+
+    await gateway.handleSetAmbience(
+      {} as any,
+      { roomId: 10, userId: 1 } as any,
+      { soundId: 'TableAmbience1' },
+      Date.now(),
+    );
+
+    expect(sounds.listTableAmbiencesWithFilter).toHaveBeenCalled();
+    expect(roomsService.requireRoomForOwnerAction).toHaveBeenCalledWith(10, 1);
+    expect(roomsService.saveRoom).toHaveBeenCalled();
+    const savedRoom = roomsService.saveRoom.mock.calls[0][0];
+    expect(savedRoom.tableAmbienceSoundId).toBe('TableAmbience1');
+    expect(gateway.sendError).not.toHaveBeenCalled();
+  });
+
+  it('rejects an inactive or missing ambience id', async () => {
+    const { gateway, roomsService, sounds } = createGateway();
+    sounds.listTableAmbiencesWithFilter.mockResolvedValue({ items: [] });
+
+    await gateway.handleSetAmbience(
+      {} as any,
+      { roomId: 10, userId: 1 } as any,
+      { soundId: 'TableAmbience1' },
+      Date.now(),
+    );
+
+    expect(gateway.sendError).toHaveBeenCalledWith(
+      expect.anything(),
+      'Ambiance indisponible: TableAmbience1',
+    );
+    expect(roomsService.requireRoomForOwnerAction).not.toHaveBeenCalled();
+    expect(roomsService.saveRoom).not.toHaveBeenCalled();
+  });
+
+  it('rejects an invalid ambience id before querying active list', async () => {
+    const { gateway, roomsService, sounds } = createGateway();
+
+    await gateway.handleSetAmbience(
+      {} as any,
+      { roomId: 10, userId: 1 } as any,
+      { soundId: 'TableAmbience99' },
+      Date.now(),
+    );
+
+    expect(gateway.sendError).toHaveBeenCalledWith(
+      expect.anything(),
+      'Ambiance invalide: TableAmbience99',
+    );
+    expect(sounds.listTableAmbiencesWithFilter).not.toHaveBeenCalled();
+    expect(roomsService.saveRoom).not.toHaveBeenCalled();
+  });
+
+  it('allows clearing ambience with an empty sound id', async () => {
+    const { gateway, roomsService, sounds } = createGateway();
+
+    await gateway.handleSetAmbience(
+      {} as any,
+      { roomId: 10, userId: 1 } as any,
+      { soundId: '' },
+      Date.now(),
+    );
+
+    expect(sounds.listTableAmbiencesWithFilter).not.toHaveBeenCalled();
+    expect(roomsService.requireRoomForOwnerAction).toHaveBeenCalledWith(10, 1);
+    const savedRoom = roomsService.saveRoom.mock.calls[0][0];
+    expect(savedRoom.tableAmbienceSoundId).toBeNull();
+    expect(gateway.sendError).not.toHaveBeenCalled();
+  });
+});

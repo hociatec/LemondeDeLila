@@ -1,8 +1,8 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
+import { GameStateEntity } from '../../../application/models/game-state.model';
 import {
   PanierExpressMetadata,
   PanierExpressPlayer,
-} from './model/panier-express-state.entity';
+} from './model/panier-express-state.model';
 import { asRecord, toText } from './panier-express-state.helpers';
 
 export function mergePanierExpressMetadataWithDefaults(
@@ -182,3 +182,7 @@ export function ensurePanierExpressQuizOutcome(
   });
   return normalized;
 }
+
+
+
+

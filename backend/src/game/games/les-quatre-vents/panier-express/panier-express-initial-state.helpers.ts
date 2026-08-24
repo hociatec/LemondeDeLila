@@ -1,8 +1,8 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
+import { GameStateEntity } from '../../../application/models/game-state.model';
 import {
   PanierExpressMetadata,
   PanierExpressPlayer,
-} from './model/panier-express-state.entity';
+} from './model/panier-express-state.model';
 import { ensureShoppingLists, toStringArray } from './panier-express.shopping';
 
 type HydratePanierExpressInitialStateArgs = {
@@ -147,7 +147,7 @@ function hydratePlayers(
   return players.map((player) => {
     const assigned = assignedById.get(Number(player.id));
     return {
-      ...(player as PanierExpressPlayer),
+      ...(player as unknown as PanierExpressPlayer),
       isBot: assigned?.isBot ?? player.isBot === true,
       basket: Array.isArray(player.basket)
         ? player.basket.map((item) => String(item))
@@ -214,3 +214,7 @@ function asRecord(value: unknown): Record<string, unknown> {
   }
   return value as Record<string, unknown>;
 }
+
+
+
+

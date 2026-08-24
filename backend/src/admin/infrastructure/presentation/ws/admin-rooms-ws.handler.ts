@@ -1,16 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
 import { AdminRoomsService } from '../../../application/use-cases/admin-rooms/admin-rooms.service';
-import { AdminRoomsCleanupWsDto } from './admin-rooms-cleanup.dto';
-import { AdminRoomsDestroyWsDto } from './admin-rooms-destroy.dto';
-import { AdminRoomsListWsDto } from './admin-rooms-list.dto';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+import { AdminRoomsCleanupWsDto } from './dto/admin-rooms-cleanup.ws.dto';
+import { AdminRoomsDestroyWsDto } from './dto/admin-rooms-destroy.ws.dto';
+import { AdminRoomsListWsDto } from './dto/admin-rooms-list.ws.dto';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import {
   AdminRoomsSettingsGetWsDto,
   AdminRoomsSettingsUpdateWsDto,
-} from './admin-rooms-settings.dto';
+} from './dto/admin-rooms-settings.ws.dto';
 
 @Injectable()
 export class AdminRoomsWsHandler {
@@ -19,28 +19,31 @@ export class AdminRoomsWsHandler {
     private readonly rooms: AdminRoomsService,
   ) {}
 
-  async roomsCleanup(session: WsSession, payload: any) {
+  async roomsCleanup(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminRoomsCleanupWsDto, payload);
     const res = await this.rooms.cleanup(dto);
     return { type: WS_EVENTS.admin.rooms.cleanup, payload: res };
   }
 
-  async roomsList(session: WsSession, payload: any) {
+  async roomsList(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminRoomsListWsDto, payload ?? {});
     const res = await this.rooms.list(dto);
     return { type: WS_EVENTS.admin.rooms.list, payload: res };
   }
 
-  async roomsDestroy(session: WsSession, payload: any) {
+  async roomsDestroy(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminRoomsDestroyWsDto, payload);
-    const res = await this.rooms.destroy(dto);
+    const res = await this.rooms.destroy({
+      roomId: dto.roomId,
+      confirm: dto.confirm,
+    });
     return { type: WS_EVENTS.admin.rooms.destroy, payload: res };
   }
 
-  roomsSettingsGet(session: WsSession, payload: any) {
+  roomsSettingsGet(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminRoomsSettingsGetWsDto, payload ?? {});
     return {
@@ -49,7 +52,7 @@ export class AdminRoomsWsHandler {
     };
   }
 
-  async roomsSettingsUpdate(session: WsSession, payload: any) {
+  async roomsSettingsUpdate(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminRoomsSettingsUpdateWsDto, payload);
     const updated = await this.rooms.updateSettings({
@@ -64,6 +67,7 @@ export class AdminRoomsWsHandler {
     return { type: WS_EVENTS.admin.rooms.settingsUpdate, payload: updated };
   }
 }
+
 
 
 

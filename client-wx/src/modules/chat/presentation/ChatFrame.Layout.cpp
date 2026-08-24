@@ -2,7 +2,6 @@
 #include "modules/chat/presentation/ChatFrame.h"
 
 #include <wx/button.h>
-#include <wx/listbox.h>
 #include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -38,6 +37,8 @@ void ChatFrame::BuildLayout()
         wxDefaultPosition,
         wxDefaultSize,
         wxTE_READONLY | wxTE_CENTER | wxBORDER_NONE);
+    titleLabel->Hide();
+    subtitleLabel->Hide();
     headerSizer->Add(titleLabel, 0, wxALIGN_CENTER_HORIZONTAL);
     headerSizer->Add(subtitleLabel, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 4);
     headerSizer->Add(statusLabel_, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 6);
@@ -49,22 +50,17 @@ void ChatFrame::BuildLayout()
         contentPanel,
         wxID_ANY,
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatMessagesHeader));
-    historyList_ = new wxListBox(contentPanel, wxID_ANY);
-    emptyHistoryCtrl_ = new wxTextCtrl(
+    historyCtrl_ = new wxTextCtrl(
         contentPanel,
         wxID_ANY,
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatNoMessage),
         wxDefaultPosition,
         wxDefaultSize,
-        wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
+        wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2);
     // Keep the composer visible even on smaller screens. The history expands
     // into the remaining space instead of forcing the composer below the viewport.
-    historyList_->SetMinSize(wxSize(-1, 240));
-    emptyHistoryCtrl_->SetMinSize(wxSize(-1, 90));
-    // Before the asynchronous history load completes, expose a stable history
-    // target to Tab instead of an empty/disabled list box.
-    historyList_->Show(false);
-    emptyHistoryCtrl_->Show(true);
+    historyCtrl_->SetMinSize(wxSize(-1, 240));
+    historyCtrl_->SetName(lila::shared::text::FromUtf8(lila::shared::text::ui::ChatMessagesHeader));
 
     auto* historyActionSizer = new wxBoxSizer(wxHORIZONTAL);
     editMessageButton_ = new wxButton(
@@ -95,13 +91,11 @@ void ChatFrame::BuildLayout()
     contentSizer->Add(inputLabel, 0, wxBOTTOM, 8);
     contentSizer->Add(inputCtrl_, 0, wxEXPAND | wxBOTTOM, 18);
     contentSizer->Add(historyLabel, 0, wxBOTTOM, 8);
-    contentSizer->Add(historyList_, 1, wxEXPAND | wxBOTTOM, 12);
-    contentSizer->Add(emptyHistoryCtrl_, 1, wxEXPAND | wxBOTTOM, 12);
+    contentSizer->Add(historyCtrl_, 1, wxEXPAND | wxBOTTOM, 12);
     contentSizer->Add(historyActionSizer, 0, wxBOTTOM, 12);
     lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder(
         {inputCtrl_,
-         historyList_,
-         emptyHistoryCtrl_,
+         historyCtrl_,
          editMessageButton_,
          deleteMessageButton_});
     contentPanel->SetSizer(contentSizer);
@@ -133,10 +127,8 @@ void ChatFrame::ApplyTheme()
         child->SetForegroundColour(Theme::TextPrimary());
     }
 
-    historyList_->SetBackgroundColour(wxColour(12, 21, 35));
-    historyList_->SetForegroundColour(Theme::TextPrimary());
-    emptyHistoryCtrl_->SetBackgroundColour(wxColour(12, 21, 35));
-    emptyHistoryCtrl_->SetForegroundColour(Theme::TextPrimary());
+    historyCtrl_->SetBackgroundColour(wxColour(12, 21, 35));
+    historyCtrl_->SetForegroundColour(Theme::TextPrimary());
     inputCtrl_->SetBackgroundColour(wxColour(12, 21, 35));
     inputCtrl_->SetForegroundColour(Theme::TextPrimary());
     statusLabel_->SetForegroundColour(Theme::Accent());
@@ -147,11 +139,8 @@ void ChatFrame::ApplyTheme()
     
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*statusLabel_, statusLabel_->GetValue());
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *historyList_,
+        *historyCtrl_,
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatMessagesListAccessible));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *emptyHistoryCtrl_,
-        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatMessagesEmptyAccessible));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *editMessageButton_,
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatEditMessageAction));

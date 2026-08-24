@@ -1,5 +1,5 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { PanierExpressMetadata } from './model/panier-express-state.entity';
+import { GameStateEntity } from '../../../application/models/game-state.model';
+import { PanierExpressMetadata } from './model/panier-express-state.model';
 import { toText } from './panier-express-state.helpers';
 import { applyAdvancedPanierExpressEventBatch } from './panier-express-event-advanced-batch.helpers';
 
@@ -37,7 +37,7 @@ export function applyAdvancedPanierExpressEvent(args: {
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
-  ) => { meta: PanierExpressMetadata; value: T | undefined };
+  ) => { meta: PanierExpressMetadata; value: T | null };
   moveCircular: (
     length: number,
     currentPosition: number,
@@ -123,8 +123,8 @@ export function applyAdvancedPanierExpressEvent(args: {
       next = args.appendLog(
         next,
         targetNames.length
-          ? `[Panier Express] Journee bio : bonus pour ${targetNames.join(', ')}.`
-          : `[Panier Express] Journee bio : aucun joueur sur un stand Bio.`,
+          ? `[Panier Express] Journée bio: bonus pour ${targetNames.join(', ')}.`
+          : `[Panier Express] Journée bio: aucun joueur sur un stand Bio.`,
       );
       return args.appendActionLog(next, args.playerId, 'event', {
         event: args.event,
@@ -170,7 +170,7 @@ export function applyAdvancedPanierExpressEvent(args: {
         next = args.setTurnStatus(next, args.playerId, 'keepTurn', 1);
         next = args.appendLog(
           next,
-          `[Panier Express] ${args.eventLabel} : vous piochez "${args.formatCourseLabel(card)}", mais cet ingredient est deja dans le panier. Il est donc defausse. Vous rejouez immediatement.`,
+          `[Panier Express] ${args.eventLabel}: vous piochez « ${args.formatCourseLabel(card)} », mais cet ingrédient est déjà dans le panier. Il est donc défaussé. Vous rejouez immédiatement.`,
         );
         return args.appendActionLog(next, args.playerId, 'event', {
           event: args.event,
@@ -189,7 +189,7 @@ export function applyAdvancedPanierExpressEvent(args: {
       if (!kept) {
         next = args.appendLog(
           next,
-          `[Panier Express] ${args.eventLabel} : "${args.formatCourseLabel(card)}" est defausse.`,
+          `[Panier Express] ${args.eventLabel}: "${args.formatCourseLabel(card)}" est défaussé.`,
         );
         return args.appendActionLog(next, args.playerId, 'event', {
           event: args.event,
@@ -200,7 +200,7 @@ export function applyAdvancedPanierExpressEvent(args: {
 
       next = args.appendLog(
         next,
-        `[Panier Express] ${args.eventLabel} : recoit "${args.formatCourseLabel(card)}".`,
+        `[Panier Express] ${args.eventLabel}: reçoit "${args.formatCourseLabel(card)}".`,
       );
       return args.appendActionLog(next, args.playerId, 'event', {
         event: args.event,
@@ -270,3 +270,7 @@ export function applyAdvancedPanierExpressEvent(args: {
       return applyAdvancedPanierExpressEventBatch(args);
   }
 }
+
+
+
+

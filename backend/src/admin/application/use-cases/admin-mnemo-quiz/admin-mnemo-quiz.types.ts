@@ -1,7 +1,7 @@
 import type {
   MnemoQuestionStatus,
   MnemoQuizQuestion,
-} from '../../../../game/games/vents-infinis/arche-de-mnemosyne/model/mnemo-quiz.model';
+} from '../../../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
 
 export interface ListAdminMnemoQuestionsQuery {
   categoryId?: string;

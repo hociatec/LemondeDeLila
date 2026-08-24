@@ -22,7 +22,10 @@ void MainMenuFrame::ApplyTheme()
     navigationLabel_->SetFont(Theme::BodyFont());
     navigationLabel_->SetForegroundColour(Theme::TextPrimary());
 
-    menu_->ApplyTheme();
+    if (menu_ != nullptr)
+    {
+        menu_->ApplyTheme();
+    }
 
     statusLabel_->SetFont(Theme::BodyFont());
     statusLabel_->SetForegroundColour(Theme::Accent());

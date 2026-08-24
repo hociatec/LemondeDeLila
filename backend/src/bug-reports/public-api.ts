@@ -1,0 +1,11 @@
+export { BugReportsModule } from './module/bug-reports.module';
+export { AddBugReportCommentService } from './application/use-cases/bug-report-comments/add-bug-report-comment.service';
+export { CountBugReportCommentsService } from './application/use-cases/bug-report-comments/count-bug-report-comments.service';
+export { ListBugReportCommentsService } from './application/use-cases/bug-report-comments/list-bug-report-comments.service';
+export { CreateBugReportService } from './application/use-cases/bug-reports/create-bug-report.service';
+export { DeleteBugReportService } from './application/use-cases/bug-reports/delete-bug-report.service';
+export { GetBugReportService } from './application/use-cases/bug-reports/get-bug-report.service';
+export { ListBugReportsService } from './application/use-cases/bug-reports/list-bug-reports.service';
+export { UpdateBugReportService } from './application/use-cases/bug-reports/update-bug-report.service';
+export { UpdateBugReportStatusService } from './application/use-cases/bug-reports/update-bug-report-status.service';
+

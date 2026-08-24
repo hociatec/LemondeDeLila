@@ -4,10 +4,8 @@
 #include <utility>
 
 #include <wx/event.h>
-#include <wx/frame.h>
 #include <wx/window.h>
 
-#include "modules/social/presentation/SocialFocusController.h"
 #include "modules/social/presentation/SocialNavigationState.h"
 #include "modules/social/presentation/SocialView.h"
 #include "shared/accessibility/NavigationController.h"
@@ -26,34 +24,17 @@ bool IsSameWindow(wxWindow* left, wxWindow* right)
     return left != nullptr && right != nullptr && left == right;
 }
 
-wxWindow* CurrentActionMenuContainer(SocialView& view, SocialSection section)
-{
-    const auto friends = view.FriendsSection();
-    const auto incoming = view.IncomingSection();
-    const auto outgoing = view.OutgoingSection();
-    const auto blocked = view.BlockedSection();
-    switch (section)
-    {
-    case SocialSection::Friends: return friends.actionsMenu;
-    case SocialSection::IncomingRequests: return incoming.actionsMenu;
-    case SocialSection::OutgoingRequests: return outgoing.actionsMenu;
-    case SocialSection::Blocked: return blocked.actionsMenu;
-    case SocialSection::Profile: return view.Profile().profileMenu;
-    }
-    return nullptr;
-}
 }
 
 void SocialEventRouter::BindRootEvents(
-    wxFrame& frame,
+    wxWindow& owner,
     SocialView& view,
     SocialNavigationState& navigationState,
-    SocialFocusController& focusController,
     Handlers handlers)
 {
-    frame.Bind(
+    owner.Bind(
         wxEVT_CHAR_HOOK,
-        [&view, &navigationState, &focusController, handlers](wxKeyEvent& event)
+        [&navigationState, handlers](wxKeyEvent& event)
         {
             try
             {
@@ -79,8 +60,8 @@ void SocialEventRouter::BindRootEvents(
         });
 
     Navigator::BindEscapeNavigation(
-        frame,
-        [&view, &navigationState, &focusController, handlers]()
+        owner,
+        [&navigationState, handlers]()
         {
             if (navigationState.currentScreen == SocialNavigationState::Screen::Section &&
                 navigationState.currentSection != SocialSection::Profile &&
@@ -99,26 +80,6 @@ void SocialEventRouter::BindRootEvents(
                 return true;
             }
             return false;
-        });
-
-    focusController.BindNavigation(frame);
-
-    frame.Bind(
-        wxEVT_CLOSE_WINDOW,
-        [handlers = std::move(handlers)](wxCloseEvent& event)
-        {
-            if (handlers.beginClosing)
-            {
-                handlers.beginClosing();
-            }
-            if (event.CanVeto())
-            {
-                event.Veto();
-            }
-            if (handlers.onExitRequested)
-            {
-                handlers.onExitRequested();
-            }
         });
 }
 }

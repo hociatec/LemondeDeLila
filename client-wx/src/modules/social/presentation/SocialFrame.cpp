@@ -2,7 +2,8 @@
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/social/presentation/SocialActionController.h"
 #include "modules/social/presentation/SocialLoadController.h"
-#include "modules/social/presentation/SocialFocusController.h"
+#include "modules/social/presentation/SocialProfileCoordinator.h"
+#include "modules/social/presentation/SocialScreenCoordinator.h"
 #include "modules/social/presentation/SocialSectionCoordinator.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialView.h"
@@ -12,7 +13,6 @@
 #include <stdexcept>
 #include <utility>
 
-#include <wx/app.h>
 #include <wx/button.h>
 #include <wx/choice.h>
 #include <wx/msgdlg.h>
@@ -23,6 +23,8 @@
 
 #include "modules/social/application/SocialService.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/accessibility/FocusManager.h"
+#include "shared/accessibility/AccessibilityUtils.h"
 #include "shared/logging/Logger.h"
 #include "shared/text/UiTexts.h"
 #include "shared/config/AppConfig.h"
@@ -39,25 +41,23 @@ namespace lila::modules::social::presentation
 SocialFrame::~SocialFrame() = default;
 
 SocialFrame::SocialFrame(
+    wxWindow* parent,
     lila::modules::social::application::SocialService& socialService,
     OpenMessagingRequestedHandler onOpenMessagingRequested,
+    OpenStoryBookRequestedHandler onOpenStoryBookRequested,
     CloseRequestedHandler onCloseRequested,
     ExitRequestedHandler onExitRequested,
     std::size_t initialSelectedMenuIndex)
-    : wxFrame(
-          nullptr,
-          wxID_ANY,
-          wxString::Format(
-              lila::shared::text::FromUtf8(lila::shared::text::ui::SocialFrameTitle),
-              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()).wc_str()),
-          wxDefaultPosition,
-          wxSize(WindowWidth, WindowHeight),
-          wxDEFAULT_FRAME_STYLE),
+    : lila::shared::accessibility::NonFocusablePanel(
+          parent,
+          0),
       onOpenMessagingRequested_(std::move(onOpenMessagingRequested)),
+      onOpenStoryBookRequested_(std::move(onOpenStoryBookRequested)),
       onCloseRequested_(std::move(onCloseRequested)),
       onExitRequested_(std::move(onExitRequested)),
       navigationState_(initialSelectedMenuIndex)
 {
+    SetMinSize(wxSize(WindowWidth, WindowHeight));
     view_ = new SocialView(this);
     auto* frameSizer = new wxBoxSizer(wxVERTICAL);
     frameSizer->Add(view_, 1, wxEXPAND);
@@ -66,8 +66,6 @@ SocialFrame::SocialFrame(
     loadController_ = std::make_unique<SocialLoadController>(socialService);
     sectionPresenter_ = std::make_unique<SocialSectionPresenter>(
         *this, *view_, dataStore_, navigationState_, selectionMemory_);
-    focusController_ = std::make_unique<SocialFocusController>(
-        *view_, navigationState_, [this]() { sectionPresenter_->SyncSelectionState(); });
     sectionCoordinator_ = std::make_unique<SocialSectionCoordinator>(
         *loadController_,
         dataStore_,
@@ -75,17 +73,46 @@ SocialFrame::SocialFrame(
         *sectionPresenter_,
         *view_,
         SocialSectionCoordinator::Callbacks{
-            [this](const wxString& busyMessage, const std::function<void()>& worker, const std::function<void()>& onSuccess)
+            [this](const wxString& busyMessage, const std::function<void()>& worker, const std::function<void()>& onSuccess, bool announceBusy)
             {
-                RunBackgroundTask(busyMessage, worker, onSuccess);
+                RunBackgroundTask(busyMessage, worker, onSuccess, announceBusy);
             },
-            [this](const wxString& message, bool isError)
+            [this](const wxString& message, bool isError, bool announce)
             {
-                UpdateStatus(message, isError);
+                UpdateStatus(message, isError, announce);
             },
             [this]()
             {
-                focusController_->FocusCurrentScreen();
+                ArmInitialListActivationSuppression();
+                ScheduleFocusCurrentScreen();
+            }});
+    screenCoordinator_ = std::make_unique<SocialScreenCoordinator>(
+        navigationState_,
+        *sectionCoordinator_,
+        *sectionPresenter_,
+        *view_,
+        SocialScreenCoordinator::Callbacks{
+            [this](std::size_t selectedMenuIndex)
+            {
+                if (onOpenMessagingRequested_)
+                {
+                    onOpenMessagingRequested_(selectedMenuIndex);
+                }
+            },
+            [this]()
+            {
+                if (onCloseRequested_)
+                {
+                    onCloseRequested_();
+                }
+            },
+            [this]()
+            {
+                SyncPanels();
+            },
+            [this]()
+            {
+                ScheduleFocusCurrentScreen();
             }});
     actionController_ = std::make_unique<SocialActionController>(
         socialService,
@@ -109,6 +136,32 @@ SocialFrame::SocialFrame(
             [this](SocialSection section)
             {
                 RefreshSection(section);
+            }});
+    profileCoordinator_ = std::make_unique<SocialProfileCoordinator>(
+        navigationState_,
+        dataStore_,
+        *sectionPresenter_,
+        *view_,
+        *actionController_,
+        SocialProfileCoordinator::Callbacks{
+            [this](const wxString& message, bool isError)
+            {
+                UpdateStatus(message, isError);
+            },
+            [this](const wxString& message)
+            {
+                ShowActionFeedback(message);
+            },
+            [this]()
+            {
+                ScheduleFocusCurrentScreen();
+            },
+            [this](int userId, std::string username)
+            {
+                if (onOpenStoryBookRequested_)
+                {
+                    onOpenStoryBookRequested_(userId, std::move(username));
+                }
             }});
     BindEvents();
 
@@ -155,14 +208,32 @@ SocialFrame::SocialFrame(
         blocked.actionsMenu->SetTabNavigationEnabled(false);
     }
 
-    SetScreen(Screen::Menu);
-    UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::KeyboardNavigationHint));
-    CentreOnScreen();
-    CallAfter(
-        [this]()
+    SyncPanels();
+    UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::KeyboardNavigationHint), false, false);
+}
+
+lila::shared::accessibility::FocusManager::Plan SocialFrame::BuildFocusPlan()
+{
+    lila::shared::accessibility::FocusManager::Plan plan;
+    if (navigationState_.currentScreen == Screen::Menu)
+    {
+        plan.AddResolver([this]() { return ResolveMenuFocusTarget(); });
+    }
+    else if (navigationState_.currentSection == SocialSection::Profile)
+    {
+        plan.AddScope([this]() { return BuildFocusScope(); });
+    }
+    else
+    {
+        if (navigationState_.sectionActionMenuActive)
         {
-            focusController_->FocusCurrentScreen();
-        });
+            const auto controls = view_->SectionFor(navigationState_.currentSection);
+            plan.AddWindow(controls.actionsMenu != nullptr ? controls.actionsMenu->GetFirstButton() : nullptr);
+        }
+        plan.AddResolver([this]() { return ResolveCurrentSectionTarget(); });
+    }
+
+    return plan;
 }
 
 void SocialFrame::RunUiAction(const std::function<void()>& action)
@@ -184,10 +255,30 @@ void SocialFrame::ShowActionFeedback(const wxString& message, const wxString& ti
     wxMessageBox(message, title, wxOK | wxICON_INFORMATION, this);
 }
 
+void SocialFrame::ArmInitialListActivationSuppression() noexcept
+{
+    if (navigationState_.currentScreen == Screen::Section && !navigationState_.sectionActionMenuActive)
+    {
+        suppressNextListActivation_ = true;
+    }
+}
+
+bool SocialFrame::ConsumePendingListActivationSuppression() noexcept
+{
+    if (!suppressNextListActivation_)
+    {
+        return false;
+    }
+
+    suppressNextListActivation_ = false;
+    return true;
+}
+
 void SocialFrame::RunBackgroundTask(
     const wxString& busyMessage,
     const std::function<void()>& worker,
-    const std::function<void()>& onSuccess)
+    const std::function<void()>& onSuccess,
+    bool announceBusy)
 {
     if (isBusy_)
     {
@@ -195,7 +286,7 @@ void SocialFrame::RunBackgroundTask(
         return;
     }
 
-    SetBusyState(true, busyMessage);
+    SetBusyState(true, busyMessage, announceBusy);
     wxWeakRef<SocialFrame> weakSelf(this);
     lila::shared::ui::RunBackgroundTask(
         this,
@@ -221,12 +312,12 @@ void SocialFrame::RunBackgroundTask(
         });
 }
 
-void SocialFrame::SetBusyState(bool busy, const wxString& message)
+void SocialFrame::SetBusyState(bool busy, const wxString& message, bool announce)
 {
     isBusy_ = busy;
     if (busy && !message.empty())
     {
-        UpdateStatus(message);
+        UpdateStatus(message, false, announce);
     }
 
     ApplyBusyState();

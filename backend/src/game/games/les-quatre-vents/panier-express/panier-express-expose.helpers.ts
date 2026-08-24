@@ -1,20 +1,23 @@
 import {
   GameStateEntity,
   PendingState,
-} from '../../../core/entities/game-state.entity';
-import { GameStateWithActions } from '../../../engine/dto/game-action.dto';
-import { QuizQuestion } from '../../../modules/quiz/services/quiz-runner.service';
-import { PanierExpressMetadata } from './model/panier-express-state.entity';
+} from '../../../application/models/game-state.model';
+import {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../../../models/game-action.model';
+import { QuizQuestion } from '../../../application/features/quiz/services/quiz-runner.service';
+import { PanierExpressMetadata } from './model/panier-express-state.model';
 import { toPlayerIdValue } from './panier-express-state.helpers';
 
 type BuildExposedPanierExpressStateArgs = {
   state: GameStateEntity;
   meta: PanierExpressMetadata;
   requestedUserId?: number | null;
-  getActions: (viewerId: number) => unknown[];
+  getActions: (viewerId: number) => GameSingleActionDto[];
   expose: (args: {
     state: GameStateEntity;
-    actions: unknown[];
+    actions: GameSingleActionDto[];
     rawPending: PendingState | null;
     pendingQuiz: QuizQuestion | undefined;
     currentId: number | null;
@@ -65,3 +68,9 @@ function resolveViewerId(
     ? viewerId
     : null;
 }
+
+
+
+
+
+

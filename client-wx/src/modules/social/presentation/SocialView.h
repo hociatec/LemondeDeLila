@@ -6,6 +6,8 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 
+#include "modules/social/presentation/SocialSection.h"
+
 class wxWindow;
 namespace lila::shared::ui::controls { class VerticalMenu; }
 namespace lila::modules::social::presentation {
@@ -19,6 +21,7 @@ public:
         wxSimplebook* sectionBook;
     };
     struct SectionControls final {
+        wxPanel* panel;
         lila::shared::ui::controls::VerticalMenu* list;
         wxTextCtrl* emptyControl;
         lila::shared::ui::controls::VerticalMenu* actionsMenu;
@@ -42,6 +45,7 @@ public:
     [[nodiscard]] SectionControls IncomingSection() const noexcept;
     [[nodiscard]] SectionControls OutgoingSection() const noexcept;
     [[nodiscard]] SectionControls BlockedSection() const noexcept;
+    [[nodiscard]] SectionControls SectionFor(SocialSection section) const noexcept;
     [[nodiscard]] ProfileControls Profile() const noexcept;
     wxStaticText* titleLabel = nullptr;
     wxStaticText* subtitleLabel = nullptr;

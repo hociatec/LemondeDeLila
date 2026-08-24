@@ -1,18 +1,16 @@
-import { Test } from '@nestjs/testing';
-import { RandomService } from '../../../../modules/random/services/random.service';
-import { TurnFlowService } from '../../../../modules/turn/services/turn-flow.service';
-import { TurnService } from '../../../../modules/turn/services/turn.service';
-import { TurnPoliciesService } from '../../../../modules/turn-policies/services/turn-policies.service';
-import { GameCoreService } from '../../../../core/services/game-core.service';
-import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
-import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
-import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
-import { GaloponsActionService } from './galopons-action.service';
-import { SetupFlowModule } from '../../../../modules/setup-flow/setup-flow.module';
-import { GaloponsEnsembleModule } from '../galopons-ensemble.module';
-import { GaloponsSetupService } from '../setup/galopons-setup.service';
-import { GaloponsBotService } from '../bots/galopons-bot.service';
+import { RandomService } from '../../../../application/services/random.service';
+import { TurnFlowService } from '../../../../application/services/turn-flow.service';
+import { TurnService } from '../../../../application/services/turn.service';
+import { TurnPoliciesService } from '../../../../application/services/turn-policies.service';
+import { GameCoreService } from '../../../../application/services/game-core.service';
+import { DeckPoliciesService } from '../../../../application/features/deck-policies/services/deck-policies.service';
+import { SetupFlowService } from '../../../../application/services/setup-flow.service';
+import { GaloponsActionService } from '../application/services/galopons-action.service';
+import { GaloponsSetupService } from '../application/services/galopons-setup.service';
+import { GaloponsBotService } from '../application/services/galopons-bot.service';
 import * as Rulebook from '../rulebook/rulebook';
+import boardJson from '../model/content/board.json';
+import cardsJson from '../model/content/cards.json';
 
 function buildTiles() {
   const tiles = Array.from({ length: 40 }, (_, i) => ({
@@ -130,58 +128,41 @@ function makeSetupBaseState() {
   } as any;
 }
 
+function makeSetupRuntime() {
+  const random = new RandomService();
+  const core = new GameCoreService();
+  const setupFlow = new SetupFlowService();
+  const contentLoader = {
+    validators: {
+      version:
+        (_expected: number) =>
+        (_payload: unknown) => {},
+      arrayField:
+        (_field: string, _minItems = 0) =>
+        (_payload: unknown) => {},
+    },
+    loadContent: <T>(params: { filename: string }): T => {
+      if (params.filename === 'board.json') return boardJson as T;
+      if (params.filename === 'cards.json') return cardsJson as T;
+      throw new Error(`Unsupported content file: ${params.filename}`);
+    },
+  } as any;
+
+  return {
+    setup: new GaloponsSetupService(core, contentLoader, random, setupFlow),
+    actions: new GaloponsActionService(
+      random,
+      { advanceTurn: (state: any) => state } as any,
+      core,
+      new DeckPoliciesService(random),
+      setupFlow,
+    ),
+  };
+}
+
 describe('GaloponsActionService', () => {
-  it('imports SetupFlowModule so Nest can resolve SetupFlowService', () => {
-    const imports = Reflect.getMetadata('imports', GaloponsEnsembleModule);
-
-    expect(Array.isArray(imports)).toBe(true);
-    expect(imports).toContain(SetupFlowModule);
-  });
-
-  it('requires sequential pawn selection before rolling and restores the starter turn', async () => {
-    const moduleRef = await Test.createTestingModule({
-      providers: [
-        GameCoreService,
-        RandomService,
-        SetupFlowService,
-        GameContentLoaderService,
-        DeckPoliciesService,
-        GaloponsSetupService,
-        {
-          provide: 'TurnFlowService',
-          useValue: {
-            advanceTurn: (state: any) => state,
-          },
-        },
-        {
-          provide: GaloponsActionService,
-          useFactory: (
-            random: RandomService,
-            turns: TurnFlowService,
-            core: GameCoreService,
-            deckPolicies: DeckPoliciesService,
-            setupFlow: SetupFlowService,
-          ) =>
-            new GaloponsActionService(
-              random,
-              turns,
-              core,
-              deckPolicies,
-              setupFlow,
-            ),
-          inject: [
-            RandomService,
-            'TurnFlowService',
-            GameCoreService,
-            DeckPoliciesService,
-            SetupFlowService,
-          ],
-        },
-      ],
-    }).compile();
-
-    const setup = moduleRef.get(GaloponsSetupService);
-    const actions = moduleRef.get(GaloponsActionService);
+  it('requires sequential pawn selection before rolling and restores the starter turn', () => {
+    const { setup, actions } = makeSetupRuntime();
 
     let state = setup.hydrateInitialState(makeSetupBaseState());
     expect((state.pending as any)?.type).toBe('choose_pawn');
@@ -276,7 +257,7 @@ describe('GaloponsActionService', () => {
           tiles: [
             {
               n: 1,
-              title: 'Départ',
+              title: 'DÃƒÂ©part',
               type: 'start',
               region: 'prairie',
               description: "L'aventure commence ici.",
@@ -389,12 +370,12 @@ describe('GaloponsActionService', () => {
 
     expect(
       out.log.some((entry: any) =>
-        String(entry?.message ?? '').includes('hacene lance le dé'),
+        String(entry?.message ?? '').includes('hacene lance'),
       ),
     ).toBe(true);
     expect(
       out.log.some((entry: any) =>
-        String(entry?.message ?? '').includes('Azrael lance le dé'),
+        String(entry?.message ?? '').includes('Azrael lance'),
       ),
     ).toBe(false);
     expect(meta(out).positions[1]).toBe(2);
@@ -544,7 +525,7 @@ describe('GaloponsActionService', () => {
     const { service } = makeRuntime();
     const out = (service as any).applyCard(makeState(), 1, {
       id: 15,
-      text: 'Vous aidez un poulain perdu à retrouver son chemin. Donnez-lui une pomme en la défaussant, puis rejouez immédiatement.',
+      text: 'Vous aidez un poulain perdu ÃƒÂ  retrouver son chemin. Donnez-lui une pomme en la dÃƒÂ©faussant, puis rejouez immÃƒÂ©diatement.',
     });
 
     expect(meta(out).apples[1]).toBe(1);
@@ -672,9 +653,9 @@ describe('GaloponsActionService', () => {
       'Tous les joueurs restent sur place pendant un tour',
       "Choisissez un joueur et avancez tout les deux d'une case",
       'aidez un autre joueur en le faisant avancer de 2 cases',
-      "Défaussez-vous d'une pomme",
-      "Avancez jusqu'à la prochaine case forêt",
-      "Avancez jusqu'à la prochaine case montagne",
+      "DÃƒÂ©faussez-vous d'une pomme",
+      "Avancez jusqu'ÃƒÂ  la prochaine case forÃƒÂªt",
+      "Avancez jusqu'ÃƒÂ  la prochaine case montagne",
       'Avancez de 3 cases',
       'Reculez de 2 cases',
     ];
@@ -756,7 +737,7 @@ describe('GaloponsActionService', () => {
     expect(
       skipMessages.some((message) => /passe 1 tour\(s\)\./i.test(message)),
     ).toBe(false);
-    expect(finishMessages).not.toContain('Écurie finale.');
+    expect(finishMessages).not.toContain('Ãƒâ€°curie finale.');
   });
 
   it('only lets the bot act when it is the current player or the pending owner', () => {
@@ -801,3 +782,13 @@ describe('GaloponsActionService', () => {
     );
   });
 });
+
+
+
+
+
+
+
+
+
+

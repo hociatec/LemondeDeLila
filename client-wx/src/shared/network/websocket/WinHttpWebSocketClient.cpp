@@ -242,10 +242,28 @@ std::string WinHttpWebSocketClient::Receive()
 std::string WinHttpWebSocketClient::SendAndReceive(
     const std::string& endpoint,
     const std::string& payload,
-    const WebSocketHeaders& headers)
+    const WebSocketHeaders& headers,
+    std::stop_token stopToken)
 {
     Connect(endpoint, headers);
+    if (stopToken.stop_requested())
+    {
+        Close();
+        throw std::runtime_error("WebSocket operation cancelled.");
+    }
+
     Send(payload);
+    std::stop_callback cancelReceive(
+        stopToken,
+        [this]()
+        {
+#ifdef _WIN32
+            if (state_ != nullptr)
+            {
+                state_->webSocket.Reset();
+            }
+#endif
+        });
     return Receive();
 }
 }

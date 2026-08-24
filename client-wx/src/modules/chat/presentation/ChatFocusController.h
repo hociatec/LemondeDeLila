@@ -2,8 +2,9 @@
 
 #include <functional>
 
+#include "shared/accessibility/FocusManager.h"
+
 class wxButton;
-class wxListBox;
 class wxTextCtrl;
 class wxWindow;
 
@@ -14,19 +15,17 @@ class ChatFocusController final
 public:
     ChatFocusController(
         wxTextCtrl& input,
-        wxListBox& history,
-        wxTextCtrl& emptyHistory,
+        wxTextCtrl& history,
         wxButton& editButton,
         wxButton& deleteButton) noexcept;
 
     void BindNavigation(wxWindow& owner, std::function<bool()> historyActionModeProvider);
-    void FocusComposer() const;
-    void FocusFirstHistoryAction() const;
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildComposerPlan() const;
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFirstHistoryActionPlan() const;
 
 private:
     wxTextCtrl& input_;
-    wxListBox& history_;
-    wxTextCtrl& emptyHistory_;
+    wxTextCtrl& history_;
     wxButton& editButton_;
     wxButton& deleteButton_;
 };

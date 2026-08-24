@@ -94,6 +94,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/bootstrap/AppRuntime.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/bootstrap/AppCompositions.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/unordered_map
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xhash

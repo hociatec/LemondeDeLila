@@ -1,9 +1,9 @@
-﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
+} from '../../../../domain/errors/public-api';
 import {
   MINUIT_GAME,
   type MinuitActionType,
@@ -12,19 +12,19 @@ import type { MinuitMetadata } from '../model/minuit.types';
 import {
   normalizeActionType,
   normalizeLegacyRollAliasToUpper,
-} from '../../../../actions/action-service.helper';
+} from '../../../../application/helpers/action-service.helper';
 import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
-} from '../../../../core/helpers/pawn-pending-rulebook.helper';
+} from '../../../../application/helpers/pawn-pending-rulebook.helper';
 import {
   getPendingChooseTargetActionsForPlayer,
   getPendingDrawActionsForPlayer,
   validatePendingChooseTargetActionForActor,
   validatePendingDrawActionForActor,
-} from '../../../../core/helpers/pending-actions-rulebook.helper';
-import { toPlayerId } from '../../../../core/helpers/player-id.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+} from '../../../../application/helpers/pending-actions-rulebook.helper';
+import { toPlayerId } from '../../../../application/helpers/player-id.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object'
@@ -145,7 +145,7 @@ export function validateAction(
   }
 
   if (!isStartedState(state)) {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃƒÂ©marrÃƒÂ©e.", {
       gameType: 'en-attendant-minuit',
     });
   }
@@ -245,3 +245,6 @@ export function validateAction(
   if (type === 'ROLL_DICE') return { type: 'roll', payload: {} };
   return { type, payload: action.payload ?? {} };
 }
+
+
+

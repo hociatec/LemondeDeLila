@@ -5,6 +5,7 @@
 #include <optional>
 #include <memory>
 
+#include "modules/social/presentation/SocialActionId.h"
 #include "modules/social/presentation/SocialSection.h"
 #include "modules/social/domain/SocialProfile.h"
 
@@ -31,10 +32,11 @@ public:
         application::SocialService& socialService,
         Callbacks callbacks);
 
-    void ActivateFriend(std::size_t actionIndex, std::optional<int> userId, bool isBlocked) const;
-    void ActivateIncomingRequest(std::size_t actionIndex, std::optional<int> userId, bool isBlocked) const;
-    void ActivateOutgoingRequest(std::size_t actionIndex, std::optional<int> userId, bool isBlocked) const;
-    void ActivateBlockedUser(std::size_t actionIndex, std::optional<int> userId) const;
+    void ActivateSectionAction(
+        SocialSection section,
+        SocialActionId actionId,
+        std::optional<int> userId,
+        bool isBlocked) const;
     void SaveProfile(
         domain::SocialProfileUpdate update,
         std::function<void(std::optional<domain::SocialProfile>)> onSaved) const;

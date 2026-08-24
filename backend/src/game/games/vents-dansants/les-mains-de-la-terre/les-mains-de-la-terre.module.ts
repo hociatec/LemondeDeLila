@@ -1,15 +1,13 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../core/core.module';
-import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
-import { LesMainsActionService } from './actions/les-mains-de-la-terre-action.service';
-import { LesMainsDeLaTerreBotService } from './bots/les-mains-de-la-terre-bot.service';
-import { LesMainsDeLaTerreService } from './les-mains-de-la-terre.service';
-import { LesMainsPresenterService } from './presenter/les-mains-de-la-terre-presenter.service';
-import { LesMainsSetupService } from './setup/les-mains-de-la-terre-setup.service';
+import { GameCoreModule } from '../../../module/game-core.module';
+import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { LesMainsActionService } from './application/services/les-mains-de-la-terre-action.service';
+import { LesMainsDeLaTerreBotService } from './application/services/les-mains-de-la-terre-bot.service';
+import { LesMainsDeLaTerreService } from './application/services/les-mains-de-la-terre.service';
+import { LesMainsPresenterService } from './application/services/les-mains-de-la-terre-presenter.service';
+import { LesMainsSetupService } from './application/services/les-mains-de-la-terre-setup.service';
 
 @Module({
-  imports: [BoardGameDeckKitModule, GameCoreModule, GameRegistryModule],
   providers: [
     LesMainsDeLaTerreService,
     LesMainsSetupService,
@@ -20,3 +18,8 @@ import { LesMainsSetupService } from './setup/les-mains-de-la-terre-setup.servic
   exports: [LesMainsDeLaTerreService],
 })
 export class LesMainsDeLaTerreModule {}
+
+
+
+
+

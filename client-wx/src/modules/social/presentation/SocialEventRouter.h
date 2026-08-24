@@ -3,11 +3,10 @@
 #include <functional>
 #include <string>
 
-class wxFrame;
+class wxWindow;
 
 namespace lila::modules::social::presentation
 {
-class SocialFocusController;
 class SocialNavigationState;
 class SocialView;
 
@@ -25,10 +24,9 @@ public:
     };
 
     static void BindRootEvents(
-        wxFrame& frame,
+        wxWindow& owner,
         SocialView& view,
         SocialNavigationState& navigationState,
-        SocialFocusController& focusController,
         Handlers handlers);
 };
 }

@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "shared/accessibility/FocusManager.h"
+
 #include "modules/messaging/presentation/MessagingNavigationState.h"
 
 class wxWindow;
@@ -21,7 +23,9 @@ public:
         SelectionSyncHandler onSelectionAdjusted);
 
     void BindNavigation(wxWindow& owner);
-    void FocusCurrentScreen();
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildCurrentScreenPlan();
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildComposeRecipientPlan() const;
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildComposeBodyPlan() const;
 
 private:
     MessagingView& view_;

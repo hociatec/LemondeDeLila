@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MnemoQuizStoreService } from '../../../../game/games/vents-infinis/arche-de-mnemosyne/store/mnemo-quiz-store.service';
+import { MnemoQuizStoreService } from '../../../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
 
 @Injectable()
 export class AdminMnemoQuizCategoriesService {

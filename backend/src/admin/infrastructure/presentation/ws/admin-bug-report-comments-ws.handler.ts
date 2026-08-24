@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
 import { AdminBugReportCommentsService } from '../../../application/use-cases/admin-bug-reports/admin-bug-report-comments.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import {
   AdminBugReportCommentAddWsDto,
   AdminBugReportCommentsListWsDto,
-} from './admin-bug-report-comments.dto';
+} from './dto/admin-bug-report-comments.ws.dto';
 
 @Injectable()
 export class AdminBugReportCommentsWsHandler {
@@ -16,7 +16,7 @@ export class AdminBugReportCommentsWsHandler {
     private readonly comments: AdminBugReportCommentsService,
   ) {}
 
-  async list(session: WsSession, payload: any) {
+  async list(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(
       AdminBugReportCommentsListWsDto,
@@ -26,7 +26,7 @@ export class AdminBugReportCommentsWsHandler {
     return { type: WS_EVENTS.admin.bugReports.commentsList, payload: { items } };
   }
 
-  async add(session: WsSession, payload: any) {
+  async add(session: WsSession, payload: unknown) {
     const user = requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportCommentAddWsDto, payload);
     const result = await this.comments.add({
@@ -41,6 +41,7 @@ export class AdminBugReportCommentsWsHandler {
     };
   }
 }
+
 
 
 

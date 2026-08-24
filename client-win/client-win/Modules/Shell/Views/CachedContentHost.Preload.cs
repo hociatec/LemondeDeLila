@@ -20,6 +20,16 @@ public partial class CachedContentHost
 
         try
         {
+            if (_entries.TryGetValue(content, out var existing) && existing.IsMaterialized)
+            {
+                return;
+            }
+
+            if (!_queuedPreloads.Add(content))
+            {
+                return;
+            }
+
             _preloadQueue.Enqueue(content);
             SchedulePreloadPump();
         }
@@ -56,8 +66,13 @@ public partial class CachedContentHost
             }
 
             var content = _preloadQueue.Dequeue();
+            _queuedPreloads.Remove(content);
             var entry = GetOrCreateEntry(content, ensureInHostGrid: false);
-            MaterializePresenter(entry.Presenter);
+            if (!entry.IsMaterialized)
+            {
+                MaterializePresenter(entry.Presenter);
+                entry.IsMaterialized = true;
+            }
         }
         catch
         {

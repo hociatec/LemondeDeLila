@@ -1,14 +1,14 @@
-﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import {
   normalizeActionType,
   normalizeLegacyRollAliasToUpper,
-} from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+} from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
+} from '../../../../domain/errors/public-api';
 import {
   MISSION_GALAXIE_GAME,
   type MissionGalaxieActionType,
@@ -18,7 +18,7 @@ import {
   getPendingIndexedChoiceActionsForPlayer,
   validatePendingDrawActionForActor,
   validatePendingIndexedChoiceActionForActor,
-} from '../../../../core/helpers/pending-actions-rulebook.helper';
+} from '../../../../application/helpers/pending-actions-rulebook.helper';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'
@@ -105,7 +105,7 @@ export function validateAction(
   }
 
   if (!isStartedState(state)) {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃƒÂ©marrÃƒÂ©e.", {
       gameType: 'mission-galaxie',
     });
   }
@@ -208,3 +208,6 @@ export function validateAction(
   if (type === 'ROLL_DICE') return { type: 'roll', payload: {} };
   return { type, payload: action.payload ?? {} };
 }
+
+
+

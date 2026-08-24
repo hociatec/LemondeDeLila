@@ -1,9 +1,9 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { GameSingleActionDto } from '../../../engine/dto/game-action.dto';
+import { GameStateEntity } from '../../../application/models/game-state.model';
+import { GameSingleActionDto } from '../../../models/game-action.model';
 import {
   PanierExpressMetadata,
   PanierExpressPlayer,
-} from './model/panier-express-state.entity';
+} from './model/panier-express-state.model';
 import { asRecord, toText } from './panier-express-state.helpers';
 
 export function getPanierExpressMetadataRecord(
@@ -43,3 +43,7 @@ export function getPanierExpressMetadata(
 ): PanierExpressMetadata {
   return (state.metadata ?? buildMetadata(state)) as PanierExpressMetadata;
 }
+
+
+
+

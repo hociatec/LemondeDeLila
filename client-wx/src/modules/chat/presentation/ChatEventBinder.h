@@ -3,9 +3,8 @@
 #include <functional>
 
 class wxButton;
-class wxFrame;
-class wxListBox;
 class wxTextCtrl;
+class wxWindow;
 
 namespace lila::modules::chat::presentation
 {
@@ -15,7 +14,7 @@ public:
     struct Widgets
     {
         wxTextCtrl& input;
-        wxListBox& history;
+        wxTextCtrl& history;
         wxButton& editButton;
         wxButton& deleteButton;
     };
@@ -32,6 +31,6 @@ public:
         std::function<void()> closeWindow;
     };
 
-    static void Bind(wxFrame& frame, Widgets widgets, Handlers handlers);
+    static void Bind(wxWindow& owner, Widgets widgets, Handlers handlers);
 };
 }

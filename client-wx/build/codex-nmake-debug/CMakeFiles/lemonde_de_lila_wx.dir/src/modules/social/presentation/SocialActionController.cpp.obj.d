@@ -106,13 +106,15 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialActionId.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSection.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialProfile.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialUser.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/SocialService.h
@@ -126,7 +128,6 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h

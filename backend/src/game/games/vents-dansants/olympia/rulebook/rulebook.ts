@@ -1,12 +1,20 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GamePayloadValidationError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import { OlympiaDeckType } from '../model/olympia-cards';
-import { normalizeActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
 import type {
   OlympiaMetadata,
   OlympiaStatus,
-} from '../model/olympia-state.entity';
+} from '../model/olympia-state.model';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -53,16 +61,16 @@ export function validateAction(
 ): GameSingleActionDto {
   const type = normalizeActionType(action);
   if (!actorId) {
-    throw new Error('Acteur requis.');
+    throw new GameActorRequiredError();
   }
   if (!isStartedState(state)) {
-    throw new Error("La partie n'est pas ouverte.");
+    throw new GameStateViolationError("La partie n'est pas ouverte.");
   }
   if (state.turn?.currentPlayerId !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
   if (type !== 'draw_card' && type !== 'play_card' && type !== 'pass') {
-    throw new Error(`Action inconnue : ${type}`);
+    throw new GameUnknownActionError(`Action inconnue : ${type}`);
   }
 
   const payload = (action.payload ?? {}) as {
@@ -74,10 +82,10 @@ export function validateAction(
     const meta = getMeta(state);
     const available = meta.decks?.[deck] ?? [];
     if (!available.length) {
-      throw new Error(`Le deck ${deck} est vide.`);
+      throw new GameActionRejectedError(`Le deck ${deck} est vide.`);
     }
     if (hasBlockingStatus(meta.statuses, actorId, 'block_actions')) {
-      throw new Error('Vous ne pouvez pas piocher.');
+      throw new GameActionRejectedError('Vous ne pouvez pas piocher.');
     }
     return action;
   }
@@ -85,17 +93,17 @@ export function validateAction(
   if (type === 'play_card') {
     const cardId = String(payload.cardId ?? '').trim();
     if (!cardId) {
-      throw new Error('Carte à jouer manquante.');
+      throw new GamePayloadValidationError('Carte à jouer manquante.');
     }
     const meta = getMeta(state);
     const hand = Array.isArray(meta.hands?.[actorId])
       ? meta.hands[actorId]
       : [];
     if (!hand.includes(cardId)) {
-      throw new Error("Cette carte n'est pas dans votre main.");
+      throw new GameActionRejectedError("Cette carte n'est pas dans votre main.");
     }
     if (hasBlockingStatus(meta.statuses, actorId, 'block_play')) {
-      throw new Error('Vous ne pouvez pas jouer de carte.');
+      throw new GameActionRejectedError('Vous ne pouvez pas jouer de carte.');
     }
     return action;
   }

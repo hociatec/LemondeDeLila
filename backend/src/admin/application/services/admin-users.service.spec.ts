@@ -17,6 +17,23 @@ describe('AdminUsersCommandService', () => {
     } as any;
   }
 
+  function createService(repo: any) {
+    const passwords = {
+      generateTemporaryPassword: jest.fn(() => 'TempPass123!'),
+      hashPassword: jest.fn(async (value: string) => `hashed:${value}`),
+    } as any;
+    const bans = {
+      sanitizeReason: jest.fn((value: string) =>
+        String(value ?? '')
+          .trim()
+          .replace(/\s+/g, ' ')
+          .slice(0, 255),
+      ),
+      resolveBannedUntil: jest.fn(() => null),
+    } as any;
+    return new AdminUsersCommandService(repo, passwords, bans);
+  }
+
   it('normalizes and truncates ban reason', async () => {
     const repo = createRepositoryMock();
     repo.findById.mockResolvedValue({
@@ -26,7 +43,7 @@ describe('AdminUsersCommandService', () => {
       password: 'hashed',
       roles: ['ROLE_USER'],
     });
-    const service = new AdminUsersCommandService(repo);
+    const service = createService(repo);
 
     const result = await service.ban(
       7,
@@ -51,7 +68,7 @@ describe('AdminUsersCommandService', () => {
       password: 'hashed',
       roles: ['ROLE_USER'],
     });
-    const service = new AdminUsersCommandService(repo);
+    const service = createService(repo);
 
     await expect(service.update(8, { password: '   ' })).rejects.toBeInstanceOf(
       BadRequestException,
@@ -61,7 +78,7 @@ describe('AdminUsersCommandService', () => {
   it('rejects duplicate email on create', async () => {
     const repo = createRepositoryMock();
     repo.findByEmail.mockResolvedValueOnce({ id: 9, email: 'dup@example.com' });
-    const service = new AdminUsersCommandService(repo);
+    const service = createService(repo);
 
     await expect(
       service.create({
@@ -75,7 +92,7 @@ describe('AdminUsersCommandService', () => {
   it('throws when deleting unknown user', async () => {
     const repo = createRepositoryMock();
     repo.findById.mockResolvedValue(null);
-    const service = new AdminUsersCommandService(repo);
+    const service = createService(repo);
 
     await expect(service.delete(999)).rejects.toBeInstanceOf(NotFoundException);
   });

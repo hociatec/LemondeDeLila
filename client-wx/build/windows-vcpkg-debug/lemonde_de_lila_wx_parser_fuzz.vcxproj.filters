@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\tests\ParserFuzzHarness.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtocol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\wamp64\www\lemondeDeLila\client-wx\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_json.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{8832BC70-E7B8-3E46-B848-AE56D57C3A95}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

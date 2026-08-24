@@ -1,13 +1,21 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GamePayloadValidationError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   BANDE_A_BANANE_CARD_BY_ID,
-  BandeABananeCardDefinition,
-  BandeABananeMonkeySpecies,
+  type BandeABananeCardDefinition,
+  type BandeABananeMonkeySpecies,
 } from '../model/la-bande-a-banane-cards';
-import type { BandeABananeMetadata } from '../model/la-bande-a-banane-state.entity';
-import { normalizeActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import type { BandeABananeMetadata } from '../model/la-bande-a-banane-state.model';
 
 export type BandeABananeActionPayload = {
   cardId?: string | null;
@@ -177,18 +185,18 @@ export function validateAction(
   const type = normalizeActionType(action);
   const payload = (action?.payload ?? {}) as BandeABananeActionPayload;
   if (type !== 'play_card' && type !== 'pass') {
-    throw new Error(`Action inconnue : ${type}`);
+    throw new GameUnknownActionError(`Action inconnue : ${type}`);
   }
   if (actorId == null) {
-    throw new Error('Acteur requis.');
+    throw new GameActorRequiredError();
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas commencée.");
+    throw new GameStateViolationError("La partie n'est pas commencée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
 
   if (type === 'pass') {
@@ -197,22 +205,22 @@ export function validateAction(
 
   const cardId = String(payload.cardId ?? '').trim();
   if (!cardId) {
-    throw new Error('Carte manquante.');
+    throw new GamePayloadValidationError('Carte manquante.');
   }
 
   const meta = getMeta(state);
   if (!playerHasCard(meta, actorId, cardId)) {
-    throw new Error('Vous ne possédez pas cette carte.');
+    throw new GameActionRejectedError('Vous ne possédez pas cette carte.');
   }
 
   const definition = BANDE_A_BANANE_CARD_BY_ID[cardId];
   if (!definition) {
-    throw new Error('Carte invalide.');
+    throw new GamePayloadValidationError('Carte invalide.');
   }
 
   if (definition.type === 'monkey') {
     if (tileUsed(definition.species, meta, actorId)) {
-      throw new Error('Vous avez déjà cette espèce.');
+      throw new GameActionRejectedError('Vous avez déjà cette espèce.');
     }
     return { type: 'play_card', payload };
   }
@@ -220,20 +228,20 @@ export function validateAction(
   if (definition.type === 'joker') {
     const species = payload.species;
     if (!species) {
-      throw new Error('Choisissez une espèce pour le joker.');
+      throw new GamePayloadValidationError(
+        'Choisissez une espèce pour le joker.',
+      );
     }
     if (tileUsed(species, meta, actorId)) {
-      throw new Error('Cette espèce est déjà dans votre troupe.');
+      throw new GameActionRejectedError(
+        'Cette espèce est déjà dans votre troupe.',
+      );
     }
     return { type: 'play_card', payload };
   }
 
   if (definition.type === 'action') {
     return validateActionCard(state, definition, payload, actorId);
-  }
-
-  if (definition.type === 'trap') {
-    return { type: 'play_card', payload };
   }
 
   return { type: 'play_card', payload };
@@ -259,16 +267,20 @@ function validateActionCard(
   if (card.action === 'vol-de-banane') {
     const targetId = payload.targetPlayerId;
     if (targetId == null) {
-      throw new Error('Choisissez une cible pour voler.');
+      throw new GamePayloadValidationError('Choisissez une cible pour voler.');
     }
     if (targetId === actorId) {
-      throw new Error('Impossible de vous voler vous-même.');
+      throw new GameActionRejectedError(
+        'Impossible de vous voler vous-même.',
+      );
     }
     if (!opponents.includes(targetId)) {
-      throw new Error('Cible invalide.');
+      throw new GamePayloadValidationError('Cible invalide.');
     }
     if (!opponentHasCards(meta, targetId)) {
-      throw new Error("La cible n'a pas de cartes à voler.");
+      throw new GameActionRejectedError(
+        "La cible n'a pas de cartes à voler.",
+      );
     }
     return { type: 'play_card', payload };
   }
@@ -276,31 +288,37 @@ function validateActionCard(
   if (card.action === 'cris-de-la-jungle') {
     const targetId = payload.targetPlayerId;
     if (targetId == null) {
-      throw new Error('Choisissez une cible pour échanger.');
+      throw new GamePayloadValidationError(
+        'Choisissez une cible pour échanger.',
+      );
     }
     if (targetId === actorId) {
-      throw new Error("Impossible de s'échanger avec soi-même.");
+      throw new GameActionRejectedError(
+        "Impossible de s'échanger avec soi-même.",
+      );
     }
     if (!opponents.includes(targetId)) {
-      throw new Error('Cible invalide.');
+      throw new GamePayloadValidationError('Cible invalide.');
     }
     if (!opponentHasCards(meta, targetId)) {
-      throw new Error("La cible n'a pas de cartes à échanger.");
+      throw new GameActionRejectedError(
+        "La cible n'a pas de cartes à échanger.",
+      );
     }
     const giveCardId = String(payload.cardToGiveId ?? '').trim();
     if (!giveCardId) {
-      throw new Error('Choisissez une carte à donner.');
+      throw new GamePayloadValidationError('Choisissez une carte à donner.');
     }
     if (giveCardId === card.id) {
-      throw new Error("Vous ne pouvez pas donner la carte d'action.");
+      throw new GameActionRejectedError(
+        "Vous ne pouvez pas donner la carte d'action.",
+      );
     }
     if (!playerHasCard(meta, actorId, giveCardId)) {
-      throw new Error('Vous ne possédez pas cette carte à donner.');
+      throw new GameActionRejectedError(
+        'Vous ne possédez pas cette carte à donner.',
+      );
     }
-    return { type: 'play_card', payload };
-  }
-
-  if (card.action === 'grimpeur-fou') {
     return { type: 'play_card', payload };
   }
 

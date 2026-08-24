@@ -1,15 +1,15 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
+} from '../../../../domain/errors/public-api';
 import { TOUT_PRES_DE_MAMAN_GAME } from '../definitions/tout-pres-de-maman.definition';
 import {
   normalizeActionType as normalizeRawActionType,
   normalizeRollActionType,
-} from '../../../../actions/action-service.helper';
-import { canPlayerActOnTurn } from '../../../../rulebook/rulebook-guard.helper';
+} from '../../../../application/helpers/action-service.helper';
+import { canPlayerActOnTurn } from '../../../../application/helpers/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -44,7 +44,7 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃƒÂ©marrÃƒÂ©e.", {
       gameType: TOUT_PRES_DE_MAMAN_GAME.id,
     });
   }
@@ -66,3 +66,6 @@ export function validateAction(
 
   return { type: 'roll', payload: {} };
 }
+
+
+

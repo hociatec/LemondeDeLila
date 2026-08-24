@@ -1,5 +1,5 @@
-import { DeckPoolState } from '../../../modules/cards/services/deck-pool.service';
-import { PanierExpressDeckPool } from './model/panier-express-state.entity';
+import { DeckPoolState } from '../../../application/services/deck-pool.service';
+import { PanierExpressDeckPool } from './model/panier-express-state.model';
 import { asRecord, toText } from './panier-express-state.helpers';
 
 export function toDrawQueueEntries(
@@ -20,3 +20,6 @@ export function asStringDeckPool(
 ): DeckPoolState<string> {
   return pool as DeckPoolState<string>;
 }
+
+
+

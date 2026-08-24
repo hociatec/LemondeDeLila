@@ -1,14 +1,17 @@
+import * as crypto from 'crypto';
 import { BotNameRegistryService } from './bot-name-registry.service';
+import type { BotNameCacheConfig } from '../../../application/ports/bot-name-cache-config.port';
 
 export class BotNameCacheService {
   private cachedEnabledNames: { values: string[]; expiresAt: number } | null =
     null;
   private readonly namesCacheTtlMs: number;
 
-  constructor(private readonly registry: BotNameRegistryService) {
-    const ttlCandidate = Number(process.env.BOT_NAMES_CACHE_TTL_MS ?? 30000);
-    this.namesCacheTtlMs =
-      Number.isFinite(ttlCandidate) && ttlCandidate >= 0 ? ttlCandidate : 30000;
+  constructor(
+    private readonly registry: BotNameRegistryService,
+    config: BotNameCacheConfig,
+  ) {
+    this.namesCacheTtlMs = config.namesCacheTtlMs;
   }
 
   async getEnabledNames(): Promise<string[]> {
@@ -42,7 +45,7 @@ export class BotNameCacheService {
   private shuffle(values: string[]): string[] {
     const arr = [...values];
     for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = crypto.randomInt(i + 1);
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;

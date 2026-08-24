@@ -55,41 +55,9 @@ include CMakeFiles\generate_protocol_fields.dir\compiler_depend.make
 # Include the progress variables for this target.
 include CMakeFiles\generate_protocol_fields.dir\progress.make
 
-CMakeFiles\generate_protocol_fields: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h
-CMakeFiles\generate_protocol_fields: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\SocialProtocolFields.generated.h
-CMakeFiles\generate_protocol_fields: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\ChatProtocolFields.generated.h
-CMakeFiles\generate_protocol_fields: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\MessagingProtocolFields.generated.h
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h: C:\wamp64\www\lemondeDeLila\client-wx\scripts\GenerateProtocolFields.ps1
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h: C:\wamp64\www\lemondeDeLila\backend\src\user\ws\auth-ws.handler.ts
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h: C:\wamp64\www\lemondeDeLila\backend\src\user\services\user.auth.service.ts
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h: C:\wamp64\www\lemondeDeLila\backend\src\social\services\social-profile.service.ts
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h: C:\wamp64\www\lemondeDeLila\backend\src\social\services\social-relationship.service.ts
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h: C:\wamp64\www\lemondeDeLila\backend\src\presence\services\presence-chat.service.ts
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h: C:\wamp64\www\lemondeDeLila\backend\src\chat\services\chat.service.ts
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h: C:\wamp64\www\lemondeDeLila\backend\src\messaging\services\messaging.service.ts
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h: C:\wamp64\www\lemondeDeLila\backend\src\messaging\ws\ws.dto.ts
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h: C:\wamp64\www\lemondeDeLila\backend\src\messaging\ws\messaging-ws.handler.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/UserAuthFields.generated.h, C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/SocialProtocolFields.generated.h, C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/ChatProtocolFields.generated.h, C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/MessagingProtocolFields.generated.h"
-	powershell -ExecutionPolicy Bypass -File C:/wamp64/www/lemondeDeLila/client-wx/scripts/GenerateProtocolFields.ps1 -BackendRoot C:/wamp64/www/lemondeDeLila/client-wx/../backend -OutputRoot C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\SocialProtocolFields.generated.h: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h
-	@$(CMAKE_COMMAND) -E touch_nocreate C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\SocialProtocolFields.generated.h
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\ChatProtocolFields.generated.h: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h
-	@$(CMAKE_COMMAND) -E touch_nocreate C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\ChatProtocolFields.generated.h
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\MessagingProtocolFields.generated.h: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h
-	@$(CMAKE_COMMAND) -E touch_nocreate C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\MessagingProtocolFields.generated.h
-
 CMakeFiles\generate_protocol_fields.dir\codegen:
 .PHONY : CMakeFiles\generate_protocol_fields.dir\codegen
 
-generate_protocol_fields: CMakeFiles\generate_protocol_fields
-generate_protocol_fields: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\ChatProtocolFields.generated.h
-generate_protocol_fields: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\MessagingProtocolFields.generated.h
-generate_protocol_fields: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\SocialProtocolFields.generated.h
-generate_protocol_fields: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h
 generate_protocol_fields: CMakeFiles\generate_protocol_fields.dir\build.make
 .PHONY : generate_protocol_fields
 

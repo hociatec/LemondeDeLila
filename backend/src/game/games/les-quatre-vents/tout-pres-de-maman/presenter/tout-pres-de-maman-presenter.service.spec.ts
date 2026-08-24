@@ -1,4 +1,4 @@
-import { BoardPayloadService } from '../../../../modules/board/services/board-payload.service';
+import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
 import { ToutPresDeMamanPresenterService } from './tout-pres-de-maman-presenter.service';
 
 describe('ToutPresDeMamanPresenterService', () => {
@@ -27,3 +27,4 @@ describe('ToutPresDeMamanPresenterService', () => {
     expect((exposed.extras as any)?.ui?.panels?.position).toBeUndefined();
   });
 });
+

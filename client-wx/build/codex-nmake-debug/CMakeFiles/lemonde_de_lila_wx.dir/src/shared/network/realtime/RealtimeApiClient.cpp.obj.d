@@ -221,4 +221,5 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeProtocol.h

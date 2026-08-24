@@ -1,18 +1,22 @@
-import { CatalogService } from '../../catalog/services/catalog.service';
-import { ChatSettingsService } from '../../chat/services/chat-settings.service';
-import { ChatService } from '../../chat/services/chat.service';
-import { ClientUpdatesService } from '../../client-updates/services/client-updates.service';
-import { HttpJwtGuard } from '../../common/guards/http-jwt.guard';
-import { AdminRoleGuard } from '../../common/guards/admin-role.guard';
-import { PerfMetricsService } from '../../common/services/perf-metrics.service';
-import { GameCategoriesService } from '../../game/engine/services/game-categories.service';
-import { GameCatalogOverridesService } from '../../game/engine/services/game-catalog-overrides.service';
-import { GameRegistryService } from '../../game/engine/services/game-registry.service';
-import { NotificationService } from '../../notification/services/notification.service';
-import { RoomMaintenanceSettingsService } from '../../room/services/room-maintenance-settings.service';
-import { RoomService } from '../../room/services/room.service';
-import { SocialProfileSettingsService } from '../../social/services/social-profile-settings.service';
-import { GameStatsService } from '../../stats/services/game-stats.service';
+import { ConfigService } from '@nestjs/config';
+import { CatalogService } from '../../catalog/public-api';
+import { ChatSettingsService } from '../../chat/public-api';
+import { ChatService } from '../../chat/public-api';
+import { ClientUpdatesService } from '../../client-updates/public-api';
+import {
+  AdminRoleGuard,
+  HttpJwtGuard,
+  JwtPayloadVerifierService,
+} from '../../common/auth/public-api';
+import { PerfMetricsService } from '../../common/observability/public-api';
+import {
+  GameCategoriesService,
+  GameCatalogOverridesService,
+  GameRegistryService,
+} from '../../game/public-api';
+import { RoomMaintenanceSettingsService } from '../../room/public-api';
+import { SocialProfileSettingsService } from '../../social/public-api';
+import { GameStatsService } from '../../stats/public-api';
 import { AdminCatalogInvalidationService } from '../application/services/admin-catalog-invalidation.service';
 import { ADMIN_CATALOG_CACHE_PORT } from '../application/ports/admin-catalog-cache.port';
 import {
@@ -23,6 +27,7 @@ import { ADMIN_CLIENT_UPDATES_PORT } from '../application/ports/admin-client-upd
 import { ADMIN_GAME_CATEGORIES_PORT } from '../application/ports/admin-game-categories.port';
 import { ADMIN_GAME_OVERRIDES_PORT } from '../application/ports/admin-game-overrides.port';
 import { ADMIN_GAME_REGISTRY_PORT } from '../application/ports/admin-game-registry.port';
+import { ADMIN_MAINTENANCE_CONFIG } from '../application/ports/admin-maintenance-config.port';
 import { ADMIN_LOGS_CONFIG_PORT } from '../application/ports/admin-logs-config.port';
 import { ADMIN_MAINTENANCE_RUNTIME_PORT } from '../application/ports/admin-maintenance-runtime.port';
 import { ADMIN_NOTIFICATION_PORT } from '../application/ports/admin-notification.port';
@@ -36,9 +41,12 @@ import { ADMIN_STATS_PORT } from '../application/ports/admin-stats.port';
 import { ADMIN_USER_REPOSITORY } from '../application/ports/admin-user.repository';
 import { ROLE_DEFINITION_REPOSITORY } from '../application/ports/role-definition.repository';
 import { AdminLogsConfigService } from '../infrastructure/config/admin-logs-config.service';
+import { createAdminMaintenanceConfig } from '../infrastructure/config/admin-maintenance.config';
+import { AdminRoomsAdapter } from '../infrastructure/public/admin-rooms.adapter';
 import { AdminMaintenanceGuard } from '../infrastructure/presentation/http/guards/admin-maintenance.guard';
 import { AdminUserTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/admin-user-typeorm.repository';
 import { RoleDefinitionTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/role-definition-typeorm.repository';
+import { AdminNotificationAdapter } from '../infrastructure/system/admin-notification.adapter';
 import { AdminMaintenanceRuntimeService } from '../infrastructure/system/admin-maintenance-runtime.service';
 
 export const ADMIN_CORE_PROVIDERS = [
@@ -58,7 +66,7 @@ export const ADMIN_CORE_PROVIDERS = [
   },
   {
     provide: ADMIN_NOTIFICATION_PORT,
-    useExisting: NotificationService,
+    useExisting: AdminNotificationAdapter,
   },
   {
     provide: ADMIN_CLIENT_UPDATES_PORT,
@@ -98,7 +106,7 @@ export const ADMIN_CORE_PROVIDERS = [
   },
   {
     provide: ADMIN_ROOMS_PORT,
-    useExisting: RoomService,
+    useExisting: AdminRoomsAdapter,
   },
   {
     provide: ADMIN_ROOM_SETTINGS_PORT,
@@ -112,7 +120,15 @@ export const ADMIN_CORE_PROVIDERS = [
     provide: ADMIN_LOGS_CONFIG_PORT,
     useExisting: AdminLogsConfigService,
   },
+  {
+    provide: ADMIN_MAINTENANCE_CONFIG,
+    inject: [ConfigService],
+    useFactory: createAdminMaintenanceConfig,
+  },
   AdminCatalogInvalidationService,
+  AdminNotificationAdapter,
+  AdminRoomsAdapter,
+  JwtPayloadVerifierService,
   HttpJwtGuard,
   AdminRoleGuard,
   AdminMaintenanceGuard,

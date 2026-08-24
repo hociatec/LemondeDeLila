@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include <wx/frame.h>
 #include <wx/panel.h>
 #include <wx/simplebook.h>
+#include <wx/window.h>
 
 #include "modules/social/presentation/SocialDataStore.h"
 #include "modules/social/presentation/SocialNavigationState.h"
@@ -35,7 +35,7 @@ void PopulateMenu(lila::shared::ui::controls::VerticalMenu& list, const std::vec
 }
 
 SocialSectionPresenter::SocialSectionPresenter(
-    wxFrame& owner,
+    wxWindow& owner,
     SocialView& view,
     SocialDataStore& dataStore,
     SocialNavigationState& navigationState,
@@ -50,35 +50,41 @@ SocialSectionPresenter::SocialSectionPresenter(
 
 void SocialSectionPresenter::PopulateSection(SocialSection section)
 {
+    const auto controls = view_.SectionFor(section);
+    if (controls.list == nullptr)
+    {
+        return;
+    }
+
     switch (section)
     {
     case SocialSection::Friends:
-        PopulateMenu(*view_.friendsList, dataStore_.Friends(), [](const domain::SocialUser& user)
+        PopulateMenu(*controls.list, dataStore_.Friends(), [](const domain::SocialUser& user)
         {
             return SocialPresentationModel::BuildUserLabel(user);
         });
-        RestoreSelection(*view_.friendsList, section);
+        RestoreSelection(*controls.list, section);
         break;
     case SocialSection::IncomingRequests:
-        PopulateMenu(*view_.incomingRequestsList, dataStore_.IncomingRequests(), [](const domain::SocialFriendRequest& request)
+        PopulateMenu(*controls.list, dataStore_.IncomingRequests(), [](const domain::SocialFriendRequest& request)
         {
             return SocialPresentationModel::BuildRequestLabel(request, true);
         });
-        RestoreSelection(*view_.incomingRequestsList, section);
+        RestoreSelection(*controls.list, section);
         break;
     case SocialSection::OutgoingRequests:
-        PopulateMenu(*view_.outgoingRequestsList, dataStore_.OutgoingRequests(), [](const domain::SocialFriendRequest& request)
+        PopulateMenu(*controls.list, dataStore_.OutgoingRequests(), [](const domain::SocialFriendRequest& request)
         {
             return SocialPresentationModel::BuildRequestLabel(request, false);
         });
-        RestoreSelection(*view_.outgoingRequestsList, section);
+        RestoreSelection(*controls.list, section);
         break;
     case SocialSection::Blocked:
-        PopulateMenu(*view_.blockedUsersList, dataStore_.BlockedUsers(), [](const domain::SocialUser& user)
+        PopulateMenu(*controls.list, dataStore_.BlockedUsers(), [](const domain::SocialUser& user)
         {
             return SocialPresentationModel::BuildUserLabel(user);
         });
-        RestoreSelection(*view_.blockedUsersList, section);
+        RestoreSelection(*controls.list, section);
         break;
     case SocialSection::Profile:
         break;
@@ -87,14 +93,11 @@ void SocialSectionPresenter::PopulateSection(SocialSection section)
 
 void SocialSectionPresenter::StoreSelection(SocialSection section)
 {
-    lila::shared::ui::controls::VerticalMenu* list = nullptr;
-    switch (section)
+    const auto controls = view_.SectionFor(section);
+    auto* list = controls.list;
+    if (section == SocialSection::Profile)
     {
-    case SocialSection::Friends: list = view_.friendsList; break;
-    case SocialSection::IncomingRequests: list = view_.incomingRequestsList; break;
-    case SocialSection::OutgoingRequests: list = view_.outgoingRequestsList; break;
-    case SocialSection::Blocked: list = view_.blockedUsersList; break;
-    case SocialSection::Profile: return;
+        return;
     }
 
     selectionMemory_.Store(
@@ -122,37 +125,18 @@ void SocialSectionPresenter::ShowOnlySectionPanel(wxWindow* targetPanel)
         return;
     }
 
-    const std::array<wxWindow*, 5> panels = {
-        view_.friendsPanel,
-        view_.incomingRequestsPanel,
-        view_.outgoingRequestsPanel,
-        view_.blockedPanel,
-        view_.profilePanel,
-    };
-    for (std::size_t index = 0; index < panels.size(); ++index)
-    {
-        if (panels[index] == targetPanel)
-        {
-            view_.sectionBook->SetSelection(index);
-            view_.sectionBook->Layout();
-            owner_.Layout();
-            return;
-        }
-    }
+    view_.sectionBook->SetSelection(static_cast<int>(SocialSectionIndex(navigationState_.currentSection)));
+    view_.sectionBook->Layout();
+    owner_.Layout();
 }
 
 void SocialSectionPresenter::ShowCurrentSection()
 {
-    switch (navigationState_.currentSection)
+    const auto controls = view_.SectionFor(navigationState_.currentSection);
+    ShowOnlySectionPanel(controls.panel);
+    if (navigationState_.currentSection == SocialSection::Profile)
     {
-    case SocialSection::Friends: ShowOnlySectionPanel(view_.friendsPanel); return;
-    case SocialSection::IncomingRequests: ShowOnlySectionPanel(view_.incomingRequestsPanel); return;
-    case SocialSection::OutgoingRequests: ShowOnlySectionPanel(view_.outgoingRequestsPanel); return;
-    case SocialSection::Blocked: ShowOnlySectionPanel(view_.blockedPanel); return;
-    case SocialSection::Profile:
-        ShowOnlySectionPanel(view_.profilePanel);
         SyncProfileEditorVisibility();
-        return;
     }
 }
 }

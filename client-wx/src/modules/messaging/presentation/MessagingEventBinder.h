@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <functional>
 
-class wxFrame;
+class wxWindow;
 
 namespace lila::modules::messaging::presentation
 {
@@ -33,7 +33,7 @@ public:
     };
 
     static void Bind(
-        wxFrame& frame,
+        wxWindow& owner,
         MessagingView& view,
         MessagingNavigationState& navigationState,
         MessagingFocusController& focusController,

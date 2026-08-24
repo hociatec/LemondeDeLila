@@ -156,6 +156,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xhash
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/vcpkg/installed/x64-windows/include/wx/panel.h
 C:/vcpkg/installed/x64-windows/include/wx/window.h
 C:/vcpkg/installed/x64-windows/include/wx/event.h
@@ -195,7 +196,6 @@ C:/vcpkg/installed/x64-windows/include/wx/fontenc.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/unichar.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/vcpkg/installed/x64-windows/include/wx/stringops.h
 C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
 C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
@@ -574,8 +574,11 @@ C:/vcpkg/installed/x64-windows/include/wx/sizer.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/Theme.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenuEntry.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibleMenu.h
+C:/vcpkg/installed/x64-windows/include/wx/weakref.h
+C:/vcpkg/installed/x64-windows/include/wx/meta/int2type.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/Logger.h

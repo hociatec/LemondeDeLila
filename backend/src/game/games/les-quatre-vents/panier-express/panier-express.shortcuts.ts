@@ -1,6 +1,6 @@
-import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
-import type { PanierExpressMetadata } from './model/panier-express-state.entity';
-import { interfaceShortcut } from '../../../engine/shortcuts/shortcut-utils';
+import type { GameShortcutsBuilder } from '../../../models/game-shortcuts.model';
+import type { PanierExpressMetadata } from './model/panier-express-state.model';
+import { interfaceShortcut } from '../../../application/helpers/shortcut-utils';
 
 export const buildPanierExpressShortcuts: GameShortcutsBuilder<
   PanierExpressMetadata
@@ -15,3 +15,5 @@ export const buildPanierExpressShortcuts: GameShortcutsBuilder<
     interfaceShortcut('P', 'position'),
   ];
 };
+
+

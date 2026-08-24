@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <functional>
 
-class wxFrame;
+class wxWindow;
 
 namespace lila::modules::options::presentation
 {
@@ -16,15 +16,16 @@ public:
     struct Handlers
     {
         std::function<void(std::size_t)> activateSection;
+        std::function<void(std::size_t)> selectSection;
         std::function<void()> cancelChanges;
-        std::function<void()> refreshUnsavedState;
+        std::function<void()> saveState;
         std::function<void()> handleEscape;
         std::function<bool()> isInsideSection;
         std::function<void()> onExitRequested;
     };
 
     static void Bind(
-        wxFrame& frame,
+        wxWindow& owner,
         OptionsView& view,
         OptionsFocusController& focusController,
         Handlers handlers);

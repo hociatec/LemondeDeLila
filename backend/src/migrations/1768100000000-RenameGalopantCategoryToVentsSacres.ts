@@ -1,7 +1,14 @@
 import type { QueryRunner } from 'typeorm';
 import { MigrationInterface } from 'typeorm';
 
-function pickId(row: any, key: string): string {
+type CategoryRow = {
+  id?: unknown;
+  name?: unknown;
+  parent_id?: unknown;
+  enabled?: unknown;
+};
+
+function pickId(row: CategoryRow | undefined, key: keyof CategoryRow): string {
   const v = row?.[key];
   return typeof v === 'string' ? v : String(v ?? '');
 }
@@ -16,13 +23,13 @@ export class RenameGalopantCategoryToVentsSacres1768100000000 implements Migrati
     const existingLegacy = (await queryRunner.query(
       'SELECT id, name, parent_id, enabled FROM game_categories WHERE id = ? LIMIT 1',
       [legacyId],
-    )) as any[];
+    )) as CategoryRow[];
     if (existingLegacy.length === 0) return;
 
     const existingNext = (await queryRunner.query(
       'SELECT id FROM game_categories WHERE id = ? LIMIT 1',
       [nextId],
-    )) as any[];
+    )) as CategoryRow[];
     if (existingNext.length > 0) return;
 
     const row = existingLegacy[0];
@@ -65,13 +72,13 @@ export class RenameGalopantCategoryToVentsSacres1768100000000 implements Migrati
     const existingNext = (await queryRunner.query(
       'SELECT id, name, parent_id, enabled FROM game_categories WHERE id = ? LIMIT 1',
       [nextId],
-    )) as any[];
+    )) as CategoryRow[];
     if (existingNext.length === 0) return;
 
     const existingLegacy = (await queryRunner.query(
       'SELECT id FROM game_categories WHERE id = ? LIMIT 1',
       [legacyId],
-    )) as any[];
+    )) as CategoryRow[];
     if (existingLegacy.length > 0) return;
 
     const row = existingNext[0];

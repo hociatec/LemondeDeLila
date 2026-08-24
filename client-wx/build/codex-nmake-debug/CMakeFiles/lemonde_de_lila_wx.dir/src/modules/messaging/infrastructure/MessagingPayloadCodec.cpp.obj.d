@@ -226,6 +226,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/infrastructure/MessagingProtocolFields.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/MessagingProtocolFields.generated.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/infrastructure/remote/UserAuthFields.h

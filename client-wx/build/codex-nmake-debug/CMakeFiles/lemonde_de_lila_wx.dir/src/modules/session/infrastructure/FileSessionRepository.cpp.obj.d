@@ -233,3 +233,4 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/persistence/JsonFileStorage.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/JwtPayload.h

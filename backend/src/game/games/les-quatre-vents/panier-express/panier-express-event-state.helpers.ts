@@ -1,6 +1,6 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { PendingState } from '../../../core/entities/game-state.entity';
-import { PanierExpressMetadata } from './model/panier-express-state.entity';
+import { GameStateEntity } from '../../../application/models/game-state.model';
+import { PendingState } from '../../../application/models/game-state.model';
+import { PanierExpressMetadata } from './model/panier-express-state.model';
 
 export function setPanierExpressPickPending(args: {
   state: GameStateEntity;
@@ -214,7 +214,7 @@ export function discardPanierExpressRandomCourse(args: {
   pickOne: <T>(
     metadata: PanierExpressMetadata,
     items: T[],
-  ) => { meta: PanierExpressMetadata; value: T | undefined };
+  ) => { meta: PanierExpressMetadata; value: T | null };
   toStringArray: (value: unknown) => string[];
   removeOne: (items: string[], value: string) => string[];
 }): { state: GameStateEntity; discarded: string | null } {
@@ -265,3 +265,7 @@ export function discardPanierExpressRandomCourse(args: {
   });
   return { state: next, discarded: card };
 }
+
+
+
+

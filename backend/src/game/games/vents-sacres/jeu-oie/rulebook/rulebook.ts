@@ -1,20 +1,24 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   isRollAlias,
   normalizeActionType,
-} from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+} from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
 import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
-} from '../../../../core/helpers/pawn-pending-rulebook.helper';
+} from '../../../../application/helpers/pawn-pending-rulebook.helper';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
+} from '../../../../domain/errors/public-api';
 
 const ALLOWED = new Set(['roll', 'ROLL_DICE', 'roll_dice', 'choose_pawn']);
+
+type PendingWithPlayer = {
+  playerId?: number;
+};
 
 function samePlayerId(a: unknown, b: unknown): boolean {
   const left = Number(a);
@@ -28,7 +32,7 @@ export function getAvailableActions(
 ): GameSingleActionDto[] {
   if (!isStartedState(state)) return [];
 
-  const pending = state.pending as any;
+  const pending = state.pending ?? null;
   if (pending) {
     const pawnActions = getPendingPawnActionsForPlayer(
       pending,
@@ -75,7 +79,7 @@ export function validateAction(
     throw new PlayerActionError('Acteur requis.', { gameType: 'jeu-oie' });
   }
 
-  const pending = state.pending as any;
+  const pending = state.pending ?? null;
   if (pending) {
     const pawnValidation = validatePendingPawnActionForActor({
       pending,
@@ -110,8 +114,8 @@ export function validateAction(
     throw new PlayerActionError("Ce n'est pas votre tour.", {
       gameType: 'jeu-oie',
       playerId: actorId,
-      currentPlayerId: current as any,
-    });
+        currentPlayerId: current,
+      });
   }
 
   if (isRollAlias(rawType, normalized)) {
@@ -119,3 +123,6 @@ export function validateAction(
   }
   return { ...action, type: 'roll', payload: {} };
 }
+
+
+

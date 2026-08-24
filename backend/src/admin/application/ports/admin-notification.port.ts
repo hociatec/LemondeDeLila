@@ -5,6 +5,21 @@ export interface AdminNotificationPort {
     payload: Record<string, unknown>,
   ): Promise<void>;
 
+  notifyClientUpdateAvailable(
+    userId: number,
+    payload: Record<string, unknown>,
+  ): Promise<void>;
+
+  notifyClientUpdateRequired(
+    userId: number,
+    payload: Record<string, unknown>,
+  ): Promise<void>;
+
+  notifyClientUpdateImminent(
+    userId: number,
+    payload: Record<string, unknown>,
+  ): Promise<void>;
+
   disconnectAll(reason?: string): void;
 }
 

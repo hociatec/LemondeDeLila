@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
 import { AdminClientUpdatesSharedService } from './admin-client-updates-shared.service';
 import type { AdminClientUpdateAnnounceCommand } from './admin-client-updates.types';
 
@@ -31,7 +30,7 @@ export class AdminClientUpdateAnnounceService {
 
     await Promise.all(
       recipientIds.map((userId) =>
-        notifications.notifyUser(userId, WS_EVENTS.clientUpdate.available, payload),
+        notifications.notifyClientUpdateAvailable(userId, payload),
       ),
     );
 

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import { AdminBotsService } from '../../../application/use-cases/admin-bots/admin-bots.service';
 import {
   AdminBotNameCreateWsDto,
@@ -11,7 +11,7 @@ import {
   AdminBotNamesListWsDto,
   AdminBotSettingsGetWsDto,
   AdminBotSettingsUpdateWsDto,
-} from './admin-ws.dto';
+} from './dto/admin-ws.dto';
 
 @Injectable()
 export class AdminBotsWsHandler {
@@ -20,7 +20,7 @@ export class AdminBotsWsHandler {
     private readonly adminBots: AdminBotsService,
   ) {}
 
-  async botsNamesList(session: WsSession, payload: any) {
+  async botsNamesList(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminBotNamesListWsDto, payload ?? {});
     return {
@@ -29,7 +29,7 @@ export class AdminBotsWsHandler {
     };
   }
 
-  botSettingsGet(session: WsSession, payload: any) {
+  botSettingsGet(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminBotSettingsGetWsDto, payload ?? {});
     return {
@@ -38,7 +38,7 @@ export class AdminBotsWsHandler {
     };
   }
 
-  async botSettingsUpdate(session: WsSession, payload: any) {
+  async botSettingsUpdate(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBotSettingsUpdateWsDto, payload);
     const updated = await this.adminBots.updateSettings({
@@ -49,7 +49,7 @@ export class AdminBotsWsHandler {
     return { type: WS_EVENTS.admin.bots.settingsUpdate, payload: updated };
   }
 
-  async botNameCreate(session: WsSession, payload: any) {
+  async botNameCreate(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBotNameCreateWsDto, payload);
     return {
@@ -58,7 +58,7 @@ export class AdminBotsWsHandler {
     };
   }
 
-  async botNameUpdate(session: WsSession, payload: any) {
+  async botNameUpdate(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBotNameUpdateWsDto, payload);
     return {
@@ -70,7 +70,7 @@ export class AdminBotsWsHandler {
     };
   }
 
-  async botNameDelete(session: WsSession, payload: any) {
+  async botNameDelete(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBotNameDeleteWsDto, payload);
     return {
@@ -79,3 +79,4 @@ export class AdminBotsWsHandler {
     };
   }
 }
+

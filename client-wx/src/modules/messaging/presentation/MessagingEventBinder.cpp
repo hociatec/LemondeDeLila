@@ -4,9 +4,9 @@
 
 #include <wx/button.h>
 #include <wx/event.h>
-#include <wx/frame.h>
 #include <wx/listbox.h>
 #include <wx/textctrl.h>
+#include <wx/window.h>
 
 #include "modules/messaging/domain/MessagingBox.h"
 #include "modules/messaging/presentation/MessagingFocusController.h"
@@ -30,7 +30,7 @@ void Invoke(const std::function<void()>& handler)
 }
 
 void MessagingEventBinder::Bind(
-    wxFrame& frame,
+    wxWindow& owner,
     MessagingView& view,
     MessagingNavigationState& navigationState,
     MessagingFocusController& focusController,
@@ -111,7 +111,7 @@ void MessagingEventBinder::Bind(
         });
 
     lila::shared::accessibility::NavigationController::BindEscapeNavigation(
-        frame,
+        owner,
         [&navigationState, handlers]()
         {
             if (navigationState.currentScreen == MessagingNavigationState::Screen::Menu)
@@ -123,17 +123,6 @@ void MessagingEventBinder::Bind(
             return handlers.goBack ? handlers.goBack() : false;
         });
 
-    focusController.BindNavigation(frame);
-
-    frame.Bind(
-        wxEVT_CLOSE_WINDOW,
-        [exitFrame = std::move(handlers.exitFrame)](wxCloseEvent& event)
-        {
-            if (event.CanVeto())
-            {
-                event.Veto();
-            }
-            Invoke(exitFrame);
-        });
+    focusController.BindNavigation(owner);
 }
 }

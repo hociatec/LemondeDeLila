@@ -1,10 +1,22 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { PanierExpressUtils } from '../model/panier-express-utils.service';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { PanierExpressUtils } from '../application/services/panier-express-utils.service';
+import type { PanierExpressPlayer } from '../model/panier-express-state.model';
 import {
   addCardToPlayerState,
   removeFromInventoryState,
   setInventoryState,
 } from './panier-express-exchange-state.helpers';
+
+type MetaRngState = { getMeta: () => Record<string, unknown> };
+type PickOneResult<T> = { meta: Record<string, unknown>; value: T | null };
+type PickPendingState = {
+  type: 'pick';
+  playerId: number;
+  blocking: true;
+  label: string;
+  choices: string[];
+  data: Record<string, unknown>;
+};
 
 export function applyPanierExpressExchangeCard(args: {
   state: GameStateEntity;
@@ -13,20 +25,20 @@ export function applyPanierExpressExchangeCard(args: {
   card: string;
   utils: PanierExpressUtils;
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
-  createMetaRng: (metadata: any) => { getMeta: () => any };
+  createMetaRng: (metadata: Record<string, unknown>) => MetaRngState;
   pickOne: <T>(
-    metadata: any,
+    metadata: Record<string, unknown>,
     items: T[],
-  ) => { meta: any; value: T | undefined };
+  ) => PickOneResult<T>;
 }): GameStateEntity | null {
   const kind = String(args.card ?? '').trim();
   if (!kind) return args.state;
 
   if (kind === 'vol-discret') {
-    const meta = (args.state.metadata ?? {}) as any;
+    const meta = (args.state.metadata ?? {}) as Record<string, unknown>;
     const target = (args.state.players ?? []).find(
       (player) => player.id === args.targetPlayerId,
-    ) as any;
+    ) as PanierExpressPlayer | undefined;
     const inventory = args.utils.toStringArray(target?.inventory);
     if (!inventory.length) {
       return args.appendLog(
@@ -61,10 +73,10 @@ export function applyPanierExpressExchangeCard(args: {
   if (kind === 'chariot-echange') {
     const initiator = (args.state.players ?? []).find(
       (player) => player.id === args.initiatorPlayerId,
-    ) as any;
+    ) as PanierExpressPlayer | undefined;
     const target = (args.state.players ?? []).find(
       (player) => player.id === args.targetPlayerId,
-    ) as any;
+    ) as PanierExpressPlayer | undefined;
     const initiatorInv = args.utils.toStringArray(initiator?.inventory);
     const targetInv = args.utils.toStringArray(target?.inventory);
     let next: GameStateEntity = args.state;
@@ -90,10 +102,10 @@ export function applyPanierExpressExchangeCard(args: {
   if (kind === 'echange-force') {
     const initiator = (args.state.players ?? []).find(
       (player) => player.id === args.initiatorPlayerId,
-    ) as any;
+    ) as PanierExpressPlayer | undefined;
     const target = (args.state.players ?? []).find(
       (player) => player.id === args.targetPlayerId,
-    ) as any;
+    ) as PanierExpressPlayer | undefined;
     const initiatorInv = args.utils.toStringArray(initiator?.inventory);
     const targetInv = args.utils.toStringArray(target?.inventory);
     if (!initiatorInv.length || !targetInv.length) {
@@ -104,11 +116,16 @@ export function applyPanierExpressExchangeCard(args: {
     }
 
     let next: GameStateEntity = args.state;
-    const metaRng = args.createMetaRng((next.metadata as any) ?? {});
+    const metaRng = args.createMetaRng(
+      (next.metadata ?? {}) as Record<string, unknown>,
+    );
     const pickA = args.pickOne(metaRng.getMeta(), initiatorInv);
     next = { ...next, metadata: pickA.meta };
     const aCard = String(pickA.value ?? '').trim();
-    const pickB = args.pickOne((next.metadata as any) ?? {}, targetInv);
+    const pickB = args.pickOne(
+      (next.metadata ?? {}) as Record<string, unknown>,
+      targetInv,
+    );
     next = { ...next, metadata: pickB.meta };
     const bCard = String(pickB.value ?? '').trim();
 
@@ -148,7 +165,7 @@ export function applyPanierExpressExchangeCard(args: {
   if (kind === 'echange-impose') {
     const target = (args.state.players ?? []).find(
       (player) => player.id === args.targetPlayerId,
-    ) as any;
+    ) as PanierExpressPlayer | undefined;
     const inventory = args.utils.toStringArray(target?.inventory);
     if (!inventory.length) {
       return args.appendLog(
@@ -169,9 +186,13 @@ export function applyPanierExpressExchangeCard(args: {
           initiatorId: args.initiatorPlayerId,
           cards: inventory,
         },
-      } as any,
+      } satisfies PickPendingState,
     };
   }
 
   return null;
 }
+
+
+
+

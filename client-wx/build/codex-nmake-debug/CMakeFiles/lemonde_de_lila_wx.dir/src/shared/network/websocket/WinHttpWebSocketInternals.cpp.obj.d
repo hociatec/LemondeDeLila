@@ -87,6 +87,14 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xutility
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic_wait.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xthreads.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_sanitizer_annotate_container.hpp
@@ -337,7 +345,6 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/tchar.h
 C:/vcpkg/installed/x64-windows/include/wx/features.h
 C:/vcpkg/installed/x64-windows/include/wx/wxcrtbase.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/wctype.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/io.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_io.h
 C:/vcpkg/installed/x64-windows/include/wx/strvararg.h

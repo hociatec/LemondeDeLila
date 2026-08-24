@@ -1,15 +1,15 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
+} from '../../../../domain/errors/public-api';
 import { SAC_VARIANTS } from '../sac-a-malices-variants';
 import {
   isRollAlias,
   normalizeActionType,
-} from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+} from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
 
 const ALLOWED = new Set([
   'roll',
@@ -222,3 +222,7 @@ export function validateAction(
   }
   return { ...action, type: normalized, payload: {} };
 }
+
+
+
+

@@ -35,25 +35,21 @@
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
-    <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
-    <UseDebugLibraries>false</UseDebugLibraries>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
-    <UseDebugLibraries>false</UseDebugLibraries>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
-    <UseDebugLibraries>false</UseDebugLibraries>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -92,7 +88,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>C:\wamp64\www\lemondeDeLila\client-wx\src;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /external:I "C:/vcpkg/installed/x64-windows/lib/mswud" /external:I "C:/vcpkg/installed/x64-windows/include"</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "C:/vcpkg/installed/x64-windows/lib/mswud" /external:I "C:/vcpkg/installed/x64-windows/include" /utf-8</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <ConformanceMode>true</ConformanceMode>
@@ -137,7 +133,7 @@ exit /b %1
 if %errorlevel% neq 0 goto :VCEnd</Command>
     </PostBuildEvent>
     <Link>
-      <AdditionalDependencies>C:\vcpkg\installed\x64-windows\debug\lib\wxmsw33ud_core.lib;C:\vcpkg\installed\x64-windows\debug\lib\wxbase33ud.lib;winhttp.lib;kernel32.lib;user32.lib;gdi32.lib;gdiplus.lib;msimg32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;ws2_32.lib;wininet.lib;oleacc.lib;uxtheme.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\vcpkg\installed\x64-windows\debug\lib\wxmsw33ud_core.lib;C:\vcpkg\installed\x64-windows\debug\lib\wxbase33ud.lib;winhttp.lib;crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;gdiplus.lib;msimg32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;ws2_32.lib;wininet.lib;oleacc.lib;uxtheme.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -153,7 +149,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>C:\wamp64\www\lemondeDeLila\client-wx\src;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /external:I "C:/vcpkg/installed/x64-windows/lib/mswu" /external:I "C:/vcpkg/installed/x64-windows/include"</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "C:/vcpkg/installed/x64-windows/lib/mswu" /external:I "C:/vcpkg/installed/x64-windows/include" /utf-8</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ConformanceMode>true</ConformanceMode>
@@ -199,7 +195,7 @@ exit /b %1
 if %errorlevel% neq 0 goto :VCEnd</Command>
     </PostBuildEvent>
     <Link>
-      <AdditionalDependencies>C:\vcpkg\installed\x64-windows\lib\wxmsw33u_core.lib;C:\vcpkg\installed\x64-windows\lib\wxbase33u.lib;winhttp.lib;kernel32.lib;user32.lib;gdi32.lib;gdiplus.lib;msimg32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;ws2_32.lib;wininet.lib;oleacc.lib;uxtheme.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\vcpkg\installed\x64-windows\lib\wxmsw33u_core.lib;C:\vcpkg\installed\x64-windows\lib\wxbase33u.lib;winhttp.lib;crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;gdiplus.lib;msimg32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;ws2_32.lib;wininet.lib;oleacc.lib;uxtheme.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -215,7 +211,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>C:\wamp64\www\lemondeDeLila\client-wx\src;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /external:I "C:/vcpkg/installed/x64-windows/lib/mswu" /external:I "C:/vcpkg/installed/x64-windows/include"</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "C:/vcpkg/installed/x64-windows/lib/mswu" /external:I "C:/vcpkg/installed/x64-windows/include" /utf-8</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ConformanceMode>true</ConformanceMode>
@@ -261,7 +257,7 @@ exit /b %1
 if %errorlevel% neq 0 goto :VCEnd</Command>
     </PostBuildEvent>
     <Link>
-      <AdditionalDependencies>C:\vcpkg\installed\x64-windows\lib\wxmsw33u_core.lib;C:\vcpkg\installed\x64-windows\lib\wxbase33u.lib;winhttp.lib;kernel32.lib;user32.lib;gdi32.lib;gdiplus.lib;msimg32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;ws2_32.lib;wininet.lib;oleacc.lib;uxtheme.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\vcpkg\installed\x64-windows\lib\wxmsw33u_core.lib;C:\vcpkg\installed\x64-windows\lib\wxbase33u.lib;winhttp.lib;crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;gdiplus.lib;msimg32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;ws2_32.lib;wininet.lib;oleacc.lib;uxtheme.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -277,7 +273,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>C:\wamp64\www\lemondeDeLila\client-wx\src;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /external:I "C:/vcpkg/installed/x64-windows/lib/mswu" /external:I "C:/vcpkg/installed/x64-windows/include"</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "C:/vcpkg/installed/x64-windows/lib/mswu" /external:I "C:/vcpkg/installed/x64-windows/include" /utf-8</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ConformanceMode>true</ConformanceMode>
@@ -322,7 +318,7 @@ exit /b %1
 if %errorlevel% neq 0 goto :VCEnd</Command>
     </PostBuildEvent>
     <Link>
-      <AdditionalDependencies>C:\vcpkg\installed\x64-windows\lib\wxmsw33u_core.lib;C:\vcpkg\installed\x64-windows\lib\wxbase33u.lib;winhttp.lib;kernel32.lib;user32.lib;gdi32.lib;gdiplus.lib;msimg32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;ws2_32.lib;wininet.lib;oleacc.lib;uxtheme.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\vcpkg\installed\x64-windows\lib\wxmsw33u_core.lib;C:\vcpkg\installed\x64-windows\lib\wxbase33u.lib;winhttp.lib;crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;gdiplus.lib;msimg32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;shlwapi.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;version.lib;ws2_32.lib;wininet.lib;oleacc.lib;uxtheme.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -348,7 +344,7 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfig.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfig.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonTargets.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\vcpkg-cmake-wrapper.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfig.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets.cmake;C:\vcpkg\scripts\buildsystems\vcpkg.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeCXXCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeRCCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeSystem.cmake;C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppBuildInfo.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTest.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTestTargets.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTestUseLaunchers.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\DartConfiguration.tcl.in;C:\Program Files\CMake\share\cmake-3.31\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfig.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfig.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonTargets.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\vcpkg-cmake-wrapper.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfig.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets.cmake;C:\vcpkg\scripts\buildsystems\vcpkg.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeCXXCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeRCCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeSystem.cmake;C:\wamp64\www\lemondeDeLila\client-wx\resources\texts.fr.json;C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppBuildInfo.h.in;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/wamp64/www/lemondeDeLila/client-wx/CMakeLists.txt</Message>
@@ -361,7 +357,7 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfig.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfig.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonTargets.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\vcpkg-cmake-wrapper.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfig.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets.cmake;C:\vcpkg\scripts\buildsystems\vcpkg.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeCXXCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeRCCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeSystem.cmake;C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppBuildInfo.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTest.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTestTargets.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTestUseLaunchers.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\DartConfiguration.tcl.in;C:\Program Files\CMake\share\cmake-3.31\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfig.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfig.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonTargets.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\vcpkg-cmake-wrapper.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfig.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets.cmake;C:\vcpkg\scripts\buildsystems\vcpkg.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeCXXCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeRCCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeSystem.cmake;C:\wamp64\www\lemondeDeLila\client-wx\resources\texts.fr.json;C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppBuildInfo.h.in;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/wamp64/www/lemondeDeLila/client-wx/CMakeLists.txt</Message>
@@ -374,7 +370,7 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfig.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfig.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonTargets.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\vcpkg-cmake-wrapper.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfig.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets.cmake;C:\vcpkg\scripts\buildsystems\vcpkg.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeCXXCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeRCCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeSystem.cmake;C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppBuildInfo.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTest.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTestTargets.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTestUseLaunchers.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\DartConfiguration.tcl.in;C:\Program Files\CMake\share\cmake-3.31\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfig.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfig.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonTargets.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\vcpkg-cmake-wrapper.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfig.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets.cmake;C:\vcpkg\scripts\buildsystems\vcpkg.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeCXXCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeRCCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeSystem.cmake;C:\wamp64\www\lemondeDeLila\client-wx\resources\texts.fr.json;C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppBuildInfo.h.in;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/wamp64/www/lemondeDeLila/client-wx/CMakeLists.txt</Message>
@@ -387,7 +383,7 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfig.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfig.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonTargets.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\vcpkg-cmake-wrapper.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfig.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets.cmake;C:\vcpkg\scripts\buildsystems\vcpkg.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeCXXCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeRCCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeSystem.cmake;C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppBuildInfo.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTest.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTestTargets.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CTestUseLaunchers.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\DartConfiguration.tcl.in;C:\Program Files\CMake\share\cmake-3.31\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfig.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\nanosvg\NanoSVGTargets.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfig.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_jsonTargets.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\vcpkg-cmake-wrapper.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfig.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsConfigVersion.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-debug.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets-release.cmake;C:\vcpkg\installed\x64-windows\share\wxwidgets\wxWidgetsTargets.cmake;C:\vcpkg\scripts\buildsystems\vcpkg.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeCXXCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeRCCompiler.cmake;C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\3.31.6\CMakeSystem.cmake;C:\wamp64\www\lemondeDeLila\client-wx\resources\texts.fr.json;C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppBuildInfo.h.in;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
     </CustomBuild>
@@ -396,27 +392,146 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\app\main.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\app\Application.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\app\navigation\AppNavigator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\app\navigation\HostFrame.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\bootstrap\AppBootstrap.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\bootstrap\AppCompositions.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\bootstrap\AppRuntime.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\about\presentation\AboutFrame.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\about\presentation\AboutFrame.Events.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\about\presentation\AboutFrame.Layout.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\about\presentation\AboutPageContentBuilder.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\about\presentation\AboutPageCoordinator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\application\CatalogService.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\infrastructure\CatalogApi.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogPanel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogPanel.Events.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogPanel.Layout.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogPanel.Loading.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogShelfNavigator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomLobbyService.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.Realtime.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomLobbyApi.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\JoinRoomsPanel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomLobbyNavigator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomOpenRequest.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomGameZoneAnchor.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Actions.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Commands.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Confirmation.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Events.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Layout.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Loading.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Preparation.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Realtime.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.State.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPresentationModel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomShortcutPolicy.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\application\VaultService.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\infrastructure\VaultApi.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\infrastructure\VaultPayloadCodec.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultNavigator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPresentationModel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPanel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPanel.Actions.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPanel.Events.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPanel.Layout.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPanel.Loading.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPanel.Pages.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\application\StoryBookService.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\infrastructure\StoryBookApi.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\presentation\StoryBookNavigator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\presentation\StoryBookPanel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\presentation\StoryBookPanel.Events.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\presentation\StoryBookPanel.Layout.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\presentation\StoryBookPanel.Loading.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\presentation\StoryBookPanel.Pages.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\application\LeaderboardService.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\infrastructure\LeaderboardApi.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\presentation\LeaderboardPanel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Connection.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Messages.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Reconnect.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatMessageStore.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtocol.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\PresenceChatGateway.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatEventBinder.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.Actions.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.Connection.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.Layout.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.Events.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFocusController.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.History.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\application\MessagingService.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\MessagingApi.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingActionController.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingComposeController.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingEventBinder.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFocusController.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingPresentationModel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingSelectionMemory.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingMailboxLoader.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingView.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingView.Menu.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingView.Detail.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingView.Compose.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingView.Theme.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.Mailbox.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.Actions.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.Events.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.State.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingScreenCoordinator.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\SocialService.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\infrastructure\SocialApi.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\infrastructure\SocialPayloadCodec.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialActionController.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialDataStore.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialEventRouter.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Bindings.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Layout.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Events.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Sections.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Menu.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Navigation.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialProfileCoordinator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialScreenCoordinator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialPresentationModel.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialSectionCoordinator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Profile.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialSelectionMemory.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialSectionPresenter.Core.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialSectionPresenter.Profile.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialSectionPresenter.Selection.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialView.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialView.Layout.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialView.ListSections.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialView.Profile.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialView.Theme.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\application\HomeAuthValidator.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.Layout.cpp" />
@@ -424,20 +539,37 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.Navigation.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.Events.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.Submit.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\ActionButton.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\AccessibilityUtils.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\FileOptionsRepository.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\OptionsJsonSchemaMigrator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsEventBinder.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsFrame.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\AuthenticatedRealtimeApiClient.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeApiClient.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketProvider.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\WinHttpWebSocketClient.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenu.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\Theme.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsFocusController.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsSectionCoordinator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.Layout.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.State.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsViewPagesBuilder.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsViewStateAdapter.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.Pages.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.Theme.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\application\PresenceMonitor.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\infrastructure\PresenceConnectionFactory.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\infrastructure\PresencePayloadCodec.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresenceActionController.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresenceFrame.Actions.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresenceFrame.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresenceFrame.Events.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresenceFrame.Layout.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresenceFrame.State.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresencePresentationModel.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\application\LoginUseCase.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\application\RegisterUseCase.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\remote\JwtLoginClaimsParser.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\WsAuthenticationService.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\main_menu\presentation\MainMenuFrame.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\main_menu\presentation\MainMenuContent.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\main_menu\presentation\MainMenuFrame.Layout.cpp" />
@@ -445,9 +577,33 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\main_menu\presentation\MainMenuFrame.Events.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\application\SessionStore.cpp" />
     <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\infrastructure\FileSessionRepository.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\remote\JwtLoginClaimsParser.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp" />
-    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\WsAuthenticationService.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\ActionButton.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\AccessibilityUtils.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusCoordinator.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusMemory.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusManager.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusTransition.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\NavigationController.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppDataPaths.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\AuthenticatedRealtimeApiClient.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeApiClient.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocol.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketProvider.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketTransport.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\WinHttpWebSocketClient.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\WinHttpWebSocketInternals.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\persistence\JsonFileStorage.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\concurrency\BackgroundExecutor.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenu.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenu.Entries.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenuEntry.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\SecurityUtils.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\JwtPayload.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.cpp" />
+    <ClCompile Include="C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\Theme.cpp" />
     <Natvis Include="C:\vcpkg\installed\x64-windows\share\nlohmann_json\nlohmann_json.natvis">
     </Natvis>
   </ItemGroup>
@@ -456,6 +612,12 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ProjectReference Include="C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\ZERO_CHECK.vcxproj">
       <Project>{E33B3BAB-7194-3FE1-A50D-7F93F32DA306}</Project>
       <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\wamp64\www\lemondeDeLila\client-wx\build\windows-vcpkg-debug\generate_protocol_fields.vcxproj">
+      <Project>{268B4537-4A13-3835-A144-EF553DB8D5D7}</Project>
+      <Name>generate_protocol_fields</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>

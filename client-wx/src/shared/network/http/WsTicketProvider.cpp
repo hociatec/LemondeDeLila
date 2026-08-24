@@ -88,7 +88,7 @@ std::string WsTicketProvider::GetTicket(const std::string& scope, const std::str
             lastErrorMessage = exception.what();
             if (exception.StatusCode() == 401 || exception.StatusCode() == 403)
             {
-                break;
+                throw;
             }
         }
         catch (const std::exception& exception)
@@ -118,5 +118,4 @@ unsigned long lila::shared::network::http::WsTicketRequestError::StatusCode() co
 {
     return statusCode_;
 }
-
 

@@ -1,13 +1,21 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GamePayloadValidationError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   LES_MAINS_CARD_BY_ID,
   LES_MAINS_FAMILIES,
 } from '../model/les-mains-de-la-terre-cards';
 import type { LesMainsFamily } from '../model/les-mains-de-la-terre-cards';
-import type { LesMainsMetadata } from '../model/les-mains-de-la-terre-state.entity';
-import { normalizeActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import type { LesMainsMetadata } from '../model/les-mains-de-la-terre-state.model';
 
 type LesMainsActionPayload = {
   cardId?: string | null;
@@ -68,33 +76,35 @@ export function validateAction(
 ): GameSingleActionDto {
   const type = normalizeActionType(action);
   if (type !== 'request_card') {
-    throw new Error(`Action inconnue: ${type}`);
+    throw new GameUnknownActionError(`Action inconnue: ${type}`);
   }
   if (actorId == null) {
-    throw new Error('Acteur requis');
+    throw new GameActorRequiredError('Acteur requis');
   }
   const meta = getMeta(state);
   if (meta.winnerId != null) {
-    throw new Error('La partie est terminée.');
+    throw new GameStateViolationError('La partie est terminée.');
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas démarrée.");
+    throw new GameStateViolationError("La partie n'est pas démarrée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
   const payload = (action.payload ?? {}) as LesMainsActionPayload;
   const cardId = String(payload.cardId ?? '').trim();
   const target =
     typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
   if (!cardId || target == null || target === actorId) {
-    throw new Error('Cible ou carte invalide.');
+    throw new GamePayloadValidationError('Cible ou carte invalide.');
   }
   const definition = LES_MAINS_CARD_BY_ID[cardId];
   if (!definition || definition.type !== 'metier' || !definition.family) {
-    throw new Error("La carte demandée n'est pas une carte métier valide.");
+    throw new GamePayloadValidationError(
+      "La carte demandée n'est pas une carte métier valide.",
+    );
   }
   const hand = Array.isArray(meta.hands?.[actorId]) ? meta.hands[actorId] : [];
   const hasFamily = hand.some(
@@ -102,13 +112,13 @@ export function validateAction(
   );
   const freeRequest = Boolean(meta.freeFamilyRequest?.[actorId]);
   if (!hasFamily && !freeRequest) {
-    throw new Error(
+    throw new GameActionRejectedError(
       'Vous devez posséder au moins une carte de cette famille pour la demander.',
     );
   }
   const targetExists = getPlayerIds(state.players).includes(target);
   if (!targetExists) {
-    throw new Error('Joueur cible invalide.');
+    throw new GamePayloadValidationError('Joueur cible invalide.');
   }
   return { type: 'request_card', payload: { cardId, targetPlayerId: target } };
 }

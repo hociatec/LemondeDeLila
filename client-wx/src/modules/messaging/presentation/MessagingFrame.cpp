@@ -13,7 +13,6 @@
 #include <memory>
 #include <utility>
 
-#include <wx/app.h>
 #include <wx/button.h>
 #include <wx/listbox.h>
 #include <wx/msgdlg.h>
@@ -45,21 +44,17 @@ namespace lila::modules::messaging::presentation
 MessagingFrame::~MessagingFrame() = default;
 
 MessagingFrame::MessagingFrame(
+    wxWindow* parent,
     lila::modules::messaging::application::MessagingService& messagingService,
     CloseRequestedHandler onCloseRequested,
     ExitRequestedHandler onExitRequested)
-    : wxFrame(
-          nullptr,
-          wxID_ANY,
-          wxString::Format(
-              lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingFrameTitle),
-              lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()).wc_str()),
-      wxDefaultPosition,
-      wxSize(WindowWidth, WindowHeight),
-      wxDEFAULT_FRAME_STYLE),
+    : lila::shared::accessibility::NonFocusablePanel(
+          parent,
+          0),
       onCloseRequested_(std::move(onCloseRequested)),
       onExitRequested_(std::move(onExitRequested))
 {
+    SetMinSize(wxSize(WindowWidth, WindowHeight));
     view_ = new MessagingView(this);
     auto* frameSizer = new wxBoxSizer(wxVERTICAL);
     frameSizer->Add(view_, 1, wxEXPAND);
@@ -88,7 +83,7 @@ MessagingFrame::MessagingFrame(
             },
             [this]()
             {
-                focusController_->FocusCurrentScreen();
+                ScheduleFocusCurrentScreen();
             }});
     actionController_ = std::make_unique<MessagingActionController>(
         messagingService,
@@ -166,12 +161,15 @@ MessagingFrame::MessagingFrame(
 
     SetScreen(Screen::Menu);
     UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::KeyboardNavigationHint));
-    CentreOnScreen();
-    CallAfter(
-        [this]()
-        {
-            focusController_->FocusCurrentScreen();
-        });
+}
+
+lila::shared::accessibility::FocusManager::Plan MessagingFrame::BuildFocusPlan()
+{
+    if (focusController_ != nullptr)
+    {
+        return focusController_->BuildCurrentScreenPlan();
+    }
+    return {};
 }
 }
 

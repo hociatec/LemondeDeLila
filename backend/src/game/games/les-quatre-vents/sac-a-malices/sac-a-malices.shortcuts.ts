@@ -1,8 +1,8 @@
-import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
+import type { GameShortcutsBuilder } from '../../../models/game-shortcuts.model';
 import {
   interfaceShortcut,
   actionShortcut,
-} from '../../../engine/shortcuts/shortcut-utils';
+} from '../../../application/helpers/shortcut-utils';
 
 export const buildSacAMalicesShortcuts: GameShortcutsBuilder = (ctx) => {
   const metaRecord =
@@ -61,3 +61,4 @@ export const buildSacAMalicesShortcuts: GameShortcutsBuilder = (ctx) => {
 
   return shortcuts;
 };
+

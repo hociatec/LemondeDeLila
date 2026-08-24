@@ -31,9 +31,14 @@ SocialListSectionControls BuildSocialListSection(
 {
     SocialListSectionControls controls;
     controls.panel = new wxPanel(parent);
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*controls.panel, wxEmptyString, wxEmptyString);
     auto* sizer = new wxBoxSizer(wxVERTICAL);
     auto* title = new wxStaticText(controls.panel, wxID_ANY, titleText);
-    controls.list = new lila::shared::ui::controls::VerticalMenu(controls.panel, {});
+    title->Hide();
+    controls.list = new lila::shared::ui::controls::VerticalMenu(
+        controls.panel,
+        {},
+        lila::shared::ui::controls::VerticalMenuRole::List);
     controls.list->SetMinSize(wxSize(260, -1));
     controls.emptyState = new wxTextCtrl(
         controls.panel,
@@ -45,8 +50,11 @@ SocialListSectionControls BuildSocialListSection(
     controls.emptyState->SetMinSize(wxSize(-1, 80));
     controls.actions = new lila::shared::ui::controls::VerticalMenu(
         controls.panel,
-        lila::shared::ui::navigation::BuildMenuItems(actionItems));
+        lila::shared::ui::navigation::BuildMenuItems(actionItems),
+        lila::shared::ui::controls::VerticalMenuRole::List);
     controls.actions->SetMinSize(wxSize(260, -1));
+    controls.actions->Show(false);
+    controls.actions->Enable(false);
 
     sizer->Add(title, 0, wxBOTTOM, 10);
     sizer->Add(controls.list, 1, wxEXPAND | wxBOTTOM, 12);

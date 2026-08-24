@@ -58,3 +58,5 @@ export function describeEffect(effect: PiratesCardEffect): string {
       return '';
   }
 }
+
+

@@ -1,20 +1,20 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   isRollAlias,
   normalizeActionType,
-} from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+} from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
+} from '../../../../domain/errors/public-api';
 import {
   getPendingDrawActionsForPlayer,
   getPendingChooseTargetActionsForPlayer,
   validatePendingChooseTargetActionForActor,
   validatePendingDrawActionForActor,
-} from '../../../../core/helpers/pending-actions-rulebook.helper';
+} from '../../../../application/helpers/pending-actions-rulebook.helper';
 
 const ALLOWED = new Set([
   'roll',
@@ -146,3 +146,6 @@ export function validateAction(
   if (normalized === 'choose_target') return action;
   return { ...action, type: 'roll', payload: {} };
 }
+
+
+

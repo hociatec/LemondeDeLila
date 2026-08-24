@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../engine/model/game-definition.model';
+import type { GameDefinition } from '../../../../application/models/game-definition.model';
 
 export type ContesCacahuetesGameId = 'contes-et-cacahuetes';
 export type ContesCacahuetesPhaseId = 'turn';
@@ -41,3 +41,4 @@ export const CONTES_CACAHUETES_GAME: GameDefinition<
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;
+

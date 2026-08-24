@@ -2,6 +2,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <mutex>
+#include <stop_token>
 #include <string>
 
 #include "shared/network/http/WsTicketProvider.h"
@@ -21,12 +23,14 @@ public:
 
     [[nodiscard]] RealtimeApiResponse Send(
         const RealtimeApiRequest& request,
-        const std::string& bearerToken) const;
+        const std::string& bearerToken,
+        std::stop_token stopToken = {}) const;
 
 private:
     std::string endpoint_;
     std::string clientVersion_;
     websocket::IWebSocketClient& webSocketClient_;
     http::IWsTicketProvider& wsTicketProvider_;
+    mutable std::mutex requestMutex_;
 };
 }

@@ -1,19 +1,18 @@
-﻿import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../core/core.module';
-import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
-import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
-import { TurnPoliciesModule } from '../../../modules/turn-policies/turn-policies.module';
-import { ContesService } from './contes.service';
-import { ContesCacahuetesSetupService } from './setup/contes-et-cacahuetes-setup.service';
-import { ContesActionService } from './actions/contes-action.service';
-import { ContesPresenterService } from './presenter/contes-presenter.service';
-import { ContesBotService } from './bots/contes-bot.service';
+import { Module } from '@nestjs/common';
+import { GameCoreModule } from '../../../module/game-core.module';
+import { SetupFlowModule } from '../../../application/modules/setup-flow.module';
+import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { TurnPoliciesModule } from '../../../application/modules/turn-policies.module';
+import { ContesService } from './application/services/contes.service';
+import { ContesCacahuetesSetupService } from './application/services/contes-et-cacahuetes-setup.service';
+import { ContesActionService } from './application/services/contes-action.service';
+import { ContesPresenterService } from './application/services/contes-presenter.service';
+import { ContesBotService } from './application/services/contes-bot.service';
+import { ContesTargetingService } from './application/services/contes-targeting.service';
 
 @Module({
   imports: [
     GameCoreModule,
-    GameRegistryModule,
     BoardGameDeckKitModule,
     SetupFlowModule,
     TurnPoliciesModule,
@@ -24,7 +23,13 @@ import { ContesBotService } from './bots/contes-bot.service';
     ContesActionService,
     ContesPresenterService,
     ContesBotService,
+    ContesTargetingService,
   ],
   exports: [ContesService],
 })
 export class ContesModule {}
+
+
+
+
+

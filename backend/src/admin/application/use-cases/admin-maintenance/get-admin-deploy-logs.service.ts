@@ -3,13 +3,18 @@ import {
   ADMIN_MAINTENANCE_RUNTIME_PORT,
   type AdminMaintenanceRuntimePort,
 } from '../../ports/admin-maintenance-runtime.port';
-import { ADMIN_DEPLOY_UNIT } from './admin-maintenance.constants';
+import {
+  ADMIN_MAINTENANCE_CONFIG,
+  type AdminMaintenanceConfig,
+} from '../../ports/admin-maintenance-config.port';
 
 @Injectable()
 export class GetAdminDeployLogsService {
   constructor(
     @Inject(ADMIN_MAINTENANCE_RUNTIME_PORT)
     private readonly runtime: AdminMaintenanceRuntimePort,
+    @Inject(ADMIN_MAINTENANCE_CONFIG)
+    private readonly config: AdminMaintenanceConfig,
   ) {}
 
   execute(input: { tail?: string }) {
@@ -19,7 +24,7 @@ export class GetAdminDeployLogsService {
       '-n',
       'journalctl',
       '-u',
-      ADMIN_DEPLOY_UNIT,
+      this.config.deployUnit,
       '--no-pager',
       '-o',
       'short-iso',
@@ -32,6 +37,6 @@ export class GetAdminDeployLogsService {
         details: res,
       });
     }
-    return { ok: true, unit: ADMIN_DEPLOY_UNIT, tail, logs: res.stdout };
+    return { ok: true, unit: this.config.deployUnit, tail, logs: res.stdout };
   }
 }

@@ -1,11 +1,13 @@
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/infrastructure/remote/JwtLoginClaimsParser.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdint
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals_core.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sal.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/concurrencysal.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vadefs.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xkeycheck.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdint.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_sanitizer_annotate_container.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp
@@ -64,8 +66,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/initializer_list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstddef
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stddef.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/type_traits
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdint
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdint.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/compare
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/concepts
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/climits
@@ -229,3 +229,4 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/JwtPayload.h

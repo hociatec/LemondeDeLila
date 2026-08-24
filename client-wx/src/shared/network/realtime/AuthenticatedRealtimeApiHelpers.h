@@ -1,10 +1,12 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#include <stop_token>
 #include <stdexcept>
 #include <string>
 
 #include "modules/session/application/SessionStore.h"
+#include "shared/errors/AppError.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/network/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/realtime/RealtimeApiClient.h"
@@ -18,7 +20,8 @@ inline RealtimeApiResponse SendAndCheckAuth(
     lila::modules::session::application::SessionStore& sessionStore,
     const std::string& noActiveSessionMessage,
     const std::string& type,
-    nlohmann::json payload)
+    nlohmann::json payload,
+    std::stop_token stopToken = {})
 {
     if (!sessionStore.HasActiveSession())
     {
@@ -30,7 +33,8 @@ inline RealtimeApiResponse SendAndCheckAuth(
             .type = type,
             .payload = std::move(payload),
         },
-        sessionStore.Current().token);
+        sessionStore.Current().token,
+        stopToken);
 }
 
 inline void EnsureSuccessOrThrow(
@@ -46,10 +50,22 @@ inline void EnsureSuccessOrThrow(
     if (response.statusCode == 401 || response.statusCode == 403)
     {
         sessionStore.Clear();
-        throw std::runtime_error(lila::shared::errors::SessionExpiredMessage);
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(
+                lila::shared::errors::ErrorCode::InvalidSession,
+                lila::shared::errors::SessionExpiredMessage));
     }
 
-    throw std::runtime_error(lila::shared::errors::WithDetails(fallbackMessage.c_str(), response.errorMessage));
+    if (response.errorKind == RealtimeErrorKind::Server && !response.errorMessage.empty())
+    {
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(
+                lila::shared::errors::ErrorCode::Unexpected,
+                response.errorMessage));
+    }
+
+    throw std::runtime_error(
+        lila::shared::errors::WithDetails(fallbackMessage.c_str(), response.errorMessage));
 }
 
 inline RealtimeApiResponse SendAuthenticatedRequest(
@@ -58,10 +74,11 @@ inline RealtimeApiResponse SendAuthenticatedRequest(
     const std::string& noActiveSessionMessage,
     const std::string& type,
     nlohmann::json payload,
-    const std::string& fallbackMessage)
+    const std::string& fallbackMessage,
+    std::stop_token stopToken = {})
 {
     auto response = SendAndCheckAuth(
-        client, sessionStore, noActiveSessionMessage, type, std::move(payload));
+        client, sessionStore, noActiveSessionMessage, type, std::move(payload), stopToken);
     EnsureSuccessOrThrow(response, sessionStore, fallbackMessage);
     return response;
 }

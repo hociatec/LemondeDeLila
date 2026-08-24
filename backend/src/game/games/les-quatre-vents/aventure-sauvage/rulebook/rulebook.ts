@@ -1,23 +1,23 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import { resolvePawnId } from '../aventure-sauvage.pawns';
 import {
   isRollActionType,
   normalizeActionType,
-} from '../../../../actions/action-service.helper';
+} from '../../../../application/helpers/action-service.helper';
 import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
-} from '../../../../core/helpers/pawn-pending-rulebook.helper';
+} from '../../../../application/helpers/pawn-pending-rulebook.helper';
 import {
   getPendingDrawActionsForPlayer,
   validatePendingDrawActionForActor,
-} from '../../../../core/helpers/pending-actions-rulebook.helper';
+} from '../../../../application/helpers/pending-actions-rulebook.helper';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+} from '../../../../domain/errors/public-api';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
 
 const GAME_TYPE = 'aventure-sauvage';
 
@@ -155,3 +155,6 @@ function toText(value: unknown): string {
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   return '';
 }
+
+
+

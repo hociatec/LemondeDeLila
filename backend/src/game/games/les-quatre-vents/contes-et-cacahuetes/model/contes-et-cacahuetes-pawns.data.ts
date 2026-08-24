@@ -42,3 +42,4 @@ export const CONTES_PAWNS: ContesPawnChoice[] = [
       "Arman est un petit garçon aux cheveux bruns foncés et aux yeux verts profonds qui observent chaque détail du monde avec intelligence et douceur. Sa peau légèrement olive et sa tenue traditionnelle aux broderies anciennes reflètent son attachement aux traditions et au patrimoine de son pays. Passionné et attentif, il raconte les légendes des montagnes volcaniques et des monastères d'Arménie, vous faisant voyager dans un univers où chaque pierre murmure un secret et où les paysages scintillent de mystère. À ses côtés, vous êtes immédiatement plongé dans un monde riche, fascinant et vivant.",
   },
 ];
+

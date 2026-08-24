@@ -1,6 +1,6 @@
-import type { GameShortcutsBuilder } from '../../../../engine/shortcuts/game-shortcuts';
-import { positionOnlyShortcuts } from '../../../../engine/shortcuts/shortcut-presets';
-import { interfaceShortcut } from '../../../../engine/shortcuts/shortcut-utils';
+import type { GameShortcutsBuilder } from '../../../../models/game-shortcuts.model';
+import { positionOnlyShortcuts } from '../../../../application/helpers/shortcut-presets';
+import { interfaceShortcut } from '../../../../application/helpers/shortcut-utils';
 
 export const buildMonVillageShortcuts: GameShortcutsBuilder = () => [
   ...positionOnlyShortcuts(),

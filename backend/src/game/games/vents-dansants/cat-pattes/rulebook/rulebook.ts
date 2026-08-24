@@ -1,16 +1,25 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GameConfigurationError,
+  GamePayloadValidationError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   CAT_PATTES_CARD_BY_ID,
-  CatPattesCardDefinition,
-  CatPattesBotType,
-  CatPattesObstacleType,
-  CatPattesParadeType,
+  type CatPattesBotType,
+  type CatPattesCardDefinition,
+  type CatPattesObstacleType,
+  type CatPattesParadeType,
 } from '../model/cat-pattes-cards';
-import type { CatPattesMetadata } from '../model/cat-pattes-state.entity';
-import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.entity';
-import { normalizeActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import { CAT_PATTES_GOAL } from '../model/cat-pattes-state.model';
+import type { CatPattesMetadata } from '../model/cat-pattes-state.model';
 
 type CatPattesActionPayload = {
   cardId?: string | null;
@@ -54,7 +63,7 @@ function hasBot(
   bots: CatPattesMetadata['bots'][number],
   type: string,
 ): boolean {
-  return Array.isArray(bots) && bots.includes(type as any);
+  return Array.isArray(bots) && bots.includes(type as CatPattesBotType);
 }
 
 function getBots(
@@ -233,8 +242,8 @@ export function getAvailableActions(
   const actions: GameSingleActionDto[] = [];
   const blockedByObstacle = isBlockedByObstacle(meta, playerId);
   const opponents = (Array.isArray(state.players) ? state.players : [])
-    .filter((p) => p?.id != null && p.id !== playerId)
-    .map((p) => p.id);
+    .filter((player) => player?.id != null && player.id !== playerId)
+    .map((player) => player.id);
 
   const counterActions: GameSingleActionDto[] = [];
 
@@ -340,31 +349,37 @@ export function validateAction(
     type !== 'cat_pattes_set_config' &&
     type !== 'pass'
   ) {
-    throw new Error(`Action inconnue: ${type}`);
+    throw new GameUnknownActionError(`Action inconnue: ${type}`);
   }
   if (actorId == null) {
-    throw new Error('Acteur requis');
+    throw new GameActorRequiredError('Acteur requis');
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas démarrée.");
+    throw new GameStateViolationError("La partie n'est pas démarrée.");
   }
 
   const meta = getMeta(state);
   if ((meta.setupStep ?? '') === 'setup_config') {
     if (type !== 'cat_pattes_set_config') {
-      throw new Error('Configuration requise avant de commencer.');
+      throw new GameConfigurationError(
+        'Configuration requise avant de commencer.',
+      );
     }
     if (!samePlayerId(meta.ownerPlayerId, actorId)) {
-      throw new Error('Seul le propriétaire de la table peut configurer.');
+      throw new GameConfigurationError(
+        'Seul le propriétaire de la table peut configurer.',
+      );
     }
     const roundsRaw = Number(payload.roundsToPlay ?? payload.value ?? null);
     if (!Number.isFinite(roundsRaw)) {
-      throw new Error('Nombre de manches invalide.');
+      throw new GamePayloadValidationError('Nombre de manches invalide.');
     }
     const roundsToPlay = Math.round(roundsRaw);
     if (roundsToPlay < 1 || roundsToPlay > 20) {
-      throw new Error('Nombre de manches hors limites (1-20).');
+      throw new GamePayloadValidationError(
+        'Nombre de manches hors limites (1-20).',
+      );
     }
     return {
       type: 'cat_pattes_set_config',
@@ -374,22 +389,24 @@ export function validateAction(
     };
   }
 
-  if (state.pending) throw new Error('Action indisponible (choix en attente).');
+  if (state.pending) {
+    throw new GameActionRejectedError('Action indisponible (choix en attente).');
+  }
 
   const current = state.turn?.currentPlayerId ?? null;
   if (!samePlayerId(current, actorId)) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
 
   if (!samePlayerId(meta.drawnPlayerId, actorId)) {
     if (type !== 'draw') {
-      throw new Error("Vous devez d'abord piocher.");
+      throw new GameActionRejectedError("Vous devez d'abord piocher.");
     }
     return { type: 'draw', payload: {} };
   }
 
   if (type === 'draw') {
-    throw new Error('Carte déjà piochée ce tour.');
+    throw new GameActionRejectedError('Carte déjà piochée ce tour.');
   }
 
   if (type === 'pass') {
@@ -398,28 +415,30 @@ export function validateAction(
 
   const cardId = String(payload.cardId ?? '').trim();
   if (!cardId && type === 'play_card') {
-    // Robust fallback: if the client sends a play action without cardId, discard instead.
     return { type: 'discard_card', payload: {} };
   }
   if (!cardId && type !== 'discard_card') {
-    throw new Error('Carte introuvable.');
+    throw new GamePayloadValidationError('Carte introuvable.');
   }
   const hand = Array.isArray(meta.hands?.[actorId]) ? meta.hands[actorId] : [];
   const blockedByObstacle = isBlockedByObstacle(meta, actorId);
   const hasCounterInHand = (): boolean => {
     for (const id of hand) {
-      const def = CAT_PATTES_CARD_BY_ID[id];
-      if (!def) continue;
-      if (def.type === 'parade' && canPlayParade(meta, actorId, def))
+      const definition = CAT_PATTES_CARD_BY_ID[id];
+      if (!definition) continue;
+      if (definition.type === 'parade' && canPlayParade(meta, actorId, definition)) {
         return true;
-      if (def.type === 'bot' && canPlayBot(meta, actorId, def)) return true;
+      }
+      if (definition.type === 'bot' && canPlayBot(meta, actorId, definition)) {
+        return true;
+      }
     }
     return false;
   };
 
   if (type === 'discard_card') {
     if (blockedByObstacle && hasCounterInHand()) {
-      throw new Error(
+      throw new GameActionRejectedError(
         'Un obstacle actif vous bloque: vous devez contrer avec une Parade ou un Pouvoir.',
       );
     }
@@ -427,16 +446,16 @@ export function validateAction(
       return { type: 'discard_card', payload: {} };
     }
     if (!hand.includes(cardId)) {
-      throw new Error('Carte indisponible.');
+      throw new GameActionRejectedError('Carte indisponible.');
     }
     return { type: 'discard_card', payload: { cardId } };
   }
   if (!hand.includes(cardId)) {
-    throw new Error('Carte indisponible.');
+    throw new GameActionRejectedError('Carte indisponible.');
   }
   const definition = CAT_PATTES_CARD_BY_ID[cardId];
   if (!definition) {
-    throw new Error('Carte invalide.');
+    throw new GamePayloadValidationError('Carte invalide.');
   }
 
   if (
@@ -444,40 +463,39 @@ export function validateAction(
     definition.type !== 'parade' &&
     definition.type !== 'bot'
   ) {
-    throw new Error(
+    throw new GameActionRejectedError(
       'Un obstacle actif vous bloque: jouez une Parade ou un Pouvoir.',
     );
   }
 
-  if (
-    definition.type === 'pattes' &&
-    !canPlayPattes(meta, actorId, definition)
-  ) {
+  if (definition.type === 'pattes' && !canPlayPattes(meta, actorId, definition)) {
     const bots = meta.bots?.[actorId] ?? [];
     const passageStar = hasBot(bots, 'passage-star');
     const hasSun = Boolean(meta.hasSun?.[actorId]);
     const obstacle = meta.obstacles?.[actorId] ?? null;
     if (!hasSun && !passageStar) {
-      throw new Error(
+      throw new GameActionRejectedError(
         'Impossible de jouer Pattes: aucun Rayon de soleil actif.',
       );
     }
     if (obstacle && !obstacleIsIgnoredByBots(obstacle, bots)) {
-      throw new Error('Impossible de jouer Pattes: un obstacle vous bloque.');
+      throw new GameActionRejectedError(
+        'Impossible de jouer Pattes: un obstacle vous bloque.',
+      );
     }
     const currentPos = Number(meta.positions?.[actorId] ?? 0);
     const delta = Number(definition.value ?? 0);
     if (Number.isFinite(delta) && currentPos + delta > getGoalPattes(meta)) {
-      throw new Error(
+      throw new GameActionRejectedError(
         `Impossible de jouer Pattes: depassement de ${getGoalPattes(meta)} pattes.`,
       );
     }
-    throw new Error('Impossible de jouer Pattes.');
+    throw new GameActionRejectedError('Impossible de jouer Pattes.');
   }
 
   if (definition.type === 'obstacle') {
     if (blockedByObstacle) {
-      throw new Error(
+      throw new GameActionRejectedError(
         'Un obstacle actif vous bloque: vous ne pouvez pas jouer une carte Obstacle.',
       );
     }
@@ -486,18 +504,22 @@ export function validateAction(
         ? payload.targetPlayerId
         : null;
     if (targetId == null) {
-      throw new Error('La cible est requise pour une carte Obstacle.');
+      throw new GamePayloadValidationError(
+        'La cible est requise pour une carte Obstacle.',
+      );
     }
     if (targetId === actorId) {
-      throw new Error("Impossible de s'infliger son propre obstacle.");
+      throw new GameActionRejectedError(
+        "Impossible de s'infliger son propre obstacle.",
+      );
     }
-    const targetHand = Array.isArray(state.players) ? state.players : [];
-    const exists = targetHand.some((p) => samePlayerId(p?.id, targetId));
+    const players = Array.isArray(state.players) ? state.players : [];
+    const exists = players.some((player) => samePlayerId(player?.id, targetId));
     if (!exists) {
-      throw new Error('Joueur cible invalide.');
+      throw new GamePayloadValidationError('Joueur cible invalide.');
     }
     if (!playerCanReceiveObstacle(meta, targetId, definition.obstacle!)) {
-      throw new Error(
+      throw new GameActionRejectedError(
         'La cible ne peut pas recevoir cet obstacle (deja protegee ou deja un obstacle).',
       );
     }
@@ -505,7 +527,7 @@ export function validateAction(
 
   if (definition.type === 'parade') {
     if (!canPlayParade(meta, actorId, definition)) {
-      throw new Error(
+      throw new GameActionRejectedError(
         'Impossible de jouer cette Parade: aucun obstacle correspondant ou soleil non autorisé.',
       );
     }
@@ -513,7 +535,7 @@ export function validateAction(
 
   if (definition.type === 'bot') {
     if (!canPlayBot(meta, actorId, definition)) {
-      throw new Error(
+      throw new GameActionRejectedError(
         'Un obstacle actif vous bloque: ce Pouvoir ne le contre pas.',
       );
     }

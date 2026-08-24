@@ -26,7 +26,8 @@ public:
     [[nodiscard]] std::string SendAndReceive(
         const std::string& endpoint,
         const std::string& payload,
-        const WebSocketHeaders& headers = {}) override;
+        const WebSocketHeaders& headers = {},
+        std::stop_token stopToken = {}) override;
 
 private:
     struct NativeState;

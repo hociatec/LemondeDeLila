@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../core/core.module';
-import { GameRegistryModule } from '../../../engine/game-registry.module';
-import { EngineServicesModule } from '../../../engine/services/engine-services.module';
-import { SetupFlowModule } from '../../../modules/setup-flow/setup-flow.module';
-import { BoardGameDeckKitModule } from '../../../modules/game-kits/board-game-kits.module';
-import { SacAMalicesService } from './sac-a-malices.service';
-import { SacAMalicesSetupService } from './setup/sac-a-malices-setup.service';
-import { SacAMalicesActionService } from './actions/sac-a-malices-action.service';
-import { SacAMalicesPresenterService } from './presenter/sac-a-malices-presenter.service';
-import { SacAMalicesBotService } from './bots/sac-a-malices-bot.service';
+import { GameCoreModule } from '../../../module/game-core.module';
+import { EngineServicesModule } from '../../../infrastructure/module/engine-services.module';
+import { SetupFlowModule } from '../../../application/modules/setup-flow.module';
+import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { SacAMalicesService } from './application/services/sac-a-malices.service';
+import { SacAMalicesSetupService } from './application/services/sac-a-malices-setup.service';
+import { SacAMalicesActionService } from './application/services/sac-a-malices-action.service';
+import { SacAMalicesPresenterService } from './application/services/sac-a-malices-presenter.service';
+import { SacAMalicesBotService } from './application/services/sac-a-malices-bot.service';
+import { SacAMalicesPropertyService } from './application/services/sac-a-malices-property.service';
+import { SacAMalicesEconomyService } from './application/services/sac-a-malices-economy.service';
 
 @Module({
   imports: [
     GameCoreModule,
-    GameRegistryModule,
     EngineServicesModule,
     BoardGameDeckKitModule,
     SetupFlowModule,
@@ -24,7 +24,15 @@ import { SacAMalicesBotService } from './bots/sac-a-malices-bot.service';
     SacAMalicesActionService,
     SacAMalicesPresenterService,
     SacAMalicesBotService,
+    SacAMalicesPropertyService,
+    SacAMalicesEconomyService,
   ],
   exports: [SacAMalicesService],
 })
 export class SacAMalicesModule {}
+
+
+
+
+
+

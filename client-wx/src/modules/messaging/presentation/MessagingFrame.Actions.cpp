@@ -1,7 +1,9 @@
 #include "shared/text/Encoding.h"
 #include "modules/messaging/presentation/MessagingFrame.h"
+#include "shared/accessibility/FocusCoordinator.h"
 #include "modules/messaging/presentation/MessagingActionController.h"
 #include "modules/messaging/presentation/MessagingComposeController.h"
+#include "modules/messaging/presentation/MessagingFocusController.h"
 #include "modules/messaging/presentation/MessagingView.h"
 #include "modules/messaging/presentation/MessagingPresentationModel.h"
 #include "modules/messaging/presentation/MessagingScreenCoordinator.h"
@@ -27,14 +29,14 @@ void MessagingFrame::SendComposedMessage()
     if (recipientName.empty())
     {
         UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingRecipientRequired), true);
-        compose.recipientCtrl->SetFocus();
+        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposeRecipientPlan()));
         return;
     }
 
     if (body.empty())
     {
         UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingBodyRequired), true);
-        compose.bodyCtrl->SetFocus();
+        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposeBodyPlan()));
         return;
     }
     composeController_->Send(MessagingComposeController::SendPayload{

@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CountBugReportCommentsService } from '../../../../bug-reports/application/use-cases/bug-report-comments/count-bug-report-comments.service';
-import { CreateBugReportService } from '../../../../bug-reports/application/use-cases/bug-reports/create-bug-report.service';
-import { DeleteBugReportService } from '../../../../bug-reports/application/use-cases/bug-reports/delete-bug-report.service';
-import { GetBugReportService } from '../../../../bug-reports/application/use-cases/bug-reports/get-bug-report.service';
-import { ListBugReportsService } from '../../../../bug-reports/application/use-cases/bug-reports/list-bug-reports.service';
-import { UpdateBugReportService } from '../../../../bug-reports/application/use-cases/bug-reports/update-bug-report.service';
-import { UpdateBugReportStatusService } from '../../../../bug-reports/application/use-cases/bug-reports/update-bug-report-status.service';
+import { CountBugReportCommentsService } from '../../../../bug-reports/public-api';
+import { CreateBugReportService } from '../../../../bug-reports/public-api';
+import { DeleteBugReportService } from '../../../../bug-reports/public-api';
+import { GetBugReportService } from '../../../../bug-reports/public-api';
+import { ListBugReportsService } from '../../../../bug-reports/public-api';
+import { UpdateBugReportService } from '../../../../bug-reports/public-api';
+import { UpdateBugReportStatusService } from '../../../../bug-reports/public-api';
 
 export interface CreateAdminBugReportCommand {
   subject: string;

@@ -35,7 +35,11 @@ domain::AuthenticationResult WsAuthenticationService::Login(const domain::LoginC
         const auto claims = remote::JwtLoginClaimsParser::Parse(payload.token);
         const std::string resolvedUsername = payload.username.empty() ? claims.username : payload.username;
         const int resolvedUserId = payload.userId == 0 ? claims.userId : payload.userId;
-        return domain::AuthenticationResult::Ok(resolvedUsername, payload.token, resolvedUserId);
+        return domain::AuthenticationResult::Ok(
+            resolvedUsername,
+            payload.token,
+            resolvedUserId,
+            claims.expiresAt);
     }
     catch (const std::exception& exception)
     {

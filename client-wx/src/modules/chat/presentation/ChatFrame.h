@@ -6,14 +6,13 @@
 #include <string>
 #include <vector>
 
-#include <wx/frame.h>
-
+#include "shared/accessibility/FocusPlanView.h"
+#include "shared/accessibility/NonFocusablePanel.h"
 #include "modules/chat/application/ChatService.h"
 #include "modules/chat/domain/ChatMessage.h"
 #include "shared/ui/navigation/NavigationStack.h"
 
 class wxButton;
-class wxListBox;
 class wxTextCtrl;
 
 
@@ -36,19 +35,22 @@ namespace lila::modules::chat::presentation
 {
 class ChatFocusController;
 
-class ChatFrame final : public wxFrame
+class ChatFrame final : public lila::shared::accessibility::NonFocusablePanel, public lila::shared::accessibility::FocusPlanView
 {
 public:
     using CloseRequestedHandler = std::function<void()>;
     using ExitRequestedHandler = std::function<void()>;
 
     ChatFrame(
+        wxWindow* parent,
         lila::modules::chat::application::ChatService& chatService,
         lila::modules::options::application::OptionsStore& optionsStore,
         lila::modules::session::application::SessionStore& sessionStore,
         CloseRequestedHandler onCloseRequested,
         ExitRequestedHandler onExitRequested);
     ~ChatFrame() override;
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
+    void ResetFocusToComposer();
 
 private:
     struct NavigationSnapshot final
@@ -97,8 +99,7 @@ private:
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
     wxTextCtrl* statusLabel_ = nullptr;
-    wxListBox* historyList_ = nullptr;
-    wxTextCtrl* emptyHistoryCtrl_ = nullptr;
+    wxTextCtrl* historyCtrl_ = nullptr;
     wxTextCtrl* inputCtrl_ = nullptr;
     wxButton* editMessageButton_ = nullptr;
     wxButton* deleteMessageButton_ = nullptr;
@@ -108,6 +109,7 @@ private:
     std::size_t activeOpenChatRequestId_ = 0;
     std::optional<std::string> selectedActionMessageId_;
     std::vector<domain::ChatMessage> visibleMessages_;
+    std::vector<long> messageStartPositions_;
     std::optional<std::string> pendingEditMessageId_;
     lila::shared::ui::navigation::NavigationStack<NavigationSnapshot> navigationHistory_;
     std::shared_ptr<lila::modules::chat::application::ChatService::EventHandlers> eventHandlers_;

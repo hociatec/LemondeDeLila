@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import { AdminProfileService } from '../../../application/use-cases/admin-profile/admin-profile.service';
 import {
   AdminProfileSettingsGetWsDto,
   AdminProfileSettingsUpdateWsDto,
-} from './admin-profile-settings.dto';
+} from './dto/admin-profile-settings.ws.dto';
 
 @Injectable()
 export class AdminProfileWsHandler {
@@ -16,7 +16,7 @@ export class AdminProfileWsHandler {
     private readonly profile: AdminProfileService,
   ) {}
 
-  profileSettingsGet(session: WsSession, payload: any) {
+  profileSettingsGet(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminProfileSettingsGetWsDto, payload ?? {});
     return {
@@ -25,7 +25,7 @@ export class AdminProfileWsHandler {
     };
   }
 
-  async profileSettingsUpdate(session: WsSession, payload: any) {
+  async profileSettingsUpdate(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(
       AdminProfileSettingsUpdateWsDto,
@@ -38,3 +38,4 @@ export class AdminProfileWsHandler {
     return { type: WS_EVENTS.admin.profile.settingsUpdate, payload: updated };
   }
 }
+

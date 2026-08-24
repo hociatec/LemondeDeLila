@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { AdminSafeUser } from '../../../../domain/models/admin-user.model';
+import type { AdminSafeUser } from '../../../domain/models/admin-user.model';
 import { AdminCatalogInvalidationService } from '../../services/admin-catalog-invalidation.service';
 import { AdminUsersCommandService } from './admin-users-command.service';
 

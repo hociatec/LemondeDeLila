@@ -1,8 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import type { CaCard, CaMetadata, CaTile } from '../model/ca.types';
 
-@Injectable()
 export class CaSetupService {
   hydrateInitialState(base: GameStateEntity): GameStateEntity {
     const players = Array.isArray(base.players) ? base.players : [];
@@ -377,9 +375,9 @@ function buildDeck(): CaCard[] {
       21 + i,
       title,
       'c_reculs',
-      kind as any,
+      kind as CaCard['kind'],
       text,
-      kind === 'move' ? (delta as any) : undefined,
+      kind === 'move' ? delta : undefined,
     ),
   );
 
@@ -431,7 +429,7 @@ function buildDeck(): CaCard[] {
     ],
   ] as const;
   dEntries.forEach(([title, kind, text, delta], index) =>
-    push(33 + index, title, 'd_special', kind as any, text, delta),
+    push(33 + index, title, 'd_special', kind as CaCard['kind'], text, delta),
   );
 
   const chaos = [
@@ -487,7 +485,7 @@ function buildDeck(): CaCard[] {
     ],
   ] as const;
   chaos.forEach(([title, kind, text], i) =>
-    push(41 + i, title, 'e_chaos', kind as any, text),
+    push(41 + i, title, 'e_chaos', kind as CaCard['kind'], text),
   );
 
   const f = [
@@ -540,3 +538,5 @@ function buildDeck(): CaCard[] {
 
   return cards;
 }
+
+

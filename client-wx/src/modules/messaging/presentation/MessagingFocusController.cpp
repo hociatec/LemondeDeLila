@@ -9,6 +9,7 @@
 #include <wx/window.h>
 
 #include "modules/messaging/presentation/MessagingView.h"
+#include "shared/accessibility/FocusManager.h"
 #include "shared/accessibility/NavigationController.h"
 #include "shared/ui/controls/VerticalMenu.h"
 
@@ -17,6 +18,28 @@ namespace lila::modules::messaging::presentation
 namespace
 {
 using Navigator = lila::shared::accessibility::NavigationController;
+using FocusManager = lila::shared::accessibility::FocusManager;
+
+wxWindow* ResolveMessageListTarget(
+    MessagingView& view,
+    MessagingFocusController::SelectionSyncHandler onSelectionAdjusted)
+{
+    if (view.messagesList == nullptr || view.messagesList->GetCount() <= 0)
+    {
+        return view.emptyMessagesCtrl;
+    }
+
+    if (view.messagesList->GetSelection() == wxNOT_FOUND)
+    {
+        view.messagesList->SetSelection(0);
+        if (onSelectionAdjusted)
+        {
+            onSelectionAdjusted();
+        }
+    }
+
+    return view.messagesList;
+}
 }
 
 MessagingFocusController::MessagingFocusController(
@@ -51,39 +74,45 @@ void MessagingFocusController::BindNavigation(wxWindow& owner)
         });
 }
 
-void MessagingFocusController::FocusCurrentScreen()
+lila::shared::accessibility::FocusManager::Plan MessagingFocusController::BuildCurrentScreenPlan()
 {
     using Screen = MessagingNavigationState::Screen;
+    FocusManager::Plan plan;
+
     switch (navigationState_.currentScreen)
     {
     case Screen::Menu:
         if (view_.menu != nullptr)
         {
             view_.menu->SetSelectedIndexSilently(navigationState_.lastMenuIndex);
-            view_.menu->FocusSelectedItem();
+            plan.AddWindow(view_.menu->GetFirstButton());
         }
-        return;
+        break;
     case Screen::List:
-        if (view_.messagesList->GetCount() > 0)
-        {
-            if (view_.messagesList->GetSelection() == wxNOT_FOUND)
-            {
-                view_.messagesList->SetSelection(0);
-                if (onSelectionAdjusted_) onSelectionAdjusted_();
-            }
-            static_cast<void>(Navigator::Focus(view_.messagesList));
-        }
-        else
-        {
-            static_cast<void>(Navigator::Focus(view_.emptyMessagesCtrl));
-        }
-        return;
+        plan.AddResolver([this]() { return ResolveMessageListTarget(view_, onSelectionAdjusted_); });
+        break;
     case Screen::Detail:
-        static_cast<void>(Navigator::Focus(view_.detailCtrl));
-        return;
+        plan.AddWindow(view_.detailCtrl);
+        break;
     case Screen::Compose:
-        static_cast<void>(Navigator::Focus(view_.recipientCtrl));
-        return;
+        plan.AddWindow(view_.recipientCtrl);
+        break;
     }
+
+    return plan;
+}
+
+lila::shared::accessibility::FocusManager::Plan MessagingFocusController::BuildComposeRecipientPlan() const
+{
+    FocusManager::Plan plan;
+    plan.AddWindow(view_.recipientCtrl);
+    return plan;
+}
+
+lila::shared::accessibility::FocusManager::Plan MessagingFocusController::BuildComposeBodyPlan() const
+{
+    FocusManager::Plan plan;
+    plan.AddWindow(view_.bodyCtrl);
+    return plan;
 }
 }

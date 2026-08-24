@@ -1,0 +1,154 @@
+﻿import { Injectable } from '@nestjs/common';
+import { WebSocket } from 'ws';
+import { ClientUpdatesService } from '../../../../client-updates/public-api';
+import { isVersionLower } from '../../../../common/utils/public-api';
+import {
+  WsJwtAuthService,
+  WsTicketAuthService,
+  WS_EVENTS,
+} from '../../../../realtime/public-api';
+import { NotificationWsHandler } from './notification-ws.handler';
+import { NotificationWsSessionService } from './notification-ws-session.service';
+
+@Injectable()
+export class NotificationWsConnectionService {
+  constructor(
+    private readonly auth: WsJwtAuthService,
+    private readonly clientUpdates: ClientUpdatesService,
+    private readonly wsTickets: WsTicketAuthService,
+    private readonly sessions: NotificationWsSessionService,
+    private readonly handler: NotificationWsHandler,
+  ) {}
+
+  async handleConnection(client: WebSocket, args: unknown[]): Promise<void> {
+    const token = this.auth.extractToken(client, args);
+    const user = this.auth.tryVerify(token);
+    if (!user?.id) {
+      client.close(4001, 'auth required');
+      return;
+    }
+    if (!this.wsTickets.validate(client, args, 'notify')) {
+      client.close(4403, 'ws ticket requis');
+      return;
+    }
+
+    try {
+      const clientVersion = this.auth.extractClientVersion(client, args);
+      const minRequiredVersion =
+        (await this.clientUpdates.getMinRequiredVersion())?.trim() || null;
+      if (minRequiredVersion) {
+        const outdated =
+          !clientVersion ||
+          isVersionLower(clientVersion, minRequiredVersion) === true;
+        if (outdated) {
+          const origin = this.extractOriginFromWsArgs(args);
+          const latest = await this.clientUpdates.getLatest();
+          this.sessions.safeSend(client, {
+            type: WS_EVENTS.clientUpdate.required,
+            payload: {
+              minRequiredVersion,
+              currentVersion: clientVersion || null,
+              message: 'Une mise Ã  jour du client est requise pour continuer.',
+              publishedAt: null,
+              url: this.clientUpdates.resolveClientPublicUrlForOrigin(
+                latest,
+                origin,
+              ),
+            },
+          });
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          client.close(4406, 'update required');
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    this.sessions.register(client, {
+      userId: user.id,
+      username: String(user.username || '').trim() || `user#${user.id}`,
+      roles: Array.isArray(user.roles) ? user.roles : [],
+      socket: client,
+      origin: this.extractOriginFromWsArgs(args),
+    });
+
+    client.on('error', () => client.close());
+    client.on('message', (data) => void this.onClientMessage(client, data));
+
+    await this.sessions.sendConnected(client, user.id);
+  }
+
+  handleDisconnect(client: WebSocket): void {
+    this.sessions.unregister(client);
+  }
+
+  private async onClientMessage(
+    client: WebSocket,
+    data: unknown,
+  ): Promise<void> {
+    const meta = this.sessions.getMeta(client);
+    if (!meta) {
+      return;
+    }
+
+    const raw =
+      typeof data === 'string'
+        ? data
+        : data &&
+            typeof data === 'object' &&
+            'toString' in data &&
+            typeof (data as { toString?: unknown }).toString === 'function'
+          ? (data as { toString: (encoding?: string) => string }).toString(
+              'utf-8',
+            )
+          : '';
+    if (!raw) return;
+
+    let parsed: Record<string, unknown> | null = null;
+    try {
+      const value = JSON.parse(raw);
+      parsed =
+        value && typeof value === 'object' && !Array.isArray(value)
+          ? (value as Record<string, unknown>)
+          : null;
+    } catch {
+      return;
+    }
+    if (!parsed) {
+      return;
+    }
+
+    const requestId =
+      typeof parsed.requestId === 'string' ? parsed.requestId : null;
+    await this.handler.handle(client, meta, parsed, requestId);
+  }
+
+  private extractOriginFromWsArgs(args: unknown[]): string | null {
+    try {
+      const request =
+        args && args[0] && typeof args[0] === 'object'
+          ? (args[0] as {
+              headers?: Record<string, string | string[] | undefined>;
+            })
+          : null;
+      const headers = request?.headers || null;
+      const hostHeader =
+        (typeof headers?.['x-forwarded-host'] === 'string'
+          ? headers['x-forwarded-host']
+          : undefined) ||
+        (typeof headers?.host === 'string' ? headers.host : undefined) ||
+        '';
+      const host = (hostHeader || '').split(',')[0]?.trim();
+      if (!host) return null;
+
+      const protoHeader =
+        (headers?.['x-forwarded-proto'] as string | undefined) || 'https';
+      const proto = (protoHeader || '').split(',')[0]?.trim() || 'https';
+      return `${proto}://${host}`;
+    } catch {
+      return null;
+    }
+  }
+}
+

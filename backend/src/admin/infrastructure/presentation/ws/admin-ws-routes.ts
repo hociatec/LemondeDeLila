@@ -1,5 +1,5 @@
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
-import type { WsRouteRegistry } from '../../../../common/ws/ws-route-registry.service';
+﻿import { WS_EVENTS } from '../../../../realtime/public-api';
+import type { WsRouteRegistry } from '../../../../realtime/public-api';
 import type { AdminBotsWsHandler } from './admin-bots-ws.handler';
 import type { AdminBroadcastWsHandler } from './admin-broadcast-ws.handler';
 import type { AdminBugReportCommentsWsHandler } from './admin-bug-report-comments-ws.handler';
@@ -36,7 +36,9 @@ export type AdminWsHandlers = {
 
 type AdminRouteDefinition = {
   event: string;
-  bind: (handlers: AdminWsHandlers) => (session: any, payload: any) => any;
+  bind: (
+    handlers: AdminWsHandlers,
+  ) => (session: unknown, payload: unknown) => unknown;
 };
 
 const ADMIN_WS_ROUTES: AdminRouteDefinition[] = [
@@ -113,6 +115,7 @@ export function registerAdminWsRoutes(
     registry.register(route.event, route.bind(handlers));
   }
 }
+
 
 
 

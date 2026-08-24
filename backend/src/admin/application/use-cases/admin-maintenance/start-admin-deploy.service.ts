@@ -3,13 +3,18 @@ import {
   ADMIN_MAINTENANCE_RUNTIME_PORT,
   type AdminMaintenanceRuntimePort,
 } from '../../ports/admin-maintenance-runtime.port';
-import { ADMIN_DEPLOY_UNIT } from './admin-maintenance.constants';
+import {
+  ADMIN_MAINTENANCE_CONFIG,
+  type AdminMaintenanceConfig,
+} from '../../ports/admin-maintenance-config.port';
 
 @Injectable()
 export class StartAdminDeployService {
   constructor(
     @Inject(ADMIN_MAINTENANCE_RUNTIME_PORT)
     private readonly runtime: AdminMaintenanceRuntimePort,
+    @Inject(ADMIN_MAINTENANCE_CONFIG)
+    private readonly config: AdminMaintenanceConfig,
   ) {}
 
   execute() {
@@ -19,7 +24,7 @@ export class StartAdminDeployService {
       'systemctl',
       'start',
       '--no-block',
-      ADMIN_DEPLOY_UNIT,
+      this.config.deployUnit,
     ]);
     if (res.status !== 0) {
       throw new InternalServerErrorException({
@@ -27,6 +32,6 @@ export class StartAdminDeployService {
         details: res,
       });
     }
-    return { ok: true, unit: ADMIN_DEPLOY_UNIT };
+    return { ok: true, unit: this.config.deployUnit };
   }
 }

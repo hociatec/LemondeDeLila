@@ -1,5 +1,5 @@
-import { GameStateEntity } from '../../../core/entities/game-state.entity';
-import { PanierExpressMetadata } from './model/panier-express-state.entity';
+import { GameStateEntity } from '../../../application/models/game-state.model';
+import { PanierExpressMetadata } from './model/panier-express-state.model';
 
 export function applyBasicPanierExpressEvent(args: {
   event: string;
@@ -392,3 +392,7 @@ export function applyBasicPanierExpressEvent(args: {
       return null;
   }
 }
+
+
+
+

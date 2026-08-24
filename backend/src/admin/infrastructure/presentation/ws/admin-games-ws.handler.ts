@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import { AdminGamesManagementService } from '../../../application/use-cases/admin-games/admin-games-management.service';
 import {
   AdminGameCategoryAssignWsDto,
@@ -13,7 +13,7 @@ import {
   AdminGameResetWsDto,
   AdminGameSetEnabledWsDto,
   AdminGameUpdateWsDto,
-} from './admin-ws.dto';
+} from './dto/admin-ws.dto';
 
 @Injectable()
 export class AdminGamesWsHandler {
@@ -30,7 +30,7 @@ export class AdminGamesWsHandler {
     };
   }
 
-  gamesCategoriesList(session: WsSession, payload: any) {
+  gamesCategoriesList(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminGameCategoriesListWsDto, payload ?? {});
     return {
@@ -39,7 +39,7 @@ export class AdminGamesWsHandler {
     };
   }
 
-  async gamesCategoryCreate(session: WsSession, payload: any) {
+  async gamesCategoryCreate(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminGameCategoryCreateWsDto, payload);
     return {
@@ -48,7 +48,7 @@ export class AdminGamesWsHandler {
     };
   }
 
-  async gamesCategoryUpdate(session: WsSession, payload: any) {
+  async gamesCategoryUpdate(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminGameCategoryUpdateWsDto, payload);
     return {
@@ -57,7 +57,7 @@ export class AdminGamesWsHandler {
     };
   }
 
-  async gamesCategoryAssign(session: WsSession, payload: any) {
+  async gamesCategoryAssign(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminGameCategoryAssignWsDto, payload);
     return {
@@ -66,7 +66,7 @@ export class AdminGamesWsHandler {
     };
   }
 
-  async gamesCategoryDelete(session: WsSession, payload: any) {
+  async gamesCategoryDelete(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminGameCategoryDeleteWsDto, payload);
     return {
@@ -75,7 +75,7 @@ export class AdminGamesWsHandler {
     };
   }
 
-  async gamesSetEnabled(session: WsSession, payload: any) {
+  async gamesSetEnabled(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminGameSetEnabledWsDto, payload);
     return {
@@ -84,7 +84,7 @@ export class AdminGamesWsHandler {
     };
   }
 
-  async gamesUpdate(session: WsSession, payload: any) {
+  async gamesUpdate(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminGameUpdateWsDto, payload);
     return {
@@ -104,7 +104,7 @@ export class AdminGamesWsHandler {
     };
   }
 
-  async gamesReset(session: WsSession, payload: any) {
+  async gamesReset(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(AdminGameResetWsDto, payload);
     return {
@@ -113,3 +113,4 @@ export class AdminGamesWsHandler {
     };
   }
 }
+

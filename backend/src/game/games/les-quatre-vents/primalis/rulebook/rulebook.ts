@@ -1,12 +1,12 @@
-﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import { PlayerActionError } from '../../../../../common/errors/game-errors';
+﻿import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import { PlayerActionError } from '../../../../domain/errors/public-api';
 import { PRIMALIS_GAME } from '../definitions/primalis.definition';
 import {
   isRollAlias,
   normalizeActionType,
-} from '../../../../actions/action-service.helper';
-import { canPlayerActOnTurn } from '../../../../rulebook/rulebook-guard.helper';
+} from '../../../../application/helpers/action-service.helper';
+import { canPlayerActOnTurn } from '../../../../application/helpers/rulebook-guard.helper';
 import type { PrimalisActionType } from '../definitions/primalis.definition';
 
 function isPrimalisActionType(value: string): value is PrimalisActionType {
@@ -41,7 +41,7 @@ export function validateAction(
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas démarrée.", {
+    throw new PlayerActionError("La partie n'est pas dÃƒÂ©marrÃƒÂ©e.", {
       gameType: 'primalis',
     });
   }
@@ -55,3 +55,7 @@ export function validateAction(
   }
   return { type: 'roll', payload: {} };
 }
+
+
+
+

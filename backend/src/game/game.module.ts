@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { EngineModule } from './engine/engine.module';
-import { GamePluginsModule } from './engine/game-plugins.module';
+import { GAME_MODULE_IMPORTS } from './module/game.module.definition';
 
 @Module({
-  imports: [EngineModule, GamePluginsModule.forRoot()],
-  exports: [EngineModule],
+  imports: GAME_MODULE_IMPORTS,
+  exports: GAME_MODULE_IMPORTS,
 })
 export class GameModule {}

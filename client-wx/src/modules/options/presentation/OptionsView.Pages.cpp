@@ -1,4 +1,3 @@
-#include <wx/button.h>
 #include <wx/event.h>
 #include <wx/sizer.h>
 
@@ -23,27 +22,4 @@ void OptionsView::BuildChatPage(wxWindow* parent)
     OptionsViewPagesBuilder::BuildChatPage(*this, parent);
 }
 
-void OptionsView::AddSectionSaveButton(wxWindow* parent, wxBoxSizer* sectionSizer)
-{
-    if (parent == nullptr || sectionSizer == nullptr)
-    {
-        return;
-    }
-
-    auto* sectionSaveButton = new wxButton(parent, wxID_ANY, wxString(L"Enregistrer"));
-    sectionSizer->AddStretchSpacer();
-    sectionSizer->Add(sectionSaveButton, 0, wxALIGN_RIGHT | wxTOP, 8);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*sectionSaveButton, wxString(L"Enregistrer"));
-    sectionSaveButtons.push_back(sectionSaveButton);
-
-    sectionSaveButton->Bind(
-        wxEVT_BUTTON,
-        [this](wxCommandEvent&)
-        {
-            if (onSave_)
-            {
-                onSave_();
-            }
-        });
-}
 }

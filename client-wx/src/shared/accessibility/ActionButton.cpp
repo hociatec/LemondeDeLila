@@ -18,18 +18,40 @@ bool ActionButton::ShouldActivateOnKeyCode(int keyCode) noexcept
     }
 }
 
-bool ActionButton::ShouldPreserveArrowNavigation(int keyCode) noexcept
+bool ActionButton::ShouldPreserveVerticalNavigation(int keyCode) noexcept
+{
+    switch (keyCode)
+    {
+    case WXK_UP:
+    case WXK_DOWN:
+    case WXK_NUMPAD_UP:
+    case WXK_NUMPAD_DOWN:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool ActionButton::ShouldSuppressHorizontalNavigation(int keyCode) noexcept
 {
     switch (keyCode)
     {
     case WXK_LEFT:
     case WXK_RIGHT:
-    case WXK_UP:
-    case WXK_DOWN:
     case WXK_NUMPAD_LEFT:
     case WXK_NUMPAD_RIGHT:
-    case WXK_NUMPAD_UP:
-    case WXK_NUMPAD_DOWN:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool ActionButton::ShouldSuppressTabNavigation(int keyCode) noexcept
+{
+    switch (keyCode)
+    {
+    case WXK_TAB:
+    case WXK_NUMPAD_TAB:
         return true;
     default:
         return false;
@@ -48,6 +70,11 @@ ActionButton::ActionButton(
     Bind(wxEVT_CHAR_HOOK, &ActionButton::OnCharHook, this);
 }
 
+void ActionButton::SetMenuNavigationMode(bool enabled) noexcept
+{
+    menuNavigationMode_ = enabled;
+}
+
 void ActionButton::OnCharHook(wxKeyEvent& event)
 {
     const int keyCode = event.GetKeyCode();
@@ -60,9 +87,19 @@ void ActionButton::OnCharHook(wxKeyEvent& event)
         return;
     }
 
-    if (ShouldPreserveArrowNavigation(keyCode))
+    if (ShouldPreserveVerticalNavigation(keyCode))
     {
         event.Skip();
+        return;
+    }
+
+    if (menuNavigationMode_ && ShouldSuppressHorizontalNavigation(keyCode))
+    {
+        return;
+    }
+
+    if (menuNavigationMode_ && ShouldSuppressTabNavigation(keyCode))
+    {
         return;
     }
 

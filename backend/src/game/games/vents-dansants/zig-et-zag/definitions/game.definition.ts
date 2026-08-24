@@ -1,4 +1,4 @@
-﻿import type { GameDefinition } from '../../../../engine/model/game-definition.model';
+﻿import type { GameDefinition } from '../../../../application/models/game-definition.model';
 
 export type ZigEtZagGameId = 'zig-et-zag';
 export type ZigEtZagPhaseId = 'turn';

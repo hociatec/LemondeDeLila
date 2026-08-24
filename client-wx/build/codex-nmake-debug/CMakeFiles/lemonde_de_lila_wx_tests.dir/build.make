@@ -81,10 +81,410 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\tests\NetworkProtocolTests.cpp.s: cmake_
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\tests\NetworkProtocolTests.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\tests\NetworkProtocolTests.cpp
 <<
 
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogShelfNavigator.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/catalog/presentation/CatalogShelfNavigator.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogShelfNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/catalog/presentation/CatalogShelfNavigator.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogShelfNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/catalog/presentation/CatalogShelfNavigator.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogShelfNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomPayloadCodec.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomPayloadCodec.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomPayloadCodec.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/application/RoomSessionService.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/application/RoomSessionService.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/application/RoomSessionService.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.Realtime.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/application/RoomSessionService.Realtime.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.Realtime.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/application/RoomSessionService.Realtime.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.Realtime.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/application/RoomSessionService.Realtime.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.Realtime.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.State.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.State.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/infrastructure/RoomSessionGateway.State.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomLobbyNavigator.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomLobbyNavigator.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomLobbyNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomLobbyNavigator.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomLobbyNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomLobbyNavigator.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomLobbyNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomOpenRequest.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomOpenRequest.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomOpenRequest.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomOpenRequest.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomOpenRequest.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomOpenRequest.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomOpenRequest.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPresentationModel.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomPresentationModel.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPresentationModel.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomPresentationModel.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPresentationModel.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomPresentationModel.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPresentationModel.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomShortcutPolicy.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomShortcutPolicy.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomShortcutPolicy.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomShortcutPolicy.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomShortcutPolicy.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/rooms/presentation/RoomShortcutPolicy.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomShortcutPolicy.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\infrastructure\VaultPayloadCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/vault/infrastructure/VaultPayloadCodec.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\infrastructure\VaultPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/vault/infrastructure/VaultPayloadCodec.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\infrastructure\VaultPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/vault/infrastructure/VaultPayloadCodec.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\infrastructure\VaultPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultNavigator.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/vault/presentation/VaultNavigator.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/vault/presentation/VaultNavigator.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/vault/presentation/VaultNavigator.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPresentationModel.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/vault/presentation/VaultPresentationModel.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPresentationModel.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/vault/presentation/VaultPresentationModel.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPresentationModel.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/vault/presentation/VaultPresentationModel.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPresentationModel.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/storybook/infrastructure/StoryBookPayloadCodec.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/storybook/infrastructure/StoryBookPayloadCodec.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/storybook/infrastructure/StoryBookPayloadCodec.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\presentation\StoryBookNavigator.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/storybook/presentation/StoryBookNavigator.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\presentation\StoryBookNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/storybook/presentation/StoryBookNavigator.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\presentation\StoryBookNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/storybook/presentation/StoryBookNavigator.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\storybook\presentation\StoryBookNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/leaderboard/infrastructure/LeaderboardPayloadCodec.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/leaderboard/infrastructure/LeaderboardPayloadCodec.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/leaderboard/infrastructure/LeaderboardPayloadCodec.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/leaderboard/presentation/LeaderboardNavigator.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/leaderboard/presentation/LeaderboardNavigator.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/leaderboard/presentation/LeaderboardNavigator.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp
+<<
+
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/application/ChatService.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/application/ChatService.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.cpp
 <<
@@ -104,7 +504,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Connection.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/application/ChatService.Connection.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/application/ChatService.Connection.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Connection.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Connection.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Connection.cpp
 <<
@@ -124,7 +524,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Messages.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/application/ChatService.Messages.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/application/ChatService.Messages.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Messages.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Messages.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Messages.cpp
 <<
@@ -144,7 +544,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Reconnect.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Reconnect.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Reconnect.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Reconnect.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/application/ChatService.Reconnect.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/application/ChatService.Reconnect.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Reconnect.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Reconnect.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Reconnect.cpp
 <<
@@ -164,7 +564,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatMessageStore.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatMessageStore.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatMessageStore.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatMessageStore.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/application/ChatMessageStore.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/application/ChatMessageStore.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatMessageStore.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatMessageStore.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatMessageStore.cpp
 <<
@@ -184,7 +584,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatMessage
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp
 <<
@@ -204,7 +604,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatEven
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatProtocol.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtocol.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatProtocol.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/infrastructure/ChatProtocol.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_28) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/chat/infrastructure/ChatProtocol.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatProtocol.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatProtocol.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtocol.cpp
 <<
@@ -224,7 +624,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatProt
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\application\OptionsStore.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\application\OptionsStore.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/options/application/OptionsStore.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/options/application/OptionsStore.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\application\OptionsStore.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\application\OptionsStore.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.cpp
 <<
@@ -244,7 +644,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\application\OptionsS
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/options/infrastructure/OptionsJsonDocumentCodec.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/options/infrastructure/OptionsJsonDocumentCodec.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp
 <<
@@ -264,7 +664,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\Optio
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsJsonSchemaMigrator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsJsonSchemaMigrator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\OptionsJsonSchemaMigrator.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsJsonSchemaMigrator.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/options/infrastructure/OptionsJsonSchemaMigrator.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_31) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/options/infrastructure/OptionsJsonSchemaMigrator.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsJsonSchemaMigrator.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsJsonSchemaMigrator.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\OptionsJsonSchemaMigrator.cpp
 <<
@@ -284,7 +684,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\Optio
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/options/infrastructure/OptionsStateJsonMapper.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_32) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/options/infrastructure/OptionsStateJsonMapper.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp
 <<
@@ -304,7 +704,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\options\infrastructure\Optio
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\application\SessionStore.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/session/application/SessionStore.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_33) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/modules/session/application/SessionStore.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\application\SessionStore.cpp
 <<
@@ -324,7 +724,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionS
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\concurrency\BackgroundExecutor.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\concurrency\BackgroundExecutor.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\concurrency\BackgroundExecutor.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\concurrency\BackgroundExecutor.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/concurrency/BackgroundExecutor.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_34) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/concurrency/BackgroundExecutor.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\concurrency\BackgroundExecutor.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\concurrency\BackgroundExecutor.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\concurrency\BackgroundExecutor.cpp
 <<
@@ -344,7 +744,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\concurrency\BackgroundExecuto
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\ActionButton.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\ActionButton.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\ActionButton.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\ActionButton.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/accessibility/ActionButton.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_35) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/accessibility/ActionButton.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\ActionButton.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\ActionButton.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\ActionButton.cpp
 <<
@@ -364,7 +764,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\ActionButton.cp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\NavigationController.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\NavigationController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\NavigationController.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\NavigationController.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/accessibility/NavigationController.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_36) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/accessibility/NavigationController.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\NavigationController.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\NavigationController.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\NavigationController.cpp
 <<
@@ -384,7 +784,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\NavigationContr
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppConfig.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppConfig.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/config/AppConfig.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_37) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/config/AppConfig.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppConfig.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppConfig.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.cpp
 <<
@@ -404,7 +804,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppConfig.cpp.s: cmake
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppDataPaths.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppDataPaths.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppDataPaths.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppDataPaths.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/config/AppDataPaths.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_38) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/config/AppDataPaths.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppDataPaths.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppDataPaths.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppDataPaths.cpp
 <<
@@ -424,7 +824,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\config\AppDataPaths.cpp.s: cm
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketProvider.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketProvider.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketProvider.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketProvider.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/network/http/WsTicketProvider.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_39) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/network/http/WsTicketProvider.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketProvider.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketProvider.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketProvider.cpp
 <<
@@ -444,7 +844,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketProvider
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketTransport.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketTransport.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketTransport.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketTransport.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/network/http/WsTicketTransport.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_40) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/network/http/WsTicketTransport.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketTransport.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketTransport.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketTransport.cpp
 <<
@@ -464,7 +864,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketTranspor
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocol.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/network/realtime/RealtimeProtocol.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_41) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/network/realtime/RealtimeProtocol.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocol.cpp
 <<
@@ -484,7 +884,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProt
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\SecurityUtils.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\SecurityUtils.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\SecurityUtils.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\SecurityUtils.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/security/SecurityUtils.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_42) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/security/SecurityUtils.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\SecurityUtils.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\SecurityUtils.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\SecurityUtils.cpp
 <<
@@ -501,10 +901,30 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\SecurityUtils.cpp.s:
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\SecurityUtils.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\SecurityUtils.cpp
 <<
 
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\JwtPayload.cpp
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_43) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/security/JwtPayload.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\JwtPayload.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/security/JwtPayload.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\JwtPayload.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/security/JwtPayload.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\JwtPayload.cpp
+<<
+
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\Encoding.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\Encoding.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/text/Encoding.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_44) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/text/Encoding.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\Encoding.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\Encoding.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.cpp
 <<
@@ -524,7 +944,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\Encoding.cpp.s: cmake_fo
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\UiTextCatalog.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\UiTextCatalog.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/text/UiTextCatalog.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_45) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/text/UiTextCatalog.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\UiTextCatalog.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\UiTextCatalog.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.cpp
 <<
@@ -544,7 +964,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\UiTextCatalog.cpp.s: cma
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\logging\Logger.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\logging\Logger.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\logging\Logger.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/logging/Logger.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_46) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/logging/Logger.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\logging\Logger.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\logging\Logger.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.cpp
 <<
@@ -564,7 +984,7 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\logging\Logger.cpp.s: cmake_f
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\persistence\JsonFileStorage.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\flags.make
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\persistence\JsonFileStorage.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\persistence\JsonFileStorage.cpp
 CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\persistence\JsonFileStorage.cpp.obj: CMakeFiles\lemonde_de_lila_wx_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/persistence/JsonFileStorage.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_47) "Building CXX object CMakeFiles/lemonde_de_lila_wx_tests.dir/src/shared/persistence/JsonFileStorage.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\persistence\JsonFileStorage.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\persistence\JsonFileStorage.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\shared\persistence\JsonFileStorage.cpp
 <<
@@ -584,6 +1004,26 @@ CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\persistence\JsonFileStorage.c
 # Object files for target lemonde_de_lila_wx_tests
 lemonde_de_lila_wx_tests_OBJECTS = \
 "CMakeFiles\lemonde_de_lila_wx_tests.dir\tests\NetworkProtocolTests.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj" \
 "CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.cpp.obj" \
 "CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Connection.cpp.obj" \
 "CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Messages.cpp.obj" \
@@ -605,6 +1045,7 @@ lemonde_de_lila_wx_tests_OBJECTS = \
 "CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketTransport.cpp.obj" \
 "CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj" \
 "CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\SecurityUtils.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.obj" \
 "CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\Encoding.cpp.obj" \
 "CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\UiTextCatalog.cpp.obj" \
 "CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\logging\Logger.cpp.obj" \
@@ -614,6 +1055,26 @@ lemonde_de_lila_wx_tests_OBJECTS = \
 lemonde_de_lila_wx_tests_EXTERNAL_OBJECTS =
 
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\tests\NetworkProtocolTests.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.cpp.obj
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Connection.cpp.obj
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.Messages.cpp.obj
@@ -635,6 +1096,7 @@ lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\http\WsTicketTransport.cpp.obj
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\SecurityUtils.cpp.obj
+lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.obj
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\Encoding.cpp.obj
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\text\UiTextCatalog.cpp.obj
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\logging\Logger.cpp.obj
@@ -643,7 +1105,7 @@ lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make
 lemonde_de_lila_wx_tests.exe: C:\vcpkg\installed\x64-windows\debug\lib\wxmsw33ud_core.lib
 lemonde_de_lila_wx_tests.exe: C:\vcpkg\installed\x64-windows\debug\lib\wxbase33ud.lib
 lemonde_de_lila_wx_tests.exe: CMakeFiles\lemonde_de_lila_wx_tests.dir\objects1.rsp
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Linking CXX executable lemonde_de_lila_wx_tests.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_48) "Linking CXX executable lemonde_de_lila_wx_tests.exe"
 	"C:\Program Files\CMake\bin\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\lemonde_de_lila_wx_tests.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100261~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100261~1.0\x64\mt.exe --manifests -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\link.exe /nologo @CMakeFiles\lemonde_de_lila_wx_tests.dir\objects1.rsp @<<
  /out:lemonde_de_lila_wx_tests.exe /implib:lemonde_de_lila_wx_tests.lib /pdb:C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\lemonde_de_lila_wx_tests.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console  C:\vcpkg\installed\x64-windows\debug\lib\wxmsw33ud_core.lib C:\vcpkg\installed\x64-windows\debug\lib\wxbase33ud.lib crypt32.lib winhttp.lib kernel32.lib user32.lib gdi32.lib gdiplus.lib msimg32.lib comdlg32.lib winspool.lib winmm.lib shell32.lib shlwapi.lib comctl32.lib ole32.lib oleaut32.lib uuid.lib rpcrt4.lib advapi32.lib version.lib ws2_32.lib wininet.lib oleacc.lib uxtheme.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib 
 <<

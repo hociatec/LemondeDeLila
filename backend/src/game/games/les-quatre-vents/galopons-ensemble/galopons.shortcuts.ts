@@ -1,9 +1,9 @@
-import type { GameShortcutsBuilder } from '../../../engine/shortcuts/game-shortcuts';
-import { positionOnlyShortcuts } from '../../../engine/shortcuts/shortcut-presets';
+import type { GameShortcutsBuilder } from '../../../models/game-shortcuts.model';
+import { positionOnlyShortcuts } from '../../../application/helpers/shortcut-presets';
 import {
   actionShortcut,
   interfaceShortcut,
-} from '../../../engine/shortcuts/shortcut-utils';
+} from '../../../application/helpers/shortcut-utils';
 
 export const buildGaloponsShortcuts: GameShortcutsBuilder = () => [
   ...positionOnlyShortcuts(),

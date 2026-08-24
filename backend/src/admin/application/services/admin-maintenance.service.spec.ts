@@ -2,6 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { AdminDaemonReloadService } from '../use-cases/admin-maintenance/admin-daemon-reload.service';
 import { GetAdminBackendServiceStatusService } from '../use-cases/admin-maintenance/get-admin-backend-service-status.service';
 import { StartAdminDeployService } from '../use-cases/admin-maintenance/start-admin-deploy.service';
+import type { AdminMaintenanceConfig } from '../../infrastructure/config/admin-maintenance.config';
 
 describe('Admin maintenance use-cases', () => {
   it('uses runtime port to start deploy', () => {
@@ -12,14 +13,13 @@ describe('Admin maintenance use-cases', () => {
       stderr: '',
       error: null,
     });
+    const config = createConfig();
 
-    const service = new StartAdminDeployService(runtime as any);
+    const service = new StartAdminDeployService(runtime as any, config);
 
     expect(service.execute()).toEqual({
       ok: true,
-      unit:
-        process.env.ADMIN_MAINTENANCE_DEPLOY_UNIT ||
-        'lila-backend-deploy.service',
+      unit: config.deployUnit,
     });
     expect(runtime.runCommand).toHaveBeenCalledWith([
       'sudo',
@@ -27,8 +27,7 @@ describe('Admin maintenance use-cases', () => {
       'systemctl',
       'start',
       '--no-block',
-      process.env.ADMIN_MAINTENANCE_DEPLOY_UNIT ||
-        'lila-backend-deploy.service',
+      config.deployUnit,
     ]);
   });
 
@@ -44,14 +43,16 @@ describe('Admin maintenance use-cases', () => {
       Id: 'svc',
       ActiveState: 'active',
     });
+    const config = createConfig();
 
-    const service = new GetAdminBackendServiceStatusService(runtime as any);
+    const service = new GetAdminBackendServiceStatusService(
+      runtime as any,
+      config,
+    );
 
     expect(service.execute()).toEqual({
       ok: true,
-      unit:
-        process.env.ADMIN_MAINTENANCE_BACKEND_SERVICE ||
-        'lila-backend.service',
+      unit: config.backendService,
       Id: 'svc',
       ActiveState: 'active',
     });
@@ -83,5 +84,13 @@ function createRuntime() {
     parseSystemctlShow: jest.fn(),
     parseTail: jest.fn(),
     shQuote: jest.fn(),
+  };
+}
+
+function createConfig(): AdminMaintenanceConfig {
+  return {
+    deployUnit: 'lila-backend-deploy.service',
+    backendService: 'lila-backend.service',
+    healthPort: 3000,
   };
 }

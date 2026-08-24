@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { MnemoQuizStoreService } from '../../../../game/games/vents-infinis/arche-de-mnemosyne/store/mnemo-quiz-store.service';
+import { MnemoQuizStoreService } from '../../../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
 import type {
   MnemoQuestionStatus,
   MnemoQuizQuestion,
-} from '../../../../game/games/vents-infinis/arche-de-mnemosyne/model/mnemo-quiz.model';
+} from '../../../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
 import type {
   CreateAdminMnemoQuestionCommand,
   ListAdminMnemoQuestionsQuery,
   MnemoQuestionPatch,
   UpdateAdminMnemoQuestionCommand,
 } from './admin-mnemo-quiz.types';
+import { AdminMnemoQuestionNotFoundError } from '../../../domain/errors/admin-domain.errors';
 
 @Injectable()
 export class AdminMnemoQuizQuestionsService {
@@ -96,7 +97,7 @@ export class AdminMnemoQuizQuestionsService {
   private requireQuestion(id: string): MnemoQuizQuestion {
     const existing = this.store.listQuestions().find((question) => question.id === id);
     if (!existing) {
-      throw new Error('Question introuvable');
+      throw new AdminMnemoQuestionNotFoundError();
     }
     return existing;
   }

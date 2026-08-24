@@ -78,7 +78,7 @@ export type MnemoPrompt =
     };
 
 export type MnemoQuizMetadata = {
-  rng?: Record<string, any>;
+  rng?: Record<string, unknown>;
   ownerPlayerId?: number | null;
   config: MnemoQuizConfig;
   selectedCategoryId: string | null;

@@ -1,5 +1,6 @@
 ﻿#include "shared/text/Encoding.h"
 #include "modules/home/presentation/HomeFrame.h"
+#include "shared/accessibility/FocusCoordinator.h"
 #include "shared/ui/BackgroundTask.h"
 #include "shared/errors/ErrorMessages.h"
 
@@ -25,9 +26,14 @@ void HomeFrame::SetBusyState(bool isBusy, const wxString& statusMessage)
 {
     isBusy_ = isBusy;
 
-    SetFormInteractivity(Page::Landing, !isBusy);
-    SetFormInteractivity(Page::Login, !isBusy);
-    SetFormInteractivity(Page::Register, !isBusy);
+    // Ne pas désactiver les contrôles pendant l'authentification :
+    // le lecteur d'écran annonce sinon "indisponible" sur le contrôle focalisé.
+    if (!isBusy)
+    {
+        SetFormInteractivity(Page::Landing, true);
+        SetFormInteractivity(Page::Login, true);
+        SetFormInteractivity(Page::Register, true);
+    }
 
     if (!statusMessage.empty())
     {
@@ -36,7 +42,7 @@ void HomeFrame::SetBusyState(bool isBusy, const wxString& statusMessage)
 
     if (!isBusy)
     {
-        FocusCurrentPagePrimaryField();
+        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
     }
 }
 
@@ -101,7 +107,6 @@ void HomeFrame::OnLoginSubmit(wxCommandEvent& event)
     SetBusyState(true, lila::shared::text::FromUtf8("Connexion au serveur..."));
     SetStatus(lila::shared::text::FromUtf8("Authentification..."));
 
-    auto result = std::make_shared<std::optional<user::domain::AuthenticationResult>>();
     wxWeakRef<HomeFrame> weakSelf(this);
 
     lila::shared::ui::RunBackgroundTaskWithResult<user::domain::AuthenticationResult>(
@@ -117,9 +122,9 @@ void HomeFrame::OnLoginSubmit(wxCommandEvent& event)
                 return;
             }
 
-            weakSelf->SetBusyState(false);
             if (!errorMessage.empty() || !result.has_value())
             {
+                weakSelf->SetBusyState(false);
                 weakSelf->SetStatus(lila::shared::text::FromUtf8(lila::shared::errors::AuthenticationFailed), true);
                 return;
             }
@@ -127,6 +132,7 @@ void HomeFrame::OnLoginSubmit(wxCommandEvent& event)
             const auto& loginResult = result.value();
             if (!loginResult.success)
             {
+                weakSelf->SetBusyState(false);
                 weakSelf->SetStatus(
                     loginResult.message.empty()
                         ? lila::shared::text::FromUtf8(lila::shared::errors::AuthenticationFailed)
@@ -140,7 +146,10 @@ void HomeFrame::OnLoginSubmit(wxCommandEvent& event)
 
             auto forwardedResult = loginResult;
             forwardedResult.rememberSession = rememberSession;
-            weakSelf->SetStatus(lila::shared::text::FromUtf8("Chargement des données..."));
+            // The form stays enabled while authenticating, so a successful login only
+            // needs to release the submission guard before switching views. Applying
+            // the home focus plan here would briefly move focus back to the login form.
+            weakSelf->isBusy_ = false;
             if (weakSelf->onLoginSucceeded_)
             {
                 weakSelf->onLoginSucceeded_(forwardedResult);

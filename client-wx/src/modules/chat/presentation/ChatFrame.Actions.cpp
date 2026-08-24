@@ -1,9 +1,9 @@
 #include "shared/text/Encoding.h"
 #include "modules/chat/presentation/ChatFrame.h"
+#include "shared/accessibility/FocusCoordinator.h"
 #include "modules/chat/presentation/ChatFocusController.h"
 
 #include <wx/button.h>
-#include <wx/listbox.h>
 #include <wx/msgdlg.h>
 #include <wx/textctrl.h>
 
@@ -20,7 +20,7 @@ void ChatFrame::SendInput()
     if (isBusy_ || chatService_.State() != domain::ChatState::Connected || !inputCtrl_->IsEditable())
     {
         UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ChatNotConnected), true);
-        focusController_->FocusComposer();
+        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposerPlan()));
         return;
     }
 
@@ -104,11 +104,8 @@ void ChatFrame::HandleEscape()
 
 void ChatFrame::HandleHistoryClick()
 {
-    const int selection = historyList_->GetSelection();
-    const bool shouldEnterActionMode =
-        selection != wxNOT_FOUND
-        && static_cast<std::size_t>(selection) < visibleMessages_.size()
-        && CanActOnMessage(visibleMessages_[static_cast<std::size_t>(selection)]);
+    const auto message = GetSelectedMessage();
+    const bool shouldEnterActionMode = message.has_value() && CanActOnMessage(*message);
 
     if (shouldEnterActionMode && !isHistoryActionMode_)
     {
@@ -123,7 +120,7 @@ void ChatFrame::HandleHistoryClick()
     }
     else
     {
-        selectedActionMessageId_ = visibleMessages_[static_cast<std::size_t>(selection)].id;
+        selectedActionMessageId_ = message->id;
         isHistoryActionMode_ = true;
     }
     SyncActionState();
@@ -145,7 +142,7 @@ void ChatFrame::HandleHistoryActivation()
     isHistoryActionMode_ = true;
     SyncActionState();
 
-    focusController_->FocusFirstHistoryAction();
+    static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildFirstHistoryActionPlan()));
 }
 
 void ChatFrame::HandleEditSelected()
@@ -213,7 +210,7 @@ void ChatFrame::BeginEdit(const domain::ChatMessage& message)
     isHistoryActionMode_ = false;
     pendingEditMessageId_ = message.id;
     inputCtrl_->SetValue(lila::shared::text::FromUtf8(message.text));
-    focusController_->FocusComposer();
+    static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposerPlan()));
     inputCtrl_->SelectAll();
     UpdateStatus(lila::shared::text::FromUtf8(lila::shared::text::ui::ChatEditMode));
     SyncActionState();
@@ -267,10 +264,10 @@ void ChatFrame::ApplyNavigationSnapshot(const NavigationSnapshot& snapshot)
     SyncActionState();
     if (isHistoryActionMode_)
     {
-        focusController_->FocusFirstHistoryAction();
+        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildFirstHistoryActionPlan()));
         return;
     }
 
-    focusController_->FocusComposer();
+    static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposerPlan()));
 }
 }

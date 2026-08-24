@@ -1,7 +1,7 @@
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import { GameCoreService } from '../../../../core/services/game-core.service';
-import { RandomService } from '../../../../modules/random/services/random.service';
-import { DeckPoliciesService } from '../../../../modules/deck-policies/services/deck-policies.service';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import { GameCoreService } from '../../../../application/services/game-core.service';
+import { RandomService } from '../../../../application/services/random.service';
+import { DeckPoliciesService } from '../../../../application/features/deck-policies/services/deck-policies.service';
 import { SacAMalicesActionService } from './sac-a-malices-action.service';
 
 function makeBaseState(): GameStateEntity {
@@ -23,11 +23,11 @@ function makeBaseState(): GameStateEntity {
       setupStep: 'playing',
       setupStarterId: 1,
       tiles: [
-        { n: 1, title: 'Départ', type: 'start' },
+        { n: 1, title: 'DÃ©part', type: 'start' },
         { n: 2, title: 'Rue Rouge A', type: 'property', group: 'Rouge' },
         { n: 3, title: 'Chance', type: 'chance' },
         { n: 4, title: 'Rue Rouge B', type: 'property', group: 'Rouge' },
-        { n: 5, title: 'Taxe', type: 'tax', description: 'Payez 200 €' },
+        { n: 5, title: 'Taxe', type: 'tax', description: 'Payez 200 â‚¬' },
         { n: 6, title: 'Gare de Lille', type: 'station' },
         { n: 7, title: 'Compagnie Eau', type: 'utility' },
         { n: 8, title: 'Prison', type: 'jail' },
@@ -66,7 +66,7 @@ function makeBaseState(): GameStateEntity {
         chance: {
           cards: [
             { id: 1, text: 'Sortie de prison' },
-            { id: 2, text: 'Payez 50 €' },
+            { id: 2, text: 'Payez 50 â‚¬' },
           ],
           discard: [],
         },
@@ -437,7 +437,7 @@ describe('SacAMalicesActionService', () => {
     });
     state = (service as any).applyCard(state, 1, 'chance', {
       id: 11,
-      text: 'Tous les joueurs reçoivent 10',
+      text: 'Tous les joueurs reÃ§oivent 10',
     });
     state = (service as any).applyCard(state, 1, 'chance', {
       id: 12,
@@ -461,11 +461,11 @@ describe('SacAMalicesActionService', () => {
     });
     state = (service as any).applyCard(state, 1, 'chance', {
       id: 17,
-      text: 'Avancez à Gare de Lille',
+      text: 'Avancez Ã  Gare de Lille',
     });
     state = (service as any).applyCard(state, 1, 'chance', {
       id: 18,
-      text: 'Retournez à la case départ',
+      text: 'Retournez Ã  la case dÃ©part',
     });
     state = (service as any).applyCard(state, 1, 'chance', {
       id: 19,
@@ -508,3 +508,10 @@ describe('SacAMalicesActionService', () => {
     expect(getMeta(winner).winnerId).toBe(2);
   });
 });
+
+
+
+
+
+
+

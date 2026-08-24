@@ -603,6 +603,30 @@ src\app\navigation\AppNavigator.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.s
 .PHONY : src\app\navigation\AppNavigator.cpp.s
 
+src\app\navigation\HostFrame.obj: src\app\navigation\HostFrame.cpp.obj
+.PHONY : src\app\navigation\HostFrame.obj
+
+# target to build an object file
+src\app\navigation\HostFrame.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj
+.PHONY : src\app\navigation\HostFrame.cpp.obj
+
+src\app\navigation\HostFrame.i: src\app\navigation\HostFrame.cpp.i
+.PHONY : src\app\navigation\HostFrame.i
+
+# target to preprocess a source file
+src\app\navigation\HostFrame.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.i
+.PHONY : src\app\navigation\HostFrame.cpp.i
+
+src\app\navigation\HostFrame.s: src\app\navigation\HostFrame.cpp.s
+.PHONY : src\app\navigation\HostFrame.s
+
+# target to generate assembly for a file
+src\app\navigation\HostFrame.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.s
+.PHONY : src\app\navigation\HostFrame.cpp.s
+
 src\bootstrap\AppBootstrap.obj: src\bootstrap\AppBootstrap.cpp.obj
 .PHONY : src\bootstrap\AppBootstrap.obj
 
@@ -626,6 +650,102 @@ src\bootstrap\AppBootstrap.s: src\bootstrap\AppBootstrap.cpp.s
 src\bootstrap\AppBootstrap.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppBootstrap.cpp.s
 .PHONY : src\bootstrap\AppBootstrap.cpp.s
+
+src\bootstrap\AppCompositions.Game.obj: src\bootstrap\AppCompositions.Game.cpp.obj
+.PHONY : src\bootstrap\AppCompositions.Game.obj
+
+# target to build an object file
+src\bootstrap\AppCompositions.Game.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Game.cpp.obj
+.PHONY : src\bootstrap\AppCompositions.Game.cpp.obj
+
+src\bootstrap\AppCompositions.Game.i: src\bootstrap\AppCompositions.Game.cpp.i
+.PHONY : src\bootstrap\AppCompositions.Game.i
+
+# target to preprocess a source file
+src\bootstrap\AppCompositions.Game.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Game.cpp.i
+.PHONY : src\bootstrap\AppCompositions.Game.cpp.i
+
+src\bootstrap\AppCompositions.Game.s: src\bootstrap\AppCompositions.Game.cpp.s
+.PHONY : src\bootstrap\AppCompositions.Game.s
+
+# target to generate assembly for a file
+src\bootstrap\AppCompositions.Game.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Game.cpp.s
+.PHONY : src\bootstrap\AppCompositions.Game.cpp.s
+
+src\bootstrap\AppCompositions.Network.obj: src\bootstrap\AppCompositions.Network.cpp.obj
+.PHONY : src\bootstrap\AppCompositions.Network.obj
+
+# target to build an object file
+src\bootstrap\AppCompositions.Network.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Network.cpp.obj
+.PHONY : src\bootstrap\AppCompositions.Network.cpp.obj
+
+src\bootstrap\AppCompositions.Network.i: src\bootstrap\AppCompositions.Network.cpp.i
+.PHONY : src\bootstrap\AppCompositions.Network.i
+
+# target to preprocess a source file
+src\bootstrap\AppCompositions.Network.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Network.cpp.i
+.PHONY : src\bootstrap\AppCompositions.Network.cpp.i
+
+src\bootstrap\AppCompositions.Network.s: src\bootstrap\AppCompositions.Network.cpp.s
+.PHONY : src\bootstrap\AppCompositions.Network.s
+
+# target to generate assembly for a file
+src\bootstrap\AppCompositions.Network.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Network.cpp.s
+.PHONY : src\bootstrap\AppCompositions.Network.cpp.s
+
+src\bootstrap\AppCompositions.Social.obj: src\bootstrap\AppCompositions.Social.cpp.obj
+.PHONY : src\bootstrap\AppCompositions.Social.obj
+
+# target to build an object file
+src\bootstrap\AppCompositions.Social.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.obj
+.PHONY : src\bootstrap\AppCompositions.Social.cpp.obj
+
+src\bootstrap\AppCompositions.Social.i: src\bootstrap\AppCompositions.Social.cpp.i
+.PHONY : src\bootstrap\AppCompositions.Social.i
+
+# target to preprocess a source file
+src\bootstrap\AppCompositions.Social.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.i
+.PHONY : src\bootstrap\AppCompositions.Social.cpp.i
+
+src\bootstrap\AppCompositions.Social.s: src\bootstrap\AppCompositions.Social.cpp.s
+.PHONY : src\bootstrap\AppCompositions.Social.s
+
+# target to generate assembly for a file
+src\bootstrap\AppCompositions.Social.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.s
+.PHONY : src\bootstrap\AppCompositions.Social.cpp.s
+
+src\bootstrap\AppCompositions.User.obj: src\bootstrap\AppCompositions.User.cpp.obj
+.PHONY : src\bootstrap\AppCompositions.User.obj
+
+# target to build an object file
+src\bootstrap\AppCompositions.User.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj
+.PHONY : src\bootstrap\AppCompositions.User.cpp.obj
+
+src\bootstrap\AppCompositions.User.i: src\bootstrap\AppCompositions.User.cpp.i
+.PHONY : src\bootstrap\AppCompositions.User.i
+
+# target to preprocess a source file
+src\bootstrap\AppCompositions.User.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.i
+.PHONY : src\bootstrap\AppCompositions.User.cpp.i
+
+src\bootstrap\AppCompositions.User.s: src\bootstrap\AppCompositions.User.cpp.s
+.PHONY : src\bootstrap\AppCompositions.User.s
+
+# target to generate assembly for a file
+src\bootstrap\AppCompositions.User.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.s
+.PHONY : src\bootstrap\AppCompositions.User.cpp.s
 
 src\bootstrap\AppRuntime.obj: src\bootstrap\AppRuntime.cpp.obj
 .PHONY : src\bootstrap\AppRuntime.obj
@@ -770,6 +890,204 @@ src\modules\about\presentation\AboutPageCoordinator.s: src\modules\about\present
 src\modules\about\presentation\AboutPageCoordinator.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\about\presentation\AboutPageCoordinator.cpp.s
 .PHONY : src\modules\about\presentation\AboutPageCoordinator.cpp.s
+
+src\modules\catalog\application\CatalogService.obj: src\modules\catalog\application\CatalogService.cpp.obj
+.PHONY : src\modules\catalog\application\CatalogService.obj
+
+# target to build an object file
+src\modules\catalog\application\CatalogService.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\application\CatalogService.cpp.obj
+.PHONY : src\modules\catalog\application\CatalogService.cpp.obj
+
+src\modules\catalog\application\CatalogService.i: src\modules\catalog\application\CatalogService.cpp.i
+.PHONY : src\modules\catalog\application\CatalogService.i
+
+# target to preprocess a source file
+src\modules\catalog\application\CatalogService.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\application\CatalogService.cpp.i
+.PHONY : src\modules\catalog\application\CatalogService.cpp.i
+
+src\modules\catalog\application\CatalogService.s: src\modules\catalog\application\CatalogService.cpp.s
+.PHONY : src\modules\catalog\application\CatalogService.s
+
+# target to generate assembly for a file
+src\modules\catalog\application\CatalogService.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\application\CatalogService.cpp.s
+.PHONY : src\modules\catalog\application\CatalogService.cpp.s
+
+src\modules\catalog\infrastructure\CatalogApi.obj: src\modules\catalog\infrastructure\CatalogApi.cpp.obj
+.PHONY : src\modules\catalog\infrastructure\CatalogApi.obj
+
+# target to build an object file
+src\modules\catalog\infrastructure\CatalogApi.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\infrastructure\CatalogApi.cpp.obj
+.PHONY : src\modules\catalog\infrastructure\CatalogApi.cpp.obj
+
+src\modules\catalog\infrastructure\CatalogApi.i: src\modules\catalog\infrastructure\CatalogApi.cpp.i
+.PHONY : src\modules\catalog\infrastructure\CatalogApi.i
+
+# target to preprocess a source file
+src\modules\catalog\infrastructure\CatalogApi.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\infrastructure\CatalogApi.cpp.i
+.PHONY : src\modules\catalog\infrastructure\CatalogApi.cpp.i
+
+src\modules\catalog\infrastructure\CatalogApi.s: src\modules\catalog\infrastructure\CatalogApi.cpp.s
+.PHONY : src\modules\catalog\infrastructure\CatalogApi.s
+
+# target to generate assembly for a file
+src\modules\catalog\infrastructure\CatalogApi.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\infrastructure\CatalogApi.cpp.s
+.PHONY : src\modules\catalog\infrastructure\CatalogApi.cpp.s
+
+src\modules\catalog\infrastructure\CatalogPayloadCodec.obj: src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj
+.PHONY : src\modules\catalog\infrastructure\CatalogPayloadCodec.obj
+
+# target to build an object file
+src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj
+.PHONY : src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.obj
+
+src\modules\catalog\infrastructure\CatalogPayloadCodec.i: src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.i
+.PHONY : src\modules\catalog\infrastructure\CatalogPayloadCodec.i
+
+# target to preprocess a source file
+src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.i
+.PHONY : src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.i
+
+src\modules\catalog\infrastructure\CatalogPayloadCodec.s: src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.s
+.PHONY : src\modules\catalog\infrastructure\CatalogPayloadCodec.s
+
+# target to generate assembly for a file
+src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.s
+.PHONY : src\modules\catalog\infrastructure\CatalogPayloadCodec.cpp.s
+
+src\modules\catalog\presentation\CatalogPanel.Events.obj: src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Events.obj
+
+# target to build an object file
+src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj
+
+src\modules\catalog\presentation\CatalogPanel.Events.i: src\modules\catalog\presentation\CatalogPanel.Events.cpp.i
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Events.i
+
+# target to preprocess a source file
+src\modules\catalog\presentation\CatalogPanel.Events.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.i
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Events.cpp.i
+
+src\modules\catalog\presentation\CatalogPanel.Events.s: src\modules\catalog\presentation\CatalogPanel.Events.cpp.s
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Events.s
+
+# target to generate assembly for a file
+src\modules\catalog\presentation\CatalogPanel.Events.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.s
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Events.cpp.s
+
+src\modules\catalog\presentation\CatalogPanel.Layout.obj: src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Layout.obj
+
+# target to build an object file
+src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj
+
+src\modules\catalog\presentation\CatalogPanel.Layout.i: src\modules\catalog\presentation\CatalogPanel.Layout.cpp.i
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Layout.i
+
+# target to preprocess a source file
+src\modules\catalog\presentation\CatalogPanel.Layout.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.i
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Layout.cpp.i
+
+src\modules\catalog\presentation\CatalogPanel.Layout.s: src\modules\catalog\presentation\CatalogPanel.Layout.cpp.s
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Layout.s
+
+# target to generate assembly for a file
+src\modules\catalog\presentation\CatalogPanel.Layout.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.s
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Layout.cpp.s
+
+src\modules\catalog\presentation\CatalogPanel.Loading.obj: src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Loading.obj
+
+# target to build an object file
+src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj
+
+src\modules\catalog\presentation\CatalogPanel.Loading.i: src\modules\catalog\presentation\CatalogPanel.Loading.cpp.i
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Loading.i
+
+# target to preprocess a source file
+src\modules\catalog\presentation\CatalogPanel.Loading.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.i
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Loading.cpp.i
+
+src\modules\catalog\presentation\CatalogPanel.Loading.s: src\modules\catalog\presentation\CatalogPanel.Loading.cpp.s
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Loading.s
+
+# target to generate assembly for a file
+src\modules\catalog\presentation\CatalogPanel.Loading.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.s
+.PHONY : src\modules\catalog\presentation\CatalogPanel.Loading.cpp.s
+
+src\modules\catalog\presentation\CatalogPanel.obj: src\modules\catalog\presentation\CatalogPanel.cpp.obj
+.PHONY : src\modules\catalog\presentation\CatalogPanel.obj
+
+# target to build an object file
+src\modules\catalog\presentation\CatalogPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj
+.PHONY : src\modules\catalog\presentation\CatalogPanel.cpp.obj
+
+src\modules\catalog\presentation\CatalogPanel.i: src\modules\catalog\presentation\CatalogPanel.cpp.i
+.PHONY : src\modules\catalog\presentation\CatalogPanel.i
+
+# target to preprocess a source file
+src\modules\catalog\presentation\CatalogPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.i
+.PHONY : src\modules\catalog\presentation\CatalogPanel.cpp.i
+
+src\modules\catalog\presentation\CatalogPanel.s: src\modules\catalog\presentation\CatalogPanel.cpp.s
+.PHONY : src\modules\catalog\presentation\CatalogPanel.s
+
+# target to generate assembly for a file
+src\modules\catalog\presentation\CatalogPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.s
+.PHONY : src\modules\catalog\presentation\CatalogPanel.cpp.s
+
+src\modules\catalog\presentation\CatalogShelfNavigator.obj: src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj
+.PHONY : src\modules\catalog\presentation\CatalogShelfNavigator.obj
+
+# target to build an object file
+src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj
+.PHONY : src\modules\catalog\presentation\CatalogShelfNavigator.cpp.obj
+
+src\modules\catalog\presentation\CatalogShelfNavigator.i: src\modules\catalog\presentation\CatalogShelfNavigator.cpp.i
+.PHONY : src\modules\catalog\presentation\CatalogShelfNavigator.i
+
+# target to preprocess a source file
+src\modules\catalog\presentation\CatalogShelfNavigator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.i
+.PHONY : src\modules\catalog\presentation\CatalogShelfNavigator.cpp.i
+
+src\modules\catalog\presentation\CatalogShelfNavigator.s: src\modules\catalog\presentation\CatalogShelfNavigator.cpp.s
+.PHONY : src\modules\catalog\presentation\CatalogShelfNavigator.s
+
+# target to generate assembly for a file
+src\modules\catalog\presentation\CatalogShelfNavigator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\catalog\presentation\CatalogShelfNavigator.cpp.s
+.PHONY : src\modules\catalog\presentation\CatalogShelfNavigator.cpp.s
 
 src\modules\chat\application\ChatMessageStore.obj: src\modules\chat\application\ChatMessageStore.cpp.obj
 .PHONY : src\modules\chat\application\ChatMessageStore.obj
@@ -1349,6 +1667,228 @@ src\modules\home\presentation\HomeFrame.s: src\modules\home\presentation\HomeFra
 src\modules\home\presentation\HomeFrame.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.cpp.s
 .PHONY : src\modules\home\presentation\HomeFrame.cpp.s
+
+src\modules\leaderboard\application\LeaderboardService.obj: src\modules\leaderboard\application\LeaderboardService.cpp.obj
+.PHONY : src\modules\leaderboard\application\LeaderboardService.obj
+
+# target to build an object file
+src\modules\leaderboard\application\LeaderboardService.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\application\LeaderboardService.cpp.obj
+.PHONY : src\modules\leaderboard\application\LeaderboardService.cpp.obj
+
+src\modules\leaderboard\application\LeaderboardService.i: src\modules\leaderboard\application\LeaderboardService.cpp.i
+.PHONY : src\modules\leaderboard\application\LeaderboardService.i
+
+# target to preprocess a source file
+src\modules\leaderboard\application\LeaderboardService.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\application\LeaderboardService.cpp.i
+.PHONY : src\modules\leaderboard\application\LeaderboardService.cpp.i
+
+src\modules\leaderboard\application\LeaderboardService.s: src\modules\leaderboard\application\LeaderboardService.cpp.s
+.PHONY : src\modules\leaderboard\application\LeaderboardService.s
+
+# target to generate assembly for a file
+src\modules\leaderboard\application\LeaderboardService.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\application\LeaderboardService.cpp.s
+.PHONY : src\modules\leaderboard\application\LeaderboardService.cpp.s
+
+src\modules\leaderboard\infrastructure\LeaderboardApi.obj: src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.obj
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardApi.obj
+
+# target to build an object file
+src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.obj
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.obj
+
+src\modules\leaderboard\infrastructure\LeaderboardApi.i: src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.i
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardApi.i
+
+# target to preprocess a source file
+src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.i
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.i
+
+src\modules\leaderboard\infrastructure\LeaderboardApi.s: src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.s
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardApi.s
+
+# target to generate assembly for a file
+src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.s
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardApi.cpp.s
+
+src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.obj: src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.obj
+
+# target to build an object file
+src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.obj
+
+src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.i: src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.i
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.i
+
+# target to preprocess a source file
+src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.i
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.i
+
+src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.s: src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.s
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.s
+
+# target to generate assembly for a file
+src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.s
+.PHONY : src\modules\leaderboard\infrastructure\LeaderboardPayloadCodec.cpp.s
+
+src\modules\leaderboard\presentation\LeaderboardNavigator.obj: src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardNavigator.obj
+
+# target to build an object file
+src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.obj
+
+src\modules\leaderboard\presentation\LeaderboardNavigator.i: src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardNavigator.i
+
+# target to preprocess a source file
+src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.i
+
+src\modules\leaderboard\presentation\LeaderboardNavigator.s: src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardNavigator.s
+
+# target to generate assembly for a file
+src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardNavigator.cpp.s
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Events.obj: src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Events.obj
+
+# target to build an object file
+src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.obj
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Events.i: src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Events.i
+
+# target to preprocess a source file
+src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.i
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Events.s: src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Events.s
+
+# target to generate assembly for a file
+src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Events.cpp.s
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Layout.obj: src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Layout.obj
+
+# target to build an object file
+src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.obj
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Layout.i: src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Layout.i
+
+# target to preprocess a source file
+src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.i
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Layout.s: src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Layout.s
+
+# target to generate assembly for a file
+src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Layout.cpp.s
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Loading.obj: src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Loading.obj
+
+# target to build an object file
+src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.obj
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Loading.i: src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Loading.i
+
+# target to preprocess a source file
+src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.i
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Loading.s: src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Loading.s
+
+# target to generate assembly for a file
+src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Loading.cpp.s
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Pages.obj: src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Pages.obj
+
+# target to build an object file
+src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.obj
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Pages.i: src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Pages.i
+
+# target to preprocess a source file
+src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.i
+
+src\modules\leaderboard\presentation\LeaderboardPanel.Pages.s: src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Pages.s
+
+# target to generate assembly for a file
+src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.Pages.cpp.s
+
+src\modules\leaderboard\presentation\LeaderboardPanel.obj: src\modules\leaderboard\presentation\LeaderboardPanel.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.obj
+
+# target to build an object file
+src\modules\leaderboard\presentation\LeaderboardPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.cpp.obj
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.cpp.obj
+
+src\modules\leaderboard\presentation\LeaderboardPanel.i: src\modules\leaderboard\presentation\LeaderboardPanel.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.i
+
+# target to preprocess a source file
+src\modules\leaderboard\presentation\LeaderboardPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.cpp.i
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.cpp.i
+
+src\modules\leaderboard\presentation\LeaderboardPanel.s: src\modules\leaderboard\presentation\LeaderboardPanel.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.s
+
+# target to generate assembly for a file
+src\modules\leaderboard\presentation\LeaderboardPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\leaderboard\presentation\LeaderboardPanel.cpp.s
+.PHONY : src\modules\leaderboard\presentation\LeaderboardPanel.cpp.s
 
 src\modules\main_menu\presentation\MainMenuContent.obj: src\modules\main_menu\presentation\MainMenuContent.cpp.obj
 .PHONY : src\modules\main_menu\presentation\MainMenuContent.obj
@@ -2370,6 +2910,1023 @@ src\modules\options\presentation\OptionsViewStateAdapter.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.s
 .PHONY : src\modules\options\presentation\OptionsViewStateAdapter.cpp.s
 
+src\modules\presence\application\PresenceMonitor.obj: src\modules\presence\application\PresenceMonitor.cpp.obj
+.PHONY : src\modules\presence\application\PresenceMonitor.obj
+
+# target to build an object file
+src\modules\presence\application\PresenceMonitor.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\application\PresenceMonitor.cpp.obj
+.PHONY : src\modules\presence\application\PresenceMonitor.cpp.obj
+
+src\modules\presence\application\PresenceMonitor.i: src\modules\presence\application\PresenceMonitor.cpp.i
+.PHONY : src\modules\presence\application\PresenceMonitor.i
+
+# target to preprocess a source file
+src\modules\presence\application\PresenceMonitor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\application\PresenceMonitor.cpp.i
+.PHONY : src\modules\presence\application\PresenceMonitor.cpp.i
+
+src\modules\presence\application\PresenceMonitor.s: src\modules\presence\application\PresenceMonitor.cpp.s
+.PHONY : src\modules\presence\application\PresenceMonitor.s
+
+# target to generate assembly for a file
+src\modules\presence\application\PresenceMonitor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\application\PresenceMonitor.cpp.s
+.PHONY : src\modules\presence\application\PresenceMonitor.cpp.s
+
+src\modules\presence\infrastructure\PresenceConnectionFactory.obj: src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.obj
+.PHONY : src\modules\presence\infrastructure\PresenceConnectionFactory.obj
+
+# target to build an object file
+src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.obj
+.PHONY : src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.obj
+
+src\modules\presence\infrastructure\PresenceConnectionFactory.i: src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.i
+.PHONY : src\modules\presence\infrastructure\PresenceConnectionFactory.i
+
+# target to preprocess a source file
+src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.i
+.PHONY : src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.i
+
+src\modules\presence\infrastructure\PresenceConnectionFactory.s: src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.s
+.PHONY : src\modules\presence\infrastructure\PresenceConnectionFactory.s
+
+# target to generate assembly for a file
+src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.s
+.PHONY : src\modules\presence\infrastructure\PresenceConnectionFactory.cpp.s
+
+src\modules\presence\infrastructure\PresencePayloadCodec.obj: src\modules\presence\infrastructure\PresencePayloadCodec.cpp.obj
+.PHONY : src\modules\presence\infrastructure\PresencePayloadCodec.obj
+
+# target to build an object file
+src\modules\presence\infrastructure\PresencePayloadCodec.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\infrastructure\PresencePayloadCodec.cpp.obj
+.PHONY : src\modules\presence\infrastructure\PresencePayloadCodec.cpp.obj
+
+src\modules\presence\infrastructure\PresencePayloadCodec.i: src\modules\presence\infrastructure\PresencePayloadCodec.cpp.i
+.PHONY : src\modules\presence\infrastructure\PresencePayloadCodec.i
+
+# target to preprocess a source file
+src\modules\presence\infrastructure\PresencePayloadCodec.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\infrastructure\PresencePayloadCodec.cpp.i
+.PHONY : src\modules\presence\infrastructure\PresencePayloadCodec.cpp.i
+
+src\modules\presence\infrastructure\PresencePayloadCodec.s: src\modules\presence\infrastructure\PresencePayloadCodec.cpp.s
+.PHONY : src\modules\presence\infrastructure\PresencePayloadCodec.s
+
+# target to generate assembly for a file
+src\modules\presence\infrastructure\PresencePayloadCodec.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\infrastructure\PresencePayloadCodec.cpp.s
+.PHONY : src\modules\presence\infrastructure\PresencePayloadCodec.cpp.s
+
+src\modules\presence\presentation\PresenceActionController.obj: src\modules\presence\presentation\PresenceActionController.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceActionController.obj
+
+# target to build an object file
+src\modules\presence\presentation\PresenceActionController.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceActionController.cpp.obj
+
+src\modules\presence\presentation\PresenceActionController.i: src\modules\presence\presentation\PresenceActionController.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceActionController.i
+
+# target to preprocess a source file
+src\modules\presence\presentation\PresenceActionController.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceActionController.cpp.i
+
+src\modules\presence\presentation\PresenceActionController.s: src\modules\presence\presentation\PresenceActionController.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceActionController.s
+
+# target to generate assembly for a file
+src\modules\presence\presentation\PresenceActionController.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceActionController.cpp.s
+
+src\modules\presence\presentation\PresenceFrame.Actions.obj: src\modules\presence\presentation\PresenceFrame.Actions.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceFrame.Actions.obj
+
+# target to build an object file
+src\modules\presence\presentation\PresenceFrame.Actions.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.Actions.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceFrame.Actions.cpp.obj
+
+src\modules\presence\presentation\PresenceFrame.Actions.i: src\modules\presence\presentation\PresenceFrame.Actions.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceFrame.Actions.i
+
+# target to preprocess a source file
+src\modules\presence\presentation\PresenceFrame.Actions.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.Actions.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceFrame.Actions.cpp.i
+
+src\modules\presence\presentation\PresenceFrame.Actions.s: src\modules\presence\presentation\PresenceFrame.Actions.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceFrame.Actions.s
+
+# target to generate assembly for a file
+src\modules\presence\presentation\PresenceFrame.Actions.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.Actions.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceFrame.Actions.cpp.s
+
+src\modules\presence\presentation\PresenceFrame.Events.obj: src\modules\presence\presentation\PresenceFrame.Events.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceFrame.Events.obj
+
+# target to build an object file
+src\modules\presence\presentation\PresenceFrame.Events.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.Events.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceFrame.Events.cpp.obj
+
+src\modules\presence\presentation\PresenceFrame.Events.i: src\modules\presence\presentation\PresenceFrame.Events.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceFrame.Events.i
+
+# target to preprocess a source file
+src\modules\presence\presentation\PresenceFrame.Events.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.Events.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceFrame.Events.cpp.i
+
+src\modules\presence\presentation\PresenceFrame.Events.s: src\modules\presence\presentation\PresenceFrame.Events.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceFrame.Events.s
+
+# target to generate assembly for a file
+src\modules\presence\presentation\PresenceFrame.Events.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.Events.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceFrame.Events.cpp.s
+
+src\modules\presence\presentation\PresenceFrame.Layout.obj: src\modules\presence\presentation\PresenceFrame.Layout.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceFrame.Layout.obj
+
+# target to build an object file
+src\modules\presence\presentation\PresenceFrame.Layout.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.Layout.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceFrame.Layout.cpp.obj
+
+src\modules\presence\presentation\PresenceFrame.Layout.i: src\modules\presence\presentation\PresenceFrame.Layout.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceFrame.Layout.i
+
+# target to preprocess a source file
+src\modules\presence\presentation\PresenceFrame.Layout.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.Layout.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceFrame.Layout.cpp.i
+
+src\modules\presence\presentation\PresenceFrame.Layout.s: src\modules\presence\presentation\PresenceFrame.Layout.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceFrame.Layout.s
+
+# target to generate assembly for a file
+src\modules\presence\presentation\PresenceFrame.Layout.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.Layout.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceFrame.Layout.cpp.s
+
+src\modules\presence\presentation\PresenceFrame.State.obj: src\modules\presence\presentation\PresenceFrame.State.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceFrame.State.obj
+
+# target to build an object file
+src\modules\presence\presentation\PresenceFrame.State.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.State.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceFrame.State.cpp.obj
+
+src\modules\presence\presentation\PresenceFrame.State.i: src\modules\presence\presentation\PresenceFrame.State.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceFrame.State.i
+
+# target to preprocess a source file
+src\modules\presence\presentation\PresenceFrame.State.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.State.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceFrame.State.cpp.i
+
+src\modules\presence\presentation\PresenceFrame.State.s: src\modules\presence\presentation\PresenceFrame.State.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceFrame.State.s
+
+# target to generate assembly for a file
+src\modules\presence\presentation\PresenceFrame.State.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.State.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceFrame.State.cpp.s
+
+src\modules\presence\presentation\PresenceFrame.obj: src\modules\presence\presentation\PresenceFrame.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceFrame.obj
+
+# target to build an object file
+src\modules\presence\presentation\PresenceFrame.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.obj
+.PHONY : src\modules\presence\presentation\PresenceFrame.cpp.obj
+
+src\modules\presence\presentation\PresenceFrame.i: src\modules\presence\presentation\PresenceFrame.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceFrame.i
+
+# target to preprocess a source file
+src\modules\presence\presentation\PresenceFrame.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.i
+.PHONY : src\modules\presence\presentation\PresenceFrame.cpp.i
+
+src\modules\presence\presentation\PresenceFrame.s: src\modules\presence\presentation\PresenceFrame.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceFrame.s
+
+# target to generate assembly for a file
+src\modules\presence\presentation\PresenceFrame.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.s
+.PHONY : src\modules\presence\presentation\PresenceFrame.cpp.s
+
+src\modules\presence\presentation\PresencePresentationModel.obj: src\modules\presence\presentation\PresencePresentationModel.cpp.obj
+.PHONY : src\modules\presence\presentation\PresencePresentationModel.obj
+
+# target to build an object file
+src\modules\presence\presentation\PresencePresentationModel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresencePresentationModel.cpp.obj
+.PHONY : src\modules\presence\presentation\PresencePresentationModel.cpp.obj
+
+src\modules\presence\presentation\PresencePresentationModel.i: src\modules\presence\presentation\PresencePresentationModel.cpp.i
+.PHONY : src\modules\presence\presentation\PresencePresentationModel.i
+
+# target to preprocess a source file
+src\modules\presence\presentation\PresencePresentationModel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresencePresentationModel.cpp.i
+.PHONY : src\modules\presence\presentation\PresencePresentationModel.cpp.i
+
+src\modules\presence\presentation\PresencePresentationModel.s: src\modules\presence\presentation\PresencePresentationModel.cpp.s
+.PHONY : src\modules\presence\presentation\PresencePresentationModel.s
+
+# target to generate assembly for a file
+src\modules\presence\presentation\PresencePresentationModel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresencePresentationModel.cpp.s
+.PHONY : src\modules\presence\presentation\PresencePresentationModel.cpp.s
+
+src\modules\rooms\application\RoomLobbyService.obj: src\modules\rooms\application\RoomLobbyService.cpp.obj
+.PHONY : src\modules\rooms\application\RoomLobbyService.obj
+
+# target to build an object file
+src\modules\rooms\application\RoomLobbyService.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\application\RoomLobbyService.cpp.obj
+.PHONY : src\modules\rooms\application\RoomLobbyService.cpp.obj
+
+src\modules\rooms\application\RoomLobbyService.i: src\modules\rooms\application\RoomLobbyService.cpp.i
+.PHONY : src\modules\rooms\application\RoomLobbyService.i
+
+# target to preprocess a source file
+src\modules\rooms\application\RoomLobbyService.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\application\RoomLobbyService.cpp.i
+.PHONY : src\modules\rooms\application\RoomLobbyService.cpp.i
+
+src\modules\rooms\application\RoomLobbyService.s: src\modules\rooms\application\RoomLobbyService.cpp.s
+.PHONY : src\modules\rooms\application\RoomLobbyService.s
+
+# target to generate assembly for a file
+src\modules\rooms\application\RoomLobbyService.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\application\RoomLobbyService.cpp.s
+.PHONY : src\modules\rooms\application\RoomLobbyService.cpp.s
+
+src\modules\rooms\application\RoomSessionService.Realtime.obj: src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj
+.PHONY : src\modules\rooms\application\RoomSessionService.Realtime.obj
+
+# target to build an object file
+src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj
+.PHONY : src\modules\rooms\application\RoomSessionService.Realtime.cpp.obj
+
+src\modules\rooms\application\RoomSessionService.Realtime.i: src\modules\rooms\application\RoomSessionService.Realtime.cpp.i
+.PHONY : src\modules\rooms\application\RoomSessionService.Realtime.i
+
+# target to preprocess a source file
+src\modules\rooms\application\RoomSessionService.Realtime.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.i
+.PHONY : src\modules\rooms\application\RoomSessionService.Realtime.cpp.i
+
+src\modules\rooms\application\RoomSessionService.Realtime.s: src\modules\rooms\application\RoomSessionService.Realtime.cpp.s
+.PHONY : src\modules\rooms\application\RoomSessionService.Realtime.s
+
+# target to generate assembly for a file
+src\modules\rooms\application\RoomSessionService.Realtime.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.Realtime.cpp.s
+.PHONY : src\modules\rooms\application\RoomSessionService.Realtime.cpp.s
+
+src\modules\rooms\application\RoomSessionService.obj: src\modules\rooms\application\RoomSessionService.cpp.obj
+.PHONY : src\modules\rooms\application\RoomSessionService.obj
+
+# target to build an object file
+src\modules\rooms\application\RoomSessionService.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\application\RoomSessionService.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.obj
+.PHONY : src\modules\rooms\application\RoomSessionService.cpp.obj
+
+src\modules\rooms\application\RoomSessionService.i: src\modules\rooms\application\RoomSessionService.cpp.i
+.PHONY : src\modules\rooms\application\RoomSessionService.i
+
+# target to preprocess a source file
+src\modules\rooms\application\RoomSessionService.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\application\RoomSessionService.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.i
+.PHONY : src\modules\rooms\application\RoomSessionService.cpp.i
+
+src\modules\rooms\application\RoomSessionService.s: src\modules\rooms\application\RoomSessionService.cpp.s
+.PHONY : src\modules\rooms\application\RoomSessionService.s
+
+# target to generate assembly for a file
+src\modules\rooms\application\RoomSessionService.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\application\RoomSessionService.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\application\RoomSessionService.cpp.s
+.PHONY : src\modules\rooms\application\RoomSessionService.cpp.s
+
+src\modules\rooms\infrastructure\RoomLobbyApi.obj: src\modules\rooms\infrastructure\RoomLobbyApi.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomLobbyApi.obj
+
+# target to build an object file
+src\modules\rooms\infrastructure\RoomLobbyApi.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomLobbyApi.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomLobbyApi.cpp.obj
+
+src\modules\rooms\infrastructure\RoomLobbyApi.i: src\modules\rooms\infrastructure\RoomLobbyApi.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomLobbyApi.i
+
+# target to preprocess a source file
+src\modules\rooms\infrastructure\RoomLobbyApi.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomLobbyApi.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomLobbyApi.cpp.i
+
+src\modules\rooms\infrastructure\RoomLobbyApi.s: src\modules\rooms\infrastructure\RoomLobbyApi.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomLobbyApi.s
+
+# target to generate assembly for a file
+src\modules\rooms\infrastructure\RoomLobbyApi.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomLobbyApi.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomLobbyApi.cpp.s
+
+src\modules\rooms\infrastructure\RoomPayloadCodec.obj: src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomPayloadCodec.obj
+
+# target to build an object file
+src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.obj
+
+src\modules\rooms\infrastructure\RoomPayloadCodec.i: src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomPayloadCodec.i
+
+# target to preprocess a source file
+src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.i
+
+src\modules\rooms\infrastructure\RoomPayloadCodec.s: src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomPayloadCodec.s
+
+# target to generate assembly for a file
+src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomPayloadCodec.cpp.s
+
+src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.obj: src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.obj
+
+# target to build an object file
+src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.obj
+
+src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.i: src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.i
+
+# target to preprocess a source file
+src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.i
+
+src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.s: src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.s
+
+# target to generate assembly for a file
+src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.CommandResponses.cpp.s
+
+src\modules\rooms\infrastructure\RoomSessionGateway.Commands.obj: src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.Commands.obj
+
+# target to build an object file
+src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.obj
+
+src\modules\rooms\infrastructure\RoomSessionGateway.Commands.i: src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.Commands.i
+
+# target to preprocess a source file
+src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.i
+
+src\modules\rooms\infrastructure\RoomSessionGateway.Commands.s: src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.Commands.s
+
+# target to generate assembly for a file
+src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.Commands.cpp.s
+
+src\modules\rooms\infrastructure\RoomSessionGateway.State.obj: src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.State.obj
+
+# target to build an object file
+src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.obj
+
+src\modules\rooms\infrastructure\RoomSessionGateway.State.i: src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.State.i
+
+# target to preprocess a source file
+src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.i
+
+src\modules\rooms\infrastructure\RoomSessionGateway.State.s: src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.State.s
+
+# target to generate assembly for a file
+src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.State.cpp.s
+
+src\modules\rooms\infrastructure\RoomSessionGateway.obj: src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.obj
+
+# target to build an object file
+src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.cpp.obj
+
+src\modules\rooms\infrastructure\RoomSessionGateway.i: src\modules\rooms\infrastructure\RoomSessionGateway.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.i
+
+# target to preprocess a source file
+src\modules\rooms\infrastructure\RoomSessionGateway.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.i
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.cpp.i
+
+src\modules\rooms\infrastructure\RoomSessionGateway.s: src\modules\rooms\infrastructure\RoomSessionGateway.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.s
+
+# target to generate assembly for a file
+src\modules\rooms\infrastructure\RoomSessionGateway.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\infrastructure\RoomSessionGateway.cpp.s
+.PHONY : src\modules\rooms\infrastructure\RoomSessionGateway.cpp.s
+
+src\modules\rooms\presentation\JoinRoomsPanel.Events.obj: src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.obj
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Events.obj
+
+# target to build an object file
+src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.obj
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.obj
+
+src\modules\rooms\presentation\JoinRoomsPanel.Events.i: src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.i
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Events.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.i
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.i
+
+src\modules\rooms\presentation\JoinRoomsPanel.Events.s: src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.s
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Events.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.s
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Events.cpp.s
+
+src\modules\rooms\presentation\JoinRoomsPanel.Layout.obj: src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.obj
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Layout.obj
+
+# target to build an object file
+src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.obj
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.obj
+
+src\modules\rooms\presentation\JoinRoomsPanel.Layout.i: src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.i
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Layout.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.i
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.i
+
+src\modules\rooms\presentation\JoinRoomsPanel.Layout.s: src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.s
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Layout.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.s
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Layout.cpp.s
+
+src\modules\rooms\presentation\JoinRoomsPanel.Loading.obj: src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.obj
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Loading.obj
+
+# target to build an object file
+src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.obj
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.obj
+
+src\modules\rooms\presentation\JoinRoomsPanel.Loading.i: src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.i
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Loading.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.i
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.i
+
+src\modules\rooms\presentation\JoinRoomsPanel.Loading.s: src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.s
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Loading.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.s
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Loading.cpp.s
+
+src\modules\rooms\presentation\JoinRoomsPanel.Pages.obj: src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.obj
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Pages.obj
+
+# target to build an object file
+src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.obj
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.obj
+
+src\modules\rooms\presentation\JoinRoomsPanel.Pages.i: src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.i
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Pages.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.i
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.i
+
+src\modules\rooms\presentation\JoinRoomsPanel.Pages.s: src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.s
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Pages.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.s
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.Pages.cpp.s
+
+src\modules\rooms\presentation\JoinRoomsPanel.obj: src\modules\rooms\presentation\JoinRoomsPanel.cpp.obj
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.obj
+
+# target to build an object file
+src\modules\rooms\presentation\JoinRoomsPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.cpp.obj
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.cpp.obj
+
+src\modules\rooms\presentation\JoinRoomsPanel.i: src\modules\rooms\presentation\JoinRoomsPanel.cpp.i
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\JoinRoomsPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.cpp.i
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.cpp.i
+
+src\modules\rooms\presentation\JoinRoomsPanel.s: src\modules\rooms\presentation\JoinRoomsPanel.cpp.s
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\JoinRoomsPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\JoinRoomsPanel.cpp.s
+.PHONY : src\modules\rooms\presentation\JoinRoomsPanel.cpp.s
+
+src\modules\rooms\presentation\RoomGameZoneAnchor.obj: src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomGameZoneAnchor.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.obj
+
+src\modules\rooms\presentation\RoomGameZoneAnchor.i: src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomGameZoneAnchor.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.i
+
+src\modules\rooms\presentation\RoomGameZoneAnchor.s: src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomGameZoneAnchor.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomGameZoneAnchor.cpp.s
+
+src\modules\rooms\presentation\RoomLobbyNavigator.obj: src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomLobbyNavigator.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomLobbyNavigator.cpp.obj
+
+src\modules\rooms\presentation\RoomLobbyNavigator.i: src\modules\rooms\presentation\RoomLobbyNavigator.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomLobbyNavigator.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomLobbyNavigator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomLobbyNavigator.cpp.i
+
+src\modules\rooms\presentation\RoomLobbyNavigator.s: src\modules\rooms\presentation\RoomLobbyNavigator.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomLobbyNavigator.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomLobbyNavigator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomLobbyNavigator.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomLobbyNavigator.cpp.s
+
+src\modules\rooms\presentation\RoomLobbyPresentationModel.obj: src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomLobbyPresentationModel.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.obj
+
+src\modules\rooms\presentation\RoomLobbyPresentationModel.i: src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomLobbyPresentationModel.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.i
+
+src\modules\rooms\presentation\RoomLobbyPresentationModel.s: src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomLobbyPresentationModel.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomLobbyPresentationModel.cpp.s
+
+src\modules\rooms\presentation\RoomOpenRequest.obj: src\modules\rooms\presentation\RoomOpenRequest.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomOpenRequest.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomOpenRequest.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomOpenRequest.cpp.obj
+
+src\modules\rooms\presentation\RoomOpenRequest.i: src\modules\rooms\presentation\RoomOpenRequest.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomOpenRequest.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomOpenRequest.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomOpenRequest.cpp.i
+
+src\modules\rooms\presentation\RoomOpenRequest.s: src\modules\rooms\presentation\RoomOpenRequest.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomOpenRequest.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomOpenRequest.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomOpenRequest.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomOpenRequest.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.Actions.obj: src\modules\rooms\presentation\RoomPanel.Actions.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Actions.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.Actions.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Actions.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Actions.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.Actions.i: src\modules\rooms\presentation\RoomPanel.Actions.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Actions.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.Actions.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Actions.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Actions.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.Actions.s: src\modules\rooms\presentation\RoomPanel.Actions.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Actions.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.Actions.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Actions.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Actions.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.Commands.obj: src\modules\rooms\presentation\RoomPanel.Commands.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Commands.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.Commands.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Commands.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Commands.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.Commands.i: src\modules\rooms\presentation\RoomPanel.Commands.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Commands.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.Commands.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Commands.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Commands.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.Commands.s: src\modules\rooms\presentation\RoomPanel.Commands.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Commands.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.Commands.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Commands.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Commands.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.Confirmation.obj: src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Confirmation.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.Confirmation.i: src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Confirmation.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.Confirmation.s: src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Confirmation.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Confirmation.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.Events.obj: src\modules\rooms\presentation\RoomPanel.Events.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Events.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.Events.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Events.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Events.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.Events.i: src\modules\rooms\presentation\RoomPanel.Events.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Events.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.Events.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Events.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Events.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.Events.s: src\modules\rooms\presentation\RoomPanel.Events.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Events.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.Events.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Events.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Events.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.Layout.obj: src\modules\rooms\presentation\RoomPanel.Layout.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Layout.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.Layout.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Layout.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Layout.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.Layout.i: src\modules\rooms\presentation\RoomPanel.Layout.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Layout.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.Layout.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Layout.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Layout.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.Layout.s: src\modules\rooms\presentation\RoomPanel.Layout.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Layout.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.Layout.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Layout.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Layout.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.Loading.obj: src\modules\rooms\presentation\RoomPanel.Loading.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Loading.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.Loading.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Loading.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Loading.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.Loading.i: src\modules\rooms\presentation\RoomPanel.Loading.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Loading.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.Loading.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Loading.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Loading.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.Loading.s: src\modules\rooms\presentation\RoomPanel.Loading.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Loading.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.Loading.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Loading.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Loading.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.Preparation.obj: src\modules\rooms\presentation\RoomPanel.Preparation.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Preparation.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.Preparation.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Preparation.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Preparation.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.Preparation.i: src\modules\rooms\presentation\RoomPanel.Preparation.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Preparation.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.Preparation.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Preparation.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Preparation.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.Preparation.s: src\modules\rooms\presentation\RoomPanel.Preparation.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Preparation.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.Preparation.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Preparation.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Preparation.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.Realtime.obj: src\modules\rooms\presentation\RoomPanel.Realtime.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Realtime.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.Realtime.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Realtime.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Realtime.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.Realtime.i: src\modules\rooms\presentation\RoomPanel.Realtime.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Realtime.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.Realtime.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Realtime.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Realtime.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.Realtime.s: src\modules\rooms\presentation\RoomPanel.Realtime.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Realtime.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.Realtime.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Realtime.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Realtime.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.Shortcuts.obj: src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Shortcuts.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.Shortcuts.i: src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Shortcuts.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.Shortcuts.s: src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Shortcuts.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.Shortcuts.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.State.obj: src\modules\rooms\presentation\RoomPanel.State.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.State.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.State.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.State.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.State.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.State.i: src\modules\rooms\presentation\RoomPanel.State.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.State.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.State.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.State.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.State.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.State.s: src\modules\rooms\presentation\RoomPanel.State.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.State.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.State.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.State.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.State.cpp.s
+
+src\modules\rooms\presentation\RoomPanel.obj: src\modules\rooms\presentation\RoomPanel.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPanel.cpp.obj
+
+src\modules\rooms\presentation\RoomPanel.i: src\modules\rooms\presentation\RoomPanel.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPanel.cpp.i
+
+src\modules\rooms\presentation\RoomPanel.s: src\modules\rooms\presentation\RoomPanel.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPanel.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPanel.cpp.s
+
+src\modules\rooms\presentation\RoomPresentationModel.obj: src\modules\rooms\presentation\RoomPresentationModel.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPresentationModel.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomPresentationModel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomPresentationModel.cpp.obj
+
+src\modules\rooms\presentation\RoomPresentationModel.i: src\modules\rooms\presentation\RoomPresentationModel.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPresentationModel.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomPresentationModel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomPresentationModel.cpp.i
+
+src\modules\rooms\presentation\RoomPresentationModel.s: src\modules\rooms\presentation\RoomPresentationModel.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPresentationModel.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomPresentationModel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomPresentationModel.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomPresentationModel.cpp.s
+
+src\modules\rooms\presentation\RoomShortcutPolicy.obj: src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomShortcutPolicy.obj
+
+# target to build an object file
+src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj
+.PHONY : src\modules\rooms\presentation\RoomShortcutPolicy.cpp.obj
+
+src\modules\rooms\presentation\RoomShortcutPolicy.i: src\modules\rooms\presentation\RoomShortcutPolicy.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomShortcutPolicy.i
+
+# target to preprocess a source file
+src\modules\rooms\presentation\RoomShortcutPolicy.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.i
+.PHONY : src\modules\rooms\presentation\RoomShortcutPolicy.cpp.i
+
+src\modules\rooms\presentation\RoomShortcutPolicy.s: src\modules\rooms\presentation\RoomShortcutPolicy.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomShortcutPolicy.s
+
+# target to generate assembly for a file
+src\modules\rooms\presentation\RoomShortcutPolicy.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\rooms\presentation\RoomShortcutPolicy.cpp.s
+.PHONY : src\modules\rooms\presentation\RoomShortcutPolicy.cpp.s
+
 src\modules\session\application\SessionStore.obj: src\modules\session\application\SessionStore.cpp.obj
 .PHONY : src\modules\session\application\SessionStore.obj
 
@@ -2565,30 +4122,6 @@ src\modules\social\presentation\SocialEventRouter.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialEventRouter.cpp.s
 .PHONY : src\modules\social\presentation\SocialEventRouter.cpp.s
 
-src\modules\social\presentation\SocialFocusController.obj: src\modules\social\presentation\SocialFocusController.cpp.obj
-.PHONY : src\modules\social\presentation\SocialFocusController.obj
-
-# target to build an object file
-src\modules\social\presentation\SocialFocusController.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFocusController.cpp.obj
-.PHONY : src\modules\social\presentation\SocialFocusController.cpp.obj
-
-src\modules\social\presentation\SocialFocusController.i: src\modules\social\presentation\SocialFocusController.cpp.i
-.PHONY : src\modules\social\presentation\SocialFocusController.i
-
-# target to preprocess a source file
-src\modules\social\presentation\SocialFocusController.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFocusController.cpp.i
-.PHONY : src\modules\social\presentation\SocialFocusController.cpp.i
-
-src\modules\social\presentation\SocialFocusController.s: src\modules\social\presentation\SocialFocusController.cpp.s
-.PHONY : src\modules\social\presentation\SocialFocusController.s
-
-# target to generate assembly for a file
-src\modules\social\presentation\SocialFocusController.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFocusController.cpp.s
-.PHONY : src\modules\social\presentation\SocialFocusController.cpp.s
-
 src\modules\social\presentation\SocialFrame.Bindings.obj: src\modules\social\presentation\SocialFrame.Bindings.cpp.obj
 .PHONY : src\modules\social\presentation\SocialFrame.Bindings.obj
 
@@ -2780,6 +4313,54 @@ src\modules\social\presentation\SocialPresentationModel.s: src\modules\social\pr
 src\modules\social\presentation\SocialPresentationModel.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialPresentationModel.cpp.s
 .PHONY : src\modules\social\presentation\SocialPresentationModel.cpp.s
+
+src\modules\social\presentation\SocialProfileCoordinator.obj: src\modules\social\presentation\SocialProfileCoordinator.cpp.obj
+.PHONY : src\modules\social\presentation\SocialProfileCoordinator.obj
+
+# target to build an object file
+src\modules\social\presentation\SocialProfileCoordinator.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialProfileCoordinator.cpp.obj
+.PHONY : src\modules\social\presentation\SocialProfileCoordinator.cpp.obj
+
+src\modules\social\presentation\SocialProfileCoordinator.i: src\modules\social\presentation\SocialProfileCoordinator.cpp.i
+.PHONY : src\modules\social\presentation\SocialProfileCoordinator.i
+
+# target to preprocess a source file
+src\modules\social\presentation\SocialProfileCoordinator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialProfileCoordinator.cpp.i
+.PHONY : src\modules\social\presentation\SocialProfileCoordinator.cpp.i
+
+src\modules\social\presentation\SocialProfileCoordinator.s: src\modules\social\presentation\SocialProfileCoordinator.cpp.s
+.PHONY : src\modules\social\presentation\SocialProfileCoordinator.s
+
+# target to generate assembly for a file
+src\modules\social\presentation\SocialProfileCoordinator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialProfileCoordinator.cpp.s
+.PHONY : src\modules\social\presentation\SocialProfileCoordinator.cpp.s
+
+src\modules\social\presentation\SocialScreenCoordinator.obj: src\modules\social\presentation\SocialScreenCoordinator.cpp.obj
+.PHONY : src\modules\social\presentation\SocialScreenCoordinator.obj
+
+# target to build an object file
+src\modules\social\presentation\SocialScreenCoordinator.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialScreenCoordinator.cpp.obj
+.PHONY : src\modules\social\presentation\SocialScreenCoordinator.cpp.obj
+
+src\modules\social\presentation\SocialScreenCoordinator.i: src\modules\social\presentation\SocialScreenCoordinator.cpp.i
+.PHONY : src\modules\social\presentation\SocialScreenCoordinator.i
+
+# target to preprocess a source file
+src\modules\social\presentation\SocialScreenCoordinator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialScreenCoordinator.cpp.i
+.PHONY : src\modules\social\presentation\SocialScreenCoordinator.cpp.i
+
+src\modules\social\presentation\SocialScreenCoordinator.s: src\modules\social\presentation\SocialScreenCoordinator.cpp.s
+.PHONY : src\modules\social\presentation\SocialScreenCoordinator.s
+
+# target to generate assembly for a file
+src\modules\social\presentation\SocialScreenCoordinator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialScreenCoordinator.cpp.s
+.PHONY : src\modules\social\presentation\SocialScreenCoordinator.cpp.s
 
 src\modules\social\presentation\SocialSectionCoordinator.obj: src\modules\social\presentation\SocialSectionCoordinator.cpp.obj
 .PHONY : src\modules\social\presentation\SocialSectionCoordinator.obj
@@ -3021,6 +4602,228 @@ src\modules\social\presentation\SocialView.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialView.cpp.s
 .PHONY : src\modules\social\presentation\SocialView.cpp.s
 
+src\modules\storybook\application\StoryBookService.obj: src\modules\storybook\application\StoryBookService.cpp.obj
+.PHONY : src\modules\storybook\application\StoryBookService.obj
+
+# target to build an object file
+src\modules\storybook\application\StoryBookService.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\application\StoryBookService.cpp.obj
+.PHONY : src\modules\storybook\application\StoryBookService.cpp.obj
+
+src\modules\storybook\application\StoryBookService.i: src\modules\storybook\application\StoryBookService.cpp.i
+.PHONY : src\modules\storybook\application\StoryBookService.i
+
+# target to preprocess a source file
+src\modules\storybook\application\StoryBookService.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\application\StoryBookService.cpp.i
+.PHONY : src\modules\storybook\application\StoryBookService.cpp.i
+
+src\modules\storybook\application\StoryBookService.s: src\modules\storybook\application\StoryBookService.cpp.s
+.PHONY : src\modules\storybook\application\StoryBookService.s
+
+# target to generate assembly for a file
+src\modules\storybook\application\StoryBookService.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\application\StoryBookService.cpp.s
+.PHONY : src\modules\storybook\application\StoryBookService.cpp.s
+
+src\modules\storybook\infrastructure\StoryBookApi.obj: src\modules\storybook\infrastructure\StoryBookApi.cpp.obj
+.PHONY : src\modules\storybook\infrastructure\StoryBookApi.obj
+
+# target to build an object file
+src\modules\storybook\infrastructure\StoryBookApi.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\infrastructure\StoryBookApi.cpp.obj
+.PHONY : src\modules\storybook\infrastructure\StoryBookApi.cpp.obj
+
+src\modules\storybook\infrastructure\StoryBookApi.i: src\modules\storybook\infrastructure\StoryBookApi.cpp.i
+.PHONY : src\modules\storybook\infrastructure\StoryBookApi.i
+
+# target to preprocess a source file
+src\modules\storybook\infrastructure\StoryBookApi.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\infrastructure\StoryBookApi.cpp.i
+.PHONY : src\modules\storybook\infrastructure\StoryBookApi.cpp.i
+
+src\modules\storybook\infrastructure\StoryBookApi.s: src\modules\storybook\infrastructure\StoryBookApi.cpp.s
+.PHONY : src\modules\storybook\infrastructure\StoryBookApi.s
+
+# target to generate assembly for a file
+src\modules\storybook\infrastructure\StoryBookApi.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\infrastructure\StoryBookApi.cpp.s
+.PHONY : src\modules\storybook\infrastructure\StoryBookApi.cpp.s
+
+src\modules\storybook\infrastructure\StoryBookPayloadCodec.obj: src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj
+.PHONY : src\modules\storybook\infrastructure\StoryBookPayloadCodec.obj
+
+# target to build an object file
+src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj
+.PHONY : src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.obj
+
+src\modules\storybook\infrastructure\StoryBookPayloadCodec.i: src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.i
+.PHONY : src\modules\storybook\infrastructure\StoryBookPayloadCodec.i
+
+# target to preprocess a source file
+src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.i
+.PHONY : src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.i
+
+src\modules\storybook\infrastructure\StoryBookPayloadCodec.s: src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.s
+.PHONY : src\modules\storybook\infrastructure\StoryBookPayloadCodec.s
+
+# target to generate assembly for a file
+src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.s
+.PHONY : src\modules\storybook\infrastructure\StoryBookPayloadCodec.cpp.s
+
+src\modules\storybook\presentation\StoryBookNavigator.obj: src\modules\storybook\presentation\StoryBookNavigator.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookNavigator.obj
+
+# target to build an object file
+src\modules\storybook\presentation\StoryBookNavigator.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookNavigator.cpp.obj
+
+src\modules\storybook\presentation\StoryBookNavigator.i: src\modules\storybook\presentation\StoryBookNavigator.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookNavigator.i
+
+# target to preprocess a source file
+src\modules\storybook\presentation\StoryBookNavigator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookNavigator.cpp.i
+
+src\modules\storybook\presentation\StoryBookNavigator.s: src\modules\storybook\presentation\StoryBookNavigator.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookNavigator.s
+
+# target to generate assembly for a file
+src\modules\storybook\presentation\StoryBookNavigator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\storybook\presentation\StoryBookNavigator.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookNavigator.cpp.s
+
+src\modules\storybook\presentation\StoryBookPanel.Events.obj: src\modules\storybook\presentation\StoryBookPanel.Events.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Events.obj
+
+# target to build an object file
+src\modules\storybook\presentation\StoryBookPanel.Events.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Events.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Events.cpp.obj
+
+src\modules\storybook\presentation\StoryBookPanel.Events.i: src\modules\storybook\presentation\StoryBookPanel.Events.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Events.i
+
+# target to preprocess a source file
+src\modules\storybook\presentation\StoryBookPanel.Events.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Events.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Events.cpp.i
+
+src\modules\storybook\presentation\StoryBookPanel.Events.s: src\modules\storybook\presentation\StoryBookPanel.Events.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Events.s
+
+# target to generate assembly for a file
+src\modules\storybook\presentation\StoryBookPanel.Events.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Events.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Events.cpp.s
+
+src\modules\storybook\presentation\StoryBookPanel.Layout.obj: src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Layout.obj
+
+# target to build an object file
+src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.obj
+
+src\modules\storybook\presentation\StoryBookPanel.Layout.i: src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Layout.i
+
+# target to preprocess a source file
+src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.i
+
+src\modules\storybook\presentation\StoryBookPanel.Layout.s: src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Layout.s
+
+# target to generate assembly for a file
+src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Layout.cpp.s
+
+src\modules\storybook\presentation\StoryBookPanel.Loading.obj: src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Loading.obj
+
+# target to build an object file
+src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.obj
+
+src\modules\storybook\presentation\StoryBookPanel.Loading.i: src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Loading.i
+
+# target to preprocess a source file
+src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.i
+
+src\modules\storybook\presentation\StoryBookPanel.Loading.s: src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Loading.s
+
+# target to generate assembly for a file
+src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Loading.cpp.s
+
+src\modules\storybook\presentation\StoryBookPanel.Pages.obj: src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Pages.obj
+
+# target to build an object file
+src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.obj
+
+src\modules\storybook\presentation\StoryBookPanel.Pages.i: src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Pages.i
+
+# target to preprocess a source file
+src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.i
+
+src\modules\storybook\presentation\StoryBookPanel.Pages.s: src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Pages.s
+
+# target to generate assembly for a file
+src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.Pages.cpp.s
+
+src\modules\storybook\presentation\StoryBookPanel.obj: src\modules\storybook\presentation\StoryBookPanel.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.obj
+
+# target to build an object file
+src\modules\storybook\presentation\StoryBookPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.cpp.obj
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.cpp.obj
+
+src\modules\storybook\presentation\StoryBookPanel.i: src\modules\storybook\presentation\StoryBookPanel.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.i
+
+# target to preprocess a source file
+src\modules\storybook\presentation\StoryBookPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.cpp.i
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.cpp.i
+
+src\modules\storybook\presentation\StoryBookPanel.s: src\modules\storybook\presentation\StoryBookPanel.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.s
+
+# target to generate assembly for a file
+src\modules\storybook\presentation\StoryBookPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\storybook\presentation\StoryBookPanel.cpp.s
+.PHONY : src\modules\storybook\presentation\StoryBookPanel.cpp.s
+
 src\modules\user\application\LoginUseCase.obj: src\modules\user\application\LoginUseCase.cpp.obj
 .PHONY : src\modules\user\application\LoginUseCase.obj
 
@@ -3141,6 +4944,279 @@ src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.s
 .PHONY : src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.s
 
+src\modules\vault\application\VaultService.obj: src\modules\vault\application\VaultService.cpp.obj
+.PHONY : src\modules\vault\application\VaultService.obj
+
+# target to build an object file
+src\modules\vault\application\VaultService.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\application\VaultService.cpp.obj
+.PHONY : src\modules\vault\application\VaultService.cpp.obj
+
+src\modules\vault\application\VaultService.i: src\modules\vault\application\VaultService.cpp.i
+.PHONY : src\modules\vault\application\VaultService.i
+
+# target to preprocess a source file
+src\modules\vault\application\VaultService.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\application\VaultService.cpp.i
+.PHONY : src\modules\vault\application\VaultService.cpp.i
+
+src\modules\vault\application\VaultService.s: src\modules\vault\application\VaultService.cpp.s
+.PHONY : src\modules\vault\application\VaultService.s
+
+# target to generate assembly for a file
+src\modules\vault\application\VaultService.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\application\VaultService.cpp.s
+.PHONY : src\modules\vault\application\VaultService.cpp.s
+
+src\modules\vault\infrastructure\VaultApi.obj: src\modules\vault\infrastructure\VaultApi.cpp.obj
+.PHONY : src\modules\vault\infrastructure\VaultApi.obj
+
+# target to build an object file
+src\modules\vault\infrastructure\VaultApi.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\infrastructure\VaultApi.cpp.obj
+.PHONY : src\modules\vault\infrastructure\VaultApi.cpp.obj
+
+src\modules\vault\infrastructure\VaultApi.i: src\modules\vault\infrastructure\VaultApi.cpp.i
+.PHONY : src\modules\vault\infrastructure\VaultApi.i
+
+# target to preprocess a source file
+src\modules\vault\infrastructure\VaultApi.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\infrastructure\VaultApi.cpp.i
+.PHONY : src\modules\vault\infrastructure\VaultApi.cpp.i
+
+src\modules\vault\infrastructure\VaultApi.s: src\modules\vault\infrastructure\VaultApi.cpp.s
+.PHONY : src\modules\vault\infrastructure\VaultApi.s
+
+# target to generate assembly for a file
+src\modules\vault\infrastructure\VaultApi.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\infrastructure\VaultApi.cpp.s
+.PHONY : src\modules\vault\infrastructure\VaultApi.cpp.s
+
+src\modules\vault\infrastructure\VaultPayloadCodec.obj: src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj
+.PHONY : src\modules\vault\infrastructure\VaultPayloadCodec.obj
+
+# target to build an object file
+src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj
+.PHONY : src\modules\vault\infrastructure\VaultPayloadCodec.cpp.obj
+
+src\modules\vault\infrastructure\VaultPayloadCodec.i: src\modules\vault\infrastructure\VaultPayloadCodec.cpp.i
+.PHONY : src\modules\vault\infrastructure\VaultPayloadCodec.i
+
+# target to preprocess a source file
+src\modules\vault\infrastructure\VaultPayloadCodec.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.i
+.PHONY : src\modules\vault\infrastructure\VaultPayloadCodec.cpp.i
+
+src\modules\vault\infrastructure\VaultPayloadCodec.s: src\modules\vault\infrastructure\VaultPayloadCodec.cpp.s
+.PHONY : src\modules\vault\infrastructure\VaultPayloadCodec.s
+
+# target to generate assembly for a file
+src\modules\vault\infrastructure\VaultPayloadCodec.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\infrastructure\VaultPayloadCodec.cpp.s
+.PHONY : src\modules\vault\infrastructure\VaultPayloadCodec.cpp.s
+
+src\modules\vault\presentation\VaultNavigator.obj: src\modules\vault\presentation\VaultNavigator.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultNavigator.obj
+
+# target to build an object file
+src\modules\vault\presentation\VaultNavigator.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultNavigator.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultNavigator.cpp.obj
+
+src\modules\vault\presentation\VaultNavigator.i: src\modules\vault\presentation\VaultNavigator.cpp.i
+.PHONY : src\modules\vault\presentation\VaultNavigator.i
+
+# target to preprocess a source file
+src\modules\vault\presentation\VaultNavigator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultNavigator.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.i
+.PHONY : src\modules\vault\presentation\VaultNavigator.cpp.i
+
+src\modules\vault\presentation\VaultNavigator.s: src\modules\vault\presentation\VaultNavigator.cpp.s
+.PHONY : src\modules\vault\presentation\VaultNavigator.s
+
+# target to generate assembly for a file
+src\modules\vault\presentation\VaultNavigator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultNavigator.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultNavigator.cpp.s
+.PHONY : src\modules\vault\presentation\VaultNavigator.cpp.s
+
+src\modules\vault\presentation\VaultPanel.Actions.obj: src\modules\vault\presentation\VaultPanel.Actions.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.Actions.obj
+
+# target to build an object file
+src\modules\vault\presentation\VaultPanel.Actions.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Actions.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.Actions.cpp.obj
+
+src\modules\vault\presentation\VaultPanel.Actions.i: src\modules\vault\presentation\VaultPanel.Actions.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.Actions.i
+
+# target to preprocess a source file
+src\modules\vault\presentation\VaultPanel.Actions.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Actions.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.Actions.cpp.i
+
+src\modules\vault\presentation\VaultPanel.Actions.s: src\modules\vault\presentation\VaultPanel.Actions.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.Actions.s
+
+# target to generate assembly for a file
+src\modules\vault\presentation\VaultPanel.Actions.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Actions.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.Actions.cpp.s
+
+src\modules\vault\presentation\VaultPanel.Events.obj: src\modules\vault\presentation\VaultPanel.Events.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.Events.obj
+
+# target to build an object file
+src\modules\vault\presentation\VaultPanel.Events.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Events.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.Events.cpp.obj
+
+src\modules\vault\presentation\VaultPanel.Events.i: src\modules\vault\presentation\VaultPanel.Events.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.Events.i
+
+# target to preprocess a source file
+src\modules\vault\presentation\VaultPanel.Events.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Events.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.Events.cpp.i
+
+src\modules\vault\presentation\VaultPanel.Events.s: src\modules\vault\presentation\VaultPanel.Events.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.Events.s
+
+# target to generate assembly for a file
+src\modules\vault\presentation\VaultPanel.Events.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Events.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.Events.cpp.s
+
+src\modules\vault\presentation\VaultPanel.Layout.obj: src\modules\vault\presentation\VaultPanel.Layout.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.Layout.obj
+
+# target to build an object file
+src\modules\vault\presentation\VaultPanel.Layout.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Layout.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.Layout.cpp.obj
+
+src\modules\vault\presentation\VaultPanel.Layout.i: src\modules\vault\presentation\VaultPanel.Layout.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.Layout.i
+
+# target to preprocess a source file
+src\modules\vault\presentation\VaultPanel.Layout.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Layout.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.Layout.cpp.i
+
+src\modules\vault\presentation\VaultPanel.Layout.s: src\modules\vault\presentation\VaultPanel.Layout.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.Layout.s
+
+# target to generate assembly for a file
+src\modules\vault\presentation\VaultPanel.Layout.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Layout.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.Layout.cpp.s
+
+src\modules\vault\presentation\VaultPanel.Loading.obj: src\modules\vault\presentation\VaultPanel.Loading.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.Loading.obj
+
+# target to build an object file
+src\modules\vault\presentation\VaultPanel.Loading.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Loading.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.Loading.cpp.obj
+
+src\modules\vault\presentation\VaultPanel.Loading.i: src\modules\vault\presentation\VaultPanel.Loading.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.Loading.i
+
+# target to preprocess a source file
+src\modules\vault\presentation\VaultPanel.Loading.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Loading.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.Loading.cpp.i
+
+src\modules\vault\presentation\VaultPanel.Loading.s: src\modules\vault\presentation\VaultPanel.Loading.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.Loading.s
+
+# target to generate assembly for a file
+src\modules\vault\presentation\VaultPanel.Loading.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Loading.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.Loading.cpp.s
+
+src\modules\vault\presentation\VaultPanel.Pages.obj: src\modules\vault\presentation\VaultPanel.Pages.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.Pages.obj
+
+# target to build an object file
+src\modules\vault\presentation\VaultPanel.Pages.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Pages.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.Pages.cpp.obj
+
+src\modules\vault\presentation\VaultPanel.Pages.i: src\modules\vault\presentation\VaultPanel.Pages.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.Pages.i
+
+# target to preprocess a source file
+src\modules\vault\presentation\VaultPanel.Pages.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Pages.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.Pages.cpp.i
+
+src\modules\vault\presentation\VaultPanel.Pages.s: src\modules\vault\presentation\VaultPanel.Pages.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.Pages.s
+
+# target to generate assembly for a file
+src\modules\vault\presentation\VaultPanel.Pages.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.Pages.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.Pages.cpp.s
+
+src\modules\vault\presentation\VaultPanel.obj: src\modules\vault\presentation\VaultPanel.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.obj
+
+# target to build an object file
+src\modules\vault\presentation\VaultPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPanel.cpp.obj
+
+src\modules\vault\presentation\VaultPanel.i: src\modules\vault\presentation\VaultPanel.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.i
+
+# target to preprocess a source file
+src\modules\vault\presentation\VaultPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPanel.cpp.i
+
+src\modules\vault\presentation\VaultPanel.s: src\modules\vault\presentation\VaultPanel.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.s
+
+# target to generate assembly for a file
+src\modules\vault\presentation\VaultPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPanel.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPanel.cpp.s
+
+src\modules\vault\presentation\VaultPresentationModel.obj: src\modules\vault\presentation\VaultPresentationModel.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPresentationModel.obj
+
+# target to build an object file
+src\modules\vault\presentation\VaultPresentationModel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.obj
+.PHONY : src\modules\vault\presentation\VaultPresentationModel.cpp.obj
+
+src\modules\vault\presentation\VaultPresentationModel.i: src\modules\vault\presentation\VaultPresentationModel.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPresentationModel.i
+
+# target to preprocess a source file
+src\modules\vault\presentation\VaultPresentationModel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.i
+.PHONY : src\modules\vault\presentation\VaultPresentationModel.cpp.i
+
+src\modules\vault\presentation\VaultPresentationModel.s: src\modules\vault\presentation\VaultPresentationModel.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPresentationModel.s
+
+# target to generate assembly for a file
+src\modules\vault\presentation\VaultPresentationModel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\vault\presentation\VaultPresentationModel.cpp.s
+.PHONY : src\modules\vault\presentation\VaultPresentationModel.cpp.s
+
 src\shared\accessibility\AccessibilityUtils.obj: src\shared\accessibility\AccessibilityUtils.cpp.obj
 .PHONY : src\shared\accessibility\AccessibilityUtils.obj
 
@@ -3191,6 +5267,102 @@ src\shared\accessibility\ActionButton.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\ActionButton.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\ActionButton.cpp.s
 .PHONY : src\shared\accessibility\ActionButton.cpp.s
+
+src\shared\accessibility\FocusCoordinator.obj: src\shared\accessibility\FocusCoordinator.cpp.obj
+.PHONY : src\shared\accessibility\FocusCoordinator.obj
+
+# target to build an object file
+src\shared\accessibility\FocusCoordinator.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusCoordinator.cpp.obj
+.PHONY : src\shared\accessibility\FocusCoordinator.cpp.obj
+
+src\shared\accessibility\FocusCoordinator.i: src\shared\accessibility\FocusCoordinator.cpp.i
+.PHONY : src\shared\accessibility\FocusCoordinator.i
+
+# target to preprocess a source file
+src\shared\accessibility\FocusCoordinator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusCoordinator.cpp.i
+.PHONY : src\shared\accessibility\FocusCoordinator.cpp.i
+
+src\shared\accessibility\FocusCoordinator.s: src\shared\accessibility\FocusCoordinator.cpp.s
+.PHONY : src\shared\accessibility\FocusCoordinator.s
+
+# target to generate assembly for a file
+src\shared\accessibility\FocusCoordinator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusCoordinator.cpp.s
+.PHONY : src\shared\accessibility\FocusCoordinator.cpp.s
+
+src\shared\accessibility\FocusManager.obj: src\shared\accessibility\FocusManager.cpp.obj
+.PHONY : src\shared\accessibility\FocusManager.obj
+
+# target to build an object file
+src\shared\accessibility\FocusManager.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusManager.cpp.obj
+.PHONY : src\shared\accessibility\FocusManager.cpp.obj
+
+src\shared\accessibility\FocusManager.i: src\shared\accessibility\FocusManager.cpp.i
+.PHONY : src\shared\accessibility\FocusManager.i
+
+# target to preprocess a source file
+src\shared\accessibility\FocusManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusManager.cpp.i
+.PHONY : src\shared\accessibility\FocusManager.cpp.i
+
+src\shared\accessibility\FocusManager.s: src\shared\accessibility\FocusManager.cpp.s
+.PHONY : src\shared\accessibility\FocusManager.s
+
+# target to generate assembly for a file
+src\shared\accessibility\FocusManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusManager.cpp.s
+.PHONY : src\shared\accessibility\FocusManager.cpp.s
+
+src\shared\accessibility\FocusMemory.obj: src\shared\accessibility\FocusMemory.cpp.obj
+.PHONY : src\shared\accessibility\FocusMemory.obj
+
+# target to build an object file
+src\shared\accessibility\FocusMemory.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusMemory.cpp.obj
+.PHONY : src\shared\accessibility\FocusMemory.cpp.obj
+
+src\shared\accessibility\FocusMemory.i: src\shared\accessibility\FocusMemory.cpp.i
+.PHONY : src\shared\accessibility\FocusMemory.i
+
+# target to preprocess a source file
+src\shared\accessibility\FocusMemory.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusMemory.cpp.i
+.PHONY : src\shared\accessibility\FocusMemory.cpp.i
+
+src\shared\accessibility\FocusMemory.s: src\shared\accessibility\FocusMemory.cpp.s
+.PHONY : src\shared\accessibility\FocusMemory.s
+
+# target to generate assembly for a file
+src\shared\accessibility\FocusMemory.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusMemory.cpp.s
+.PHONY : src\shared\accessibility\FocusMemory.cpp.s
+
+src\shared\accessibility\FocusTransition.obj: src\shared\accessibility\FocusTransition.cpp.obj
+.PHONY : src\shared\accessibility\FocusTransition.obj
+
+# target to build an object file
+src\shared\accessibility\FocusTransition.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusTransition.cpp.obj
+.PHONY : src\shared\accessibility\FocusTransition.cpp.obj
+
+src\shared\accessibility\FocusTransition.i: src\shared\accessibility\FocusTransition.cpp.i
+.PHONY : src\shared\accessibility\FocusTransition.i
+
+# target to preprocess a source file
+src\shared\accessibility\FocusTransition.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusTransition.cpp.i
+.PHONY : src\shared\accessibility\FocusTransition.cpp.i
+
+src\shared\accessibility\FocusTransition.s: src\shared\accessibility\FocusTransition.cpp.s
+.PHONY : src\shared\accessibility\FocusTransition.s
+
+# target to generate assembly for a file
+src\shared\accessibility\FocusTransition.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\FocusTransition.cpp.s
+.PHONY : src\shared\accessibility\FocusTransition.cpp.s
 
 src\shared\accessibility\NavigationController.obj: src\shared\accessibility\NavigationController.cpp.obj
 .PHONY : src\shared\accessibility\NavigationController.obj
@@ -3540,6 +5712,33 @@ src\shared\persistence\JsonFileStorage.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\persistence\JsonFileStorage.cpp.s
 .PHONY : src\shared\persistence\JsonFileStorage.cpp.s
 
+src\shared\security\JwtPayload.obj: src\shared\security\JwtPayload.cpp.obj
+.PHONY : src\shared\security\JwtPayload.obj
+
+# target to build an object file
+src\shared\security\JwtPayload.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\security\JwtPayload.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.obj
+.PHONY : src\shared\security\JwtPayload.cpp.obj
+
+src\shared\security\JwtPayload.i: src\shared\security\JwtPayload.cpp.i
+.PHONY : src\shared\security\JwtPayload.i
+
+# target to preprocess a source file
+src\shared\security\JwtPayload.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\security\JwtPayload.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.i
+.PHONY : src\shared\security\JwtPayload.cpp.i
+
+src\shared\security\JwtPayload.s: src\shared\security\JwtPayload.cpp.s
+.PHONY : src\shared\security\JwtPayload.s
+
+# target to generate assembly for a file
+src\shared\security\JwtPayload.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\security\JwtPayload.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\security\JwtPayload.cpp.s
+.PHONY : src\shared\security\JwtPayload.cpp.s
+
 src\shared\security\SecurityUtils.obj: src\shared\security\SecurityUtils.cpp.obj
 .PHONY : src\shared\security\SecurityUtils.obj
 
@@ -3651,6 +5850,30 @@ src\shared\ui\Theme.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\Theme.cpp.s
 .PHONY : src\shared\ui\Theme.cpp.s
 
+src\shared\ui\controls\VerticalMenu.Entries.obj: src\shared\ui\controls\VerticalMenu.Entries.cpp.obj
+.PHONY : src\shared\ui\controls\VerticalMenu.Entries.obj
+
+# target to build an object file
+src\shared\ui\controls\VerticalMenu.Entries.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.Entries.cpp.obj
+.PHONY : src\shared\ui\controls\VerticalMenu.Entries.cpp.obj
+
+src\shared\ui\controls\VerticalMenu.Entries.i: src\shared\ui\controls\VerticalMenu.Entries.cpp.i
+.PHONY : src\shared\ui\controls\VerticalMenu.Entries.i
+
+# target to preprocess a source file
+src\shared\ui\controls\VerticalMenu.Entries.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.Entries.cpp.i
+.PHONY : src\shared\ui\controls\VerticalMenu.Entries.cpp.i
+
+src\shared\ui\controls\VerticalMenu.Entries.s: src\shared\ui\controls\VerticalMenu.Entries.cpp.s
+.PHONY : src\shared\ui\controls\VerticalMenu.Entries.s
+
+# target to generate assembly for a file
+src\shared\ui\controls\VerticalMenu.Entries.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.Entries.cpp.s
+.PHONY : src\shared\ui\controls\VerticalMenu.Entries.cpp.s
+
 src\shared\ui\controls\VerticalMenu.obj: src\shared\ui\controls\VerticalMenu.cpp.obj
 .PHONY : src\shared\ui\controls\VerticalMenu.obj
 
@@ -3674,6 +5897,30 @@ src\shared\ui\controls\VerticalMenu.s: src\shared\ui\controls\VerticalMenu.cpp.s
 src\shared\ui\controls\VerticalMenu.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.cpp.s
 .PHONY : src\shared\ui\controls\VerticalMenu.cpp.s
+
+src\shared\ui\controls\VerticalMenuEntry.obj: src\shared\ui\controls\VerticalMenuEntry.cpp.obj
+.PHONY : src\shared\ui\controls\VerticalMenuEntry.obj
+
+# target to build an object file
+src\shared\ui\controls\VerticalMenuEntry.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenuEntry.cpp.obj
+.PHONY : src\shared\ui\controls\VerticalMenuEntry.cpp.obj
+
+src\shared\ui\controls\VerticalMenuEntry.i: src\shared\ui\controls\VerticalMenuEntry.cpp.i
+.PHONY : src\shared\ui\controls\VerticalMenuEntry.i
+
+# target to preprocess a source file
+src\shared\ui\controls\VerticalMenuEntry.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenuEntry.cpp.i
+.PHONY : src\shared\ui\controls\VerticalMenuEntry.cpp.i
+
+src\shared\ui\controls\VerticalMenuEntry.s: src\shared\ui\controls\VerticalMenuEntry.cpp.s
+.PHONY : src\shared\ui\controls\VerticalMenuEntry.s
+
+# target to generate assembly for a file
+src\shared\ui\controls\VerticalMenuEntry.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenuEntry.cpp.s
+.PHONY : src\shared\ui\controls\VerticalMenuEntry.cpp.s
 
 tests\NetworkProtocolTests.obj: tests\NetworkProtocolTests.cpp.obj
 .PHONY : tests\NetworkProtocolTests.obj
@@ -3773,9 +6020,24 @@ help:
 	@echo ... src/app/navigation/AppNavigator.obj
 	@echo ... src/app/navigation/AppNavigator.i
 	@echo ... src/app/navigation/AppNavigator.s
+	@echo ... src/app/navigation/HostFrame.obj
+	@echo ... src/app/navigation/HostFrame.i
+	@echo ... src/app/navigation/HostFrame.s
 	@echo ... src/bootstrap/AppBootstrap.obj
 	@echo ... src/bootstrap/AppBootstrap.i
 	@echo ... src/bootstrap/AppBootstrap.s
+	@echo ... src/bootstrap/AppCompositions.Game.obj
+	@echo ... src/bootstrap/AppCompositions.Game.i
+	@echo ... src/bootstrap/AppCompositions.Game.s
+	@echo ... src/bootstrap/AppCompositions.Network.obj
+	@echo ... src/bootstrap/AppCompositions.Network.i
+	@echo ... src/bootstrap/AppCompositions.Network.s
+	@echo ... src/bootstrap/AppCompositions.Social.obj
+	@echo ... src/bootstrap/AppCompositions.Social.i
+	@echo ... src/bootstrap/AppCompositions.Social.s
+	@echo ... src/bootstrap/AppCompositions.User.obj
+	@echo ... src/bootstrap/AppCompositions.User.i
+	@echo ... src/bootstrap/AppCompositions.User.s
 	@echo ... src/bootstrap/AppRuntime.obj
 	@echo ... src/bootstrap/AppRuntime.i
 	@echo ... src/bootstrap/AppRuntime.s
@@ -3794,6 +6056,30 @@ help:
 	@echo ... src/modules/about/presentation/AboutPageCoordinator.obj
 	@echo ... src/modules/about/presentation/AboutPageCoordinator.i
 	@echo ... src/modules/about/presentation/AboutPageCoordinator.s
+	@echo ... src/modules/catalog/application/CatalogService.obj
+	@echo ... src/modules/catalog/application/CatalogService.i
+	@echo ... src/modules/catalog/application/CatalogService.s
+	@echo ... src/modules/catalog/infrastructure/CatalogApi.obj
+	@echo ... src/modules/catalog/infrastructure/CatalogApi.i
+	@echo ... src/modules/catalog/infrastructure/CatalogApi.s
+	@echo ... src/modules/catalog/infrastructure/CatalogPayloadCodec.obj
+	@echo ... src/modules/catalog/infrastructure/CatalogPayloadCodec.i
+	@echo ... src/modules/catalog/infrastructure/CatalogPayloadCodec.s
+	@echo ... src/modules/catalog/presentation/CatalogPanel.Events.obj
+	@echo ... src/modules/catalog/presentation/CatalogPanel.Events.i
+	@echo ... src/modules/catalog/presentation/CatalogPanel.Events.s
+	@echo ... src/modules/catalog/presentation/CatalogPanel.Layout.obj
+	@echo ... src/modules/catalog/presentation/CatalogPanel.Layout.i
+	@echo ... src/modules/catalog/presentation/CatalogPanel.Layout.s
+	@echo ... src/modules/catalog/presentation/CatalogPanel.Loading.obj
+	@echo ... src/modules/catalog/presentation/CatalogPanel.Loading.i
+	@echo ... src/modules/catalog/presentation/CatalogPanel.Loading.s
+	@echo ... src/modules/catalog/presentation/CatalogPanel.obj
+	@echo ... src/modules/catalog/presentation/CatalogPanel.i
+	@echo ... src/modules/catalog/presentation/CatalogPanel.s
+	@echo ... src/modules/catalog/presentation/CatalogShelfNavigator.obj
+	@echo ... src/modules/catalog/presentation/CatalogShelfNavigator.i
+	@echo ... src/modules/catalog/presentation/CatalogShelfNavigator.s
 	@echo ... src/modules/chat/application/ChatMessageStore.obj
 	@echo ... src/modules/chat/application/ChatMessageStore.i
 	@echo ... src/modules/chat/application/ChatMessageStore.s
@@ -3863,6 +6149,33 @@ help:
 	@echo ... src/modules/home/presentation/HomeFrame.obj
 	@echo ... src/modules/home/presentation/HomeFrame.i
 	@echo ... src/modules/home/presentation/HomeFrame.s
+	@echo ... src/modules/leaderboard/application/LeaderboardService.obj
+	@echo ... src/modules/leaderboard/application/LeaderboardService.i
+	@echo ... src/modules/leaderboard/application/LeaderboardService.s
+	@echo ... src/modules/leaderboard/infrastructure/LeaderboardApi.obj
+	@echo ... src/modules/leaderboard/infrastructure/LeaderboardApi.i
+	@echo ... src/modules/leaderboard/infrastructure/LeaderboardApi.s
+	@echo ... src/modules/leaderboard/infrastructure/LeaderboardPayloadCodec.obj
+	@echo ... src/modules/leaderboard/infrastructure/LeaderboardPayloadCodec.i
+	@echo ... src/modules/leaderboard/infrastructure/LeaderboardPayloadCodec.s
+	@echo ... src/modules/leaderboard/presentation/LeaderboardNavigator.obj
+	@echo ... src/modules/leaderboard/presentation/LeaderboardNavigator.i
+	@echo ... src/modules/leaderboard/presentation/LeaderboardNavigator.s
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Events.obj
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Events.i
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Events.s
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Layout.obj
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Layout.i
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Layout.s
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Loading.obj
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Loading.i
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Loading.s
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Pages.obj
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Pages.i
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.Pages.s
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.obj
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.i
+	@echo ... src/modules/leaderboard/presentation/LeaderboardPanel.s
 	@echo ... src/modules/main_menu/presentation/MainMenuContent.obj
 	@echo ... src/modules/main_menu/presentation/MainMenuContent.i
 	@echo ... src/modules/main_menu/presentation/MainMenuContent.s
@@ -3989,6 +6302,129 @@ help:
 	@echo ... src/modules/options/presentation/OptionsViewStateAdapter.obj
 	@echo ... src/modules/options/presentation/OptionsViewStateAdapter.i
 	@echo ... src/modules/options/presentation/OptionsViewStateAdapter.s
+	@echo ... src/modules/presence/application/PresenceMonitor.obj
+	@echo ... src/modules/presence/application/PresenceMonitor.i
+	@echo ... src/modules/presence/application/PresenceMonitor.s
+	@echo ... src/modules/presence/infrastructure/PresenceConnectionFactory.obj
+	@echo ... src/modules/presence/infrastructure/PresenceConnectionFactory.i
+	@echo ... src/modules/presence/infrastructure/PresenceConnectionFactory.s
+	@echo ... src/modules/presence/infrastructure/PresencePayloadCodec.obj
+	@echo ... src/modules/presence/infrastructure/PresencePayloadCodec.i
+	@echo ... src/modules/presence/infrastructure/PresencePayloadCodec.s
+	@echo ... src/modules/presence/presentation/PresenceActionController.obj
+	@echo ... src/modules/presence/presentation/PresenceActionController.i
+	@echo ... src/modules/presence/presentation/PresenceActionController.s
+	@echo ... src/modules/presence/presentation/PresenceFrame.Actions.obj
+	@echo ... src/modules/presence/presentation/PresenceFrame.Actions.i
+	@echo ... src/modules/presence/presentation/PresenceFrame.Actions.s
+	@echo ... src/modules/presence/presentation/PresenceFrame.Events.obj
+	@echo ... src/modules/presence/presentation/PresenceFrame.Events.i
+	@echo ... src/modules/presence/presentation/PresenceFrame.Events.s
+	@echo ... src/modules/presence/presentation/PresenceFrame.Layout.obj
+	@echo ... src/modules/presence/presentation/PresenceFrame.Layout.i
+	@echo ... src/modules/presence/presentation/PresenceFrame.Layout.s
+	@echo ... src/modules/presence/presentation/PresenceFrame.State.obj
+	@echo ... src/modules/presence/presentation/PresenceFrame.State.i
+	@echo ... src/modules/presence/presentation/PresenceFrame.State.s
+	@echo ... src/modules/presence/presentation/PresenceFrame.obj
+	@echo ... src/modules/presence/presentation/PresenceFrame.i
+	@echo ... src/modules/presence/presentation/PresenceFrame.s
+	@echo ... src/modules/presence/presentation/PresencePresentationModel.obj
+	@echo ... src/modules/presence/presentation/PresencePresentationModel.i
+	@echo ... src/modules/presence/presentation/PresencePresentationModel.s
+	@echo ... src/modules/rooms/application/RoomLobbyService.obj
+	@echo ... src/modules/rooms/application/RoomLobbyService.i
+	@echo ... src/modules/rooms/application/RoomLobbyService.s
+	@echo ... src/modules/rooms/application/RoomSessionService.Realtime.obj
+	@echo ... src/modules/rooms/application/RoomSessionService.Realtime.i
+	@echo ... src/modules/rooms/application/RoomSessionService.Realtime.s
+	@echo ... src/modules/rooms/application/RoomSessionService.obj
+	@echo ... src/modules/rooms/application/RoomSessionService.i
+	@echo ... src/modules/rooms/application/RoomSessionService.s
+	@echo ... src/modules/rooms/infrastructure/RoomLobbyApi.obj
+	@echo ... src/modules/rooms/infrastructure/RoomLobbyApi.i
+	@echo ... src/modules/rooms/infrastructure/RoomLobbyApi.s
+	@echo ... src/modules/rooms/infrastructure/RoomPayloadCodec.obj
+	@echo ... src/modules/rooms/infrastructure/RoomPayloadCodec.i
+	@echo ... src/modules/rooms/infrastructure/RoomPayloadCodec.s
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.obj
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.i
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.s
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.Commands.obj
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.Commands.i
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.Commands.s
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.State.obj
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.State.i
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.State.s
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.obj
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.i
+	@echo ... src/modules/rooms/infrastructure/RoomSessionGateway.s
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Events.obj
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Events.i
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Events.s
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Layout.obj
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Layout.i
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Layout.s
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Loading.obj
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Loading.i
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Loading.s
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Pages.obj
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Pages.i
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.Pages.s
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.obj
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.i
+	@echo ... src/modules/rooms/presentation/JoinRoomsPanel.s
+	@echo ... src/modules/rooms/presentation/RoomGameZoneAnchor.obj
+	@echo ... src/modules/rooms/presentation/RoomGameZoneAnchor.i
+	@echo ... src/modules/rooms/presentation/RoomGameZoneAnchor.s
+	@echo ... src/modules/rooms/presentation/RoomLobbyNavigator.obj
+	@echo ... src/modules/rooms/presentation/RoomLobbyNavigator.i
+	@echo ... src/modules/rooms/presentation/RoomLobbyNavigator.s
+	@echo ... src/modules/rooms/presentation/RoomLobbyPresentationModel.obj
+	@echo ... src/modules/rooms/presentation/RoomLobbyPresentationModel.i
+	@echo ... src/modules/rooms/presentation/RoomLobbyPresentationModel.s
+	@echo ... src/modules/rooms/presentation/RoomOpenRequest.obj
+	@echo ... src/modules/rooms/presentation/RoomOpenRequest.i
+	@echo ... src/modules/rooms/presentation/RoomOpenRequest.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.Actions.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.Actions.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.Actions.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.Commands.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.Commands.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.Commands.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.Confirmation.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.Confirmation.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.Confirmation.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.Events.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.Events.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.Events.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.Layout.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.Layout.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.Layout.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.Loading.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.Loading.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.Loading.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.Preparation.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.Preparation.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.Preparation.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.Realtime.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.Realtime.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.Realtime.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.Shortcuts.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.Shortcuts.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.Shortcuts.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.State.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.State.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.State.s
+	@echo ... src/modules/rooms/presentation/RoomPanel.obj
+	@echo ... src/modules/rooms/presentation/RoomPanel.i
+	@echo ... src/modules/rooms/presentation/RoomPanel.s
+	@echo ... src/modules/rooms/presentation/RoomPresentationModel.obj
+	@echo ... src/modules/rooms/presentation/RoomPresentationModel.i
+	@echo ... src/modules/rooms/presentation/RoomPresentationModel.s
+	@echo ... src/modules/rooms/presentation/RoomShortcutPolicy.obj
+	@echo ... src/modules/rooms/presentation/RoomShortcutPolicy.i
+	@echo ... src/modules/rooms/presentation/RoomShortcutPolicy.s
 	@echo ... src/modules/session/application/SessionStore.obj
 	@echo ... src/modules/session/application/SessionStore.i
 	@echo ... src/modules/session/application/SessionStore.s
@@ -4013,9 +6449,6 @@ help:
 	@echo ... src/modules/social/presentation/SocialEventRouter.obj
 	@echo ... src/modules/social/presentation/SocialEventRouter.i
 	@echo ... src/modules/social/presentation/SocialEventRouter.s
-	@echo ... src/modules/social/presentation/SocialFocusController.obj
-	@echo ... src/modules/social/presentation/SocialFocusController.i
-	@echo ... src/modules/social/presentation/SocialFocusController.s
 	@echo ... src/modules/social/presentation/SocialFrame.Bindings.obj
 	@echo ... src/modules/social/presentation/SocialFrame.Bindings.i
 	@echo ... src/modules/social/presentation/SocialFrame.Bindings.s
@@ -4040,6 +6473,12 @@ help:
 	@echo ... src/modules/social/presentation/SocialPresentationModel.obj
 	@echo ... src/modules/social/presentation/SocialPresentationModel.i
 	@echo ... src/modules/social/presentation/SocialPresentationModel.s
+	@echo ... src/modules/social/presentation/SocialProfileCoordinator.obj
+	@echo ... src/modules/social/presentation/SocialProfileCoordinator.i
+	@echo ... src/modules/social/presentation/SocialProfileCoordinator.s
+	@echo ... src/modules/social/presentation/SocialScreenCoordinator.obj
+	@echo ... src/modules/social/presentation/SocialScreenCoordinator.i
+	@echo ... src/modules/social/presentation/SocialScreenCoordinator.s
 	@echo ... src/modules/social/presentation/SocialSectionCoordinator.obj
 	@echo ... src/modules/social/presentation/SocialSectionCoordinator.i
 	@echo ... src/modules/social/presentation/SocialSectionCoordinator.s
@@ -4070,6 +6509,33 @@ help:
 	@echo ... src/modules/social/presentation/SocialView.obj
 	@echo ... src/modules/social/presentation/SocialView.i
 	@echo ... src/modules/social/presentation/SocialView.s
+	@echo ... src/modules/storybook/application/StoryBookService.obj
+	@echo ... src/modules/storybook/application/StoryBookService.i
+	@echo ... src/modules/storybook/application/StoryBookService.s
+	@echo ... src/modules/storybook/infrastructure/StoryBookApi.obj
+	@echo ... src/modules/storybook/infrastructure/StoryBookApi.i
+	@echo ... src/modules/storybook/infrastructure/StoryBookApi.s
+	@echo ... src/modules/storybook/infrastructure/StoryBookPayloadCodec.obj
+	@echo ... src/modules/storybook/infrastructure/StoryBookPayloadCodec.i
+	@echo ... src/modules/storybook/infrastructure/StoryBookPayloadCodec.s
+	@echo ... src/modules/storybook/presentation/StoryBookNavigator.obj
+	@echo ... src/modules/storybook/presentation/StoryBookNavigator.i
+	@echo ... src/modules/storybook/presentation/StoryBookNavigator.s
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Events.obj
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Events.i
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Events.s
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Layout.obj
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Layout.i
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Layout.s
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Loading.obj
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Loading.i
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Loading.s
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Pages.obj
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Pages.i
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.Pages.s
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.obj
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.i
+	@echo ... src/modules/storybook/presentation/StoryBookPanel.s
 	@echo ... src/modules/user/application/LoginUseCase.obj
 	@echo ... src/modules/user/application/LoginUseCase.i
 	@echo ... src/modules/user/application/LoginUseCase.s
@@ -4085,12 +6551,57 @@ help:
 	@echo ... src/modules/user/infrastructure/remote/UserAuthRemoteDataSource.obj
 	@echo ... src/modules/user/infrastructure/remote/UserAuthRemoteDataSource.i
 	@echo ... src/modules/user/infrastructure/remote/UserAuthRemoteDataSource.s
+	@echo ... src/modules/vault/application/VaultService.obj
+	@echo ... src/modules/vault/application/VaultService.i
+	@echo ... src/modules/vault/application/VaultService.s
+	@echo ... src/modules/vault/infrastructure/VaultApi.obj
+	@echo ... src/modules/vault/infrastructure/VaultApi.i
+	@echo ... src/modules/vault/infrastructure/VaultApi.s
+	@echo ... src/modules/vault/infrastructure/VaultPayloadCodec.obj
+	@echo ... src/modules/vault/infrastructure/VaultPayloadCodec.i
+	@echo ... src/modules/vault/infrastructure/VaultPayloadCodec.s
+	@echo ... src/modules/vault/presentation/VaultNavigator.obj
+	@echo ... src/modules/vault/presentation/VaultNavigator.i
+	@echo ... src/modules/vault/presentation/VaultNavigator.s
+	@echo ... src/modules/vault/presentation/VaultPanel.Actions.obj
+	@echo ... src/modules/vault/presentation/VaultPanel.Actions.i
+	@echo ... src/modules/vault/presentation/VaultPanel.Actions.s
+	@echo ... src/modules/vault/presentation/VaultPanel.Events.obj
+	@echo ... src/modules/vault/presentation/VaultPanel.Events.i
+	@echo ... src/modules/vault/presentation/VaultPanel.Events.s
+	@echo ... src/modules/vault/presentation/VaultPanel.Layout.obj
+	@echo ... src/modules/vault/presentation/VaultPanel.Layout.i
+	@echo ... src/modules/vault/presentation/VaultPanel.Layout.s
+	@echo ... src/modules/vault/presentation/VaultPanel.Loading.obj
+	@echo ... src/modules/vault/presentation/VaultPanel.Loading.i
+	@echo ... src/modules/vault/presentation/VaultPanel.Loading.s
+	@echo ... src/modules/vault/presentation/VaultPanel.Pages.obj
+	@echo ... src/modules/vault/presentation/VaultPanel.Pages.i
+	@echo ... src/modules/vault/presentation/VaultPanel.Pages.s
+	@echo ... src/modules/vault/presentation/VaultPanel.obj
+	@echo ... src/modules/vault/presentation/VaultPanel.i
+	@echo ... src/modules/vault/presentation/VaultPanel.s
+	@echo ... src/modules/vault/presentation/VaultPresentationModel.obj
+	@echo ... src/modules/vault/presentation/VaultPresentationModel.i
+	@echo ... src/modules/vault/presentation/VaultPresentationModel.s
 	@echo ... src/shared/accessibility/AccessibilityUtils.obj
 	@echo ... src/shared/accessibility/AccessibilityUtils.i
 	@echo ... src/shared/accessibility/AccessibilityUtils.s
 	@echo ... src/shared/accessibility/ActionButton.obj
 	@echo ... src/shared/accessibility/ActionButton.i
 	@echo ... src/shared/accessibility/ActionButton.s
+	@echo ... src/shared/accessibility/FocusCoordinator.obj
+	@echo ... src/shared/accessibility/FocusCoordinator.i
+	@echo ... src/shared/accessibility/FocusCoordinator.s
+	@echo ... src/shared/accessibility/FocusManager.obj
+	@echo ... src/shared/accessibility/FocusManager.i
+	@echo ... src/shared/accessibility/FocusManager.s
+	@echo ... src/shared/accessibility/FocusMemory.obj
+	@echo ... src/shared/accessibility/FocusMemory.i
+	@echo ... src/shared/accessibility/FocusMemory.s
+	@echo ... src/shared/accessibility/FocusTransition.obj
+	@echo ... src/shared/accessibility/FocusTransition.i
+	@echo ... src/shared/accessibility/FocusTransition.s
 	@echo ... src/shared/accessibility/NavigationController.obj
 	@echo ... src/shared/accessibility/NavigationController.i
 	@echo ... src/shared/accessibility/NavigationController.s
@@ -4130,6 +6641,9 @@ help:
 	@echo ... src/shared/persistence/JsonFileStorage.obj
 	@echo ... src/shared/persistence/JsonFileStorage.i
 	@echo ... src/shared/persistence/JsonFileStorage.s
+	@echo ... src/shared/security/JwtPayload.obj
+	@echo ... src/shared/security/JwtPayload.i
+	@echo ... src/shared/security/JwtPayload.s
 	@echo ... src/shared/security/SecurityUtils.obj
 	@echo ... src/shared/security/SecurityUtils.i
 	@echo ... src/shared/security/SecurityUtils.s
@@ -4142,9 +6656,15 @@ help:
 	@echo ... src/shared/ui/Theme.obj
 	@echo ... src/shared/ui/Theme.i
 	@echo ... src/shared/ui/Theme.s
+	@echo ... src/shared/ui/controls/VerticalMenu.Entries.obj
+	@echo ... src/shared/ui/controls/VerticalMenu.Entries.i
+	@echo ... src/shared/ui/controls/VerticalMenu.Entries.s
 	@echo ... src/shared/ui/controls/VerticalMenu.obj
 	@echo ... src/shared/ui/controls/VerticalMenu.i
 	@echo ... src/shared/ui/controls/VerticalMenu.s
+	@echo ... src/shared/ui/controls/VerticalMenuEntry.obj
+	@echo ... src/shared/ui/controls/VerticalMenuEntry.i
+	@echo ... src/shared/ui/controls/VerticalMenuEntry.s
 	@echo ... tests/NetworkProtocolTests.obj
 	@echo ... tests/NetworkProtocolTests.i
 	@echo ... tests/NetworkProtocolTests.s

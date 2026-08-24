@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { AdminLogsService } from '../../../application/use-cases/admin-logs/admin-logs.service';
-import { AdminLogsDownloadWsDto } from './admin-ws.dto';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
+import { AdminLogsService } from '../../filesystem/admin-logs.service';
+import { AdminLogsDownloadWsDto } from './dto/admin-ws.dto';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 
 @Injectable()
 export class AdminLogsWsHandler {
@@ -13,7 +13,7 @@ export class AdminLogsWsHandler {
     private readonly logs: AdminLogsService,
   ) {}
 
-  async logsDownload(session: WsSession, payload: any) {
+  async logsDownload(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminLogsDownloadWsDto, payload ?? {});
     return {
@@ -22,3 +22,4 @@ export class AdminLogsWsHandler {
     };
   }
 }
+

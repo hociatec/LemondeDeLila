@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../engine/model/game-definition.model';
+import type { GameDefinition } from '../../../../application/models/game-definition.model';
 
 export type PrimalisGameId = 'primalis';
 export type PrimalisPhaseId = 'turn';
@@ -20,3 +20,4 @@ export const PRIMALIS_GAME: GameDefinition<
   phaseOrder: [{ id: 'turn', kind: 'player-action' }],
   victory: null,
 } as const;
+

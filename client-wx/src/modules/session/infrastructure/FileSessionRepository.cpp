@@ -3,6 +3,7 @@
 #include "shared/data/JsonReaders.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/persistence/JsonFileStorage.h"
+#include "shared/security/JwtPayload.h"
 #include "shared/security/SecurityUtils.h"
 
 #include <nlohmann/json.hpp>
@@ -36,9 +37,13 @@ domain::Session ParseSession(const nlohmann::json& document)
     session.refreshToken = lila::shared::security::UnprotectSecret(
         lila::shared::data::json::ReadOptionalString(document, "refreshToken"));
 
-    session.expiresAt = lila::shared::data::json::ReadOptionalInteger(
+    session.expiresAt = lila::shared::data::json::ReadOptionalInteger64(
         document,
         "expiresAt");
+    if (session.expiresAt <= 0)
+    {
+        session.expiresAt = lila::shared::security::ReadJwtExpiration(session.token);
+    }
 
     return session;
 }
@@ -78,13 +83,16 @@ void FileSessionRepository::Save(const domain::Session& session)
 
     const auto path = lila::shared::persistence::JsonFileStorage::ResolvePath("session.json");
     const std::string protectedToken = lila::shared::security::ProtectSecret(session.token);
+    const auto expiresAt = session.expiresAt > 0
+        ? session.expiresAt
+        : lila::shared::security::ReadJwtExpiration(session.token);
 
     const nlohmann::json document = {
         {std::string(lila::modules::session::infrastructure::fields::UserId), session.userId.value},
         {std::string(lila::modules::session::infrastructure::fields::Username), session.username},
         {std::string(lila::modules::session::infrastructure::fields::Token), protectedToken},
         {"refreshToken", session.refreshToken.empty() ? std::string{} : lila::shared::security::ProtectSecret(session.refreshToken)},
-        {"expiresAt", session.expiresAt}
+        {"expiresAt", expiresAt}
     };
 
     lila::shared::persistence::JsonFileStorage::Write(

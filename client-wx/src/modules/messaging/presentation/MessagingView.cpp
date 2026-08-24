@@ -48,10 +48,10 @@ void MessagingView::BuildLayout()
     BuildDetailScreen();
     BuildComposeScreen();
 
-    screenBook->AddPage(menuPanel, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingPageMenu));
-    screenBook->AddPage(listPanel, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingPageList));
-    screenBook->AddPage(detailPanel, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingPageDetail));
-    screenBook->AddPage(composePanel, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingPageCompose));
+    screenBook->AddPage(menuPanel, wxEmptyString);
+    screenBook->AddPage(listPanel, wxEmptyString);
+    screenBook->AddPage(detailPanel, wxEmptyString);
+    screenBook->AddPage(composePanel, wxEmptyString);
 
     rootSizer->Add(headerPanel, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 28);
     rootSizer->Add(screenBook, 1, wxEXPAND | wxALL, 24);
@@ -66,6 +66,8 @@ wxPanel* MessagingView::BuildHeader()
     auto* subtitleLabel = new wxStaticText(panel, wxID_ANY, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingFrameSubtitle));
     statusLabel = new wxStaticText(panel, wxID_ANY, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingFrameInitialStatus));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*statusLabel, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingFrameStatusAccessible));
+    titleLabel->Hide();
+    subtitleLabel->Hide();
     sizer->Add(titleLabel, 0, wxALIGN_CENTER_HORIZONTAL);
     sizer->Add(subtitleLabel, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 4);
     sizer->Add(statusLabel, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 6);

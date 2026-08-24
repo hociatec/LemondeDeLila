@@ -25,7 +25,7 @@ import { AdminGameCategoriesService } from '../application/use-cases/admin-games
 import { AdminGameOverridesService } from '../application/use-cases/admin-games/admin-game-overrides.service';
 import { AdminGamesManagementService } from '../application/use-cases/admin-games/admin-games-management.service';
 import { AdminGamesPresenterService } from '../application/use-cases/admin-games/admin-games-presenter.service';
-import { AdminLogsService } from '../application/use-cases/admin-logs/admin-logs.service';
+import { AdminLogsService } from '../infrastructure/filesystem/admin-logs.service';
 import { AdminMnemoQuizCategoriesService } from '../application/use-cases/admin-mnemo-quiz/admin-mnemo-quiz-categories.service';
 import { AdminMnemoQuizPresenterService } from '../application/use-cases/admin-mnemo-quiz/admin-mnemo-quiz-presenter.service';
 import { AdminMnemoQuizQuestionsService } from '../application/use-cases/admin-mnemo-quiz/admin-mnemo-quiz-questions.service';

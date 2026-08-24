@@ -29,6 +29,8 @@ void AboutFrame::BuildLayout()
         wxString(L"Informations du client natif, raccourcis clavier et contact administrateur."));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*titleLabel_, wxString(L"À propos"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*subtitleLabel, wxString(L"Informations"));
+    titleLabel_->Hide();
+    subtitleLabel->Hide();
     headerSizer->Add(titleLabel_, 0, wxBOTTOM, 6);
     headerSizer->Add(subtitleLabel, 0);
     headerPanel->SetSizer(headerSizer);
@@ -42,7 +44,8 @@ void AboutFrame::BuildLayout()
         {"contact", wxString(L"Contacter un administrateur")}};
     itemsList_ = new lila::shared::ui::controls::VerticalMenu(
         contentPanel,
-        std::span<const lila::shared::ui::controls::VerticalMenuItem>(rootItems, 3));
+        std::span<const lila::shared::ui::controls::VerticalMenuItem>(rootItems, 3),
+        lila::shared::ui::controls::VerticalMenuRole::Entries);
     detailsLabel_ = new wxStaticText(contentPanel, wxID_ANY, wxEmptyString);
     shortcutsTextCtrl_ = new wxTextCtrl(
         contentPanel,
@@ -101,7 +104,7 @@ void AboutFrame::BuildLayout()
     frameSizer->Add(root, 1, wxEXPAND);
     SetSizer(frameSizer);
 
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*itemsList_, wxString(L"Menu d'informations"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*itemsList_, wxString(L"Rubriques"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*detailsLabel_, wxString(L"Détails"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*shortcutsTextCtrl_, wxString(L"Liste des raccourcis"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*contactMessageCtrl_, wxString(L"Message au staff"));

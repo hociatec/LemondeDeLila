@@ -1,9 +1,9 @@
-import { seededShuffle } from '../../../../common/utils/seeded-shuffle';
+import { seededShuffle } from '../../../../common/utils/public-api';
 import type {
   PanierExpressMetadata,
   PanierExpressPlayer,
-} from './model/panier-express-state.entity';
-import { ensureSeededRng } from '../../../../common/utils/seeded-rng';
+} from './model/panier-express-state.model';
+import { ensureSeededRng } from '../../../../common/utils/public-api';
 
 export function toStringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
@@ -85,7 +85,7 @@ export function ensureShoppingLists(params: {
   const baseMeta = (metadata ?? {}) as Record<string, unknown>;
   const currentRng =
     baseMeta['rng'] && typeof baseMeta['rng'] === 'object'
-      ? (baseMeta['rng'] as any)
+      ? asRecord(baseMeta['rng'])
       : null;
   const explicitSeedRaw = currentRng?.seed;
   const explicitSeed =
@@ -104,7 +104,7 @@ export function ensureShoppingLists(params: {
     // Fallback déterministe (tests/unit + états hors room context).
     let derived = 1;
     const ids = (Array.isArray(players) ? players : [])
-      .map((p) => (typeof (p as any)?.id === 'number' ? (p as any).id : NaN))
+      .map((p) => (typeof p?.id === 'number' ? p.id : NaN))
       .filter((id) => Number.isFinite(id))
       .sort((a, b) => a - b);
     for (const id of ids) {
@@ -119,7 +119,7 @@ export function ensureShoppingLists(params: {
       ? counterRaw
       : Math.max(0, Number(counterRaw ?? 0));
   const metaWithRng: PanierExpressMetadata = {
-    ...(metadata as any),
+    ...metadata,
     rng: { seed, counter: Number.isFinite(counter) ? counter : 0 },
   };
   const size = Math.min(shoppingListSize, pool.length);
@@ -127,7 +127,7 @@ export function ensureShoppingLists(params: {
     return { metadata: metaWithRng, players };
   }
 
-  const existingMap = asRecord((metaWithRng as any).shoppingLists);
+  const existingMap = asRecord(metaWithRng.shoppingLists);
   const outMap: Record<number, string[]> = {};
   const used = new Set<string>();
 
@@ -139,7 +139,7 @@ export function ensureShoppingLists(params: {
 
   for (const p of players) {
     if (p == null || typeof p.id !== 'number') continue;
-    const fromPlayer = normalizeList((p as any).shoppingList);
+    const fromPlayer = normalizeList(p.shoppingList);
     const fromMeta = normalizeList(existingMap[String(p.id)]);
     const list = fromPlayer.length > 0 ? fromPlayer : fromMeta;
     if (list.length > 0) {
@@ -179,9 +179,7 @@ export function ensureShoppingLists(params: {
 
   const patchedPlayers = players.map((p) => {
     if (p == null || typeof p.id !== 'number') return p;
-    const current = Array.isArray((p as any).shoppingList)
-      ? p.shoppingList
-      : [];
+    const current = Array.isArray(p.shoppingList) ? p.shoppingList : [];
     if (current.length > 0) {
       return { ...p, shoppingList: normalizeList(current) };
     }
@@ -199,3 +197,5 @@ function asRecord(value: unknown): Record<string, unknown> {
   if (value == null || typeof value !== 'object') return {};
   return value as Record<string, unknown>;
 }
+
+

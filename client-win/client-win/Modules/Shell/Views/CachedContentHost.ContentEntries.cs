@@ -93,7 +93,8 @@ public partial class CachedContentHost
             Presenter = presenter,
             Cacheable = cacheable,
             LastAccessTicks = DateTime.UtcNow.Ticks,
-            IsInHostGrid = false
+            IsInHostGrid = false,
+            IsMaterialized = false
         };
 
         _entries.Add(content, entry);

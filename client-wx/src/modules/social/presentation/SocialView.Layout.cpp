@@ -24,6 +24,8 @@ void SocialView::BuildLayout()
     auto* headerSizer = new wxBoxSizer(wxVERTICAL);
     titleLabel = new wxStaticText(headerPanel, wxID_ANY, lila::shared::text::FromUtf8(lila::shared::text::ui::SocialSocialHeader));
     subtitleLabel = new wxStaticText(headerPanel, wxID_ANY, lila::shared::text::FromUtf8(lila::shared::text::ui::SocialSocialSubtitle));
+    titleLabel->Hide();
+    subtitleLabel->Hide();
     headerSizer->Add(titleLabel, 0, wxBOTTOM, 6);
     headerSizer->Add(subtitleLabel, 0);
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*titleLabel, lila::shared::text::FromUtf8(lila::shared::text::ui::SocialSocialHeader));
@@ -44,9 +46,10 @@ void SocialView::BuildLayout()
 
     menu = new lila::shared::ui::controls::VerticalMenu(
         contentPanel,
-        lila::shared::ui::navigation::BuildMenuItems(MenuItems));
+        lila::shared::ui::navigation::BuildMenuItems(MenuItems),
+        lila::shared::ui::controls::VerticalMenuRole::Entries);
     menu->SetMinSize(wxSize(260, -1));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu, lila::shared::text::FromUtf8(lila::shared::text::ui::SocialNavigationMenuAccessible));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu, wxString(L"Social"));
 
     sectionBook = new wxSimplebook(contentPanel, wxID_ANY);
     BuildFriendsSection(sectionBook);
@@ -54,11 +57,11 @@ void SocialView::BuildLayout()
     BuildOutgoingRequestsSection(sectionBook);
     BuildBlockedSection(sectionBook);
     BuildProfileSection(sectionBook);
-    sectionBook->AddPage(friendsPanel, lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuFriends));
-    sectionBook->AddPage(incomingRequestsPanel, lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuIncomingRequests));
-    sectionBook->AddPage(outgoingRequestsPanel, lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuOutgoingRequests));
-    sectionBook->AddPage(blockedPanel, lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuBlocked));
-    sectionBook->AddPage(profilePanel, lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuProfile));
+    sectionBook->AddPage(friendsPanel, wxEmptyString);
+    sectionBook->AddPage(incomingRequestsPanel, wxEmptyString);
+    sectionBook->AddPage(outgoingRequestsPanel, wxEmptyString);
+    sectionBook->AddPage(blockedPanel, wxEmptyString);
+    sectionBook->AddPage(profilePanel, wxEmptyString);
 
     contentSizer->Add(menu, 0, wxEXPAND | wxRIGHT, 20);
     contentSizer->Add(sectionBook, 1, wxEXPAND);

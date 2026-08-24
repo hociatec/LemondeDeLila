@@ -14,6 +14,7 @@ inline constexpr std::string_view ClientVersionHeader = "x-lila-client-version";
 inline constexpr std::string_view WsTicketHeader = "x-lila-ws-ticket";
 inline constexpr std::string_view WsTicketScopeApi = "api";
 inline constexpr std::string_view WsTicketScopePresence = "presence";
+inline constexpr std::string_view WsTicketScopeRoom = "room";
 inline constexpr std::string_view WsTicketPath = "/ws/ticket?scope=";
 inline constexpr std::string_view WsTicketApiPath = "/api/ws/ticket?scope=";
 inline constexpr std::string_view WsTicketResponseField = "ticket";

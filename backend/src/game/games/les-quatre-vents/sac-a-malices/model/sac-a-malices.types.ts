@@ -132,3 +132,4 @@ export type SacMetadata = {
   };
   winnerId?: number | null;
 };
+

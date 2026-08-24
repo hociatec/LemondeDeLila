@@ -1,10 +1,10 @@
 #include "modules/chat/presentation/ChatFocusController.h"
 
 #include <wx/button.h>
-#include <wx/listbox.h>
 #include <wx/textctrl.h>
 #include <wx/window.h>
 
+#include "shared/accessibility/FocusManager.h"
 #include "shared/accessibility/NavigationController.h"
 
 namespace lila::modules::chat::presentation
@@ -12,17 +12,16 @@ namespace lila::modules::chat::presentation
 namespace
 {
 using Navigator = lila::shared::accessibility::NavigationController;
+using FocusManager = lila::shared::accessibility::FocusManager;
 }
 
 ChatFocusController::ChatFocusController(
     wxTextCtrl& input,
-    wxListBox& history,
-    wxTextCtrl& emptyHistory,
+    wxTextCtrl& history,
     wxButton& editButton,
     wxButton& deleteButton) noexcept
     : input_(input),
       history_(history),
-      emptyHistory_(emptyHistory),
       editButton_(editButton),
       deleteButton_(deleteButton)
 {
@@ -46,23 +45,28 @@ void ChatFocusController::BindNavigation(wxWindow& owner, std::function<bool()> 
             Navigator::Scope chatLoop;
             chatLoop
                 .Add(&input_)
-                .Add([this]() -> wxWindow*
-                {
-                    return history_.IsShown() ? static_cast<wxWindow*>(&history_) : static_cast<wxWindow*>(&emptyHistory_);
-                });
+                .Add(&history_);
             return chatLoop;
         });
 }
 
-void ChatFocusController::FocusComposer() const
+lila::shared::accessibility::FocusManager::Plan ChatFocusController::BuildComposerPlan() const
 {
-    static_cast<void>(Navigator::Focus(&input_));
+    FocusManager::Plan plan;
+    plan.AddWindow(&input_);
+    return plan;
 }
 
-void ChatFocusController::FocusFirstHistoryAction() const
+lila::shared::accessibility::FocusManager::Plan ChatFocusController::BuildFirstHistoryActionPlan() const
 {
-    Navigator::Scope actions;
-    actions.Add(&editButton_).Add(&deleteButton_);
-    static_cast<void>(Navigator::FocusFirst(actions));
+    FocusManager::Plan plan;
+    plan.AddScope(
+        [this]()
+        {
+            Navigator::Scope actions;
+            actions.Add(&editButton_).Add(&deleteButton_);
+            return actions;
+        });
+    return plan;
 }
 }

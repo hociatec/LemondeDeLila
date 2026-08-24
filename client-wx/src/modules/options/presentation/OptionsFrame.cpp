@@ -11,7 +11,6 @@
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/gbsizer.h>
-#include <wx/event.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 
@@ -31,21 +30,19 @@ namespace lila::modules::options::presentation
 OptionsFrame::~OptionsFrame() = default;
 
 OptionsFrame::OptionsFrame(
+    wxWindow* parent,
     application::OptionsStore& optionsStore,
     CloseRequestedHandler onCloseRequested,
     ExitRequestedHandler onExitRequested)
-    : wxFrame(
-          nullptr,
-          wxID_ANY,
-          wxString(L"Options - ") + lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()),
-          wxDefaultPosition,
-          wxSize(WindowWidth, WindowHeight),
-          wxDEFAULT_FRAME_STYLE),
+    : lila::shared::accessibility::NonFocusablePanel(
+          parent,
+          0),
       onCloseRequested_(std::move(onCloseRequested)),
       onExitRequested_(std::move(onExitRequested))
 {
+    SetMinSize(wxSize(WindowWidth, WindowHeight));
     editorController_ = std::make_unique<OptionsEditorController>(optionsStore);
-    view_ = new OptionsView(this, [this]() { SaveState(); });
+    view_ = new OptionsView(this);
     focusController_ = std::make_unique<OptionsFocusController>(*view_);
     sectionCoordinator_ = std::make_unique<OptionsSectionCoordinator>(
         *editorController_,
@@ -70,19 +67,7 @@ OptionsFrame::OptionsFrame(
     view_->ApplyTheme();
     BindEvents();
     sectionCoordinator_->LoadState();
-    CentreOnScreen();
-    UpdateStatus(wxString(L"Modifiez les options puis Enregistrer."));
-    CallAfter(
-        [this]()
-        {
-            const auto shell = view_->Shell();
-            if (shell.sectionsMenu != nullptr)
-            {
-                shell.sectionsMenu->SetSelectedIndexSilently(0);
-                navigationState_.SetCurrentSection(0);
-                shell.sectionsMenu->FocusFirstItem();
-            }
-        });
+    UpdateStatus(wxString(L"Les options sont enregistrees automatiquement."));
 }
 
 
@@ -113,8 +98,9 @@ void OptionsFrame::BindEvents()
         *focusController_,
         OptionsEventBinder::Handlers{
             [this](std::size_t index) { ActivateSection(index); },
+            [this](std::size_t index) { navigationState_.SetCurrentSection(index); },
             [this]() { CancelChanges(); },
-            [this]() { RefreshUnsavedState(); },
+            [this]() { SaveState(); },
             [this]() { HandleEscape(); },
             [this]() { return navigationState_.insideSection; },
             [this]()
@@ -125,6 +111,30 @@ void OptionsFrame::BindEvents()
                 }
             }});
     sectionCoordinator_->RefreshUnsavedState();
+}
+
+lila::shared::accessibility::FocusManager::Plan OptionsFrame::BuildFocusPlan()
+{
+    if (focusController_ == nullptr)
+    {
+        return {};
+    }
+
+    if (navigationState_.insideSection)
+    {
+        return focusController_->BuildFirstSectionControlPlan(navigationState_.currentSectionIndex);
+    }
+
+    const auto shell = view_->Shell();
+    if (shell.sectionsMenu != nullptr)
+    {
+        if (navigationState_.currentSectionIndex >= shell.sectionsMenu->GetItemCount())
+        {
+            navigationState_.SetCurrentSection(0);
+        }
+        return focusController_->BuildSectionMenuPlan(navigationState_.currentSectionIndex);
+    }
+    return {};
 }
 
 void OptionsFrame::LoadState() { sectionCoordinator_->LoadState(); }

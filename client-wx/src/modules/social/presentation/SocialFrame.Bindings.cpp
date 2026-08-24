@@ -1,7 +1,9 @@
 #include "shared/text/Encoding.h"
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/social/presentation/SocialActionController.h"
-#include "modules/social/presentation/SocialFocusController.h"
+#include "modules/social/presentation/SocialActionId.h"
+#include "modules/social/presentation/SocialProfileCoordinator.h"
+#include "modules/social/presentation/SocialScreenCoordinator.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialView.h"
 #include "shared/ui/controls/VerticalMenu.h"
@@ -13,6 +15,26 @@
 
 namespace lila::modules::social::presentation
 {
+namespace
+{
+wxString BuildMenuSelectionStatus(std::size_t index)
+{
+    const char* label = lila::shared::text::ui::SocialNavigationMenuAccessible.data();
+    switch (index)
+    {
+    case 0: label = lila::shared::text::ui::SocialMenuMessaging.data(); break;
+    case 1: label = lila::shared::text::ui::SocialMenuFriends.data(); break;
+    case 2: label = lila::shared::text::ui::SocialMenuIncomingRequests.data(); break;
+    case 3: label = lila::shared::text::ui::SocialMenuOutgoingRequests.data(); break;
+    case 4: label = lila::shared::text::ui::SocialMenuBlocked.data(); break;
+    case 5: label = lila::shared::text::ui::SocialMenuProfile.data(); break;
+    default: break;
+    }
+
+    return lila::shared::text::FromUtf8(label) + wxString(L". Entrée pour ouvrir.");
+}
+}
+
 void SocialFrame::BindMenuEvents()
 {
     lila::shared::ui::navigation::BindMenuHandlers(
@@ -20,13 +42,17 @@ void SocialFrame::BindMenuEvents()
         [this](std::size_t index)
         {
             navigationState_.lastMenuIndex = index;
+            UpdateStatus(BuildMenuSelectionStatus(index), false, false);
         },
         [this](std::size_t index)
         {
             RunUiAction(
                 [this, index]()
                 {
-                    ActivateMenuIndex(index);
+                    if (screenCoordinator_ != nullptr)
+                    {
+                        screenCoordinator_->ActivateMenuIndex(index);
+                    }
                 });
         });
 
@@ -38,130 +64,74 @@ void SocialFrame::BindMenuEvents()
                 RunUiAction(
                     [this]()
                     {
-                        ActivateProfileEditorSelection();
+                        if (profileCoordinator_ != nullptr)
+                        {
+                            profileCoordinator_->ActivateSelectedAction();
+                        }
                     });
             });
     }
 }
 
-void SocialFrame::BindFriendsEvents()
+void SocialFrame::HandleSectionAction(SocialSection section, std::string_view actionId)
 {
-    BindSectionSelectionRefresh(*view_->friendsList);
-    if (view_->friendsActionsMenu != nullptr)
+    const auto parsedAction = ParseSocialActionId(actionId);
+    if (!parsedAction.has_value())
     {
-        view_->friendsActionsMenu->SetActivatedHandler(
-            [this](std::size_t actionIndex)
-            {
-                RunUiAction(
-                    [this, actionIndex]()
-                    {
-                        const auto userId = sectionPresenter_->GetSelectedUserId();
-                        actionController_->ActivateFriend(
-                            actionIndex,
-                            userId,
-                            userId.has_value() && dataStore_.IsBlocked(*userId));
-                    });
-            });
+        return;
     }
 
-    view_->friendsList->SetActivatedHandler(
-        [this](std::size_t)
-        {
-            RunUiAction(
-                [this]()
-                {
-                    OpenCurrentSectionActionMenu();
-                });
-        });
+    const auto userId = sectionPresenter_->GetSelectedUserId();
+    const bool isBlocked = userId.has_value() && dataStore_.IsBlocked(*userId);
+    actionController_->ActivateSectionAction(section, *parsedAction, userId, isBlocked);
 }
 
-void SocialFrame::BindIncomingRequestsEvents()
+void SocialFrame::BindSectionEvents(SocialSection section)
 {
-    BindSectionSelectionRefresh(*view_->incomingRequestsList);
-    if (view_->incomingActionsMenu != nullptr)
+    const auto controls = view_->SectionFor(section);
+    if (controls.list == nullptr)
     {
-        view_->incomingActionsMenu->SetActivatedHandler(
-            [this](std::size_t actionIndex)
-            {
-                RunUiAction(
-                    [this, actionIndex]()
-                    {
-                        const auto userId = sectionPresenter_->GetSelectedUserId();
-                        actionController_->ActivateIncomingRequest(
-                            actionIndex,
-                            userId,
-                            userId.has_value() && dataStore_.IsBlocked(*userId));
-                    });
-            });
+        return;
     }
 
-    view_->incomingRequestsList->SetActivatedHandler(
+    controls.list->SetSelectionChangedHandler(
         [this](std::size_t)
         {
             RunUiAction(
                 [this]()
                 {
-                    OpenCurrentSectionActionMenu();
+                    sectionPresenter_->SyncSelectionState();
                 });
         });
-}
-
-void SocialFrame::BindOutgoingRequestsEvents()
-{
-    BindSectionSelectionRefresh(*view_->outgoingRequestsList);
-    if (view_->outgoingActionsMenu != nullptr)
-    {
-        view_->outgoingActionsMenu->SetActivatedHandler(
-            [this](std::size_t actionIndex)
-            {
-                RunUiAction(
-                    [this, actionIndex]()
-                    {
-                        const auto userId = sectionPresenter_->GetSelectedUserId();
-                        actionController_->ActivateOutgoingRequest(
-                            actionIndex,
-                            userId,
-                            userId.has_value() && dataStore_.IsBlocked(*userId));
-                    });
-            });
-    }
-
-    view_->outgoingRequestsList->SetActivatedHandler(
+    controls.list->SetActivatedHandler(
         [this](std::size_t)
         {
             RunUiAction(
                 [this]()
                 {
-                    OpenCurrentSectionActionMenu();
+                    if (ConsumePendingListActivationSuppression())
+                    {
+                        return;
+                    }
+                    if (screenCoordinator_ != nullptr)
+                    {
+                        screenCoordinator_->OpenCurrentSectionActionMenu();
+                    }
                 });
         });
-}
 
-void SocialFrame::BindBlockedUsersEvents()
-{
-    BindSectionSelectionRefresh(*view_->blockedUsersList);
-    if (view_->blockedActionsMenu != nullptr)
+    if (controls.actionsMenu != nullptr)
     {
-        view_->blockedActionsMenu->SetActivatedHandler(
-            [this](std::size_t actionIndex)
+        controls.actionsMenu->SetActivatedHandler(
+            [this, section, actionsMenu = controls.actionsMenu](std::size_t actionIndex)
             {
                 RunUiAction(
-                    [this, actionIndex]()
+                    [this, section, actionsMenu, actionIndex]()
                     {
-                        actionController_->ActivateBlockedUser(actionIndex, sectionPresenter_->GetSelectedUserId());
+                        HandleSectionAction(section, actionsMenu->GetItemId(actionIndex));
                     });
             });
     }
-
-    view_->blockedUsersList->SetActivatedHandler(
-        [this](std::size_t)
-        {
-            RunUiAction(
-                [this]()
-                {
-                    OpenCurrentSectionActionMenu();
-                });
-        });
 }
 
 void SocialFrame::BindProfileEvents()
@@ -170,26 +140,23 @@ void SocialFrame::BindProfileEvents()
         wxEVT_BUTTON,
         [this](wxCommandEvent&)
         {
-            RunUiAction([this]() { SaveProfile(); });
+            RunUiAction(
+                [this]()
+                {
+                    if (profileCoordinator_ != nullptr)
+                    {
+                        profileCoordinator_->SaveProfile();
+                    }
+                });
         });
     view_->profileCancelButton->Bind(
         wxEVT_BUTTON,
         [this](wxCommandEvent&)
         {
-            HandleEscape();
-        });
-}
-
-void SocialFrame::BindSectionSelectionRefresh(lila::shared::ui::controls::VerticalMenu& list)
-{
-    list.SetSelectionChangedHandler(
-        [this](std::size_t)
-        {
-            RunUiAction(
-                [this]()
-                {
-                    sectionPresenter_->SyncSelectionState();
-                });
+            if (screenCoordinator_ != nullptr)
+            {
+                screenCoordinator_->HandleEscape();
+            }
         });
 }
 }

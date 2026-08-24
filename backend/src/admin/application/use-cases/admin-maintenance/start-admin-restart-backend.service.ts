@@ -3,20 +3,25 @@ import {
   ADMIN_MAINTENANCE_RUNTIME_PORT,
   type AdminMaintenanceRuntimePort,
 } from '../../ports/admin-maintenance-runtime.port';
-import { ADMIN_BACKEND_SERVICE } from './admin-maintenance.constants';
+import {
+  ADMIN_MAINTENANCE_CONFIG,
+  type AdminMaintenanceConfig,
+} from '../../ports/admin-maintenance-config.port';
 
 @Injectable()
 export class StartAdminRestartBackendService {
   constructor(
     @Inject(ADMIN_MAINTENANCE_RUNTIME_PORT)
     private readonly runtime: AdminMaintenanceRuntimePort,
+    @Inject(ADMIN_MAINTENANCE_CONFIG)
+    private readonly config: AdminMaintenanceConfig,
   ) {}
 
   execute() {
     this.runtime.spawnDetached(
-      ['sudo', '-n', 'systemctl', 'restart', ADMIN_BACKEND_SERVICE],
+      ['sudo', '-n', 'systemctl', 'restart', this.config.backendService],
       { delayMs: 350 },
     );
-    return { ok: true, service: ADMIN_BACKEND_SERVICE, scheduled: true };
+    return { ok: true, service: this.config.backendService, scheduled: true };
   }
 }

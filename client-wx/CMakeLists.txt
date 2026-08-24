@@ -60,6 +60,13 @@ set(
 )
 
 set(
+    LILA_BACKEND_ROOT
+    "${CMAKE_CURRENT_SOURCE_DIR}/../backend"
+    CACHE PATH
+    "Racine locale du backend utilisee pour regenerer les contrats protocole"
+)
+
+set(
     LILA_GENERATED_PROTOCOL_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol/UserAuthFields.generated.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol/SocialProtocolFields.generated.h"
@@ -67,34 +74,58 @@ set(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol/MessagingProtocolFields.generated.h"
 )
 
-add_custom_command(
-    OUTPUT ${LILA_GENERATED_PROTOCOL_HEADERS}
-    COMMAND powershell
-        -ExecutionPolicy Bypass
-        -File "${LILA_PROTOCOL_FIELDS_SCRIPT}"
-        -BackendRoot "${CMAKE_CURRENT_SOURCE_DIR}/../backend"
-        -OutputRoot "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol"
-    DEPENDS
-        "${LILA_PROTOCOL_FIELDS_SCRIPT}"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/user/ws/auth-ws.handler.ts"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/user/services/user.auth.service.ts"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/social/services/social-profile.service.ts"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/social/services/social-relationship.service.ts"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/presence/services/presence-chat.service.ts"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/chat/services/chat.service.ts"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/messaging/services/messaging.service.ts"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/messaging/ws/ws.dto.ts"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/messaging/ws/messaging-ws.handler.ts"
-    VERBATIM
+set(
+    LILA_PROTOCOL_GENERATION_DEPENDENCIES
+    "${LILA_BACKEND_ROOT}/src/user/ws/auth-ws.handler.ts"
+    "${LILA_BACKEND_ROOT}/src/user/services/user.auth.service.ts"
+    "${LILA_BACKEND_ROOT}/src/social/services/social-profile.service.ts"
+    "${LILA_BACKEND_ROOT}/src/social/services/social-relationship.service.ts"
+    "${LILA_BACKEND_ROOT}/src/presence/services/presence-chat.service.ts"
+    "${LILA_BACKEND_ROOT}/src/chat/services/chat.service.ts"
+    "${LILA_BACKEND_ROOT}/src/messaging/services/messaging.service.ts"
+    "${LILA_BACKEND_ROOT}/src/messaging/ws/ws.dto.ts"
+    "${LILA_BACKEND_ROOT}/src/messaging/ws/messaging-ws.handler.ts"
 )
 
-add_custom_target(generate_protocol_fields DEPENDS ${LILA_GENERATED_PROTOCOL_HEADERS})
+set(LILA_CAN_GENERATE_PROTOCOL_FIELDS ON)
+foreach(protocol_dependency IN LISTS LILA_PROTOCOL_GENERATION_DEPENDENCIES)
+    if(NOT EXISTS "${protocol_dependency}")
+        set(LILA_CAN_GENERATE_PROTOCOL_FIELDS OFF)
+        break()
+    endif()
+endforeach()
+
+if(LILA_CAN_GENERATE_PROTOCOL_FIELDS)
+    add_custom_command(
+        OUTPUT ${LILA_GENERATED_PROTOCOL_HEADERS}
+        COMMAND powershell
+            -ExecutionPolicy Bypass
+            -File "${LILA_PROTOCOL_FIELDS_SCRIPT}"
+            -BackendRoot "${LILA_BACKEND_ROOT}"
+            -OutputRoot "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol"
+        DEPENDS
+            "${LILA_PROTOCOL_FIELDS_SCRIPT}"
+            ${LILA_PROTOCOL_GENERATION_DEPENDENCIES}
+        VERBATIM
+    )
+
+    add_custom_target(generate_protocol_fields DEPENDS ${LILA_GENERATED_PROTOCOL_HEADERS})
+    message(STATUS "Backend local detecte : regeneration des contrats protocole activee.")
+else()
+    add_custom_target(generate_protocol_fields)
+    message(STATUS "Backend local introuvable : utilisation des contrats protocole versionnes dans le client.")
+endif()
 
 add_executable(lemonde_de_lila_wx WIN32
     src/app/main.cpp
     src/app/Application.cpp
     src/app/navigation/AppNavigator.cpp
+    src/app/navigation/HostFrame.cpp
     src/bootstrap/AppBootstrap.cpp
+    src/bootstrap/AppCompositions.Network.cpp
+    src/bootstrap/AppCompositions.User.cpp
+    src/bootstrap/AppCompositions.Game.cpp
+    src/bootstrap/AppCompositions.Social.cpp
     src/bootstrap/AppRuntime.cpp
 
     src/modules/about/presentation/AboutFrame.cpp
@@ -102,6 +133,79 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/about/presentation/AboutFrame.Layout.cpp
     src/modules/about/presentation/AboutPageContentBuilder.cpp
     src/modules/about/presentation/AboutPageCoordinator.cpp
+
+    src/modules/catalog/application/CatalogService.cpp
+    src/modules/catalog/infrastructure/CatalogApi.cpp
+    src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp
+    src/modules/catalog/presentation/CatalogPanel.cpp
+    src/modules/catalog/presentation/CatalogPanel.Events.cpp
+    src/modules/catalog/presentation/CatalogPanel.Layout.cpp
+    src/modules/catalog/presentation/CatalogPanel.Loading.cpp
+    src/modules/catalog/presentation/CatalogShelfNavigator.cpp
+
+    src/modules/rooms/application/RoomLobbyService.cpp
+    src/modules/rooms/application/RoomSessionService.cpp
+    src/modules/rooms/application/RoomSessionService.Realtime.cpp
+    src/modules/rooms/infrastructure/RoomLobbyApi.cpp
+    src/modules/rooms/infrastructure/RoomPayloadCodec.cpp
+    src/modules/rooms/infrastructure/RoomSessionGateway.cpp
+    src/modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp
+    src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.cpp
+    src/modules/rooms/infrastructure/RoomSessionGateway.State.cpp
+    src/modules/rooms/presentation/JoinRoomsPanel.cpp
+    src/modules/rooms/presentation/JoinRoomsPanel.Events.cpp
+    src/modules/rooms/presentation/JoinRoomsPanel.Layout.cpp
+    src/modules/rooms/presentation/JoinRoomsPanel.Loading.cpp
+    src/modules/rooms/presentation/JoinRoomsPanel.Pages.cpp
+    src/modules/rooms/presentation/RoomLobbyNavigator.cpp
+    src/modules/rooms/presentation/RoomLobbyPresentationModel.cpp
+    src/modules/rooms/presentation/RoomOpenRequest.cpp
+    src/modules/rooms/presentation/RoomGameZoneAnchor.cpp
+    src/modules/rooms/presentation/RoomPanel.cpp
+    src/modules/rooms/presentation/RoomPanel.Actions.cpp
+    src/modules/rooms/presentation/RoomPanel.Commands.cpp
+    src/modules/rooms/presentation/RoomPanel.Confirmation.cpp
+    src/modules/rooms/presentation/RoomPanel.Events.cpp
+    src/modules/rooms/presentation/RoomPanel.Layout.cpp
+    src/modules/rooms/presentation/RoomPanel.Loading.cpp
+    src/modules/rooms/presentation/RoomPanel.Preparation.cpp
+    src/modules/rooms/presentation/RoomPanel.Realtime.cpp
+    src/modules/rooms/presentation/RoomPanel.Shortcuts.cpp
+    src/modules/rooms/presentation/RoomPanel.State.cpp
+    src/modules/rooms/presentation/RoomPresentationModel.cpp
+    src/modules/rooms/presentation/RoomShortcutPolicy.cpp
+
+    src/modules/vault/application/VaultService.cpp
+    src/modules/vault/infrastructure/VaultApi.cpp
+    src/modules/vault/infrastructure/VaultPayloadCodec.cpp
+    src/modules/vault/presentation/VaultNavigator.cpp
+    src/modules/vault/presentation/VaultPresentationModel.cpp
+    src/modules/vault/presentation/VaultPanel.cpp
+    src/modules/vault/presentation/VaultPanel.Actions.cpp
+    src/modules/vault/presentation/VaultPanel.Events.cpp
+    src/modules/vault/presentation/VaultPanel.Layout.cpp
+    src/modules/vault/presentation/VaultPanel.Loading.cpp
+    src/modules/vault/presentation/VaultPanel.Pages.cpp
+
+    src/modules/storybook/application/StoryBookService.cpp
+    src/modules/storybook/infrastructure/StoryBookApi.cpp
+    src/modules/storybook/infrastructure/StoryBookPayloadCodec.cpp
+    src/modules/storybook/presentation/StoryBookNavigator.cpp
+    src/modules/storybook/presentation/StoryBookPanel.cpp
+    src/modules/storybook/presentation/StoryBookPanel.Events.cpp
+    src/modules/storybook/presentation/StoryBookPanel.Layout.cpp
+    src/modules/storybook/presentation/StoryBookPanel.Loading.cpp
+    src/modules/storybook/presentation/StoryBookPanel.Pages.cpp
+
+    src/modules/leaderboard/application/LeaderboardService.cpp
+    src/modules/leaderboard/infrastructure/LeaderboardApi.cpp
+    src/modules/leaderboard/infrastructure/LeaderboardPayloadCodec.cpp
+    src/modules/leaderboard/presentation/LeaderboardNavigator.cpp
+    src/modules/leaderboard/presentation/LeaderboardPanel.cpp
+    src/modules/leaderboard/presentation/LeaderboardPanel.Events.cpp
+    src/modules/leaderboard/presentation/LeaderboardPanel.Layout.cpp
+    src/modules/leaderboard/presentation/LeaderboardPanel.Loading.cpp
+    src/modules/leaderboard/presentation/LeaderboardPanel.Pages.cpp
 
     src/modules/chat/application/ChatService.cpp
     src/modules/chat/application/ChatService.Connection.cpp
@@ -153,8 +257,9 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/social/presentation/SocialFrame.Layout.cpp
     src/modules/social/presentation/SocialFrame.Events.cpp
     src/modules/social/presentation/SocialFrame.Menu.cpp
-    src/modules/social/presentation/SocialFocusController.cpp
     src/modules/social/presentation/SocialFrame.Navigation.cpp
+    src/modules/social/presentation/SocialProfileCoordinator.cpp
+    src/modules/social/presentation/SocialScreenCoordinator.cpp
     src/modules/social/presentation/SocialPresentationModel.cpp
     src/modules/social/presentation/SocialSectionCoordinator.cpp
     src/modules/social/presentation/SocialFrame.Profile.cpp
@@ -193,6 +298,17 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/options/presentation/OptionsView.Pages.cpp
     src/modules/options/presentation/OptionsView.Theme.cpp
 
+    src/modules/presence/application/PresenceMonitor.cpp
+    src/modules/presence/infrastructure/PresenceConnectionFactory.cpp
+    src/modules/presence/infrastructure/PresencePayloadCodec.cpp
+    src/modules/presence/presentation/PresenceActionController.cpp
+    src/modules/presence/presentation/PresenceFrame.Actions.cpp
+    src/modules/presence/presentation/PresenceFrame.cpp
+    src/modules/presence/presentation/PresenceFrame.Events.cpp
+    src/modules/presence/presentation/PresenceFrame.Layout.cpp
+    src/modules/presence/presentation/PresenceFrame.State.cpp
+    src/modules/presence/presentation/PresencePresentationModel.cpp
+
     src/modules/user/application/LoginUseCase.cpp
     src/modules/user/application/RegisterUseCase.cpp
     src/modules/user/infrastructure/remote/JwtLoginClaimsParser.cpp
@@ -210,6 +326,10 @@ add_executable(lemonde_de_lila_wx WIN32
 
     src/shared/accessibility/ActionButton.cpp
     src/shared/accessibility/AccessibilityUtils.cpp
+    src/shared/accessibility/FocusCoordinator.cpp
+    src/shared/accessibility/FocusMemory.cpp
+    src/shared/accessibility/FocusManager.cpp
+    src/shared/accessibility/FocusTransition.cpp
     src/shared/accessibility/NavigationController.cpp
 
     src/shared/config/AppConfig.cpp
@@ -228,7 +348,10 @@ add_executable(lemonde_de_lila_wx WIN32
     src/shared/text/Encoding.cpp
     src/shared/text/UiTextCatalog.cpp
     src/shared/ui/controls/VerticalMenu.cpp
+    src/shared/ui/controls/VerticalMenu.Entries.cpp
+    src/shared/ui/controls/VerticalMenuEntry.cpp
     src/shared/security/SecurityUtils.cpp
+    src/shared/security/JwtPayload.cpp
     src/shared/logging/Logger.cpp
     src/shared/ui/Theme.cpp
 )
@@ -291,6 +414,26 @@ if(BUILD_TESTING)
     if(EXISTS "${NETWORK_PROTOCOL_TEST}")
         add_executable(lemonde_de_lila_wx_tests
             tests/NetworkProtocolTests.cpp
+            src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp
+            src/modules/catalog/presentation/CatalogShelfNavigator.cpp
+            src/modules/rooms/infrastructure/RoomPayloadCodec.cpp
+            src/modules/rooms/application/RoomSessionService.cpp
+            src/modules/rooms/application/RoomSessionService.Realtime.cpp
+            src/modules/rooms/infrastructure/RoomSessionGateway.cpp
+            src/modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp
+            src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.cpp
+            src/modules/rooms/infrastructure/RoomSessionGateway.State.cpp
+            src/modules/rooms/presentation/RoomLobbyNavigator.cpp
+            src/modules/rooms/presentation/RoomOpenRequest.cpp
+            src/modules/rooms/presentation/RoomPresentationModel.cpp
+            src/modules/rooms/presentation/RoomShortcutPolicy.cpp
+            src/modules/vault/infrastructure/VaultPayloadCodec.cpp
+            src/modules/vault/presentation/VaultNavigator.cpp
+            src/modules/vault/presentation/VaultPresentationModel.cpp
+            src/modules/storybook/infrastructure/StoryBookPayloadCodec.cpp
+            src/modules/storybook/presentation/StoryBookNavigator.cpp
+            src/modules/leaderboard/infrastructure/LeaderboardPayloadCodec.cpp
+            src/modules/leaderboard/presentation/LeaderboardNavigator.cpp
             src/modules/chat/application/ChatService.cpp
             src/modules/chat/application/ChatService.Connection.cpp
             src/modules/chat/application/ChatService.Messages.cpp
@@ -312,6 +455,7 @@ if(BUILD_TESTING)
             src/shared/network/http/WsTicketTransport.cpp
             src/shared/network/realtime/RealtimeProtocol.cpp
             src/shared/security/SecurityUtils.cpp
+            src/shared/security/JwtPayload.cpp
             src/shared/text/Encoding.cpp
             src/shared/text/UiTextCatalog.cpp
             src/shared/logging/Logger.cpp

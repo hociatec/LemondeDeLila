@@ -1,11 +1,8 @@
 #include "shared/text/Encoding.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 
-#include <array>
 #include <span>
-
-#include <wx/button.h>
-#include <wx/panel.h>
+#include <vector>
 
 #include "modules/social/presentation/SocialDataStore.h"
 #include "modules/social/presentation/SocialNavigationState.h"
@@ -15,126 +12,163 @@
 
 namespace lila::modules::social::presentation
 {
+namespace
+{
+using MenuItem = lila::shared::ui::controls::VerticalMenuItem;
+
+struct SectionSelectionState final
+{
+    bool hasItems = false;
+    bool showActionMenu = false;
+    std::vector<MenuItem> actionItems;
+};
+
+void SetActionMenuItems(
+    lila::shared::ui::controls::VerticalMenu* menu,
+    bool visible,
+    std::span<const MenuItem> items)
+{
+    if (menu == nullptr)
+    {
+        return;
+    }
+
+    if (!visible)
+    {
+        menu->SetItems({});
+        menu->Show(false);
+        return;
+    }
+
+    const auto selected = menu->GetSelectedIndex();
+    menu->SetItems(items);
+    if (selected < menu->GetItemCount())
+    {
+        menu->SetSelectedIndexSilently(selected);
+    }
+    menu->Show(true);
+}
+
+MenuItem BuildToggleBlockItem(const char* id, bool blocked)
+{
+    return MenuItem{
+        id,
+        blocked
+            ? lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionUnblock)
+            : lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock)};
+}
+
+std::vector<MenuItem> BuildActionItems(
+    SocialSection section,
+    const SocialDataStore& dataStore,
+    const SocialView& view)
+{
+    switch (section)
+    {
+    case SocialSection::Friends:
+    {
+        const auto controls = view.FriendsSection();
+        const auto& friends = dataStore.Friends();
+        const std::size_t selection = controls.list != nullptr ? controls.list->GetSelectedIndex() : 0;
+        const bool blocked = selection < friends.size() && dataStore.IsBlocked(friends[selection].id);
+        return {
+            {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
+            {"remove-friend", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionRemoveFriend)},
+            BuildToggleBlockItem("block-friend", blocked),
+        };
+    }
+    case SocialSection::IncomingRequests:
+    {
+        const auto controls = view.IncomingSection();
+        const auto& incoming = dataStore.IncomingRequests();
+        const std::size_t selection = controls.list != nullptr ? controls.list->GetSelectedIndex() : 0;
+        const bool blocked = selection < incoming.size() && dataStore.IsBlocked(incoming[selection].requester.id);
+        return {
+            {"accept-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionAccept)},
+            {"reject-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionReject)},
+            {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
+            BuildToggleBlockItem("block-user", blocked),
+        };
+    }
+    case SocialSection::OutgoingRequests:
+    {
+        const auto controls = view.OutgoingSection();
+        const auto& outgoing = dataStore.OutgoingRequests();
+        const std::size_t selection = controls.list != nullptr ? controls.list->GetSelectedIndex() : 0;
+        const bool blocked = selection < outgoing.size() && dataStore.IsBlocked(outgoing[selection].addressee.id);
+        return {
+            {"cancel-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionCancel)},
+            {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
+            BuildToggleBlockItem("block-user", blocked),
+        };
+    }
+    case SocialSection::Blocked:
+        return {
+            {"unblock-user", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionUnblock)},
+        };
+    case SocialSection::Profile:
+        return {};
+    }
+
+    return {};
+}
+
+SectionSelectionState BuildSelectionState(
+    SocialSection section,
+    const SocialDataStore& dataStore,
+    const SocialNavigationState& navigationState,
+    const SocialView& view)
+{
+    const auto controls = view.SectionFor(section);
+    if (controls.list == nullptr)
+    {
+        return {};
+    }
+
+    const bool hasItems = controls.list->GetItemCount() > 0;
+    return SectionSelectionState{
+        hasItems,
+        navigationState.currentSection == section &&
+            navigationState.sectionActionMenuActive &&
+            hasItems,
+        BuildActionItems(section, dataStore, view)};
+}
+}
+
 void SocialSectionPresenter::SyncSectionActionVisibility()
 {
-    const bool showFriendsActions =
-        navigationState_.currentSection == SocialSection::Friends &&
-        navigationState_.sectionActionMenuActive &&
-        view_.friendsList->GetItemCount() > 0;
-    const bool showIncomingActions =
-        navigationState_.currentSection == SocialSection::IncomingRequests &&
-        navigationState_.sectionActionMenuActive &&
-        view_.incomingRequestsList->GetItemCount() > 0;
-    const bool showOutgoingActions =
-        navigationState_.currentSection == SocialSection::OutgoingRequests &&
-        navigationState_.sectionActionMenuActive &&
-        view_.outgoingRequestsList->GetItemCount() > 0;
-    const bool showBlockedActions =
-        navigationState_.currentSection == SocialSection::Blocked &&
-        navigationState_.sectionActionMenuActive &&
-        view_.blockedUsersList->GetItemCount() > 0;
+    for (const auto section : {SocialSection::Friends, SocialSection::IncomingRequests, SocialSection::OutgoingRequests, SocialSection::Blocked})
+    {
+        const auto controls = view_.SectionFor(section);
+        if (controls.actionsMenu == nullptr || controls.list == nullptr)
+        {
+            continue;
+        }
 
-    if (view_.friendsActionsMenu != nullptr)
-    {
-        view_.friendsActionsMenu->Show(showFriendsActions);
-    }
-    if (view_.incomingActionsMenu != nullptr)
-    {
-        view_.incomingActionsMenu->Show(showIncomingActions);
-    }
-    if (view_.outgoingActionsMenu != nullptr)
-    {
-        view_.outgoingActionsMenu->Show(showOutgoingActions);
-    }
-    if (view_.blockedActionsMenu != nullptr)
-    {
-        view_.blockedActionsMenu->Show(showBlockedActions);
+        controls.actionsMenu->Show(BuildSelectionState(section, dataStore_, navigationState_, view_).showActionMenu);
     }
 }
 
 void SocialSectionPresenter::SyncSelectionState()
 {
-    const auto& friends = dataStore_.Friends();
-    const auto& incoming = dataStore_.IncomingRequests();
-    const auto& outgoing = dataStore_.OutgoingRequests();
-
-    const bool hasFriends = view_.friendsList->GetItemCount() > 0;
-    const bool hasIncoming = view_.incomingRequestsList->GetItemCount() > 0;
-    const bool hasOutgoing = view_.outgoingRequestsList->GetItemCount() > 0;
-    const bool hasBlocked = view_.blockedUsersList->GetItemCount() > 0;
-    const std::size_t friendSelection = view_.friendsList->GetSelectedIndex();
-    const std::size_t incomingSelection = view_.incomingRequestsList->GetSelectedIndex();
-    const std::size_t outgoingSelection = view_.outgoingRequestsList->GetSelectedIndex();
-
-    view_.friendsList->Show(hasFriends);
-    view_.emptyFriendsCtrl->Show(!hasFriends);
-    view_.incomingRequestsList->Show(hasIncoming);
-    view_.emptyIncomingRequestsCtrl->Show(!hasIncoming);
-    view_.outgoingRequestsList->Show(hasOutgoing);
-    view_.emptyOutgoingRequestsCtrl->Show(!hasOutgoing);
-    view_.blockedUsersList->Show(hasBlocked);
-    view_.emptyBlockedUsersCtrl->Show(!hasBlocked);
-    SyncSectionActionVisibility();
-
-    const bool canActOnFriends = hasFriends && friendSelection < friends.size();
-    if (view_.friendsActionsMenu != nullptr && view_.friendsActionsMenu->GetFirstButton() != nullptr)
+    for (const auto section : {SocialSection::Friends, SocialSection::IncomingRequests, SocialSection::OutgoingRequests, SocialSection::Blocked})
     {
-        const bool blockedFriend = canActOnFriends && dataStore_.IsBlocked(friends[friendSelection].id);
-        const std::array<lila::shared::ui::controls::VerticalMenuItem, 3> items = {{
-            {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
-            {"remove-friend", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionRemoveFriend)},
-            {"block-friend", blockedFriend ? lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionUnblock)
-                                           : lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock)},
-        }};
-        const auto selected = view_.friendsActionsMenu->GetSelectedIndex();
-        view_.friendsActionsMenu->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{items.data(), items.size()});
-        if (selected < view_.friendsActionsMenu->GetItemCount())
+        const auto controls = view_.SectionFor(section);
+        if (controls.list == nullptr || controls.emptyControl == nullptr)
         {
-            view_.friendsActionsMenu->SetSelectedIndexSilently(selected);
+            continue;
+        }
+
+        const auto state = BuildSelectionState(section, dataStore_, navigationState_, view_);
+        controls.list->Show(state.hasItems);
+        controls.emptyControl->Show(!state.hasItems);
+        SetActionMenuItems(controls.actionsMenu, state.showActionMenu, state.actionItems);
+
+        if (controls.panel != nullptr)
+        {
+            controls.panel->Layout();
         }
     }
-
-    const bool canActOnIncoming = hasIncoming && incomingSelection < incoming.size();
-    if (view_.incomingActionsMenu != nullptr && view_.incomingActionsMenu->GetFirstButton() != nullptr)
-    {
-        const bool blockedSender = canActOnIncoming && dataStore_.IsBlocked(incoming[incomingSelection].requester.id);
-        const std::array<lila::shared::ui::controls::VerticalMenuItem, 4> items = {{
-            {"accept-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionAccept)},
-            {"reject-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionReject)},
-            {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
-            {"block-user", blockedSender ? lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionUnblock)
-                                         : lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock)},
-        }};
-        const auto selected = view_.incomingActionsMenu->GetSelectedIndex();
-        view_.incomingActionsMenu->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{items.data(), items.size()});
-        if (selected < view_.incomingActionsMenu->GetItemCount())
-        {
-            view_.incomingActionsMenu->SetSelectedIndexSilently(selected);
-        }
-    }
-
-    const bool canActOnOutgoing = hasOutgoing && outgoingSelection < outgoing.size();
-    if (view_.outgoingActionsMenu != nullptr && view_.outgoingActionsMenu->GetFirstButton() != nullptr)
-    {
-        const bool blockedReceiver = canActOnOutgoing && dataStore_.IsBlocked(outgoing[outgoingSelection].addressee.id);
-        const std::array<lila::shared::ui::controls::VerticalMenuItem, 3> items = {{
-            {"cancel-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionCancel)},
-            {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
-            {"block-user", blockedReceiver ? lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionUnblock)
-                                           : lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock)},
-        }};
-        const auto selected = view_.outgoingActionsMenu->GetSelectedIndex();
-        view_.outgoingActionsMenu->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{items.data(), items.size()});
-        if (selected < view_.outgoingActionsMenu->GetItemCount())
-        {
-            view_.outgoingActionsMenu->SetSelectedIndexSilently(selected);
-        }
-    }
-
-    view_.friendsPanel->Layout();
-    view_.incomingRequestsPanel->Layout();
-    view_.outgoingRequestsPanel->Layout();
-    view_.blockedPanel->Layout();
 }
 
 std::optional<int> SocialSectionPresenter::GetSelectedUserId() const
@@ -146,15 +180,8 @@ std::optional<int> SocialSectionPresenter::GetSelectedUserId() const
             : dataStore_.UserIdAt(SocialSection::Profile, 0);
     }
 
-    lila::shared::ui::controls::VerticalMenu* list = nullptr;
-    switch (navigationState_.currentSection)
-    {
-    case SocialSection::Friends: list = view_.friendsList; break;
-    case SocialSection::IncomingRequests: list = view_.incomingRequestsList; break;
-    case SocialSection::OutgoingRequests: list = view_.outgoingRequestsList; break;
-    case SocialSection::Blocked: list = view_.blockedUsersList; break;
-    case SocialSection::Profile: break;
-    }
+    const auto controls = view_.SectionFor(navigationState_.currentSection);
+    auto* list = controls.list;
     if (list == nullptr || list->GetItemCount() == 0)
     {
         return std::nullopt;

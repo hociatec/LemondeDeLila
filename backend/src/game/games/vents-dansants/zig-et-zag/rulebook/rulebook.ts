@@ -1,11 +1,17 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import { normalizeLowerActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import { normalizeLowerActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import type {
   ZigEtZagMetadata,
   ZigEtZagRoundState,
-} from '../model/zig-et-zag-state.entity';
+} from '../model/zig-et-zag-state.model';
 
 function getMeta(state: GameStateEntity): ZigEtZagMetadata {
   return (state.metadata ?? {}) as ZigEtZagMetadata;
@@ -22,9 +28,7 @@ export function getAvailableActions(
 
   const waiting = waitingPlayerIds(round);
   if (!waiting.length || waiting[0] !== playerId) return [];
-  const actions: GameSingleActionDto[] = [];
-  actions.push({ type: 'draw_card', payload: {} });
-  return actions;
+  return [{ type: 'draw_card', payload: {} }];
 }
 
 export function validateAction(
@@ -34,26 +38,26 @@ export function validateAction(
 ): GameSingleActionDto {
   const type = normalizeLowerActionType(action);
   if (type !== 'draw_card') {
-    throw new Error(`Action inconnue: ${action?.type}`);
+    throw new GameUnknownActionError(`Action inconnue: ${action?.type}`);
   }
   if (actorId == null) {
-    throw new Error('Acteur requis');
+    throw new GameActorRequiredError('Acteur requis');
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas démarrée.");
+    throw new GameStateViolationError("La partie n'est pas démarrée.");
   }
   const meta = getMeta(state);
   if (meta.winnerId != null) {
-    throw new Error('La partie est terminée.');
+    throw new GameStateViolationError('La partie est terminée.');
   }
   const round = meta.roundState;
   if (!round) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
   const waiting = waitingPlayerIds(round);
   if (!waiting.length || waiting[0] !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
   return {
     type: 'draw_card',
@@ -63,13 +67,15 @@ export function validateAction(
 
 function waitingPlayerIds(round: ZigEtZagRoundState): number[] {
   return (round.waitingPlayers ?? [])
-    .map((v: any) => {
-      if (typeof v === 'number' && Number.isFinite(v)) return v;
-      if (typeof v === 'string') {
-        const n = Number(v.trim());
-        return Number.isFinite(n) ? n : null;
+    .map((value: unknown) => {
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+      if (typeof value === 'string') {
+        const parsed = Number(value.trim());
+        return Number.isFinite(parsed) ? parsed : null;
       }
       return null;
     })
-    .filter((v: any): v is number => typeof v === 'number');
+    .filter(
+      (value: number | null): value is number => typeof value === 'number',
+    );
 }

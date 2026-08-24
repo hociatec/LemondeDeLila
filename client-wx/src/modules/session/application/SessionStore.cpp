@@ -37,6 +37,7 @@ bool SessionStore::Restore()
     const auto stored = repository_->Load();
     if (!stored.has_value())
     {
+        repository_->Clear();
         current_ = {};
         persisted_ = false;
         return false;

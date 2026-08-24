@@ -1,14 +1,14 @@
-﻿import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
+﻿import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import {
   isRollActionType,
   isRollAlias,
   normalizeActionType,
-} from '../../../../actions/action-service.helper';
+} from '../../../../application/helpers/action-service.helper';
 import type {
   PanierExpressMetadata,
   PanierExpressTile,
-} from '../model/panier-express-state.entity';
+} from '../model/panier-express-state.model';
 import {
   PANIER_EXPRESS_GAME,
   type PanierExpressActionType,
@@ -16,16 +16,16 @@ import {
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
+} from '../../../../domain/errors/public-api';
 import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
-} from '../../../../core/helpers/pawn-pending-rulebook.helper';
+} from '../../../../application/helpers/pawn-pending-rulebook.helper';
 import {
   getPendingIndexedChoiceActionsForPlayer,
   validatePendingDrawActionForActor,
   validatePendingIndexedChoiceActionForActor,
-} from '../../../../core/helpers/pending-actions-rulebook.helper';
+} from '../../../../application/helpers/pending-actions-rulebook.helper';
 
 type PendingRecord = Record<string, unknown>;
 
@@ -136,8 +136,8 @@ export function getAvailableActions(
     toText(pending.step) !== 'confirm',
   );
 
-  // IMPORTANT: un quiz "pending" peut provenir d'autres mécaniques (ex: échange refusé),
-  // pas uniquement d'une case quiz. Tant que le quiz n'est pas résolu, aucune autre action n'est autorisée.
+  // IMPORTANT: un quiz "pending" peut provenir d'autres mÃƒÂ©caniques (ex: ÃƒÂ©change refusÃƒÂ©),
+  // pas uniquement d'une case quiz. Tant que le quiz n'est pas rÃƒÂ©solu, aucune autre action n'est autorisÃƒÂ©e.
   if (hasPendingQuiz) {
     const quizPending = asRecord(pendingQuiz);
     const rawChoices = Array.isArray(quizPending.choices)
@@ -154,8 +154,8 @@ export function getAvailableActions(
     }));
   }
 
-  // IMPORTANT: un échange "pending" peut aussi provenir d'une action/carte (pas uniquement d'une case échange).
-  // Tant que l'échange n'est pas terminé, aucune autre action n'est autorisée.
+  // IMPORTANT: un ÃƒÂ©change "pending" peut aussi provenir d'une action/carte (pas uniquement d'une case ÃƒÂ©change).
+  // Tant que l'ÃƒÂ©change n'est pas terminÃƒÂ©, aucune autre action n'est autorisÃƒÂ©e.
   if (hasPendingExchange) {
     const exchangePending = pending;
     if (!exchangePending) return [];
@@ -181,7 +181,7 @@ export function getAvailableActions(
         }));
     }
 
-    // Étape inconnue => ne pas proposer 'roll' (sinon boucle d'erreur "terminer l'échange").
+    // Ãƒâ€°tape inconnue => ne pas proposer 'roll' (sinon boucle d'erreur "terminer l'ÃƒÂ©change").
     return [];
   }
 
@@ -231,7 +231,7 @@ export function validateAction(
         pendingPlayerId != null &&
         actorId !== pendingPlayerId
       ) {
-        throw new PlayerActionError('Une action est déjà en attente.', {
+        throw new PlayerActionError('Une action est dÃƒÂ©jÃƒÂ  en attente.', {
           gameType: 'panier-express',
           playerId: actorId,
           currentPlayerId: state.turn?.currentPlayerId ?? null,
@@ -240,7 +240,7 @@ export function validateAction(
       if (isRollActionType(rawType, normalizedType)) {
         if (actorId != null) {
           throw new PlayerActionError(
-            "Vous devez d'abord résoudre l'action en attente.",
+            "Vous devez d'abord rÃƒÂ©soudre l'action en attente.",
             {
               gameType: 'panier-express',
               playerId: actorId,
@@ -396,7 +396,7 @@ export function validateAction(
       pid == null ||
       pid !== actorId
     ) {
-      throw new PlayerActionError('Aucun échange à confirmer.', {
+      throw new PlayerActionError('Aucun ÃƒÂ©change ÃƒÂ  confirmer.', {
         gameType: 'panier-express',
         playerId: actorId ?? undefined,
       });
@@ -454,19 +454,19 @@ export function validateAction(
   }
 
   if (type === 'roll') {
-    // Anti-triche: ignorer tout payload côté client (ex: roll forcé).
+    // Anti-triche: ignorer tout payload cÃƒÂ´tÃƒÂ© client (ex: roll forcÃƒÂ©).
     if (actorId != null) {
       const meta = getMeta(state);
       const pendingQuiz = meta.quiz?.pending?.[actorId];
       if (pendingQuiz) {
-        throw new PlayerActionError('Vous devez répondre au quiz.', {
+        throw new PlayerActionError('Vous devez rÃƒÂ©pondre au quiz.', {
           gameType: 'panier-express',
           playerId: actorId,
         });
       }
       const pending = asPendingRecord(state.pending);
       if (pending && toText(pending.type) === 'exchange') {
-        throw new PlayerActionError("Vous devez terminer l'échange en cours.", {
+        throw new PlayerActionError("Vous devez terminer l'ÃƒÂ©change en cours.", {
           gameType: 'panier-express',
           playerId: actorId,
         });
@@ -475,7 +475,7 @@ export function validateAction(
     if (hasBlockingPending) {
       if (actorId != null) {
         throw new PlayerActionError(
-          "Vous devez d'abord résoudre l'action en attente.",
+          "Vous devez d'abord rÃƒÂ©soudre l'action en attente.",
           {
             gameType: 'panier-express',
             playerId: actorId,
@@ -529,3 +529,8 @@ function toText(value: unknown): string {
 function toBoolean(value: unknown): boolean {
   return value === true;
 }
+
+
+
+
+

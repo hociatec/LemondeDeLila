@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../engine/model/game-definition.model';
+import type { GameDefinition } from '../../../../application/models/game-definition.model';
 import { PANIER_EXPRESS_VICTORY } from './victory.definition';
 
 export type PanierExpressGameId = 'panier-express';
@@ -66,3 +66,4 @@ export const PANIER_EXPRESS_GAME: GameDefinition<
   ],
   victory: PANIER_EXPRESS_VICTORY,
 } as const;
+

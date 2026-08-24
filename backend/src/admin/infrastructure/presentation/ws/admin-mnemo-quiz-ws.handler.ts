@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import { AdminMnemoQuizCategoriesService } from '../../../application/use-cases/admin-mnemo-quiz/admin-mnemo-quiz-categories.service';
 import { AdminMnemoQuizPresenterService } from '../../../application/use-cases/admin-mnemo-quiz/admin-mnemo-quiz-presenter.service';
 import { AdminMnemoQuizQuestionsService } from '../../../application/use-cases/admin-mnemo-quiz/admin-mnemo-quiz-questions.service';
@@ -15,7 +15,7 @@ import {
   AdminMnemoQuizQuestionDeleteWsDto,
   AdminMnemoQuizQuestionUpdateWsDto,
   AdminMnemoQuizQuestionsListWsDto,
-} from './admin-mnemo-quiz.dto';
+} from './dto/admin-mnemo-quiz.ws.dto';
 
 @Injectable()
 export class AdminMnemoQuizWsHandler {
@@ -26,7 +26,7 @@ export class AdminMnemoQuizWsHandler {
     private readonly presenter: AdminMnemoQuizPresenterService,
   ) {}
 
-  mnemoCategories(session: WsSession, payload: any) {
+  mnemoCategories(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminMnemoQuizCategoriesListWsDto, payload ?? {});
     this.categories.list();
@@ -36,7 +36,7 @@ export class AdminMnemoQuizWsHandler {
     };
   }
 
-  mnemoCategoryCreate(session: WsSession, payload: any) {
+  mnemoCategoryCreate(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(
       AdminMnemoQuizCategoryCreateWsDto,
@@ -49,7 +49,7 @@ export class AdminMnemoQuizWsHandler {
     };
   }
 
-  mnemoCategoryUpdate(session: WsSession, payload: any) {
+  mnemoCategoryUpdate(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(
       AdminMnemoQuizCategoryUpdateWsDto,
@@ -62,7 +62,7 @@ export class AdminMnemoQuizWsHandler {
     };
   }
 
-  mnemoCategoryDelete(session: WsSession, payload: any) {
+  mnemoCategoryDelete(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(
       AdminMnemoQuizCategoryDeleteWsDto,
@@ -75,7 +75,7 @@ export class AdminMnemoQuizWsHandler {
     };
   }
 
-  mnemoQuestions(session: WsSession, payload: any) {
+  mnemoQuestions(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(
       AdminMnemoQuizQuestionsListWsDto,
@@ -90,7 +90,7 @@ export class AdminMnemoQuizWsHandler {
     };
   }
 
-  mnemoQuestionCreate(session: WsSession, payload: any) {
+  mnemoQuestionCreate(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(
       AdminMnemoQuizQuestionCreateWsDto,
@@ -109,7 +109,7 @@ export class AdminMnemoQuizWsHandler {
     };
   }
 
-  mnemoQuestionUpdate(session: WsSession, payload: any) {
+  mnemoQuestionUpdate(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(
       AdminMnemoQuizQuestionUpdateWsDto,
@@ -132,7 +132,7 @@ export class AdminMnemoQuizWsHandler {
     };
   }
 
-  mnemoQuestionDelete(session: WsSession, payload: any) {
+  mnemoQuestionDelete(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(
       AdminMnemoQuizQuestionDeleteWsDto,
@@ -145,3 +145,4 @@ export class AdminMnemoQuizWsHandler {
     };
   }
 }
+

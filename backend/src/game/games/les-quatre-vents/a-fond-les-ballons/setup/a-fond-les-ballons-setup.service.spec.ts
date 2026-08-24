@@ -1,8 +1,7 @@
-import { GameCoreService } from '../../../../core/services/game-core.service';
-import { RandomService } from '../../../../modules/random/services/random.service';
-import { GameContentLoaderService } from '../../../../engine/services/game-content-loader.service';
-import { SetupFlowService } from '../../../../modules/setup-flow/services/setup-flow.service';
-import { AFondLesBallonsSetupService } from './a-fond-les-ballons-setup.service';
+import { GameCoreService } from '../../../../application/services/game-core.service';
+import { RandomService } from '../../../../application/services/random.service';
+import { SetupFlowService } from '../../../../application/services/setup-flow.service';
+import { AFondLesBallonsSetupService } from '../application/services/a-fond-les-ballons-setup.service';
 
 function makeBase(players = 3) {
   return {
@@ -34,7 +33,31 @@ function makeService() {
   return new AFondLesBallonsSetupService(
     new GameCoreService(),
     random,
-    new GameContentLoaderService(),
+    {
+      validators: {
+        version: () => () => undefined,
+        arrayField: () => () => undefined,
+      },
+      loadContent: () => ({
+        pawns: [
+          {
+            id: 'capitaine-cacahuete',
+            name: 'Capitaine Cacahuète',
+            description: 'Test',
+          },
+          {
+            id: 'professeur-gribouille',
+            name: 'Professeur Gribouille',
+            description: 'Test',
+          },
+          {
+            id: 'miss-froufrou',
+            name: 'Miss Froufrou',
+            description: 'Test',
+          },
+        ],
+      }),
+    } as any,
     new SetupFlowService(),
   );
 }

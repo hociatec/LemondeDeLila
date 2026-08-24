@@ -1,8 +1,16 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
-import type { NawakMetadata } from '../model/nawak-state.entity';
-import { normalizeActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GamePayloadValidationError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { NawakMetadata } from '../model/nawak-state.model';
 
 type NawakActionPayload = {
   answerIndex?: number | null;
@@ -68,56 +76,56 @@ export function validateAction(
 ): GameSingleActionDto {
   const type = normalizeActionType(action);
   if (type !== 'choose_answer' && type !== 'vote_answer') {
-    throw new Error(`Action inconnue: ${type}`);
+    throw new GameUnknownActionError(`Action inconnue: ${type}`);
   }
   if (actorId == null) {
-    throw new Error('Acteur requis');
+    throw new GameActorRequiredError('Acteur requis');
   }
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas démarrée.");
+    throw new GameStateViolationError("La partie n'est pas démarrée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
   const meta = getMeta(state);
   if (meta.winnerId != null) {
-    throw new Error('La partie est terminée.');
+    throw new GameStateViolationError('La partie est terminée.');
   }
 
   const payload = (action.payload ?? {}) as NawakActionPayload;
   if (type === 'choose_answer') {
     if (meta.roundStage !== 'choose') {
-      throw new Error('Vous ne pouvez pas choisir maintenant.');
+      throw new GameActionRejectedError('Vous ne pouvez pas choisir maintenant.');
     }
     const answerIndex =
       typeof payload.answerIndex === 'number' ? payload.answerIndex : null;
     if (answerIndex == null || answerIndex < 0 || answerIndex >= 3) {
-      throw new Error('Réponse invalide.');
+      throw new GamePayloadValidationError('Réponse invalide.');
     }
     const submissions = meta.submissions ?? {};
     if (submissions[actorId] != null) {
-      throw new Error('Vous avez déjà choisi une réponse.');
+      throw new GameActionRejectedError('Vous avez déjà choisi une réponse.');
     }
     return { type: 'choose_answer', payload: { answerIndex } };
   }
 
   if (meta.roundStage !== 'vote') {
-    throw new Error('Vous ne pouvez pas voter maintenant.');
+    throw new GameActionRejectedError('Vous ne pouvez pas voter maintenant.');
   }
   const targetPlayerId =
     typeof payload.targetPlayerId === 'number' ? payload.targetPlayerId : null;
   if (targetPlayerId == null || targetPlayerId === actorId) {
-    throw new Error('Cible de vote invalide.');
+    throw new GamePayloadValidationError('Cible de vote invalide.');
   }
   const submissions = meta.submissions ?? {};
   if (submissions[targetPlayerId] == null) {
-    throw new Error("La cible n'a pas soumis de réponse.");
+    throw new GameActionRejectedError("La cible n'a pas soumis de réponse.");
   }
   const votes = meta.votes ?? {};
   if (votes[actorId] != null) {
-    throw new Error('Vous avez déjà voté.');
+    throw new GameActionRejectedError('Vous avez déjà voté.');
   }
 
   return { type: 'vote_answer', payload: { targetPlayerId } };

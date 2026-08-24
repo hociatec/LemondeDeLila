@@ -28,6 +28,8 @@ void OptionsView::BuildLayout()
     auto* headerSizer = new wxBoxSizer(wxVERTICAL);
     auto* titleLabel = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Options"));
     auto* subtitleLabel = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Préférences du client"));
+    titleLabel->Hide();
+    subtitleLabel->Hide();
     headerSizer->Add(titleLabel, 0, wxALIGN_CENTER_HORIZONTAL);
     headerSizer->Add(subtitleLabel, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 6);
     headerPanel->SetSizer(headerSizer);
@@ -84,11 +86,12 @@ void OptionsView::BuildSectionMenu(wxWindow* parent)
     auto* sectionSizer = new wxBoxSizer(wxVERTICAL);
     sectionsMenu = new lila::shared::ui::controls::VerticalMenu(
         parent,
-        lila::shared::ui::navigation::BuildMenuItems(std::span(menuItems)));
+        lila::shared::ui::navigation::BuildMenuItems(std::span(menuItems)),
+        lila::shared::ui::controls::VerticalMenuRole::Entries);
     sectionsMenu->SetTabNavigationEnabled(false);
     sectionSizer->Add(sectionsMenu, 1, wxEXPAND);
     parent->SetSizer(sectionSizer);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*sectionsMenu, wxString(L"Sections des options"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*sectionsMenu, wxString(L"Options"));
 }
 
 void OptionsView::BuildSectionPages(wxWindow* parent)
@@ -107,9 +110,9 @@ void OptionsView::BuildSectionPages(wxWindow* parent)
     BuildSoundsPage(soundsPage);
     BuildChatPage(chatPage);
 
-    sectionBook->AddPage(generalPage, wxString(L"Général"));
-    sectionBook->AddPage(soundsPage, wxString(L"Sons"));
-    sectionBook->AddPage(chatPage, wxString(L"Tchat"));
+    sectionBook->AddPage(generalPage, wxEmptyString);
+    sectionBook->AddPage(soundsPage, wxEmptyString);
+    sectionBook->AddPage(chatPage, wxEmptyString);
     sectionBook->SetSelection(0);
 }
 }

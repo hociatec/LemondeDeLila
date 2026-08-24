@@ -5,6 +5,7 @@
 #include "modules/messaging/presentation/MessagingScreenCoordinator.h"
 #include "modules/messaging/presentation/MessagingView.h"
 #include "shared/accessibility/AccessibilityUtils.h"
+#include "shared/accessibility/FocusCoordinator.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/text/UiTexts.h"
 #include "shared/ui/BackgroundTask.h"
@@ -187,10 +188,16 @@ void MessagingFrame::SetScreen(Screen screen, std::optional<Screen> previousScre
     navigationState_.Enter(screen);
     SyncPanels();
     SyncSelectionState();
-    CallAfter(
+    ScheduleFocusCurrentScreen();
+}
+
+void MessagingFrame::ScheduleFocusCurrentScreen()
+{
+    lila::shared::accessibility::FocusCoordinator::Schedule(
+        *this,
         [this]()
         {
-            focusController_->FocusCurrentScreen();
+            return focusController_->BuildCurrentScreenPlan();
         });
 }
 

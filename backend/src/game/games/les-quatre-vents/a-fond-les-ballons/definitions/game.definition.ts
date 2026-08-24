@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../engine/model/game-definition.model';
+import type { GameDefinition } from '../../../../application/models/game-definition.model';
 
 export type AFondLesBallonsGameId = 'a-fond-les-ballons';
 export type AFondLesBallonsPhaseId = 'turn';

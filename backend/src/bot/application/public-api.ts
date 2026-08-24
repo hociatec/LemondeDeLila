@@ -1,0 +1,12 @@
+export { BotApplicationError } from './errors/bot-application.errors';
+export { AddBotToRoomService } from './use-cases/bot-rooms/add-bot-to-room.service';
+export { AddSystemBotToRoomService } from './use-cases/bot-rooms/add-system-bot-to-room.service';
+export { CountRoomBotsService } from './use-cases/bot-rooms/count-room-bots.service';
+export { CreateBotNameService } from './use-cases/bot-names/create-bot-name.service';
+export { DeleteBotNameService } from './use-cases/bot-names/delete-bot-name.service';
+export { GetLastRoomBotService } from './use-cases/bot-rooms/get-last-room-bot.service';
+export { ListBotNamesService } from './use-cases/bot-names/list-bot-names.service';
+export { RemoveBotFromRoomService } from './use-cases/bot-rooms/remove-bot-from-room.service';
+export { RemoveAllRoomBotsService } from './use-cases/bot-rooms/remove-all-room-bots.service';
+export { RenameRoomBotService } from './use-cases/bot-rooms/rename-room-bot.service';
+export { UpdateBotNameService } from './use-cases/bot-names/update-bot-name.service';

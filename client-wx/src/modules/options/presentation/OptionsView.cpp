@@ -1,7 +1,5 @@
 #include "modules/options/presentation/OptionsView.h"
 
-#include <utility>
-
 namespace
 {
 constexpr int SectionMenuMinWidth = 220;
@@ -9,21 +7,20 @@ constexpr int SectionMenuMinWidth = 220;
 
 namespace lila::modules::options::presentation
 {
-OptionsView::OptionsView(wxWindow* parent, SaveRequestedHandler onSave)
-    : wxPanel(parent),
-      onSave_(std::move(onSave))
+OptionsView::OptionsView(wxWindow* parent)
+    : wxPanel(parent)
 {
     BuildLayout();
 }
 
 OptionsView::ShellControls OptionsView::Shell() noexcept
 {
-    return {sectionsMenu, sectionBook, sectionsPanel, statusLabel, cancelButton, &sectionSaveButtons};
+    return {sectionsMenu, sectionBook, sectionsPanel, statusLabel, cancelButton};
 }
 
 OptionsView::ShellControls OptionsView::Shell() const noexcept
 {
-    return {sectionsMenu, sectionBook, sectionsPanel, statusLabel, cancelButton, const_cast<std::vector<wxButton*>*>(&sectionSaveButtons)};
+    return {sectionsMenu, sectionBook, sectionsPanel, statusLabel, cancelButton};
 }
 
 OptionsView::GeneralSectionControls OptionsView::GeneralControls() const noexcept

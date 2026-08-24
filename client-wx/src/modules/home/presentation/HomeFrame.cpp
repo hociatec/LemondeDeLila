@@ -14,24 +14,21 @@ constexpr int WindowHeight = 720;
 namespace lila::modules::home::presentation
 {
 HomeFrame::HomeFrame(
+    wxWindow* parent,
     user::application::LoginUseCase& loginUseCase,
     user::application::RegisterUseCase& registerUseCase,
     LoginSucceededHandler onLoginSucceeded)
-    : wxFrame(
-          nullptr,
-          wxID_ANY,
-          lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()),
-          wxDefaultPosition,
-          wxSize(WindowWidth, WindowHeight),
-          wxDEFAULT_FRAME_STYLE & ~wxRESIZE_BORDER & ~wxMAXIMIZE_BOX),
+    : lila::shared::accessibility::NonFocusablePanel(
+          parent,
+          0),
       loginUseCase_(loginUseCase),
       registerUseCase_(registerUseCase),
       onLoginSucceeded_(std::move(onLoginSucceeded))
 {
+    SetMinSize(wxSize(WindowWidth, WindowHeight));
     BuildLayout();
     ApplyTheme();
     BindEvents();
     ShowPage(Page::Landing);
-    CentreOnScreen();
 }
 }

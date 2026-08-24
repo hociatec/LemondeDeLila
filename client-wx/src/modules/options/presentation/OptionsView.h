@@ -1,7 +1,5 @@
 #pragma once
 #include <cstddef>
-#include <functional>
-#include <vector>
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/panel.h>
@@ -11,7 +9,6 @@
 
 #include "modules/options/domain/OptionsState.h"
 
-class wxBoxSizer;
 class wxWindow;
 
 namespace lila::shared::ui::controls { class VerticalMenu; }
@@ -23,7 +20,6 @@ class OptionsViewPagesBuilder;
 class OptionsView final : public wxPanel
 {
 public:
-    using SaveRequestedHandler = std::function<void()>;
     struct ShellControls final
     {
         lila::shared::ui::controls::VerticalMenu* sectionsMenu;
@@ -31,7 +27,6 @@ public:
         wxPanel* sectionsPanel;
         wxStaticText* statusLabel;
         wxButton* cancelButton;
-        std::vector<wxButton*>* sectionSaveButtons;
     };
 
     struct GeneralSectionControls final
@@ -70,7 +65,7 @@ public:
         wxCheckBox* confirmChatExitCheckbox;
     };
 
-    OptionsView(wxWindow* parent, SaveRequestedHandler onSave);
+    explicit OptionsView(wxWindow* parent);
     void ApplyTheme();
     [[nodiscard]] wxWindow* GetFirstSectionControl(std::size_t sectionIndex) const;
     [[nodiscard]] domain::OptionsState ReadState(const domain::OptionsState& baseState) const;
@@ -90,9 +85,7 @@ private:
     void BuildGeneralPage(wxWindow* parent);
     void BuildSoundsPage(wxWindow* parent);
     void BuildChatPage(wxWindow* parent);
-    void AddSectionSaveButton(wxWindow* parent, wxBoxSizer* sectionSizer);
 
-    SaveRequestedHandler onSave_;
     lila::shared::ui::controls::VerticalMenu* sectionsMenu = nullptr;
     wxSimplebook* sectionBook = nullptr;
     wxPanel* sectionsPanel = nullptr;
@@ -126,7 +119,6 @@ private:
     wxCheckBox* restoreSessionCheckbox = nullptr;
     wxCheckBox* showNavigationStatusCheckbox = nullptr;
     wxButton* cancelButton = nullptr;
-    std::vector<wxButton*> sectionSaveButtons;
 
     wxWindow* generalPage = nullptr;
     wxWindow* soundsPage = nullptr;

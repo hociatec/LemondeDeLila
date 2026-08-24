@@ -1,42 +1,42 @@
-import { User } from '../user/entities/user.entity';
-import { ChatMessage } from '../chat/entities/chat-message.entity';
-import { ChatSettingsEntity } from '../chat/entities/chat-settings.entity';
-import { PrivateMessage } from '../messaging/entities/private-message.entity';
-import { SocialProfile } from '../social/entities/social-profile.entity';
-import { SocialRelationship } from '../social/entities/social-relationship.entity';
-import { SocialProfileSettingsEntity } from '../social/entities/social-profile-settings.entity';
-import { Room } from '../room/entities/room.entity';
-import { RoomParticipant } from '../room/entities/room-participant.entity';
-import { RoomBot } from '../room/entities/room-bot.entity';
-import { RoomMaintenanceSettingsEntity } from '../room/entities/room-maintenance-settings.entity';
+import { User } from '../user/public-api';
+import { ChatMessage } from '../chat/infrastructure/persistence/typeorm/entities/chat-message.entity';
+import { ChatSettingsEntity } from '../chat/infrastructure/persistence/typeorm/entities/chat-settings.entity';
+import { PrivateMessageEntity } from '../messaging/infrastructure/persistence/typeorm/entities/private-message.entity';
+import { SocialProfileEntity } from '../social/infrastructure/persistence/typeorm/entities/social-profile.entity';
+import { SocialRelationshipEntity } from '../social/infrastructure/persistence/typeorm/entities/social-relationship.entity';
+import { SocialProfileSettingsEntity } from '../social/infrastructure/persistence/typeorm/entities/social-profile-settings.entity';
+import { Room } from '../room/infrastructure/persistence/typeorm/entities/room.entity';
+import { RoomParticipant } from '../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
+import { RoomBot } from '../room/infrastructure/persistence/typeorm/entities/room-bot.entity';
+import { RoomMaintenanceSettingsEntity } from '../room/infrastructure/persistence/typeorm/entities/room-maintenance-settings.entity';
 import { BotName } from '../bot/infrastructure/persistence/typeorm/entities/bot-name.entity';
-import { GameMatch } from '../stats/entities/game-match.entity';
-import { GameMatchPlayer } from '../stats/entities/game-match-player.entity';
-import { RoleDefinitionEntity } from '../admin/entities/role-definition.entity';
-import { GameCategoryEntity } from '../game/engine/entities/game-category.entity';
-import { GameCategoryAssignmentEntity } from '../game/engine/entities/game-category-assignment.entity';
-import { GameCatalogOverrideEntity } from '../game/engine/entities/game-catalog-override.entity';
-import { BotSettingsEntity } from '../game/modules/bot/entities/bot-settings.entity';
+import { GameMatchEntity } from '../stats/infrastructure/persistence/typeorm/entities/game-match.entity';
+import { GameMatchPlayerEntity } from '../stats/infrastructure/persistence/typeorm/entities/game-match-player.entity';
+import { RoleDefinitionEntity } from '../admin/infrastructure/persistence/typeorm/entities/role-definition.entity';
+import { GameCategoryEntity } from '../game/engine/infrastructure/persistence/typeorm/entities/game-category.entity';
+import { GameCategoryAssignmentEntity } from '../game/engine/infrastructure/persistence/typeorm/entities/game-category-assignment.entity';
+import { GameCatalogOverrideEntity } from '../game/engine/infrastructure/persistence/typeorm/entities/game-catalog-override.entity';
+import { BotSettingsEntity } from '../game/public-api';
 import { BugReportEntity } from '../bug-reports/infrastructure/persistence/typeorm/entities/bug-report.entity';
 import { BugReportCommentEntity } from '../bug-reports/infrastructure/persistence/typeorm/entities/bug-report-comment.entity';
-import { NotificationInboxItem } from '../notification/entities/notification-inbox-item.entity';
-import { VaultRoomSnapshotEntity } from '../vault/entities/vault-room-snapshot.entity';
+import { NotificationInboxItemEntity } from '../notification/infrastructure/persistence/typeorm/entities/notification-inbox-item.entity';
+import { VaultRoomSnapshotEntity } from '../vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity';
 
 export const ORM_ENTITIES = [
   User,
   ChatMessage,
   ChatSettingsEntity,
-  PrivateMessage,
-  SocialProfile,
-  SocialRelationship,
+  PrivateMessageEntity,
+  SocialProfileEntity,
+  SocialRelationshipEntity,
   SocialProfileSettingsEntity,
   Room,
   RoomParticipant,
   RoomBot,
   RoomMaintenanceSettingsEntity,
   BotName,
-  GameMatch,
-  GameMatchPlayer,
+  GameMatchEntity,
+  GameMatchPlayerEntity,
   RoleDefinitionEntity,
   GameCategoryEntity,
   GameCategoryAssignmentEntity,
@@ -44,6 +44,7 @@ export const ORM_ENTITIES = [
   BotSettingsEntity,
   BugReportEntity,
   BugReportCommentEntity,
-  NotificationInboxItem,
+  NotificationInboxItemEntity,
   VaultRoomSnapshotEntity,
 ];
+

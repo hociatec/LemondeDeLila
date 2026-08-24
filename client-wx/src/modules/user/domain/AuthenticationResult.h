@@ -1,6 +1,8 @@
 ﻿#pragma once
 
+#include <cstdint>
 #include <string>
+#include <utility>
 
 #include "shared/text/UiTexts.h"
 
@@ -13,15 +15,21 @@ struct AuthenticationResult
     std::string message;
     std::string token;
     int userId = 0;
+    std::int64_t expiresAt = 0;
     std::string username;
 
-    [[nodiscard]] static AuthenticationResult Ok(std::string resolvedUsername, std::string resolvedToken, int resolvedUserId)
+    [[nodiscard]] static AuthenticationResult Ok(
+        std::string resolvedUsername,
+        std::string resolvedToken,
+        int resolvedUserId,
+        std::int64_t resolvedExpiresAt)
     {
         AuthenticationResult result;
         result.success = true;
         result.message = lila::shared::text::ui::AuthenticationSuccessMessage.str();
         result.token = std::move(resolvedToken);
         result.userId = resolvedUserId;
+        result.expiresAt = resolvedExpiresAt;
         result.username = std::move(resolvedUsername);
         return result;
     }

@@ -3,6 +3,7 @@
 #include <functional>
 #include <wx/string.h>
 
+#include "shared/accessibility/FocusManager.h"
 #include "shared/ui/navigation/NavigationStack.h"
 
 namespace lila::modules::session::application
@@ -42,14 +43,16 @@ public:
         lila::modules::session::application::SessionStore& sessionStore,
         Callbacks callbacks) noexcept;
 
+    void InitializeRootPage();
     void ShowPage(Page page, bool pushCurrentToHistory = false, int restoreSelection = -1);
     void ActivateRootItem(std::size_t index);
-    void FocusCurrentPage() const;
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildCurrentPageFocusPlan() const;
     void HandleEscape();
 
 private:
     [[nodiscard]] NavigationSnapshot CaptureSnapshot() const;
     void RestoreSnapshot(const NavigationSnapshot& snapshot);
+    void SyncPageVisibility(Page page) const;
     void ApplyPageContent(Page page, int restoreSelection);
     void BuildRootMenuItems() const;
     void BuildInfoItems() const;

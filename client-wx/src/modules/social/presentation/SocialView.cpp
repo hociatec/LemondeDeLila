@@ -13,22 +13,41 @@ SocialView::ShellControls SocialView::Shell() const noexcept
 
 SocialView::SectionControls SocialView::FriendsSection() const noexcept
 {
-    return {friendsList, emptyFriendsCtrl, friendsActionsMenu};
+    return {friendsPanel, friendsList, emptyFriendsCtrl, friendsActionsMenu};
 }
 
 SocialView::SectionControls SocialView::IncomingSection() const noexcept
 {
-    return {incomingRequestsList, emptyIncomingRequestsCtrl, incomingActionsMenu};
+    return {incomingRequestsPanel, incomingRequestsList, emptyIncomingRequestsCtrl, incomingActionsMenu};
 }
 
 SocialView::SectionControls SocialView::OutgoingSection() const noexcept
 {
-    return {outgoingRequestsList, emptyOutgoingRequestsCtrl, outgoingActionsMenu};
+    return {outgoingRequestsPanel, outgoingRequestsList, emptyOutgoingRequestsCtrl, outgoingActionsMenu};
 }
 
 SocialView::SectionControls SocialView::BlockedSection() const noexcept
 {
-    return {blockedUsersList, emptyBlockedUsersCtrl, blockedActionsMenu};
+    return {blockedPanel, blockedUsersList, emptyBlockedUsersCtrl, blockedActionsMenu};
+}
+
+SocialView::SectionControls SocialView::SectionFor(SocialSection section) const noexcept
+{
+    switch (section)
+    {
+    case SocialSection::Friends:
+        return FriendsSection();
+    case SocialSection::IncomingRequests:
+        return IncomingSection();
+    case SocialSection::OutgoingRequests:
+        return OutgoingSection();
+    case SocialSection::Blocked:
+        return BlockedSection();
+    case SocialSection::Profile:
+        return {profilePanel, nullptr, nullptr, nullptr};
+    }
+
+    return {nullptr, nullptr, nullptr, nullptr};
 }
 
 SocialView::ProfileControls SocialView::Profile() const noexcept

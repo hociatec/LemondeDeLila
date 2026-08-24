@@ -1,5 +1,15 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
+import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import {
+  GameActorRequiredError,
+  GameActionRejectedError,
+  GamePayloadValidationError,
+  GameStateViolationError,
+  GameTurnViolationError,
+  GameUnknownActionError,
+} from '../../../../domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   PIMP_MY_RIDE_CARD_BY_ID,
   PIMP_MY_RIDE_CATEGORY_ORDER,
@@ -7,9 +17,7 @@ import {
 import type {
   PimpMyRideMetadata,
   PimpMyRidePlayerProgress,
-} from '../model/pimp-my-ride-state.entity';
-import { normalizeActionType } from '../../../../actions/action-service.helper';
-import { isStartedState } from '../../../../rulebook/rulebook-guard.helper';
+} from '../model/pimp-my-ride-state.model';
 
 interface PimpMyRideActionPayload {
   cardId?: string | null;
@@ -82,24 +90,24 @@ export function validateAction(
   const type = normalizeActionType(action);
   const payload = (action?.payload ?? {}) as PimpMyRideActionPayload;
   if (type !== 'play_card' && type !== 'discard_card' && type !== 'pass') {
-    throw new Error(`Action inconnue : ${type}`);
+    throw new GameUnknownActionError(`Action inconnue : ${type}`);
   }
   if (actorId == null) {
-    throw new Error('Acteur requis.');
+    throw new GameActorRequiredError();
   }
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new Error("La partie n'est pas commencée.");
+    throw new GameStateViolationError("La partie n'est pas commencée.");
   }
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== actorId) {
-    throw new Error("Ce n'est pas votre tour.");
+    throw new GameTurnViolationError();
   }
 
   const meta = getMeta(state);
   if (meta.winnerId != null) {
-    throw new Error('La partie est déjà terminée.');
+    throw new GameStateViolationError('La partie est déjà terminée.');
   }
 
   if (type === 'pass') {
@@ -108,34 +116,34 @@ export function validateAction(
 
   const cardId = String(payload.cardId ?? '').trim();
   if (!cardId) {
-    throw new Error('Carte manquante.');
+    throw new GamePayloadValidationError('Carte manquante.');
   }
 
   const hand = Array.isArray(meta.hands?.[actorId]) ? meta.hands[actorId] : [];
   if (!hand.includes(cardId)) {
-    throw new Error('Carte indisponible.');
+    throw new GameActionRejectedError('Carte indisponible.');
   }
 
   const definition = PIMP_MY_RIDE_CARD_BY_ID[cardId];
   if (!definition) {
-    throw new Error('Carte invalide.');
+    throw new GamePayloadValidationError('Carte invalide.');
   }
 
   if (type === 'play_card') {
     const progress = getProgress(meta, actorId);
     const requiredCategory = getRequiredCategory(progress);
     if (definition.category !== requiredCategory) {
-      throw new Error("La carte ne correspond pas à l'étape en cours.");
+      throw new GameActionRejectedError(
+        "La carte ne correspond pas à l'étape en cours.",
+      );
     }
     return { type: 'play_card', payload: { cardId } };
   }
 
-  if (type === 'discard_card') {
-    if (meta.drawnPlayerId !== actorId || meta.drawnCardId !== cardId) {
-      throw new Error('Vous ne pouvez jeter que la carte récemment piochée.');
-    }
-    return { type: 'discard_card', payload: { cardId } };
+  if (meta.drawnPlayerId !== actorId || meta.drawnCardId !== cardId) {
+    throw new GameActionRejectedError(
+      'Vous ne pouvez jeter que la carte récemment piochée.',
+    );
   }
-
-  return { type: 'pass', payload: {} };
+  return { type: 'discard_card', payload: { cardId } };
 }

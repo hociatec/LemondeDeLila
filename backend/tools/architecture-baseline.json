@@ -1,0 +1,1320 @@
+{
+  "generatedAt": "2026-08-21T15:50:53.267Z",
+  "violations": [
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/client-updates/application/use-cases/client-updates/client-updates-upload.service.ts",
+      "detail": "imports src/client-updates/infrastructure/filesystem/client-updates-upload-store.service.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/client-updates/application/use-cases/client-updates/client-updates.service.ts",
+      "detail": "imports src/client-updates/infrastructure/filesystem/client-updates-meta-store.service.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/client-updates/application/use-cases/client-updates/client-updates.service.ts",
+      "detail": "imports src/client-updates/infrastructure/filesystem/client-updates-paths.service.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/client-updates/application/use-cases/client-updates/client-updates.service.ts",
+      "detail": "imports src/client-updates/infrastructure/filesystem/client-updates-publisher.service.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/notification/application/services/notification.service.ts",
+      "detail": "imports src/notification/infrastructure/transport/notification-transport.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/presence/application/services/presence.service.ts",
+      "detail": "imports src/presence/infrastructure/transport/presence-transport.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/ports/room-lobby.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/ports/room-participant.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/ports/room-participant.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/ports/room-participant.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/ports/room-user.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/ports/room-vault.port.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/ports/room.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/ports/room.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-access.service.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-admin-context.service.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-admin-context.service.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-admin-maintenance.service.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-admin-maintenance.service.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-lifecycle-facade.service.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-lifecycle.service.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-membership-facade.service.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-membership.service.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-membership.service.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-membership.service.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room-payload-builder.service.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "application-no-infrastructure",
+      "file": "src/room/application/services/room.service.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/admin/infrastructure/persistence/typeorm/repositories/admin-user-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/admin/infrastructure/public/admin-rooms.adapter.ts",
+      "detail": "imports src/room/application/ports/room-admin.port.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/admin/module/admin.module.imports.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/app.module.ts",
+      "detail": "imports src/database/entities.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/bot/infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-bot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/bot/infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/bot/infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/bot/module/bot.module.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-bot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/bot/module/bot.module.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/bot/module/bot.module.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/bot/module/bot.module.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/catalog/infrastructure/game-registry/catalog-game-registry.source.ts",
+      "detail": "imports src/game/engine/application/services/game-registry.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/catalog/module/catalog.module.imports.ts",
+      "detail": "imports src/game/engine/module/game-registry.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/chat/infrastructure/persistence/typeorm/entities/chat-message.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/client-updates/infrastructure/presentation/http/controllers/admin-client-updates.controller.ts",
+      "detail": "imports src/common/guards/infrastructure/http/admin-role.guard.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/client-updates/infrastructure/presentation/http/controllers/admin-client-updates.controller.ts",
+      "detail": "imports src/common/guards/infrastructure/http/http-jwt.guard.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/client-updates/module/client-updates.module.providers.presentation.ts",
+      "detail": "imports src/common/guards/application/services/jwt-payload-verifier.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/client-updates/module/client-updates.module.providers.presentation.ts",
+      "detail": "imports src/common/guards/infrastructure/http/admin-role.guard.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/client-updates/module/client-updates.module.providers.presentation.ts",
+      "detail": "imports src/common/guards/infrastructure/http/http-jwt.guard.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/data-source.ts",
+      "detail": "imports src/database/entities.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/admin/infrastructure/persistence/typeorm/entities/role-definition.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/bot/infrastructure/persistence/typeorm/entities/bot-name.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/bug-reports/infrastructure/persistence/typeorm/entities/bug-report-comment.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/bug-reports/infrastructure/persistence/typeorm/entities/bug-report.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/chat/infrastructure/persistence/typeorm/entities/chat-message.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/chat/infrastructure/persistence/typeorm/entities/chat-settings.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/game/engine/infrastructure/persistence/typeorm/entities/game-catalog-override.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/game/engine/infrastructure/persistence/typeorm/entities/game-category-assignment.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/game/engine/infrastructure/persistence/typeorm/entities/game-category.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/game/modules/bot/infrastructure/persistence/typeorm/entities/bot-settings.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/messaging/infrastructure/persistence/typeorm/entities/private-message.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/notification/infrastructure/persistence/typeorm/entities/notification-inbox-item.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-bot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-maintenance-settings.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/social/infrastructure/persistence/typeorm/entities/social-profile-settings.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/social/infrastructure/persistence/typeorm/entities/social-profile.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/social/infrastructure/persistence/typeorm/entities/social-relationship.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/stats/infrastructure/persistence/typeorm/entities/game-match-player.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/stats/infrastructure/persistence/typeorm/entities/game-match.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/engine/application/services/game-engine-state.store.ts",
+      "detail": "imports src/common/redis/application/services/redis-client.factory.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/engine/module/engine.module.ts",
+      "detail": "imports src/client-updates/module/client-updates.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/engine/module/engine.module.ts",
+      "detail": "imports src/room/module/room.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/engine/module/engine.module.ts",
+      "detail": "imports src/social/module/social.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/engine/module/engine.module.ts",
+      "detail": "imports src/stats/module/stats.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/games/les-quatre-vents/contes-et-cacahuetes/actions/contes-action.service.ts",
+      "detail": "imports src/common/utils/mojibake.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/games/les-quatre-vents/contes-et-cacahuetes/actions/contes-status-state.helper.ts",
+      "detail": "imports src/common/utils/mojibake.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/games/les-quatre-vents/contes-et-cacahuetes/setup/contes-et-cacahuetes-setup.service.ts",
+      "detail": "imports src/common/utils/mojibake.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/games/les-quatre-vents/panier-express/setup/panier-express-setup.service.ts",
+      "detail": "imports src/common/utils/seeded-shuffle.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/games/vents-sacres/corridor/setup/corridor-setup.service.ts",
+      "detail": "imports src/common/utils/seeded-rng.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/games/vents-sacres/morpion/morpion.service.ts",
+      "detail": "imports src/common/utils/seeded-rng.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/game/modules/random/services/random.service.ts",
+      "detail": "imports src/common/utils/seeded-rng.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/health/infrastructure/checks/redis.health.ts",
+      "detail": "imports src/common/redis/application/services/redis-client.factory.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/health/infrastructure/presentation/http/controllers/health.controller.ts",
+      "detail": "imports src/common/utils/build-info.utils.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/main.ts",
+      "detail": "imports src/app.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/main.ts",
+      "detail": "imports src/common/services/application/services/serv-logger.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/main.ts",
+      "detail": "imports src/common/ws/infrastructure/platform/lila-ws.adapter.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/messaging/application/services/message-validator.service.ts",
+      "detail": "imports src/common/utils/message-sanitizer.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/messaging/application/services/messaging-notification.service.ts",
+      "detail": "imports src/notification/application/services/notification.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/messaging/application/services/messaging-notification.service.ts",
+      "detail": "imports src/notification/application/services/user-badge-counts.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/messaging/infrastructure/persistence/typeorm/entities/private-message.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/messaging/infrastructure/persistence/typeorm/repositories/messaging-user-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/messaging/infrastructure/persistence/typeorm/repositories/private-message-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/messaging/module/messaging.module.imports.ts",
+      "detail": "imports src/notification/module/notification.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/messaging/module/messaging.module.imports.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/notification/application/services/notification.service.ts",
+      "detail": "imports src/common/utils/mojibake.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/notification/application/services/user-badge-counts.service.ts",
+      "detail": "imports src/messaging/application/ports/private-message.repository.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/notification/infrastructure/persistence/typeorm/repositories/notification-inbox-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/notification/infrastructure/presentation/ws/notification.gateway.ts",
+      "detail": "imports src/social/infrastructure/persistence/typeorm/entities/social-relationship.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/notification/infrastructure/transport/notification-transport.ts",
+      "detail": "imports src/common/pubsub/redis-pubsub.transport.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/notification/module/notification.module.imports.ts",
+      "detail": "imports src/messaging/infrastructure/persistence/typeorm/entities/private-message.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/notification/module/notification.module.imports.ts",
+      "detail": "imports src/social/infrastructure/persistence/typeorm/entities/social-relationship.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/application/services/presence-chat.service.ts",
+      "detail": "imports src/common/interfaces/ws-auth-payload.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/application/services/presence.service.ts",
+      "detail": "imports src/common/interfaces/ws-auth-payload.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/infrastructure/persistence/typeorm/repositories/presence-room-participant-typeorm.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/infrastructure/persistence/typeorm/repositories/presence-user-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/infrastructure/system/presence-chat.adapter.ts",
+      "detail": "imports src/chat/application/use-cases/chat/chat-settings.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/infrastructure/system/presence-chat.adapter.ts",
+      "detail": "imports src/chat/application/use-cases/chat/chat.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/infrastructure/transport/presence-transport.ts",
+      "detail": "imports src/common/pubsub/redis-pubsub.transport.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/module/presence.module.imports.ts",
+      "detail": "imports src/chat/module/chat.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/module/presence.module.imports.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/module/presence.module.imports.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/presence/module/presence.module.providers.core.ts",
+      "detail": "imports src/common/redis/application/services/redis-client.factory.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/realtime/module/realtime.module.imports.ts",
+      "detail": "imports src/client-updates/module/client-updates.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/realtime/module/realtime.module.providers.core.ts",
+      "detail": "imports src/common/session/application/ports/session-state-store.port.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/realtime/module/realtime.module.providers.core.ts",
+      "detail": "imports src/common/session/infrastructure/persistence/redis-session-store.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/ports/room-participant.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/ports/room-user.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/ports/room.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/services/room-admin-context.service.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/services/room-admin-maintenance.service.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/services/room-lifecycle-facade.service.ts",
+      "detail": "imports src/bot/application/use-cases/bot-rooms/count-room-bots.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/services/room-lobby-refresh.service.ts",
+      "detail": "imports src/common/ws/application/services/ws-api-hub.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/services/room-membership-facade.service.ts",
+      "detail": "imports src/bot/application/use-cases/bot-rooms/count-room-bots.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/services/room-membership.service.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/services/room-payload-builder.service.ts",
+      "detail": "imports src/catalog/application/use-cases/catalog/catalog.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/application/services/room-payload-cache.service.ts",
+      "detail": "imports src/common/redis/application/services/redis-client.factory.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/infrastructure/persistence/typeorm/entities/room.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/infrastructure/persistence/typeorm/repositories/room-participant-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/infrastructure/persistence/typeorm/repositories/room-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/infrastructure/persistence/typeorm/repositories/room-user-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/infrastructure/persistence/typeorm/repositories/room-vault-snapshot-typeorm.repository.ts",
+      "detail": "imports src/vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/module/room.module.imports.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/room/module/room.module.imports.ts",
+      "detail": "imports src/vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/social/application/services/social-relationship.service.ts",
+      "detail": "imports src/notification/application/services/notification.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/social/infrastructure/persistence/typeorm/entities/social-profile.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/social/infrastructure/persistence/typeorm/entities/social-relationship.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/social/infrastructure/persistence/typeorm/repositories/social-profile-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/social/infrastructure/persistence/typeorm/repositories/social-relationship-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/social/infrastructure/persistence/typeorm/repositories/social-user-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/social/module/social.module.imports.ts",
+      "detail": "imports src/notification/module/notification.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/social/module/social.module.imports.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/sounds/application/services/sounds.service.ts",
+      "detail": "imports src/notification/application/services/notification.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/sounds/infrastructure/presentation/http/controllers/admin-sounds.controller.ts",
+      "detail": "imports src/common/guards/infrastructure/http/admin-role.guard.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/sounds/infrastructure/presentation/http/controllers/admin-sounds.controller.ts",
+      "detail": "imports src/common/guards/infrastructure/http/http-jwt.guard.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/sounds/module/sounds.module.imports.ts",
+      "detail": "imports src/notification/module/notification.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/sounds/module/sounds.module.providers.core.ts",
+      "detail": "imports src/common/guards/application/services/jwt-payload-verifier.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/sounds/module/sounds.module.providers.core.ts",
+      "detail": "imports src/common/guards/infrastructure/http/admin-role.guard.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/sounds/module/sounds.module.providers.core.ts",
+      "detail": "imports src/common/guards/infrastructure/http/http-jwt.guard.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/stats/application/services/game-stats.service.ts",
+      "detail": "imports src/catalog/application/use-cases/catalog/catalog.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/stats/application/services/game-stats.service.ts",
+      "detail": "imports src/game/core/entities/game-state.model.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/stats/infrastructure/persistence/typeorm/repositories/game-match-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/stats/infrastructure/presentation/ws/stats-ws.handler.ts",
+      "detail": "imports src/social/application/services/social.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/stats/module/stats.module.imports.ts",
+      "detail": "imports src/catalog/module/catalog.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/stats/module/stats.module.imports.ts",
+      "detail": "imports src/social/module/social.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/user/infrastructure/security/jwt-user-token.service.ts",
+      "detail": "imports src/common/auth/application/services/jwt-config.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/vault/application/ports/vault-game.port.ts",
+      "detail": "imports src/game/core/entities/game-state.model.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/vault/application/services/vault-room-snapshots.service.ts",
+      "detail": "imports src/game/core/entities/game-state.model.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/vault/application/services/vault-room-snapshots.service.ts",
+      "detail": "imports src/room/application/ports/room-vault.port.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/vault/infrastructure/system/vault-user-notifier.adapter.ts",
+      "detail": "imports src/notification/application/services/notification.service.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/vault/module/vault.module.imports.ts",
+      "detail": "imports src/room/module/room.module.ts"
+    },
+    {
+      "rule": "cross-domain-deep-import",
+      "file": "src/vault/vault.types.ts",
+      "detail": "imports src/game/core/entities/game-state.model.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/admin/infrastructure/persistence/typeorm/repositories/admin-user-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/admin/module/admin.module.imports.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/bot/infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-bot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/bot/infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/bot/infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/bot/module/bot.module.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-bot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/bot/module/bot.module.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/bot/module/bot.module.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/bot/module/bot.module.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/chat/infrastructure/persistence/typeorm/entities/chat-message.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/admin/infrastructure/persistence/typeorm/entities/role-definition.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/bot/infrastructure/persistence/typeorm/entities/bot-name.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/bug-reports/infrastructure/persistence/typeorm/entities/bug-report-comment.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/bug-reports/infrastructure/persistence/typeorm/entities/bug-report.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/chat/infrastructure/persistence/typeorm/entities/chat-message.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/chat/infrastructure/persistence/typeorm/entities/chat-settings.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/game/engine/infrastructure/persistence/typeorm/entities/game-catalog-override.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/game/engine/infrastructure/persistence/typeorm/entities/game-category-assignment.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/game/engine/infrastructure/persistence/typeorm/entities/game-category.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/game/modules/bot/infrastructure/persistence/typeorm/entities/bot-settings.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/messaging/infrastructure/persistence/typeorm/entities/private-message.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/notification/infrastructure/persistence/typeorm/entities/notification-inbox-item.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-bot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-maintenance-settings.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/social/infrastructure/persistence/typeorm/entities/social-profile-settings.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/social/infrastructure/persistence/typeorm/entities/social-profile.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/social/infrastructure/persistence/typeorm/entities/social-relationship.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/stats/infrastructure/persistence/typeorm/entities/game-match-player.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/stats/infrastructure/persistence/typeorm/entities/game-match.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/database/entities.ts",
+      "detail": "imports src/vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/messaging/infrastructure/persistence/typeorm/entities/private-message.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/messaging/infrastructure/persistence/typeorm/repositories/messaging-user-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/messaging/infrastructure/persistence/typeorm/repositories/private-message-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/messaging/module/messaging.module.imports.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/notification/infrastructure/persistence/typeorm/repositories/notification-inbox-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/notification/infrastructure/presentation/ws/notification.gateway.ts",
+      "detail": "imports src/social/infrastructure/persistence/typeorm/entities/social-relationship.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/notification/module/notification.module.imports.ts",
+      "detail": "imports src/messaging/infrastructure/persistence/typeorm/entities/private-message.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/notification/module/notification.module.imports.ts",
+      "detail": "imports src/social/infrastructure/persistence/typeorm/entities/social-relationship.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/presence/infrastructure/persistence/typeorm/repositories/presence-room-participant-typeorm.repository.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/presence/infrastructure/persistence/typeorm/repositories/presence-user-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/presence/module/presence.module.imports.ts",
+      "detail": "imports src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/presence/module/presence.module.imports.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/application/ports/room-participant.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/application/ports/room-user.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/application/ports/room.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/application/services/room-admin-context.service.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/application/services/room-admin-maintenance.service.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/application/services/room-membership.service.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/infrastructure/persistence/typeorm/entities/room-participant.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/infrastructure/persistence/typeorm/entities/room.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/infrastructure/persistence/typeorm/repositories/room-participant-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/infrastructure/persistence/typeorm/repositories/room-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/infrastructure/persistence/typeorm/repositories/room-user-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/infrastructure/persistence/typeorm/repositories/room-vault-snapshot-typeorm.repository.ts",
+      "detail": "imports src/vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/module/room.module.imports.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/room/module/room.module.imports.ts",
+      "detail": "imports src/vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/social/infrastructure/persistence/typeorm/entities/social-profile.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/social/infrastructure/persistence/typeorm/entities/social-relationship.entity.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/social/infrastructure/persistence/typeorm/repositories/social-profile-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/social/infrastructure/persistence/typeorm/repositories/social-relationship-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/social/infrastructure/persistence/typeorm/repositories/social-user-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/social/module/social.module.imports.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "cross-domain-typeorm-entity",
+      "file": "src/stats/infrastructure/persistence/typeorm/repositories/game-match-typeorm.repository.ts",
+      "detail": "imports src/user/infrastructure/persistence/typeorm/entities/user.entity.ts"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "bot -> room -> bot"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "bot -> room -> vault -> bot"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "catalog -> game -> room -> catalog"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "catalog -> game -> room -> stats -> catalog"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "catalog -> game -> stats -> catalog"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "game -> room -> catalog -> game"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "game -> room -> stats -> catalog -> game"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "game -> room -> stats -> game"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "game -> room -> vault -> game"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "game -> stats -> catalog -> game"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "game -> stats -> game"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "messaging -> notification -> messaging"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "notification -> messaging -> notification"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "notification -> social -> notification"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "presence -> room -> presence"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "presence -> room -> vault -> presence"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "room -> bot -> room"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "room -> catalog -> game -> room"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "room -> presence -> room"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "room -> stats -> catalog -> game -> room"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "room -> stats -> game -> room"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "room -> vault -> bot -> room"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "room -> vault -> game -> room"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "room -> vault -> presence -> room"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "room -> vault -> room"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "social -> notification -> social"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "stats -> catalog -> game -> room -> stats"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "stats -> catalog -> game -> stats"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "stats -> game -> room -> stats"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "stats -> game -> stats"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "vault -> bot -> room -> vault"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "vault -> game -> room -> vault"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "vault -> presence -> room -> vault"
+    },
+    {
+      "rule": "domain-cycle",
+      "file": "(domain-graph)",
+      "detail": "vault -> room -> vault"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
@@ -67,6 +68,27 @@ inline int ReadOptionalInteger(const nlohmann::json& source, const char* fieldNa
     }
 
     return iterator->get<int>();
+}
+
+inline std::int64_t ReadOptionalInteger64(
+    const nlohmann::json& source,
+    const char* fieldName,
+    std::int64_t defaultValue = 0)
+{
+    const auto iterator = source.find(fieldName);
+    if (iterator == source.end() || iterator->is_null()) return defaultValue;
+    if (!iterator->is_number_integer())
+    {
+        const std::string message =
+            std::string(lila::shared::errors::JsonFieldNamePrefix) + fieldName
+            + lila::shared::errors::JsonFieldTypeIntegerSuffix;
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(
+                lila::shared::errors::ErrorCode::JsonCorrupted,
+                message,
+                message));
+    }
+    return iterator->get<std::int64_t>();
 }
 
 inline bool ReadOptionalBool(const nlohmann::json& source, const char* fieldName, bool defaultValue)

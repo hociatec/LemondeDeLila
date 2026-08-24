@@ -1,5 +1,5 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { WsRouteRegistry } from '../../../../common/ws/ws-route-registry.service';
+﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+import { WsRouteRegistry } from '../../../../realtime/public-api';
 import { AdminBotsWsHandler } from './admin-bots-ws.handler';
 import { AdminBroadcastWsHandler } from './admin-broadcast-ws.handler';
 import { AdminBugReportCommentsWsHandler } from './admin-bug-report-comments-ws.handler';
@@ -58,6 +58,7 @@ export class AdminWsRegistrar implements OnModuleInit {
     });
   }
 }
+
 
 
 

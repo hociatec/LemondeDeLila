@@ -51,12 +51,12 @@ export class AdminRoomsService {
     });
   }
 
-  async destroy(input: { roomId: string; confirm: boolean }) {
+  async destroy(input: { roomId: string | number; confirm: boolean }) {
     if (input.confirm !== true) {
       throw new BadRequestException('Confirmation requise.');
     }
 
-    return this.rooms.adminDestroyRoom(input.roomId);
+    return this.rooms.adminDestroyRoom(String(input.roomId));
   }
 
   getSettings() {

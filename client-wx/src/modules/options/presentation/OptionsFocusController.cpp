@@ -5,13 +5,16 @@
 #include <wx/window.h>
 
 #include "modules/options/presentation/OptionsView.h"
+#include "shared/accessibility/FocusManager.h"
 #include "shared/accessibility/NavigationController.h"
+#include "shared/ui/controls/VerticalMenu.h"
 
 namespace lila::modules::options::presentation
 {
 namespace
 {
 using Navigator = lila::shared::accessibility::NavigationController;
+using FocusManager = lila::shared::accessibility::FocusManager;
 
 Navigator::Scope BuildSectionScope(OptionsView& view, int sectionIndex)
 {
@@ -82,9 +85,25 @@ Navigator::Scope BuildSoundPairScope(OptionsView& view, wxWindow* focused)
 
 OptionsFocusController::OptionsFocusController(OptionsView& view) noexcept : view_(view) {}
 
-bool OptionsFocusController::FocusFirstSectionControl(std::size_t sectionIndex)
+lila::shared::accessibility::FocusManager::Plan OptionsFocusController::BuildSectionMenuPlan(std::size_t sectionIndex)
 {
-    return Navigator::FocusFirst(BuildSectionScope(view_, static_cast<int>(sectionIndex)));
+    FocusManager::Plan plan;
+    const auto shell = view_.Shell();
+    if (shell.sectionsMenu == nullptr || shell.sectionsMenu->GetItemCount() == 0)
+    {
+        return plan;
+    }
+
+    shell.sectionsMenu->SetSelectedIndexSilently(sectionIndex);
+    plan.AddWindow(shell.sectionsMenu->GetSelectedControl());
+    return plan;
+}
+
+lila::shared::accessibility::FocusManager::Plan OptionsFocusController::BuildFirstSectionControlPlan(std::size_t sectionIndex)
+{
+    FocusManager::Plan plan;
+    plan.AddScope([this, sectionIndex]() { return BuildSectionScope(view_, static_cast<int>(sectionIndex)); });
+    return plan;
 }
 
 void OptionsFocusController::BindNavigation(wxWindow& owner, std::function<bool()> isInsideSection)

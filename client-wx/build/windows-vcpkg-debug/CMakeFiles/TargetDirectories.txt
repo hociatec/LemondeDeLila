@@ -1,3 +1,11 @@
+C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/Experimental.dir
+C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/Nightly.dir
+C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/Continuous.dir
+C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/NightlyMemoryCheck.dir
+C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/generate_protocol_fields.dir
 C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/lemonde_de_lila_wx.dir
+C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/lemonde_de_lila_wx_tests.dir
+C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/lemonde_de_lila_wx_parser_fuzz.dir
+C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/RUN_TESTS.dir
 C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/ALL_BUILD.dir
 C:/wamp64/www/lemondeDeLila/client-wx/build/windows-vcpkg-debug/CMakeFiles/ZERO_CHECK.dir

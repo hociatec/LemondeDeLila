@@ -1,5 +1,5 @@
-﻿import type { GameStateEntity } from '../../../../core/entities/game-state.entity';
-import type { GameSingleActionDto } from '../../../../engine/dto/game-action.dto';
+﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../models/game-action.model';
 import {
   FOULEES_FANTASTIQUES_GAME,
   type FouleesFantastiquesActionType,
@@ -7,16 +7,28 @@ import {
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../common/errors/game-errors';
-import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.entity';
+} from '../../../../domain/errors/public-api';
+import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.model';
 import {
   isRollAlias,
   normalizeActionType,
-} from '../../../../actions/action-service.helper';
+} from '../../../../application/helpers/action-service.helper';
 import {
   getPendingPawnMoveActionsForPlayer,
   validatePendingPawnMoveActionForActor,
-} from '../../../../core/helpers/pending-pawn-move-rulebook.helper';
+} from '../../../../application/helpers/pending-pawn-move-rulebook.helper';
+
+type FouleesChooseFamilyPending = {
+  type: 'choose_family';
+  playerId: number;
+  data?: {
+    familyIds?: string[];
+  };
+};
+
+type FouleesActionPayload = {
+  familyId?: string;
+};
 
 export function getAvailableActions(
   state: GameStateEntity,
@@ -27,7 +39,7 @@ export function getAvailableActions(
   const current = state.turn?.currentPlayerId ?? null;
   if (current !== playerId) return [];
 
-  const pending: any = state.pending ?? null;
+  const pending = state.pending as FouleesChooseFamilyPending | null;
   if (pending) {
     if (pending.type === 'choose_family' && pending.playerId === playerId) {
       const familyIds: string[] = Array.isArray(pending?.data?.familyIds)
@@ -65,7 +77,9 @@ export function validateAction(
   const type = rawType as FouleesFantastiquesActionType;
   if (
     !FOULEES_FANTASTIQUES_GAME.actions.includes(type) &&
-    !FOULEES_FANTASTIQUES_GAME.actions.includes(normalizedType as any)
+    !FOULEES_FANTASTIQUES_GAME.actions.includes(
+      normalizedType as FouleesFantastiquesActionType,
+    )
   ) {
     throw new GameValidationError(`Action inconnue: ${rawType}`, {
       gameType: 'foulees-fantastiques',
@@ -92,7 +106,7 @@ export function validateAction(
   }
 
   if (type === 'choose_family') {
-    const pending: any = state.pending ?? null;
+    const pending = state.pending as FouleesChooseFamilyPending | null;
     if (
       !pending ||
       pending.type !== 'choose_family' ||
@@ -103,8 +117,8 @@ export function validateAction(
         playerId: actorId ?? undefined,
       });
     }
-    const payload = action.payload ?? {};
-    const familyId = String((payload as any).familyId ?? '').trim();
+    const payload = (action.payload ?? {}) as FouleesActionPayload;
+    const familyId = String(payload.familyId ?? '').trim();
     if (!familyId) {
       throw new GameValidationError('Payload invalide: familyId', {
         gameType: 'foulees-fantastiques',
@@ -126,14 +140,14 @@ export function validateAction(
       });
     }
 
-    const meta = (state.metadata ?? {}) as any as FouleesFantastiquesMetadata;
+    const meta = (state.metadata ?? {}) as FouleesFantastiquesMetadata;
     const taken = Object.entries(meta.familyIdByPlayer ?? {}).some(
       ([pid, fid]) =>
         Number(pid) !== (actorId ?? NaN) &&
         String(fid ?? '').trim() === familyId,
     );
     if (taken) {
-      throw new GameValidationError('Famille déjà choisie.', {
+      throw new GameValidationError('Famille dÃƒÂ©jÃƒÂ  choisie.', {
         gameType: 'foulees-fantastiques',
         playerId: actorId ?? undefined,
         payload,
@@ -143,7 +157,7 @@ export function validateAction(
   }
 
   if (type === 'move_pawn') {
-    const pending: any = state.pending ?? null;
+    const pending = state.pending ?? null;
     const moveValidation = validatePendingPawnMoveActionForActor({
       pending,
       actorId,
@@ -183,3 +197,6 @@ export function validateAction(
 
   return { ...action, type: 'roll', payload: {} };
 }
+
+
+

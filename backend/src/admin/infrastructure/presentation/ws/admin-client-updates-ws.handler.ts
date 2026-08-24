@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { requireAdmin } from '../../../../common/ws/ws-auth';
-import type { WsSession } from '../../../../common/ws/ws-route-registry.service';
-import { PayloadValidationService } from '../../../../common/validation/payload-validation.service';
-import { WS_EVENTS } from '../../../../common/ws/ws-events';
+﻿import { Injectable } from '@nestjs/common';
+import { requireAdmin } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import { AdminClientUpdatesDispatchService } from '../../../application/use-cases/admin-client-updates/admin-client-updates-dispatch.service';
 import {
   AdminClientUpdateAnnounceWsDto,
   AdminClientUpdateForceLatestWsDto,
   AdminClientUpdateScheduleWsDto,
-} from './admin-ws.dto';
+} from './dto/admin-ws.dto';
 
 @Injectable()
 export class AdminClientUpdatesWsHandler {
@@ -17,7 +17,7 @@ export class AdminClientUpdatesWsHandler {
     private readonly clientUpdateDispatch: AdminClientUpdatesDispatchService,
   ) {}
 
-  async clientUpdateAnnounce(session: WsSession, payload: any) {
+  async clientUpdateAnnounce(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(
       AdminClientUpdateAnnounceWsDto,
@@ -35,7 +35,7 @@ export class AdminClientUpdatesWsHandler {
     };
   }
 
-  async clientUpdateForceLatest(session: WsSession, payload: any) {
+  async clientUpdateForceLatest(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(
       AdminClientUpdateForceLatestWsDto,
@@ -52,7 +52,7 @@ export class AdminClientUpdatesWsHandler {
     };
   }
 
-  async clientUpdateSchedule(session: WsSession, payload: any) {
+  async clientUpdateSchedule(session: WsSession, payload: unknown) {
     const admin = requireAdmin(session);
     const dto = this.validator.validate(
       AdminClientUpdateScheduleWsDto,
@@ -71,3 +71,4 @@ export class AdminClientUpdatesWsHandler {
     };
   }
 }
+

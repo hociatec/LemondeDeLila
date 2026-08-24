@@ -63,8 +63,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-16sm5l"
-      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-16sm5l"
+      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-6mqn4i"
+      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-6mqn4i"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od /RTC1"
@@ -78,28 +78,28 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-16sm5l'
+        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-6mqn4i'
         
-        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_7cc10\\fast
-        	C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_7cc10.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_7cc10.dir\\build
-        Building CXX object CMakeFiles/cmTC_7cc10.dir/CMakeCXXCompilerABI.cpp.obj
-        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_7cc10.dir\\CMakeCXXCompilerABI.cpp.obj.d --working-dir=C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-16sm5l --filter-prefix="Remarque-ß: inclusion du fichier-ß:  " -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nmF578.tmp
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_616b3\\fast
+        	C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_616b3.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_616b3.dir\\build
+        Building CXX object CMakeFiles/cmTC_616b3.dir/CMakeCXXCompilerABI.cpp.obj
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_616b3.dir\\CMakeCXXCompilerABI.cpp.obj.d --working-dir=C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-6mqn4i --filter-prefix="Remarque-ß: inclusion du fichier-ß:  " -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm6AB1.tmp
         CMakeCXXCompilerABI.cpp
-        Linking CXX executable cmTC_7cc10.exe
-        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_7cc10.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_7cc10.dir\\objects1.rsp @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nmF73E.tmp
+        Linking CXX executable cmTC_616b3.exe
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_616b3.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_616b3.dir\\objects1.rsp @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm6C49.tmp
         Visual Studio Incremental Link with embedded manifests
-        Create CMakeFiles\\cmTC_7cc10.dir/manifest.rc
-        Create empty: CMakeFiles\\cmTC_7cc10.dir/embed.manifest
+        Create CMakeFiles\\cmTC_616b3.dir/manifest.rc
+        Create empty: CMakeFiles\\cmTC_616b3.dir/embed.manifest
         RC Pass 1:
-        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_7cc10.dir/manifest.res CMakeFiles\\cmTC_7cc10.dir/manifest.rc
+        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_616b3.dir/manifest.res CMakeFiles\\cmTC_616b3.dir/manifest.rc
         LINK Pass 1:
-        C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_7cc10.dir\\objects1.rsp /out:cmTC_7cc10.exe /implib:cmTC_7cc10.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-16sm5l\\cmTC_7cc10.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_7cc10.dir/intermediate.manifest CMakeFiles\\cmTC_7cc10.dir/manifest.res
+        C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_616b3.dir\\objects1.rsp /out:cmTC_616b3.exe /implib:cmTC_616b3.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-6mqn4i\\cmTC_616b3.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_616b3.dir/intermediate.manifest CMakeFiles\\cmTC_616b3.dir/manifest.res
         MT:
-        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe /nologo /manifest CMakeFiles\\cmTC_7cc10.dir/intermediate.manifest /out:CMakeFiles\\cmTC_7cc10.dir/embed.manifest /notify_update
+        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe /nologo /manifest CMakeFiles\\cmTC_616b3.dir/intermediate.manifest /out:CMakeFiles\\cmTC_616b3.dir/embed.manifest /notify_update
         RC Pass 2:
-        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_7cc10.dir/manifest.res CMakeFiles\\cmTC_7cc10.dir/manifest.rc
+        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_616b3.dir/manifest.res CMakeFiles\\cmTC_616b3.dir/manifest.rc
         FINAL LINK:
-        C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_7cc10.dir\\objects1.rsp /out:cmTC_7cc10.exe /implib:cmTC_7cc10.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-16sm5l\\cmTC_7cc10.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_7cc10.dir/intermediate.manifest CMakeFiles\\cmTC_7cc10.dir/manifest.res
+        C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_616b3.dir\\objects1.rsp /out:cmTC_616b3.exe /implib:cmTC_616b3.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-6mqn4i\\cmTC_616b3.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_616b3.dir/intermediate.manifest CMakeFiles\\cmTC_616b3.dir/manifest.res
         
       exitCode: 0
   -
@@ -142,12 +142,12 @@ events:
       - "C:/vcpkg/installed/x64-windows/share/wxwidgets/wxWidgetsConfig.cmake:224 (find_dependency)"
       - "C:/vcpkg/installed/x64-windows/share/wxwidgets/vcpkg-cmake-wrapper.cmake:55 (_find_package)"
       - "C:/vcpkg/scripts/buildsystems/vcpkg.cmake:893 (include)"
-      - "CMakeLists.txt:11 (find_package)"
+      - "CMakeLists.txt:35 (find_package)"
     checks:
       - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
     directories:
-      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-ipwqcn"
-      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-ipwqcn"
+      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-q5kbce"
+      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-q5kbce"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od /RTC1"
@@ -160,17 +160,17 @@ events:
       variable: "CMAKE_HAVE_LIBC_PTHREAD"
       cached: true
       stdout: |
-        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-ipwqcn'
+        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-q5kbce'
         
-        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_eadce\\fast
-        	C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_eadce.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_eadce.dir\\build
-        Building CXX object CMakeFiles/cmTC_eadce.dir/src.cxx.obj
-        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_eadce.dir\\src.cxx.obj.d --working-dir=C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ipwqcn --filter-prefix="Remarque-ß: inclusion du fichier-ß:  " -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nmFF8A.tmp
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_2248c\\fast
+        	C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_2248c.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_2248c.dir\\build
+        Building CXX object CMakeFiles/cmTC_2248c.dir/src.cxx.obj
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_2248c.dir\\src.cxx.obj.d --working-dir=C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-q5kbce --filter-prefix="Remarque-ß: inclusion du fichier-ß:  " -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm708D.tmp
         src.cxx
-        C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ipwqcn\\src.cxx(1): fatal error C1083: Impossible d'ouvrir le fichier includeÔö¼├í: 'pthread.h'Ôö¼├í: No such file or directory
-        NMAKE : fatal error U1077: '"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_eadce.dir\\src.cxx.obj.d --working-dir=C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-ipwqcn --filter-prefix="Remarque-ß: inclusion du fichier-ß:  " -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nmFF8A.tmp'á: code retour '0x2'
+        C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-q5kbce\\src.cxx(1): fatal error C1083: Impossible d'ouvrir le fichier includeÔö¼├í: 'pthread.h'Ôö¼├í: No such file or directory
+        NMAKE : fatal error U1077: '"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_2248c.dir\\src.cxx.obj.d --working-dir=C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-q5kbce --filter-prefix="Remarque-ß: inclusion du fichier-ß:  " -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm708D.tmp'á: code retour '0x2'
         Stop.
-        NMAKE : fatal error U1077: 'C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_eadce.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_eadce.dir\\build'á: code retour '0x2'
+        NMAKE : fatal error U1077: 'C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_2248c.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_2248c.dir\\build'á: code retour '0x2'
         Stop.
         
       exitCode: 2
@@ -185,12 +185,12 @@ events:
       - "C:/vcpkg/installed/x64-windows/share/wxwidgets/wxWidgetsConfig.cmake:224 (find_dependency)"
       - "C:/vcpkg/installed/x64-windows/share/wxwidgets/vcpkg-cmake-wrapper.cmake:55 (_find_package)"
       - "C:/vcpkg/scripts/buildsystems/vcpkg.cmake:893 (include)"
-      - "CMakeLists.txt:11 (find_package)"
+      - "CMakeLists.txt:35 (find_package)"
     checks:
       - "Looking for pthread_create in pthreads"
     directories:
-      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-rqxyst"
-      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-rqxyst"
+      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-85yel0"
+      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-85yel0"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od /RTC1"
@@ -203,27 +203,27 @@ events:
       variable: "CMAKE_HAVE_PTHREADS_CREATE"
       cached: true
       stdout: |
-        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-rqxyst'
+        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-85yel0'
         
-        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_9ae58\\fast
-        	C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_9ae58.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_9ae58.dir\\build
-        Building CXX object CMakeFiles/cmTC_9ae58.dir/CheckFunctionExists.cxx.obj
-        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_9ae58.dir\\CheckFunctionExists.cxx.obj.d --working-dir=C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-rqxyst --filter-prefix="Remarque-ß: inclusion du fichier-ß:  " -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm3C0.tmp
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_ef637\\fast
+        	C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_ef637.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_ef637.dir\\build
+        Building CXX object CMakeFiles/cmTC_ef637.dir/CheckFunctionExists.cxx.obj
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_ef637.dir\\CheckFunctionExists.cxx.obj.d --working-dir=C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-85yel0 --filter-prefix="Remarque-ß: inclusion du fichier-ß:  " -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm71E5.tmp
         CheckFunctionExists.cxx
-        Linking CXX executable cmTC_9ae58.exe
-        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_9ae58.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_9ae58.dir\\objects1.rsp @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm49C.tmp
+        Linking CXX executable cmTC_ef637.exe
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_ef637.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_ef637.dir\\objects1.rsp @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm7273.tmp
         Visual Studio Incremental Link with embedded manifests
-        Create CMakeFiles\\cmTC_9ae58.dir/manifest.rc
-        Create empty: CMakeFiles\\cmTC_9ae58.dir/embed.manifest
+        Create CMakeFiles\\cmTC_ef637.dir/manifest.rc
+        Create empty: CMakeFiles\\cmTC_ef637.dir/embed.manifest
         RC Pass 1:
-        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_9ae58.dir/manifest.res CMakeFiles\\cmTC_9ae58.dir/manifest.rc
+        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_ef637.dir/manifest.res CMakeFiles\\cmTC_ef637.dir/manifest.rc
         LINK Pass 1:
-        C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_9ae58.dir\\objects1.rsp /out:cmTC_9ae58.exe /implib:cmTC_9ae58.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-rqxyst\\cmTC_9ae58.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_9ae58.dir/intermediate.manifest CMakeFiles\\cmTC_9ae58.dir/manifest.res
-        LINK Pass 1: command "C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_9ae58.dir\\objects1.rsp /out:cmTC_9ae58.exe /implib:cmTC_9ae58.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-rqxyst\\cmTC_9ae58.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_9ae58.dir/intermediate.manifest CMakeFiles\\cmTC_9ae58.dir/manifest.res" failed (exit code 1104) with the following output:
+        C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_ef637.dir\\objects1.rsp /out:cmTC_ef637.exe /implib:cmTC_ef637.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-85yel0\\cmTC_ef637.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_ef637.dir/intermediate.manifest CMakeFiles\\cmTC_ef637.dir/manifest.res
+        LINK Pass 1: command "C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_ef637.dir\\objects1.rsp /out:cmTC_ef637.exe /implib:cmTC_ef637.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-85yel0\\cmTC_ef637.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_ef637.dir/intermediate.manifest CMakeFiles\\cmTC_ef637.dir/manifest.res" failed (exit code 1104) with the following output:
         LINK : fatal error LNK1104: impossible d'ouvrir le fichier 'pthreads.lib'
-        NMAKE : fatal error U1077: '"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_9ae58.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_9ae58.dir\\objects1.rsp @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm49C.tmp'á: code retour '0xffffffff'
+        NMAKE : fatal error U1077: '"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_ef637.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_ef637.dir\\objects1.rsp @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm7273.tmp'á: code retour '0xffffffff'
         Stop.
-        NMAKE : fatal error U1077: 'C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_9ae58.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_9ae58.dir\\build'á: code retour '0x2'
+        NMAKE : fatal error U1077: 'C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_ef637.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_ef637.dir\\build'á: code retour '0x2'
         Stop.
         
       exitCode: 2
@@ -238,12 +238,12 @@ events:
       - "C:/vcpkg/installed/x64-windows/share/wxwidgets/wxWidgetsConfig.cmake:224 (find_dependency)"
       - "C:/vcpkg/installed/x64-windows/share/wxwidgets/vcpkg-cmake-wrapper.cmake:55 (_find_package)"
       - "C:/vcpkg/scripts/buildsystems/vcpkg.cmake:893 (include)"
-      - "CMakeLists.txt:11 (find_package)"
+      - "CMakeLists.txt:35 (find_package)"
     checks:
       - "Looking for pthread_create in pthread"
     directories:
-      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-rb86dn"
-      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-rb86dn"
+      source: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-mm5cm0"
+      binary: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-mm5cm0"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od /RTC1"
@@ -256,27 +256,27 @@ events:
       variable: "CMAKE_HAVE_PTHREAD_CREATE"
       cached: true
       stdout: |
-        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-rb86dn'
+        Change Dir: 'C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/CMakeScratch/TryCompile-mm5cm0'
         
-        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_b7e53\\fast
-        	C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_b7e53.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_b7e53.dir\\build
-        Building CXX object CMakeFiles/cmTC_b7e53.dir/CheckFunctionExists.cxx.obj
-        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_b7e53.dir\\CheckFunctionExists.cxx.obj.d --working-dir=C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-rb86dn --filter-prefix="Remarque-ß: inclusion du fichier-ß:  " -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm6EC.tmp
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_04c85\\fast
+        	C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_04c85.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_04c85.dir\\build
+        Building CXX object CMakeFiles/cmTC_04c85.dir/CheckFunctionExists.cxx.obj
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_04c85.dir\\CheckFunctionExists.cxx.obj.d --working-dir=C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-mm5cm0 --filter-prefix="Remarque-ß: inclusion du fichier-ß:  " -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm73C9.tmp
         CheckFunctionExists.cxx
-        Linking CXX executable cmTC_b7e53.exe
-        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_b7e53.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_b7e53.dir\\objects1.rsp @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm77A.tmp
+        Linking CXX executable cmTC_04c85.exe
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_04c85.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_04c85.dir\\objects1.rsp @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm7438.tmp
         Visual Studio Incremental Link with embedded manifests
-        Create CMakeFiles\\cmTC_b7e53.dir/manifest.rc
-        Create empty: CMakeFiles\\cmTC_b7e53.dir/embed.manifest
+        Create CMakeFiles\\cmTC_04c85.dir/manifest.rc
+        Create empty: CMakeFiles\\cmTC_04c85.dir/embed.manifest
         RC Pass 1:
-        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_b7e53.dir/manifest.res CMakeFiles\\cmTC_b7e53.dir/manifest.rc
+        C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe /fo CMakeFiles\\cmTC_04c85.dir/manifest.res CMakeFiles\\cmTC_04c85.dir/manifest.rc
         LINK Pass 1:
-        C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_b7e53.dir\\objects1.rsp /out:cmTC_b7e53.exe /implib:cmTC_b7e53.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-rb86dn\\cmTC_b7e53.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_b7e53.dir/intermediate.manifest CMakeFiles\\cmTC_b7e53.dir/manifest.res
-        LINK Pass 1: command "C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_b7e53.dir\\objects1.rsp /out:cmTC_b7e53.exe /implib:cmTC_b7e53.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-rb86dn\\cmTC_b7e53.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_b7e53.dir/intermediate.manifest CMakeFiles\\cmTC_b7e53.dir/manifest.res" failed (exit code 1104) with the following output:
+        C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_04c85.dir\\objects1.rsp /out:cmTC_04c85.exe /implib:cmTC_04c85.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-mm5cm0\\cmTC_04c85.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_04c85.dir/intermediate.manifest CMakeFiles\\cmTC_04c85.dir/manifest.res
+        LINK Pass 1: command "C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_04c85.dir\\objects1.rsp /out:cmTC_04c85.exe /implib:cmTC_04c85.lib /pdb:C:\\wamp64\\www\\lemondeDeLila\\client-wx\\build\\codex-nmake-debug\\CMakeFiles\\CMakeScratch\\TryCompile-mm5cm0\\cmTC_04c85.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_04c85.dir/intermediate.manifest CMakeFiles\\cmTC_04c85.dir/manifest.res" failed (exit code 1104) with the following output:
         LINK : fatal error LNK1104: impossible d'ouvrir le fichier 'pthread.lib'
-        NMAKE : fatal error U1077: '"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_b7e53.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_b7e53.dir\\objects1.rsp @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm77A.tmp'á: code retour '0xffffffff'
+        NMAKE : fatal error U1077: '"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\\cmTC_04c85.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\100261~1.0\\x64\\mt.exe --manifests -- C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\link.exe /nologo @CMakeFiles\\cmTC_04c85.dir\\objects1.rsp @C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\nm7438.tmp'á: code retour '0xffffffff'
         Stop.
-        NMAKE : fatal error U1077: 'C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_b7e53.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_b7e53.dir\\build'á: code retour '0x2'
+        NMAKE : fatal error U1077: 'C:\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\nmake.exe  -f CMakeFiles\\cmTC_04c85.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_04c85.dir\\build'á: code retour '0x2'
         Stop.
         
       exitCode: 2

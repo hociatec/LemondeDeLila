@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../game/core/entities/game-state.entity';
+import type { VaultGameState } from './application/models/vault-game-state.model';
 
 export type VaultRoomSnapshotV1 = {
   version: 1;
@@ -17,7 +17,7 @@ export type VaultRoomSnapshotV1 = {
   };
   game: {
     gameType: string;
-    state: GameStateEntity;
+    state: VaultGameState;
   };
 };
 
