@@ -89,6 +89,7 @@ private:
     lila::modules::vault::application::VaultService& vaultService_;
     lila::modules::storybook::application::StoryBookService& storyBookService_;
     lila::modules::leaderboard::application::LeaderboardService& leaderboardService_;
+    lila::modules::gameplay::application::GameSessionService& gameSessionService_;
     lila::modules::chat::application::ChatService& chatService_;
     lila::modules::messaging::application::MessagingService& messagingService_;
     lila::modules::social::application::SocialService& socialService_;

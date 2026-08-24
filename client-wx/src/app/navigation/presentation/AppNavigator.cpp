@@ -31,6 +31,7 @@ AppNavigator::AppNavigator(
       vaultService_(game.vaultService),
       storyBookService_(game.storyBookService),
       leaderboardService_(game.leaderboardService),
+      gameSessionService_(game.gameSessionService),
       chatService_(social.chatService),
       messagingService_(social.messagingService),
       socialService_(social.socialService),

@@ -45,6 +45,7 @@ Compress-Archive -Path (Join-Path $bootstrap '*') -DestinationPath $bootstrapZip
 [pscustomobject]@{
     UpdateZip = $updateZip
     BootstrapZip = $bootstrapZip
+    PayloadDir = $payload
     Sha256 = (Get-FileHash -LiteralPath $updateZip -Algorithm SHA256).Hash.ToLowerInvariant()
     Size = (Get-Item -LiteralPath $updateZip).Length
 } | ConvertTo-Json

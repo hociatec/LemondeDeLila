@@ -19,6 +19,8 @@ class wxTextCtrl;
 class wxWindow;
 class wxKeyEvent;
 namespace lila::shared::accessibility { class ActionButton; }
+namespace lila::modules::gameplay::application { class GameSessionService; }
+namespace lila::modules::gameplay::presentation { class GamePlayPanel; }
 namespace lila::modules::rooms::application { class RoomSessionService; }
 namespace lila::modules::audio::application { class IAudioService; }
 
@@ -38,6 +40,7 @@ public:
     RoomPanel(
         wxWindow* parent,
         application::RoomSessionService& roomService,
+        lila::modules::gameplay::application::GameSessionService& gameService,
         lila::modules::audio::application::IAudioService& audioService,
         CurrentUserIdProvider currentUserId,
         SaveRequestedHandler onSaveRequested,
@@ -77,6 +80,7 @@ private:
     void Leave();
     void RequestLeaveConfirmation();
     void ApplyRoom(domain::RoomState room);
+    void SyncGamePlayPanel();
     void ShowConnecting();
     void ShowRoom();
     void ShowError(const wxString& message, PreparedHandler onPrepared);
@@ -88,12 +92,14 @@ private:
     void ApplyInitialFocusIfNeeded();
 
     application::RoomSessionService& roomService_;
+    lila::modules::gameplay::application::GameSessionService& gameService_;
     lila::modules::audio::application::IAudioService& audioService_;
     CurrentUserIdProvider currentUserId_;
     SaveRequestedHandler onSaveRequested_;
     AbandonRequestedHandler onAbandonRequested_;
     CloseRequestedHandler onCloseRequested_;
     RoomGameZoneAnchor* gameZoneAnchor_ = nullptr;
+    lila::modules::gameplay::presentation::GamePlayPanel* gamePlayPanel_ = nullptr;
     wxStaticText* statusLabel_ = nullptr;
     wxStaticText* detailsLabel_ = nullptr;
     wxStaticText* gameNameLabel_ = nullptr;

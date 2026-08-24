@@ -4,6 +4,7 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 
+#include "modules/gameplay/presentation/GamePlayPanel.h"
 #include "modules/rooms/presentation/RoomGameZoneAnchor.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/accessibility/presentation/ActionButton.h"
@@ -39,10 +40,14 @@ void RoomPanel::BuildLayout()
     zoneTitle->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
     gameZoneAnchor_ = new RoomGameZoneAnchor(this);
     gameZoneAnchor_->SetMinSize(wxSize(360, 80));
+    gamePlayPanel_ = new lila::modules::gameplay::presentation::GamePlayPanel(this, gameService_);
+    gamePlayPanel_->Hide();
+    gamePlayPanel_->SetMinSize(wxSize(360, 320));
     roomColumn->Add(roomTitle, 0, wxBOTTOM, 12);
     roomColumn->Add(detailsLabel_, 0, wxEXPAND | wxBOTTOM, 18);
     roomColumn->Add(zoneTitle, 0, wxBOTTOM, 8);
     roomColumn->Add(gameZoneAnchor_, 1, wxEXPAND);
+    roomColumn->Add(gamePlayPanel_, 1, wxEXPAND);
 
     auto* secondaryColumn = new wxBoxSizer(wxVERTICAL);
     chatTitle_ = new wxStaticText(this, wxID_ANY, wxString(L"Chat"));

@@ -3,6 +3,12 @@ name: Client WX - Build, sign and publish
 on:
   workflow_dispatch:
   workflow_call:
+  push:
+    branches:
+      - main
+    paths:
+      - 'client-wx/**'
+      - '.github/workflows/client-wx-auto-update.yml'
 
 concurrency:
   group: client-wx-publish-main
@@ -85,6 +91,10 @@ jobs:
           & (Join-Path $root 'vcpkg.exe') install wxwidgets nlohmann-json --triplet x64-windows --clean-after-build
           "VCPKG_ROOT=$root" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
 
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
       - name: Configure and build WX Release
         shell: cmd
         env:
@@ -158,6 +168,7 @@ jobs:
           $signature = [Convert]::ToBase64String([IO.File]::ReadAllBytes($signaturePath))
           "update_zip=$($result.UpdateZip)" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "bootstrap_zip=$($result.BootstrapZip)" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "payload_dir=$($result.PayloadDir)" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "sha256=$($result.Sha256)" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "signature=$signature" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "release_id=$releaseId" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
@@ -165,6 +176,34 @@ jobs:
           "published_at=$publishedAt" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "mandatory_at=$mandatoryAt" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "minimum_version=$minimumVersion" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Build and sign WX installer
+        id: installer
+        shell: pwsh
+        env:
+          TIMESTAMP_URL: ${{ secrets.CODESIGN_TIMESTAMP_URL }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $result = client-wx\scripts\BuildWxInstaller.ps1 `
+            -PayloadDir '${{ steps.package.outputs.payload_dir }}' `
+            -OutputDir $env:RUNNER_TEMP\client-wx-installer `
+            -Version '${{ steps.version.outputs.value }}' | ConvertFrom-Json
+          $timestamp = if ($env:TIMESTAMP_URL) { $env:TIMESTAMP_URL } else { 'http://timestamp.digicert.com' }
+          $thumbprint = '${{ steps.certificate.outputs.thumbprint }}'
+          signtool sign /sha1 $thumbprint /fd SHA256 /tr $timestamp /td SHA256 $result.InstallerExe
+          $signature = Get-AuthenticodeSignature -LiteralPath $result.InstallerExe
+          if ($signature.Status -notin @('Valid', 'UnknownError')) {
+            throw "Installateur WX signé invalide: $($signature.Status)."
+          }
+          "installer_exe=$($result.InstallerExe)" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Upload WX installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: LeMondeDeLilaWX-${{ steps.version.outputs.value }}-Setup
+          path: ${{ steps.installer.outputs.installer_exe }}
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Publish mandatory WX update
         shell: pwsh
@@ -176,6 +215,7 @@ jobs:
             -ApiBase $env:API_BASE `
             -UploadToken $env:UPLOAD_TOKEN `
             -PackagePath '${{ steps.package.outputs.update_zip }}' `
+            -InstallerPath '${{ steps.installer.outputs.installer_exe }}' `
             -Version '${{ steps.version.outputs.value }}' `
             -ReleaseId '${{ steps.package.outputs.release_id }}' `
             -Sequence '${{ steps.package.outputs.sequence }}' `

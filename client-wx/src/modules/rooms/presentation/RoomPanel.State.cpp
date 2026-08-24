@@ -4,6 +4,7 @@
 #include <wx/textctrl.h>
 #include <wx/window.h>
 
+#include "modules/gameplay/presentation/GamePlayPanel.h"
 #include "modules/rooms/presentation/RoomPresentationModel.h"
 #include "modules/audio/application/IAudioService.h"
 #include "modules/rooms/presentation/RoomGameZoneAnchor.h"
@@ -30,9 +31,28 @@ void RoomPanel::ApplyRoom(domain::RoomState room)
     ShowRoom();
 }
 
+void RoomPanel::SyncGamePlayPanel()
+{
+    const bool isStarted = room_.started || room_.status == "started";
+    gameZoneAnchor_->Show(!isStarted);
+    gamePlayPanel_->Show(isStarted);
+    if (!isStarted)
+    {
+        gamePlayPanel_->CloseSession();
+        return;
+    }
+    if (!gamePlayPanel_->IsOpenFor(room_.id, room_.gameType))
+    {
+        gamePlayPanel_->Open(room_.id, room_.gameType, room_.gameName);
+    }
+}
+
 void RoomPanel::ShowConnecting()
 {
     state_ = State::Connecting;
+    gamePlayPanel_->CloseSession();
+    gamePlayPanel_->Hide();
+    gameZoneAnchor_->Show(true);
     gameZoneAnchor_->SetTitle(lila::shared::text::FromUtf8(room_.gameName));
     gameNameLabel_->SetLabel(lila::shared::text::FromUtf8(room_.gameName));
     detailsLabel_->Hide();
@@ -45,6 +65,7 @@ void RoomPanel::ShowRoom()
 {
     const auto actions = RoomPresentationModel::BuildItems(room_);
     if (!actions.empty()) gameZoneAnchor_->SetTitle(actions.front().label);
+    SyncGamePlayPanel();
     gameNameLabel_->SetLabel(lila::shared::text::FromUtf8(room_.gameName));
     UpdateStatus(RoomPresentationModel::BuildStatus(room_));
     detailsLabel_->SetLabel(RoomPresentationModel::BuildDetails(room_));
@@ -63,6 +84,9 @@ void RoomPanel::ShowRoom()
 void RoomPanel::ShowError(const wxString& message, PreparedHandler onPrepared)
 {
     state_ = State::Error;
+    gamePlayPanel_->CloseSession();
+    gamePlayPanel_->Hide();
+    gameZoneAnchor_->Show(true);
     gameZoneAnchor_->SetTitle(wxString(L"R\u00E9essayer"));
     UpdateStatus(message, true);
     ApplyInitialFocusIfNeeded();

@@ -44,7 +44,8 @@ void AppRuntime::CreateNavigator(const StepLogger& setStep)
         *game_.roomSessionService,
         *game_.vaultService,
         *game_.storyBookService,
-        *game_.leaderboardService};
+        *game_.leaderboardService,
+        *game_.gameSessionService};
     app::navigation::SocialNavigationDependencies social{
         *social_.chatService,
         *social_.messagingService,

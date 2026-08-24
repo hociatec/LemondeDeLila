@@ -1,0 +1,26 @@
+#pragma once
+
+#include <optional>
+#include <string>
+
+#include "modules/gameplay/domain/GameState.h"
+
+namespace lila::modules::gameplay::domain
+{
+enum class GameEventType
+{
+    StateUpdated,
+    Acknowledged,
+    ConnectionStatus,
+    Error,
+    Ignored,
+};
+
+struct GameEvent final
+{
+    GameEventType type = GameEventType::Ignored;
+    std::optional<GameState> state;
+    std::string message;
+    bool isError = false;
+};
+}

@@ -2,6 +2,7 @@ param(
     [Parameter(Mandatory = $true)][string]$ApiBase,
     [Parameter(Mandatory = $true)][string]$UploadToken,
     [Parameter(Mandatory = $true)][string]$PackagePath,
+    [Parameter(Mandatory = $true)][string]$InstallerPath,
     [Parameter(Mandatory = $true)][string]$Version,
     [Parameter(Mandatory = $true)][string]$ReleaseId,
     [Parameter(Mandatory = $true)][long]$Sequence,
@@ -27,6 +28,8 @@ function Invoke-WithRetry {
 $api = $ApiBase.TrimEnd('/')
 $headers = @{ 'x-client-updates-upload-token' = $UploadToken.Trim() }
 $size = (Get-Item -LiteralPath $PackagePath).Length
+$installerSize = (Get-Item -LiteralPath $InstallerPath).Length
+$installerSha256 = (Get-FileHash -LiteralPath $InstallerPath -Algorithm SHA256).Hash.ToLowerInvariant()
 $body = @{
     releaseId = $ReleaseId
     version = $Version
@@ -37,6 +40,8 @@ $body = @{
     mandatoryAt = $MandatoryAt
     totalBytes = $size
     sha256 = $Sha256.ToLowerInvariant()
+    installerTotalBytes = $installerSize
+    installerSha256 = $installerSha256
     signature = $Signature
 } | ConvertTo-Json
 
@@ -47,29 +52,38 @@ $init = Invoke-WithRetry {
 $uploadId = [string]$init.uploadId
 if ([string]::IsNullOrWhiteSpace($uploadId)) { throw 'uploadId WX absent.' }
 
-$chunkSize = 10MB
-$buffer = New-Object byte[] $chunkSize
-$stream = [IO.File]::OpenRead((Resolve-Path -LiteralPath $PackagePath).Path)
-try {
-    $index = 0
-    while (($read = $stream.Read($buffer, 0, $buffer.Length)) -gt 0) {
-        $part = Join-Path ([IO.Path]::GetTempPath()) "lila-wx-$uploadId-$index.part"
-        try {
-            [IO.File]::WriteAllBytes($part, $buffer[0..($read - 1)])
-            Invoke-WithRetry {
-                Invoke-RestMethod -Method Post `
-                    -Uri "$api/ci/client-wx-updates/upload/chunk" `
-                    -Headers $headers `
-                    -Form @{ uploadId = $uploadId; index = "$index"; file = Get-Item -LiteralPath $part }
-            } | Out-Null
-        } finally {
-            Remove-Item -LiteralPath $part -Force -ErrorAction SilentlyContinue
+function Send-UploadChunks {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Kind
+    )
+    $chunkSize = 10MB
+    $buffer = New-Object byte[] $chunkSize
+    $stream = [IO.File]::OpenRead((Resolve-Path -LiteralPath $Path).Path)
+    try {
+        $index = 0
+        while (($read = $stream.Read($buffer, 0, $buffer.Length)) -gt 0) {
+            $part = Join-Path ([IO.Path]::GetTempPath()) "lila-wx-$uploadId-$Kind-$index.part"
+            try {
+                [IO.File]::WriteAllBytes($part, $buffer[0..($read - 1)])
+                Invoke-WithRetry {
+                    Invoke-RestMethod -Method Post `
+                        -Uri "$api/ci/client-wx-updates/upload/chunk" `
+                        -Headers $headers `
+                        -Form @{ uploadId = $uploadId; kind = $Kind; index = "$index"; file = Get-Item -LiteralPath $part }
+                } | Out-Null
+            } finally {
+                Remove-Item -LiteralPath $part -Force -ErrorAction SilentlyContinue
+            }
+            $index++
         }
-        $index++
+    } finally {
+        $stream.Dispose()
     }
-} finally {
-    $stream.Dispose()
 }
+
+Send-UploadChunks -Path $PackagePath -Kind 'artifact'
+Send-UploadChunks -Path $InstallerPath -Kind 'installer'
 
 Invoke-WithRetry {
     Invoke-RestMethod -Method Post -Uri "$api/ci/client-wx-updates/upload/complete" `

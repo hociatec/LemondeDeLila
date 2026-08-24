@@ -6,6 +6,8 @@
 #include "bootstrap/composition/infrastructure/support/AuthenticatedServiceFactory.h"
 #include "modules/catalog/application/CatalogService.h"
 #include "modules/catalog/infrastructure/CatalogApi.h"
+#include "modules/gameplay/application/GameSessionService.h"
+#include "modules/gameplay/infrastructure/GameSessionGateway.h"
 #include "modules/leaderboard/application/LeaderboardService.h"
 #include "modules/leaderboard/infrastructure/LeaderboardApi.h"
 #include "modules/rooms/application/RoomLobbyService.h"
@@ -21,6 +23,7 @@
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
+#include "shared/network/domain/WebSocketConstants.h"
 #include "shared/network/domain/UrlUtils.h"
 
 namespace lila::bootstrap
@@ -61,6 +64,18 @@ void GameComposition::Assemble(
         sessionStore);
     roomSessionService =
         std::make_unique<modules::rooms::application::RoomSessionService>(*roomSessionGateway);
+
+    gameSessionWebSocketClient = detail::CreateWebSocketClient();
+    const auto gameEndpoint =
+        shared::network::ExtractOrigin(shared::config::AppConfig::ResolveBackendApiWs()) +
+        std::string(shared::network::ws::GamePath);
+    gameSessionGateway = std::make_unique<modules::gameplay::infrastructure::GameSessionGateway>(
+        gameEndpoint,
+        *gameSessionWebSocketClient,
+        *network.wsTicketProvider,
+        sessionStore);
+    gameSessionService =
+        std::make_unique<modules::gameplay::application::GameSessionService>(*gameSessionGateway);
 
     setStep("Creation du service coffre fort");
     detail::CreateAuthenticatedServiceStack(

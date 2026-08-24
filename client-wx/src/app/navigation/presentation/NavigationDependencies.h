@@ -20,6 +20,11 @@ namespace lila::modules::leaderboard::application
 class LeaderboardService;
 }
 
+namespace lila::modules::gameplay::application
+{
+class GameSessionService;
+}
+
 namespace lila::modules::messaging::application
 {
 class MessagingService;
@@ -85,6 +90,7 @@ struct GameNavigationDependencies final
     lila::modules::vault::application::VaultService& vaultService;
     lila::modules::storybook::application::StoryBookService& storyBookService;
     lila::modules::leaderboard::application::LeaderboardService& leaderboardService;
+    lila::modules::gameplay::application::GameSessionService& gameSessionService;
 };
 
 struct SocialNavigationDependencies final

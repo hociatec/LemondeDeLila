@@ -17,10 +17,12 @@ inline constexpr std::string_view WsTicketHeader = "x-lila-ws-ticket";
 inline constexpr std::string_view WsTicketScopeApi = "api";
 inline constexpr std::string_view WsTicketScopePresence = "presence";
 inline constexpr std::string_view WsTicketScopeRoom = "room";
+inline constexpr std::string_view WsTicketScopeGame = "game";
 inline constexpr std::string_view WsTicketPath = "/ws/ticket?scope=";
 inline constexpr std::string_view WsTicketApiPath = "/api/ws/ticket?scope=";
 inline constexpr std::string_view WsTicketResponseField = "ticket";
 inline constexpr std::string_view PresencePath = "/presence";
+inline constexpr std::string_view GamePath = "/ws/game";
 inline constexpr std::string_view PresenceContextQuery = "?context=";
 inline constexpr std::string_view PresenceContextChat = "chat";
 }

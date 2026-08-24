@@ -166,6 +166,16 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/catalog/presentation/CatalogPanel.Loading.cpp
     src/modules/catalog/presentation/CatalogShelfNavigator.cpp
 
+    src/modules/gameplay/application/GameSessionService.cpp
+    src/modules/gameplay/infrastructure/GameSessionGateway.cpp
+    src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp
+    src/modules/gameplay/presentation/GamePlayFormatters.cpp
+    src/modules/gameplay/presentation/GamePlayPanel.cpp
+    src/modules/gameplay/presentation/GamePlayPanel.Events.cpp
+    src/modules/gameplay/presentation/GamePlayPanel.Layout.cpp
+    src/modules/gameplay/presentation/GamePlayPanel.Session.cpp
+    src/modules/gameplay/presentation/GamePlayPanel.State.cpp
+
     src/modules/rooms/application/RoomLobbyService.cpp
     src/modules/rooms/application/RoomSessionService.cpp
     src/modules/rooms/application/RoomSessionService.Realtime.cpp
@@ -626,4 +636,3 @@ if(BUILD_TESTING)
         )
     endif()
 endif()
-

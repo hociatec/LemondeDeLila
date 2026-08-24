@@ -18,6 +18,8 @@ namespace lila::modules::catalog::application { class CatalogService; }
 namespace lila::modules::catalog::infrastructure { class CatalogApi; }
 namespace lila::modules::leaderboard::application { class LeaderboardService; }
 namespace lila::modules::leaderboard::infrastructure { class LeaderboardApi; }
+namespace lila::modules::gameplay::application { class GameSessionService; }
+namespace lila::modules::gameplay::infrastructure { class GameSessionGateway; }
 namespace lila::modules::rooms::application { class RoomLobbyService; class RoomSessionService; }
 namespace lila::modules::rooms::infrastructure { class RoomLobbyApi; class RoomSessionGateway; }
 namespace lila::modules::session::application { class SessionStore; }
@@ -51,6 +53,9 @@ struct GameComposition final
     std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> roomSessionWebSocketClient;
     std::unique_ptr<lila::modules::rooms::infrastructure::RoomSessionGateway> roomSessionGateway;
     std::unique_ptr<lila::modules::rooms::application::RoomSessionService> roomSessionService;
+    std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> gameSessionWebSocketClient;
+    std::unique_ptr<lila::modules::gameplay::infrastructure::GameSessionGateway> gameSessionGateway;
+    std::unique_ptr<lila::modules::gameplay::application::GameSessionService> gameSessionService;
     std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> vaultWebSocketClient;
     std::unique_ptr<lila::shared::network::realtime::AuthenticatedRealtimeApiClient> vaultRealtimeApiClient;
     std::unique_ptr<lila::modules::vault::infrastructure::VaultApi> vaultApi;
