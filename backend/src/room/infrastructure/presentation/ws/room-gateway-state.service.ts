@@ -333,8 +333,8 @@ export class RoomGatewayStateService {
       return {
         ownerId: payload.room.owner?.id ?? null,
         title: 'Configuration de la table',
-        description: 'Le serveur vous invite a preparer la partie.',
-        message: 'Choisissez rapidement l ambiance et la configuration.',
+        description: 'Le serveur vous invite à préparer la partie.',
+        message: "Choisissez rapidement l'ambiance et la configuration.",
       };
     }
 

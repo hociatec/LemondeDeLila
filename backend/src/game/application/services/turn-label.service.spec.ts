@@ -28,6 +28,6 @@ describe('TurnLabelService', () => {
       turn: { currentPlayerId: 7, direction: 1 },
     });
 
-    expect(service.compute(state, 'lama')).toBe("C'est a Garfield de jouer.");
+    expect(service.compute(state, 'lama')).toBe("C'est à Garfield de jouer.");
   });
 });

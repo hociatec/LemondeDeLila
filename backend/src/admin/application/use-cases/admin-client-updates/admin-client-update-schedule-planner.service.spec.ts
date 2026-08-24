@@ -14,7 +14,7 @@ describe('AdminClientUpdateSchedulePlannerService', () => {
       delayMs: 600_000,
       scheduledAtMs: 601_000,
       warningDelayMs: 300_000,
-      imminentMessage: 'Mise a jour imminente dans cinq minutes.',
+      imminentMessage: 'Mise à jour imminente dans cinq minutes.',
     });
   });
 

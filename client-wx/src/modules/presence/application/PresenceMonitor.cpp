@@ -50,7 +50,7 @@ void PresenceMonitor::Start()
         [this](std::optional<lila::shared::errors::AppError>)
         {
             receiveTask_.reset();
-            SetStatus("Presence deconnectee.");
+            SetStatus("Présence déconnectée.");
         });
 }
 
@@ -71,7 +71,7 @@ void PresenceMonitor::Stop()
 
     std::scoped_lock lock(mutex_);
     players_.clear();
-    status_ = "Presence deconnectee.";
+    status_ = "Présence déconnectée.";
     hasSnapshot_ = false;
 }
 
@@ -135,7 +135,7 @@ void PresenceMonitor::Connect()
         connect(sessionStore_.RefreshAccessToken());
     }
     webSocketClient_.Send(lila::modules::presence::infrastructure::TavernContextPayload());
-    SetStatus("Presence connectee.");
+    SetStatus("Présence connectée.");
 }
 
 void PresenceMonitor::ApplyUpdate(const std::string& rawJson)

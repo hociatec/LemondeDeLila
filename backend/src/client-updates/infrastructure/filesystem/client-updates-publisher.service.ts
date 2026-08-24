@@ -119,7 +119,7 @@ export class ClientUpdatesPublisherService {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Le Monde de Lila - Mise a jour</title>
+    <title>Le Monde de Lila - Mise à jour</title>
     <style>
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 24px; max-width: 760px; margin: 0 auto; }
       h1 { margin: 0 0 8px; }
@@ -131,8 +131,8 @@ export class ClientUpdatesPublisherService {
     </style>
   </head>
   <body>
-    <h1>Mise a jour du client</h1>
-    <div class="muted">Telechargez la derniere version du client Windows.</div>
+    <h1>Mise à jour du client</h1>
+    <div class="muted">Téléchargez la dernière version du client Windows.</div>
     <div class="card">
       ${
         links.length > 0
@@ -148,7 +148,7 @@ export class ClientUpdatesPublisherService {
           : '<div>Aucun package disponible pour le moment.</div>'
       }
       <div class="note" style="margin-top: 16px;">
-        Si l'application vous indique qu'une mise a jour est requise, installez la derniere version puis relancez.
+        Si l'application vous indique qu'une mise à jour est requise, installez la dernière version puis relancez.
       </div>
     </div>
   </body>

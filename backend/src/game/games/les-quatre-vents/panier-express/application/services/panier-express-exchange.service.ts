@@ -71,7 +71,7 @@ export class PanierExpressExchangeService {
     if (result.kind === 'updated') return result.state;
     return this.core.appendLog(
       state,
-      "[Panier Express] Cible d'echange invalide.",
+      "[Panier Express] Cible d'échange invalide.",
     );
   }
 
@@ -87,7 +87,7 @@ export class PanierExpressExchangeService {
       this.adapter(),
     );
     if (result.kind !== 'offered') {
-      return this.core.appendLog(state, `[Panier Express] Echange invalide.`);
+      return this.core.appendLog(state, `[Panier Express] Échange invalide.`);
     }
 
     const offer = result.offer;
@@ -97,7 +97,7 @@ export class PanierExpressExchangeService {
     const takeText = takeLabel != null ? `"${takeLabel}"` : 'aucune carte';
     return this.core.appendLog(
       result.state,
-      `[Panier Express] ${offer.initiatorUsername} propose un echange a ${offer.targetUsername} : il donne "${giveLabel}" et recevra ${takeText}.`,
+      `[Panier Express] ${offer.initiatorUsername} propose un échange à ${offer.targetUsername} : il donne "${giveLabel}" et recevra ${takeText}.`,
     );
   }
 
@@ -110,7 +110,7 @@ export class PanierExpressExchangeService {
     if (result.kind !== 'resolved') {
       return this.core.appendLog(
         state,
-        `[Panier Express] Acceptation d'echange invalide.`,
+        `[Panier Express] Acceptation d'échange invalide.`,
       );
     }
 
@@ -121,7 +121,7 @@ export class PanierExpressExchangeService {
     if (offer.bonusRequested) {
       const after = this.core.appendLog(
         result.state,
-        `[Panier Express] Echange accepte : ${offer.initiatorUsername} donne "${giveLabel}" a ${offer.targetUsername}. ${offer.targetUsername} n'a aucune carte et perd 2 tours.`,
+        `[Panier Express] Échange accepté : ${offer.initiatorUsername} donne "${giveLabel}" à ${offer.targetUsername}. ${offer.targetUsername} n'a aucune carte et perd 2 tours.`,
       );
       return {
         ...after,
@@ -150,7 +150,7 @@ export class PanierExpressExchangeService {
 
     return this.core.appendLog(
       result.state,
-      `[Panier Express] Echange accepte : ${offer.initiatorUsername} donne "${giveLabel}" et recoit "${takeLabel ?? ''}" de ${offer.targetUsername}.`,
+      `[Panier Express] Échange accepté : ${offer.initiatorUsername} donne "${giveLabel}" et reçoit "${takeLabel ?? ''}" de ${offer.targetUsername}.`,
     );
   }
 
@@ -164,12 +164,12 @@ export class PanierExpressExchangeService {
     if (!offer) {
       return this.core.appendLog(
         state,
-        `[Panier Express] Refus d'echange invalide.`,
+        `[Panier Express] Refus d'échange invalide.`,
       );
     }
     return this.core.appendLog(
       cleared,
-      `[Panier Express] ${offer.targetUsername} refuse l'echange propose par ${offer.initiatorUsername}.`,
+      `[Panier Express] ${offer.targetUsername} refuse l'échange proposé par ${offer.initiatorUsername}.`,
     );
   }
 
@@ -194,7 +194,7 @@ export class PanierExpressExchangeService {
     }
     return this.core.appendLog(
       state,
-      `[Panier Express] Carte d'echange non geree : ${String(card ?? '').trim()}.`,
+      `[Panier Express] Carte d'échange non gérée : ${String(card ?? '').trim()}.`,
     );
   }
 
@@ -206,7 +206,7 @@ export class PanierExpressExchangeService {
     if (!meta.decks) {
       return this.core.appendLog(
         state,
-        `[Panier Express] Decks indisponibles pour les echanges.`,
+        `[Panier Express] Decks indisponibles pour les échanges.`,
       );
     }
 
@@ -264,8 +264,8 @@ export class PanierExpressExchangeService {
 
     const reason =
       started.kind === 'no_targets'
-        ? `[Panier Express] Aucun joueur disponible pour un echange (${resolvedCard}).`
-        : `[Panier Express] Pas d'echange possible (${resolvedCard}).`;
+        ? `[Panier Express] Aucun joueur disponible pour un échange (${resolvedCard}).`
+        : `[Panier Express] Pas d'échange possible (${resolvedCard}).`;
     return this.core.appendLog({ ...state, metadata }, reason);
   }
 
@@ -302,7 +302,6 @@ export class PanierExpressExchangeService {
     return (meta as Record<string, unknown>)[key] ?? null;
   }
 }
-
 
 
 

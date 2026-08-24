@@ -78,7 +78,7 @@ export class AdminClientUpdateSchedulerService {
       }
 
       await new Promise((resolve) => setTimeout(resolve, 1200));
-      notifications.disconnectAll('Mise a jour en cours.');
+      notifications.disconnectAll('Mise à jour en cours.');
       this.scheduledAtMs = null;
     };
 

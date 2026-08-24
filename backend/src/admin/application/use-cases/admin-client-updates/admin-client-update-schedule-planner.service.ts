@@ -40,8 +40,8 @@ export class AdminClientUpdateSchedulePlannerService {
         : null;
     const defaultImminentMessage =
       delayMs >= warningLeadMs
-        ? 'Mise a jour imminente dans cinq minutes.'
-        : `Mise a jour imminente dans ${Math.max(
+        ? 'Mise à jour imminente dans cinq minutes.'
+        : `Mise à jour imminente dans ${Math.max(
             1,
             Math.round(delayMs / 60_000),
           )} minute(s).`;

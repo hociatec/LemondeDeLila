@@ -227,7 +227,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
         return addEffectLog('none');
       }
       next = args.setPickPending({
-        label: 'Choisissez une carte a prendre, puis Entree.',
+        label: 'Choisissez une carte à prendre, puis Entrée.',
         kind: 'event.conseil_voisinage.pick',
         choices: candidates.map((candidate) => candidate.label),
         data: { candidates, myInventory },
@@ -243,7 +243,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       if (!order.length || start < 0) {
         next = args.appendLog(
           next,
-          `[Panier Express] Troc improvise : impossible.`,
+          `[Panier Express] Troc improvisé : impossible.`,
         );
         return addEffectLog('none');
       }
@@ -261,7 +261,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
             playerId: pid,
             blocking: true,
             label:
-              'Choisissez une carte a donner au joueur suivant, puis Entree.',
+              'Choisissez une carte à donner au joueur suivant, puis Entrée.',
             choices: inventory,
             data: { kind: 'event.troc_improvise', order, cursor, processed },
           });
@@ -273,7 +273,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       if (!next.pending) {
         next = args.appendLog(
           next,
-          `[Panier Express] Troc improvise : aucun inventaire a echanger.`,
+          `[Panier Express] Troc improvisé : aucun inventaire à échanger.`,
         );
       }
       return addEffectLog('multi_pick');
@@ -301,7 +301,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
               type: 'pick',
               playerId: pid,
               blocking: true,
-              label: 'Choisissez une carte a defausser, puis Entree.',
+              label: 'Choisissez une carte à défausser, puis Entrée.',
               choices: cards,
               data: {
                 kind: 'event.changement_de_saison',
@@ -335,7 +335,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       if (idx < 0 || players.length < 2) {
         next = args.appendLog(
           next,
-          `[Panier Express] Echange obligatoire : aucun echange possible.`,
+          `[Panier Express] Échange obligatoire : aucun échange possible.`,
         );
         return addEffectLog('none');
       }
@@ -347,7 +347,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       if (!myInventory.length || !theirInventory.length) {
         next = args.appendLog(
           next,
-          `[Panier Express] Echange obligatoire : inventaire vide.`,
+          `[Panier Express] Échange obligatoire : inventaire vide.`,
         );
         return addEffectLog('none');
       }
@@ -366,7 +366,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       if (giveB) next = args.addOneCourseToPlayer(next, args.playerId, giveB);
       next = args.appendLog(
         next,
-        `[Panier Express] Echange obligatoire : echange entre ${args.playerName(args.state, args.playerId)} et ${args.playerName(args.state, targetId)}.`,
+        `[Panier Express] Échange obligatoire : échange entre ${args.playerName(args.state, args.playerId)} et ${args.playerName(args.state, targetId)}.`,
       );
       return addEffectLog('swap_random', { targetId });
     }
@@ -417,7 +417,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       };
       next = args.appendLog(
         next,
-        `[Panier Express] Inversion de panier : echange d'inventaire avec ${args.playerName(args.state, targetId)}.`,
+        `[Panier Express] Inversion de panier : échange d'inventaire avec ${args.playerName(args.state, targetId)}.`,
       );
       return addEffectLog('swap_inventory', { targetId });
     }

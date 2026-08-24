@@ -31,7 +31,7 @@ wxString AvailabilityLabel(const std::string& availability)
     }
     if (normalized == "occupied")
     {
-        return wxString(L"occupe");
+        return wxString(L"occupé");
     }
     if (normalized == "absent")
     {
@@ -93,8 +93,8 @@ wxString PresencePresentationModel::BuildPlayerLabel(const domain::PresencePlaye
 wxString PresencePresentationModel::BuildTitle(std::size_t playerCount)
 {
     return playerCount == 1
-        ? wxString(L"Presence (1 connecte)")
-        : wxString::Format(wxString(L"Presence (%zu connectes)"), playerCount);
+        ? wxString(L"Présence (1 connecté)")
+        : wxString::Format(wxString(L"Présence (%zu connectés)"), playerCount);
 }
 
 std::vector<MenuItem> PresencePresentationModel::BuildPlayerItems(
@@ -108,7 +108,7 @@ std::vector<MenuItem> PresencePresentationModel::BuildPlayerItems(
     }
     if (items.empty())
     {
-        items.push_back({"empty", wxString(L"Aucun joueur connecte.")});
+        items.push_back({"empty", wxString(L"Aucun joueur connecté.")});
     }
     return items;
 }
@@ -116,7 +116,7 @@ std::vector<MenuItem> PresencePresentationModel::BuildPlayerItems(
 std::vector<MenuItem> PresencePresentationModel::BuildActionItems(const PresenceSocialState& socialState)
 {
     std::vector<MenuItem> items;
-    items.push_back(socialState.isBlocked ? MenuItem{"unblock", wxString(L"Debloquer")} : MenuItem{"block", wxString(L"Bloquer")});
+    items.push_back(socialState.isBlocked ? MenuItem{"unblock", wxString(L"Débloquer")} : MenuItem{"block", wxString(L"Bloquer")});
     if (socialState.isFriend)
     {
         items.push_back({"friend.remove", wxString(L"Retirer de mes amis")});

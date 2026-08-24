@@ -13,7 +13,7 @@ void PresenceFrame::BuildLayout()
 {
     SetBackgroundColour(lila::shared::ui::Theme::Background());
     auto* root = new wxBoxSizer(wxVERTICAL);
-    titleLabel_ = new wxStaticText(this, wxID_ANY, wxString(L"Presence"));
+    titleLabel_ = new wxStaticText(this, wxID_ANY, wxString(L"Présence"));
     titleLabel_->Hide();
     menu_ = new lila::shared::ui::controls::VerticalMenu(
         this,
@@ -35,6 +35,6 @@ void PresenceFrame::BuildLayout()
     detailsLabel_->SetForegroundColour(lila::shared::ui::Theme::TextMuted());
     statusLabel_->SetBackgroundColour(lila::shared::ui::Theme::Background());
     statusLabel_->SetForegroundColour(lila::shared::ui::Theme::Accent());
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu_, wxString(L"Presence"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu_, wxString(L"Présence"));
 }
 }

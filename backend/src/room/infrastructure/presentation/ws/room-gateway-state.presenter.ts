@@ -53,8 +53,8 @@ export class RoomGatewayStatePresenter {
       payload: {
         message:
           payload.reason === 'room.started'
-            ? 'la partie demare, bon jeux!'
-            : 'Mise a jour de la table en cours.',
+            ? 'La partie démarre, bon jeu !'
+            : 'Mise à jour de la table en cours.',
         priority: payload.priority === 'assertive' ? 'assertive' : 'polite',
       },
     };
@@ -73,8 +73,8 @@ export class RoomGatewayStatePresenter {
       payload: {
         message:
           gameName.length === 0
-            ? 'Table creee. Ajoutez des bots et commencez a jouer (Entree).'
-            : `Table de ${gameName} creee. Ajoutez des bots et commencez a jouer (Entree).`,
+            ? 'Table créée. Ajoutez des bots et commencez à jouer (Entrée).'
+            : `Table de ${gameName} créée. Ajoutez des bots et commencez à jouer (Entrée).`,
       },
     };
   }

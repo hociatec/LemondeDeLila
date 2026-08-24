@@ -6,21 +6,21 @@ export class ExchangeService {
   getOverview(): ModuleOverviewDto {
     return {
       id: 'exchange',
-      label: 'Echange',
+      label: 'Échange',
       description:
-        'Mecanismes d echange entre joueurs (cartes, ressources, troc).',
+        "Mécanismes d'échange entre joueurs (cartes, ressources, troc).",
       capabilities: [
         {
           id: 'offers',
-          description: 'Creation et validation d offres d echange.',
+          description: "Création et validation d'offres d'échange.",
         },
         {
           id: 'constraints',
-          description: 'Regles d eligibilite et contraintes de jeu.',
+          description: "Règles d'éligibilité et contraintes de jeu.",
         },
         {
           id: 'resolution',
-          description: 'Application des echanges et mise a jour des inventaires.',
+          description: 'Application des échanges et mise à jour des inventaires.',
         },
       ],
     };

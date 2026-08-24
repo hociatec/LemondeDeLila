@@ -95,7 +95,7 @@ export function applyPanierExpressExchangeCard(args: {
     });
     return args.appendLog(
       next,
-      `[Panier Express] Chariot echange : ${args.utils.playerName(args.state, args.initiatorPlayerId)} echange son inventaire avec ${args.utils.playerName(args.state, args.targetPlayerId)}.`,
+      `[Panier Express] Chariot échange : ${args.utils.playerName(args.state, args.initiatorPlayerId)} échange son inventaire avec ${args.utils.playerName(args.state, args.targetPlayerId)}.`,
     );
   }
 
@@ -111,7 +111,7 @@ export function applyPanierExpressExchangeCard(args: {
     if (!initiatorInv.length || !targetInv.length) {
       return args.appendLog(
         args.state,
-        `[Panier Express] Echange force : inventaire vide.`,
+        `[Panier Express] Échange forcé : inventaire vide.`,
       );
     }
 
@@ -158,7 +158,7 @@ export function applyPanierExpressExchangeCard(args: {
     }
     return args.appendLog(
       next,
-      `[Panier Express] Echange force : echange au hasard entre ${args.utils.playerName(args.state, args.initiatorPlayerId)} et ${args.utils.playerName(args.state, args.targetPlayerId)}.`,
+      `[Panier Express] Échange forcé : échange au hasard entre ${args.utils.playerName(args.state, args.initiatorPlayerId)} et ${args.utils.playerName(args.state, args.targetPlayerId)}.`,
     );
   }
 
@@ -170,7 +170,7 @@ export function applyPanierExpressExchangeCard(args: {
     if (!inventory.length) {
       return args.appendLog(
         args.state,
-        `[Panier Express] Echange impose : ${args.utils.playerName(args.state, args.targetPlayerId)} n'a aucune carte.`,
+        `[Panier Express] Échange imposé : ${args.utils.playerName(args.state, args.targetPlayerId)} n'a aucune carte.`,
       );
     }
     return {
@@ -179,7 +179,7 @@ export function applyPanierExpressExchangeCard(args: {
         type: 'pick',
         playerId: args.targetPlayerId,
         blocking: true,
-        label: `Choisissez une carte a donner a ${args.utils.playerName(args.state, args.initiatorPlayerId)}, puis Entree.`,
+        label: `Choisissez une carte à donner à ${args.utils.playerName(args.state, args.initiatorPlayerId)}, puis Entrée.`,
         choices: inventory,
         data: {
           kind: 'exchange.impose.choose_card',
@@ -192,7 +192,5 @@ export function applyPanierExpressExchangeCard(args: {
 
   return null;
 }
-
-
 
 

@@ -53,7 +53,7 @@ private:
     std::function<bool(int)> isFriend_;
     mutable std::mutex mutex_;
     std::vector<domain::PresencePlayer> players_;
-    std::string status_ = "Presence deconnectee.";
+    std::string status_ = "Présence déconnectée.";
     bool hasSnapshot_ = false;
     std::optional<int> currentRoomId_;
     PlayersChangedHandler onPlayersChanged_;

@@ -33,7 +33,7 @@ export class TurnLabelService {
     const status = (state?.status ?? '').toLowerCase().trim();
     if (!status) return null;
 
-    if (status === 'finished') return 'Partie terminee.';
+    if (status === 'finished') return 'Partie terminée.';
 
     if (status !== 'started') {
       const formatted = (gameType ?? '').trim();
@@ -44,7 +44,7 @@ export class TurnLabelService {
             .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
             .join(' ')
         : 'la table';
-      return `Bienvenue sur ${label}. B pour ajouter un bot, Maj+B pour retirer un bot, Entree pour demarrer la partie.`;
+      return `Bienvenue sur ${label}. B pour ajouter un bot, Maj+B pour retirer un bot, Entrée pour démarrer la partie.`;
     }
 
     const players = Array.isArray(state.players) ? state.players : [];
@@ -63,7 +63,7 @@ export class TurnLabelService {
         const username = this.sanitizePlayerName(found?.username);
         const name =
           username.length > 0 ? username : `Joueur ${targetPlayerId}`;
-        return `C'est a ${name} de choisir son pion.`;
+        return `C'est à ${name} de choisir son pion.`;
       }
     }
 
@@ -71,7 +71,7 @@ export class TurnLabelService {
       const found = players.find((p) => Number(p?.id) === currentPlayerId);
       const username = this.sanitizePlayerName(found?.username);
       const name = username.length > 0 ? username : `Joueur ${currentPlayerId}`;
-      return `C'est a ${name} de jouer.`;
+      return `C'est à ${name} de jouer.`;
     }
 
     const idx = typeof state.turnIndex === 'number' ? state.turnIndex : -1;
@@ -83,7 +83,7 @@ export class TurnLabelService {
         : byIndex?.id != null
           ? `Joueur ${byIndex.id}`
           : null;
-    if (name) return `C'est a ${name} de jouer.`;
+    if (name) return `C'est à ${name} de jouer.`;
 
     return 'Tour en cours.';
   }

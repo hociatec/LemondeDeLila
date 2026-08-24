@@ -65,7 +65,7 @@ export class InteractiveExchangeService {
       card,
       step: 'choose_target',
       blocking: true,
-      label: 'Choisissez un joueur pour l echange dans la liste, puis Entree.',
+      label: "Choisissez un joueur pour l'échange dans la liste, puis Entrée.",
       targets,
     };
 
@@ -106,7 +106,7 @@ export class InteractiveExchangeService {
       targetPlayerId: chosen.targetPlayerId,
       targetUsername: chosen.targetUsername,
       giveChoices,
-      label: 'Choisissez la carte a donner dans la liste, puis Entree.',
+      label: 'Choisissez la carte à donner dans la liste, puis Entrée.',
     };
 
     return {
@@ -162,7 +162,7 @@ export class InteractiveExchangeService {
       type: 'exchange',
       step: 'confirm',
       blocking: true,
-      label: 'Echange propose : A = accepter, R = refuser.',
+      label: 'Échange proposé : A = accepter, R = refuser.',
       playerId: targetPlayerId,
       initiatorPlayerId: playerId,
       initiatorUsername:

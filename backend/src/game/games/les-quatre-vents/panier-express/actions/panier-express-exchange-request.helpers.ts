@@ -76,7 +76,7 @@ export function requestPanierExpressSpecialExchange(args: {
         type: 'pick',
         playerId: args.playerId,
         blocking: true,
-        label: `Choisissez un joueur pour ${exchangeLabel}, puis Entree.`,
+        label: `Choisissez un joueur pour ${exchangeLabel}, puis Entrée.`,
         choices,
         data: {
           kind: 'exchange.choose_target',
@@ -116,7 +116,7 @@ export function requestPanierExpressSpecialExchange(args: {
         type: 'pick',
         playerId: args.playerId,
         blocking: true,
-        label: `Choisissez une carte a echanger avec ${args.utils.playerName(args.state, targetPlayerId)}, puis Entree.`,
+        label: `Choisissez une carte à échanger avec ${args.utils.playerName(args.state, targetPlayerId)}, puis Entrée.`,
         choices: inventory,
         data: { kind: 'exchange.troc_rapide.choose_give', targetPlayerId },
       } satisfies PickPendingState,
@@ -135,10 +135,10 @@ export function requestPanierExpressSpecialExchange(args: {
     if (!choices.length) {
       const label =
         args.resolvedCard === 'troc-fruit-legume'
-          ? 'Troc fruit/legume'
+          ? 'Troc fruit/légume'
           : args.resolvedCard === 'echange-saison'
-            ? 'Echange de saison'
-            : 'Echange strategique';
+            ? 'Échange de saison'
+            : 'Échange stratégique';
       return args.appendLog(
         { ...args.state, metadata: args.metadata },
         `[Panier Express] ${label} : aucun joueur disponible.`,
@@ -158,7 +158,7 @@ export function requestPanierExpressSpecialExchange(args: {
           playerId: args.playerId,
           blocking: true,
           label:
-            "Choisissez un joueur pour l'echange strategique, puis Entree.",
+            "Choisissez un joueur pour l'échange stratégique, puis Entrée.",
           choices,
           data: {
             kind: 'exchange.strategique.choose_target',
@@ -178,8 +178,8 @@ export function requestPanierExpressSpecialExchange(args: {
         blocking: true,
         label:
           args.resolvedCard === 'troc-fruit-legume'
-            ? 'Choisissez un joueur pour le troc, puis Entree.'
-            : "Choisissez un joueur pour l'echange de saison, puis Entree.",
+            ? 'Choisissez un joueur pour le troc, puis Entrée.'
+            : "Choisissez un joueur pour l'échange de saison, puis Entrée.",
         choices,
         data: {
           kind:
@@ -200,7 +200,7 @@ export function requestPanierExpressSpecialExchange(args: {
     if (!cards.length) {
       return args.appendLog(
         { ...args.state, metadata: args.metadata },
-        `[Panier Express] Marche noir : aucune carte a defausser.`,
+        `[Panier Express] Marché noir : aucune carte à défausser.`,
       );
     }
     return {
@@ -210,7 +210,7 @@ export function requestPanierExpressSpecialExchange(args: {
         type: 'pick',
         playerId: args.playerId,
         blocking: true,
-        label: 'Choisissez une carte a defausser, puis Entree.',
+        label: 'Choisissez une carte à défausser, puis Entrée.',
         choices: cards,
         data: { kind: 'exchange.marche_noir.discard' },
       } satisfies PickPendingState,
@@ -258,7 +258,7 @@ export function requestPanierExpressSpecialExchange(args: {
         type: 'pick',
         playerId: args.playerId,
         blocking: true,
-        label: `Choisissez une carte a echanger avec ${args.utils.playerName(args.state, targetPlayerId)}, puis Entree.`,
+        label: `Choisissez une carte à échanger avec ${args.utils.playerName(args.state, targetPlayerId)}, puis Entrée.`,
         choices: myInv,
         data: {
           kind: 'exchange.voisin.choose_give',
@@ -343,7 +343,7 @@ export function requestPanierExpressSpecialExchange(args: {
     if (eligible.length < 2) {
       return args.appendLog(
         { ...args.state, metadata: args.metadata },
-        `[Panier Express] Echange masque : pas assez de joueurs avec des cartes.`,
+        `[Panier Express] Échange masqué : pas assez de joueurs avec des cartes.`,
       );
     }
     const shuffledPlayers = args.shuffle(
@@ -383,7 +383,7 @@ export function requestPanierExpressSpecialExchange(args: {
     }
     return args.appendLog(
       next,
-      `[Panier Express] Echange masque : echange realise.`,
+      `[Panier Express] Échange masqué : échange réalisé.`,
     );
   }
 
@@ -426,7 +426,7 @@ export function requestPanierExpressSpecialExchange(args: {
     if (players.length < 2) {
       return args.appendLog(
         { ...args.state, metadata: args.metadata },
-        `[Panier Express] Echange simultane : aucun joueur disponible.`,
+        `[Panier Express] Échange simultané : aucun joueur disponible.`,
       );
     }
     let next: GameStateEntity = { ...args.state, metadata: args.metadata };
@@ -451,7 +451,7 @@ export function requestPanierExpressSpecialExchange(args: {
       const targetId = players[(idx + 1) % players.length].id;
       next = args.appendLog(
         next,
-        `[Panier Express] Echange simultane : ${args.utils.playerName(args.state, entry.from)} donne "${args.utils.formatCourseLabel(entry.card)}" a ${args.utils.playerName(args.state, targetId)}.`,
+        `[Panier Express] Échange simultané : ${args.utils.playerName(args.state, entry.from)} donne "${args.utils.formatCourseLabel(entry.card)}" à ${args.utils.playerName(args.state, targetId)}.`,
       );
     }
     return next;
@@ -489,8 +489,5 @@ export function requestPanierExpressSpecialExchange(args: {
 
   return null;
 }
-
-
-
 
 

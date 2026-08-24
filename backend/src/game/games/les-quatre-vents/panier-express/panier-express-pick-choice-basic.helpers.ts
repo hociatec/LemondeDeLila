@@ -193,7 +193,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
     next = args.addCourseToPlayer(next, targetPlayerId, card);
     next = args.appendLog(
       next,
-      `[Panier Express] Producteur genereux : ${args.playerName(args.state, args.actorId)} pioche 2 cartes et offre "${args.formatCourseLabel(card)}" a ${args.playerName(args.state, targetPlayerId)}.`,
+      `[Panier Express] Producteur généreux : ${args.playerName(args.state, args.actorId)} pioche 2 cartes et offre "${args.formatCourseLabel(card)}" à ${args.playerName(args.state, targetPlayerId)}.`,
     );
     next = args.appendActionLog(next, args.actorId, 'event', {
       event: 'producteur-genereux',
@@ -271,7 +271,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
         type: 'pick',
         playerId: args.actorId,
         blocking: true,
-        label: 'Choisissez la carte a donner (inventaire), puis Entree.',
+        label: 'Choisissez la carte à donner (inventaire), puis Entrée.',
         choices: inventory,
         data: {
           kind: 'event.echange_spontane.choose_give',
@@ -299,7 +299,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
     if (!targetInv.length) {
       next = args.appendLog(
         next,
-        `[Panier Express] Echange spontane : ${args.playerName(args.state, targetPlayerId)} n'a aucune carte.`,
+        `[Panier Express] Échange spontané : ${args.playerName(args.state, targetPlayerId)} n'a aucune carte.`,
       );
       return args.advanceTurn(next);
     }
@@ -414,7 +414,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
     }
     next = args.appendLog(
       next,
-      `[Panier Express] Troc improvise : ${args.playerName(args.state, giverId)} donne "${args.formatCourseLabel(give)}" a ${args.playerName(args.state, receiverId)}.`,
+      `[Panier Express] Troc improvisé : ${args.playerName(args.state, giverId)} donne "${args.formatCourseLabel(give)}" à ${args.playerName(args.state, receiverId)}.`,
     );
 
     let nextCursor = (giverIndex + 1) % order.length;
@@ -431,7 +431,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
             playerId: pid,
             blocking: true,
             label:
-              'Choisissez une carte a donner au joueur suivant, puis Entree.',
+              'Choisissez une carte à donner au joueur suivant, puis Entrée.',
             choices: inventory,
             data: {
               kind: 'event.troc_improvise',
@@ -446,7 +446,7 @@ export function resolveBasicPanierExpressPickChoice(args: {
       nextProcessed += 1;
     }
 
-    next = args.appendLog(next, `[Panier Express] Troc improvise : termine.`);
+    next = args.appendLog(next, `[Panier Express] Troc improvisé : terminé.`);
     return args.advanceTurn(next);
   }
 
@@ -654,7 +654,5 @@ export function resolveBasicPanierExpressPickChoice(args: {
 
   return null;
 }
-
-
 
 

@@ -63,11 +63,11 @@ void PresenceFrame::RebuildPlayers(std::optional<int> preferredPlayerId, bool fo
 
     titleLabel_->SetLabel(hasSnapshot
         ? PresencePresentationModel::BuildTitle(players_.size())
-        : wxString(L"Presence"));
+        : wxString(L"Présence"));
     detailsLabel_->SetLabel(hasSnapshot
         ? FromUtf8(presenceMonitor_.Status())
-        : wxString(L"Chargement de la presence..."));
-    UpdateStatus(wxString(L"Fleches : naviguer. Entree : selectionner. Echap : fermer."));
+        : wxString(L"Chargement de la présence..."));
+    UpdateStatus(wxString(L"Flèches : naviguer. Entrée : sélectionner. Échap : fermer."));
     if (focusSelection)
     {
         static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
@@ -92,7 +92,7 @@ void PresenceFrame::RebuildActions()
     menu_->SetItems(PresencePresentationModel::BuildActionItems(*socialState_));
     menu_->SetSelectedIndexSilently(0);
     detailsLabel_->SetLabel(wxEmptyString);
-    UpdateStatus(wxString(L"Fleches : naviguer. Entree : selectionner. Echap : retour."));
+    UpdateStatus(wxString(L"Flèches : naviguer. Entrée : sélectionner. Échap : retour."));
     static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
 }
 
