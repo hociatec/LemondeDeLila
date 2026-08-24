@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { ClientUpdatesService } from '../../client-updates/public-api';
 import {
   isVersionGreater,
   isVersionLower,
 } from '../../common/utils/public-api';
-import { WxUpdateReleaseService } from '../infrastructure/persistence/wx-update-release.service';
+import {
+  WX_UPDATE_RELEASE_READER,
+  type WxUpdateReleaseReader,
+} from './wx-update-release.reader';
 
 export type UpdateNotice = {
   currentVersion: string | null;
@@ -23,7 +26,8 @@ export type UpdateNotice = {
 export class UpdatePolicyService {
   constructor(
     private readonly legacyUpdates: ClientUpdatesService,
-    private readonly wxUpdates: WxUpdateReleaseService,
+    @Inject(WX_UPDATE_RELEASE_READER)
+    private readonly wxUpdates: WxUpdateReleaseReader,
   ) {}
 
   getMinimumVersion(product: string | null): Promise<string | null> {
