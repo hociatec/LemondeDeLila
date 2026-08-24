@@ -9,6 +9,7 @@
 #include <wx/weakref.h>
 
 #include "modules/gameplay/domain/GameAction.h"
+#include "modules/gameplay/domain/GameEvent.h"
 #include "modules/gameplay/domain/GameState.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
 
