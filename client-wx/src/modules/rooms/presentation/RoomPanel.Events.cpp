@@ -3,6 +3,7 @@
 #include <wx/event.h>
 #include <wx/textctrl.h>
 
+#include "modules/gameplay/presentation/GamePlayPanel.h"
 #include "modules/rooms/presentation/RoomGameZoneAnchor.h"
 #include "modules/rooms/presentation/RoomPresentationModel.h"
 #include "shared/accessibility/presentation/ActionButton.h"
