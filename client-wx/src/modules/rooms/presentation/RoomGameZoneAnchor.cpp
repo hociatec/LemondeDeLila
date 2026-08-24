@@ -7,8 +7,8 @@
 #include <wx/event.h>
 #include <wx/weakref.h>
 
-#include "shared/accessibility/NavigationController.h"
-#include "shared/ui/Theme.h"
+#include "shared/accessibility/application/NavigationController.h"
+#include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::rooms::presentation
 {

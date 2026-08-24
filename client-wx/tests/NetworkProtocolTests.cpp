@@ -16,6 +16,11 @@
 #include <vector>
 
 #include <wx/init.h>
+#include "modules/audio/application/AudioService.h"
+#include "modules/audio/application/IAudioBackend.h"
+#include "modules/audio/application/IAudioService.h"
+#include "modules/audio/application/IAudioSettingsProvider.h"
+#include "modules/audio/application/SoundVolumeResolver.h"
 #include "modules/chat/application/ChatService.h"
 #include "modules/chat/application/ChatMessageStore.h"
 #include "modules/chat/application/IChatGateway.h"
@@ -47,25 +52,27 @@
 #include "modules/session/application/SessionStore.h"
 #include "modules/session/domain/ISessionRepository.h"
 #include "modules/session/domain/Session.h"
-#include "shared/accessibility/ActionButton.h"
-#include "shared/cache/SingleFlightCache.h"
-#include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/concurrency/AsyncRequestSlot.h"
-#include "shared/accessibility/NavigationController.h"
-#include "shared/audio/SoundCatalog.h"
-#include "shared/domain/DomainTypes.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/logging/Logger.h"
-#include "shared/network/realtime/AuthenticatedRealtimeApiHelpers.h"
-#include "shared/network/realtime/RealtimeProtocol.h"
-#include "shared/network/WebSocketConstants.h"
-#include "shared/network/http/WsTicketProvider.h"
-#include "shared/network/websocket/IWebSocketClient.h"
-#include "shared/persistence/AtomicFileWriter.h"
-#include "shared/persistence/JsonFileStorage.h"
-#include "shared/security/JwtPayload.h"
-#include "shared/security/SecurityUtils.h"
-#include "shared/text/Encoding.h"
+#include "shared/accessibility/presentation/ActionButton.h"
+#include "shared/cache/application/SingleFlightCache.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/concurrency/application/AsyncRequestSlot.h"
+#include "shared/accessibility/application/NavigationController.h"
+#include "modules/audio/domain/SoundCatalog.h"
+#include "modules/audio/infrastructure/LocalSoundManifest.h"
+#include "modules/audio/presentation/SoundOptionsCatalog.h"
+#include "shared/domain/identifiers/DomainTypes.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/logging/application/Logger.h"
+#include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
+#include "shared/network/application/realtime/RealtimeProtocol.h"
+#include "shared/network/domain/WebSocketConstants.h"
+#include "shared/network/application/http/IWsTicketProvider.h"
+#include "shared/network/application/websocket/IWebSocketClient.h"
+#include "shared/persistence/infrastructure/AtomicFileWriter.h"
+#include "shared/persistence/infrastructure/JsonFileStorage.h"
+#include "shared/security/domain/JwtPayload.h"
+#include "shared/security/infrastructure/SecurityUtils.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace
 {
@@ -116,6 +123,83 @@ private:
     std::optional<lila::modules::session::domain::Session> session_;
 };
 
+class BlockingSessionRefresher final
+    : public lila::modules::session::application::ISessionRefresher
+{
+public:
+    [[nodiscard]] lila::modules::session::application::SessionRefreshResult Refresh(
+        const std::string&,
+        std::stop_token stopToken) override
+    {
+        {
+            std::scoped_lock lock(mutex_);
+            started_ = true;
+        }
+        condition_.notify_all();
+
+        std::unique_lock lock(mutex_);
+        std::stop_callback cancelWait(stopToken, [this]() { condition_.notify_all(); });
+        condition_.wait(lock, [this, stopToken]() {
+            return released_ || stopToken.stop_requested();
+        });
+        if (stopToken.stop_requested())
+        {
+            return {};
+        }
+
+        lila::modules::session::application::SessionRefreshResult result;
+        result.success = true;
+        result.token = "new-header.new-payload.new-signature";
+        result.refreshToken = "rotated-refresh-token";
+        result.expiresAt = 4102444800LL;
+        return result;
+    }
+
+    [[nodiscard]] bool Revoke(
+        const std::string& refreshToken,
+        std::stop_token = {}) override
+    {
+        std::scoped_lock lock(mutex_);
+        revokedTokens_.push_back(refreshToken);
+        return true;
+    }
+
+    void WaitUntilStarted()
+    {
+        std::unique_lock lock(mutex_);
+        if (!condition_.wait_for(
+                lock,
+                std::chrono::seconds(2),
+                [this]() { return started_; }))
+        {
+            throw std::runtime_error("Timed out waiting for session refresh.");
+        }
+    }
+
+    void Release()
+    {
+        {
+            std::scoped_lock lock(mutex_);
+            released_ = true;
+        }
+        condition_.notify_all();
+    }
+
+    [[nodiscard]] bool WasRevoked(const std::string& refreshToken) const
+    {
+        std::scoped_lock lock(mutex_);
+        return std::find(revokedTokens_.begin(), revokedTokens_.end(), refreshToken)
+            != revokedTokens_.end();
+    }
+
+private:
+    mutable std::mutex mutex_;
+    std::condition_variable condition_;
+    bool started_ = false;
+    bool released_ = false;
+    std::vector<std::string> revokedTokens_;
+};
+
 class InMemoryOptionsRepository final : public lila::modules::options::domain::IOptionsRepository
 {
 public:
@@ -131,6 +215,78 @@ public:
 
 private:
     mutable lila::modules::options::domain::OptionsState state_;
+};
+
+class FakeAudioService final : public lila::modules::audio::application::IAudioService
+{
+public:
+    void Play(lila::modules::audio::domain::SoundCue cue) override
+    {
+        playedCues.push_back(cue);
+    }
+
+    void StartLoop(lila::modules::audio::domain::SoundCue cue) override
+    {
+        playedCues.push_back(cue);
+    }
+
+    void StopLoop() override {}
+
+    void SetBackground(lila::modules::audio::domain::AudioBackground background) override
+    {
+        currentBackground = background;
+    }
+
+    void StopAll() override {}
+    void ShutdownImmediately() override {}
+
+    std::vector<lila::modules::audio::domain::SoundCue> playedCues;
+    lila::modules::audio::domain::AudioBackground currentBackground =
+        lila::modules::audio::domain::AudioBackground::None;
+};
+
+class FixedAudioSettingsProvider final
+    : public lila::modules::audio::application::IAudioSettingsProvider
+{
+public:
+    [[nodiscard]] lila::modules::audio::application::AudioSettings Snapshot() const override
+    {
+        return settings;
+    }
+
+    lila::modules::audio::application::AudioSettings settings;
+};
+
+class RecordingAudioBackend final : public lila::modules::audio::application::IAudioBackend
+{
+public:
+    void Preload(lila::modules::audio::domain::SoundCue cue) override
+    {
+        preloaded.push_back(cue);
+    }
+
+    void Play(lila::modules::audio::domain::SoundCue cue, float volume) override
+    {
+        played.emplace_back(cue, volume);
+    }
+
+    void SetLoop(
+        std::optional<lila::modules::audio::domain::SoundCue> cue,
+        float volume) override
+    {
+        loops.emplace_back(cue, volume);
+    }
+
+    void StopAll() override { ++stopCount; }
+    void InterruptPlayback() noexcept override { ++interruptCount; }
+    void Shutdown() noexcept override { ++shutdownCount; }
+
+    std::vector<lila::modules::audio::domain::SoundCue> preloaded;
+    std::vector<std::pair<lila::modules::audio::domain::SoundCue, float>> played;
+    std::vector<std::pair<std::optional<lila::modules::audio::domain::SoundCue>, float>> loops;
+    int stopCount = 0;
+    int interruptCount = 0;
+    int shutdownCount = 0;
 };
 
 class FakeRoomTicketProvider final : public lila::shared::network::http::IWsTicketProvider
@@ -154,7 +310,8 @@ class FakeRoomWebSocketClient final : public lila::shared::network::websocket::I
 public:
     void Connect(
         const std::string& value,
-        const lila::shared::network::websocket::WebSocketHeaders& valueHeaders) override
+        const lila::shared::network::websocket::WebSocketHeaders& valueHeaders,
+        std::stop_token = {}) override
     {
         endpoint = value;
         headers = valueHeaders;
@@ -162,6 +319,7 @@ public:
     }
 
     void Close() override { connected = false; }
+    void CancelPendingOperation() noexcept override { connected = false; }
     [[nodiscard]] bool IsConnected() const override { return connected; }
     [[nodiscard]] bool IsConnectedTo(
         const std::string& value,
@@ -665,18 +823,24 @@ void TestOptionsCodecMigratesLegacyFieldsAndSchema()
 
 void TestSoundCatalogAndPerCueOptionsRoundTrip()
 {
-    const auto catalog = lila::shared::audio::GetSoundCatalog();
+    const auto catalog = lila::modules::audio::domain::GetSoundCatalog();
+    const auto options = lila::modules::audio::presentation::GetSoundOptions();
     Expect(
-        catalog.size() == static_cast<std::size_t>(lila::shared::audio::SoundCue::Count),
+        catalog.size() == static_cast<std::size_t>(lila::modules::audio::domain::SoundCue::Count),
         "Tous les sons doivent etre presents dans le catalogue");
+    Expect(options.size() == catalog.size(), "Chaque son doit avoir un libelle d'option");
 
     std::unordered_set<std::string> keys;
-    for (const auto& descriptor : catalog)
+    for (std::size_t index = 0; index < catalog.size(); ++index)
     {
+        const auto& descriptor = catalog[index];
         Expect(keys.insert(std::string(descriptor.key)).second, "Cle de son dupliquee");
-        Expect(!descriptor.label.empty(), "Libelle de son requis");
+        Expect(options[index].cue == descriptor.cue, "Ordre du catalogue d'options invalide");
+        Expect(!options[index].label.empty(), "Libelle de son requis");
+        const auto fileName = lila::modules::audio::infrastructure::GetLocalSoundFile(descriptor.cue);
+        Expect(!fileName.empty(), "Fichier sonore de repli requis");
         Expect(
-            std::filesystem::exists(std::filesystem::current_path() / "resources" / "sounds" / descriptor.fileName),
+            std::filesystem::exists(std::filesystem::current_path() / "resources" / "sounds" / fileName),
             "Fichier sonore ou fichier de repli manquant");
     }
 
@@ -695,6 +859,57 @@ void TestSoundCatalogAndPerCueOptionsRoundTrip()
     Expect(normalized.audio.cues.at("clientConnected").volume == 100, "Volume individuel non borne");
 
     std::cout << "[TEST PASSED] SoundCatalogAndPerCueOptionsRoundTrip\n";
+}
+
+void TestAudioSettingsAndServiceRouting()
+{
+    using namespace lila::modules::audio;
+    FixedAudioSettingsProvider settings;
+    settings.settings.ambienceVolume = 30;
+    settings.settings.splitAmbienceVolume = false;
+    settings.settings.cues[static_cast<std::size_t>(domain::SoundCue::MainMenuMusic)] = {true, 50};
+
+    const auto* menu = domain::FindSoundDescriptor(domain::SoundCue::MainMenuMusic);
+    Expect(menu != nullptr, "Son du menu attendu");
+    const auto commonVolume = application::ResolvePlaybackSettings(*menu, settings.settings);
+    Expect(commonVolume.enabled && commonVolume.volume > 0.149F && commonVolume.volume < 0.151F,
+        "Volume ambiance commun et individuel attendu");
+
+    settings.settings.splitAmbienceVolume = true;
+    settings.settings.menuAmbienceVolume = 80;
+    const auto splitVolume = application::ResolvePlaybackSettings(*menu, settings.settings);
+    Expect(splitVolume.volume > 0.399F && splitVolume.volume < 0.401F,
+        "Volume ambiance menu separe attendu");
+
+    RecordingAudioBackend backend;
+    application::AudioService service(backend, settings);
+    Expect(backend.preloaded.size() == 8, "Prechauffage des sons courants attendu");
+
+    service.Play(domain::SoundCue::Navigation);
+    Expect(backend.played.size() == 1 && backend.played.front().first == domain::SoundCue::Navigation,
+        "Routage du son de navigation attendu");
+    service.SetBackground(domain::AudioBackground::MainMenu);
+    Expect(backend.loops.size() == 1 &&
+        backend.loops.front().first == domain::SoundCue::MainMenuMusic,
+        "Routage de l'ambiance menu attendu");
+    settings.settings.tableAmbienceVolume = 20;
+    service.StartLoop(domain::SoundCue::TableAmbience20);
+    Expect(backend.loops.back().first == domain::SoundCue::TableAmbience20,
+        "Toutes les ambiances de table doivent pouvoir etre lancees");
+
+    settings.settings.muteAll = true;
+    service.Play(domain::SoundCue::Selection);
+    Expect(backend.played.size() == 1, "Aucun son ne doit etre joue en mode muet");
+    service.SetBackground(domain::AudioBackground::Tavern);
+    Expect(!backend.loops.back().first.has_value(), "L'ambiance doit etre arretee en mode muet");
+
+    service.ShutdownImmediately();
+    service.Play(domain::SoundCue::Navigation);
+    Expect(backend.interruptCount == 1 && backend.shutdownCount == 1,
+        "Arret immediat et liberation du moteur attendus");
+    Expect(backend.played.size() == 1, "Aucune lecture ne doit suivre l'arret audio");
+
+    std::cout << "[TEST PASSED] AudioSettingsAndServiceRouting\n";
 }
 
 void TestSessionClearWipesRefreshToken()
@@ -752,6 +967,60 @@ void TestSessionStoreRestoreLoadsPersistedSession()
     Expect(sessionStore.IsPersistent(), "La session restauree devait etre marquee persistante");
 
     std::cout << "[TEST PASSED] SessionStoreRestoreLoadsPersistedSession\n";
+}
+
+void TestSessionStoreRejectsSupersededConcurrentRefresh()
+{
+    auto refresher = std::make_unique<BlockingSessionRefresher>();
+    auto* refresherProbe = refresher.get();
+    lila::modules::session::application::SessionStore sessionStore(
+        std::make_unique<InMemorySessionRepository>(),
+        std::move(refresher));
+
+    lila::modules::session::domain::Session firstSession;
+    firstSession.userId = lila::shared::domain::UserId{1};
+    firstSession.username = "first-user";
+    firstSession.token = "old-header.old-payload.old-signature";
+    firstSession.refreshToken = "old-refresh-token";
+    firstSession.expiresAt = 1;
+    sessionStore.Open(std::move(firstSession), false);
+
+    auto refresh = std::async(
+        std::launch::async,
+        [&sessionStore]() { return sessionStore.RefreshAccessToken(); });
+    refresherProbe->WaitUntilStarted();
+
+    sessionStore.Clear();
+    lila::modules::session::domain::Session secondSession;
+    secondSession.userId = lila::shared::domain::UserId{2};
+    secondSession.username = "second-user";
+    secondSession.token = "second-header.second-payload.second-signature";
+    secondSession.refreshToken = "second-refresh-token";
+    secondSession.expiresAt = 4102444800LL;
+    sessionStore.Open(std::move(secondSession), false);
+    refresherProbe->Release();
+
+    bool supersededRefreshRejected = false;
+    try
+    {
+        static_cast<void>(refresh.get());
+    }
+    catch (const std::exception&)
+    {
+        supersededRefreshRejected = true;
+    }
+
+    Expect(supersededRefreshRejected, "Un refresh d'une ancienne session doit etre rejete");
+    const auto snapshot = sessionStore.Current();
+    Expect(snapshot.userId == lila::shared::domain::UserId{2}, "La nouvelle session doit rester active");
+    Expect(snapshot.token == "second-header.second-payload.second-signature", "Le token du nouvel utilisateur doit rester intact");
+    Expect(refresherProbe->WasRevoked("rotated-refresh-token"), "Le refresh token devenu orphelin doit etre revoque");
+
+    auto modifiedSnapshot = sessionStore.Current();
+    modifiedSnapshot.username = "mutated-copy";
+    Expect(sessionStore.Current().username == "second-user", "Current doit retourner une copie protegee");
+
+    std::cout << "[TEST PASSED] SessionStoreRejectsSupersededConcurrentRefresh\n";
 }
 
 void TestAtomicFileWriterReplacesExistingContent()
@@ -1646,6 +1915,7 @@ void TestChatServiceCloseInterruptsReceiveLoop()
     lila::modules::session::application::SessionStore sessionStore(std::make_unique<InMemorySessionRepository>());
     lila::modules::options::application::OptionsStore optionsStore(std::make_unique<InMemoryOptionsRepository>());
     optionsStore.Load();
+    FakeAudioService audioService;
 
     lila::modules::session::domain::Session session;
     session.userId = lila::shared::domain::UserId{7};
@@ -1654,7 +1924,8 @@ void TestChatServiceCloseInterruptsReceiveLoop()
     session.expiresAt = 4102444800LL;
     sessionStore.Open(session, false);
 
-    lila::modules::chat::application::ChatService service(gateway, protocol, sessionStore, optionsStore);
+    lila::modules::chat::application::ChatService service(
+        gateway, protocol, sessionStore, optionsStore, audioService);
     Expect(service.Open(), "Ouverture chat attendue");
     WaitUntil([&service]() { return !service.Messages().empty(); }, "Historique initial attendu");
 
@@ -1683,6 +1954,7 @@ void TestChatServiceReconnectsAfterTransientFailure()
     lila::modules::session::application::SessionStore sessionStore(std::make_unique<InMemorySessionRepository>());
     lila::modules::options::application::OptionsStore optionsStore(std::make_unique<InMemoryOptionsRepository>());
     optionsStore.Load();
+    FakeAudioService audioService;
 
     lila::modules::session::domain::Session session;
     session.userId = lila::shared::domain::UserId{7};
@@ -1691,7 +1963,8 @@ void TestChatServiceReconnectsAfterTransientFailure()
     session.expiresAt = 4102444800LL;
     sessionStore.Open(session, false);
 
-    lila::modules::chat::application::ChatService service(gateway, protocol, sessionStore, optionsStore);
+    lila::modules::chat::application::ChatService service(
+        gateway, protocol, sessionStore, optionsStore, audioService);
     Expect(service.Open(), "Ouverture chat attendue");
 
     WaitUntil([&gateway]() { std::lock_guard lock(gateway.mutex_); return gateway.openCount >= 3; }, "Reconnexions attendues");
@@ -1718,6 +1991,7 @@ void TestChatServiceSendReportsTransportFailure()
     lila::modules::session::application::SessionStore sessionStore(std::make_unique<InMemorySessionRepository>());
     lila::modules::options::application::OptionsStore optionsStore(std::make_unique<InMemoryOptionsRepository>());
     optionsStore.Load();
+    FakeAudioService audioService;
 
     lila::modules::session::domain::Session session;
     session.userId = lila::shared::domain::UserId{7};
@@ -1726,7 +2000,8 @@ void TestChatServiceSendReportsTransportFailure()
     session.expiresAt = 4102444800LL;
     sessionStore.Open(session, false);
 
-    lila::modules::chat::application::ChatService service(gateway, protocol, sessionStore, optionsStore);
+    lila::modules::chat::application::ChatService service(
+        gateway, protocol, sessionStore, optionsStore, audioService);
     Expect(service.Open(), "Ouverture chat attendue");
 
     bool threw = false;
@@ -1899,9 +2174,11 @@ int main()
         run("JsonFileStorageRejectsCorruptedFiles", TestJsonFileStorageRejectsCorruptedFiles);
         run("OptionsCodecMigratesLegacyFieldsAndSchema", TestOptionsCodecMigratesLegacyFieldsAndSchema);
         run("SoundCatalogAndPerCueOptionsRoundTrip", TestSoundCatalogAndPerCueOptionsRoundTrip);
+        run("AudioSettingsAndServiceRouting", TestAudioSettingsAndServiceRouting);
         run("SessionClearWipesRefreshToken", TestSessionClearWipesRefreshToken);
         run("SessionMovePreservesSecrets", TestSessionMovePreservesSecrets);
         run("SessionStoreRestoreLoadsPersistedSession", TestSessionStoreRestoreLoadsPersistedSession);
+        run("SessionStoreRejectsSupersededConcurrentRefresh", TestSessionStoreRejectsSupersededConcurrentRefresh);
         run("AtomicFileWriterReplacesExistingContent", TestAtomicFileWriterReplacesExistingContent);
         run("EncodingRoundTripUnicode", TestEncodingRoundTripUnicode);
         run("EncodingRejectsInvalidUtf8", TestEncodingRejectsInvalidUtf8);

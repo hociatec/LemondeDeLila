@@ -86,7 +86,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/compare
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/concepts
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/tuple
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/controls/VerticalMenu.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
@@ -158,8 +158,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
-C:/vcpkg/installed/x64-windows/include/wx/panel.h
-C:/vcpkg/installed/x64-windows/include/wx/window.h
 C:/vcpkg/installed/x64-windows/include/wx/event.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/platform.h
@@ -502,6 +500,8 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/shared/qos.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/meta/convertible.h
 C:/vcpkg/installed/x64-windows/include/wx/meta/removeref.h
+C:/vcpkg/installed/x64-windows/include/wx/panel.h
+C:/vcpkg/installed/x64-windows/include/wx/window.h
 C:/vcpkg/installed/x64-windows/include/wx/font.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -549,6 +549,6 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/vault/presentation/VaultNavigator.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/vault/domain/VaultSnapshot.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/encoding/Encoding.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def

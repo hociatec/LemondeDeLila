@@ -6,9 +6,9 @@
 
 #include "modules/leaderboard/infrastructure/LeaderboardPayloadCodec.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/errors/AppError.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/network/realtime/AuthenticatedRealtimeApiHelpers.h"
+#include "shared/errors/domain/AppError.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 
 namespace lila::modules::leaderboard::infrastructure
 {

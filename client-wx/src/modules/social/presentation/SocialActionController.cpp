@@ -3,8 +3,8 @@
 #include <utility>
 
 #include "modules/social/application/SocialService.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/UiTexts.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
 
 namespace lila::modules::social::presentation
 {

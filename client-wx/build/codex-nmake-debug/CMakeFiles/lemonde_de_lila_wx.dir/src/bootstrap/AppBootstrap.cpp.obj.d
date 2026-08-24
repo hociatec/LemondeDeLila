@@ -106,7 +106,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_sanitizer_annotate_container.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/Logger.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/application/Logger.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp

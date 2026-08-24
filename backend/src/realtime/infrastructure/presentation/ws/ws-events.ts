@@ -19,8 +19,12 @@ export const WS_EVENTS = {
   },
   auth: {
     login: 'auth.login',
+    logout: 'auth.logout',
+    refresh: 'auth.refresh',
     register: 'auth.register',
     loginOk: 'auth.login.ok',
+    logoutOk: 'auth.logout.ok',
+    refreshOk: 'auth.refresh.ok',
     registerOk: 'auth.register.ok',
   },
   users: {

@@ -223,8 +223,8 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/infrastructure/OptionsJsonSchemaMigrator.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/infrastructure/OptionsStateJsonMapper.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/CoreErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/presentation/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/NetworkErrorMessages.h

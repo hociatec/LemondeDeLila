@@ -51,6 +51,7 @@ Ce mécanisme remplace le secret partagé statique côté client (déconseillé)
 | `JWT_ALGORITHM` | `RS256` (recommandé) ou `HS256` (legacy). Si absent, le backend déduit le mode selon la présence de clés RSA. |
 | `JWT_PRIVATE_KEY_PATH` / `JWT_PRIVATE_KEY_PEM` | (RS256) Clé privée PEM pour signer les tokens. Ne jamais exposer au client. |
 | `JWT_PUBLIC_KEY_PATH` / `JWT_PUBLIC_KEY_PEM` | (RS256) Clé publique PEM pour vérifier les tokens. Peut être distribuée aux clients. |
+| `REFRESH_TOKEN_TTL_SECONDS` | Durée de vie des refresh tokens opaques stockés sous forme hashée dans Redis (30 jours par défaut). |
 | `JWT_SECRET` | (HS256 legacy) Secret partagé pour signer/vérifier. Ne jamais l’embarquer dans un client. |
 | `GAME_ENGINE_STATE_REDIS_URL` | Redis utilisé pour persister l’état des parties (requis pour la reprise après crash). |
 | `SESSION_STORE_REDIS_URL` | Redis pour les sessions WS/API, notifications et présence (peuvent avoir leurs URL dédiées). |

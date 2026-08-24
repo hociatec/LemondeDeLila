@@ -5,9 +5,9 @@
 #include <wx/textctrl.h>
 
 #include "modules/rooms/presentation/RoomGameZoneAnchor.h"
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/accessibility/ActionButton.h"
-#include "shared/ui/Theme.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/accessibility/presentation/ActionButton.h"
+#include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::rooms::presentation
 {

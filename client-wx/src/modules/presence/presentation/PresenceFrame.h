@@ -8,8 +8,8 @@
 
 #include "modules/presence/domain/PresencePlayer.h"
 #include "modules/presence/presentation/PresencePresentationModel.h"
-#include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NonFocusablePanel.h"
+#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
 
 class wxStaticText;
 class wxWindow;

@@ -7,7 +7,7 @@
 #include <wx/textctrl.h>
 #include <wx/window.h>
 
-#include "shared/accessibility/NavigationController.h"
+#include "shared/accessibility/application/NavigationController.h"
 
 namespace lila::modules::chat::presentation
 {

@@ -95,8 +95,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_sanitizer_annotate_container.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusPlanView.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusManager.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusPlanView.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusManager.h
 C:/vcpkg/installed/x64-windows/include/wx/window.h
 C:/vcpkg/installed/x64-windows/include/wx/event.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -498,10 +498,10 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/ole/access.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/window.h
 C:/vcpkg/installed/x64-windows/include/wx/settings.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/NavigationController.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NonFocusablePanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/presentation/NonFocusablePanel.h
 C:/vcpkg/installed/x64-windows/include/wx/panel.h
 C:/vcpkg/installed/x64-windows/include/wx/containr.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -529,22 +529,31 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/msgdlg.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/main_menu/presentation/MainMenuContent.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/application/OptionsStore.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsRepository.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/shared_mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsRepository.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/controls/VerticalMenu.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfilesystem_abi.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_tzdb.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/format
@@ -579,4 +588,4 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/istream
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ostream.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ios
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sstream
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/MenuBlueprint.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/navigation/MenuBlueprint.h

@@ -105,10 +105,27 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/application/OptionsStore.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/shared_mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
@@ -123,19 +140,19 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/infrastructure/FileOpt
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/application/SessionStore.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/ISessionRepository.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/Session.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/SecurityUtils.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/infrastructure/SecurityUtils.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/infrastructure/FileSessionRepository.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/application/LoginUseCase.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/AuthenticationResult.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Common.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Chat.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Messaging.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Social.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/IAuthenticationService.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/LoginCredentials.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/RegisterRequest.h
@@ -143,7 +160,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/RegistrationResult
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/application/RegisterUseCase.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/infrastructure/WsAuthenticationService.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/infrastructure/remote/UserAuthRemoteDataSource.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/realtime/RealtimeApiClient.h
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iterator
 C:/vcpkg/installed/x64-windows/include/nlohmann/adl_serializer.hpp
@@ -153,7 +170,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/array
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/forward_list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/valarray
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/exceptions.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/value_t.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_scope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/detected.hpp
@@ -175,13 +191,6 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/identity_tag.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/meta/std_fs.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/filesystem
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfilesystem_abi.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_tzdb.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/format
@@ -247,11 +256,4 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/ordered_map.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/websocket/IWebSocketClient.h

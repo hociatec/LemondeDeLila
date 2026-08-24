@@ -1,7 +1,7 @@
 #include "modules/rooms/presentation/RoomLobbyPresentationModel.h"
 
 #include "modules/rooms/presentation/RoomLobbyNavigator.h"
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation
 {

@@ -11,8 +11,8 @@
 
 #include "modules/catalog/domain/CatalogShelf.h"
 #include "modules/catalog/presentation/CatalogShelfNavigator.h"
-#include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NonFocusablePanel.h"
+#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
 
 class wxStaticText;
 class wxWindow;

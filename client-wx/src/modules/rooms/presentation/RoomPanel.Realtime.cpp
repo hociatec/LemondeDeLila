@@ -6,7 +6,8 @@
 #include <wx/weakref.h>
 
 #include "modules/rooms/application/RoomSessionService.h"
-#include "shared/text/Encoding.h"
+#include "modules/audio/application/IAudioService.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation
 {
@@ -75,8 +76,21 @@ void RoomPanel::HandleRoomEvent(domain::RoomEvent event)
             UpdateStatus(lila::shared::text::FromUtf8(event.message), false, true);
         return;
     case domain::RoomEventType::ChatMessage:
-        for (const auto& chat : event.chatMessages) AppendHistory(FormatChatMessage(chat));
+        {
+        const int currentUserId = currentUserId_ ? currentUserId_() : 0;
+        bool received = false;
+        for (const auto& chat : event.chatMessages)
+        {
+            received = received || (chat.userId != 0 && chat.userId != currentUserId);
+            AppendHistory(FormatChatMessage(chat));
+        }
+        if (received)
+        {
+            audioService_.Play(
+                lila::modules::audio::domain::SoundCue::TableChatMessageReceived);
+        }
         return;
+        }
     case domain::RoomEventType::ChatHistory:
         if (!chatHistoryReceived_)
         {

@@ -4,7 +4,7 @@
 
 #include "modules/user/infrastructure/remote/JwtLoginClaimsParser.h"
 #include "modules/user/infrastructure/remote/UserAuthRemoteDataSource.h"
-#include "shared/errors/ErrorMessages.h"
+#include "shared/errors/catalog/ErrorMessages.h"
 
 namespace lila::modules::user::infrastructure
 {
@@ -43,6 +43,7 @@ domain::AuthenticationResult WsAuthenticationService::Login(const domain::LoginC
         return domain::AuthenticationResult::Ok(
             resolvedUsername,
             payload.token,
+            payload.refreshToken,
             resolvedUserId,
             claims.expiresAt);
     }

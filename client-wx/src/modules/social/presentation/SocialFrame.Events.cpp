@@ -1,10 +1,10 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/social/presentation/SocialProfileCoordinator.h"
 #include "modules/social/presentation/SocialScreenCoordinator.h"
 #include "modules/social/presentation/SocialView.h"
 #include "modules/social/presentation/SocialEventRouter.h"
-#include "shared/accessibility/NavigationController.h"
+#include "shared/accessibility/application/NavigationController.h"
 
 namespace lila::modules::social::presentation
 {
@@ -24,7 +24,6 @@ void SocialFrame::BindEvents()
 
     SocialEventRouter::BindRootEvents(
         *this,
-        *view_,
         navigationState_,
         SocialEventRouter::Handlers{
             [this]()

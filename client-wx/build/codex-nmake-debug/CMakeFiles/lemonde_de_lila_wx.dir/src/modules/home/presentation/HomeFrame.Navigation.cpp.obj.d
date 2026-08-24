@@ -102,16 +102,16 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iosfwd
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Common.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusPlanView.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusManager.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Chat.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Messaging.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Social.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusPlanView.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusManager.h
 C:/vcpkg/installed/x64-windows/include/wx/window.h
 C:/vcpkg/installed/x64-windows/include/wx/event.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -506,10 +506,10 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/ole/access.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/window.h
 C:/vcpkg/installed/x64-windows/include/wx/settings.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/NavigationController.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NonFocusablePanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/presentation/NonFocusablePanel.h
 C:/vcpkg/installed/x64-windows/include/wx/panel.h
 C:/vcpkg/installed/x64-windows/include/wx/containr.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -621,8 +621,8 @@ C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/textctrl.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibilityUtils.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/ActionButton.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/presentation/AccessibilityUtils.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/presentation/ActionButton.h
 C:/vcpkg/installed/x64-windows/include/wx/button.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -631,5 +631,5 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/anybutton.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/button.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusCoordinator.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/Theme.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusCoordinator.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/theme/Theme.h

@@ -216,8 +216,8 @@ DART_TESTING_TIMEOUT:STRING=1500
 // protocole
 LILA_BACKEND_ROOT:PATH=C:/wamp64/www/lemondeDeLila/client-wx/../backend
 
-//Source canonique des événements WebSocket du backend
-LILA_BACKEND_WS_EVENTS_FILE:FILEPATH=C:/wamp64/www/lemondeDeLila/client-wx/../backend/src/common/ws/ws-events.ts
+//Canonical backend WebSocket events source
+LILA_BACKEND_WS_EVENTS_FILE:FILEPATH=C:/wamp64/www/lemondeDeLila/client-wx/../backend/src/realtime/infrastructure/presentation/ws/ws-events.ts
 
 //Enable AddressSanitizer where supported
 LILA_ENABLE_ASAN:BOOL=OFF

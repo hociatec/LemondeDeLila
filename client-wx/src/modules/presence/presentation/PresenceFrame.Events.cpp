@@ -4,8 +4,8 @@
 
 #include "modules/presence/presentation/PresencePresentationModel.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/accessibility/NavigationController.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/NavigationController.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::presence::presentation
 {

@@ -9,7 +9,7 @@
 #include "modules/messaging/domain/MessagingBox.h"
 #include "modules/messaging/domain/MessagingMessage.h"
 #include "modules/messaging/domain/MessagingUser.h"
-#include "shared/network/realtime/RealtimeApiClient.h"
+#include "shared/network/application/realtime/RealtimeApiClient.h"
 
 namespace lila::modules::messaging::infrastructure::codec
 {

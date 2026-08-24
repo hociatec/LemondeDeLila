@@ -7,7 +7,7 @@
 #include <wx/string.h>
 
 #include "modules/presence/domain/PresencePlayer.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::session::domain { struct Session; }
 

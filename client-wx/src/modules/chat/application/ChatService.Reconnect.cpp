@@ -6,10 +6,10 @@
 #include <thread>
 
 #include "modules/session/application/SessionStore.h"
-#include "shared/config/AppConfig.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/logging/Logger.h"
-#include "shared/network/http/WsTicketProvider.h"
+#include "shared/config/domain/AppConfig.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/logging/application/Logger.h"
+#include "shared/network/application/http/IWsTicketProvider.h"
 
 namespace lila::modules::chat::application
 {
@@ -100,7 +100,7 @@ void ChatService::ReceiveLoop(std::stop_token stopToken)
                 try
                 {
                     gateway_.Close();
-                    gateway_.Open(sessionStore_.Current().token, shared::config::AppConfig::ResolveClientVersion());
+                    OpenGateway(stopToken);
                     SetState(domain::ChatState::Connected);
                     SetStatus(lila::shared::errors::ChatReconnected, false);
                     reconnectAttempt_ = 0;

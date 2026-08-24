@@ -1,4 +1,4 @@
-﻿// Generated from ../backend/src/{presence,chat}/services. Do not edit manually.
+// Generated from backend/contracts/client-wx-fields.json. Do not edit manually.
 #pragma once
 
 #include <cstddef>

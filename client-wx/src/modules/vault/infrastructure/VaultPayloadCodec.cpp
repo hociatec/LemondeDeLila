@@ -5,9 +5,9 @@
 
 #include <nlohmann/json.hpp>
 
-#include "shared/data/JsonReaders.h"
-#include "shared/errors/AppError.h"
-#include "shared/errors/ErrorMessages.h"
+#include "shared/data/json/JsonReaders.h"
+#include "shared/errors/domain/AppError.h"
+#include "shared/errors/catalog/ErrorMessages.h"
 
 namespace lila::modules::vault::infrastructure::codec
 {

@@ -13,9 +13,10 @@ import {
   type UserTokenServicePort,
 } from '../ports/user-token.port';
 import {
-  USER_REPOSITORY,
-  type UserRepository,
-} from '../ports/user.repository';
+  REFRESH_TOKEN_SERVICE,
+  type RefreshTokenServicePort,
+} from '../ports/refresh-token.port';
+import { USER_REPOSITORY, type UserRepository } from '../ports/user.repository';
 
 @Injectable()
 export class LoginUserService {
@@ -28,12 +29,16 @@ export class LoginUserService {
     private readonly passwordHasher: PasswordHasherPort,
     @Inject(USER_TOKEN_SERVICE)
     private readonly tokenService: UserTokenServicePort,
+    @Inject(REFRESH_TOKEN_SERVICE)
+    private readonly refreshTokens: RefreshTokenServicePort,
   ) {}
 
-  async execute(input: {
+  async execute(input: { username: string; password: string }): Promise<{
+    token: string;
+    refreshToken: string;
+    userId: number;
     username: string;
-    password: string;
-  }): Promise<{ token: string; userId: number; username: string }> {
+  }> {
     const user = await this.users.findByUsername(input.username);
     if (!user) {
       throw new UnauthorizedException('Identifiants invalides');
@@ -75,7 +80,9 @@ export class LoginUserService {
       const until = formatDateFr(user.bannedUntil);
       const reason = this.sanitizeBanReason(user.banReason);
       const suffix = reason ? ` (motif : ${reason})` : '';
-      throw new UnauthorizedException(`Compte banni jusqu'au ${until}${suffix}`);
+      throw new UnauthorizedException(
+        `Compte banni jusqu'au ${until}${suffix}`,
+      );
     }
 
     const token = this.tokenService.sign({
@@ -84,7 +91,8 @@ export class LoginUserService {
       roles: user.roles?.length ? user.roles : ['ROLE_USER'],
       username: user.username,
     });
-    return { token, userId: user.id, username: user.username };
+    const refreshToken = await this.refreshTokens.issue(user.id);
+    return { token, refreshToken, userId: user.id, username: user.username };
   }
 
   private sanitizeBanReason(reason: string | null): string | null {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 #include <atomic>
 #include <functional>
@@ -10,9 +10,9 @@
 
 #include <wx/string.h>
 
-#include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NavigationController.h"
-#include "shared/accessibility/NonFocusablePanel.h"
+#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "modules/social/domain/SocialFriendRequest.h"
 #include "modules/social/domain/SocialProfile.h"
 #include "modules/social/domain/SocialUser.h"
@@ -21,8 +21,8 @@
 #include "modules/social/presentation/SocialPresentationModel.h"
 #include "modules/social/presentation/SocialSelectionMemory.h"
 #include "modules/social/presentation/SocialNavigationState.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/UiTexts.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
 
 class wxButton;
 class wxChoice;

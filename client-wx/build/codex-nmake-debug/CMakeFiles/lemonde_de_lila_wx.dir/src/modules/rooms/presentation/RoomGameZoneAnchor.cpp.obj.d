@@ -557,7 +557,7 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/dcclient.h
 C:/vcpkg/installed/x64-windows/include/wx/weakref.h
 C:/vcpkg/installed/x64-windows/include/wx/meta/int2type.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/NavigationController.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/Theme.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/theme/Theme.h

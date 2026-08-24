@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "modules/rooms/application/IRoomSessionGateway.h"
-#include "shared/logging/Logger.h"
+#include "shared/logging/application/Logger.h"
 
 namespace lila::modules::rooms::application
 {

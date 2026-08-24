@@ -1,11 +1,17 @@
 #include "modules/social/application/SocialService.h"
 
+#include <algorithm>
+
+#include "modules/audio/application/IAudioService.h"
 #include "modules/social/infrastructure/SocialProtocolFields.h"
 
 namespace lila::modules::social::application
 {
-SocialService::SocialService(ISocialGateway& api)
-    : api_(api)
+SocialService::SocialService(
+    ISocialGateway& api,
+    lila::modules::audio::application::IAudioService& audioService)
+    : api_(api),
+      audioService_(audioService)
 {
 }
 
@@ -99,13 +105,25 @@ void SocialService::UnblockUser(int userId) const
 
 void SocialService::RequestFriend(int userId) const
 {
-    static_cast<void>(api_.RequestFriend(userId));
+    if (api_.RequestFriend(userId))
+    {
+        audioService_.Play(
+            lila::modules::audio::domain::SoundCue::FriendInvitationSent);
+    }
     ClearRelationshipCache();
 }
 
 std::vector<domain::SocialUser> SocialService::SearchUsers(const std::string& query) const
 {
     return api_.SearchUsers(query);
+}
+
+bool SocialService::IsFriendCached(int userId) const
+{
+    const auto friends = friendsCache_.TryGet();
+    return friends.has_value() && std::ranges::any_of(
+        *friends,
+        [userId](const domain::SocialUser& user) { return user.id.value == userId; });
 }
 
 void SocialService::ClearCache()

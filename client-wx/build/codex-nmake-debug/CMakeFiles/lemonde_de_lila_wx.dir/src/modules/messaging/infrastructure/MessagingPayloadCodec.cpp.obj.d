@@ -223,8 +223,8 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingBox.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingMessage.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/realtime/RealtimeApiClient.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
@@ -232,18 +232,18 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/websocket/IWebSocketClient.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/infrastructure/MessagingProtocolFields.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/MessagingProtocolFields.generated.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/infrastructure/remote/UserAuthFields.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/UserAuthFields.generated.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/DateTime.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonApiHelpers.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/AppError.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimePayloadReaders.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/time/DateTime.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/json/JsonApiHelpers.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/json/JsonReaders.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/domain/AppError.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/CoreErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/presentation/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/NetworkErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/realtime/RealtimePayloadReaders.h

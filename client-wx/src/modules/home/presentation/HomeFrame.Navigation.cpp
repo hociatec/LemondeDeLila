@@ -6,12 +6,12 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/accessibility/ActionButton.h"
-#include "shared/accessibility/FocusManager.h"
-#include "shared/accessibility/FocusCoordinator.h"
-#include "shared/accessibility/NonFocusablePanel.h"
-#include "shared/ui/Theme.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/accessibility/presentation/ActionButton.h"
+#include "shared/accessibility/application/FocusManager.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
+#include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::home::presentation
 {

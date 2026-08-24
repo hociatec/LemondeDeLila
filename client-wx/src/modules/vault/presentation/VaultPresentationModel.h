@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::vault::presentation
 {

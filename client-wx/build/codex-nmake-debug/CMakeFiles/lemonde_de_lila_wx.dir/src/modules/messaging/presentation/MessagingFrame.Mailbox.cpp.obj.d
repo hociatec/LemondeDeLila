@@ -106,8 +106,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusPlanView.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusManager.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusPlanView.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusManager.h
 C:/vcpkg/installed/x64-windows/include/wx/window.h
 C:/vcpkg/installed/x64-windows/include/wx/event.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -500,10 +500,10 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/ole/access.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/window.h
 C:/vcpkg/installed/x64-windows/include/wx/settings.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/NavigationController.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NonFocusablePanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/presentation/NonFocusablePanel.h
 C:/vcpkg/installed/x64-windows/include/wx/panel.h
 C:/vcpkg/installed/x64-windows/include/wx/containr.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -511,12 +511,12 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingBox.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingMessage.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingSelectionMemory.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/array
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingNavigationState.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/navigation/NavigationStack.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingPresentationModel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingScreenCoordinator.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingMailboxLoader.h

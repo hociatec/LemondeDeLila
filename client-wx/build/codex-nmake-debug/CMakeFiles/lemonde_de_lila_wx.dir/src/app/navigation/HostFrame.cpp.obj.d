@@ -527,10 +527,10 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/sizer.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NonFocusablePanel.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppConfig.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/presentation/NonFocusablePanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/domain/AppConfig.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/encoding/Encoding.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def

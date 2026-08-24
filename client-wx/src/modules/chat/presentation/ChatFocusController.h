@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "shared/accessibility/FocusManager.h"
+#include "shared/accessibility/application/FocusManager.h"
 
 class wxButton;
 class wxTextCtrl;

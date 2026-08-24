@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
-#include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NonFocusablePanel.h"
+#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "modules/chat/application/ChatService.h"
 #include "modules/chat/domain/ChatMessage.h"
-#include "shared/ui/navigation/NavigationStack.h"
+#include "shared/ui/presentation/navigation/NavigationStack.h"
 
 class wxButton;
 class wxTextCtrl;

@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 
 #include <span>
@@ -8,9 +8,9 @@
 #include "modules/social/presentation/SocialPresentationModel.h"
 #include "modules/social/presentation/SocialProfileMapper.h"
 #include "modules/social/presentation/SocialView.h"
-#include "shared/text/UiTexts.h"
-#include "shared/ui/controls/VerticalMenu.h"
-#include "shared/ui/navigation/MenuBlueprint.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "shared/ui/presentation/navigation/MenuBlueprint.h"
 
 namespace lila::modules::social::presentation
 {

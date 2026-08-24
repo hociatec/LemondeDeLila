@@ -2,13 +2,14 @@
 
 #include <string>
 
-#include "shared/network/realtime/RealtimeApiClient.h"
+#include "shared/network/application/realtime/RealtimeApiClient.h"
 
 namespace lila::modules::user::infrastructure::remote
 {
 struct LoginRemotePayload
 {
     std::string token;
+    std::string refreshToken;
     std::string username;
     int userId = 0;
 };
@@ -25,6 +26,12 @@ public:
 
     void WarmUp() const;
     [[nodiscard]] shared::network::realtime::RealtimeApiResponse Login(const std::string& username, const std::string& password) const;
+    [[nodiscard]] shared::network::realtime::RealtimeApiResponse Refresh(
+        const std::string& refreshToken,
+        std::stop_token stopToken = {}) const;
+    [[nodiscard]] shared::network::realtime::RealtimeApiResponse Logout(
+        const std::string& refreshToken,
+        std::stop_token stopToken = {}) const;
     [[nodiscard]] shared::network::realtime::RealtimeApiResponse Register(
         const std::string& username,
         const std::string& email,

@@ -2,8 +2,8 @@
 
 #include "modules/options/infrastructure/OptionsJsonDocumentCodec.h"
 
-#include "shared/data/JsonApiHelpers.h"
-#include "shared/data/JsonReaders.h"
+#include "shared/data/json/JsonApiHelpers.h"
+#include "shared/data/json/JsonReaders.h"
 
 #include <string>
 

@@ -5,10 +5,10 @@
 #include <nlohmann/json.hpp>
 #include "modules/rooms/infrastructure/RoomProtocol.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/config/AppConfig.h"
-#include "shared/network/WebSocketConstants.h"
-#include "shared/network/http/WsTicketProvider.h"
-#include "shared/network/websocket/IWebSocketClient.h"
+#include "shared/config/domain/AppConfig.h"
+#include "shared/network/domain/WebSocketConstants.h"
+#include "shared/network/application/http/IWsTicketProvider.h"
+#include "shared/network/application/websocket/IWebSocketClient.h"
 
 namespace lila::modules::rooms::infrastructure
 {
@@ -24,17 +24,32 @@ void RoomSessionGateway::Connect()
     if (!sessionStore_.HasActiveSession()) throw std::runtime_error("Aucune session active pour la table.");
     std::scoped_lock sendLock(sendMutex_);
     client_.Close();
-    const auto& token = sessionStore_.Current().token;
-    const auto ticket = ticketProvider_.GetTicket(
-        std::string(lila::shared::network::ws::WsTicketScopeRoom),
-        token);
-    lila::shared::network::websocket::WebSocketHeaders headers{
-        {std::string(lila::shared::network::ws::AuthorizationHeader),
-         std::string(lila::shared::network::ws::AuthorizationScheme) + token},
-        {std::string(lila::shared::network::ws::WsTicketHeader), ticket},
-        {std::string(lila::shared::network::ws::ClientVersionHeader),
-         lila::shared::config::AppConfig::ResolveClientVersion()}};
-    client_.Connect(endpoint_, headers);
+    const auto connect = [this](const std::string& token)
+    {
+        const auto ticket = ticketProvider_.GetTicket(
+            std::string(lila::shared::network::ws::WsTicketScopeRoom),
+            token);
+        lila::shared::network::websocket::WebSocketHeaders headers{
+            {std::string(lila::shared::network::ws::AuthorizationHeader),
+             std::string(lila::shared::network::ws::AuthorizationScheme) + token},
+            {std::string(lila::shared::network::ws::WsTicketHeader), ticket},
+            {std::string(lila::shared::network::ws::ClientVersionHeader),
+             lila::shared::config::AppConfig::ResolveClientVersion()}};
+        client_.Connect(endpoint_, headers);
+    };
+    try
+    {
+        connect(sessionStore_.AccessToken());
+    }
+    catch (const lila::shared::network::http::WsTicketRequestError& exception)
+    {
+        if (exception.StatusCode() != 401 && exception.StatusCode() != 403)
+        {
+            throw;
+        }
+        client_.Close();
+        connect(sessionStore_.RefreshAccessToken());
+    }
 }
 
 void RoomSessionGateway::SendJson(const nlohmann::json& message)

@@ -99,7 +99,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/typeinfo
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_typeinfo.h

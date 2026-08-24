@@ -5,9 +5,9 @@
 
 #include "modules/session/application/SessionStore.h"
 #include "modules/chat/infrastructure/ChatProtocol.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/logging/Logger.h"
-#include "shared/audio/AudioService.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/logging/application/Logger.h"
+#include "modules/audio/application/IAudioService.h"
 #include <limits>
 #include <sstream>
 
@@ -57,7 +57,7 @@ void ChatService::ProcessIncomingMessage(const std::string& rawJson, bool fatalE
         NotifyMessagesChanged();
         if (receivedMessage)
         {
-            lila::shared::audio::AudioService::PlayGlobal(lila::shared::audio::SoundCue::ChatMessageReceived);
+            audioService_.Play(lila::modules::audio::domain::SoundCue::ChatMessageReceived);
         }
         return;
         }

@@ -4,7 +4,7 @@
 #include <string>
 
 #include "modules/messaging/domain/MessagingUser.h"
-#include "shared/domain/DomainTypes.h"
+#include "shared/domain/identifiers/DomainTypes.h"
 
 namespace lila::modules::messaging::domain
 {

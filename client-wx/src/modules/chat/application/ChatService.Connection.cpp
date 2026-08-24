@@ -7,11 +7,11 @@
 #include "modules/chat/infrastructure/ChatProtocolFields.h"
 #include "modules/options/application/OptionsStore.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/config/AppConfig.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/logging/Logger.h"
-#include "shared/network/http/WsTicketProvider.h"
-#include "shared/audio/AudioService.h"
+#include "shared/config/domain/AppConfig.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/logging/application/Logger.h"
+#include "shared/network/application/http/IWsTicketProvider.h"
+#include "modules/audio/application/IAudioService.h"
 
 namespace lila::modules::chat::application
 {
@@ -37,7 +37,7 @@ bool ChatService::Open()
         return false;
     }
 
-    if (!sessionStore_.HasActiveSession() || !sessionStore_.Current().IsAuthenticated())
+    if (!sessionStore_.HasActiveSession())
     {
         SetStatus(lila::shared::errors::ChatLoginRequired, true);
         return false;
@@ -55,7 +55,7 @@ bool ChatService::Open()
         SetState(domain::ChatState::Connecting);
         SetStatus(lila::shared::errors::ChatConnecting, false);
 
-        gateway_.Open(sessionStore_.Current().token, shared::config::AppConfig::ResolveClientVersion());
+        OpenGateway();
         SetStatus(lila::shared::errors::ChatAuthenticating, false);
         SetState(domain::ChatState::Connected);
 
@@ -109,6 +109,29 @@ bool ChatService::Open()
     }
 }
 
+void ChatService::OpenGateway(std::stop_token stopToken)
+{
+    const auto open = [this](const std::string& token)
+    {
+        gateway_.Open(token, shared::config::AppConfig::ResolveClientVersion());
+    };
+
+    try
+    {
+        open(sessionStore_.AccessToken(stopToken));
+    }
+    catch (const lila::shared::network::http::WsTicketRequestError& exception)
+    {
+        if ((exception.StatusCode() != 401 && exception.StatusCode() != 403)
+            || stopToken.stop_requested())
+        {
+            throw;
+        }
+        gateway_.Close();
+        open(sessionStore_.RefreshAccessToken(stopToken));
+    }
+}
+
 void ChatService::Close()
 {
     StopReceiveLoop();
@@ -139,7 +162,7 @@ void ChatService::Send(const std::string& text)
     try
     {
         SendRawJson(protocol_.BuildSendPayload(text));
-        lila::shared::audio::AudioService::PlayGlobal(lila::shared::audio::SoundCue::ChatMessageSent);
+        audioService_.Play(lila::modules::audio::domain::SoundCue::ChatMessageSent);
     }
     catch (const std::exception& exception)
     {

@@ -99,7 +99,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingMess
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/typeinfo
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_typeinfo.h
@@ -113,12 +113,6 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/application/IMessagi
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/infrastructure/MessagingProtocolFields.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/MessagingProtocolFields.generated.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/AudioService.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/memory
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic_wait.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xthreads.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/SoundCatalog.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/audio/application/IAudioService.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/audio/domain/AudioBackground.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/audio/domain/SoundCue.h

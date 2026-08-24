@@ -11,9 +11,9 @@
 #include "modules/social/presentation/SocialProfileMapper.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialView.h"
-#include "shared/text/Encoding.h"
-#include "shared/text/UiTexts.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::social::presentation
 {

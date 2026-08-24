@@ -4,6 +4,7 @@
 
 #include <wx/button.h>
 #include <wx/checkbox.h>
+#include <wx/choice.h>
 #include <wx/event.h>
 #include <wx/msgdlg.h>
 #include <wx/slider.h>
@@ -12,8 +13,7 @@
 
 #include "modules/options/presentation/OptionsFocusController.h"
 #include "modules/options/presentation/OptionsView.h"
-#include "shared/accessibility/NavigationController.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/NavigationController.h"
 
 namespace lila::modules::options::presentation
 {
@@ -88,26 +88,6 @@ void OptionsEventBinder::Bind(
     const auto audio = view.AudioControls();
     const auto chat = view.ChatControls();
 
-    if (shell.sectionsMenu != nullptr)
-    {
-        shell.sectionsMenu->SetSelectionChangedHandler(
-            [selectSection = handlers.selectSection](std::size_t index)
-            {
-                if (selectSection)
-                {
-                    selectSection(index);
-                }
-            });
-        shell.sectionsMenu->SetActivatedHandler(
-            [activateSection = handlers.activateSection](std::size_t index)
-            {
-                if (activateSection)
-                {
-                    activateSection(index);
-                }
-            });
-    }
-
     if (shell.cancelButton != nullptr)
     {
         shell.cancelButton->Bind(
@@ -154,9 +134,25 @@ void OptionsEventBinder::Bind(
     BindCheckbox(audio.soundNavigateCheckbox, true, view, focusController, changed);
     BindCheckbox(audio.soundSelectCheckbox, true, view, focusController, changed);
     BindCheckbox(audio.soundChatMessagesCheckbox, true, view, focusController, changed);
-    for (const auto& control : view.AudioCueControls())
+    BindCheckbox(audio.soundTableAmbienceCheckbox, true, view, focusController, changed);
+    BindCheckbox(audio.detailedSoundEnabledCheckbox, true, view, focusController, changed);
+    if (audio.detailedSoundChoice != nullptr)
     {
-        BindCheckbox(control.enabledCheckbox, true, view, focusController, changed);
+        audio.detailedSoundChoice->Bind(
+            wxEVT_CHOICE,
+            [&view, changed](wxCommandEvent& event)
+            {
+                const int selection = event.GetSelection();
+                if (selection >= 0)
+                {
+                    view.SelectAudioCueEditor(static_cast<std::size_t>(selection));
+                    view.UpdateSoundControlInteractivity();
+                    if (changed)
+                    {
+                        changed();
+                    }
+                }
+            });
     }
     BindCheckbox(chat.chatEnabledCheckbox, false, view, focusController, changed);
     BindCheckbox(chat.confirmChatExitCheckbox, false, view, focusController, changed);
@@ -174,10 +170,14 @@ void OptionsEventBinder::Bind(
     bindSliderIfReady(audio.soundNavigateSlider, audio.soundNavigateValueLabel, wxString(L"Volume navigation"));
     bindSliderIfReady(audio.soundSelectSlider, audio.soundSelectValueLabel, wxString(L"Volume sélection"));
     bindSliderIfReady(audio.soundChatMessagesSlider, audio.soundChatMessagesValueLabel, wxString(L"Volume messages"));
-    for (const auto& control : view.AudioCueControls())
-    {
-        bindSliderIfReady(control.volumeSlider, control.volumeLabel, wxString(L"Volume individuel"));
-    }
+    bindSliderIfReady(
+        audio.soundTableAmbienceSlider,
+        audio.soundTableAmbienceValueLabel,
+        wxString(L"Volume ambiances de table"));
+    bindSliderIfReady(
+        audio.detailedSoundVolumeSlider,
+        audio.detailedSoundVolumeLabel,
+        wxString(L"Volume individuel"));
 
     for (wxButton* saveButton : {general.saveButton, audio.saveButton, chat.saveButton})
     {
@@ -206,6 +206,6 @@ void OptionsEventBinder::Bind(
             return true;
         });
 
-    focusController.BindNavigation(owner, handlers.isInsideSection);
+    focusController.BindNavigation(owner);
 }
 }

@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/about/presentation/AboutFrame.h"
 #include "modules/about/presentation/AboutPageCoordinator.h"
 
@@ -9,8 +9,8 @@
 #include <wx/textctrl.h>
 
 #include "modules/session/application/SessionStore.h"
-#include "shared/config/AppConfig.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/config/domain/AppConfig.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace
 {

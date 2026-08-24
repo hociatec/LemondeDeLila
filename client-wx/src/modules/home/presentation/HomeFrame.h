@@ -3,9 +3,9 @@
 #include <functional>
 
 #include "modules/user/domain/AuthenticationResult.h"
-#include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NonFocusablePanel.h"
-#include "shared/accessibility/NavigationController.h"
+#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
+#include "shared/accessibility/application/NavigationController.h"
 
 class wxCheckBox;
 class wxPanel;

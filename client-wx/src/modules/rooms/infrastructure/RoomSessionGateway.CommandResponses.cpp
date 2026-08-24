@@ -6,7 +6,7 @@
 
 #include "modules/rooms/infrastructure/RoomPayloadCodec.h"
 #include "modules/rooms/infrastructure/RoomProtocol.h"
-#include "shared/network/websocket/IWebSocketClient.h"
+#include "shared/network/application/websocket/IWebSocketClient.h"
 
 namespace lila::modules::rooms::infrastructure
 {

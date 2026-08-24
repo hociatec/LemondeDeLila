@@ -3,7 +3,7 @@
 #include <cctype>
 #include <regex>
 
-#include "shared/text/StringUtils.h"
+#include "shared/text/domain/StringUtils.h"
 
 namespace
 {

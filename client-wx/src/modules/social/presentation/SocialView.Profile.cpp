@@ -1,6 +1,6 @@
 #include "modules/social/presentation/SocialView.h"
 
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 #include <array>
 #include <wx/button.h>
@@ -9,10 +9,10 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/text/UiTexts.h"
-#include "shared/ui/controls/VerticalMenu.h"
-#include "shared/ui/navigation/MenuBlueprint.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "shared/ui/presentation/navigation/MenuBlueprint.h"
 
 namespace lila::modules::social::presentation
 {

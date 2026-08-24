@@ -1,8 +1,8 @@
 #pragma once
 
 #include <functional>
-#include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NonFocusablePanel.h"
+#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
 
 class wxCommandEvent;
 class wxStaticText;

@@ -2,16 +2,16 @@
 
 #include <utility>
 
-#include "shared/network/WebSocketConstants.h"
-#include "shared/network/http/WsTicketProvider.h"
-#include "shared/network/websocket/IWebSocketClient.h"
+#include "shared/network/domain/WebSocketConstants.h"
+#include "shared/network/application/http/IWsTicketProvider.h"
+#include "shared/network/application/websocket/IWebSocketClient.h"
 
 namespace lila::modules::chat::infrastructure
 {
 PresenceChatGateway::PresenceChatGateway(
     std::string endpoint,
     lila::shared::network::websocket::IWebSocketClient& webSocketClient,
-    lila::shared::network::http::WsTicketProvider& ticketProvider)
+    lila::shared::network::http::IWsTicketProvider& ticketProvider)
     : endpoint_(std::move(endpoint)),
       webSocketClient_(webSocketClient),
       ticketProvider_(ticketProvider)

@@ -11,11 +11,13 @@ ChatService::ChatService(
     IChatGateway& gateway,
     lila::modules::chat::infrastructure::IChatProtocol& protocol,
     lila::modules::session::application::SessionStore& sessionStore,
-    lila::modules::options::application::OptionsStore& optionsStore)
+    lila::modules::options::application::OptionsStore& optionsStore,
+    lila::modules::audio::application::IAudioService& audioService)
     : gateway_(gateway),
       protocol_(protocol),
       sessionStore_(sessionStore),
-      optionsStore_(optionsStore)
+      optionsStore_(optionsStore),
+      audioService_(audioService)
 {
 }
 

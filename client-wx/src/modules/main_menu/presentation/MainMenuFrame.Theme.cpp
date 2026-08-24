@@ -2,8 +2,8 @@
 
 #include <wx/stattext.h>
 
-#include "shared/ui/Theme.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/ui/presentation/theme/Theme.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::main_menu::presentation
 {

@@ -1,4 +1,4 @@
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/encoding/Encoding.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals_core.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime.h
@@ -144,8 +144,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingScreenCoordinator.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/memory
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
@@ -159,10 +159,10 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingBox.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingMessage.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingMailboxLoader.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingNavigationState.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/navigation/NavigationStack.h
 C:/vcpkg/installed/x64-windows/include/wx/listbox.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/ctrlsub.h

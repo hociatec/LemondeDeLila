@@ -129,8 +129,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/domain/ChatMessage.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/domain/ChatServerError.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeProtocol.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/realtime/RealtimeProtocol.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/realtime/RealtimeApiClient.h
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
@@ -232,8 +232,8 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/websocket/IWebSocketClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/encoding/Encoding.h
 C:/vcpkg/installed/x64-windows/include/wx/string.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/platform.h
@@ -276,5 +276,5 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
 C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def

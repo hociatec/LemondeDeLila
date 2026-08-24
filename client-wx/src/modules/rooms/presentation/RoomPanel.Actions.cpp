@@ -7,10 +7,11 @@
 #include <wx/weakref.h>
 
 #include "modules/rooms/application/RoomSessionService.h"
-#include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/logging/Logger.h"
-#include "shared/text/Encoding.h"
+#include "modules/audio/application/IAudioService.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/logging/application/Logger.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation
 {
@@ -119,6 +120,8 @@ void RoomPanel::Leave()
                                 lila::shared::text::FromUtf8(error->UserMessage()), true, true);
                             return;
                         }
+                        weakThis->audioService_.Play(
+                            lila::modules::audio::domain::SoundCue::RoomExit);
                         weakThis->CloseSession();
                     });
             },
@@ -129,6 +132,7 @@ void RoomPanel::Leave()
 
     CancelRequest();
     roomService_.Leave();
+    audioService_.Play(lila::modules::audio::domain::SoundCue::RoomExit);
     room_ = {};
     if (onCloseRequested_) onCloseRequested_();
 }

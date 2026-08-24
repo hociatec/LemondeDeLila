@@ -10,12 +10,19 @@
 #include "modules/messaging/application/IMessagingGateway.h"
 #include "modules/messaging/infrastructure/MessagingProtocolFields.h"
 
+namespace lila::modules::audio::application
+{
+class IAudioService;
+}
+
 namespace lila::modules::messaging::application
 {
 class MessagingService final
 {
 public:
-    explicit MessagingService(IMessagingGateway& api);
+    MessagingService(
+        IMessagingGateway& api,
+        lila::modules::audio::application::IAudioService& audioService);
 
     [[nodiscard]] std::vector<domain::MessagingMessage> LoadBox(
         domain::MessagingBox box,
@@ -35,5 +42,6 @@ public:
 
 private:
     IMessagingGateway& api_;
+    lila::modules::audio::application::IAudioService& audioService_;
 };
 }

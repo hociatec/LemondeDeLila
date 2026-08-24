@@ -8,24 +8,6 @@
 
 namespace lila::modules::options::presentation
 {
-wxWindow* OptionsViewStateAdapter::GetFirstSectionControl(const OptionsView& view, std::size_t sectionIndex)
-{
-    const auto general = view.GeneralControls();
-    const auto audio = view.AudioControls();
-    const auto chat = view.ChatControls();
-    if (sectionIndex == 0)
-    {
-        return general.confirmExitCheckbox;
-    }
-
-    if (sectionIndex == 1)
-    {
-        return audio.muteAllCheckbox != nullptr ? static_cast<wxWindow*>(audio.muteAllCheckbox) : audio.soundAmbienceCheckbox;
-    }
-
-    return chat.chatEnabledCheckbox;
-}
-
 domain::OptionsState OptionsViewStateAdapter::ReadState(const OptionsView& view, const domain::OptionsState& baseState)
 {
     domain::OptionsState state = baseState;
@@ -69,6 +51,10 @@ domain::OptionsState OptionsViewStateAdapter::ReadState(const OptionsView& view,
     {
         state.soundChatMessages = audio.soundChatMessagesCheckbox->GetValue();
     }
+    if (audio.soundTableAmbienceCheckbox != nullptr)
+    {
+        state.soundTableAmbience = audio.soundTableAmbienceCheckbox->GetValue();
+    }
     if (audio.soundMenuAmbienceSlider != nullptr)
     {
         state.soundMenuAmbienceVolume = audio.soundMenuAmbienceSlider->GetValue();
@@ -77,11 +63,7 @@ domain::OptionsState OptionsViewStateAdapter::ReadState(const OptionsView& view,
     {
         state.soundTavernAmbienceVolume = audio.soundTavernAmbienceSlider->GetValue();
     }
-    if (state.soundMenuAmbienceVolume != baseState.soundMenuAmbienceVolume ||
-        state.soundTavernAmbienceVolume != baseState.soundTavernAmbienceVolume)
-    {
-        state.soundAmbienceSplit = true;
-    }
+    state.soundAmbienceSplit = true;
     if (audio.soundAppLaunchSlider != nullptr)
     {
         state.soundAppLaunchVolume = audio.soundAppLaunchSlider->GetValue();
@@ -98,18 +80,11 @@ domain::OptionsState OptionsViewStateAdapter::ReadState(const OptionsView& view,
     {
         state.soundChatMessagesVolume = audio.soundChatMessagesSlider->GetValue();
     }
-    for (const auto& control : view.AudioCueControls())
+    if (audio.soundTableAmbienceSlider != nullptr)
     {
-        auto& cue = state.audio.cues[control.key];
-        if (control.enabledCheckbox != nullptr)
-        {
-            cue.enabled = control.enabledCheckbox->GetValue();
-        }
-        if (control.volumeSlider != nullptr)
-        {
-            cue.volume = control.volumeSlider->GetValue();
-        }
+        state.soundTableAmbienceVolume = audio.soundTableAmbienceSlider->GetValue();
     }
+    state.audio.cues = view.ReadAudioCueDraft();
     if (chat.chatEnabledCheckbox != nullptr)
     {
         state.chatEnabled = chat.chatEnabledCheckbox->GetValue();
@@ -155,6 +130,7 @@ void OptionsViewStateAdapter::WriteState(OptionsView& view, const domain::Option
     setCheckbox(audio.soundNavigateCheckbox, state.soundNavigate);
     setCheckbox(audio.soundSelectCheckbox, state.soundSelect);
     setCheckbox(audio.soundChatMessagesCheckbox, state.soundChatMessages);
+    setCheckbox(audio.soundTableAmbienceCheckbox, state.soundTableAmbience);
     setCheckbox(chat.chatEnabledCheckbox, state.chatEnabled);
     setCheckbox(chat.confirmChatExitCheckbox, state.confirmChatExit);
 
@@ -164,19 +140,12 @@ void OptionsViewStateAdapter::WriteState(OptionsView& view, const domain::Option
     setSlider(audio.soundNavigateSlider, audio.soundNavigateValueLabel, state.soundNavigateVolume, wxString(L"Volume navigation"));
     setSlider(audio.soundSelectSlider, audio.soundSelectValueLabel, state.soundSelectVolume, wxString(L"Volume sélection"));
     setSlider(audio.soundChatMessagesSlider, audio.soundChatMessagesValueLabel, state.soundChatMessagesVolume, wxString(L"Volume messages"));
-    for (const auto& control : view.AudioCueControls())
-    {
-        const auto iterator = state.audio.cues.find(control.key);
-        const domain::SoundCueOptions value = iterator != state.audio.cues.end()
-            ? iterator->second
-            : domain::SoundCueOptions{};
-        setCheckbox(control.enabledCheckbox, value.enabled);
-        setSlider(
-            control.volumeSlider,
-            control.volumeLabel,
-            value.volume,
-            wxString(L"Volume individuel"));
-    }
+    setSlider(
+        audio.soundTableAmbienceSlider,
+        audio.soundTableAmbienceValueLabel,
+        state.soundTableAmbienceVolume,
+        wxString(L"Volume ambiances de table"));
+    view.WriteAudioCueDraft(state.audio.cues);
 
     UpdateSoundControlInteractivity(view);
 }
@@ -216,13 +185,17 @@ void OptionsViewStateAdapter::UpdateSoundControlInteractivity(OptionsView& view)
         audio.soundChatMessagesSlider->Enable(
             canInteract && audio.soundChatMessagesCheckbox != nullptr && audio.soundChatMessagesCheckbox->GetValue());
     }
-    for (const auto& control : view.AudioCueControls())
+    if (audio.soundTableAmbienceSlider != nullptr)
     {
-        if (control.volumeSlider != nullptr)
-        {
-            control.volumeSlider->Enable(
-                canInteract && control.enabledCheckbox != nullptr && control.enabledCheckbox->GetValue());
-        }
+        audio.soundTableAmbienceSlider->Enable(
+            canInteract && audio.soundTableAmbienceCheckbox != nullptr &&
+            audio.soundTableAmbienceCheckbox->GetValue());
+    }
+    if (audio.detailedSoundVolumeSlider != nullptr)
+    {
+        audio.detailedSoundVolumeSlider->Enable(
+            canInteract && audio.detailedSoundEnabledCheckbox != nullptr &&
+            audio.detailedSoundEnabledCheckbox->GetValue());
     }
 }
 }

@@ -4,10 +4,10 @@
 
 #include "modules/presence/application/PresenceMonitor.h"
 #include "modules/presence/presentation/PresencePresentationModel.h"
-#include "shared/accessibility/FocusCoordinator.h"
-#include "shared/text/Encoding.h"
-#include "shared/ui/Theme.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/ui/presentation/theme/Theme.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::presence::presentation
 {

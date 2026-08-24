@@ -1,13 +1,13 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/messaging/presentation/MessagingView.h"
 
 #include <wx/simplebook.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/accessibility/NonFocusablePanel.h"
-#include "shared/text/UiTexts.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
 
 namespace lila::modules::messaging::presentation
 {

@@ -9,8 +9,8 @@
 #include "modules/messaging/presentation/MessagingPresentationModel.h"
 #include "modules/messaging/presentation/MessagingSelectionMemory.h"
 #include "modules/messaging/presentation/MessagingView.h"
-#include "shared/text/Encoding.h"
-#include "shared/text/UiTexts.h"
+#include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
 
 namespace lila::modules::messaging::presentation
 {

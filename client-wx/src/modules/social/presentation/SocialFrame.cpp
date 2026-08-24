@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/social/presentation/SocialActionController.h"
 #include "modules/social/presentation/SocialLoadController.h"
@@ -7,7 +7,7 @@
 #include "modules/social/presentation/SocialSectionCoordinator.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialView.h"
-#include "shared/ui/BackgroundTask.h"
+#include "shared/ui/application/BackgroundTask.h"
 
 #include <memory>
 #include <stdexcept>
@@ -22,13 +22,13 @@
 #include <wx/weakref.h>
 
 #include "modules/social/application/SocialService.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/accessibility/FocusManager.h"
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/logging/Logger.h"
-#include "shared/text/UiTexts.h"
-#include "shared/config/AppConfig.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/accessibility/application/FocusManager.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/logging/application/Logger.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
+#include "shared/config/domain/AppConfig.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace
 {

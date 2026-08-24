@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/chat/presentation/ChatFrame.h"
 
 #include <algorithm>
@@ -10,9 +10,9 @@
 
 #include "modules/chat/application/ChatService.h"
 #include "modules/chat/presentation/ChatMessageActions.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/UiTexts.h"
-#include "shared/accessibility/AccessibilityUtils.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
 
 namespace lila::modules::chat::presentation
 {

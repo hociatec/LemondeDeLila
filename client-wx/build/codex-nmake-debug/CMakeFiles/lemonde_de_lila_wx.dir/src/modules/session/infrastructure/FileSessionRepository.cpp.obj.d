@@ -78,7 +78,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mmintrin.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/zmmintrin.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ammintrin.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/Session.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_sanitizer_annotate_container.hpp
@@ -106,12 +106,12 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/SecurityUtils.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/infrastructure/SecurityUtils.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/infrastructure/SessionStorageFields.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/json/JsonReaders.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
@@ -226,11 +226,11 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/ordered_map.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/AppError.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/persistence/JsonFileStorage.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/JwtPayload.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/domain/AppError.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/CoreErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/presentation/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/NetworkErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/persistence/infrastructure/JsonFileStorage.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/domain/JwtPayload.h

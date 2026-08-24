@@ -3,7 +3,7 @@
 
 #include "modules/options/presentation/OptionsView.h"
 #include "modules/options/presentation/OptionsViewPagesBuilder.h"
-#include "shared/accessibility/AccessibilityUtils.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
 
 namespace lila::modules::options::presentation
 {

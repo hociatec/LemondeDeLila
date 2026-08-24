@@ -1,28 +1,18 @@
 #pragma once
 
 #include <functional>
-#include <cstddef>
 #include <memory>
-#include <vector>
 
-#include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NonFocusablePanel.h"
-#include "modules/options/domain/OptionsState.h"
-#include "modules/options/presentation/OptionsNavigationState.h"
+#include <wx/string.h>
 
-class wxCheckBox;
-class wxSlider;
-class wxStaticText;
+#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
+
 class wxWindow;
 
 namespace lila::modules::options::application
 {
 class OptionsStore;
-}
-
-namespace lila::shared::ui::controls
-{
-class VerticalMenu;
 }
 
 namespace lila::modules::options::presentation
@@ -45,13 +35,7 @@ public:
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:
-    void ActivateSection(std::size_t index);
     void BindEvents();
-    void LoadState();
-    void ApplyState(
-        const domain::OptionsState& state,
-        bool persist,
-        const wxString& successMessage = wxEmptyString);
     void SaveState();
     void CancelChanges();
     void RefreshUnsavedState();
@@ -59,7 +43,6 @@ private:
     void UpdateStatus(const wxString& message, bool isError = false);
 
     CloseRequestedHandler onCloseRequested_;
-    OptionsNavigationState navigationState_;
     std::unique_ptr<OptionsEditorController> editorController_;
     std::unique_ptr<OptionsFocusController> focusController_;
     std::unique_ptr<OptionsSectionCoordinator> sectionCoordinator_;

@@ -36,7 +36,7 @@ find_package(wxWidgets CONFIG REQUIRED COMPONENTS core base)
 find_package(nlohmann_json CONFIG REQUIRED)
 
 configure_file(
-    src/shared/config/AppBuildInfo.h.in
+    src/shared/config/generated/AppBuildInfo.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/generated/AppBuildInfo.h
     @ONLY
 )
@@ -59,15 +59,8 @@ if(WIN32)
 endif()
 
 set(
-    LILA_BACKEND_WS_EVENTS_FILE
-    "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/common/ws/ws-events.ts"
-    CACHE FILEPATH
-    "Source canonique des événements WebSocket du backend"
-)
-
-set(
-    LILA_PROTOCOL_FIELDS_SCRIPT
-    "${CMAKE_CURRENT_SOURCE_DIR}/scripts/GenerateProtocolFields.ps1"
+    LILA_PROTOCOL_CONTRACTS_SCRIPT
+    "${CMAKE_CURRENT_SOURCE_DIR}/scripts/GenerateProtocolContracts.ps1"
 )
 
 set(
@@ -78,7 +71,13 @@ set(
 )
 
 set(
+    LILA_BACKEND_WS_EVENTS_FILE
+    "${LILA_BACKEND_ROOT}/src/realtime/infrastructure/presentation/ws/ws-events.ts"
+)
+
+set(
     LILA_GENERATED_PROTOCOL_HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol/WsMessageTypes.generated.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol/UserAuthFields.generated.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol/SocialProtocolFields.generated.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol/ChatProtocolFields.generated.h"
@@ -87,57 +86,61 @@ set(
 
 set(
     LILA_PROTOCOL_GENERATION_DEPENDENCIES
-    "${LILA_BACKEND_ROOT}/src/user/ws/auth-ws.handler.ts"
-    "${LILA_BACKEND_ROOT}/src/user/services/user.auth.service.ts"
-    "${LILA_BACKEND_ROOT}/src/social/services/social-profile.service.ts"
-    "${LILA_BACKEND_ROOT}/src/social/services/social-relationship.service.ts"
-    "${LILA_BACKEND_ROOT}/src/presence/services/presence-chat.service.ts"
-    "${LILA_BACKEND_ROOT}/src/chat/services/chat.service.ts"
-    "${LILA_BACKEND_ROOT}/src/messaging/services/messaging.service.ts"
-    "${LILA_BACKEND_ROOT}/src/messaging/ws/ws.dto.ts"
-    "${LILA_BACKEND_ROOT}/src/messaging/ws/messaging-ws.handler.ts"
+    "${LILA_BACKEND_WS_EVENTS_FILE}"
+    "${LILA_BACKEND_ROOT}/contracts/client-wx-fields.json"
 )
 
-set(LILA_CAN_GENERATE_PROTOCOL_FIELDS ON)
-foreach(protocol_dependency IN LISTS LILA_PROTOCOL_GENERATION_DEPENDENCIES)
-    if(NOT EXISTS "${protocol_dependency}")
-        set(LILA_CAN_GENERATE_PROTOCOL_FIELDS OFF)
-        break()
+if(EXISTS "${LILA_BACKEND_ROOT}")
+    foreach(protocol_dependency IN LISTS LILA_PROTOCOL_GENERATION_DEPENDENCIES)
+        if(NOT EXISTS "${protocol_dependency}")
+            message(FATAL_ERROR "Contrat backend requis absent: ${protocol_dependency}")
+        endif()
+    endforeach()
+    if(NOT EXISTS "${LILA_PROTOCOL_CONTRACTS_SCRIPT}")
+        message(FATAL_ERROR "Generateur de contrats absent: ${LILA_PROTOCOL_CONTRACTS_SCRIPT}")
     endif()
-endforeach()
 
-if(LILA_CAN_GENERATE_PROTOCOL_FIELDS)
     add_custom_command(
         OUTPUT ${LILA_GENERATED_PROTOCOL_HEADERS}
         COMMAND powershell
             -ExecutionPolicy Bypass
-            -File "${LILA_PROTOCOL_FIELDS_SCRIPT}"
+            -File "${LILA_PROTOCOL_CONTRACTS_SCRIPT}"
             -BackendRoot "${LILA_BACKEND_ROOT}"
             -OutputRoot "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol"
         DEPENDS
-            "${LILA_PROTOCOL_FIELDS_SCRIPT}"
+            "${LILA_PROTOCOL_CONTRACTS_SCRIPT}"
             ${LILA_PROTOCOL_GENERATION_DEPENDENCIES}
         VERBATIM
     )
 
-    add_custom_target(generate_protocol_fields DEPENDS ${LILA_GENERATED_PROTOCOL_HEADERS})
-    message(STATUS "Backend local detecte : regeneration des contrats protocole activee.")
+    add_custom_target(generate_protocol_contracts DEPENDS ${LILA_GENERATED_PROTOCOL_HEADERS})
+    message(STATUS "Backend local detecte : generation stricte des contrats protocole activee.")
 else()
-    add_custom_target(generate_protocol_fields)
+    add_custom_target(generate_protocol_contracts)
     message(STATUS "Backend local introuvable : utilisation des contrats protocole versionnes dans le client.")
 endif()
 
 add_executable(lemonde_de_lila_wx WIN32
-    src/app/main.cpp
-    src/app/Application.cpp
-    src/app/navigation/AppNavigator.cpp
-    src/app/navigation/HostFrame.cpp
-    src/bootstrap/AppBootstrap.cpp
-    src/bootstrap/AppCompositions.Network.cpp
-    src/bootstrap/AppCompositions.User.cpp
-    src/bootstrap/AppCompositions.Game.cpp
-    src/bootstrap/AppCompositions.Social.cpp
-    src/bootstrap/AppRuntime.cpp
+    src/app/entrypoint/main.cpp
+    src/app/lifecycle/infrastructure/StartupGuard.cpp
+    src/app/lifecycle/presentation/Application.cpp
+    src/app/navigation/presentation/AppNavigator.cpp
+    src/app/navigation/presentation/AppNavigator.GameViews.cpp
+    src/app/navigation/presentation/AppNavigator.Games.cpp
+    src/app/navigation/presentation/AppNavigator.Session.cpp
+    src/app/navigation/presentation/AppNavigator.Social.cpp
+    src/app/navigation/presentation/AppNavigator.SocialViews.cpp
+    src/app/navigation/presentation/AppNavigator.Transitions.cpp
+    src/app/navigation/presentation/AppNavigator.ViewFactory.cpp
+    src/app/navigation/presentation/HostFrame.cpp
+    src/bootstrap/composition/infrastructure/audio/AudioComposition.cpp
+    src/bootstrap/composition/infrastructure/game/GameComposition.cpp
+    src/bootstrap/composition/infrastructure/network/NetworkComposition.cpp
+    src/bootstrap/composition/infrastructure/social/SocialComposition.cpp
+    src/bootstrap/composition/infrastructure/support/AuthenticatedServiceFactory.cpp
+    src/bootstrap/composition/infrastructure/user/UserComposition.cpp
+    src/bootstrap/lifecycle/application/AppBootstrap.cpp
+    src/bootstrap/runtime/application/AppRuntime.cpp
 
     src/modules/about/presentation/AboutFrame.cpp
     src/modules/about/presentation/AboutFrame.Events.cpp
@@ -325,6 +328,7 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/user/infrastructure/remote/JwtLoginClaimsParser.cpp
     src/modules/user/infrastructure/remote/UserAuthRemoteDataSource.cpp
     src/modules/user/infrastructure/WsAuthenticationService.cpp
+    src/modules/user/infrastructure/WsSessionRefresher.cpp
 
     src/modules/main_menu/presentation/MainMenuFrame.cpp
     src/modules/main_menu/presentation/MainMenuContent.cpp
@@ -335,42 +339,59 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/session/application/SessionStore.cpp
     src/modules/session/infrastructure/FileSessionRepository.cpp
 
-    src/shared/accessibility/ActionButton.cpp
-    src/shared/accessibility/AccessibilityUtils.cpp
-    src/shared/accessibility/FocusCoordinator.cpp
-    src/shared/accessibility/FocusMemory.cpp
-    src/shared/accessibility/FocusManager.cpp
-    src/shared/accessibility/FocusTransition.cpp
-    src/shared/accessibility/NavigationController.cpp
+    src/shared/accessibility/presentation/ActionButton.cpp
+    src/shared/accessibility/presentation/AccessibilityUtils.cpp
+    src/shared/accessibility/presentation/AccessibleListBox.cpp
+    src/shared/accessibility/presentation/AccessibleListBox.Actions.cpp
+    src/shared/accessibility/application/FocusCoordinator.cpp
+    src/shared/accessibility/application/FocusMemory.cpp
+    src/shared/accessibility/application/FocusManager.cpp
+    src/shared/accessibility/application/FocusTransition.cpp
+    src/shared/accessibility/application/NavigationController.cpp
+    src/shared/accessibility/application/NavigationScope.cpp
+    src/shared/accessibility/application/NavigationBindings.cpp
 
-    src/shared/audio/AudioService.cpp
-    src/shared/audio/SoundCatalog.cpp
+    src/modules/audio/application/AudioService.cpp
+    src/modules/audio/application/SoundVolumeResolver.cpp
+    src/modules/audio/domain/SoundCatalog.cpp
+    src/modules/audio/infrastructure/AsyncAudioBackend.cpp
+    src/modules/audio/infrastructure/BassAudioBackend.cpp
+    src/modules/audio/infrastructure/BassSampleCache.cpp
+    src/modules/audio/infrastructure/BassStreamCache.cpp
+    src/modules/audio/infrastructure/LocalSoundManifest.cpp
+    src/modules/audio/infrastructure/OptionsAudioSettingsProvider.cpp
+    src/modules/audio/infrastructure/SoundAssetPath.cpp
+    src/modules/audio/presentation/SoundOptionsCatalog.cpp
 
-    src/shared/config/AppConfig.cpp
-    src/shared/config/AppDataPaths.cpp
+    src/shared/config/domain/AppConfig.cpp
+    src/shared/config/infrastructure/AppDataPaths.cpp
 
-    src/shared/network/realtime/AuthenticatedRealtimeApiClient.cpp
-    src/shared/network/realtime/RealtimeApiClient.cpp
-    src/shared/network/realtime/RealtimeProtocol.cpp
-    src/shared/network/http/WsTicketProvider.cpp
-    src/shared/network/http/WsTicketTransport.cpp
-    src/shared/network/websocket/WinHttpWebSocketClient.cpp
-    src/shared/network/websocket/WinHttpWebSocketInternals.cpp
+    src/shared/network/application/realtime/AuthenticatedRealtimeApiClient.cpp
+    src/shared/network/application/realtime/RealtimeApiClient.cpp
+    src/shared/network/application/realtime/RealtimeProtocol.cpp
+    src/shared/network/infrastructure/http/WsTicketProvider.cpp
+    src/shared/network/infrastructure/http/WsTicketTransport.cpp
+    src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.cpp
+    src/shared/network/infrastructure/websocket/WinHttpWebSocketRequest.cpp
+    src/shared/network/infrastructure/websocket/WinHttpWebSocketInternals.cpp
 
-    src/shared/persistence/JsonFileStorage.cpp
-    src/shared/concurrency/BackgroundExecutor.cpp
-    src/shared/text/Encoding.cpp
-    src/shared/text/UiTextCatalog.cpp
-    src/shared/ui/controls/VerticalMenu.cpp
-    src/shared/ui/controls/VerticalMenu.Entries.cpp
-    src/shared/ui/controls/VerticalMenuEntry.cpp
-    src/shared/security/SecurityUtils.cpp
-    src/shared/security/JwtPayload.cpp
-    src/shared/logging/Logger.cpp
-    src/shared/ui/Theme.cpp
+    src/shared/persistence/infrastructure/JsonFileStorage.cpp
+    src/shared/concurrency/application/BackgroundExecutor.cpp
+    src/shared/concurrency/application/BackgroundTasks.cpp
+    src/shared/text/presentation/encoding/Encoding.cpp
+    src/shared/text/presentation/catalog/UiTextCatalog.cpp
+    src/shared/ui/presentation/controls/VerticalMenu.cpp
+    src/shared/ui/presentation/controls/VerticalMenu.Layout.cpp
+    src/shared/ui/presentation/controls/VerticalMenu.Events.cpp
+    src/shared/ui/presentation/controls/VerticalMenu.Entries.cpp
+    src/shared/ui/presentation/controls/VerticalMenuEntry.cpp
+    src/shared/security/infrastructure/SecurityUtils.cpp
+    src/shared/security/domain/JwtPayload.cpp
+    src/shared/logging/infrastructure/Logger.cpp
+    src/shared/ui/presentation/theme/Theme.cpp
 )
 
-add_dependencies(lemonde_de_lila_wx generate_protocol_fields)
+add_dependencies(lemonde_de_lila_wx generate_protocol_contracts)
 
 target_include_directories(lemonde_de_lila_wx PRIVATE
     src
@@ -465,28 +486,33 @@ if(BUILD_TESTING)
             src/modules/options/infrastructure/OptionsJsonSchemaMigrator.cpp
             src/modules/options/infrastructure/OptionsStateJsonMapper.cpp
             src/modules/session/application/SessionStore.cpp
-            src/shared/concurrency/BackgroundExecutor.cpp
-            src/shared/accessibility/ActionButton.cpp
-            src/shared/accessibility/NavigationController.cpp
-            src/shared/audio/AudioService.cpp
-            src/shared/audio/SoundCatalog.cpp
-            src/shared/config/AppConfig.cpp
-            src/shared/config/AppDataPaths.cpp
-            src/shared/network/http/WsTicketProvider.cpp
-            src/shared/network/http/WsTicketTransport.cpp
-            src/shared/network/realtime/RealtimeProtocol.cpp
-            src/shared/security/SecurityUtils.cpp
-            src/shared/security/JwtPayload.cpp
-            src/shared/text/Encoding.cpp
-            src/shared/text/UiTextCatalog.cpp
-            src/shared/logging/Logger.cpp
-            src/shared/persistence/JsonFileStorage.cpp
+            src/shared/concurrency/application/BackgroundExecutor.cpp
+            src/shared/concurrency/application/BackgroundTasks.cpp
+            src/shared/accessibility/presentation/ActionButton.cpp
+            src/shared/accessibility/application/NavigationController.cpp
+            src/shared/accessibility/application/NavigationScope.cpp
+            src/shared/accessibility/application/NavigationBindings.cpp
+            src/modules/audio/domain/SoundCatalog.cpp
+            src/modules/audio/application/AudioService.cpp
+            src/modules/audio/application/SoundVolumeResolver.cpp
+            src/modules/audio/infrastructure/LocalSoundManifest.cpp
+            src/modules/audio/presentation/SoundOptionsCatalog.cpp
+            src/shared/config/domain/AppConfig.cpp
+            src/shared/config/infrastructure/AppDataPaths.cpp
+            src/shared/network/infrastructure/http/WsTicketProvider.cpp
+            src/shared/network/infrastructure/http/WsTicketTransport.cpp
+            src/shared/network/application/realtime/RealtimeProtocol.cpp
+            src/shared/security/infrastructure/SecurityUtils.cpp
+            src/shared/security/domain/JwtPayload.cpp
+            src/shared/text/presentation/encoding/Encoding.cpp
+            src/shared/text/presentation/catalog/UiTextCatalog.cpp
+            src/shared/logging/infrastructure/Logger.cpp
+            src/shared/persistence/infrastructure/JsonFileStorage.cpp
         )
 
         target_include_directories(lemonde_de_lila_wx_tests PRIVATE
             src
             ${CMAKE_CURRENT_BINARY_DIR}/generated
-            $<$<BOOL:${WIN32}>:${LILA_BASS_ROOT}/include>
         )
 
         target_link_libraries(lemonde_de_lila_wx_tests PRIVATE
@@ -499,7 +525,6 @@ if(BUILD_TESTING)
         if(WIN32)
             target_link_libraries(lemonde_de_lila_wx_tests PRIVATE
                 winhttp
-                "${LILA_BASS_ROOT}/lib/x64/bass.lib"
             )
         endif()
 
@@ -542,11 +567,11 @@ if(BUILD_TESTING)
             tests/ParserFuzzHarness.cpp
             src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
             src/modules/chat/infrastructure/ChatProtocol.cpp
-            src/shared/config/AppConfig.cpp
-            src/shared/network/realtime/RealtimeProtocol.cpp
-            src/shared/text/Encoding.cpp
-            src/shared/text/UiTextCatalog.cpp
-            src/shared/logging/Logger.cpp
+            src/shared/config/domain/AppConfig.cpp
+            src/shared/network/application/realtime/RealtimeProtocol.cpp
+            src/shared/text/presentation/encoding/Encoding.cpp
+            src/shared/text/presentation/catalog/UiTextCatalog.cpp
+            src/shared/logging/infrastructure/Logger.cpp
         )
 
         target_include_directories(lemonde_de_lila_wx_parser_fuzz PRIVATE

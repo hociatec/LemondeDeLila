@@ -1,8 +1,9 @@
 #include "modules/options/application/OptionsStore.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/Encoding.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 #include <stdexcept>
+#include <mutex>
 #include <utility>
 
 namespace lila::modules::options::application
@@ -18,27 +19,51 @@ OptionsStore::OptionsStore(std::unique_ptr<domain::IOptionsRepository> repositor
 
 void OptionsStore::Load()
 {
-    current_ = repository_->Load();
-    lila::shared::text::SetBrokenAccentRepairEnabled(current_.repairBrokenAccents);
+    auto loaded = repository_->Load();
+    loaded.Normalize();
+    const bool repairBrokenAccents = loaded.repairBrokenAccents;
+    {
+        std::unique_lock lock(mutex_);
+        current_ = std::move(loaded);
+        revision_.fetch_add(1, std::memory_order_release);
+    }
+    lila::shared::text::SetBrokenAccentRepairEnabled(repairBrokenAccents);
 }
 
-const domain::OptionsState& OptionsStore::Current() const
+domain::OptionsState OptionsStore::Current() const
 {
+    std::shared_lock lock(mutex_);
     return current_;
+}
+
+std::uint64_t OptionsStore::Revision() const noexcept
+{
+    return revision_.load(std::memory_order_acquire);
 }
 
 void OptionsStore::Apply(const domain::OptionsState& state)
 {
-    current_ = state;
-    current_.Normalize();
-    lila::shared::text::SetBrokenAccentRepairEnabled(current_.repairBrokenAccents);
+    auto normalized = state;
+    normalized.Normalize();
+    const bool repairBrokenAccents = normalized.repairBrokenAccents;
+    {
+        std::unique_lock lock(mutex_);
+        current_ = std::move(normalized);
+        revision_.fetch_add(1, std::memory_order_release);
+    }
+    lila::shared::text::SetBrokenAccentRepairEnabled(repairBrokenAccents);
 }
 
 void OptionsStore::Update(domain::OptionsState state)
 {
     state.Normalize();
     repository_->Save(state);
-    current_ = state;
-    lila::shared::text::SetBrokenAccentRepairEnabled(current_.repairBrokenAccents);
+    const bool repairBrokenAccents = state.repairBrokenAccents;
+    {
+        std::unique_lock lock(mutex_);
+        current_ = std::move(state);
+        revision_.fetch_add(1, std::memory_order_release);
+    }
+    lila::shared::text::SetBrokenAccentRepairEnabled(repairBrokenAccents);
 }
 }

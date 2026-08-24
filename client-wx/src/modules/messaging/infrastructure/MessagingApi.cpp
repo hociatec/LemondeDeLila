@@ -6,10 +6,10 @@
 
 #include "modules/messaging/infrastructure/MessagingProtocolFields.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/network/WsMessageTypes.h"
-#include "shared/network/realtime/AuthenticatedRealtimeApiClient.h"
-#include "shared/network/realtime/AuthenticatedRealtimeApiHelpers.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/network/domain/WsMessageTypes.h"
+#include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
+#include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 
 namespace lila::modules::messaging::infrastructure
 {

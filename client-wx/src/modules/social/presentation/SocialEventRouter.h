@@ -8,7 +8,6 @@ class wxWindow;
 namespace lila::modules::social::presentation
 {
 class SocialNavigationState;
-class SocialView;
 
 class SocialEventRouter final
 {
@@ -25,7 +24,6 @@ public:
 
     static void BindRootEvents(
         wxWindow& owner,
-        SocialView& view,
         SocialNavigationState& navigationState,
         Handlers handlers);
 };

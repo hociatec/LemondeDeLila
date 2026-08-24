@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/messaging/presentation/MessagingPresentationModel.h"
 
 #include <ctime>
@@ -6,9 +6,9 @@
 
 #include <wx/datetime.h>
 
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/CountStatusText.h"
-#include "shared/text/UiTexts.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/status/CountStatusText.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
 
 namespace lila::modules::messaging::presentation
 {

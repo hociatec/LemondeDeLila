@@ -19,10 +19,15 @@ export class UserWsRegistrar implements OnModuleInit {
     this.registry.register(WS_EVENTS.auth.login, (_, payload) =>
       this.auth.login(payload),
     );
+    this.registry.register(WS_EVENTS.auth.refresh, (_, payload) =>
+      this.auth.refresh(payload),
+    );
+    this.registry.register(WS_EVENTS.auth.logout, (_, payload) =>
+      this.auth.logout(payload),
+    );
     this.registry.register(WS_EVENTS.users.list, () => this.users.list());
     this.registry.register(WS_EVENTS.users.get, (_, payload) =>
       this.users.get(payload),
     );
   }
 }
-

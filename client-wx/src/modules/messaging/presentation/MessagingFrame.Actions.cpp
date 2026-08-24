@@ -1,6 +1,6 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/messaging/presentation/MessagingFrame.h"
-#include "shared/accessibility/FocusCoordinator.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
 #include "modules/messaging/presentation/MessagingActionController.h"
 #include "modules/messaging/presentation/MessagingComposeController.h"
 #include "modules/messaging/presentation/MessagingFocusController.h"
@@ -11,8 +11,8 @@
 #include <wx/msgdlg.h>
 #include <wx/textctrl.h>
 
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/UiTexts.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
 
 namespace lila::modules::messaging::presentation
 {

@@ -1,4 +1,4 @@
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/encoding/Encoding.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals_core.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime.h
@@ -144,8 +144,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingView.h
 C:/vcpkg/installed/x64-windows/include/wx/listbox.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -621,9 +621,9 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/button.h
 C:/vcpkg/installed/x64-windows/include/wx/sizer.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibilityUtils.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/presentation/AccessibilityUtils.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Common.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Chat.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Messaging.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Social.h

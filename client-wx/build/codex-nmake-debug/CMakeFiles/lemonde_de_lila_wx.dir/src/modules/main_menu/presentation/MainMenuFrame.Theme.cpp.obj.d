@@ -95,8 +95,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_sanitizer_annotate_container.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusPlanView.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusManager.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusPlanView.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusManager.h
 C:/vcpkg/installed/x64-windows/include/wx/window.h
 C:/vcpkg/installed/x64-windows/include/wx/event.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -498,10 +498,10 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/ole/access.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/window.h
 C:/vcpkg/installed/x64-windows/include/wx/settings.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/NavigationController.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NonFocusablePanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/presentation/NonFocusablePanel.h
 C:/vcpkg/installed/x64-windows/include/wx/panel.h
 C:/vcpkg/installed/x64-windows/include/wx/containr.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -514,8 +514,8 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/control.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/stattext.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/Theme.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/theme/Theme.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/controls/VerticalMenu.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio

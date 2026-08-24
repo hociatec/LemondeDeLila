@@ -1,6 +1,6 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/chat/presentation/ChatFrame.h"
-#include "shared/accessibility/FocusCoordinator.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
 #include "modules/chat/presentation/ChatErrorResolver.h"
 #include "modules/chat/presentation/ChatFocusController.h"
 
@@ -8,10 +8,10 @@
 #include <wx/textctrl.h>
 
 #include "modules/chat/application/ChatService.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/StringUtils.h"
-#include "shared/text/UiTexts.h"
-#include "shared/ui/BackgroundTask.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/domain/StringUtils.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
+#include "shared/ui/application/BackgroundTask.h"
 
 namespace lila::modules::chat::presentation
 {

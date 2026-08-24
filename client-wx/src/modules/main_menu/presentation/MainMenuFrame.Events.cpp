@@ -5,8 +5,8 @@
 
 #include "modules/main_menu/presentation/MainMenuContent.h"
 #include "modules/options/application/OptionsStore.h"
-#include "shared/ui/controls/VerticalMenu.h"
-#include "shared/ui/navigation/MenuBlueprint.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "shared/ui/presentation/navigation/MenuBlueprint.h"
 
 namespace lila::modules::main_menu::presentation
 {

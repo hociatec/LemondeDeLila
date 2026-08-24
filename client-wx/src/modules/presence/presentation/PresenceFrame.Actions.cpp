@@ -11,8 +11,8 @@
 
 #include "modules/presence/presentation/PresenceActionController.h"
 #include "modules/social/domain/SocialProfile.h"
-#include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/text/Encoding.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::presence::presentation
 {

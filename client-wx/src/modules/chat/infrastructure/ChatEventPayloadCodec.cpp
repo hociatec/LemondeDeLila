@@ -1,12 +1,12 @@
 #include "modules/chat/infrastructure/ChatEventPayloadCodec.h"
 
 #include "modules/chat/infrastructure/ChatProtocolFields.h"
-#include "shared/data/DateTime.h"
-#include "shared/data/JsonReaders.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/logging/Logger.h"
-#include "shared/network/WsMessageTypes.h"
-#include "shared/network/realtime/RealtimeProtocolFields.h"
+#include "shared/data/time/DateTime.h"
+#include "shared/data/json/JsonReaders.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/logging/application/Logger.h"
+#include "shared/network/domain/WsMessageTypes.h"
+#include "shared/network/application/realtime/RealtimeProtocolFields.h"
 
 #include <optional>
 #include <stdexcept>

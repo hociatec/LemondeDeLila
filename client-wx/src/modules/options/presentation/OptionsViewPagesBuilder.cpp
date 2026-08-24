@@ -1,19 +1,19 @@
 #include "modules/options/presentation/OptionsViewPagesBuilder.h"
 
-#include <array>
 #include <wx/button.h>
 #include <wx/checkbox.h>
+#include <wx/choice.h>
 #include <wx/font.h>
 #include <wx/scrolwin.h>
 #include <wx/sizer.h>
 #include <wx/slider.h>
-#include <wx/statbox.h>
 #include <wx/statline.h>
 #include <wx/stattext.h>
 
 #include "modules/options/presentation/OptionsView.h"
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/audio/SoundCatalog.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "modules/audio/domain/SoundCatalog.h"
+#include "modules/audio/presentation/SoundOptionsCatalog.h"
 
 namespace lila::modules::options::presentation
 {
@@ -92,6 +92,11 @@ void OptionsViewPagesBuilder::BuildSoundsPage(OptionsView& view, wxWindow* paren
     view.soundSelectCheckbox = new wxCheckBox(parent, wxID_ANY, wxString(L"Sons de sélection (invitations / tables)"));
     view.soundChatMessagesCheckbox = new wxCheckBox(parent, wxID_ANY, wxString(L"Sons des messages (tchat et privés)"));
 
+    view.soundTableAmbienceCheckbox = new wxCheckBox(
+        parent,
+        wxID_ANY,
+        wxString(L"Ambiances sonores des tables"));
+
     sizer->Add(view.muteAllCheckbox, 0, wxBOTTOM, 10);
     sizer->Add(new wxStaticLine(parent), 0, wxEXPAND | wxBOTTOM, 9);
     sizer->Add(view.soundAmbienceCheckbox, 0);
@@ -107,6 +112,14 @@ void OptionsViewPagesBuilder::BuildSoundsPage(OptionsView& view, wxWindow* paren
     AddVolumeControl(parent, sizer, view.soundSelectValueLabel, view.soundSelectSlider, wxString(L"Volume sélection"), 50);
     sizer->Add(view.soundChatMessagesCheckbox, 0);
     AddVolumeControl(parent, sizer, view.soundChatMessagesValueLabel, view.soundChatMessagesSlider, wxString(L"Volume messages"), 50);
+    sizer->Add(view.soundTableAmbienceCheckbox, 0);
+    AddVolumeControl(
+        parent,
+        sizer,
+        view.soundTableAmbienceValueLabel,
+        view.soundTableAmbienceSlider,
+        wxString(L"Volume ambiances de table"),
+        15);
 
     auto* detailTitle = new wxStaticText(parent, wxID_ANY, wxString(L"Réglages détaillés par son"));
     wxFont detailFont = detailTitle->GetFont();
@@ -121,45 +134,42 @@ void OptionsViewPagesBuilder::BuildSoundsPage(OptionsView& view, wxWindow* paren
         wxBOTTOM,
         12);
 
-    static constexpr std::array groupOrder{
-        L"Connexion et système",
-        L"Ambiances",
-        L"Interface",
-        L"Tchat et messages",
-        L"Amis et invitations",
-        L"Administration",
-        L"Partie",
-        L"Jeux",
-        L"Pions et murs",
-        L"Ambiances de table",
-    };
-    for (const wchar_t* groupName : groupOrder)
+    view.detailedSoundChoice = new wxChoice(parent, wxID_ANY);
+    view.detailedSoundKeys.clear();
+    for (const auto& option : lila::modules::audio::presentation::GetSoundOptions())
     {
-        const wxString group(groupName);
-        auto* groupSizer = new wxStaticBoxSizer(wxVERTICAL, parent, group);
-        sizer->Add(groupSizer, 0, wxEXPAND | wxBOTTOM, 12);
-        for (const auto& descriptor : lila::shared::audio::GetSoundCatalog())
+        const auto* descriptor = lila::modules::audio::domain::FindSoundDescriptor(option.cue);
+        if (descriptor == nullptr)
         {
-            if (descriptor.groupLabel != std::wstring_view(groupName))
-            {
-                continue;
-            }
-
-            OptionsView::AudioCueControl control;
-            control.key = descriptor.key;
-            const wxString label(descriptor.label.data(), descriptor.label.size());
-            control.enabledCheckbox = new wxCheckBox(parent, wxID_ANY, label);
-            control.volumeLabel = new wxStaticText(parent, wxID_ANY, wxString(L"Volume individuel : 100%"));
-            control.volumeSlider = new wxSlider(parent, wxID_ANY, 100, 0, 100);
-            groupSizer->Add(control.enabledCheckbox, 0, wxLEFT | wxRIGHT | wxTOP, 8);
-            groupSizer->Add(control.volumeLabel, 0, wxLEFT | wxRIGHT | wxTOP, 8);
-            groupSizer->Add(control.volumeSlider, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
-            lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-                *control.volumeSlider,
-                wxString::Format(wxString(L"Volume individuel, %s"), label));
-            view.audioCueControls.push_back(std::move(control));
+            continue;
         }
+        const auto groupText = lila::modules::audio::presentation::GetSoundFamilyLabel(descriptor->family);
+        const wxString group(groupText.data(), groupText.size());
+        const wxString label(option.label.data(), option.label.size());
+        view.detailedSoundChoice->Append(wxString::Format(wxString(L"%s — %s"), group, label));
+        view.detailedSoundKeys.emplace_back(descriptor->key);
     }
+    view.detailedSoundChoice->SetSelection(0);
+    view.detailedSoundEnabledCheckbox = new wxCheckBox(
+        parent,
+        wxID_ANY,
+        wxString(L"Activer ce son"));
+    view.detailedSoundVolumeLabel = new wxStaticText(
+        parent,
+        wxID_ANY,
+        wxString(L"Volume individuel : 100%"));
+    view.detailedSoundVolumeSlider = new wxSlider(parent, wxID_ANY, 100, 0, 100);
+    sizer->Add(new wxStaticText(parent, wxID_ANY, wxString(L"Type de son")), 0, wxBOTTOM, 4);
+    sizer->Add(view.detailedSoundChoice, 0, wxEXPAND | wxBOTTOM, 8);
+    sizer->Add(view.detailedSoundEnabledCheckbox, 0, wxBOTTOM, 4);
+    sizer->Add(view.detailedSoundVolumeLabel, 0, wxBOTTOM, 4);
+    sizer->Add(view.detailedSoundVolumeSlider, 0, wxEXPAND | wxBOTTOM, 8);
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *view.detailedSoundChoice,
+        wxString(L"Type de son à configurer"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *view.detailedSoundVolumeSlider,
+        wxString(L"Volume individuel du son sélectionné"));
 
     AddSaveButton(parent, sizer, view.soundsSaveButton);
     FinishScrollablePage(parent, sizer);
@@ -170,6 +180,9 @@ void OptionsViewPagesBuilder::BuildSoundsPage(OptionsView& view, wxWindow* paren
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundNavigateSlider, wxString(L"Volume navigation"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundSelectSlider, wxString(L"Volume sélection"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*view.soundChatMessagesSlider, wxString(L"Volume messages"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *view.soundTableAmbienceSlider,
+        wxString(L"Volume ambiances de table"));
 }
 
 void OptionsViewPagesBuilder::BuildChatPage(OptionsView& view, wxWindow* parent)

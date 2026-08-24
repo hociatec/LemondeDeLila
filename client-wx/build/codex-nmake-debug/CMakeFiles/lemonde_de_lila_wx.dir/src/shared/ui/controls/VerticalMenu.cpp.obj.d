@@ -157,8 +157,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
-C:/vcpkg/installed/x64-windows/include/wx/panel.h
-C:/vcpkg/installed/x64-windows/include/wx/window.h
 C:/vcpkg/installed/x64-windows/include/wx/event.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/platform.h
@@ -501,6 +499,8 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/shared/qos.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/meta/convertible.h
 C:/vcpkg/installed/x64-windows/include/wx/meta/removeref.h
+C:/vcpkg/installed/x64-windows/include/wx/panel.h
+C:/vcpkg/installed/x64-windows/include/wx/window.h
 C:/vcpkg/installed/x64-windows/include/wx/font.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -582,5 +582,3 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibleMenu.h
 C:/vcpkg/installed/x64-windows/include/wx/weakref.h
 C:/vcpkg/installed/x64-windows/include/wx/meta/int2type.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/Logger.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/AudioService.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/SoundCatalog.h

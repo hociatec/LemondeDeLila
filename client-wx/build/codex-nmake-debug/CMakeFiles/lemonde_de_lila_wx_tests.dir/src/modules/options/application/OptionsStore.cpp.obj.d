@@ -93,12 +93,29 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/shared_mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_sanitizer_annotate_container.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
@@ -110,12 +127,12 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsRepository.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/CoreErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/presentation/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/NetworkErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/encoding/Encoding.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/vcpkg/installed/x64-windows/include/wx/string.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -167,6 +184,5 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xhash
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def

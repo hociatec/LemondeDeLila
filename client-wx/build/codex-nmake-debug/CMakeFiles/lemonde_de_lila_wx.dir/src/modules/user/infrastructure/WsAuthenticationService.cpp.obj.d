@@ -92,20 +92,20 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/tuple
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Common.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Chat.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Messaging.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Social.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/LoginCredentials.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/RegisterRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/domain/RegistrationResult.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/infrastructure/remote/JwtLoginClaimsParser.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/infrastructure/remote/UserAuthRemoteDataSource.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/realtime/RealtimeApiClient.h
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
@@ -242,9 +242,9 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/websocket/IWebSocketClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/CoreErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/presentation/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/NetworkErrorMessages.h

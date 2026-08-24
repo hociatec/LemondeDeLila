@@ -107,7 +107,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingMess
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/memory
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic_wait.h
@@ -122,15 +122,15 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/application/IMessagi
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/infrastructure/MessagingProtocolFields.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/MessagingProtocolFields.generated.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Common.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Chat.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/CoreErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/presentation/ErrorFormatting.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ModuleErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/NetworkErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Common.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Chat.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Messaging.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTexts.Social.h

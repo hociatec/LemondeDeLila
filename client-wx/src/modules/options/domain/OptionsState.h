@@ -15,6 +15,8 @@ struct SoundCueOptions final
     [[nodiscard]] bool operator==(const SoundCueOptions&) const = default;
 };
 
+using SoundCueOptionsMap = std::map<std::string, SoundCueOptions, std::less<>>;
+
 struct AudioOptions
 {
     bool muteAll = false;
@@ -34,7 +36,7 @@ struct AudioOptions
     int soundSelectVolume = 50;
     int soundChatMessagesVolume = 50;
     int soundTableAmbienceVolume = 15;
-    std::map<std::string, SoundCueOptions, std::less<>> cues;
+    SoundCueOptionsMap cues;
 
     [[nodiscard]] bool operator==(const AudioOptions&) const = default;
 };

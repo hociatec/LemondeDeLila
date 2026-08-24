@@ -168,4 +168,4 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ostream.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ios
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sstream
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/application/IRoomSessionGateway.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/Logger.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/application/Logger.h

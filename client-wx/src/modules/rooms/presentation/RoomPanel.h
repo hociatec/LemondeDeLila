@@ -10,9 +10,9 @@
 
 #include "modules/rooms/domain/Room.h"
 #include "modules/rooms/presentation/RoomOpenRequest.h"
-#include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NonFocusablePanel.h"
-#include "shared/concurrency/AsyncRequestSlot.h"
+#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
+#include "shared/concurrency/application/AsyncRequestSlot.h"
 
 class wxStaticText;
 class wxTextCtrl;
@@ -20,6 +20,7 @@ class wxWindow;
 class wxKeyEvent;
 namespace lila::shared::accessibility { class ActionButton; }
 namespace lila::modules::rooms::application { class RoomSessionService; }
+namespace lila::modules::audio::application { class IAudioService; }
 
 namespace lila::modules::rooms::presentation
 {
@@ -30,12 +31,15 @@ class RoomPanel final : public lila::shared::accessibility::NonFocusablePanel,
 public:
     using PreparedHandler = std::function<void()>;
     using CloseRequestedHandler = std::function<void()>;
+    using CurrentUserIdProvider = std::function<int()>;
     using SaveRequestedHandler = std::function<std::string(int, std::stop_token)>;
     using AbandonRequestedHandler = std::function<void(int, std::stop_token)>;
 
     RoomPanel(
         wxWindow* parent,
         application::RoomSessionService& roomService,
+        lila::modules::audio::application::IAudioService& audioService,
+        CurrentUserIdProvider currentUserId,
         SaveRequestedHandler onSaveRequested,
         AbandonRequestedHandler onAbandonRequested,
         CloseRequestedHandler onCloseRequested);
@@ -84,6 +88,8 @@ private:
     void ApplyInitialFocusIfNeeded();
 
     application::RoomSessionService& roomService_;
+    lila::modules::audio::application::IAudioService& audioService_;
+    CurrentUserIdProvider currentUserId_;
     SaveRequestedHandler onSaveRequested_;
     AbandonRequestedHandler onAbandonRequested_;
     CloseRequestedHandler onCloseRequested_;

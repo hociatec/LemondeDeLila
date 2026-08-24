@@ -2,8 +2,8 @@
 #include <string>
 
 #include "modules/chat/infrastructure/ChatProtocol.h"
-#include "shared/network/realtime/RealtimeProtocol.h"
-#include "shared/text/Encoding.h"
+#include "shared/network/application/realtime/RealtimeProtocol.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 int main()
 {

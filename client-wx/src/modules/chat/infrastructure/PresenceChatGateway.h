@@ -6,7 +6,7 @@
 
 namespace lila::shared::network::http
 {
-class WsTicketProvider;
+class IWsTicketProvider;
 }
 
 namespace lila::shared::network::websocket
@@ -22,7 +22,7 @@ public:
     PresenceChatGateway(
         std::string endpoint,
         lila::shared::network::websocket::IWebSocketClient& webSocketClient,
-        lila::shared::network::http::WsTicketProvider& ticketProvider);
+        lila::shared::network::http::IWsTicketProvider& ticketProvider);
 
     void Open(const std::string& bearerToken, const std::string& clientVersion) override;
     void Close() override;
@@ -33,6 +33,6 @@ public:
 private:
     std::string endpoint_;
     lila::shared::network::websocket::IWebSocketClient& webSocketClient_;
-    lila::shared::network::http::WsTicketProvider& ticketProvider_;
+    lila::shared::network::http::IWsTicketProvider& ticketProvider_;
 };
 }

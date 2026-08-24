@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/chat/presentation/ChatFrame.h"
 #include "modules/chat/presentation/ChatEventBinder.h"
 #include "modules/chat/presentation/ChatFocusController.h"

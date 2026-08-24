@@ -1,4 +1,4 @@
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/encoding/Encoding.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals_core.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime.h
@@ -144,8 +144,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSectionPresenter.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
@@ -573,12 +573,12 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/bookctrl.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/notebook.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialDataStore.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialFriendRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialUser.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialProfile.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialNavigationState.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/navigation/NavigationStack.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialPresentationModel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSelectionMemory.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialView.h
@@ -636,7 +636,7 @@ C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/textctrl.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/controls/VerticalMenu.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio

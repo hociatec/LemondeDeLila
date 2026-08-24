@@ -7,10 +7,11 @@
 #include <wx/weakref.h>
 
 #include "modules/rooms/application/RoomSessionService.h"
+#include "modules/audio/application/IAudioService.h"
 #include "modules/rooms/presentation/RoomPresentationModel.h"
-#include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/Encoding.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation
 {
@@ -42,14 +43,15 @@ void RoomPanel::ExecuteCommand(domain::RoomCommandRequest request)
     const auto generation = requestSlot_.CurrentToken();
     state_ = State::Busy;
     auto* service = &roomService_;
+    const auto command = request.command;
     wxWeakRef<RoomPanel> weakThis(this);
     requestSlot_.Track(lila::shared::concurrency::RunAsync(
         [service, request](std::stop_token stopToken) { service->Execute(request, stopToken); },
-        [weakThis, generation](std::optional<lila::shared::errors::AppError> error) mutable
+        [weakThis, generation, command](std::optional<lila::shared::errors::AppError> error) mutable
         {
             if (!weakThis) return;
             weakThis->CallAfter(
-                [weakThis, generation, error = std::move(error)]() mutable
+                [weakThis, generation, command, error = std::move(error)]() mutable
                 {
                     if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
                     weakThis->state_ = State::Ready;
@@ -58,6 +60,11 @@ void RoomPanel::ExecuteCommand(domain::RoomCommandRequest request)
                         weakThis->UpdateStatus(
                             lila::shared::text::FromUtf8(error->UserMessage()), true, true);
                         return;
+                    }
+                    if (command == domain::RoomCommand::SendChat)
+                    {
+                        weakThis->audioService_.Play(
+                            lila::modules::audio::domain::SoundCue::TableChatMessageSent);
                     }
                     weakThis->ShowRoom();
                 });

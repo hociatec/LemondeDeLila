@@ -1,13 +1,12 @@
 #include "modules/options/presentation/OptionsFocusController.h"
 
 #include <wx/defs.h>
-#include <wx/slider.h>
+#include <wx/notebook.h>
 #include <wx/window.h>
 
 #include "modules/options/presentation/OptionsView.h"
-#include "shared/accessibility/FocusManager.h"
-#include "shared/accessibility/NavigationController.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/FocusManager.h"
+#include "shared/accessibility/application/NavigationController.h"
 
 namespace lila::modules::options::presentation
 {
@@ -46,6 +45,11 @@ Navigator::Scope BuildSectionScope(OptionsView& view, int sectionIndex)
             audio.soundSelectSlider,
             audio.soundChatMessagesCheckbox,
             audio.soundChatMessagesSlider,
+            audio.soundTableAmbienceCheckbox,
+            audio.soundTableAmbienceSlider,
+            audio.detailedSoundChoice,
+            audio.detailedSoundEnabledCheckbox,
+            audio.detailedSoundVolumeSlider,
             audio.saveButton});
         break;
     case 2:
@@ -57,92 +61,108 @@ Navigator::Scope BuildSectionScope(OptionsView& view, int sectionIndex)
     return scope;
 }
 
-Navigator::Scope BuildSoundPairScope(OptionsView& view, wxWindow* focused)
+Navigator::Scope BuildOptionsScope(OptionsView& view)
 {
-    const auto audio = view.AudioControls();
-    const auto makeIfContains = [focused](std::initializer_list<wxWindow*> controls)
+    const auto shell = view.Shell();
+    Navigator::Scope scope;
+    scope.Add(shell.sectionBook);
+    if (shell.sectionBook != nullptr)
     {
-        Navigator::Scope scope;
-        scope.Add(controls);
-        return Navigator::Contains(scope, focused) ? scope : Navigator::Scope{};
-    };
-
-    for (const auto& controls : {
-             std::initializer_list<wxWindow*>{audio.soundAmbienceCheckbox, audio.soundMenuAmbienceSlider, audio.soundTavernAmbienceSlider},
-             std::initializer_list<wxWindow*>{audio.soundAppLaunchCheckbox, audio.soundAppLaunchSlider},
-             std::initializer_list<wxWindow*>{audio.soundNavigateCheckbox, audio.soundNavigateSlider},
-             std::initializer_list<wxWindow*>{audio.soundSelectCheckbox, audio.soundSelectSlider},
-             std::initializer_list<wxWindow*>{audio.soundChatMessagesCheckbox, audio.soundChatMessagesSlider}})
-    {
-        Navigator::Scope scope = makeIfContains(controls);
-        if (!scope.Empty())
+        const Navigator::Scope section = BuildSectionScope(view, shell.sectionBook->GetSelection());
+        for (wxWindow* control : Navigator::Resolve(section))
         {
-            return scope;
+            scope.Add(control);
         }
     }
-    return {};
+    scope.Add(shell.cancelButton);
+    return scope;
 }
+
+bool IsPreviousTabKey(int keyCode) noexcept
+{
+    return keyCode == WXK_LEFT || keyCode == WXK_NUMPAD_LEFT;
+}
+
+bool IsNextTabKey(int keyCode) noexcept
+{
+    return keyCode == WXK_RIGHT || keyCode == WXK_NUMPAD_RIGHT;
+}
+
+bool IsVerticalArrowKey(int keyCode) noexcept
+{
+    return keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP ||
+        keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN;
+}
+
 }
 
 OptionsFocusController::OptionsFocusController(OptionsView& view) noexcept : view_(view) {}
 
-lila::shared::accessibility::FocusManager::Plan OptionsFocusController::BuildSectionMenuPlan(std::size_t sectionIndex)
+lila::shared::accessibility::FocusManager::Plan OptionsFocusController::BuildSectionTabsPlan()
 {
     FocusManager::Plan plan;
     const auto shell = view_.Shell();
-    if (shell.sectionsMenu == nullptr || shell.sectionsMenu->GetItemCount() == 0)
+    if (shell.sectionBook == nullptr || shell.sectionBook->GetPageCount() == 0)
     {
         return plan;
     }
 
-    shell.sectionsMenu->SetSelectedIndexSilently(sectionIndex);
-    plan.AddWindow(shell.sectionsMenu->GetSelectedControl());
+    plan.AddWindow(shell.sectionBook);
     return plan;
 }
 
-lila::shared::accessibility::FocusManager::Plan OptionsFocusController::BuildFirstSectionControlPlan(std::size_t sectionIndex)
-{
-    FocusManager::Plan plan;
-    plan.AddScope([this, sectionIndex]() { return BuildSectionScope(view_, static_cast<int>(sectionIndex)); });
-    return plan;
-}
-
-void OptionsFocusController::BindNavigation(wxWindow& owner, std::function<bool()> isInsideSection)
+void OptionsFocusController::BindNavigation(wxWindow& owner)
 {
     Navigator::BindTabNavigation(
         owner,
         [this]()
         {
-            const auto shell = view_.Shell();
-            if (shell.sectionBook == nullptr || shell.sectionBook->GetSelection() != 1)
-            {
-                return Navigator::Scope{};
-            }
-            return BuildSoundPairScope(view_, wxWindow::FindFocus());
+            return BuildOptionsScope(view_);
         },
-        [isInsideSection]() { return !isInsideSection || isInsideSection(); });
+        {},
+        Navigator::Boundary::Wrap);
 
-    Navigator::BindVerticalNavigation(
-        owner,
-        [this]()
+    owner.Bind(
+        wxEVT_CHAR_HOOK,
+        [this](wxKeyEvent& event)
         {
             const auto shell = view_.Shell();
-            if (shell.sectionBook == nullptr)
+            wxNotebook* book = shell.sectionBook;
+            if (book == nullptr || wxWindow::FindFocus() != book)
             {
-                return Navigator::Scope{};
+                event.Skip();
+                return;
             }
-            return BuildSectionScope(view_, shell.sectionBook->GetSelection());
-        },
-        [isInsideSection]()
-        {
-            if (isInsideSection && !isInsideSection())
+
+            const int keyCode = event.GetKeyCode();
+            if (IsVerticalArrowKey(keyCode))
             {
-                return false;
+                event.Skip(false);
+                return;
             }
-            wxWindow* focused = wxWindow::FindFocus();
-            return focused == nullptr || dynamic_cast<wxSlider*>(focused) == nullptr;
-        },
-        Navigator::Boundary::Clamp);
+            if (!IsPreviousTabKey(keyCode) && !IsNextTabKey(keyCode))
+            {
+                event.Skip();
+                return;
+            }
+
+            const int pageCount = book->GetPageCount();
+            const int current = book->GetSelection();
+            if (pageCount <= 0 || current == wxNOT_FOUND)
+            {
+                event.Skip(false);
+                return;
+            }
+
+            const int delta = IsPreviousTabKey(keyCode) ? -1 : 1;
+            const int target = current + delta;
+            if (target >= 0 && target < pageCount)
+            {
+                book->SetSelection(target);
+                book->SetFocus();
+            }
+            event.Skip(false);
+        });
 }
 
 bool OptionsFocusController::FocusNextSectionControl()

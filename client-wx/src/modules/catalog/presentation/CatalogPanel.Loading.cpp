@@ -12,13 +12,13 @@
 
 #include "modules/catalog/application/CatalogService.h"
 #include "modules/options/application/OptionsStore.h"
-#include "shared/accessibility/FocusCoordinator.h"
-#include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/logging/Logger.h"
-#include "shared/text/Encoding.h"
-#include "shared/ui/Theme.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/logging/application/Logger.h"
+#include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/ui/presentation/theme/Theme.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::catalog::presentation
 {

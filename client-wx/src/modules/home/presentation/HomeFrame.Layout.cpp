@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/home/presentation/HomeFrame.h"
 
 #include <wx/checkbox.h>
@@ -8,10 +8,10 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 
-#include "shared/accessibility/ActionButton.h"
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/accessibility/NonFocusablePanel.h"
-#include "shared/config/AppConfig.h"
+#include "shared/accessibility/presentation/ActionButton.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
+#include "shared/config/domain/AppConfig.h"
 
 namespace lila::modules::home::presentation
 {

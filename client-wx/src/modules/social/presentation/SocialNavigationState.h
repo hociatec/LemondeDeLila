@@ -4,7 +4,7 @@
 #include <optional>
 
 #include "modules/social/presentation/SocialSection.h"
-#include "shared/ui/navigation/NavigationStack.h"
+#include "shared/ui/presentation/navigation/NavigationStack.h"
 
 namespace lila::modules::social::presentation
 {

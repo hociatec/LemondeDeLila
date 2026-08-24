@@ -10,7 +10,7 @@
 #include "modules/messaging/domain/MessagingMessage.h"
 #include "modules/messaging/domain/MessagingUser.h"
 #include "modules/messaging/application/IMessagingGateway.h"
-#include "shared/network/realtime/RealtimeApiClient.h"
+#include "shared/network/application/realtime/RealtimeApiClient.h"
 #include "modules/messaging/infrastructure/MessagingProtocolFields.h"
 
 namespace lila::modules::session::application

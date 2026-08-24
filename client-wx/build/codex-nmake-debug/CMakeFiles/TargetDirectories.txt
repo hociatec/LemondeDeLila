@@ -26,7 +26,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/Continu
 C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/ContinuousCoverage.dir
 C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/ContinuousMemCheck.dir
 C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/ContinuousSubmit.dir
-C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/generate_protocol_fields.dir
+C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/generate_protocol_contracts.dir
 C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/lemonde_de_lila_wx.dir
 C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/lemonde_de_lila_wx_tests.dir
 C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/lemonde_de_lila_wx_parser_fuzz.dir

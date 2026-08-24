@@ -233,4 +233,4 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/infrastructure/RoomCommandProtocol.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/infrastructure/RoomProtocol.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/websocket/IWebSocketClient.h

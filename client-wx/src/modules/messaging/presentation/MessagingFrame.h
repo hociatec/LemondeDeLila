@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NonFocusablePanel.h"
+#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "modules/messaging/domain/MessagingBox.h"
 #include "modules/messaging/domain/MessagingMessage.h"
 #include "modules/messaging/domain/MessagingUser.h"

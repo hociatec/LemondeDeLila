@@ -11,7 +11,7 @@ c++ -std=c++20 -I"$ROOT/src" \
 
 c++ -std=c++20 -pthread -I"$ROOT/src" \
   "$ROOT/tests/BackgroundExecutorTests.cpp" \
-  "$ROOT/src/shared/concurrency/BackgroundExecutor.cpp" \
+  "$ROOT/src/shared/concurrency/application/BackgroundExecutor.cpp" \
   -o "$BUILD_DIR/background-executor-tests"
 "$BUILD_DIR/background-executor-tests"
 

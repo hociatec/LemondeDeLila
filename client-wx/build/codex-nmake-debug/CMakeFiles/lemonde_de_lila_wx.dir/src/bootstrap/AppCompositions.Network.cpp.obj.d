@@ -115,13 +115,13 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/ISessionReposit
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/Session.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/SecurityUtils.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppConfig.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/infrastructure/SecurityUtils.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/domain/AppConfig.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/http/WsTicketProvider.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/http/IWsTicketProvider.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/AuthenticatedRealtimeApiClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/realtime/AuthenticatedRealtimeApiClient.h
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
@@ -236,7 +236,8 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/WinHttpWebSocketClient.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/WebSocketConstants.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/realtime/RealtimeApiClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/application/websocket/IWebSocketClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/domain/WebSocketConstants.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/infrastructure/http/WsTicketProvider.h

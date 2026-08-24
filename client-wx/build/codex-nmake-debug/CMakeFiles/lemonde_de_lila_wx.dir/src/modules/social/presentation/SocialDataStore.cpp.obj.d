@@ -88,7 +88,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/new
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/tuple
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xpolymorphic_allocator.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp

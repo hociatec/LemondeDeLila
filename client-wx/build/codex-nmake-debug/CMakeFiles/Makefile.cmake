@@ -61,7 +61,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.31.6/CMakeRCCompiler.cmake"
   "CMakeFiles/3.31.6/CMakeSystem.cmake"
   "C:/wamp64/www/lemondeDeLila/client-wx/resources/texts.fr.json"
-  "C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppBuildInfo.h.in"
+  "C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/generated/AppBuildInfo.h.in"
   "C:/wamp64/www/lemondeDeLila/client-wx/third_party/bass/bin/x64/bass.dll"
   )
 
@@ -110,7 +110,7 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/ContinuousCoverage.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousMemCheck.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousSubmit.dir/DependInfo.cmake"
-  "CMakeFiles/generate_protocol_fields.dir/DependInfo.cmake"
+  "CMakeFiles/generate_protocol_contracts.dir/DependInfo.cmake"
   "CMakeFiles/lemonde_de_lila_wx.dir/DependInfo.cmake"
   "CMakeFiles/lemonde_de_lila_wx_tests.dir/DependInfo.cmake"
   "CMakeFiles/lemonde_de_lila_wx_parser_fuzz.dir/DependInfo.cmake"

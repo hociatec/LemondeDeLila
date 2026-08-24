@@ -8,10 +8,10 @@
 #include <wx/weakref.h>
 
 #include "modules/storybook/application/StoryBookService.h"
-#include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/Encoding.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::storybook::presentation
 {

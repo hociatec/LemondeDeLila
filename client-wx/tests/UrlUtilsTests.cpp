@@ -1,7 +1,7 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "shared/network/UrlUtils.h"
+#include "shared/network/domain/UrlUtils.h"
 
 int main()
 {

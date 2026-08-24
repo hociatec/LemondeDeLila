@@ -1,7 +1,7 @@
 #include "modules/leaderboard/presentation/LeaderboardPanel.h"
 
-#include "shared/accessibility/NavigationController.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/NavigationController.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::leaderboard::presentation
 {

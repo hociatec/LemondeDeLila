@@ -1,20 +1,14 @@
 #pragma once
 
 #include <functional>
-#include <cstddef>
 
 #include <wx/string.h>
 
 #include "modules/options/domain/OptionsState.h"
-#include "shared/accessibility/FocusTransition.h"
-
-class wxWindow;
 
 namespace lila::modules::options::presentation
 {
 class OptionsEditorController;
-class OptionsFocusController;
-class OptionsNavigationState;
 class OptionsView;
 
 class OptionsSectionCoordinator final
@@ -28,12 +22,9 @@ public:
 
     OptionsSectionCoordinator(
         OptionsEditorController& editorController,
-        OptionsFocusController& focusController,
-        OptionsNavigationState& navigationState,
         OptionsView& view,
         Callbacks callbacks) noexcept;
 
-    void ActivateSection(std::size_t index);
     void LoadState();
     void ApplyState(
         const domain::OptionsState& state,
@@ -45,14 +36,8 @@ public:
     void HandleEscape();
 
 private:
-    void ApplyNavigationState();
-    [[nodiscard]] wxWindow* CurrentFocusScope() const;
-
     OptionsEditorController& editorController_;
-    OptionsFocusController& focusController_;
-    OptionsNavigationState& navigationState_;
     OptionsView& view_;
     Callbacks callbacks_;
-    lila::shared::accessibility::FocusTransition focusTransition_;
 };
 }

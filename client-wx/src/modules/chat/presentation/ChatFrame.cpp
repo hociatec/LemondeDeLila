@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/chat/presentation/ChatFrame.h"
 #include "modules/chat/presentation/ChatFocusController.h"
 
@@ -8,11 +8,11 @@
 #include "modules/chat/application/ChatService.h"
 #include "modules/options/application/OptionsStore.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/config/AppConfig.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/accessibility/FocusCoordinator.h"
-#include "shared/text/UiTexts.h"
-#include "shared/concurrency/BackgroundExecutor.h"
+#include "shared/config/domain/AppConfig.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
 
 #include <wx/dialog.h>
 #include <wx/msgdlg.h>

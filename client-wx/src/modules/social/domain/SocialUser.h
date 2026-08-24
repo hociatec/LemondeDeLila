@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shared/domain/DomainTypes.h"
+#include "shared/domain/identifiers/DomainTypes.h"
 
 namespace lila::modules::social::domain
 {

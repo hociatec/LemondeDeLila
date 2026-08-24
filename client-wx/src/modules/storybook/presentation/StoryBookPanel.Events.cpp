@@ -1,8 +1,8 @@
 #include "modules/storybook/presentation/StoryBookPanel.h"
 
-#include "shared/accessibility/NavigationController.h"
-#include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/NavigationController.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::storybook::presentation
 {

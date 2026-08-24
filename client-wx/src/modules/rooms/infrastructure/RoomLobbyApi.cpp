@@ -2,8 +2,8 @@
 #include <nlohmann/json.hpp>
 #include "modules/rooms/infrastructure/RoomPayloadCodec.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/network/realtime/AuthenticatedRealtimeApiHelpers.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 
 namespace lila::modules::rooms::infrastructure
 {

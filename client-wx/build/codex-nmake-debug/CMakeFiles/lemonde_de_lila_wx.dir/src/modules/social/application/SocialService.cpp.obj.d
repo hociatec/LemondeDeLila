@@ -96,7 +96,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialFriendRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialUser.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/typeinfo
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_typeinfo.h
@@ -108,7 +108,7 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialProfile.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/ISocialGateway.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/cache/SingleFlightCache.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/cache/application/SingleFlightCache.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
@@ -133,6 +133,12 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/audio/application/IAudioService.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/audio/domain/AudioBackground.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/audio/domain/SoundCue.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/infrastructure/SocialProtocolFields.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/SocialProtocolFields.generated.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view

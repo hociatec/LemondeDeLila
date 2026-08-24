@@ -6,7 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/rooms/infrastructure/RoomCommandProtocol.h"
-#include "shared/network/websocket/IWebSocketClient.h"
+#include "shared/network/application/websocket/IWebSocketClient.h"
 
 namespace lila::modules::rooms::infrastructure
 {

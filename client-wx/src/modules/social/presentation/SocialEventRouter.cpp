@@ -7,11 +7,10 @@
 #include <wx/window.h>
 
 #include "modules/social/presentation/SocialNavigationState.h"
-#include "modules/social/presentation/SocialView.h"
-#include "shared/accessibility/NavigationController.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/logging/Logger.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/NavigationController.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/logging/application/Logger.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::social::presentation
 {
@@ -28,7 +27,6 @@ bool IsSameWindow(wxWindow* left, wxWindow* right)
 
 void SocialEventRouter::BindRootEvents(
     wxWindow& owner,
-    SocialView& view,
     SocialNavigationState& navigationState,
     Handlers handlers)
 {

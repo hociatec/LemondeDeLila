@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-#include "shared/domain/DomainTypes.h"
+#include "shared/domain/identifiers/DomainTypes.h"
 #include "modules/social/domain/SocialFriendRequest.h"
 #include "modules/social/domain/SocialProfile.h"
 #include "modules/social/domain/SocialUser.h"

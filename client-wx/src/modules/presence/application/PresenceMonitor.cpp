@@ -1,26 +1,32 @@
 #include "modules/presence/application/PresenceMonitor.h"
 
+#include <algorithm>
 #include <exception>
 #include <utility>
 
+#include "modules/audio/application/IAudioService.h"
 #include "modules/presence/infrastructure/PresenceConnectionFactory.h"
 #include "modules/presence/infrastructure/PresencePayloadCodec.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/network/http/WsTicketProvider.h"
-#include "shared/network/websocket/IWebSocketClient.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/network/application/http/IWsTicketProvider.h"
+#include "shared/network/application/websocket/IWebSocketClient.h"
 
 namespace lila::modules::presence::application
 {
 PresenceMonitor::PresenceMonitor(
     std::string endpoint,
     lila::shared::network::websocket::IWebSocketClient& webSocketClient,
-    lila::shared::network::http::WsTicketProvider& ticketProvider,
-    lila::modules::session::application::SessionStore& sessionStore)
+    lila::shared::network::http::IWsTicketProvider& ticketProvider,
+    lila::modules::session::application::SessionStore& sessionStore,
+    lila::modules::audio::application::IAudioService& audioService,
+    std::function<bool(int)> isFriend)
     : endpoint_(std::move(endpoint)),
       webSocketClient_(webSocketClient),
       ticketProvider_(ticketProvider),
-      sessionStore_(sessionStore)
+      sessionStore_(sessionStore),
+      audioService_(audioService),
+      isFriend_(std::move(isFriend))
 {
 }
 
@@ -109,10 +115,25 @@ void PresenceMonitor::ReceiveLoop(std::stop_token stopToken)
 
 void PresenceMonitor::Connect()
 {
-    const auto& session = sessionStore_.Current();
-    webSocketClient_.Connect(
-        endpoint_,
-        lila::modules::presence::infrastructure::BuildPresenceHeaders(ticketProvider_, session.token));
+    const auto connect = [this](const std::string& token)
+    {
+        webSocketClient_.Connect(
+            endpoint_,
+            lila::modules::presence::infrastructure::BuildPresenceHeaders(ticketProvider_, token));
+    };
+    try
+    {
+        connect(sessionStore_.AccessToken());
+    }
+    catch (const lila::shared::network::http::WsTicketRequestError& exception)
+    {
+        if (exception.StatusCode() != 401 && exception.StatusCode() != 403)
+        {
+            throw;
+        }
+        webSocketClient_.Close();
+        connect(sessionStore_.RefreshAccessToken());
+    }
     webSocketClient_.Send(lila::modules::presence::infrastructure::TavernContextPayload());
     SetStatus("Presence connectee.");
 }
@@ -126,11 +147,44 @@ void PresenceMonitor::ApplyUpdate(const std::string& rawJson)
     }
 
     PlayersChangedHandler handler;
+    std::vector<int> connected;
+    std::vector<int> disconnected;
     {
         std::scoped_lock lock(mutex_);
+        if (hasSnapshot_)
+        {
+            for (const auto& player : *next)
+            {
+                const bool wasPresent = std::ranges::any_of(
+                    players_,
+                    [&player](const domain::PresencePlayer& previous)
+                    {
+                        return previous.id == player.id;
+                    });
+                if (!wasPresent) connected.push_back(player.id);
+            }
+            for (const auto& previous : players_)
+            {
+                const bool isPresent = std::ranges::any_of(
+                    *next,
+                    [&previous](const domain::PresencePlayer& player)
+                    {
+                        return player.id == previous.id;
+                    });
+                if (!isPresent) disconnected.push_back(previous.id);
+            }
+        }
         players_ = std::move(*next);
         hasSnapshot_ = true;
         handler = onPlayersChanged_;
+    }
+    if (isFriend_ && std::ranges::any_of(connected, isFriend_))
+    {
+        audioService_.Play(lila::modules::audio::domain::SoundCue::FriendConnected);
+    }
+    if (isFriend_ && std::ranges::any_of(disconnected, isFriend_))
+    {
+        audioService_.Play(lila::modules::audio::domain::SoundCue::FriendDisconnected);
     }
     NotifyChanged(handler);
 }

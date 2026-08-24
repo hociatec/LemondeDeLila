@@ -1,7 +1,7 @@
 ﻿#include "modules/user/application/LoginUseCase.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/UiTexts.h"
-#include "shared/text/StringUtils.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
+#include "shared/text/domain/StringUtils.h"
 
 namespace lila::modules::user::application
 {

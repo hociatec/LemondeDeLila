@@ -2,7 +2,7 @@
 
 #include <wx/window.h>
 
-#include "shared/ui/Theme.h"
+#include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::options::presentation
 {

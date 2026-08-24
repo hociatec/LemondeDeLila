@@ -1,6 +1,6 @@
 #include "modules/social/presentation/SocialView.h"
 
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::social::presentation
 {

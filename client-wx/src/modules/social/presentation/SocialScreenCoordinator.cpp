@@ -6,7 +6,7 @@
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialPresentationModel.h"
 #include "modules/social/presentation/SocialView.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::social::presentation
 {

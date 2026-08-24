@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/messaging/presentation/MessagingFrame.h"
 #include "modules/messaging/presentation/MessagingFocusController.h"
 #include "modules/messaging/presentation/MessagingEventBinder.h"

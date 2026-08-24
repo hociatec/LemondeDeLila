@@ -1,11 +1,14 @@
 #include "modules/messaging/application/MessagingService.h"
 
-#include "shared/audio/AudioService.h"
+#include "modules/audio/application/IAudioService.h"
 
 namespace lila::modules::messaging::application
 {
-MessagingService::MessagingService(IMessagingGateway& api)
-    : api_(api)
+MessagingService::MessagingService(
+    IMessagingGateway& api,
+    lila::modules::audio::application::IAudioService& audioService)
+    : api_(api),
+      audioService_(audioService)
 {
 }
 
@@ -27,7 +30,7 @@ std::optional<domain::MessagingMessage> MessagingService::Send(
     auto sent = api_.Send(recipientId, text, subject);
     if (sent.has_value())
     {
-        lila::shared::audio::AudioService::PlayGlobal(lila::shared::audio::SoundCue::PrivateMessageSent);
+        audioService_.Play(lila::modules::audio::domain::SoundCue::PrivateMessageSent);
     }
     return sent;
 }

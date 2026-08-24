@@ -131,4 +131,4 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xloctime
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/StringUtils.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/domain/StringUtils.h

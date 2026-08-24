@@ -8,9 +8,10 @@
 #include <wx/weakref.h>
 
 #include "modules/rooms/application/RoomSessionService.h"
-#include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/Encoding.h"
+#include "modules/audio/application/IAudioService.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation
 {
@@ -54,6 +55,10 @@ void RoomPanel::StartRequest()
                         return;
                     }
                     weakThis->ApplyRoom(std::move(*room));
+                    const auto openedCue = weakThis->request_.kind == RoomOpenRequest::Kind::Create
+                        ? lila::modules::audio::domain::SoundCue::RoomOpened
+                        : lila::modules::audio::domain::SoundCue::RoomJoined;
+                    weakThis->audioService_.Play(openedCue);
                     weakThis->roomService_.Start();
                 });
         },

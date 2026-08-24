@@ -10,7 +10,7 @@
 #include "modules/social/domain/SocialProfile.h"
 #include "modules/social/domain/SocialUser.h"
 #include "modules/social/application/ISocialGateway.h"
-#include "shared/network/realtime/RealtimeApiClient.h"
+#include "shared/network/application/realtime/RealtimeApiClient.h"
 
 namespace lila::modules::session::application
 {

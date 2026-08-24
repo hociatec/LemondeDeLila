@@ -1,9 +1,9 @@
 ﻿#include "modules/user/infrastructure/remote/UserAuthRemoteDataSource.h"
 
 #include "modules/user/infrastructure/remote/UserAuthFields.h"
-#include "shared/network/WsMessageTypes.h"
-#include "shared/data/JsonReaders.h"
-#include "shared/errors/ErrorMessages.h"
+#include "shared/network/domain/WsMessageTypes.h"
+#include "shared/data/json/JsonReaders.h"
+#include "shared/errors/catalog/ErrorMessages.h"
 
 #include <stdexcept>
 
@@ -38,6 +38,30 @@ shared::network::realtime::RealtimeApiResponse UserAuthRemoteDataSource::Login(
     });
 }
 
+shared::network::realtime::RealtimeApiResponse UserAuthRemoteDataSource::Refresh(
+    const std::string& refreshToken,
+    std::stop_token stopToken) const
+{
+    return client_.Send({
+        .type = std::string(lila::shared::network::ws::types::auth::Refresh),
+        .payload = {
+            {std::string(lila::modules::user::infrastructure::remote::fields::RefreshToken), refreshToken}
+        },
+    }, stopToken);
+}
+
+shared::network::realtime::RealtimeApiResponse UserAuthRemoteDataSource::Logout(
+    const std::string& refreshToken,
+    std::stop_token stopToken) const
+{
+    return client_.Send({
+        .type = std::string(lila::shared::network::ws::types::auth::Logout),
+        .payload = {
+            {std::string(lila::modules::user::infrastructure::remote::fields::RefreshToken), refreshToken}
+        },
+    }, stopToken);
+}
+
 shared::network::realtime::RealtimeApiResponse UserAuthRemoteDataSource::Register(
     const std::string& username,
     const std::string& email,
@@ -66,6 +90,9 @@ LoginRemotePayload UserAuthRemoteDataSource::ParseLoginPayload(const shared::net
     payload.token = lila::shared::data::json::ReadRequiredString(
         response.payload,
         lila::modules::user::infrastructure::remote::fields::Token.data());
+    payload.refreshToken = lila::shared::data::json::ReadOptionalString(
+        response.payload,
+        lila::modules::user::infrastructure::remote::fields::RefreshToken.data());
     payload.username = lila::shared::data::json::ReadRequiredString(
         response.payload,
         lila::modules::user::infrastructure::remote::fields::Username.data());

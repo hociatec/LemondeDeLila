@@ -4,8 +4,8 @@
 
 #include "modules/session/application/SessionStore.h"
 #include "modules/vault/infrastructure/VaultPayloadCodec.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/network/realtime/AuthenticatedRealtimeApiHelpers.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 
 namespace lila::modules::vault::infrastructure
 {

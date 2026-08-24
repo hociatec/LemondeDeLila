@@ -4,8 +4,8 @@
 
 #include "modules/catalog/application/CatalogService.h"
 #include "modules/options/application/OptionsStore.h"
-#include "shared/concurrency/BackgroundExecutor.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::catalog::presentation
 {

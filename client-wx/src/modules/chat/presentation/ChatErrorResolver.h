@@ -4,8 +4,8 @@
 #include <string>
 
 #include "modules/chat/domain/ChatServerError.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/StringUtils.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/domain/StringUtils.h"
 
 namespace lila::modules::chat::presentation
 {

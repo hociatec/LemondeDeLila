@@ -9,9 +9,9 @@
 #include <wx/window.h>
 
 #include "modules/messaging/presentation/MessagingView.h"
-#include "shared/accessibility/FocusManager.h"
-#include "shared/accessibility/NavigationController.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/FocusManager.h"
+#include "shared/accessibility/application/NavigationController.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::messaging::presentation
 {

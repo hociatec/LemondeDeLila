@@ -4,8 +4,8 @@
 #include <wx/textctrl.h>
 #include <wx/window.h>
 
-#include "shared/accessibility/ActionButton.h"
-#include "shared/accessibility/NavigationController.h"
+#include "shared/accessibility/presentation/ActionButton.h"
+#include "shared/accessibility/application/NavigationController.h"
 
 namespace lila::modules::home::presentation
 {

@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/main_menu/presentation/MainMenuFrame.h"
 
 #include <wx/stattext.h>
@@ -7,10 +7,10 @@
 #include "modules/main_menu/presentation/MainMenuContent.h"
 #include "modules/options/application/OptionsStore.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/accessibility/FocusManager.h"
-#include "shared/logging/Logger.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/accessibility/application/FocusManager.h"
+#include "shared/logging/application/Logger.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace
 {

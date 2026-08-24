@@ -1,4 +1,4 @@
-﻿#include "shared/text/Encoding.h"
+﻿#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/options/presentation/OptionsFrame.h"
 #include "modules/options/presentation/OptionsView.h"
 #include "modules/options/presentation/OptionsEditorController.h"
@@ -8,16 +8,10 @@
 
 #include <utility>
 
-#include <wx/button.h>
-#include <wx/checkbox.h>
-#include <wx/gbsizer.h>
 #include <wx/sizer.h>
-#include <wx/stattext.h>
 
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/config/AppConfig.h"
-#include "shared/ui/controls/VerticalMenu.h"
-#include "shared/ui/Theme.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/ui/presentation/theme/Theme.h"
 
 namespace
 {
@@ -44,8 +38,6 @@ OptionsFrame::OptionsFrame(
     focusController_ = std::make_unique<OptionsFocusController>(*view_);
     sectionCoordinator_ = std::make_unique<OptionsSectionCoordinator>(
         *editorController_,
-        *focusController_,
-        navigationState_,
         *view_,
         OptionsSectionCoordinator::Callbacks{
             [this](const wxString& message, bool isError)
@@ -68,26 +60,6 @@ OptionsFrame::OptionsFrame(
     UpdateStatus(wxString(L"Aucune modification en attente."));
 }
 
-
-
-
-
-
-
-void OptionsFrame::ActivateSection(std::size_t index) { sectionCoordinator_->ActivateSection(index); }
-
-
-
-
-
-
-
-
-
-
-
-
-
 void OptionsFrame::BindEvents()
 {
     OptionsEventBinder::Bind(
@@ -95,13 +67,10 @@ void OptionsFrame::BindEvents()
         *view_,
         *focusController_,
         OptionsEventBinder::Handlers{
-            [this](std::size_t index) { ActivateSection(index); },
-            [this](std::size_t index) { ActivateSection(index); },
             [this]() { CancelChanges(); },
             [this]() { RefreshUnsavedState(); },
             [this]() { SaveState(); },
-            [this]() { HandleEscape(); },
-            [this]() { return navigationState_.insideSection; }});
+            [this]() { HandleEscape(); }});
     sectionCoordinator_->RefreshUnsavedState();
 }
 
@@ -112,28 +81,7 @@ lila::shared::accessibility::FocusManager::Plan OptionsFrame::BuildFocusPlan()
         return {};
     }
 
-    if (navigationState_.insideSection)
-    {
-        return focusController_->BuildFirstSectionControlPlan(navigationState_.currentSectionIndex);
-    }
-
-    const auto shell = view_->Shell();
-    if (shell.sectionsMenu != nullptr)
-    {
-        if (navigationState_.currentSectionIndex >= shell.sectionsMenu->GetItemCount())
-        {
-            navigationState_.SetCurrentSection(0);
-        }
-        return focusController_->BuildSectionMenuPlan(navigationState_.currentSectionIndex);
-    }
-    return {};
-}
-
-void OptionsFrame::LoadState() { sectionCoordinator_->LoadState(); }
-
-void OptionsFrame::ApplyState(const domain::OptionsState& state, bool persist, const wxString& successMessage)
-{
-    sectionCoordinator_->ApplyState(state, persist, successMessage);
+    return focusController_->BuildSectionTabsPlan();
 }
 
 void OptionsFrame::SaveState() { sectionCoordinator_->SaveState(); }

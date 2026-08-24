@@ -583,12 +583,12 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingBox.
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingFocusController.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusManager.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusManager.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/NavigationController.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingNavigationState.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/navigation/NavigationStack.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/presentation/MessagingView.h
 C:/vcpkg/installed/x64-windows/include/wx/panel.h
 C:/vcpkg/installed/x64-windows/include/wx/containr.h
@@ -618,7 +618,7 @@ C:/vcpkg/installed/x64-windows/include/wx/stattext.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/stattext.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/controls/VerticalMenu.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
@@ -644,4 +644,4 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/forward_list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iomanip
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sstream
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/MenuBlueprint.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/navigation/MenuBlueprint.h

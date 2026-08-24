@@ -4,11 +4,11 @@
 
 #include "modules/messaging/infrastructure/MessagingProtocolFields.h"
 #include "modules/user/infrastructure/remote/UserAuthFields.h"
-#include "shared/data/DateTime.h"
-#include "shared/data/JsonApiHelpers.h"
-#include "shared/data/JsonReaders.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/network/realtime/RealtimePayloadReaders.h"
+#include "shared/data/time/DateTime.h"
+#include "shared/data/json/JsonApiHelpers.h"
+#include "shared/data/json/JsonReaders.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/network/application/realtime/RealtimePayloadReaders.h"
 
 namespace lila::modules::messaging::infrastructure::codec
 {

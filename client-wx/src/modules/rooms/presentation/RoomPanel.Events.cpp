@@ -5,9 +5,9 @@
 
 #include "modules/rooms/presentation/RoomGameZoneAnchor.h"
 #include "modules/rooms/presentation/RoomPresentationModel.h"
-#include "shared/accessibility/ActionButton.h"
-#include "shared/accessibility/NavigationController.h"
-#include "shared/text/Encoding.h"
+#include "shared/accessibility/presentation/ActionButton.h"
+#include "shared/accessibility/application/NavigationController.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation
 {

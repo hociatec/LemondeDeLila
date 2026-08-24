@@ -106,7 +106,7 @@ CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\Ch
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtocolFields.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\ChatProtocolFields.generated.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\DateTime.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\time\DateTime.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
@@ -140,7 +140,7 @@ CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\Ch
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\JsonReaders.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\json\JsonReaders.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
@@ -231,15 +231,16 @@ CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\Ch
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\AppError.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\CoreErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorFormatting.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ModuleErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\NetworkErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\WsMessageTypes.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocolFields.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\domain\AppError.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\CoreErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\presentation\ErrorFormatting.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ModuleErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\NetworkErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\application\Logger.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\domain\WsMessageTypes.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\WsMessageTypes.generated.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeProtocolFields.h
 
 
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtocol.cpp
@@ -346,1207 +347,1207 @@ CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\Ch
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatEventPayloadCodec.h
 
 
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.cpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: generated\AppBuildInfo.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\WebSocketConstants.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\StringUtils.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\UrlUtils.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\CoreErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorFormatting.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ModuleErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\NetworkErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\domain\AppConfig.cpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\domain\AppConfig.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: generated\AppBuildInfo.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\domain\WebSocketConstants.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\domain\StringUtils.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\domain\UrlUtils.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\CoreErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\presentation\ErrorFormatting.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ModuleErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\NetworkErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\config\domain\AppConfig.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
 
 
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.cpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iostream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\infrastructure\Logger.cpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\application\Logger.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iostream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\logging\infrastructure\Logger.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 
 
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocol.cpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocol.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeApiClient.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\adl_serializer.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\abi_macros.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\value_t.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_scope.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\detected.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\void_t.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\version
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cassert
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_escape.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\position_t.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\cpp_future.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\type_traits.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iterator_traits.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\begin.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\end.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json_fwd.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_concat.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\identity_tag.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\std_fs.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_json.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iteration_proxy.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ranges
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_int128.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_to.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_utils.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\byte_container_with_subtype.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\hash.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\binary_reader.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\input_adapters.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\numeric
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\json_sax.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\lexer.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\is_sax.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\parser.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\internal_iterator.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\primitive_iterator.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iter_impl.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\json_reverse_iterator.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_custom_base_class.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_pointer.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_ref.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\binary_writer.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\output_adapters.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\serializer.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_chars.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\ordered_map.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocolFields.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\JsonReaders.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\AppError.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\CoreErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorFormatting.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ModuleErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\NetworkErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\random
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeProtocol.cpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeProtocol.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeApiClient.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\adl_serializer.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\abi_macros.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\value_t.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_scope.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\detected.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\void_t.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\version
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cassert
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_escape.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\position_t.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\cpp_future.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\type_traits.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iterator_traits.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\begin.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\end.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json_fwd.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_concat.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\identity_tag.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\std_fs.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_json.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iteration_proxy.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ranges
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_int128.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_to.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_utils.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\byte_container_with_subtype.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\hash.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\binary_reader.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\input_adapters.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\numeric
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\json_sax.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\lexer.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\is_sax.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\parser.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\internal_iterator.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\primitive_iterator.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iter_impl.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\json_reverse_iterator.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_custom_base_class.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_pointer.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_ref.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\binary_writer.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\output_adapters.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\serializer.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_chars.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\ordered_map.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeProtocolFields.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\domain\AppConfig.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\json\JsonReaders.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\domain\AppError.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\CoreErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\presentation\ErrorFormatting.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ModuleErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\NetworkErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\application\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\random
 
 
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.cpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\setup.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\..\..\debug\lib\mswud\wx\setup.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stringops.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextKeys.def
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\CoreErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorFormatting.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ModuleErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\NetworkErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\cderr.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dde.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ddeml.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dlgs.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\lzexpand.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsystem.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mciapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmiscapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmiscapi2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\playsoundapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmeapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timeapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\joystickapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\nb30.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcdce.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcdcep.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\rpcnsi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcnterr.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcasync.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\shellapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winperf.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsock.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\inaddr.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincrypt.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\bcrypt.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ncrypt.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dpapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winefs.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winscard.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wtypes.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcndr.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\rpcnsip.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcsal.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wtypesbase.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winioctl.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winsmcrd.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winspool.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\prsht.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ole2.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objbase.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\combaseapi.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\unknwnbase.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objidlbase.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\cguid.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\coml2api.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objidl.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\unknwn.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\propidlbase.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oaidl.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\urlmon.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oleidl.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\servprov.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\msxml.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\propidl.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oleauto.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\commdlg.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\prsht.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextCatalog.cpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextCatalog.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextKeys.def
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\adl_serializer.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\abi_macros.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\value_t.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_scope.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\detected.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\void_t.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\version
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cassert
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_escape.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\position_t.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\cpp_future.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\type_traits.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iterator_traits.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\begin.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\end.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json_fwd.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_concat.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\identity_tag.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\std_fs.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_json.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iteration_proxy.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ranges
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_int128.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_to.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_utils.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\byte_container_with_subtype.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\hash.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\binary_reader.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\input_adapters.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\numeric
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\json_sax.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\lexer.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\is_sax.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\parser.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\internal_iterator.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\primitive_iterator.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iter_impl.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\json_reverse_iterator.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_custom_base_class.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_pointer.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_ref.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\binary_writer.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\output_adapters.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\serializer.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_chars.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\ordered_map.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stdpaths.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\setup.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\..\..\debug\lib\mswud\wx\setup.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stringops.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\filefn.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\arrstr.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dynarray.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\vector.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\direct.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\dos.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\fcntl.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\stdpaths.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\application\Logger.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextKeys.def
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\catalog\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextKeys.def
 
 
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.cpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextKeys.def
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\adl_serializer.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\abi_macros.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\value_t.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_scope.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\detected.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\void_t.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\version
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cassert
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_escape.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\position_t.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\cpp_future.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\type_traits.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iterator_traits.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\begin.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\end.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json_fwd.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_concat.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\identity_tag.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\std_fs.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_json.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iteration_proxy.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ranges
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_int128.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_to.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_utils.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\byte_container_with_subtype.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\hash.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\binary_reader.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\input_adapters.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\numeric
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\json_sax.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\lexer.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\is_sax.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\parser.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\internal_iterator.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\primitive_iterator.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iter_impl.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\json_reverse_iterator.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_custom_base_class.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_pointer.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_ref.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\binary_writer.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\output_adapters.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\serializer.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_chars.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\ordered_map.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stdpaths.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\setup.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\..\..\debug\lib\mswud\wx\setup.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stringops.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\filefn.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\arrstr.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dynarray.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\vector.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\direct.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\dos.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\fcntl.h"
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\stdpaths.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextKeys.def
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextKeys.def
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\encoding\Encoding.cpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\encoding\Encoding.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\setup.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\..\..\debug\lib\mswud\wx\setup.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stringops.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextCatalog.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextKeys.def
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\CoreErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\presentation\ErrorFormatting.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ModuleErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\NetworkErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\cderr.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dde.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ddeml.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dlgs.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\lzexpand.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsystem.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mciapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmiscapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmiscapi2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\playsoundapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmeapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timeapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\joystickapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\nb30.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcdce.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcdcep.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\rpcnsi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcnterr.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcasync.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\shellapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winperf.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsock.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\inaddr.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincrypt.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\bcrypt.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ncrypt.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dpapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winefs.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winscard.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wtypes.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcndr.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\rpcnsip.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcsal.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wtypesbase.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winioctl.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winsmcrd.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winspool.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\prsht.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ole2.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objbase.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\combaseapi.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\unknwnbase.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objidlbase.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\cguid.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\coml2api.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objidl.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\unknwn.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\propidlbase.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oaidl.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\urlmon.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oleidl.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\servprov.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\msxml.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\propidl.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oleauto.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\commdlg.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\prsht.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\presentation\encoding\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
 
 
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\tests\ParserFuzzHarness.cpp
@@ -1681,8 +1682,8 @@ CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\domain\ChatMessage.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\domain\ChatServerError.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocol.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeApiClient.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeProtocol.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeApiClient.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
@@ -1784,8 +1785,8 @@ CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: "
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\encoding\Encoding.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
@@ -1828,8 +1829,8 @@ CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.h
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextKeys.def
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextCatalog.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextKeys.def
 
 
 
@@ -1869,8 +1870,6 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.cpp:
-
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint:
@@ -1884,6 +1883,8 @@ C:\vcpkg\installed\x64-windows\include\wx\features.h:
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\domain\StringUtils.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h":
 
@@ -1903,9 +1904,9 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h:
 
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits:
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\encoding\Encoding.cpp:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\AppError.h:
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h":
 
@@ -1983,8 +1984,6 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h":
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.h:
-
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h":
@@ -1992,8 +1991,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.h:
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h":
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\DateTime.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h:
 
@@ -2109,6 +2106,8 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\domain\UrlUtils.h:
+
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\servprov.h":
@@ -2155,11 +2154,15 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtoc
 
 C:\vcpkg\installed\x64-windows\include\wx\fontenc.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\domain\WsMessageTypes.h:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\ChatProtocolFields.generated.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\combaseapi.h":
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\time\DateTime.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip:
 
@@ -2175,15 +2178,15 @@ C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_concat.hpp:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.h:
-
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\UrlUtils.h:
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\domain\AppConfig.cpp:
 
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\begin.hpp:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\encoding\Encoding.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase:
 
@@ -2201,9 +2204,15 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\domain\WebSocketConstants.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\domain\AppError.h:
+
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ModuleErrorMessages.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h:
 
@@ -2213,6 +2222,8 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeProtocol.cpp:
+
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h:
@@ -2220,6 +2231,8 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h:
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeApiClient.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp:
 
@@ -2235,7 +2248,15 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\JsonReaders.h:
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objidl.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ole2.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h":
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\json\JsonReaders.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional:
 
@@ -2273,8 +2294,6 @@ C:\vcpkg\installed\x64-windows\include\nlohmann\detail\value_t.hpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h":
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocol.cpp:
-
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_scope.hpp:
 
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\detected.hpp:
@@ -2287,9 +2306,9 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cassert:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h":
 
-C:\vcpkg\installed\x64-windows\include\wx\msw\stdpaths.h:
-
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h":
+
+C:\vcpkg\installed\x64-windows\include\wx\msw\stdpaths.h:
 
 C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp:
 
@@ -2300,6 +2319,8 @@ C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_escape.hpp:
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\cpp_future.hpp:
 
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\type_traits.hpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\application\Logger.h:
 
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iterator_traits.hpp:
 
@@ -2317,11 +2338,11 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\NetworkErrorMessages.h:
+
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h":
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocol.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio:
 
@@ -2336,6 +2357,8 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp:
 C:\vcpkg\installed\x64-windows\include\wx\arrstr.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\presentation\ErrorFormatting.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit:
 
@@ -2375,8 +2398,6 @@ C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\binary_reader.hpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h":
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.cpp:
-
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\input_adapters.hpp:
 
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp:
@@ -2407,8 +2428,6 @@ C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_custom_base_class.hp
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h":
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.h:
-
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_pointer.hpp:
 
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_ref.hpp:
@@ -2429,39 +2448,25 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream:
 
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\serializer.hpp:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\infrastructure\Logger.cpp:
+
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\CoreErrorMessages.h:
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\CoreErrorMessages.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorMessages.h:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorFormatting.h:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ModuleErrorMessages.h:
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ErrorMessages.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h":
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\NetworkErrorMessages.h:
+C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\WsMessageTypes.generated.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\WsMessageTypes.h:
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeProtocolFields.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocolFields.h:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.cpp:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.h:
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\domain\AppConfig.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h":
 
 generated\AppBuildInfo.h:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\WebSocketConstants.h:
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winscard.h":
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\StringUtils.h:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.cpp:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp:
 
@@ -2473,19 +2478,19 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h:
 
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\unknwn.h":
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\realtime\RealtimeProtocol.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeApiClient.h:
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\websocket\IWebSocketClient.h:
 
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objidl.h":
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextCatalog.cpp:
 
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ole2.h":
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextCatalog.h:
 
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h":
+C:\vcpkg\installed\x64-windows\include\wx\types.h:
 
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h":
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextKeys.def:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h:
+C:\vcpkg\installed\x64-windows\include\wx\stdpaths.h:
 
 C:\vcpkg\installed\x64-windows\include\wx\platform.h:
 
@@ -2510,8 +2515,6 @@ C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h:
 C:\vcpkg\installed\x64-windows\include\wx\cpp.h:
 
 C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h:
-
-C:\vcpkg\installed\x64-windows\include\wx\types.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h":
 
@@ -2551,7 +2554,19 @@ C:\vcpkg\installed\x64-windows\include\wx\stringops.h:
 
 C:\vcpkg\installed\x64-windows\include\wx\afterstd.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextKeys.def:
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmiscapi2.h":
+
+C:\vcpkg\installed\x64-windows\include\wx\filefn.h:
+
+C:\vcpkg\installed\x64-windows\include\wx\dynarray.h:
+
+C:\vcpkg\installed\x64-windows\include\wx\vector.h:
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\dos.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\fcntl.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h":
 
@@ -2608,10 +2623,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextKeys.def:
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h":
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\dos.h":
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\commdlg.h":
 
@@ -2671,10 +2682,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextKeys.def:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mciapi.h":
 
-C:\vcpkg\installed\x64-windows\include\wx\filefn.h:
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmiscapi2.h":
-
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timeapi.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\joystickapi.h":
@@ -2695,6 +2702,8 @@ C:\vcpkg\installed\x64-windows\include\wx\filefn.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ncrypt.h":
 
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winscard.h":
+
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winspool.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\unknwnbase.h":
@@ -2702,6 +2711,8 @@ C:\vcpkg\installed\x64-windows\include\wx\filefn.h:
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objidlbase.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\coml2api.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\unknwn.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\propidlbase.h":
 
@@ -2716,13 +2727,5 @@ C:\vcpkg\installed\x64-windows\include\wx\filefn.h:
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h":
-
-C:\vcpkg\installed\x64-windows\include\wx\stdpaths.h:
-
-C:\vcpkg\installed\x64-windows\include\wx\dynarray.h:
-
-C:\vcpkg\installed\x64-windows\include\wx\vector.h:
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\fcntl.h":
 
 C:\wamp64\www\lemondeDeLila\client-wx\tests\ParserFuzzHarness.cpp:

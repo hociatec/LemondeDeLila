@@ -1,9 +1,6 @@
 #pragma once
 
-#include <cstddef>
-#include <functional>
-
-#include "shared/accessibility/FocusManager.h"
+#include "shared/accessibility/application/FocusManager.h"
 
 class wxWindow;
 
@@ -18,9 +15,8 @@ class OptionsFocusController final
 public:
     explicit OptionsFocusController(OptionsView& view) noexcept;
 
-    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildSectionMenuPlan(std::size_t sectionIndex);
-    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFirstSectionControlPlan(std::size_t sectionIndex);
-    void BindNavigation(wxWindow& owner, std::function<bool()> isInsideSection);
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildSectionTabsPlan();
+    void BindNavigation(wxWindow& owner);
     bool FocusNextSectionControl();
 
 private:

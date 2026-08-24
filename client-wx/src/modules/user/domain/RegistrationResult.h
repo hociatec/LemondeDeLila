@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "shared/text/UiTexts.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
 
 namespace lila::modules::user::domain
 {

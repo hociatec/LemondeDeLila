@@ -1,18 +1,15 @@
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/presentation/OptionsEventBinder.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstddef
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals_core.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sal.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/concurrencysal.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vadefs.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xkeycheck.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stddef.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtr1common
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/exception
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/crtdbg.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_new_debug.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_new.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/crtdefs.h
@@ -23,9 +20,12 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_math.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stdlib.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_malloc.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_search.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stddef.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_wstdlib.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/limits.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/type_traits
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstddef
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtr1common
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdint
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdint.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstring
@@ -542,6 +542,14 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/checkbox.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/ownerdrawnbutton.h
+C:/vcpkg/installed/x64-windows/include/wx/choice.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+C:/vcpkg/installed/x64-windows/include/wx/ctrlsub.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/ctrlsub.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/choice.h
 C:/vcpkg/installed/x64-windows/include/wx/msgdlg.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -575,13 +583,14 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/stattext.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/presentation/OptionsFocusController.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusManager.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/FocusManager.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/NavigationController.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/presentation/OptionsView.h
-C:/vcpkg/installed/x64-windows/include/wx/simplebook.h
-C:/vcpkg/installed/x64-windows/include/wx/compositebookctrl.h
+C:/vcpkg/installed/x64-windows/include/wx/notebook.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/bookctrl.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -593,57 +602,9 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/imaglist.h
 C:/vcpkg/installed/x64-windows/include/wx/notebook.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/vcpkg/installed/x64-windows/include/wx/bookctrl.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/notebook.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfilesystem_abi.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_tzdb.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/format
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_format_ucd_tables.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_formatter.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_print.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ranges_tuple_formatter.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/bit
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocale
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfacet
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocinfo
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_xlocinfo_types.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/clocale
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/locale.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/charconv
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv_ryu.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv_ryu_tables.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv_tables.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/locale
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocbuf
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/streambuf
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xiosbase
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/share.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocmes
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocmon
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocnum
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xloctime
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/forward_list
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iomanip
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/istream
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ostream.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ios
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sstream
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span

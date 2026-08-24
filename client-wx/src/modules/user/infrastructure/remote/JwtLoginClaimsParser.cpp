@@ -1,8 +1,8 @@
 #include "modules/user/infrastructure/remote/JwtLoginClaimsParser.h"
 
 #include "modules/user/infrastructure/remote/UserAuthFields.h"
-#include "shared/data/JsonReaders.h"
-#include "shared/security/JwtPayload.h"
+#include "shared/data/json/JsonReaders.h"
+#include "shared/security/domain/JwtPayload.h"
 
 namespace lila::modules::user::infrastructure::remote
 {

@@ -5,11 +5,6 @@
 
 namespace lila::modules::options::presentation
 {
-wxWindow* OptionsView::GetFirstSectionControl(std::size_t sectionIndex) const
-{
-    return OptionsViewStateAdapter::GetFirstSectionControl(*this, sectionIndex);
-}
-
 domain::OptionsState OptionsView::ReadState(const domain::OptionsState& baseState) const
 {
     return OptionsViewStateAdapter::ReadState(*this, baseState);

@@ -5,7 +5,7 @@
 #include <wx/datetime.h>
 
 #include "modules/vault/presentation/VaultNavigator.h"
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::vault::presentation
 {

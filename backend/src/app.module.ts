@@ -68,6 +68,10 @@ type EnvValidationInput = Record<string, unknown>;
         JWT_AUDIENCE: Joi.string().optional(),
         JWT_CLOCK_TOLERANCE_SECONDS: Joi.number().default(10),
         JWT_EXPIRES_IN: Joi.string().default('12h'),
+        REFRESH_TOKEN_TTL_SECONDS: Joi.number()
+          .integer()
+          .min(3600)
+          .default(2592000),
         SESSION_STORE_REDIS_URL: Joi.string().uri().optional(),
         GAME_ENGINE_STATE_REDIS_URL: Joi.string().uri().optional(),
         ROOM_PAYLOAD_REDIS_URL: Joi.string().uri().optional(),

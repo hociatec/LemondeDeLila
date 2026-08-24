@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/social/presentation/SocialActionController.h"
 #include "modules/social/presentation/SocialActionId.h"
@@ -6,8 +6,8 @@
 #include "modules/social/presentation/SocialScreenCoordinator.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialView.h"
-#include "shared/ui/controls/VerticalMenu.h"
-#include "shared/ui/navigation/MenuBlueprint.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "shared/ui/presentation/navigation/MenuBlueprint.h"
 
 #include <wx/button.h>
 #include <wx/defs.h>

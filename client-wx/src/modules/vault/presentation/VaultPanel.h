@@ -8,9 +8,9 @@
 
 #include "modules/vault/domain/VaultSnapshot.h"
 #include "modules/vault/presentation/VaultNavigator.h"
-#include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NonFocusablePanel.h"
-#include "shared/concurrency/AsyncRequestSlot.h"
+#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
+#include "shared/concurrency/application/AsyncRequestSlot.h"
 
 class wxStaticText;
 class wxWindow;

@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/messaging/presentation/MessagingFrame.h"
 #include "modules/messaging/presentation/MessagingView.h"
 #include "modules/messaging/presentation/MessagingPresentationModel.h"
@@ -7,7 +7,7 @@
 #include "modules/messaging/presentation/MessagingMailboxController.h"
 #include "modules/messaging/presentation/MessagingFocusController.h"
 #include "modules/messaging/presentation/MessagingScreenCoordinator.h"
-#include "shared/ui/BackgroundTask.h"
+#include "shared/ui/application/BackgroundTask.h"
 
 #include <array>
 #include <memory>
@@ -24,14 +24,14 @@
 #include <wx/weakref.h>
 
 #include "modules/messaging/application/MessagingService.h"
-#include "shared/accessibility/NonFocusablePanel.h"
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/config/AppConfig.h"
-#include "shared/text/UiTexts.h"
-#include "shared/ui/Theme.h"
-#include "shared/ui/controls/VerticalMenu.h"
-#include "shared/ui/navigation/MenuBlueprint.h"
+#include "shared/accessibility/presentation/NonFocusablePanel.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/config/domain/AppConfig.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
+#include "shared/ui/presentation/theme/Theme.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "shared/ui/presentation/navigation/MenuBlueprint.h"
 
 namespace
 {

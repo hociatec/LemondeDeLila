@@ -8,14 +8,18 @@
 #include "modules/social/domain/SocialProfile.h"
 #include "modules/social/domain/SocialUser.h"
 #include "modules/social/application/ISocialGateway.h"
-#include "shared/cache/SingleFlightCache.h"
+#include "shared/cache/application/SingleFlightCache.h"
+
+namespace lila::modules::audio::application { class IAudioService; }
 
 namespace lila::modules::social::application
 {
 class SocialService final
 {
 public:
-    explicit SocialService(ISocialGateway& api);
+    SocialService(
+        ISocialGateway& api,
+        lila::modules::audio::application::IAudioService& audioService);
 
     [[nodiscard]] std::vector<domain::SocialUser> LoadFriends() const;
     [[nodiscard]] std::vector<domain::SocialFriendRequest> LoadIncomingRequests() const;
@@ -31,12 +35,14 @@ public:
     void UnblockUser(int userId) const;
     void RequestFriend(int userId) const;
     [[nodiscard]] std::vector<domain::SocialUser> SearchUsers(const std::string& query) const;
+    [[nodiscard]] bool IsFriendCached(int userId) const;
     void ClearCache();
 
 private:
     void ClearRelationshipCache() const;
 
     ISocialGateway& api_;
+    lila::modules::audio::application::IAudioService& audioService_;
     mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialUser>> friendsCache_;
     mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialFriendRequest>> incomingRequestsCache_;
     mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialFriendRequest>> outgoingRequestsCache_;

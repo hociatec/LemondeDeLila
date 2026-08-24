@@ -25,6 +25,10 @@ The codebase is structured around Clean Architecture principles:
 ### 2.2 Security & Session Storage
 - Token persistence uses Windows DPAPI (`CryptProtectData` / `CryptUnprotectData`) via `shared/security/SecurityUtils.h`.
 - Session access and refresh tokens in memory are erased upon destruction using `SecureWipeString`.
+- Les événements WebSocket et champs de payload du client sont régénérés depuis
+  `backend/src/realtime/infrastructure/presentation/ws/ws-events.ts` et
+  `backend/contracts/client-wx-fields.json`. La configuration CMake échoue si le
+  backend local est présent mais que l'un de ces contrats manque.
 - Local session storage files (`session.json`) have hardened file permissions (restricted ACLs under Windows / `0600` under POSIX) and are securely wiped before deletion.
 
 ### 2.3 Configuration & Preferences Boundaries

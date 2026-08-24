@@ -1,9 +1,9 @@
-﻿#include "shared/text/Encoding.h"
+﻿#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/home/presentation/HomeFrame.h"
-#include "shared/accessibility/FocusCoordinator.h"
-#include "shared/ui/BackgroundTask.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/logging/Logger.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/ui/application/BackgroundTask.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/logging/application/Logger.h"
 
 #include <chrono>
 #include <memory>
@@ -14,7 +14,7 @@
 #include <wx/weakref.h>
 #include <wx/textctrl.h>
 
-#include "shared/accessibility/ActionButton.h"
+#include "shared/accessibility/presentation/ActionButton.h"
 #include "modules/home/application/HomeAuthValidator.h"
 #include "modules/user/application/LoginUseCase.h"
 #include "modules/user/application/RegisterUseCase.h"

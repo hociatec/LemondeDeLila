@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "modules/catalog/domain/CatalogShelf.h"
-#include "shared/cache/SingleFlightCache.h"
+#include "shared/cache/application/SingleFlightCache.h"
 
 namespace lila::modules::catalog::application
 {

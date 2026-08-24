@@ -1,4 +1,4 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/social/presentation/SocialSectionCoordinator.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
@@ -8,11 +8,11 @@
 #include <wx/choice.h>
 #include <wx/textctrl.h>
 
-#include "shared/accessibility/FocusManager.h"
-#include "shared/ui/Theme.h"
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/accessibility/FocusCoordinator.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/FocusManager.h"
+#include "shared/ui/presentation/theme/Theme.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::social::presentation
 {

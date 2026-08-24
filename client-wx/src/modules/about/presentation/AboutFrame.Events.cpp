@@ -4,9 +4,9 @@
 #include <wx/button.h>
 #include <wx/stattext.h>
 
-#include "shared/accessibility/NavigationController.h"
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::about::presentation
 {

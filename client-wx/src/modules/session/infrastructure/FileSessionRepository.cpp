@@ -1,10 +1,10 @@
 #include "modules/session/infrastructure/FileSessionRepository.h"
 #include "modules/session/infrastructure/SessionStorageFields.h"
-#include "shared/data/JsonReaders.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/persistence/JsonFileStorage.h"
-#include "shared/security/JwtPayload.h"
-#include "shared/security/SecurityUtils.h"
+#include "shared/data/json/JsonReaders.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/persistence/infrastructure/JsonFileStorage.h"
+#include "shared/security/domain/JwtPayload.h"
+#include "shared/security/infrastructure/SecurityUtils.h"
 
 #include <nlohmann/json.hpp>
 

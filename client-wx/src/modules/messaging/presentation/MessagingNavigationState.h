@@ -3,7 +3,7 @@
 #include <cstddef>
 
 #include "modules/messaging/domain/MessagingBox.h"
-#include "shared/ui/navigation/NavigationStack.h"
+#include "shared/ui/presentation/navigation/NavigationStack.h"
 
 namespace lila::modules::messaging::presentation
 {

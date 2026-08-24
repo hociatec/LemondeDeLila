@@ -1,9 +1,9 @@
-#include "shared/text/Encoding.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/home/presentation/HomeFrame.h"
 
 #include "modules/user/application/LoginUseCase.h"
 #include "modules/user/application/RegisterUseCase.h"
-#include "shared/config/AppConfig.h"
+#include "shared/config/domain/AppConfig.h"
 
 namespace
 {

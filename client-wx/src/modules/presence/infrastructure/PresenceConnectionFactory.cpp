@@ -1,13 +1,13 @@
 #include "modules/presence/infrastructure/PresenceConnectionFactory.h"
 
-#include "shared/config/AppConfig.h"
-#include "shared/network/WebSocketConstants.h"
-#include "shared/network/http/WsTicketProvider.h"
+#include "shared/config/domain/AppConfig.h"
+#include "shared/network/domain/WebSocketConstants.h"
+#include "shared/network/application/http/IWsTicketProvider.h"
 
 namespace lila::modules::presence::infrastructure
 {
 lila::shared::network::websocket::WebSocketHeaders BuildPresenceHeaders(
-    lila::shared::network::http::WsTicketProvider& ticketProvider,
+    lila::shared::network::http::IWsTicketProvider& ticketProvider,
     const std::string& bearerToken)
 {
     using namespace lila::shared::network::ws;

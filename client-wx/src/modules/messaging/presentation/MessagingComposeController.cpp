@@ -5,8 +5,8 @@
 #include <utility>
 
 #include "modules/messaging/presentation/MessagingMailboxController.h"
-#include "shared/errors/ErrorMessages.h"
-#include "shared/text/UiTexts.h"
+#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/text/presentation/catalog/UiTexts.h"
 
 namespace lila::modules::messaging::presentation
 {

@@ -99,7 +99,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialNavi
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSection.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/navigation/NavigationStack.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSectionCoordinator.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/memory
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iosfwd
@@ -161,7 +161,7 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialSect
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialPresentationModel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialFriendRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialUser.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/identifiers/DomainTypes.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialProfile.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialView.h
 C:/vcpkg/installed/x64-windows/include/wx/button.h
@@ -620,7 +620,7 @@ C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/textctrl.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/controls/VerticalMenu.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio

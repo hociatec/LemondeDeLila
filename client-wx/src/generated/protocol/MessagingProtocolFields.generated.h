@@ -1,4 +1,4 @@
-﻿// Generated from ../backend/src/messaging/{services,ws}. Do not edit manually.
+// Generated from backend/contracts/client-wx-fields.json. Do not edit manually.
 #pragma once
 
 #include <string_view>

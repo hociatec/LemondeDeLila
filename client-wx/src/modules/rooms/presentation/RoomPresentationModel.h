@@ -6,7 +6,7 @@
 #include <wx/string.h>
 
 #include "modules/rooms/domain/Room.h"
-#include "shared/ui/controls/VerticalMenu.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::rooms::presentation
 {
