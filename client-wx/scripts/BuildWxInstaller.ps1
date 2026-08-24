@@ -27,14 +27,16 @@ if ([string]::IsNullOrWhiteSpace($IsccPath) -or !(Test-Path -LiteralPath $IsccPa
 
 $script = Join-Path $PSScriptRoot '..\packaging\LeMondeDeLilaWX.iss'
 $baseName = "LeMondeDeLilaWX-$Version-Setup"
-& $IsccPath `
+$isccOutput = & $IsccPath `
     "/DAppVersion=$Version" `
     "/DSourceDir=$payload" `
     "/DOutputDir=$output" `
     "/DOutputBaseFilename=$baseName" `
-    $script
-if ($LASTEXITCODE -ne 0) {
-    throw "Compilation Inno Setup échouée avec le code $LASTEXITCODE."
+    $script 2>&1
+$isccExitCode = $LASTEXITCODE
+$isccOutput | ForEach-Object { Write-Host $_ }
+if ($isccExitCode -ne 0) {
+    throw "Compilation Inno Setup echouee avec le code $isccExitCode."
 }
 
 $installer = Join-Path $output "$baseName.exe"
