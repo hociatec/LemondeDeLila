@@ -41,6 +41,15 @@ bool IsSafeReleaseId(const std::string& value)
     return std::regex_match(value, pattern) && value.find("..") == std::string::npos;
 }
 
+std::string BuildStagedUpdateArchiveFileName(const std::string& releaseId)
+{
+    if (!IsSafeReleaseId(releaseId)) {
+        throw std::runtime_error("Unsafe update release identifier.");
+    }
+    // Expand-Archive requires a .zip suffix even when the file is only staged.
+    return releaseId + ".download.zip";
+}
+
 UpdateManifest ParseUpdateManifest(const std::string& raw)
 {
     const auto value = json::parse(raw);

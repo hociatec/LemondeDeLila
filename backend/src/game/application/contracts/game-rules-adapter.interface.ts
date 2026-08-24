@@ -8,6 +8,7 @@ import type {
   GameShortcutHint,
   GameShortcutsContext,
 } from '../models/game-shortcuts.model';
+import type { GameAutomaticActionPlan } from '../models/game-automation.model';
 
 /**
  * Interface principale pour les adaptateurs de règles de jeu.
@@ -334,6 +335,12 @@ export interface GameRulesAdapter {
    * vers le jeu en cours.
    */
   getShortcuts?(ctx: GameShortcutsContext<unknown>): GameShortcutHint[];
+
+  /**
+   * Optionnel : declare une transition que le serveur doit executer sans
+   * intervention d'un client (pause, compte a rebours, phase temporisee...).
+   */
+  getAutomaticActions?(state: GameStateEntity): GameAutomaticActionPlan | null;
 }
 
 /**
@@ -408,7 +415,3 @@ export type GameDefinition = {
    */
   rulesPath?: string;
 };
-
-
-
-

@@ -42,6 +42,7 @@ private:
     void BindEvents();
     void AttachEventHandler();
     void StartJoin();
+    void PrepareAndExecuteAction(domain::GameAction action);
     void ExecuteAction(domain::GameAction action);
     void RequestRefresh();
     void ApplyState(domain::GameState state);

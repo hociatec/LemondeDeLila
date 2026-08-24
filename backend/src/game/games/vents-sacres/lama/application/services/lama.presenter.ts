@@ -5,30 +5,19 @@ import type {
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import type { PendingState } from '../../../../../application/models/game-state.model';
 import { BasePresenterService } from '../../../../../application/services/base-presenter.service';
-import type { LamaCardValue, LamaMetadata } from '../../model/lama.model';
-import {
-  lamaCardLabel,
-  lamaCardScore,
-  nextLamaValue,
-  LAMA_VALUE,
-} from '../../model/lama.model';
+import type { LamaMetadata } from '../../model/lama.model';
 import { stringOrEmpty } from '@common/utils/public-api';
-
-type LamaPresenterAction = {
-  type: string;
-  label?: string;
-  payload?: Record<string, unknown>;
-};
-
-function asRecord(value: unknown): Record<string, unknown> {
-  return value != null && typeof value === 'object'
-    ? (value as Record<string, unknown>)
-    : {};
-}
+import { LamaActionsPresenter } from './lama-actions.presenter';
+import { LamaExtrasPresenter } from './lama-extras.presenter';
+import { LamaPendingPresenter } from './lama-pending.presenter';
 
 export class LamaPresenter extends BasePresenterService {
+  private readonly actionsPresenter = new LamaActionsPresenter();
+  private readonly extrasPresenter = new LamaExtrasPresenter();
+  private readonly pendingPresenter = new LamaPendingPresenter();
+
   private normalizeUiText(value: unknown): string {
-    return String(value ?? '')
+    return stringOrEmpty(value)
       .replaceAll('Dé', 'Dé')
       .replaceAll('Dé', 'Dé')
       .replaceAll('dé', 'dé')
@@ -80,7 +69,7 @@ export class LamaPresenter extends BasePresenterService {
     const pending =
       exposed.pending && typeof exposed.pending === 'object'
         ? {
-            ...(exposed.pending as PendingState),
+            ...exposed.pending,
             label: this.normalizeUiText(exposed.pending.label ?? ''),
           }
         : exposed.pending;
@@ -96,16 +85,6 @@ export class LamaPresenter extends BasePresenterService {
     return { ...exposed, log, pending, actions };
   }
 
-  private isSetup(state: GameStateEntity): boolean {
-    const status = String(state?.status ?? '')
-      .toLowerCase()
-      .trim();
-    const phase = String(state?.phase ?? '')
-      .toLowerCase()
-      .trim();
-    return status === 'setup' || phase === 'setup';
-  }
-
   protected buildCatalog(): {
     phases: string[];
     victory: Record<string, unknown>;
@@ -117,131 +96,7 @@ export class LamaPresenter extends BasePresenterService {
     state: GameStateEntity,
     userId: number,
   ): GameSingleActionDto[] {
-    const meta = (state.metadata ?? {}) as LamaMetadata;
-
-    if (this.isSetup(state) || (meta.step ?? '') === 'setup_config') {
-      const ownerId = this.resolveSetupOwnerId(state, meta);
-      if (ownerId == null || userId !== ownerId) return [];
-      return [{ type: 'lama_set_config', payload: {} }];
-    }
-
-    if ((meta.step ?? '') === 'round_pause') {
-      return [];
-    }
-
-    if (!this.isStarted(state)) return [];
-
-    const out: GameSingleActionDto[] = [
-      { type: 'lama_peek_discard', payload: {} },
-    ];
-
-    const handValues = (
-      (meta.handsByPlayerId ?? {})[String(userId)] ?? []
-    ).filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE);
-    const dropped = Boolean((meta.droppedOutByPlayerId ?? {})[String(userId)]);
-    const drawLocked = this.isDrawLocked(meta);
-    const sortedHandValues = [...handValues].sort((a, b) => a - b);
-
-    const current = state.turn?.currentPlayerId ?? null;
-    if (current !== userId) {
-      // Not your turn: allow browsing hand without sending game-altering actions.
-      for (const value of sortedHandValues) {
-        out.push({ type: 'lama_preview', payload: { value } });
-      }
-      return out;
-    }
-
-    const step = meta.step ?? 'turn_choice';
-    if (step === 'return_token') {
-      if (meta.pendingReturnPlayerId !== userId) return [];
-      const score = Number((meta.scoresByPlayerId ?? {})[String(userId)] ?? 0);
-      if (score >= 1) out.push({ type: 'lama_return', payload: { value: 1 } });
-      if (score >= 10)
-        out.push({ type: 'lama_return', payload: { value: 10 } });
-      out.push({ type: 'lama_return', payload: { value: 0 } });
-      return out;
-    }
-
-    if (dropped) return out;
-
-    const top = this.topDiscard(meta);
-    if (!top) return out;
-    const allowed = new Set<LamaCardValue>([top, nextLamaValue(top)]);
-
-    const tracker = meta.turnTracker ?? {
-      playerId: current,
-      drawn: false,
-      played: false,
-    };
-
-    const asNumberOrNull = (value: unknown): number | null => {
-      if (typeof value === 'number' && Number.isFinite(value)) return value;
-      if (typeof value === 'string') {
-        const n = Number(value.trim());
-        return Number.isFinite(n) ? n : null;
-      }
-      return null;
-    };
-    const asBoolean = (value: unknown): boolean => {
-      if (value === true) return true;
-      if (value === false) return false;
-      if (typeof value === 'number') return value === 1;
-      if (typeof value === 'string') {
-        const t = value.trim().toLowerCase();
-        if (
-          t === 'true' ||
-          t === '1' ||
-          t === 'yes' ||
-          t === 'oui' ||
-          t === 'on'
-        )
-          return true;
-        if (
-          t === 'false' ||
-          t === '0' ||
-          t === 'no' ||
-          t === 'non' ||
-          t === 'off'
-        )
-          return false;
-      }
-      return false;
-    };
-
-    const trackerPlayerId = asNumberOrNull(tracker?.playerId);
-    const isSameTurn = trackerPlayerId === current;
-    const trackerDrawn = asBoolean(tracker?.drawn);
-    const trackerPlayed = asBoolean(tracker?.played);
-
-    const turnIndex = Number(state.turnIndex ?? 0);
-    const lastDrawMap = meta.lastDrawTurnIndexByPlayerId ?? null;
-    const lastDrawIndex =
-      lastDrawMap && typeof lastDrawMap === 'object'
-        ? asNumberOrNull(lastDrawMap[String(userId)])
-        : null;
-    const justDrew = lastDrawIndex != null && lastDrawIndex === turnIndex;
-    const alreadyDrew = (isSameTurn && trackerDrawn) || justDrew;
-
-    // One action per card in hand (including duplicates), but only expose "play" when legal.
-    // This prevents "blocked" turns where the UI suggests an unplayable card that the server ignores.
-    for (const value of sortedHandValues) {
-      if (!(isSameTurn && trackerPlayed) && allowed.has(value)) {
-        out.push({ type: 'lama_play', payload: { value, count: 1 } });
-      } else {
-        out.push({ type: 'lama_preview', payload: { value } });
-      }
-    }
-
-    if (!drawLocked && (meta.deck ?? []).length > 0 && !alreadyDrew) {
-      out.push({ type: 'draw', payload: {} });
-    }
-
-    const allowPlayAfterDraw = Boolean(meta.allowPlayAfterDraw);
-    if (allowPlayAfterDraw && alreadyDrew && !trackerPlayed) {
-      out.push({ type: 'lama_pass', payload: {} });
-    }
-    out.push({ type: 'lama_quit', payload: {} });
-    return out;
+    return this.actionsPresenter.build(state, userId);
   }
 
   protected buildPendingState(
@@ -258,131 +113,12 @@ export class LamaPresenter extends BasePresenterService {
     userId: number,
     currentPlayerId: number | null,
   ): PendingState | null {
-    if (this.isSetup(state) || (metadata.step ?? '') === 'setup_config') {
-      const ownerId = this.resolveSetupOwnerId(state, metadata);
-      if (ownerId == null || userId !== ownerId) return null;
-      return {
-        type: 'config_prompt',
-        label: 'Configuration LAMA.',
-        playerId: ownerId,
-        choices: [],
-        data: {
-          title: 'LAMA',
-          actionType: 'lama_set_config',
-          fields: [
-            {
-              key: 'loseAtScore',
-              label: 'Score de défaite (jetons)',
-              kind: 'number',
-              min: 5,
-              max: 200,
-              initialText: String(metadata.loseAtScore ?? 40),
-            },
-            {
-              key: 'roundPauseSeconds',
-              label: 'Pause entre manches (secondes)',
-              kind: 'number',
-              min: 0,
-              max: 120,
-              initialText: String(metadata.roundPauseSeconds ?? 2),
-            },
-            {
-              key: 'allowPlayAfterDraw',
-              label: 'Autoriser de rejouer après une pioche (oui/non)',
-              kind: 'boolean',
-              initialText: metadata.allowPlayAfterDraw ? 'oui' : 'non',
-            },
-            {
-              key: 'allowDrawAfterFirstQuit',
-              label:
-                'Autoriser la pioche après qu’un joueur s’est retiré (dans la manche) (oui/non)',
-              kind: 'boolean',
-              initialText: metadata.allowDrawAfterFirstQuit ? 'oui' : 'non',
-            },
-            {
-              key: 'returnTokenFromRound',
-              label:
-                'Manche à partir de laquelle un jeton peut être rendu',
-              kind: 'number',
-              min: 1,
-              max: 50,
-              initialText: String(metadata.returnTokenFromRound ?? 2),
-            },
-          ],
-        },
-      };
-    }
-
-    if ((metadata.step ?? '') === 'round_pause') {
-      const until =
-        typeof metadata.roundPauseUntilMs === 'number'
-          ? metadata.roundPauseUntilMs
-          : null;
-      const seconds =
-        until != null ? Math.max(0, Math.ceil((until - Date.now()) / 1000)) : 0;
-      return {
-        type: 'lama_pause',
-        label: `Pause entre manches : prochain round dans ~${seconds}s.`,
-        playerId: userId,
-        choices: [],
-      };
-    }
-
-    if (!this.isStarted(state)) return null;
-    // Always expose hand + discard top for the viewer (the server is the source of truth).
-
-    const step = metadata.step ?? 'turn_choice';
-    if (step === 'return_token') {
-      if (metadata.pendingReturnPlayerId !== userId) return null;
-      const score = Number(
-        (metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0,
-      );
-      const choices: string[] = [];
-      if (score >= 1) choices.push('Rendre 1 jeton');
-      if (score >= 10) choices.push('Rendre 1 diamant (10 jetons)');
-      choices.push('Ne rien rendre');
-      return {
-        type: 'lama_return',
-        label:
-          'Vous avez gagné la manche : rendez 1 jeton ou 1 diamant (10 jetons) si possible.',
-        playerId: userId,
-        choices,
-      };
-    }
-
-    const hand = (metadata.handsByPlayerId ?? {})[String(userId)] ?? [];
-    const droppedOut = Boolean(
-      (metadata.droppedOutByPlayerId ?? {})[String(userId)],
+    return this.pendingPresenter.build(
+      state,
+      metadata,
+      userId,
+      currentPlayerId,
     );
-    const drawLocked = this.isDrawLocked(metadata);
-
-    const top = this.topDiscard(metadata);
-    if (!top) return null;
-
-    const choices = hand
-      .slice()
-      .filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE)
-      .sort((a, b) => a - b)
-      .map(lamaCardLabel);
-
-    const meScore = Number(
-      (metadata.scoresByPlayerId ?? {})[String(userId)] ?? 0,
-    );
-    const discardTop = lamaCardLabel(top);
-    const handScore = [...new Set(hand)].reduce(
-      (sum, v) => sum + lamaCardScore(v),
-      0,
-    );
-    return {
-      type: currentPlayerId === userId ? 'lama_turn' : 'lama_hand',
-      label: droppedOut
-        ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} jetons). Total : ${meScore} jetons.`
-        : currentPlayerId === userId
-          ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S jetons' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S jetons'})`
-          : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (En attente)`,
-      playerId: userId,
-      choices,
-    };
   }
 
   protected getActionLabel(actionType: string): string {
@@ -411,161 +147,13 @@ export class LamaPresenter extends BasePresenterService {
     userId: number,
     currentPlayerId: number | null,
   ): Record<string, unknown> {
-    const base = this.getBaseExtras(state);
-    const players = Array.isArray(state.players) ? state.players : [];
-
-    const handValues = (metadata.handsByPlayerId ?? {})[String(userId)] ?? [];
-    const hand = handValues
-      .filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE)
-      .sort((a, b) => a - b)
-      .map(lamaCardLabel);
-
-    const scoreBy = metadata.scoresByPlayerId ?? {};
-    const myScore = Number(scoreBy[String(userId)] ?? 0);
-    const namesById = new Map<number, string>();
-    players
-      .filter((p) => typeof p?.id === 'number')
-      .forEach((p) => {
-        const pid = p.id;
-        namesById.set(
-          pid,
-          this.sanitizePlayerName(p.username) || `Joueur ${pid}`,
-        );
-      });
-    const orderedPlayerIds = players
-      .map((p) => (typeof p?.id === 'number' ? p.id : null))
-      .filter((pid): pid is number => pid != null);
-    const knownPlayerIdSet = new Set(orderedPlayerIds);
-    const orphanScores = Object.entries(scoreBy)
-      .filter(([pid]) => !knownPlayerIdSet.has(Number(pid)))
-      .map(([, score]) => Number(score))
-      .filter((score) => Number.isFinite(score));
-
-    const scoreLines: string[] = orderedPlayerIds.map((pid) => {
-      const name = namesById.get(pid) || `Joueur ${pid}`;
-      const direct = Number(scoreBy[String(pid)]);
-      const scoreValue = Number.isFinite(direct)
-        ? direct
-        : orphanScores.length > 0
-          ? Number(orphanScores.shift())
-          : 0;
-      return `${name}: ${scoreValue}`;
-    });
-
-    const discard = Array.isArray(metadata.discard) ? metadata.discard : [];
-    const top = discard.length ? discard[discard.length - 1] : null;
-    const discardTop = top ? lamaCardLabel(top) : '(vide)';
-    const drawLocked = this.isDrawLocked(metadata);
-
-    const playableText = (() => {
-      if (this.isSetup(state)) {
-        const loseAt = metadata.loseAtScore ?? null;
-        return loseAt != null
-          ? `Réglages: défaite à ${loseAt} jetons.`
-          : 'Réglages: choisissez le score de défaite, puis Entrée.';
-      }
-      if (!this.isStarted(state)) return 'Partie non démarrée.';
-      if (currentPlayerId !== userId) return "Ce n'est pas votre tour.";
-      const step = metadata.step ?? 'turn_choice';
-      if (step === 'return_token')
-        return 'Rendez 1 jeton ou 1 diamant (10 jetons) si possible.';
-      if (!top) return 'Défausse vide.';
-      const allowed = new Set<LamaCardValue>([top, nextLamaValue(top)]);
-      const counts = new Map<LamaCardValue, number>();
-      for (const v of handValues) {
-        counts.set(v, (counts.get(v) ?? 0) + 1);
-      }
-      const parts: string[] = [];
-      for (const [value, count] of [...counts.entries()].sort(
-        (a, b) => a[0] - b[0],
-      )) {
-        if (!allowed.has(value)) continue;
-        parts.push(`${lamaCardLabel(value)}×${count}`);
-      }
-      return `Défausse : ${discardTop}. (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S score' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S score'})`;
-    })();
-
-    return {
-      ...base,
-      hand,
-      score: [`Total jetons: ${myScore}`, ...scoreLines],
-      ui: {
-        panels: {
-          hand: {
-            title: 'Main',
-            message: hand.length ? `Main: ${hand.join(', ')}` : 'Main: (vide)',
-          },
-          hands: {
-            title: 'Mains',
-            message: (() => {
-              const by = metadata.handsByPlayerId ?? {};
-              const parts = players
-                .filter((p) => p?.id)
-                .map((p) => {
-                  const pid = p.id;
-                  const name = this.sanitizePlayerName(p.username) || `#${pid}`;
-                  const count = Array.isArray(by[String(pid)])
-                    ? by[String(pid)].length
-                    : 0;
-                  return `${name}: ${count}`;
-                });
-              return parts.length
-                ? `Cartes en main — ${parts.join(', ')}.`
-                : 'Cartes en main : inconnues.';
-            })(),
-          },
-          discard: {
-            title: 'Défausse',
-            message: `Défausse : ${discardTop}.`,
-          },
-          play: {
-            title: 'À jouer',
-            message: playableText,
-          },
-          score: {
-            title: 'Jetons',
-            message: (() => {
-              if (scoreLines.length === 0) return 'Jetons: inconnus.';
-              const loseAt =
-                metadata.loseAtScore != null
-                  ? Number(metadata.loseAtScore)
-                  : null;
-              const loseText =
-                loseAt != null && Number.isFinite(loseAt)
-                  ? ` Défaite à ${loseAt} jetons.`
-                  : '';
-              return `Jetons: ${scoreLines.join(', ')}.${loseText}`;
-            })(),
-          },
-          table: {
-            title: 'Table',
-            message:
-              metadata.loseAtScore != null
-                ? `Défaite à ${metadata.loseAtScore} jetons.`
-                : 'Défaite: non configurée.',
-          },
-        },
-      },
-    };
-  }
-
-  private topDiscard(meta: LamaMetadata): LamaCardValue | null {
-    const discard = meta.discard ?? [];
-    const top = discard.length ? discard[discard.length - 1] : null;
-    if (!top) return null;
-    if (top < 1 || top > LAMA_VALUE) return null;
-    return top;
-  }
-
-  private isDrawLocked(meta: LamaMetadata): boolean {
-    if (meta.allowDrawAfterFirstQuit) return false;
-
-    const dropped = meta.droppedOutByPlayerId ?? {};
-    const hands = meta.handsByPlayerId ?? {};
-
-    // Only consider players actually in the round (handsByPlayerId keys).
-    // Eliminated players may remain flagged as dropped and must not lock draws.
-    return Object.keys(hands).some((pid) => Boolean(dropped[pid]));
+    return this.extrasPresenter.build(
+      state,
+      metadata,
+      userId,
+      currentPlayerId,
+      this.getBaseExtras(state),
+    );
   }
 
   private redactDrawLogForUser(
@@ -611,42 +199,5 @@ export class LamaPresenter extends BasePresenterService {
 
       return { ...entry, message: `${actorLabel} pioche une carte.` };
     });
-  }
-
-  private resolveSetupOwnerId(
-    state: GameStateEntity,
-    metadata: LamaMetadata,
-  ): number | null {
-    const players = Array.isArray(state?.players) ? state.players : [];
-    const playerExists = (id: unknown): id is number =>
-      typeof id === 'number' && players.some((p) => Number(p?.id) === id);
-    const isBot = (id: number): boolean =>
-      players.some((p) => Number(p?.id) === id && p?.isBot === true);
-
-    const metaOwner = metadata?.ownerPlayerId ?? null;
-    if (playerExists(metaOwner) && !isBot(metaOwner)) {
-      return metaOwner;
-    }
-
-    const pendingOwner = Number(asRecord(state?.pending).playerId ?? NaN);
-    if (
-      Number.isFinite(pendingOwner) &&
-      playerExists(pendingOwner) &&
-      !isBot(pendingOwner)
-    ) {
-      return pendingOwner;
-    }
-
-    const turnOwner = state?.turn?.currentPlayerId ?? null;
-    if (playerExists(turnOwner) && !isBot(turnOwner)) {
-      return turnOwner;
-    }
-
-    const firstHuman = players.find((p) => p?.id != null && p?.isBot !== true);
-    if (typeof firstHuman?.id === 'number') {
-      return firstHuman.id;
-    }
-
-    return typeof players[0]?.id === 'number' ? players[0].id : null;
   }
 }

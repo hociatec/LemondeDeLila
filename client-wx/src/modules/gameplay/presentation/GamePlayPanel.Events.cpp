@@ -78,7 +78,7 @@ void GamePlayPanel::ActivateSelectedLine()
         UpdateStatus(wxString(L"Ligne informative."), false, true);
         return;
     }
-    ExecuteAction(state_.actions[line.actionIndex]);
+    PrepareAndExecuteAction(state_.actions[line.actionIndex]);
 }
 
 bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
@@ -107,7 +107,7 @@ bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
         {
             UpdateStatus(wxString(L"Quitter la manche demandé."), false, true);
         }
-        ExecuteAction(std::move(*action));
+        PrepareAndExecuteAction(std::move(*action));
         return true;
     }
     return false;

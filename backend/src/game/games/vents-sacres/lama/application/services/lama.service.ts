@@ -8,6 +8,8 @@ import type {
   GameShortcutHint,
   GameShortcutsContext,
 } from '../../../../../application/models/game-shortcuts.model';
+import type { GameAutomaticActionPlan } from '../../../../../application/models/game-automation.model';
+import type { LamaMetadata } from '../../model/lama.model';
 import { LamaPresenter } from './lama.presenter';
 import { LamaActionService } from './lama-action.service';
 import { LamaSetupService } from './lama-setup.service';
@@ -62,10 +64,16 @@ export class LamaService extends AbstractGameService {
   getShortcuts(ctx: GameShortcutsContext<unknown>): GameShortcutHint[] {
     return this.shortcuts.getShortcuts(ctx);
   }
+
+  getAutomaticActions(state: GameStateEntity): GameAutomaticActionPlan | null {
+    const metadata = (state.metadata ?? {}) as Partial<LamaMetadata>;
+    if (metadata.step !== 'round_pause') return null;
+    const roundNumber = Number(metadata.roundNumber ?? state.round ?? 0);
+    const executeAtMs = Number(metadata.roundPauseUntilMs ?? Date.now());
+    return {
+      key: `round-pause:${roundNumber}`,
+      executeAtMs: Number.isFinite(executeAtMs) ? executeAtMs : Date.now(),
+      actions: [{ type: 'lama_resume_round', payload: {} }],
+    };
+  }
 }
-
-
-
-
-
-

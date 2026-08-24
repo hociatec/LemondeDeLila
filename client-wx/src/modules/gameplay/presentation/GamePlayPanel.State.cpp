@@ -121,7 +121,16 @@ wxString GamePlayPanel::BuildLineDetail() const
 
 wxString GamePlayPanel::BuildInfoText(const std::string& panelId) const
 {
-    if (panelId == "details") return BuildLineDetail();
+    if (panelId == "details")
+    {
+        wxString text;
+        if (state_.prompt)
+        {
+            const auto& label = state_.prompt->label.empty() ? state_.prompt->title : state_.prompt->label;
+            if (!label.empty()) text = FromUtf8(label) + wxString(L"\n");
+        }
+        return text + BuildLineDetail();
+    }
     std::ostringstream out;
     const auto ui = state_.extras.find("ui");
     if (ui != state_.extras.end() && ui->is_object())

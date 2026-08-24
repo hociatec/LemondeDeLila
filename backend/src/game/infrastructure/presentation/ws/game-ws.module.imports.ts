@@ -13,10 +13,12 @@ import { VictoryModule } from '../../../application/modules/victory.module';
 import { Room } from '../../../../room/infrastructure/persistence/typeorm/entities/room.entity';
 import { RoomBot } from '../../../../room/infrastructure/persistence/typeorm/entities/room-bot.entity';
 import { RoomParticipant } from '../../../../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
+import { BotModule } from '../../module/bot.module';
 
 export const GAME_WS_MODULE_IMPORTS = [
   GameRegistryModule,
   EngineServicesModule,
+  BotModule,
   TypeOrmModule.forFeature([Room, RoomParticipant, RoomBot]),
   BoardModule,
   CardsModule,

@@ -1,0 +1,22 @@
+#pragma once
+
+#include <optional>
+#include <string>
+#include <vector>
+
+#include <nlohmann/json.hpp>
+
+#include "modules/gameplay/domain/GameAction.h"
+#include "modules/gameplay/domain/GameLine.h"
+#include "modules/gameplay/domain/GamePrompt.h"
+#include "modules/gameplay/domain/GameShortcut.h"
+
+namespace lila::modules::gameplay::infrastructure::detail
+{
+[[nodiscard]] std::vector<std::string> DecodeLog(const nlohmann::json& payload);
+[[nodiscard]] std::vector<domain::GameAction> DecodeActions(const nlohmann::json& payload);
+[[nodiscard]] std::vector<domain::GameShortcut> DecodeShortcuts(const nlohmann::json& extras);
+[[nodiscard]] std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode);
+[[nodiscard]] std::vector<domain::GameLine> BuildLines(const std::vector<domain::GameAction>& actions);
+[[nodiscard]] std::string NormalizeShortcutKey(std::string rawKey);
+}

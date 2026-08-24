@@ -1,12 +1,14 @@
 #pragma once
 
 #include <string>
+#include <optional>
 #include <vector>
 
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/domain/GameAction.h"
 #include "modules/gameplay/domain/GameLine.h"
+#include "modules/gameplay/domain/GamePrompt.h"
 #include "modules/gameplay/domain/GameShortcut.h"
 
 namespace lila::modules::gameplay::domain
@@ -24,6 +26,7 @@ struct GameState final
     std::vector<GameAction> actions;
     std::vector<GameShortcut> shortcuts;
     std::vector<GameLine> lines;
+    std::optional<GamePrompt> prompt;
     std::vector<std::string> logMessages;
     nlohmann::json metadata = nlohmann::json::object();
     nlohmann::json extras = nlohmann::json::object();

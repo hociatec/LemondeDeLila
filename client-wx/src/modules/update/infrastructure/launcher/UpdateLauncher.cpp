@@ -37,6 +37,7 @@ namespace fs = std::filesystem;
 using json = nlohmann::json;
 using Manifest = lila::modules::update::UpdateManifest;
 using lila::modules::update::CanonicalUpdateSignature;
+using lila::modules::update::BuildStagedUpdateArchiveFileName;
 using lila::modules::update::IsSafeReleaseId;
 using lila::modules::update::IsUpdateNewer;
 using lila::modules::update::ParseUpdateManifest;
@@ -722,7 +723,7 @@ fs::path PrepareRelease(const fs::path& root, const Manifest& manifest)
         fs::is_regular_file(finalPath / LauncherExecutable)) return finalPath;
     const fs::path stagingRoot = root / L"staging";
     fs::create_directories(stagingRoot);
-    const fs::path archive = stagingRoot / (Widen(manifest.releaseId) + L".download");
+    const fs::path archive = stagingRoot / Widen(BuildStagedUpdateArchiveFileName(manifest.releaseId));
     EnsureFreeSpace(root, manifest.size * 2);
     DownloadFile(manifest.url, archive, manifest.size);
     if (fs::file_size(archive) != manifest.size || Sha256(archive) != manifest.sha256) {

@@ -166,11 +166,16 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/catalog/presentation/CatalogPanel.Loading.cpp
     src/modules/catalog/presentation/CatalogShelfNavigator.cpp
 
+    src/modules/gameplay/application/GamePromptInputCodec.cpp
     src/modules/gameplay/application/GameSessionService.cpp
+    src/modules/gameplay/infrastructure/GamePayloadJsonReader.cpp
     src/modules/gameplay/infrastructure/GameSessionGateway.cpp
+    src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp
     src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp
+    src/modules/gameplay/presentation/GameActionPromptDialog.cpp
     src/modules/gameplay/presentation/GamePlayFormatters.cpp
     src/modules/gameplay/presentation/GamePlayPanel.cpp
+    src/modules/gameplay/presentation/GamePlayPanel.Actions.cpp
     src/modules/gameplay/presentation/GamePlayPanel.Events.cpp
     src/modules/gameplay/presentation/GamePlayPanel.Layout.cpp
     src/modules/gameplay/presentation/GamePlayPanel.Session.cpp
@@ -498,7 +503,6 @@ if(BUILD_TESTING)
     if(EXISTS "${NETWORK_PROTOCOL_TEST}")
         add_executable(lemonde_de_lila_wx_tests
             tests/NetworkProtocolTests.cpp
-            src/modules/update/domain/UpdateProtocol.cpp
             src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp
             src/modules/catalog/presentation/CatalogShelfNavigator.cpp
             src/modules/rooms/infrastructure/RoomPayloadCodec.cpp
@@ -606,6 +610,41 @@ if(BUILD_TESTING)
         add_test(
             NAME lemonde_de_lila_wx_tests
             COMMAND lemonde_de_lila_wx_tests
+        )
+
+        add_executable(lemonde_de_lila_wx_update_tests
+            tests/UpdateProtocolTests.cpp
+            src/modules/update/domain/UpdateProtocol.cpp
+        )
+        target_include_directories(lemonde_de_lila_wx_update_tests PRIVATE src)
+        target_link_libraries(lemonde_de_lila_wx_update_tests PRIVATE nlohmann_json::nlohmann_json)
+        if(MSVC)
+            target_compile_options(lemonde_de_lila_wx_update_tests PRIVATE /W4 /permissive- /utf-8)
+        else()
+            target_compile_options(lemonde_de_lila_wx_update_tests PRIVATE -Wall -Wextra -Wpedantic)
+        endif()
+        add_test(
+            NAME lemonde_de_lila_wx_update_tests
+            COMMAND lemonde_de_lila_wx_update_tests
+        )
+
+        add_executable(lemonde_de_lila_wx_gameplay_tests
+            tests/GameplayContractTests.cpp
+            src/modules/gameplay/application/GamePromptInputCodec.cpp
+            src/modules/gameplay/infrastructure/GamePayloadJsonReader.cpp
+            src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp
+            src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp
+        )
+        target_include_directories(lemonde_de_lila_wx_gameplay_tests PRIVATE src)
+        target_link_libraries(lemonde_de_lila_wx_gameplay_tests PRIVATE nlohmann_json::nlohmann_json)
+        if(MSVC)
+            target_compile_options(lemonde_de_lila_wx_gameplay_tests PRIVATE /W4 /permissive- /utf-8)
+        else()
+            target_compile_options(lemonde_de_lila_wx_gameplay_tests PRIVATE -Wall -Wextra -Wpedantic)
+        endif()
+        add_test(
+            NAME lemonde_de_lila_wx_gameplay_tests
+            COMMAND lemonde_de_lila_wx_gameplay_tests
         )
 
         add_executable(lemonde_de_lila_wx_parser_fuzz

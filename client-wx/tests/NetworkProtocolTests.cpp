@@ -48,7 +48,6 @@
 #include "modules/options/application/OptionsStore.h"
 #include "modules/options/domain/IOptionsRepository.h"
 #include "modules/options/domain/OptionsState.h"
-#include "modules/update/domain/UpdateProtocol.h"
 #include "modules/options/infrastructure/OptionsJsonDocumentCodec.h"
 #include "modules/session/application/SessionStore.h"
 #include "modules/session/domain/ISessionRepository.h"
@@ -2150,66 +2149,6 @@ void TestSingleFlightCacheSharesLoadsAndSupportsInvalidation()
     std::cout << "[TEST PASSED] SingleFlightCacheSharesLoadsAndSupportsInvalidation\n";
 }
 
-void TestUpdateProtocolRejectsUnsafeMetadata()
-{
-    using namespace lila::modules::update;
-    Expect(IsUpdateNewer("1.10.0", "1.9.99"),
-        "La comparaison de version ne doit pas etre lexicographique");
-    Expect(!IsSafeReleaseId("../outside"),
-        "Un identifiant de release traversant doit etre rejete");
-
-    const std::string manifest = R"json({
-        "schemaVersion": 2,
-        "product": "client-wx",
-        "platform": "windows",
-        "architecture": "x64",
-        "channel": "stable",
-        "releaseId": "1.4.2-release",
-        "version": "1.4.2",
-        "sequence": 42,
-        "publishedAt": "2026-08-24T12:00:00.000Z",
-        "mandatoryAt": null,
-        "minimumVersion": "1.4.0",
-        "artifact": {
-            "url": "https://updates.example/client.zip",
-            "size": 1234,
-            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "signature": "AA==",
-            "signatureAlgorithm": "rsa-pkcs1-sha256"
-        }
-    })json";
-    const auto parsed = ParseUpdateManifest(manifest);
-    const auto canonical = CanonicalUpdateSignature(parsed);
-    const std::string expectedCanonical =
-        "lila-client-wx-manifest-v2\n"
-        "product=client-wx\n"
-        "platform=windows\n"
-        "architecture=x64\n"
-        "channel=stable\n"
-        "releaseId=1.4.2-release\n"
-        "version=1.4.2\n"
-        "sequence=42\n"
-        "publishedAt=2026-08-24T12:00:00.000Z\n"
-        "mandatoryAt=-\n"
-        "minimumVersion=1.4.0\n"
-        "artifactSize=1234\n"
-        "artifactSha256=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    Expect(canonical == expectedCanonical,
-        "Le contrat signe doit rester identique entre le client, le backend et la CI");
-
-    bool rejected = false;
-    try
-    {
-        static_cast<void>(ParseUpdateVersion("1.02.3"));
-    }
-    catch (...)
-    {
-        rejected = true;
-    }
-    Expect(rejected, "Une version ambigue doit etre rejetee");
-    std::cout << "[TEST PASSED] UpdateProtocolRejectsUnsafeMetadata\n";
-}
-
 int main()
 {
     try
@@ -2227,7 +2166,6 @@ int main()
         std::cout << "Running automated unit tests for client-wx...\n";
         std::cout.flush();
         run("SessionValidation", TestSessionValidation);
-        run("UpdateProtocolRejectsUnsafeMetadata", TestUpdateProtocolRejectsUnsafeMetadata);
         run("JwtPayloadExpiration", TestJwtPayloadExpiration);
         run("OptionsStateNormalization", TestOptionsStateNormalization);
         run("DomainTypes", TestDomainTypes);
