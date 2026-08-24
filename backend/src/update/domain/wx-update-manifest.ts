@@ -25,6 +25,11 @@ export type WxUpdateManifest = {
     signature: string;
     signatureAlgorithm: typeof WX_UPDATE_SIGNATURE_ALGORITHM;
   };
+  installer?: {
+    url: string;
+    size: number;
+    sha256: string;
+  };
 };
 
 export type WxUpdateManifestResponse = WxUpdateManifest & {

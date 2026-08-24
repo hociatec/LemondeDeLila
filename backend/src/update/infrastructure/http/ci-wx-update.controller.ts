@@ -48,6 +48,14 @@ export class CiWxUpdateController {
         typeof body.signature === 'string' ? body.signature : undefined,
       totalBytes:
         typeof body.totalBytes === 'number' ? body.totalBytes : undefined,
+      installerSha256:
+        typeof body.installerSha256 === 'string'
+          ? body.installerSha256
+          : undefined,
+      installerTotalBytes:
+        typeof body.installerTotalBytes === 'number'
+          ? body.installerTotalBytes
+          : undefined,
     });
   }
 
@@ -68,6 +76,7 @@ export class CiWxUpdateController {
       return await this.uploads.chunk({
         uploadId: typeof body?.uploadId === 'string' ? body.uploadId : '',
         index: Number(body?.index ?? -1),
+        kind: typeof body?.kind === 'string' ? body.kind : undefined,
         filePath,
       });
     } finally {

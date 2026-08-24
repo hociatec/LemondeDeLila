@@ -21,8 +21,12 @@ type WxUploadMeta = {
   sha256: string;
   signature: string;
   totalBytes: number;
+  installerSha256: string | null;
+  installerTotalBytes: number | null;
   completedAt: string | null;
 };
+
+type WxUploadPartKind = 'artifact' | 'installer';
 
 @Injectable()
 export class WxUpdateUploadService {
@@ -47,6 +51,8 @@ export class WxUpdateUploadService {
     sha256?: string;
     signature?: string;
     totalBytes?: number | null;
+    installerSha256?: string;
+    installerTotalBytes?: number | null;
   }): Promise<{ uploadId: string }> {
     const version = (input.version || '').trim();
     const releaseId = (input.releaseId || '').trim();
@@ -73,6 +79,22 @@ export class WxUpdateUploadService {
     if (!signature || signature.length > 16_384) {
       throw new BadRequestException('Signature WX invalide.');
     }
+    const installerSha256 = (input.installerSha256 || '').trim().toLowerCase();
+    const installerTotalBytes =
+      input.installerTotalBytes == null
+        ? null
+        : Number(input.installerTotalBytes);
+    const hasInstaller =
+      installerSha256.length > 0 || installerTotalBytes != null;
+    if (
+      hasInstaller &&
+      (!/^[a-f0-9]{64}$/.test(installerSha256) ||
+        !Number.isSafeInteger(installerTotalBytes) ||
+        installerTotalBytes <= 0 ||
+        installerTotalBytes > this.updates.getMaxArtifactBytes())
+    ) {
+      throw new BadRequestException('Métadonnées installateur WX invalides.');
+    }
     await this.pruneExpiredUploads();
     const uploadId = randomUUID();
     const dir = this.resolveUploadDir(uploadId);
@@ -89,22 +111,30 @@ export class WxUpdateUploadService {
       sha256,
       signature,
       totalBytes,
+      installerSha256: hasInstaller ? installerSha256 : null,
+      installerTotalBytes: hasInstaller ? installerTotalBytes : null,
       completedAt: null,
     };
     await this.writeJsonAtomic(path.join(dir, 'meta.json'), meta);
     return { uploadId };
   }
 
-  async chunk(input: { uploadId: string; index: number; filePath: string }) {
+  async chunk(input: {
+    uploadId: string;
+    index: number;
+    filePath: string;
+    kind?: string;
+  }) {
     const uploadId = this.requireUploadId(input.uploadId);
     if (!Number.isSafeInteger(input.index) || input.index < 0) {
       throw new BadRequestException('Index de chunk WX invalide.');
     }
+    const kind = this.normalizePartKind(input.kind);
     const dir = this.resolveUploadDir(uploadId);
     if (!fs.existsSync(path.join(dir, 'meta.json'))) {
       throw new BadRequestException('Upload WX introuvable.');
     }
-    const destination = path.join(dir, `${input.index}.part`);
+    const destination = path.join(dir, `${kind}.${input.index}.part`);
     if (fs.existsSync(destination)) {
       await fs.promises.rm(input.filePath, { force: true });
       return { ok: true, duplicate: true };
@@ -147,47 +177,33 @@ export class WxUpdateUploadService {
     }
 
     const combinedPath = path.join(dir, 'combined.zip');
+    const installerPath = path.join(dir, 'installer.zip');
     try {
-      const parts = (await fs.promises.readdir(dir))
-        .filter((name) => /^\d+\.part$/.test(name))
-        .map((name) => ({ name, index: Number.parseInt(name, 10) }))
-        .sort((left, right) => left.index - right.index);
-      if (parts.length === 0)
-        throw new BadRequestException('Aucun chunk WX reçu.');
-      parts.forEach((part, index) => {
-        if (part.index !== index) {
-          throw new BadRequestException(
-            `Chunk WX manquant à l'index ${index}.`,
-          );
-        }
+      await this.combineParts({
+        dir,
+        kind: 'artifact',
+        destination: combinedPath,
+        expectedBytes: meta.totalBytes,
+        missingMessage: 'Aucun chunk WX reçu.',
+        overflowMessage: 'Upload WX plus grand que prévu.',
+        sizeMessage: 'Taille WX invalide',
       });
-
-      await fs.promises.rm(combinedPath, { force: true });
-      const output = await fs.promises.open(combinedPath, 'wx');
-      let combinedBytes = 0;
-      try {
-        for (const part of parts) {
-          const stream = fs.createReadStream(path.join(dir, part.name));
-          for await (const bytes of stream) {
-            combinedBytes += (bytes as Buffer).length;
-            if (combinedBytes > meta.totalBytes) {
-              throw new BadRequestException('Upload WX plus grand que prévu.');
-            }
-            await output.write(bytes as Buffer);
-          }
-        }
-        await output.sync();
-      } finally {
-        await output.close();
-      }
-      const size = (await fs.promises.stat(combinedPath)).size;
-      if (size !== meta.totalBytes) {
-        throw new BadRequestException(
-          `Taille WX invalide (${size}, attendu ${meta.totalBytes}).`,
-        );
+      const hasInstaller =
+        meta.installerSha256 != null && meta.installerTotalBytes != null;
+      if (hasInstaller) {
+        await this.combineParts({
+          dir,
+          kind: 'installer',
+          destination: installerPath,
+          expectedBytes: meta.installerTotalBytes!,
+          missingMessage: 'Aucun chunk installateur WX reçu.',
+          overflowMessage: 'Installateur WX plus grand que prévu.',
+          sizeMessage: 'Taille installateur WX invalide',
+        });
       }
       const manifest = await this.updates.publish({
         zipPath: combinedPath,
+        installerZipPath: hasInstaller ? installerPath : null,
         releaseId: meta.releaseId,
         version: meta.version,
         sequence: meta.sequence,
@@ -196,6 +212,7 @@ export class WxUpdateUploadService {
         minimumVersion: meta.minimumVersion,
         mandatoryAt: meta.mandatoryAt,
         expectedSha256: meta.sha256,
+        expectedInstallerSha256: hasInstaller ? meta.installerSha256 : null,
         signature: meta.signature,
       });
       meta.completedAt = new Date().toISOString();
@@ -205,7 +222,72 @@ export class WxUpdateUploadService {
       await lock.close().catch(() => undefined);
       await fs.promises.rm(lockPath, { force: true });
       await fs.promises.rm(combinedPath, { force: true });
+      await fs.promises.rm(installerPath, { force: true });
     }
+  }
+
+  private async combineParts(input: {
+    dir: string;
+    kind: WxUploadPartKind;
+    destination: string;
+    expectedBytes: number;
+    missingMessage: string;
+    overflowMessage: string;
+    sizeMessage: string;
+  }): Promise<void> {
+    const prefix = `${input.kind}.`;
+    const parts = (await fs.promises.readdir(input.dir))
+      .filter(
+        (name) =>
+          name.startsWith(prefix) &&
+          /^\d+\.part$/.test(name.slice(prefix.length)),
+      )
+      .map((name) => ({
+        name,
+        index: Number.parseInt(name.slice(prefix.length), 10),
+      }))
+      .sort((left, right) => left.index - right.index);
+    if (parts.length === 0) {
+      throw new BadRequestException(input.missingMessage);
+    }
+    parts.forEach((part, index) => {
+      if (part.index !== index) {
+        throw new BadRequestException(
+          `Chunk WX ${input.kind} manquant à l'index ${index}.`,
+        );
+      }
+    });
+
+    await fs.promises.rm(input.destination, { force: true });
+    const output = await fs.promises.open(input.destination, 'wx');
+    let combinedBytes = 0;
+    try {
+      for (const part of parts) {
+        const stream = fs.createReadStream(path.join(input.dir, part.name));
+        for await (const bytes of stream) {
+          combinedBytes += (bytes as Buffer).length;
+          if (combinedBytes > input.expectedBytes) {
+            throw new BadRequestException(input.overflowMessage);
+          }
+          await output.write(bytes as Buffer);
+        }
+      }
+      await output.sync();
+    } finally {
+      await output.close();
+    }
+    const size = (await fs.promises.stat(input.destination)).size;
+    if (size !== input.expectedBytes) {
+      throw new BadRequestException(
+        `${input.sizeMessage} (${size}, attendu ${input.expectedBytes}).`,
+      );
+    }
+  }
+
+  private normalizePartKind(value: string | undefined): WxUploadPartKind {
+    const kind = (value || 'artifact').trim().toLowerCase();
+    if (kind === 'artifact' || kind === 'installer') return kind;
+    throw new BadRequestException('Type de chunk WX invalide.');
   }
 
   private resolveUploadDir(uploadId: string): string {

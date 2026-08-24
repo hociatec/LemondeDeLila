@@ -2,10 +2,13 @@ import {
   BadRequestException,
   Controller,
   Get,
+  NotFoundException,
   Query,
   Req,
+  Res,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import type { Response } from 'express';
 
 import { WxUpdateReleaseService } from '../persistence/wx-update-release.service';
 import { getUpdateRequestOrigin } from './update-request-origin';
@@ -33,5 +36,18 @@ export class WxUpdateLatestController {
       typeof current === 'string' ? current : null,
       request ? getUpdateRequestOrigin(request) : null,
     );
+  }
+
+  @Get('installer')
+  async installer(@Req() request: Request, @Res() response: Response) {
+    const latest = await this.updates.getForClient(
+      null,
+      getUpdateRequestOrigin(request),
+    );
+    const url = latest?.installer?.url;
+    if (!url) {
+      throw new NotFoundException('Installateur WX indisponible.');
+    }
+    response.redirect(302, url);
   }
 }

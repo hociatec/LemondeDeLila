@@ -30,6 +30,7 @@ import {
 
 export type PublishWxUpdateInput = {
   zipPath: string;
+  installerZipPath?: string | null;
   releaseId: string;
   version: string;
   sequence: number;
@@ -38,6 +39,7 @@ export type PublishWxUpdateInput = {
   minimumVersion?: string | null;
   mandatoryAt?: string | null;
   expectedSha256: string;
+  expectedInstallerSha256?: string | null;
   signature: string;
 };
 
@@ -144,6 +146,12 @@ export class WxUpdateReleaseService {
         ...latest.artifact,
         url: this.resolvePublicUrl(latest.artifact.url, origin),
       },
+      installer: latest.installer
+        ? {
+            ...latest.installer,
+            url: this.resolvePublicUrl(latest.installer.url, origin),
+          }
+        : undefined,
       currentVersion: current,
       updateAvailable,
       updateRequired,
@@ -207,6 +215,7 @@ export class WxUpdateReleaseService {
         "Empreinte SHA-256 de l'archive WX invalide.",
       );
     }
+    const installer = await this.validateInstaller(input);
 
     return this.commitPublication({
       input,
@@ -219,7 +228,36 @@ export class WxUpdateReleaseService {
       signature,
       sha256,
       artifactSize: stat.size,
+      installer,
     });
+  }
+
+  private async validateInstaller(
+    input: PublishWxUpdateInput,
+  ): Promise<{ size: number; sha256: string } | null> {
+    const installerPath = (input.installerZipPath || '').trim();
+    if (!installerPath) return null;
+    const stat = await fs.promises.stat(installerPath).catch(() => null);
+    if (
+      !stat?.isFile() ||
+      stat.size <= 0 ||
+      stat.size > this.maxArtifactBytes
+    ) {
+      throw new BadRequestException(
+        'Installateur WX absent, vide ou trop volumineux.',
+      );
+    }
+    await this.assertInstallerHeader(installerPath);
+    const sha256 = await this.sha256(installerPath);
+    const expected = (input.expectedInstallerSha256 || '')
+      .trim()
+      .toLowerCase();
+    if (expected && expected !== sha256) {
+      throw new BadRequestException(
+        "Empreinte SHA-256 de l'installateur WX invalide.",
+      );
+    }
+    return { size: stat.size, sha256 };
   }
 
   private async commitPublication(params: {
@@ -233,6 +271,7 @@ export class WxUpdateReleaseService {
     signature: string;
     sha256: string;
     artifactSize: number;
+    installer: { size: number; sha256: string } | null;
   }): Promise<WxUpdateManifest> {
     const lock = await this.acquirePublicationLock();
     try {
@@ -272,7 +311,9 @@ export class WxUpdateReleaseService {
       );
       const finalDir = path.join(releasesDir, params.releaseId);
       const fileName = `client-wx-${params.version}-windows-x64.zip`;
+      const installerFileName = `LeMondeDeLilaWX-${params.version}-Setup.exe`;
       const existingArtifact = path.join(finalDir, fileName);
+      const existingInstaller = path.join(finalDir, installerFileName);
       if (await this.pathExists(finalDir)) {
         const existingHash = await this.sha256(existingArtifact).catch(
           () => '',
@@ -282,6 +323,25 @@ export class WxUpdateReleaseService {
             'Cet identifiant de release WX existe avec un autre contenu.',
           );
         }
+        if (params.installer) {
+          const existingInstallerHash = await this.sha256(existingInstaller).catch(
+            () => '',
+          );
+          if (
+            existingInstallerHash &&
+            existingInstallerHash !== params.installer.sha256
+          ) {
+            throw new ConflictException(
+              'Cet identifiant de release WX existe avec un autre installateur.',
+            );
+          }
+          if (!existingInstallerHash && params.input.installerZipPath) {
+            await fs.promises.copyFile(
+              params.input.installerZipPath,
+              existingInstaller,
+            );
+          }
+        }
       } else {
         await fs.promises.mkdir(stagingDir, { recursive: true });
         try {
@@ -289,6 +349,12 @@ export class WxUpdateReleaseService {
             params.input.zipPath,
             path.join(stagingDir, fileName),
           );
+          if (params.installer && params.input.installerZipPath) {
+            await fs.promises.copyFile(
+              params.input.installerZipPath,
+              path.join(stagingDir, installerFileName),
+            );
+          }
           await fs.promises.mkdir(releasesDir, { recursive: true });
           await fs.promises.rename(stagingDir, finalDir);
         } catch (error) {
@@ -318,6 +384,13 @@ export class WxUpdateReleaseService {
           signatureAlgorithm: WX_UPDATE_SIGNATURE_ALGORITHM,
         },
       };
+      if (params.installer) {
+        manifest.installer = {
+          url: `${this.publicUrl.replace(/\/$/, '')}/releases/${encodeURIComponent(params.releaseId)}/${encodeURIComponent(installerFileName)}`,
+          size: params.installer.size,
+          sha256: params.installer.sha256,
+        };
+      }
       await this.saveLatestAtomically(manifest);
       this.updateManifestCache(manifest);
       return manifest;
@@ -495,6 +568,19 @@ export class WxUpdateReleaseService {
     }
   }
 
+  private async assertInstallerHeader(filePath: string): Promise<void> {
+    const handle = await fs.promises.open(filePath, 'r');
+    try {
+      const header = Buffer.alloc(2);
+      await handle.read(header, 0, header.length, 0);
+      if (header[0] !== 0x4d || header[1] !== 0x5a) {
+        throw new BadRequestException('Installateur WX invalide.');
+      }
+    } finally {
+      await handle.close();
+    }
+  }
+
   private async pathExists(target: string): Promise<boolean> {
     return fs.promises
       .access(target)
@@ -538,7 +624,24 @@ export class WxUpdateReleaseService {
       /^[a-f0-9]{64}$/i.test(item.artifact.sha256) &&
       typeof item.artifact?.signature === 'string' &&
       this.isBase64(item.artifact.signature) &&
-      item.artifact.signatureAlgorithm === WX_UPDATE_SIGNATURE_ALGORITHM
+      item.artifact.signatureAlgorithm === WX_UPDATE_SIGNATURE_ALGORITHM &&
+      this.isInstallerMetadataValid(item.installer)
+    );
+  }
+
+  private isInstallerMetadataValid(
+    value: WxUpdateManifest['installer'] | undefined,
+  ): boolean {
+    if (value == null) return true;
+    return (
+      typeof value.url === 'string' &&
+      (/^https:\/\//i.test(value.url) || value.url.startsWith('/')) &&
+      typeof value.size === 'number' &&
+      Number.isSafeInteger(value.size) &&
+      value.size > 0 &&
+      value.size <= this.maxArtifactBytes &&
+      typeof value.sha256 === 'string' &&
+      /^[a-f0-9]{64}$/i.test(value.sha256)
     );
   }
 }

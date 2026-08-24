@@ -35,9 +35,15 @@ describe('WxUpdateReleaseService', () => {
 
   it('publishes an immutable, signed manifest and enforces the minimum version', async () => {
     const archive = path.join(root, 'client.zip');
+    const installer = path.join(root, 'installer.zip');
     const content = Buffer.from('PK\x03\x04signed-test-archive');
+    const installerContent = Buffer.from('MZinstaller-test-archive');
     await fs.promises.writeFile(archive, content);
+    await fs.promises.writeFile(installer, installerContent);
     const sha256 = createHash('sha256').update(content).digest('hex');
+    const installerSha256 = createHash('sha256')
+      .update(installerContent)
+      .digest('hex');
     const fields = {
       releaseId: '1.4.2-release-abc',
       version: '1.4.2',
@@ -73,8 +79,10 @@ describe('WxUpdateReleaseService', () => {
 
     const manifest = await releases.publish({
       zipPath: archive,
+      installerZipPath: installer,
       ...fields,
       expectedSha256: sha256,
+      expectedInstallerSha256: installerSha256,
       signature,
     });
 
@@ -83,8 +91,19 @@ describe('WxUpdateReleaseService', () => {
     expect(manifest.artifact.url).toContain(
       '/releases/1.4.2-release-abc/client-wx-1.4.2-windows-x64.zip',
     );
+    expect(manifest.installer?.sha256).toBe(installerSha256);
+    expect(manifest.installer?.url).toContain(
+      '/releases/1.4.2-release-abc/LeMondeDeLilaWX-1.4.2-Setup.exe',
+    );
     expect(await releases.getMinimumVersion()).toBe('1.4.2');
-    expect((await releases.getForClient('1.3.0', null))?.mandatory).toBe(true);
+    const clientManifest = await releases.getForClient(
+      '1.3.0',
+      'https://api.lilas.hociatec.fr',
+    );
+    expect(clientManifest?.mandatory).toBe(true);
+    expect(clientManifest?.installer?.url).toBe(
+      'https://api.lilas.hociatec.fr/updates/client-wx/releases/1.4.2-release-abc/LeMondeDeLilaWX-1.4.2-Setup.exe',
+    );
   });
 
   it('rejects traversal release identifiers before touching the release tree', async () => {
