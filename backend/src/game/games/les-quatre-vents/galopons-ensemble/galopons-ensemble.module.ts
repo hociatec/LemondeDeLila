@@ -25,6 +25,7 @@ import { GaloponsBotService } from './application/services/galopons-bot.service'
     SetupFlowModule,
   ],
   providers: [
+    DeckPoliciesService,
     {
       provide: GaloponsSetupService,
       useFactory: (

@@ -25,6 +25,7 @@ import { FouleesFantastiquesBotService } from './application/services/foulees-fa
     SetupFlowModule,
   ],
   providers: [
+    RandomService,
     {
       provide: FouleesFantastiquesSetupService,
       inject: [GameCoreService, GameContentLoaderService, SetupFlowService],

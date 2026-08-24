@@ -15,6 +15,8 @@ import { EntreRitesBotService } from './application/services/entre-rites-bot.ser
 @Module({
   imports: [BoardGameDeckKitModule, GameCoreModule],
   providers: [
+    DeckPoliciesService,
+    RandomService,
     {
       provide: EntreRitesSetupService,
       inject: [RandomService],

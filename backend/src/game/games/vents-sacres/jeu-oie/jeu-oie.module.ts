@@ -30,6 +30,7 @@ import { JeuOieBotService } from './application/services/jeu-oie-bot.service';
     PromptPoliciesModule,
   ],
   providers: [
+    RandomService,
     {
       provide: JeuOieSetupService,
       inject: [GameCoreService, GameContentLoaderService, SetupFlowService],

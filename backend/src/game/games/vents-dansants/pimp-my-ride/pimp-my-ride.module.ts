@@ -9,6 +9,7 @@ import { PimpMyRidePhaseService } from './application/services/pimp-my-ride-phas
 import { PimpMyRideService } from './application/services/pimp-my-ride.service';
 
 @Module({
+  imports: [GameCoreModule, BoardGameDeckKitModule],
   providers: [
     PimpMyRideService,
     PimpMyRideSetupService,

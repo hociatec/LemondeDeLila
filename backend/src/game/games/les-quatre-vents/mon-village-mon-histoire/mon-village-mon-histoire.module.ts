@@ -22,6 +22,7 @@ import { MonVillageBotService } from './application/services/mon-village-bot.ser
     EngineServicesModule,
   ],
   providers: [
+    DeckPoliciesService,
     {
       provide: MonVillageSetupService,
       inject: [GameContentLoaderService, RandomService],

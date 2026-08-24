@@ -1,6 +1,6 @@
 ﻿import { Injectable, OnModuleInit } from '@nestjs/common';
-import { WsRouteRegistry } from '../../../../realtime/public-api';
-import { WS_EVENTS } from '../../../../realtime/public-api';
+import { WsRouteRegistry } from '../../../../common/ws/public-api';
+import { WS_EVENTS } from './ws-events';
 
 @Injectable()
 export class ApiCapabilitiesWsRegistrar implements OnModuleInit {

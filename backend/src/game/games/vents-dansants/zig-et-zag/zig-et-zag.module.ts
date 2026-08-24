@@ -12,7 +12,9 @@ import { ZigEtZagSetupService } from './application/services/zig-et-zag-setup.se
 import { ZigEtZagService } from './application/services/zig-et-zag.service';
 
 @Module({
+  imports: [GameCoreModule, BoardGameCoreKitModule],
   providers: [
+    RandomService,
     {
       provide: ZigEtZagSetupService,
       inject: [RandomService],

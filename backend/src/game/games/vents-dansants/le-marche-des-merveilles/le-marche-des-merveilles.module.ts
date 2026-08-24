@@ -8,6 +8,7 @@ import { LeMarcheDesMerveillesService } from './application/services/le-marche-d
 import { LeMarcheDesMerveillesSetupService } from './application/services/le-marche-des-merveilles-setup.service';
 
 @Module({
+  imports: [GameCoreModule, BoardGameCoreKitModule],
   providers: [
     LeMarcheDesMerveillesService,
     LeMarcheDesMerveillesSetupService,

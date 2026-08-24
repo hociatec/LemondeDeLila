@@ -19,11 +19,7 @@ export class FilesystemGameCatalogReader implements GameCatalogReader {
   }
 
   loadJsonFile<T>(params: LoadGameJsonFileParams): T {
-    const filePath = path.join(
-      params.baseDir,
-      params.contentDir ?? '',
-      params.filename,
-    );
+    const filePath = resolveContentFilePath(params);
     const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
     return JSON.parse(raw) as T;
   }
@@ -54,6 +50,50 @@ export class FilesystemGameCatalogReader implements GameCatalogReader {
       return null;
     }
   }
+}
+
+function resolveContentFilePath(params: LoadGameJsonFileParams): string {
+  const candidates = buildContentFileCandidates(params);
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return candidates[0];
+}
+
+function buildContentFileCandidates(
+  params: LoadGameJsonFileParams,
+): string[] {
+  const bases = uniquePaths([
+    params.baseDir,
+    params.baseDir.replace(`${path.sep}dist${path.sep}`, `${path.sep}src${path.sep}`),
+  ]);
+  const candidates: string[] = [];
+
+  for (const base of bases) {
+    candidates.push(path.join(base, params.contentDir ?? '', params.filename));
+
+    let current = base;
+    for (let depth = 0; depth < 8; depth += 1) {
+      candidates.push(path.join(current, params.contentDir ?? '', params.filename));
+      candidates.push(path.join(current, 'model', 'content', params.filename));
+      candidates.push(path.join(current, 'content', params.filename));
+      candidates.push(path.join(current, 'model', params.filename));
+
+      const parent = path.dirname(current);
+      if (parent === current) {
+        break;
+      }
+      current = parent;
+    }
+  }
+
+  return uniquePaths(candidates);
+}
+
+function uniquePaths(paths: string[]): string[] {
+  return Array.from(new Set(paths.filter((entry) => entry.trim().length > 0)));
 }
 
 function resolveGameRoots(): string[] {

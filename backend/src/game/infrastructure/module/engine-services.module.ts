@@ -46,6 +46,7 @@ import { FilesystemGameCatalogReader } from '../system/filesystem-game-catalog.r
     GameCategoriesService,
   ],
   exports: [
+    GAME_CATALOG_READER,
     GameContentLoaderService,
     GameContentService,
     GameEngineService,

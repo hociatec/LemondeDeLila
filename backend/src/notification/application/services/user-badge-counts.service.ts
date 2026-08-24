@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   PRIVATE_MESSAGE_REPOSITORY,
   type PrivateMessageRepository,
-} from '../../../messaging/public-api';
+} from '../../../messaging/application/ports/private-message.repository';
 import {
   NOTIFICATION_INBOX_REPOSITORY,
   type NotificationInboxRepository,

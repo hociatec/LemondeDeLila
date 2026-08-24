@@ -12,11 +12,10 @@ export function formatPresenterActions(
 ): PresentedAction[] {
   return (actions ?? []).map((action) => ({
     type: action.type,
-    label: labelResolver ? labelResolver(action) : action.type,
+    label: action.label ?? (labelResolver ? labelResolver(action) : action.type),
     payload:
       action.payload && typeof action.payload === 'object'
         ? action.payload
         : {},
   }));
 }
-

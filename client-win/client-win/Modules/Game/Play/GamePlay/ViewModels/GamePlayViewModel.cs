@@ -654,6 +654,8 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
 
                 SyncInlinePromptFromPending();
                 OnPropertyChanged(nameof(HasInlinePrompt));
+                RebuildDisplayChoices();
+                OnPropertyChanged(nameof(ShowLegacyActionsPanel));
             }
         }
         finally

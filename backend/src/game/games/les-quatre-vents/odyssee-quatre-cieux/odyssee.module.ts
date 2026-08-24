@@ -13,7 +13,9 @@ import { OdysseePresenterService } from './application/services/odyssee-presente
 import { OdysseeBotService } from './application/services/odyssee-bot.service';
 
 @Module({
+  imports: [GameCoreModule, BoardGameCoreKitModule],
   providers: [
+    RandomService,
     {
       provide: OdysseeSetupService,
       useFactory: () => new OdysseeSetupService(),
@@ -58,7 +60,6 @@ import { OdysseeBotService } from './application/services/odyssee-bot.service';
   exports: [OdysseeQuatreCieuxService],
 })
 export class OdysseeQuatreCieuxModule {}
-
 
 
 

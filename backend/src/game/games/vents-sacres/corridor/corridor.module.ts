@@ -23,6 +23,7 @@ import { CorridorBotService } from './application/services/corridor-bot.service'
     SetupFlowModule,
   ],
   providers: [
+    RandomService,
     {
       provide: CorridorSetupService,
       inject: [SetupFlowService, GameCoreService],

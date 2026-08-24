@@ -13,7 +13,10 @@ import { CerclesSacresPresenterService } from './application/services/cercles-sa
 import { CerclesSacresBotService } from './application/services/cercles-sacres-bot.service';
 
 @Module({
+  imports: [GameCoreModule, BoardGameDeckKitModule],
   providers: [
+    DeckPoliciesService,
+    RandomService,
     {
       provide: CerclesSacresSetupService,
       useFactory: (random: RandomService) =>
@@ -58,7 +61,6 @@ import { CerclesSacresBotService } from './application/services/cercles-sacres-b
   exports: [CerclesSacresService],
 })
 export class CerclesSacresModule {}
-
 
 
 

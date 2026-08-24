@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { GameStateEntity } from '../../../../../application/models/game-state.model';
 import type {
   PanierExpressMetadata,
@@ -21,6 +22,7 @@ import {
 import { PanierExpressSetupService } from './panier-express-setup.service';
 import { PanierExpressUtils } from './panier-express-utils.service';
 
+@Injectable()
 export class PanierExpressStateService {
   private static readonly SHOPPING_LIST_SIZE = 3;
 
@@ -120,7 +122,6 @@ export class PanierExpressStateService {
     return getPanierExpressPlayers(state);
   }
 }
-
 
 
 

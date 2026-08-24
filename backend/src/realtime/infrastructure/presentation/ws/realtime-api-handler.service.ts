@@ -6,7 +6,7 @@ import {
   type SessionStateStore,
 } from '../../../../common/session/public-api';
 import { isVersionLower } from '../../../../common/utils/public-api';
-import { WsRouteRegistry } from '../../../../realtime/public-api';
+import { WsRouteRegistry } from '../../../../common/ws/public-api';
 import type {
   RealtimeClientSession,
   RealtimeIncomingMessage,
@@ -104,9 +104,15 @@ export class RealtimeApiHandlerService {
         );
       }
       if (response) {
-        this.safeSend(client, { requestId, ...response });
+        for (const item of Array.isArray(response) ? response : [response]) {
+          this.safeSend(client, { requestId, ...item });
+        }
       }
     } catch (err) {
+      this.logger.error(
+        `Erreur handler WS type=${type} requestId=${requestId ?? 'n/a'} userId=${session.user?.id ?? 'anon'} connectionId=${session.connectionId}: ${this.formatError(err)}`,
+        err instanceof Error ? err.stack : undefined,
+      );
       this.sendError(client, this.formatError(err), type, requestId);
     }
   }
@@ -172,4 +178,3 @@ export class RealtimeApiHandlerService {
     return 'Erreur inconnue';
   }
 }
-

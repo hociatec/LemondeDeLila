@@ -22,6 +22,7 @@ import { VoyageBotService } from './application/services/voyage-bot.service';
     EngineServicesModule,
   ],
   providers: [
+    DeckPoliciesService,
     {
       provide: VoyageSetupService,
       inject: [GameContentLoaderService, RandomService],

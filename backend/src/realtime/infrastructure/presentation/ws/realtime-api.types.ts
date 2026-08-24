@@ -12,4 +12,7 @@ export type RealtimeClientSession = {
   user: WsAuthPayload | null;
   connectionId: string;
   clientVersion: string | null;
+  scope?: string;
+  roomId?: number | null;
+  gameType?: string | null;
 };

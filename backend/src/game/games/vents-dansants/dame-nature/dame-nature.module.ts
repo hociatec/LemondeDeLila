@@ -15,6 +15,8 @@ import { DameNatureBotService } from './application/services/dame-nature-bot.ser
 @Module({
   imports: [BoardGameDeckKitModule, GameCoreModule],
   providers: [
+    DeckPoliciesService,
+    RandomService,
     {
       provide: DameNatureSetupService,
       inject: [RandomService],

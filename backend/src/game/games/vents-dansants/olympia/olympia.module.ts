@@ -12,7 +12,9 @@ import { OlympiaPresenterService } from './application/services/olympia-presente
 import { OlympiaBotService } from './application/services/olympia-bot.service';
 
 @Module({
+  imports: [GameCoreModule, BoardGameCoreKitModule],
   providers: [
+    RandomService,
     {
       provide: OlympiaSetupService,
       useFactory: (random: RandomService) => new OlympiaSetupService(random),

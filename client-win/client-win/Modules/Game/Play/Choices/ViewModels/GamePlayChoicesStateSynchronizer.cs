@@ -126,6 +126,14 @@ internal sealed class GamePlayChoicesStateSynchronizer
             viewerPlayerId != null &&
             pendingPlayerId.Value != viewerPlayerId.Value)
         {
+            // Compat backend: for pawn selection, the authoritative signal is the
+            // server-provided action list. If choose_pawn actions are present,
+            // this viewer can act and the list must stay visible.
+            if (PawnPendingTypes.IsPawnPendingType(pendingType) &&
+                HasCompatiblePendingAction(state, pendingType))
+            {
+                return false;
+            }
             return true;
         }
 

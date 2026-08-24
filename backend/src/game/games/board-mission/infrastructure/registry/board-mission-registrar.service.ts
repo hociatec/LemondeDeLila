@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import type {
   GameSingleActionDto,
@@ -44,6 +45,7 @@ type BoardMissionManifest = {
   };
 };
 
+@Injectable()
 export class BoardMissionRegistrarService {
   constructor(
     private readonly registry: GameRegistryService,

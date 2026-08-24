@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { DeckManagerService } from '../../../../../application/services/deck-manager.service';
 import {
   DeckPoolService,
@@ -24,6 +25,7 @@ import { GameContentLoaderService } from '../../../../../engine/public-api';
 import { loadV1Content } from '../../../../../application/helpers/content-loader.helper';
 import { loadCanonicalPawns } from '../../../../../application/helpers/pawn-catalog.helper';
 
+@Injectable()
 export class PanierExpressSetupService {
   private static readonly MAX_STAND_ITEMS = 3;
 
@@ -282,7 +284,6 @@ export class PanierExpressSetupService {
     return updated as PanierExpressDeckPool;
   }
 }
-
 
 
 

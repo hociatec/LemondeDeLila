@@ -1,9 +1,9 @@
 ﻿import { Inject, Injectable } from '@nestjs/common';
-import { WS_EVENTS } from '../../../../realtime/public-api';
+import { WS_EVENTS } from '../../../../realtime/infrastructure/presentation/ws/ws-events';
 import {
   NOTIFICATION_DISPATCHER,
   type NotificationDispatcher,
-} from '../../../public-api';
+} from '../../../application/ports/notification-dispatcher.port';
 import type { FriendPresenceNotifier } from '../../../application/ports/friend-presence-notifier.port';
 
 @Injectable()

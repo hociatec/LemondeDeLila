@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { createHash, createPublicKey } from 'crypto';
 import {
   readAuthRuntimeConfigFromEnv,
@@ -12,7 +12,11 @@ import {
 
 @Injectable()
 export class JwksDocumentService {
-  constructor(private readonly config: AuthRuntimeConfig = readAuthRuntimeConfigFromEnv()) {}
+  private readonly config: AuthRuntimeConfig;
+
+  constructor(@Optional() config?: AuthRuntimeConfig) {
+    this.config = config ?? readAuthRuntimeConfigFromEnv();
+  }
 
   buildDocument() {
     const algorithm = getJwtAlgorithm(this.config);

@@ -6,6 +6,7 @@ import { CatalogModule } from '../../catalog/public-api';
 import { ChatModule } from '../../chat/public-api';
 import { ClientUpdatesModule } from '../../client-updates/public-api';
 import { ValidationModule } from '../../common/validation/public-api';
+import { EngineServicesModule } from '../../game/infrastructure/module/engine-services.module';
 import { GameRegistryModule } from '../../game/public-api';
 import { ArcheDeMnemosyneModule } from '../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
 import { BotModule as GameBotModule } from '../../game/public-api';
@@ -19,6 +20,7 @@ import { RoleDefinitionEntity } from '../infrastructure/persistence/typeorm/enti
 export const ADMIN_MODULE_IMPORTS = [
   TypeOrmModule.forFeature([User, RoleDefinitionEntity]),
   ValidationModule,
+  EngineServicesModule,
   GameRegistryModule,
   ArcheDeMnemosyneModule,
   NotificationModule,

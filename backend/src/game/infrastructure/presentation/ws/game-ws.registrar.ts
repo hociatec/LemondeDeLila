@@ -23,6 +23,33 @@ export class GameWsRegistrar implements OnModuleInit {
     this.registry.register('game.modules', (session) =>
       this.handler.modules(session),
     );
+
+    this.registry.register('game.state', (session, payload) =>
+      this.handler.state(session, payload),
+    );
+    this.registry.register('game.state.get', (session, payload) =>
+      this.handler.state(session, payload),
+    );
+    this.registry.register('game.join', (session, payload) =>
+      this.handler.join(session, payload),
+    );
+    this.registry.register('game.turn', (session, payload) =>
+      this.handler.turn(session, payload),
+    );
+    this.registry.register('game.ping', (session, payload) =>
+      this.handler.ping(session, payload),
+    );
+    this.registry.register('game.action', (session, payload) =>
+      this.handler.action(session, payload),
+    );
+    this.registry.register('game.actions', (session, payload) =>
+      this.handler.action(session, payload),
+    );
+    this.registry.register('game.actions.apply', (session, payload) =>
+      this.handler.action(session, payload),
+    );
+    this.registry.register('game.key', (session, payload) =>
+      this.handler.key(session, payload),
+    );
   }
 }
-

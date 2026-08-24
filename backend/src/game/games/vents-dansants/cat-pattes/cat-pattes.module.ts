@@ -24,6 +24,8 @@ import { CatPattesBotService } from './application/services/cat-pattes-bot.servi
     PromptPoliciesModule,
   ],
   providers: [
+    DeckPoliciesService,
+    RandomService,
     {
       provide: CatPattesSetupService,
       useFactory: (core: GameCoreService, random: RandomService) =>

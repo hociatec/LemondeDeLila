@@ -25,8 +25,16 @@ describe('pawn-selection.helper', () => {
       data: { pawns: [{ id: 'A' }, { id: 'B' }] },
     };
     expect(listPendingPawnActions(pending, 'choose_pawn')).toEqual([
-      { type: 'choose_pawn', payload: { pawnId: 'A' } },
-      { type: 'choose_pawn', payload: { pawnId: 'B' } },
+      {
+        type: 'choose_pawn',
+        label: 'A',
+        payload: { id: 'A', pawnId: 'A', pawn: 'A', value: 'A' },
+      },
+      {
+        type: 'choose_pawn',
+        label: 'B',
+        payload: { id: 'B', pawnId: 'B', pawn: 'B', value: 'B' },
+      },
     ]);
   });
 

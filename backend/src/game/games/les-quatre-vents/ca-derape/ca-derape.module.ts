@@ -15,7 +15,9 @@ import { CaPresenterService } from './application/services/ca-presenter.service'
 import { CaBotService } from './application/services/ca-bot.service';
 
 @Module({
+  imports: [GameCoreModule, BoardGameDeckKitModule],
   providers: [
+    RandomService,
     {
       provide: CaSetupService,
       useFactory: () => new CaSetupService(),
@@ -55,7 +57,6 @@ import { CaBotService } from './application/services/ca-bot.service';
   exports: [CaDerapeService],
 })
 export class CaDerapeModule {}
-
 
 
 

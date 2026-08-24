@@ -14,6 +14,7 @@ import { LaParadeSucreeBotService } from './application/services/la-parade-sucre
 @Module({
   imports: [BoardGameCoreKitModule, GameCoreModule],
   providers: [
+    RandomService,
     {
       provide: LaParadeSucreeSetupService,
       inject: [RandomService],

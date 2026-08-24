@@ -11,6 +11,7 @@ import { AbsurdissimesSetupService } from './application/services/les-absurdissi
 import { LesAbsurdissimesService } from './application/services/les-absurdissimes.service';
 
 @Module({
+  imports: [GameCoreModule, BoardGameDeckKitModule],
   providers: [
     LesAbsurdissimesService,
     AbsurdissimesDeckService,

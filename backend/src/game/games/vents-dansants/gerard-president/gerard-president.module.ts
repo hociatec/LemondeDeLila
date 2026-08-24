@@ -11,7 +11,10 @@ import { GerardPresidentSetupService } from './application/services/gerard-presi
 import { GerardPresidentService } from './application/services/gerard-president.service';
 
 @Module({
+  imports: [GameCoreModule, BoardGameDeckKitModule],
   providers: [
+    DeckPoliciesService,
+    RandomService,
     {
       provide: GerardPresidentSetupService,
       useFactory: (random: RandomService) =>

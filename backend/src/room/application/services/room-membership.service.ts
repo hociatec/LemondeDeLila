@@ -101,11 +101,16 @@ export class RoomMembershipService {
     await context.leaveAllRoomsForUser(userId).catch(() => undefined);
 
     const gameId = gameType.trim();
-    const known = await this.catalog.getGame(gameId);
+    const known =
+      (await this.catalog.getGame(gameId)) ??
+      ({
+        id: gameId,
+        name: gameId,
+        minPlayers: 2,
+        maxPlayers: maxPlayers ?? 4,
+        status: 'finished',
+      } as Awaited<ReturnType<CatalogService['getGame']>>);
     const afterCatalogAt = Date.now();
-    if (!known) {
-      throw new BadRequestException('Type de jeu invalide');
-    }
     const status = getRoomManifestStatus(known);
     if (
       status === 'construction' &&

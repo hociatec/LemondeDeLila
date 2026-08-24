@@ -12,8 +12,13 @@ export type PendingPawnPayload = {
 };
 
 export type PendingPawnChoicePayload = {
+  id?: unknown;
   pawnId?: unknown;
   pawn?: unknown;
+  label?: unknown;
+  selectedChoice?: unknown;
+  choice?: unknown;
+  optionId?: unknown;
   value?: unknown;
 };
 
@@ -69,11 +74,23 @@ export function getPendingPawnOptions(
 export function listPendingPawnActions(
   pending: PendingPawnPayload | null | undefined,
   actionType: string,
-): Array<{ type: string; payload: { pawnId: string } }> {
+): Array<{
+  type: string;
+  label: string;
+  payload: { id: string; pawnId: string; pawn: string; value: string };
+}> {
   return getPendingPawnOptions(pending)
-    .map((option) => option.id)
-    .filter((id) => id.length > 0)
-    .map((pawnId) => ({ type: actionType, payload: { pawnId } }));
+    .filter((option) => option.id.length > 0)
+    .map((option) => ({
+      type: actionType,
+      label: option.label || option.id,
+      payload: {
+        id: option.id,
+        pawnId: option.id,
+        pawn: option.id,
+        value: option.id,
+      },
+    }));
 }
 
 export function resolvePendingPawnId(
@@ -81,7 +98,16 @@ export function resolvePendingPawnId(
   payload: PendingPawnChoicePayload,
   normalize: NormalizeFn = defaultNormalize,
 ): string | null {
-  const raw = toText(payload?.pawnId ?? payload?.pawn ?? payload?.value).trim();
+  const raw = toText(
+    payload?.pawnId ??
+      payload?.id ??
+      payload?.pawn ??
+      payload?.value ??
+      payload?.optionId ??
+      payload?.selectedChoice ??
+      payload?.choice ??
+      payload?.label,
+  ).trim();
   if (!raw) return null;
 
   const options = getPendingPawnOptions(pending);

@@ -30,6 +30,7 @@ import { AventureSauvageBotService } from './application/services/aventure-sauva
     TurnPoliciesModule,
   ],
   providers: [
+    DeckPoliciesService,
     {
       provide: AventureSauvageSetupService,
       useFactory: (

@@ -20,6 +20,10 @@ export class GameEngineService {
     this.snapshots.set(this.key(roomId, gameType), state);
   }
 
+  async clearInternalState(roomId: number, gameType: string): Promise<void> {
+    this.snapshots.delete(this.key(roomId, gameType));
+  }
+
   private key(roomId: number, gameType: string): string {
     return `${roomId}:${gameType}`;
   }

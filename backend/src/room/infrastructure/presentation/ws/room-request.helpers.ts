@@ -16,9 +16,14 @@ export type RoomJoinRequest = {
 export function parseRoomCreateRequest(
   row: Record<string, unknown>,
 ): RoomCreateRequest {
-  const gameType = typeof row.gameType === 'string' ? String(row.gameType) : '';
-  const name = typeof row.name === 'string' ? String(row.name) : null;
-  const maxPlayersRaw = row.maxPlayers ?? row.max ?? null;
+  const payload =
+    row.payload && typeof row.payload === 'object'
+      ? (row.payload as Record<string, unknown>)
+      : row;
+  const gameType =
+    typeof payload.gameType === 'string' ? String(payload.gameType) : '';
+  const name = typeof payload.name === 'string' ? String(payload.name) : null;
+  const maxPlayersRaw = payload.maxPlayers ?? payload.max ?? null;
   const maxPlayers =
     typeof maxPlayersRaw === 'number'
       ? maxPlayersRaw
@@ -26,7 +31,8 @@ export function parseRoomCreateRequest(
           Number.isFinite(parseInt(maxPlayersRaw, 10))
         ? parseInt(maxPlayersRaw, 10)
         : null;
-  const isPrivate = typeof row.isPrivate === 'boolean' ? row.isPrivate : false;
+  const isPrivate =
+    typeof payload.isPrivate === 'boolean' ? payload.isPrivate : false;
 
   return { gameType, name, maxPlayers, isPrivate };
 }

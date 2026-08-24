@@ -26,6 +26,7 @@ import { LamaLogService } from './application/services/lama-log.service';
     RandomGameCoreKitModule,
   ],
   providers: [
+    RandomService,
     {
       provide: LamaSharedService,
       useFactory: () => new LamaSharedService(),

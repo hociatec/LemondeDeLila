@@ -9,7 +9,10 @@ import { SetupFlowService } from '../../../../../application/services/setup-flow
 import { loadCanonicalPawns } from '../../../../../application/helpers/pawn-catalog.helper';
 import { ensureSeededRng } from '../../../../../../common/utils/public-api';
 import { seededShuffle } from '../../../../../../common/utils/public-api';
-import { queueConfiguredPawnSelection } from '../../../../../application/helpers/configured-pawn-setup.helper';
+import {
+  assignConfiguredBotPawns,
+  queueConfiguredPawnSelection,
+} from '../../../../../application/helpers/configured-pawn-setup.helper';
 import type {
   AFondLesBallonsCard,
   AFondLesBallonsCharacter,
@@ -98,8 +101,16 @@ export class AFondLesBallonsSetupService {
       metadata: { ...metaSeed, ...shuffledDeck.meta, ...metaBase },
     };
 
-    return queueConfiguredPawnSelection({
+    const withBotPawns = assignConfiguredBotPawns({
       state: next,
+      core: this.core,
+      catalog: pawns,
+      metadataAssignmentKey: 'pawnByPlayerId',
+      logLabelResolver: (pawn) => pawn.label || pawn.id,
+    });
+
+    return queueConfiguredPawnSelection({
+      state: withBotPawns,
       core: this.core,
       setupFlow: this.setupFlow,
       catalog: pawns,
@@ -492,7 +503,6 @@ function toText(value: unknown): string {
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   return '';
 }
-
 
 
 

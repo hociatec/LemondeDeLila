@@ -32,6 +32,7 @@ import { FrousseBotService } from './application/services/frousse-bot.service';
     PromptPoliciesModule,
   ],
   providers: [
+    DeckPoliciesService,
     {
       provide: FrousseSetupService,
       inject: [

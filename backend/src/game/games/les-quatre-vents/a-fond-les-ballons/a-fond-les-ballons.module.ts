@@ -10,18 +10,12 @@ import { DeckPoliciesService } from '../../../application/features/deck-policies
 import { SetupFlowService } from '../../../application/services/setup-flow.service';
 import { BoardPayloadService } from '../../../application/services/board-payload.service';
 import { BotRunnerService } from '../../../application/services/bot-runner.service';
-import type { GameCatalogReader } from '../../../application/ports/game-catalog.reader';
+import { GameContentLoaderService } from '../../../application/services/game-content-loader.service';
 import { AFondLesBallonsService } from './application/services/a-fond-les-ballons.service';
 import { AFondLesBallonsSetupService } from './application/services/a-fond-les-ballons-setup.service';
 import { AFondLesBallonsActionService } from './application/services/a-fond-les-ballons-action.service';
 import { AFondLesBallonsPresenterService } from './application/services/a-fond-les-ballons-presenter.service';
 import { AFondLesBallonsBotService } from './application/services/a-fond-les-ballons-bot.service';
-
-const emptyCatalogReader: GameCatalogReader = {
-  listEntries: () => [],
-  loadJsonFile: <T>() => null as T,
-  readTextFile: () => '',
-};
 
 @Module({
   imports: [
@@ -31,18 +25,25 @@ const emptyCatalogReader: GameCatalogReader = {
     SetupFlowModule,
   ],
   providers: [
+    DeckPoliciesService,
     {
       provide: AFondLesBallonsSetupService,
-      inject: [GameCoreService, RandomService, SetupFlowService],
+      inject: [
+        GameCoreService,
+        RandomService,
+        GameContentLoaderService,
+        SetupFlowService,
+      ],
       useFactory: (
         core: GameCoreService,
         random: RandomService,
+        contentLoader: GameContentLoaderService,
         setupFlow: SetupFlowService,
       ) =>
         new AFondLesBallonsSetupService(
           core,
           random,
-          emptyCatalogReader as unknown as never,
+          contentLoader,
           setupFlow,
         ),
     },

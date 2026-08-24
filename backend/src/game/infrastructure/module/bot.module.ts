@@ -7,9 +7,10 @@ import { BotSettingsService } from '../../application/services/bot-settings.serv
 import { BotStrategyService } from '../../application/services/bot-strategy.service';
 import { BotSettingsEntity } from '../../infrastructure/persistence/typeorm/entities/bot-settings.entity';
 import { BotSettingsTypeormRepository } from '../../infrastructure/persistence/typeorm/repositories/bot-settings-typeorm.repository';
+import { RandomModule } from '../../application/modules/random.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BotSettingsEntity])],
+  imports: [TypeOrmModule.forFeature([BotSettingsEntity]), RandomModule],
   providers: [
     BotStrategyService,
     BotRunnerService,
@@ -29,4 +30,3 @@ import { BotSettingsTypeormRepository } from '../../infrastructure/persistence/t
   ],
 })
 export class BotModule {}
-

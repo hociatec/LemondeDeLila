@@ -22,6 +22,7 @@ import { MissionGalaxieBotService } from './application/services/mission-galaxie
     EngineServicesModule,
   ],
   providers: [
+    DeckPoliciesService,
     {
       provide: MissionGalaxieSetupService,
       inject: [GameContentLoaderService, RandomService],

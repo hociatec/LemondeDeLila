@@ -31,6 +31,7 @@ import { MinuitBotService } from './application/services/minuit-bot.service';
     PromptPoliciesModule,
   ],
   providers: [
+    DeckPoliciesService,
     {
       provide: MinuitSetupService,
       useFactory: (

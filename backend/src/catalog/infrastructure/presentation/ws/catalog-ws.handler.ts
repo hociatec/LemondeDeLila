@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PayloadValidationService } from '../../../../common/validation/public-api';
-import { CatalogService } from '../../../../catalog/public-api';
+import { CatalogService } from '../../../application/use-cases/catalog/catalog.service';
 import { CatalogCategoryDto } from './catalog-ws.dto';
 
 @Injectable()

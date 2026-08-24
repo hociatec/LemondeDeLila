@@ -8,6 +8,7 @@ import { LesMainsPresenterService } from './application/services/les-mains-de-la
 import { LesMainsSetupService } from './application/services/les-mains-de-la-terre-setup.service';
 
 @Module({
+  imports: [GameCoreModule, BoardGameDeckKitModule],
   providers: [
     LesMainsDeLaTerreService,
     LesMainsSetupService,

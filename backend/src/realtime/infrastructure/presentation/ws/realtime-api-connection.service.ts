@@ -2,9 +2,12 @@
 import { randomUUID } from 'crypto';
 import { WebSocket } from 'ws';
 import type { WsAuthPayload } from '../../../../common/interfaces/public-api';
-import { WsApiHubService } from '../../../../realtime/public-api';
-import { WsJwtAuthService } from '../../../../realtime/public-api';
-import { WsTicketAuthService } from '../../../../realtime/public-api';
+import type { WsTicketScope } from '../../../../common/ws/application/models/ws-ticket.model';
+import {
+  WsApiHubService,
+  WsJwtAuthService,
+  WsTicketAuthService,
+} from '../../../../common/ws/public-api';
 import { RealtimeApiHandlerService } from './realtime-api-handler.service';
 import type { RealtimeClientSession } from './realtime-api.types';
 
@@ -20,14 +23,18 @@ export class RealtimeApiConnectionService {
     private readonly handler: RealtimeApiHandlerService,
   ) {}
 
-  async handleConnection(client: WebSocket, args: unknown[]): Promise<void> {
+  async handleConnection(
+    client: WebSocket,
+    args: unknown[],
+    scope: WsTicketScope = 'api',
+  ): Promise<void> {
     const connectionId = randomUUID();
     const clientVersion = this.auth.extractClientVersion(client, args);
     const token = this.auth.extractToken(client, args);
     const ticketValidation = this.wsTickets.validateIfTokenPresentDetailed(
       client,
       args,
-      'api',
+      scope,
       Boolean(token),
     );
     if (!ticketValidation.ok) {
@@ -46,15 +53,24 @@ export class RealtimeApiConnectionService {
       return;
     }
 
+    const gameContext =
+      scope === 'game' ? this.extractGameContext(client, args) : {};
     const session: RealtimeClientSession = {
       socket: client,
       user: this.resolveUser(token),
       connectionId,
       clientVersion,
+      scope,
+      ...gameContext,
     };
 
     this.clients.set(client, session);
-    this.hub.register(connectionId, client);
+    this.hub.register(connectionId, client, {
+      scope,
+      roomId: session.roomId ?? null,
+      gameType: session.gameType ?? null,
+      userId: session.user?.id ?? null,
+    });
 
     client.on(
       'message',
@@ -63,6 +79,9 @@ export class RealtimeApiConnectionService {
     client.on('error', () => client.close());
 
     await this.handler.persistSession(session);
+    if (scope === 'game') {
+      await this.sendInitialGameStateIfRequested(client, session, args);
+    }
   }
 
   handleDisconnect(client: WebSocket): void {
@@ -90,5 +109,61 @@ export class RealtimeApiConnectionService {
       return null;
     }
   }
-}
 
+  private async sendInitialGameStateIfRequested(
+    client: WebSocket,
+    session: RealtimeClientSession,
+    args: unknown[],
+  ): Promise<void> {
+    try {
+      const roomId = Number(session.roomId ?? 0);
+      if (!Number.isFinite(roomId) || roomId <= 0) return;
+      const gameType = String(session.gameType ?? '').trim();
+      await this.handler.handleIncoming(
+        client,
+        session,
+        JSON.stringify({
+          type: 'game.join',
+          payload: { roomId, ...(gameType ? { gameType } : {}) },
+        }),
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Initial game.state impossible connectionId=${session.connectionId}: ${(err as Error).message}`,
+      );
+    }
+  }
+
+  private extractGameContext(
+    client: WebSocket,
+    args: unknown[],
+  ): { roomId?: number | null; gameType?: string | null } {
+    const url = this.extractUrl(client, args);
+    if (!url) return {};
+    try {
+      const parsed = new URL(url, 'ws://localhost');
+      const roomId = Number(
+        parsed.searchParams.get('roomId') ?? parsed.searchParams.get('room'),
+      );
+      const gameType = String(parsed.searchParams.get('gameType') ?? '').trim();
+      return {
+        roomId: Number.isFinite(roomId) && roomId > 0 ? roomId : null,
+        gameType: gameType || null,
+      };
+    } catch {
+      return {};
+    }
+  }
+
+  private extractUrl(client: WebSocket, args: unknown[]): string | null {
+    const firstArg = args[0];
+    if (firstArg && typeof firstArg === 'object' && 'url' in firstArg) {
+      const url = (firstArg as { url?: unknown }).url;
+      if (typeof url === 'string' && url.trim()) {
+        return url;
+      }
+    }
+    const clientUrl = (client as unknown as { url?: unknown }).url;
+    return typeof clientUrl === 'string' && clientUrl.trim() ? clientUrl : null;
+  }
+}

@@ -22,6 +22,7 @@ import { ToutPresDeMamanBotService } from './application/services/tout-pres-de-m
     EngineServicesModule,
   ],
   providers: [
+    DeckPoliciesService,
     {
       provide: ToutPresDeMamanSetupService,
       inject: [GameContentLoaderService, RandomService],

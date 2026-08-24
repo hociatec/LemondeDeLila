@@ -1,10 +1,8 @@
 import { MessagingWsHandler } from '../infrastructure/presentation/ws/messaging-ws.handler';
 import { MessagingWsRegistrar } from '../infrastructure/presentation/ws/messaging-ws.registrar';
 import { MessagingWsNotificationService } from '../infrastructure/presentation/ws/messaging-ws-notification.service';
-import {
-  NOTIFICATION_DISPATCHER,
-  USER_BADGE_COUNTS_NOTIFIER,
-} from '../../notification/public-api';
+import { NOTIFICATION_DISPATCHER } from '../../notification/application/ports/notification-dispatcher.port';
+import { USER_BADGE_COUNTS_NOTIFIER } from '../../notification/application/ports/user-badge-counts-notifier.port';
 import {
   MESSAGING_BADGE_COUNTS_NOTIFIER,
   MESSAGING_NOTIFICATION_DISPATCHER,

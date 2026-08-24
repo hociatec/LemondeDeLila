@@ -48,7 +48,16 @@ export function resolvePendingPawnChoiceAction(params: {
     params.action?.payload && typeof params.action.payload === 'object'
       ? params.action.payload
       : {};
-  const rawChoice = payload.pawnId ?? payload.pawn ?? payload.value ?? null;
+  const rawChoice =
+    payload.pawnId ??
+    payload.id ??
+    payload.pawn ??
+    payload.value ??
+    payload.optionId ??
+    payload.selectedChoice ??
+    payload.choice ??
+    payload.label ??
+    null;
   const optionsRaw = Array.isArray(pending?.data?.pawns)
     ? pending.data.pawns
     : [];
@@ -85,6 +94,5 @@ function toText(value: unknown): string {
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   return '';
 }
-
 
 

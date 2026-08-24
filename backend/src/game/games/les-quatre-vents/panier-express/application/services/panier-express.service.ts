@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import {
   GameStateEntity,
@@ -122,6 +123,7 @@ import {
 } from '../../panier-express-state.helpers';
 import { drawPanierExpressCardFromPoolBlock } from './panier-express-state-block.utils';
 
+@Injectable()
 export class PanierExpressService extends AbstractGameService {
   readonly gameType = 'panier-express';
   readonly category = 'JeuxDePlateaux';

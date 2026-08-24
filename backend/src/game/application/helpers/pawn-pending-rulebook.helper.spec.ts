@@ -11,7 +11,11 @@ describe('pawn-pending-rulebook.helper', () => {
       data: { pawns: [{ id: 'a', label: 'A' }] },
     };
     expect(getPendingPawnActionsForPlayer(pending, 7, 'choose_pawn')).toEqual([
-      { type: 'choose_pawn', payload: { pawnId: 'a' } },
+      {
+        type: 'choose_pawn',
+        label: 'A',
+        payload: { id: 'a', pawnId: 'a', pawn: 'a', value: 'a' },
+      },
     ]);
     expect(getPendingPawnActionsForPlayer(pending, 8, 'choose_pawn')).toEqual(
       [],

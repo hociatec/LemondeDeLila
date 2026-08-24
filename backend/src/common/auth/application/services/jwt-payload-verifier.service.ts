@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 import { verify as jwtVerify, type Algorithm } from 'jsonwebtoken';
 
 import type { WsAuthPayload } from '../../../interfaces/public-api';
@@ -36,7 +36,11 @@ type VerifiedWsPayload = WsAuthPayload & {
 
 @Injectable()
 export class JwtPayloadVerifierService {
-  constructor(private readonly config: AuthRuntimeConfig = readAuthRuntimeConfigFromEnv()) {}
+  private readonly config: AuthRuntimeConfig;
+
+  constructor(@Optional() config?: AuthRuntimeConfig) {
+    this.config = config ?? readAuthRuntimeConfigFromEnv();
+  }
 
   verifyHttpToken(token: string): HttpJwtPayload {
     const payload = this.verifyRawToken(token);

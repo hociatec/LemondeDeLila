@@ -17,6 +17,7 @@ import { MnemoQuizStoreService } from './infrastructure/storage/mnemo-quiz-store
     RandomTurnGameKitModule,
   ],
   providers: [
+    RandomService,
     {
       provide: MNEMO_QUIZ_STORE,
       useFactory: () => {
@@ -24,6 +25,10 @@ import { MnemoQuizStoreService } from './infrastructure/storage/mnemo-quiz-store
         store.onModuleInit();
         return store;
       },
+    },
+    {
+      provide: MnemoQuizStoreService,
+      useExisting: MNEMO_QUIZ_STORE,
     },
     {
       provide: ArcheMnemoStateService,
@@ -47,10 +52,14 @@ import { MnemoQuizStoreService } from './infrastructure/storage/mnemo-quiz-store
       ) => new ArcheDeMnemosyneService(core, turns, store, random, stateSvc),
     },
   ],
-  exports: [ArcheDeMnemosyneService, MNEMO_QUIZ_STORE, ArcheMnemoStateService],
+  exports: [
+    ArcheDeMnemosyneService,
+    MNEMO_QUIZ_STORE,
+    MnemoQuizStoreService,
+    ArcheMnemoStateService,
+  ],
 })
 export class ArcheDeMnemosyneModule {}
-
 
 
 
