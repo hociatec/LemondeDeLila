@@ -883,24 +883,36 @@ int ReplaceLauncher(DWORD parentProcessId, const fs::path& target)
 
 void AdoptBundledVersion(const fs::path& root, State& state)
 {
-    if (!state.currentReleaseId.empty()) return;
     const fs::path bundled = root / L"app";
     if (!fs::is_regular_file(bundled / AppExecutable) ||
         !fs::is_regular_file(bundled / LauncherExecutable)) return;
-    state.currentVersion = lila::modules::update::UpdateBuildConfig::BuildVersion;
-    state.currentReleaseId = "bundled";
-    const auto destination = ReleasePath(root, state.currentReleaseId);
-    fs::create_directories(destination.parent_path());
-    const bool destinationIsValid =
-        fs::is_regular_file(destination / AppExecutable) &&
-        fs::is_regular_file(destination / LauncherExecutable);
-    if (destinationIsValid) {
+
+    const std::string bundledVersion = lila::modules::update::UpdateBuildConfig::BuildVersion;
+    if (!state.currentVersion.empty() &&
+        IsUpdateNewer(state.currentVersion, bundledVersion)) {
         fs::remove_all(bundled);
-    } else {
-        if (fs::exists(destination)) fs::remove_all(destination);
-        fs::rename(bundled, destination);
+        return;
     }
+
+    const std::string bundledReleaseId = "installer-" + bundledVersion;
+    const auto destination = ReleasePath(root, bundledReleaseId);
+    fs::create_directories(destination.parent_path());
+    if (fs::exists(destination)) fs::remove_all(destination);
+    fs::rename(bundled, destination);
+
+    if (!state.currentReleaseId.empty() && state.currentReleaseId != bundledReleaseId) {
+        state.previousVersion = state.currentVersion;
+        state.previousReleaseId = state.currentReleaseId;
+    } else {
+        state.previousVersion.clear();
+        state.previousReleaseId.clear();
+    }
+    state.currentVersion = bundledVersion;
+    state.currentReleaseId = bundledReleaseId;
+    state.failedReleaseId.clear();
+    state.failedVersion.clear();
     SaveState(root, state);
+    AppendLog(root, "INFO", "Adopted installer version " + bundledVersion + ".");
 }
 
 void CleanupStaging(const fs::path& root) noexcept
@@ -919,7 +931,8 @@ void CleanupOldVersions(const fs::path& root, const State& state) noexcept
         for (const auto& entry : fs::directory_iterator(versions)) {
             if (!entry.is_directory()) continue;
             const auto id = Narrow(entry.path().filename().wstring());
-            if (id == state.currentReleaseId || id == state.retainedReleaseId) continue;
+            if (id == state.currentReleaseId || id == state.previousReleaseId ||
+                id == state.retainedReleaseId) continue;
             if (IsSafeReleaseId(id) && entry.path().parent_path() == versions) {
                 fs::remove_all(entry.path());
             }
