@@ -4,7 +4,7 @@ $target = Join-Path $env:LOCALAPPDATA 'Programs\LeMondeDeLilaWX'
 $staging = "$target.installing"
 $programsRoot = [IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA 'Programs'))
 if (![IO.Path]::GetFullPath($target).StartsWith($programsRoot, [StringComparison]::OrdinalIgnoreCase)) {
-    throw 'Chemin d’installation invalide.'
+    throw 'Chemin d installation invalide.'
 }
 
 if (Test-Path -LiteralPath $staging) {

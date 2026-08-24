@@ -22,7 +22,7 @@ if ([string]::IsNullOrWhiteSpace($IsccPath)) {
     $IsccPath = ($candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1)
 }
 if ([string]::IsNullOrWhiteSpace($IsccPath) -or !(Test-Path -LiteralPath $IsccPath)) {
-    throw 'ISCC.exe introuvable. Installez Inno Setup avant de construire l’installateur.'
+    throw 'ISCC.exe introuvable. Installez Inno Setup avant de construire l installateur.'
 }
 
 $script = Join-Path $PSScriptRoot '..\packaging\LeMondeDeLilaWX.iss'
