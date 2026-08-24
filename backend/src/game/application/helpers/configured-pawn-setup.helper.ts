@@ -2,7 +2,6 @@
   GameStateEntity,
   PlayerStateEntity,
 } from '../models/game-state.model';
-import type { GameCoreService } from '../services/game-core.service';
 import type { SetupFlowService } from '../services/setup-flow.service';
 import { resolvePlayerNameFromState } from '../helpers/player-name.helper';
 import type { ResolvePlayerNameOptions } from '../helpers/player-name.helper';
@@ -15,6 +14,10 @@ export type ConfiguredSetupPawnChoice = {
 };
 
 type ConfiguredSetupPlayer = PlayerStateEntity & Record<string, unknown>;
+type ConfiguredSetupLogger = Pick<
+  import('../services/game-core.service').GameCoreService,
+  'appendLog'
+>;
 
 type ConfiguredBotPawnPickResult = {
   choice: ConfiguredSetupPawnChoice | null;
@@ -23,7 +26,7 @@ type ConfiguredBotPawnPickResult = {
 
 export function assignConfiguredBotPawns(params: {
   state: GameStateEntity;
-  core: GameCoreService;
+  core: ConfiguredSetupLogger;
   catalog: ConfiguredSetupPawnChoice[];
   metadataAssignmentKey?: string;
   playerPawnField?: string | false;
@@ -147,7 +150,7 @@ export function assignConfiguredBotPawns(params: {
       Number(player?.id),
       params.playerNameOptions,
     );
-    const prompt = `C'est Ã  ${playerName} de choisir son pion.`;
+    const prompt = `C'est à ${playerName} de choisir son pion.`;
     let withUpdatedPlayers = {
       ...working,
       players: replacePlayer(
@@ -194,7 +197,7 @@ export function assignConfiguredBotPawns(params: {
 
 export function queueConfiguredPawnSelection(params: {
   state: GameStateEntity;
-  core?: GameCoreService;
+  core?: ConfiguredSetupLogger;
   setupFlow: SetupFlowService;
   catalog: ConfiguredSetupPawnChoice[];
   startPlayerId?: number | null;
@@ -279,7 +282,7 @@ export function queueConfiguredPawnSelection(params: {
     return next;
   }
 
-  const prompt = `C'est Ã  ${resolvePlayerNameFromState(next, pendingInfo.playerId)} de choisir son pion.`;
+  const prompt = `C'est à ${resolvePlayerNameFromState(next, pendingInfo.playerId)} de choisir son pion.`;
   const hasPrompt = Array.isArray(next.log)
     ? next.log
         .slice(-6)
@@ -390,6 +393,3 @@ function toText(value: unknown): string {
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   return '';
 }
-
-
-

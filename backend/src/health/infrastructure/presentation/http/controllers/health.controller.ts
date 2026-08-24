@@ -4,7 +4,7 @@ import {
   HealthCheckService,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
-import { getBuildInfo } from '../../../../../common/utils/build-info.utils';
+import { getBuildInfo } from '../../../../../common/utils/public-api';
 import { RedisHealthIndicator } from '../../../checks/redis.health';
 
 @Controller('health')

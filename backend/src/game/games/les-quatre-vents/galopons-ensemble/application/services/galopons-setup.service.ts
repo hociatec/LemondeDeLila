@@ -19,7 +19,7 @@ const GALOPONS_PAWNS = [
     id: 'shetland',
     name: 'Le Poney Shetland',
     description:
-      "Petit, trapu et plein de malice, ce poney ressemble Ã  une peluche... jusqu'au moment oÃ¹ il dÃ©cide que c'est lui qui commande. Ne vous fiez pas Ã  sa taille : c'est un vÃ©ritable tracteur miniature avec un sacrÃ© caractÃ¨re !",
+      "Petit, trapu et plein de malice, ce poney ressemble à une peluche... jusqu'au moment où il décide que c'est lui qui commande. Ne vous fiez pas à sa taille : c'est un véritable tracteur miniature avec un sacré caractère !",
   },
   {
     id: 'mustang',
@@ -30,12 +30,12 @@ const GALOPONS_PAWNS = [
     id: 'percheron',
     name: 'Le Percheron',
     description:
-      "Grand, puissant et impressionnant, ce cheval pourrait presque tirer une maison... ou au moins la caravane du voisin. MalgrÃ© sa taille de gÃ©ant, il est souvent d'un calme olympien.",
+      "Grand, puissant et impressionnant, ce cheval pourrait presque tirer une maison... ou au moins la caravane du voisin. Malgré sa taille de géant, il est souvent d'un calme olympien.",
   },
   {
     id: 'camargue',
     name: 'Le Camargue',
-    description: `Toujours prÃªt Ã  patauger dans les marais, ce cheval blanc semble aimer l'eau presque autant qu'un canard. Rustique et courageux, il suit les taureaux avec l'air de dire : "MÃªme pas peur !"`,
+    description: `Toujours prêt à patauger dans les marais, ce cheval blanc semble aimer l'eau presque autant qu'un canard. Rustique et courageux, il suit les taureaux avec l'air de dire : "Même pas peur !"`,
   },
 ];
 

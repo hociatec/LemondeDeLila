@@ -21,6 +21,7 @@ void NetworkComposition::Assemble(const StepLogger& setStep)
 {
     setStep("Creation des transports reseau");
     realtimeWebSocketClient = detail::CreateWebSocketClient();
+    authenticatedRealtimeWebSocketClient = detail::CreateWebSocketClient();
     presenceChatWebSocketClient = detail::CreateWebSocketClient();
     presenceWebSocketClient = detail::CreateWebSocketClient();
 
@@ -43,7 +44,7 @@ void NetworkComposition::Assemble(const StepLogger& setStep)
         std::make_unique<shared::network::realtime::AuthenticatedRealtimeApiClient>(
             shared::config::AppConfig::ResolveBackendApiWs(),
             shared::config::AppConfig::ResolveClientVersion(),
-            *realtimeWebSocketClient,
+            *authenticatedRealtimeWebSocketClient,
             *wsTicketProvider);
 }
 }

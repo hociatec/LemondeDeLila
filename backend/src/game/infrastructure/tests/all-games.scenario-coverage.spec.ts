@@ -6,7 +6,7 @@ import type {
   GameRulesAdapter,
 } from '../../application/contracts/game-rules-adapter.interface';
 import { GameRegistryModule, GameRegistryService } from '../../engine/public-api';
-import type { GameSingleActionDto } from '../../models/game-action.model';
+import type { GameSingleActionDto } from '../../application/models/game-action.model';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as fs from 'node:fs';
 import * as path from 'node:path';

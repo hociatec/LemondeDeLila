@@ -24,9 +24,15 @@ export type ContesProgressionDeps = {
     playerId: number,
     value: boolean,
   ) => GameStateEntity;
-  setPending: (state: GameStateEntity, pending: ContesPending | null) => GameStateEntity;
+  setPending: (
+    state: GameStateEntity,
+    pending: Exclude<ContesPending, null>,
+  ) => GameStateEntity;
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
-  autoSkipIfBlocked: (state: GameStateEntity, playerId: number) => GameStateEntity;
+  autoSkipIfBlocked: (
+    state: GameStateEntity,
+    playerId: number,
+  ) => GameStateEntity;
   canUseBonusCards: (state: GameStateEntity, playerId: number) => boolean;
   endTurn: (state: GameStateEntity, playerId: number) => GameStateEntity;
   onAnyPlayerPassedBlocked: (
@@ -53,7 +59,9 @@ export type ContesProgressionDeps = {
     type: ContesCardType,
     depth: number,
   ) => GameStateEntity;
-  buildConteNarrationFromTile: (tile: ContesCacahuetesTile) => ContesCard | null;
+  buildConteNarrationFromTile: (
+    tile: ContesCacahuetesTile,
+  ) => ContesCard | null;
   recordConteNarration: (
     state: GameStateEntity,
     playerId: number,
@@ -87,7 +95,8 @@ export function handleContesRoll(
 
   const meta = deps.getMeta(next);
   const forced = Number(meta.statuses.forcedRollOneTurns?.[currentId] ?? 0);
-  const rollOut = forced > 0 ? { roll: 1, meta } : deps.random.rollDice(meta, 6);
+  const rollOut =
+    forced > 0 ? { roll: 1, meta } : deps.random.rollDice(meta, 6);
   next = {
     ...next,
     metadata: { ...(next.metadata ?? {}), ...rollOut.meta },
@@ -95,12 +104,17 @@ export function handleContesRoll(
   };
 
   if (forced > 0) {
-    next = deps.setStatusCount(next, 'forcedRollOneTurns', currentId, forced - 1);
+    next = deps.setStatusCount(
+      next,
+      'forcedRollOneTurns',
+      currentId,
+      forced - 1,
+    );
   }
 
   next = deps.appendLog(
     next,
-    `${resolvePlayerNameFromState(next, currentId)} lance le dÃƒÆ’Ã‚Â© : "${rollOut.roll}".`,
+    `${resolvePlayerNameFromState(next, currentId)} lance le dé : "${rollOut.roll}".`,
   );
 
   const rerollToken = Number(
@@ -110,7 +124,8 @@ export function handleContesRoll(
     next = deps.setStatusCount(next, 'rerollToken', currentId, rerollToken - 1);
     return deps.setPending(next, {
       type: 'reroll',
-      label: 'Parchemin enchantÃƒÆ’Ã‚Â© : relancer le dÃƒÆ’Ã‚Â© ? (Relancer/Garder)',
+      label:
+        'Parchemin enchanté : relancer le dé ? (Relancer/Garder)',
       playerId: currentId,
       blocking: true,
       choices: ['Relancer', 'Garder'],
@@ -162,7 +177,7 @@ export function moveContesBy(
 ): GameStateEntity {
   if (!delta) return state;
   if (depth > 10) {
-    return deps.appendLog(state, 'Effet en chaÃƒÆ’Ã‚Â®ne interrompu.');
+    return deps.appendLog(state, 'Effet en chaîne interrompu.');
   }
 
   const meta = deps.getMeta(state);
@@ -207,12 +222,15 @@ export function applyContesTileEffect(
   tile: ContesCacahuetesTile,
   depth: number,
 ): GameStateEntity {
-  if (tile.type === 'bonus') return deps.drawAndApply(state, playerId, 'bonus', depth);
-  if (tile.type === 'malus') return deps.drawAndApply(state, playerId, 'malus', depth);
+  if (tile.type === 'bonus')
+    return deps.drawAndApply(state, playerId, 'bonus', depth);
+  if (tile.type === 'malus')
+    return deps.drawAndApply(state, playerId, 'malus', depth);
   if (tile.type === 'surprise') {
     return deps.drawAndApply(state, playerId, 'surprise', depth);
   }
-  if (tile.type === 'conte') return applyContesConteTile(deps, state, playerId, tile, depth);
+  if (tile.type === 'conte')
+    return applyContesConteTile(deps, state, playerId, tile, depth);
   return state;
 }
 
@@ -230,7 +248,7 @@ export function applyContesConteTile(
       state,
       playerId,
       'key_gold_choose_target',
-      'ClÃƒÆ’Ã‚Â© dÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢or : choisissez un joueur.',
+      'Clé d’or : choisissez un joueur.',
     );
   }
 
@@ -269,7 +287,7 @@ export function drawAndApplyContesCard(
       );
       next = deps.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ignore lÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢effet Malus (Cape dÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢invisibilitÃƒÆ’Ã‚Â©) et avance dÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢1 case.`,
+        `${resolvePlayerNameFromState(next, playerId)} ignore l’effet Malus (Cape d’invisibilité) et avance d’1 case.`,
       );
       return deps.moveBy(next, playerId, 1, depth);
     }
@@ -278,7 +296,7 @@ export function drawAndApplyContesCard(
     if (protectedOut.protected) {
       return deps.appendLog(
         protectedOut.state,
-        `${resolvePlayerNameFromState(state, playerId)} est protÃƒÆ’Ã‚Â©gÃƒÆ’Ã‚Â© du Malus.`,
+        `${resolvePlayerNameFromState(state, playerId)} est protégé du Malus.`,
       );
     }
   }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -57,7 +58,10 @@ export class AdminUsersCommandService {
     };
   }
 
-  async update(id: number, body: UpdateAdminUserCommand): Promise<AdminSafeUser> {
+  async update(
+    id: number,
+    body: UpdateAdminUserCommand,
+  ): Promise<AdminSafeUser> {
     const user = await this.requireUser(id);
 
     if (body.email && body.email.toLowerCase() !== user.email.toLowerCase()) {
@@ -86,8 +90,12 @@ export class AdminUsersCommandService {
     if (body.emailVerified !== undefined) {
       user.emailVerified = body.emailVerified;
     }
-    if (body.password) {
-      user.password = await this.passwords.hashPassword(body.password);
+    if (body.password !== undefined) {
+      const password = body.password.trim();
+      if (!password) {
+        throw new BadRequestException('Le mot de passe ne peut pas être vide');
+      }
+      user.password = await this.passwords.hashPassword(password);
     }
 
     const saved = await this.users.save(user);
@@ -140,14 +148,14 @@ export class AdminUsersCommandService {
   private async ensureEmailAvailable(email: string, excludeId?: number) {
     const existing = await this.users.findByEmail(email);
     if (existing && existing.id !== excludeId) {
-      throw new ConflictException('Email dÃ©jÃ  utilisÃ©');
+      throw new ConflictException('Email déjà utilisé');
     }
   }
 
   private async ensureUsernameAvailable(username: string, excludeId?: number) {
     const existing = await this.users.findByUsername(username);
     if (existing && existing.id !== excludeId) {
-      throw new ConflictException("Nom d'utilisateur dÃ©jÃ  utilisÃ©");
+      throw new ConflictException("Nom d'utilisateur déjà utilisé");
     }
   }
 

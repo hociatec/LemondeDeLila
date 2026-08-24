@@ -96,7 +96,7 @@ export function getSelectableCards(
   if (!round) return [];
 
   // Robustness: some stores/serializers can round-trip number ids as strings.
-  const waiting = (round.waitingPlayers ?? [])
+  const waiting = ((round.waitingPlayers ?? []) as unknown[])
     .map((v) => {
       if (typeof v === 'number' && Number.isFinite(v)) return v;
       if (typeof v === 'string') {
@@ -137,4 +137,3 @@ export function isCardAllowed(
     definition.allowedFamilies.includes(family)
   );
 }
-

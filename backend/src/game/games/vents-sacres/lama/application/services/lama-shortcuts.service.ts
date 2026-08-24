@@ -1,7 +1,7 @@
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import {
   actionShortcut,
   interfaceShortcut,
@@ -24,8 +24,7 @@ export class LamaShortcutsService {
     const meta = asLamaMetadata(ctx?.metadata);
     const currentPlayerId = ctx?.currentPlayerId ?? null;
     const droppedOutByPlayerId: Record<string, boolean> =
-      meta.droppedOutByPlayerId &&
-      typeof meta.droppedOutByPlayerId === 'object'
+      meta.droppedOutByPlayerId && typeof meta.droppedOutByPlayerId === 'object'
         ? meta.droppedOutByPlayerId
         : {};
     const drawLocked = this.shared.isDrawLocked(meta as LamaMetadata);
@@ -34,20 +33,23 @@ export class LamaShortcutsService {
       Boolean(droppedOutByPlayerId[String(currentPlayerId)]);
     const deckCount = Array.isArray(meta.deck) ? meta.deck.length : 0;
     const tracker = meta.turnTracker ?? null;
+    const trackerPlayerIdRaw: unknown = tracker?.playerId;
+    const trackerDrawnRaw: unknown = tracker?.drawn;
+    const trackerPlayedRaw: unknown = tracker?.played;
     const trackerPlayerId =
-      typeof tracker?.playerId === 'number'
-        ? tracker.playerId
-        : Number.isFinite(Number(tracker?.playerId))
-          ? Number(tracker.playerId)
+      typeof trackerPlayerIdRaw === 'number'
+        ? trackerPlayerIdRaw
+        : Number.isFinite(Number(trackerPlayerIdRaw))
+          ? Number(trackerPlayerIdRaw)
           : null;
     const trackerDrawn =
-      tracker?.drawn === true ||
-      tracker?.drawn === 1 ||
-      String(tracker?.drawn ?? '').toLowerCase() === 'true';
+      trackerDrawnRaw === true ||
+      trackerDrawnRaw === 1 ||
+      String(trackerDrawnRaw ?? '').toLowerCase() === 'true';
     const trackerPlayed =
-      tracker?.played === true ||
-      tracker?.played === 1 ||
-      String(tracker?.played ?? '').toLowerCase() === 'true';
+      trackerPlayedRaw === true ||
+      trackerPlayedRaw === 1 ||
+      String(trackerPlayedRaw ?? '').toLowerCase() === 'true';
     const isSameTurn = trackerPlayerId === currentPlayerId;
     const canDraw =
       isSameTurn &&
@@ -56,10 +58,11 @@ export class LamaShortcutsService {
       deckCount > 0 &&
       !trackerDrawn;
 
+    const allowPlayAfterDrawRaw: unknown = meta.allowPlayAfterDraw;
     const allowPlayAfterDraw =
-      meta.allowPlayAfterDraw === true ||
-      meta.allowPlayAfterDraw === 1 ||
-      String(meta.allowPlayAfterDraw ?? '').toLowerCase() === 'true';
+      allowPlayAfterDrawRaw === true ||
+      allowPlayAfterDrawRaw === 1 ||
+      String(allowPlayAfterDrawRaw ?? '').toLowerCase() === 'true';
     const canPassTurn =
       allowPlayAfterDraw && isSameTurn && trackerDrawn && !trackerPlayed;
 
@@ -73,4 +76,3 @@ export class LamaShortcutsService {
     ];
   }
 }
-

@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { CerclesSacresActionService } from './cercles-sacres-action.service';
 import { CerclesSacresPresenterService } from './cercles-sacres-presenter.service';
@@ -22,7 +22,7 @@ export class CerclesSacresService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = CERCLES_SACRES_GAME.displayName;
   readonly description =
-    'Formez trois Cercles SacrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©s en alignant six cartes thÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©matiques.';
+    'Formez trois Cercles Sacrés en alignant six cartes thématiques.';
   readonly minPlayers = CERCLES_SACRES_GAME.minPlayers;
   readonly maxPlayers = CERCLES_SACRES_GAME.maxPlayers;
 

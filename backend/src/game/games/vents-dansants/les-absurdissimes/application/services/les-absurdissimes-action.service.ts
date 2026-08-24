@@ -1,16 +1,16 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
-import { resolvePlayerName } from '../../../../application/helpers/player-name.helper';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import { resolvePlayerName } from '../../../../../application/helpers/player-name.helper';
 
-import { GameCoreService } from '../../../../application/services/game-core.service';
-import { DeckPoliciesService } from '../../../../application/features/deck-policies/services/deck-policies.service';
+import { GameCoreService } from '../../../../../application/services/game-core.service';
+import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
 import type { AbsurdissimesMetadata } from '../../model/les-absurdissimes-state.model';
 
 import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../application/helpers/action-service.helper';
+} from '../../../../../application/helpers/action-service.helper';
 import {
   getAbsurdissimesJudgeId,
   getAbsurdissimesPlayerIds,
@@ -94,7 +94,7 @@ export class AbsurdissimesActionService {
       next = { ...next, turn: { currentPlayerId: judgeTurn, direction: 1 } };
       next = this.core.appendLog(
         next,
-        'Les cartes sont prÃƒÆ’Ã‚Âªtes : le juge choisit la proposition gagnante.',
+        'Les cartes sont prêtes : le juge choisit la proposition gagnante.',
       );
       return next;
     }
@@ -128,7 +128,7 @@ export class AbsurdissimesActionService {
     meta = { ...meta, scores };
     let next = this.core.appendLog(
       state,
-      `${resolvePlayerName(state.players, winnerId)} remporte la manche avec la rÃƒÆ’Ã‚Â©ponse ${meta.submissions[winnerId] ?? ''}.`,
+      `${resolvePlayerName(state.players, winnerId)} remporte la manche avec la réponse ${meta.submissions[winnerId] ?? ''}.`,
     );
 
     const target = meta.targetScore;

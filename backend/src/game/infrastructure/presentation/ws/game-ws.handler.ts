@@ -1,9 +1,9 @@
 ﻿import { Injectable } from '@nestjs/common';
-import { requireUser } from '../../../../../realtime/public-api';
-import type { WsSession } from '../../../../../realtime/public-api';
-import { PayloadValidationService } from '../../../../../common/validation/public-api';
+import { requireUser } from '../../../../realtime/public-api';
+import type { WsSession } from '../../../../realtime/public-api';
+import { PayloadValidationService } from '../../../../common/validation/public-api';
 import { GameContentService } from '../../../engine/public-api';
-import { GameModuleOverviewRegistryService } from '../../../../application/services/game-module-overview.service';
+import { GameModuleOverviewRegistryService } from '../../../application/services/game-module-overview.service';
 import { GameRulesDto } from './dto/game-rules.ws.dto';
 
 @Injectable()

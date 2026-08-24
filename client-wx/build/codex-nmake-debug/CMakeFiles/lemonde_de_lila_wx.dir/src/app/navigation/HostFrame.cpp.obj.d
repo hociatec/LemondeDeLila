@@ -520,13 +520,6 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/tooltip.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/frame.h
-C:/vcpkg/installed/x64-windows/include/wx/timer.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/vcpkg/installed/x64-windows/include/wx/stopwatch.h
-C:/vcpkg/installed/x64-windows/include/wx/defs.h
-C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/vcpkg/installed/x64-windows/include/wx/time.h
 C:/vcpkg/installed/x64-windows/include/wx/panel.h
 C:/vcpkg/installed/x64-windows/include/wx/containr.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h

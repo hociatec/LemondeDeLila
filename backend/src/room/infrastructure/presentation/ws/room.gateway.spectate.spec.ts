@@ -11,6 +11,8 @@ import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
 import { RoomGatewayStateService } from './room-gateway-state.service';
 import { RoomClientPolicyService } from '../../../application/services/room-client-policy.service';
 import { RoomJoinPolicyService } from '../../../application/services/room-join-policy.service';
+import { RoomAdminPolicyService } from '../../../application/services/room-admin-policy.service';
+import { RoomGatewayPresenter } from './room-gateway.presenter';
 
 function createGateway() {
   const roomsService: any = {
@@ -49,6 +51,8 @@ function createGateway() {
   const lifecyclePresenter = new RoomGatewayLifecyclePresenter();
   const sessionPresenter = new RoomGatewaySessionPresenter();
   const statePresenter = new RoomGatewayStatePresenter();
+  const adminPolicy = new RoomAdminPolicyService();
+  const gatewayPresenter = new RoomGatewayPresenter();
   const lifecycle = new RoomGatewayLifecycleService(
     roomsService,
     roomsService,
@@ -63,11 +67,13 @@ function createGateway() {
     roomsService,
     roomsService,
     roomState,
+    adminPolicy,
     addBotToRoom,
     getLastRoomBot,
     removeBotFromRoom,
     perf,
     realtimeTracker,
+    gatewayPresenter,
   ) as any;
   const commands = new RoomGatewayCommandService() as any;
   const connection = new RoomGatewayConnectionService(

@@ -1596,6 +1596,9 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vc
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\NavigationController.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\AudioService.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\app.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\eventfilter.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
@@ -1657,13 +1660,52 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vc
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\generic\msgdlgg.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\msgdlg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\app\navigation\HostFrame.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\timer.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stopwatch.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\about\presentation\AboutFrame.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusPlanView.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\NonFocusablePanel.h
@@ -1672,22 +1714,12 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\Bu
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\domain\CatalogShelf.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\cache\SingleFlightCache.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\condition_variable
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogPanel.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogShelfNavigator.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomLobbyService.h
@@ -1741,10 +1773,11 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wa
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\MessagingProtocolFields.generated.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingSelectionMemory.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingNavigationState.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsFrame.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsNavigationState.h
@@ -1753,41 +1786,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wa
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresenceFrame.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresencePresentationModel.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenu.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\application\SessionStore.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\domain\ISessionRepository.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\domain\Session.h
@@ -1811,8 +1809,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wa
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\domain\RegisterRequest.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\domain\RegistrationResult.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\application\RegisterUseCase.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\AccessibilityUtils.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\AppNavigator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusCoordinator.h
 
 
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\app\navigation\HostFrame.cpp
@@ -2338,13 +2334,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\tooltip.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\frame.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\timer.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stopwatch.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\time.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\panel.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\containr.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\HostFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
@@ -3274,6 +3263,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.obj: 
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\domain\SocialUser.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\domain\SocialProfile.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\ISocialGateway.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\cache\SingleFlightCache.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\condition_variable
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\infrastructure\SocialApi.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.Social.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\WebSocketConstants.h
@@ -3398,6 +3389,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: "C
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
@@ -3433,8 +3426,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
-CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
-CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
@@ -3531,8 +3522,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppCompositions.User.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 
 
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppRuntime.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\bootstrap\AppRuntime.cpp
@@ -4049,6 +4046,9 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppRuntime.cpp.obj: C:\vcpkg\ins
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppRuntime.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\NavigationController.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppRuntime.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppRuntime.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppRuntime.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\AudioService.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppRuntime.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppRuntime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppRuntime.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketProvider.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\AppRuntime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
 
@@ -7451,6 +7451,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
@@ -7898,8 +7900,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
 
@@ -8011,6 +8011,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
@@ -8471,8 +8473,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
 
 
@@ -8583,6 +8583,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
@@ -8987,8 +8989,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\containr.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stattext.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
@@ -9017,6 +9017,11 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusCoordinator.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\concurrency\BackgroundExecutor.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.Loading.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\AppError.h
@@ -9176,6 +9181,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
@@ -9598,8 +9605,11 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\concurrency\BackgroundExecutor.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\AppError.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\catalog\presentation\CatalogPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\CoreErrorMessages.h
@@ -10026,6 +10036,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Conne
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\application\SessionStore.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\domain\ISessionRepository.h
@@ -10034,6 +10046,9 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Conne
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\SecurityUtils.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketProvider.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\AudioService.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
 
 
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Messages.cpp
@@ -10190,6 +10205,9 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messa
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\domain\DomainTypes.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\SecurityUtils.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtocol.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\AudioService.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.Messages.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
@@ -10550,6 +10568,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.cpp.o
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\application\SessionStore.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\application\ChatService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\domain\ISessionRepository.h
@@ -12835,6 +12855,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.Action
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.Actions.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\textctrl.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.Actions.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.Actions.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\StringUtils.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTexts.h
@@ -15886,6 +15908,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.cpp.ob
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFocusController.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\application\SessionStore.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\domain\ISessionRepository.h
@@ -18542,9 +18566,49 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ModuleErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\NetworkErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
@@ -18568,24 +18632,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iostream
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Submit.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
@@ -23967,6 +24013,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFra
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.Events.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
@@ -25687,6 +25735,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFra
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\main_menu\presentation\MainMenuFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
@@ -25859,6 +25909,15 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingSer
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\MessagingProtocolFields.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\MessagingProtocolFields.generated.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\AudioService.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\application\MessagingService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
 
 
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\MessagingApi.cpp
@@ -26090,8 +26149,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\Messaging
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\domain\DomainTypes.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\application\IMessagingGateway.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeApiClient.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\MessagingProtocolFields.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\MessagingProtocolFields.generated.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\MessagingPayloadCodec.h
@@ -26106,12 +26171,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\Messaging
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\NetworkErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\WsMessageTypes.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\AuthenticatedRealtimeApiClient.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketProvider.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\AuthenticatedRealtimeApiHelpers.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\AppError.h
@@ -26345,8 +26404,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\Messaging
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\domain\MessagingUser.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\domain\DomainTypes.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeApiClient.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\MessagingProtocolFields.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\MessagingProtocolFields.generated.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\messaging\infrastructure\MessagingPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\remote\UserAuthFields.h
@@ -36184,6 +36249,9 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.c
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
@@ -36192,6 +36260,59 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.c
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorFormatting.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ModuleErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\NetworkErrorMessages.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stringops.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextKeys.def
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\application\OptionsStore.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
 
 
@@ -36293,6 +36414,9 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptions
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\OptionsJsonDocumentCodec.h
@@ -36307,7 +36431,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptions
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
@@ -36322,8 +36445,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptions
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\FileOptionsRepository.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
@@ -36528,6 +36649,9 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJson
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
@@ -36541,7 +36665,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJson
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
@@ -36556,8 +36679,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJson
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsJsonDocumentCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
@@ -36996,6 +37117,9 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStat
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
@@ -37009,7 +37133,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStat
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
@@ -37024,8 +37147,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStat
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\infrastructure\OptionsStateJsonMapper.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
@@ -37679,6 +37800,30 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventB
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\checkbox.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\ownerdrawnbutton.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msgdlg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dialog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\toplevel.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\nonownedwnd.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\nonownedwnd.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iconbndl.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\icon.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iconloc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\icon.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\weakref.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\meta\int2type.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\toplevel.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\containr.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\dialog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\panel.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stockitem.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\generic\msgdlgg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\msgdlg.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\slider.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
@@ -37693,10 +37838,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventB
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\panel.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\containr.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\simplebook.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compositebookctrl.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bookctrl.h
@@ -37705,9 +37846,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventB
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\withimages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\icon.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iconloc.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\icon.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\imaglist.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
@@ -37718,6 +37856,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventB
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bookctrl.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\notebook.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsEventBinder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenu.h
@@ -38363,6 +38503,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFocusC
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFocusController.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFocusController.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\stattext.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFocusController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFocusController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFocusController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFocusController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFocusController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFocusController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenu.h
@@ -38925,10 +39067,11 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsNavigationState.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\navigation\NavigationStack.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
@@ -39231,6 +39374,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectio
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusTransition.h
@@ -39660,7 +39805,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectio
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsEditSession.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsFocusController.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsNavigationState.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\navigation\NavigationStack.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsSectionCoordinator.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
@@ -39749,36 +39893,37 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.L
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
@@ -39798,52 +39943,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.L
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\anybutton.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bmpbndl.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bitmap.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
@@ -39854,9 +39953,12 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.L
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
@@ -39871,8 +39973,50 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.L
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\anybutton.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bmpbndl.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bitmap.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stringops.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
@@ -40315,9 +40459,13 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.L
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\stattext.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\scrolwin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\generic\scrolwin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\sizer.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
@@ -40962,6 +41110,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.P
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Pages.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Pages.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\stattext.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Pages.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Pages.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Pages.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Pages.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Pages.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Pages.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsViewPagesBuilder.h
@@ -40980,36 +41130,37 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.S
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
@@ -41029,52 +41180,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.S
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\anybutton.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bmpbndl.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bitmap.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
@@ -41085,9 +41190,12 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.S
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
@@ -41102,8 +41210,50 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.S
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\anybutton.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bmpbndl.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bitmap.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stringops.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
@@ -41546,6 +41696,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.S
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\stattext.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsViewStateAdapter.h
@@ -41563,36 +41715,37 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.T
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
@@ -41612,52 +41765,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.T
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\anybutton.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bmpbndl.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bitmap.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
@@ -41668,9 +41775,12 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.T
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
@@ -41685,8 +41795,50 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.T
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\anybutton.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bmpbndl.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bitmap.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stringops.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
@@ -42129,6 +42281,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.T
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\stattext.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.Theme.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\Theme.h
@@ -42146,36 +42300,37 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.c
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
@@ -42195,52 +42350,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.c
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\anybutton.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bmpbndl.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bitmap.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
@@ -42251,9 +42360,12 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.c
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
@@ -42268,8 +42380,50 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.c
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\anybutton.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bmpbndl.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bitmap.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strconv.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\buffer.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stringops.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
@@ -42712,48 +42866,68 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.c
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\stattext.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsView.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 
 
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsViewPagesBuilder.cpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsViewPagesBuilder.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
@@ -42770,9 +42944,23 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPa
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\button.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\platform.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compiler.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\lib\mswud\wx\setup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\libraries.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\chkconf.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\version.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\cpp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\dlimpexp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\types.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\chartype.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\tchar.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\features.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\anybutton.h
@@ -42781,11 +42969,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPa
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bitmap.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
@@ -42799,21 +42984,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPa
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
@@ -42822,20 +42993,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPa
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
@@ -43261,7 +43418,12 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPa
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\checkbox.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\ownerdrawnbutton.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\gbsizer.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\scrolwin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\panel.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\containr.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\generic\scrolwin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\sizer.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
@@ -43272,17 +43434,17 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPa
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\statbox.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\containr.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\statbox.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compositewin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\statline.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\statline.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stattext.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\stattext.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\panel.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\simplebook.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\compositebookctrl.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bookctrl.h
@@ -43304,9 +43466,13 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPa
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\bookctrl.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\notebook.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\AccessibilityUtils.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewPagesBuilder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
 
 
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsViewStateAdapter.cpp
@@ -43406,6 +43572,9 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewSt
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\checkbox.h
@@ -43469,7 +43638,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewSt
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\xti.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\options\presentation\OptionsViewStateAdapter.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\rtti.h
@@ -44958,6 +45126,15 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActi
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\SocialService.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\domain\SocialFriendRequest.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\ISocialGateway.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\cache\SingleFlightCache.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\condition_variable
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 
 
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresenceFrame.Actions.cpp
@@ -47892,6 +48069,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFram
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\SocialService.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\domain\SocialFriendRequest.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\ISocialGateway.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\cache\SingleFlightCache.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\condition_variable
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\concurrency\BackgroundExecutor.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\AppError.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\presence\presentation\PresenceFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\CoreErrorMessages.h
@@ -61971,6 +62150,31 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.c
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\domain\SocialProfile.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\ISocialGateway.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\cache\SingleFlightCache.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\condition_variable
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\infrastructure\SocialProtocolFields.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\SocialProtocolFields.generated.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\application\SocialService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
@@ -62205,8 +62409,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\domain\SocialProfile.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\ISocialGateway.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeApiClient.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\infrastructure\SocialPayloadCodec.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\application\SessionStore.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\session\domain\ISessionRepository.h
@@ -62221,12 +62431,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\NetworkErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\WsMessageTypes.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\AuthenticatedRealtimeApiClient.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\http\WsTicketProvider.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\AuthenticatedRealtimeApiHelpers.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialApi.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\AppError.h
@@ -62460,8 +62664,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloa
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\domain\DomainTypes.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\domain\SocialProfile.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeApiClient.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\infrastructure\SocialProtocolFields.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\SocialProtocolFields.generated.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\infrastructure\SocialPayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\JsonApiHelpers.h
@@ -62598,6 +62808,23 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionCo
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\SocialService.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\domain\SocialFriendRequest.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\ISocialGateway.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\cache\SingleFlightCache.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\condition_variable
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\CoreErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialActionController.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorFormatting.h
@@ -67587,6 +67814,23 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialLoadController.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\SocialService.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\ISocialGateway.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\cache\SingleFlightCache.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\condition_variable
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialProfileCoordinator.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialScreenCoordinator.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialSectionCoordinator.h
@@ -67693,12 +67937,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
@@ -67737,7 +67975,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\weakref.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\meta\int2type.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\concurrency\BackgroundExecutor.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\AppError.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msgdlg.h
@@ -67762,8 +67999,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenu.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
@@ -69797,6 +70032,23 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionC
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialLoadController.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\SocialService.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\ISocialGateway.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\cache\SingleFlightCache.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\condition_variable
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialNavigationState.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\navigation\NavigationStack.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialPresentationModel.h
@@ -69899,12 +70151,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionC
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
@@ -69923,8 +70169,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionC
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTexts.Social.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenu.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
@@ -79290,8 +79534,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticati
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\CoreErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\WsAuthenticationService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\ErrorFormatting.h
@@ -79758,8 +80008,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAut
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\remote\UserAuthFields.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\UserAuthFields.generated.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\WsMessageTypes.h
@@ -88007,6 +88263,481 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\NavigationController.
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\accessibility\NavigationController.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\settings.h
 
 
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\AudioService.cpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\AudioService.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_set
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\third_party\bass\include\bass.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wtypes.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\cderr.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dde.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ddeml.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dlgs.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\lzexpand.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsystem.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mciapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmiscapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmiscapi2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\playsoundapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmeapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timeapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\joystickapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mmsyscom.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\nb30.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcdce.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcdcep.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\rpcnsi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcnterr.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcasync.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\shellapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winperf.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsock.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\inaddr.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincrypt.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\bcrypt.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ncrypt.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dpapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winefs.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winscard.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wtypes.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcndr.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\rpcnsip.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\rpcsal.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wtypesbase.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winioctl.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winsmcrd.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winspool.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\prsht.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ole2.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objbase.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\combaseapi.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\unknwnbase.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objidlbase.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\cguid.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\coml2api.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objidl.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\unknwn.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\propidlbase.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oaidl.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\urlmon.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oleidl.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\servprov.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\msxml.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\propidl.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oleauto.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\commdlg.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\prsht.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\IOptionsRepository.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.h
+
+
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.cpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+
+
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\concurrency\BackgroundExecutor.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\concurrency\BackgroundExecutor.cpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\concurrency\BackgroundExecutor.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\concurrency\BackgroundExecutor.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\concurrency\BackgroundExecutor.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
@@ -89800,8 +90531,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeApiClient.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocol.h
 
 
@@ -90029,8 +90766,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.c
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocolFields.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\JsonReaders.h
@@ -92008,6 +92751,12 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\Encoding.cpp.obj: "C:\Program 
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
 
 
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.cpp
@@ -93649,6 +94398,8 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.cpp.obj: C
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\weakref.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\meta\int2type.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\logging\Logger.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\AudioService.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenu.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.h
 
 
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\ui\controls\VerticalMenuEntry.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenuEntry.cpp
@@ -94241,9 +94992,9 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory:
 
 C:\vcpkg\installed\x64-windows\include\wx\msgout.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\app\Application.h:
-
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\app\Application.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Layout.cpp:
 
@@ -94279,13 +95030,13 @@ C:\vcpkg\installed\x64-windows\include\wx\palette.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTexts.Common.h:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf:
-
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.cpp:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTexts.Common.h:
 
 C:\vcpkg\installed\x64-windows\include\wx\msw\wrapwin.h:
 
@@ -94302,6 +95053,8 @@ C:\vcpkg\installed\x64-windows\include\wx\compositebookctrl.h:
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception:
 
@@ -94337,11 +95090,11 @@ C:\vcpkg\installed\x64-windows\include\wx\datetime.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\persistence\AtomicFileWriter.h:
-
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h":
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h":
 
@@ -94364,8 +95117,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFram
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h":
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h:
-
-C:\vcpkg\installed\x64-windows\include\wx\timer.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatMessageStore.h:
 
@@ -94392,6 +95143,10 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h:
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring:
+
+C:\vcpkg\installed\x64-windows\include\wx\statline.h:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h:
 
 C:\vcpkg\installed\x64-windows\include\wx\dialog.h:
 
@@ -94436,8 +95191,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\app\navigation\HostFrame.cpp:
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\MessagingProtocolFields.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h":
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\IChatGateway.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\NonFocusablePanel.h:
 
@@ -94541,6 +95294,8 @@ C:\vcpkg\installed\x64-windows\include\wx\sizer.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\AudioService.h:
+
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h":
@@ -94609,9 +95364,9 @@ C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\json_reverse_it
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility:
 
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h:
-
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\remote\UserAuthFields.h:
 
@@ -94757,12 +95512,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomOpenReq
 
 C:\vcpkg\installed\x64-windows\include\wx\strconv.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingView.Theme.cpp:
-
-C:\vcpkg\installed\x64-windows\include\wx\generic\textdlgg.h:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingSelectionMemory.h:
-
 C:\vcpkg\installed\x64-windows\include\wx\buffer.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h":
@@ -94881,6 +95630,8 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\Messa
 
 C:\vcpkg\installed\x64-windows\include\wx\msw\statbox.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.h:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\domain\ChatState.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialSectionPresenter.Profile.cpp:
@@ -94888,8 +95639,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialSect
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomSessionGateway.cpp:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\infrastructure\RoomPayloadCodec.cpp:
 
@@ -94909,15 +95658,15 @@ C:\vcpkg\installed\x64-windows\include\wx\filefn.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFocusController.cpp:
 
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp:
+
 C:\vcpkg\installed\x64-windows\include\wx\arrstr.h:
 
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp:
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\persistence\JsonFileStorage.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\CountStatusText.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresenceFrame.Events.cpp:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\persistence\JsonFileStorage.cpp:
 
 C:\vcpkg\installed\x64-windows\include\wx\dynarray.h:
 
@@ -95083,9 +95832,9 @@ C:\vcpkg\installed\x64-windows\include\wx\language.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomLobbyService.h:
 
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h:
-
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h":
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h":
 
@@ -95163,8 +95912,6 @@ C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\binary_writer.hpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\commdlg.h":
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.h:
-
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\msxml.h":
@@ -95183,19 +95930,15 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\infrastructure\Options
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h":
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\domain\MessagingBox.h:
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h":
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPresentationModel.h:
-
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\presentation\CatalogPanel.cpp:
 
 C:\vcpkg\installed\x64-windows\include\wx\validate.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.State.cpp:
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h":
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\domain\MessagingMessage.h:
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\domain\MessagingBox.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPresentationModel.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomLobbyNavigator.cpp:
 
@@ -95217,9 +95960,9 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.S
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h":
 
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h:
-
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h":
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h":
 
@@ -95267,9 +96010,9 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.h
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mciapi.h":
 
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\playsoundapi.h":
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\domain\DomainTypes.h:
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\playsoundapi.h":
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Preparation.cpp:
 
@@ -95359,8 +96102,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\infrastructure\Messa
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\application\SocialService.cpp:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.h:
-
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h":
 
 C:\vcpkg\installed\x64-windows\include\wx\msw\font.h:
@@ -95394,8 +96135,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialView
 C:\vcpkg\installed\x64-windows\include\wx\time.h:
 
 C:\vcpkg\installed\x64-windows\include\wx\generic\logg.h:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\navigation\NavigationStack.h:
 
 C:\vcpkg\installed\x64-windows\include\wx\icon.h:
 
@@ -95523,6 +96262,8 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusMemory.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error:
 
+C:\vcpkg\installed\x64-windows\include\wx\generic\scrolwin.h:
+
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet:
@@ -95561,6 +96302,8 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\bootstrap\AppRuntime.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTexts.Social.h:
 
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\application\RoomSessionService.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusManager.h:
@@ -95570,6 +96313,8 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.cp
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Bindings.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\NavigationController.h:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span:
 
 C:\vcpkg\installed\x64-windows\include\wx\frame.h:
 
@@ -95587,7 +96332,25 @@ C:\vcpkg\installed\x64-windows\include\wx\tooltip.h:
 
 C:\vcpkg\installed\x64-windows\include\wx\msw\frame.h:
 
-C:\vcpkg\installed\x64-windows\include\wx\stopwatch.h:
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPresentationModel.cpp:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\about\presentation\AboutFrame.h:
 
@@ -95598,8 +96361,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPanel.
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\ChatService.Reconnect.cpp:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\condition_variable:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread:
 
@@ -95643,27 +96404,51 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\domain\ChatMessage.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtocolFields.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\application\IChatGateway.h:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\presentation\ChatFrame.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\navigation\NavigationStack.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\presentation\HomeFrame.h:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\application\MessagingService.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.State.cpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\domain\MessagingMessage.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\domain\MessagingUser.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingComposeController.cpp:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\application\HomeAuthValidator.cpp:
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\domain\DomainTypes.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingNavigationState.h:
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\home\application\HomeAuthValidator.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\application\IMessagingGateway.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingNavigationState.h:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\generated\protocol\MessagingProtocolFields.generated.h:
 
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span:
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingFrame.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingView.Theme.cpp:
+
+C:\vcpkg\installed\x64-windows\include\wx\generic\textdlgg.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingSelectionMemory.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\application\OptionsStore.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\domain\OptionsState.h:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map:
+
+C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingView.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\DateTime.h:
 
@@ -95684,32 +96469,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\controls\VerticalMenu.h:
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialFrame.Profile.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.Confirmation.cpp:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\vault\presentation\VaultPresentationModel.cpp:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\presence\presentation\PresenceActionController.cpp:
 
@@ -95743,8 +96502,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\domain\RegistrationResult
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\application\RegisterUseCase.h:
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusCoordinator.h:
-
 C:\wamp64\www\lemondeDeLila\client-wx\src\bootstrap\AppCompositions.Game.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\AuthenticatedRealtimeApiClient.h:
@@ -95756,12 +96513,6 @@ C:\vcpkg\installed\x64-windows\include\nlohmann\detail\abi_macros.hpp:
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\chat\infrastructure\ChatProtocol.cpp:
 
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map:
-
-C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingView.h:
 
 C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp:
 
@@ -95961,6 +96712,8 @@ C:\vcpkg\installed\x64-windows\include\wx\file.h:
 
 C:\vcpkg\installed\x64-windows\include\wx\stdpaths.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusCoordinator.h:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\application\CatalogService.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\social\presentation\SocialLoadController.h:
@@ -96055,6 +96808,8 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\Messagi
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\messaging\presentation\MessagingEventBinder.h:
 
+C:\vcpkg\installed\x64-windows\include\wx\msw\statline.h:
+
 C:\vcpkg\installed\x64-windows\include\wx\listbox.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.cpp:
@@ -96121,6 +96876,8 @@ C:\vcpkg\installed\x64-windows\include\wx\gbsizer.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.Layout.cpp:
 
+C:\vcpkg\installed\x64-windows\include\wx\scrolwin.h:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsViewPagesBuilder.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\options\presentation\OptionsView.State.cpp:
@@ -96178,6 +96935,8 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomPanel.R
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomShortcutPolicy.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\rooms\presentation\RoomShortcutPolicy.cpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\SoundCatalog.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\JwtPayload.h:
 
@@ -96249,6 +97008,10 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusManager.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\FocusTransition.cpp:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\audio\AudioService.cpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\third_party\bass\include\bass.h:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppDataPaths.h:
@@ -96268,6 +97031,8 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\WinHttpWebSoc
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\WinHttpWebSocketInternals.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\WinHttpWebSocketInternals.cpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\persistence\AtomicFileWriter.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\JwtPayload.cpp:
 

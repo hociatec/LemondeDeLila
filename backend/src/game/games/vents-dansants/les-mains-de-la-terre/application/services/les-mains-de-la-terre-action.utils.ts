@@ -1,5 +1,5 @@
-import type { DeckPoliciesService } from '../../../../application/features/deck-policies/services/deck-policies.service';
-import type { RandomService } from '../../../../application/services/random.service';
+import type { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import type { RandomService } from '../../../../../application/services/random.service';
 
 import type { LesMainsMetadata } from '../../model/les-mains-de-la-terre-state.model';
 

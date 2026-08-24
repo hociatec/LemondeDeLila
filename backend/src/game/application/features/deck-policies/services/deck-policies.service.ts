@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { RandomService } from '../../../services/random.service';
 
-type MetaRecord = Record<string, unknown>;
-
 @Injectable()
 export class DeckPoliciesService {
   constructor(private readonly random: RandomService) {}
 
-  drawFromPile<TCard = unknown, TMeta extends MetaRecord = MetaRecord>(params: {
+  drawFromPile<
+    TCard = unknown,
+    TMeta extends object = Record<string, unknown>,
+  >(params: {
     meta: TMeta;
     pile: TCard[];
     discard: TCard[];
@@ -37,10 +38,7 @@ export class DeckPoliciesService {
           nextMeta[rngKey] && typeof nextMeta[rngKey] === 'object'
             ? (nextMeta[rngKey] as Record<string, unknown>)
             : {};
-        const shuffled = this.random.shuffle(
-          scopedRng,
-          drawDiscard,
-        );
+        const shuffled = this.random.shuffle(scopedRng, drawDiscard);
         nextMeta = { ...nextMeta, [rngKey]: shuffled.meta };
         drawPile = shuffled.values;
       }
@@ -72,7 +70,10 @@ export class DeckPoliciesService {
     };
   }
 
-  drawOne<TCard = unknown, TMeta extends MetaRecord = MetaRecord>(params: {
+  drawOne<
+    TCard = unknown,
+    TMeta extends object = Record<string, unknown>,
+  >(params: {
     meta: TMeta;
     deckKey: keyof TMeta & string;
     discardKey: keyof TMeta & string;

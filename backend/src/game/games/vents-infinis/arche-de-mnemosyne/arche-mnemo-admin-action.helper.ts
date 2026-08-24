@@ -1,19 +1,19 @@
 import type { GameStateEntity } from '../../../application/models/game-state.model';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 import type {
   MnemoAdminPage,
   MnemoPrompt,
   MnemoQuestionStatus,
   MnemoQuizMetadata,
 } from './model/mnemo-quiz.model';
-import type { MnemoQuizStoreService } from './infrastructure/storage/mnemo-quiz-store.service';
+import type { MnemoQuizStore } from './application/ports/mnemo-quiz-store.port';
 
 export function applyArcheMnemoAdminAction(input: {
   state: GameStateEntity;
   type: string;
   payload: Record<string, unknown>;
   meta: MnemoQuizMetadata;
-  store: MnemoQuizStoreService;
+  store: MnemoQuizStore;
   back: (view: MnemoAdminPage) => MnemoAdminPage;
   normalizeStatus: (value: unknown) => MnemoQuestionStatus;
   statusLabel: (value: unknown) => string;
@@ -60,8 +60,8 @@ export function applyArcheMnemoAdminAction(input: {
   if (input.type === 'mnemo_open_add_category') {
     const prompt: MnemoPrompt = {
       type: 'text_prompt',
-      title: 'Ajouter une catÃƒÂ©gorie',
-      label: 'Nom de catÃƒÂ©gorie',
+      title: 'Ajouter une catégorie',
+      label: 'Nom de catégorie',
       actionType: 'mnemo_add_category',
       payloadKey: 'name',
       cancelActionType: 'mnemo_prompt_cancel',
@@ -74,7 +74,7 @@ export function applyArcheMnemoAdminAction(input: {
       input.store.createCategory(stringOrEmpty(input.payload.name));
       return input.appendLog(
         { ...input.state, metadata: { ...input.meta, prompt: null } },
-        'CatÃƒÂ©gorie ajoutÃƒÂ©e.',
+        'Catégorie ajoutée.',
       );
     } catch (err) {
       return input.appendLog(
@@ -92,7 +92,7 @@ export function applyArcheMnemoAdminAction(input: {
     if (!category) return input.state;
     const prompt: MnemoPrompt = {
       type: 'text_prompt',
-      title: 'Renommer une catÃƒÂ©gorie',
+      title: 'Renommer une catégorie',
       label: 'Nouveau nom',
       actionType: 'mnemo_rename_category',
       payloadKey: 'name',
@@ -113,10 +113,13 @@ export function applyArcheMnemoAdminAction(input: {
     const view = input.meta.adminView;
     if (view.page !== 'category') return input.state;
     try {
-      input.store.renameCategory(view.categoryId, stringOrEmpty(input.payload.name));
+      input.store.renameCategory(
+        view.categoryId,
+        stringOrEmpty(input.payload.name),
+      );
       return input.appendLog(
         { ...input.state, metadata: { ...input.meta, prompt: null } },
-        'CatÃƒÂ©gorie renommÃƒÂ©e.',
+        'Catégorie renommée.',
       );
     } catch (err) {
       return input.appendLog(
@@ -139,7 +142,7 @@ export function applyArcheMnemoAdminAction(input: {
             prompt: null,
           },
         },
-        'CatÃƒÂ©gorie supprimÃƒÂ©e (questions mises ÃƒÂ  la corbeille).',
+        'Catégorie supprimée (questions mises à la corbeille).',
       );
     } catch (err) {
       return input.appendLog(
@@ -151,7 +154,9 @@ export function applyArcheMnemoAdminAction(input: {
 
   if (input.type === 'mnemo_open_category') {
     const categoryId = stringOrEmpty(input.payload.categoryId).trim();
-    if (!input.store.listCategories().some((entry) => entry.id === categoryId)) {
+    if (
+      !input.store.listCategories().some((entry) => entry.id === categoryId)
+    ) {
       return input.state;
     }
     return {
@@ -179,25 +184,25 @@ export function applyArcheMnemoAdminAction(input: {
         { key: 'question', label: 'Question', kind: 'text', initialText: '' },
         {
           key: 'correct',
-          label: 'Bonne rÃƒÂ©ponse',
+          label: 'Bonne réponse',
           kind: 'text',
           initialText: '',
         },
         {
           key: 'wrong1',
-          label: 'Mauvaise rÃƒÂ©ponse 1',
+          label: 'Mauvaise réponse 1',
           kind: 'text',
           initialText: '',
         },
         {
           key: 'wrong2',
-          label: 'Mauvaise rÃƒÂ©ponse 2',
+          label: 'Mauvaise réponse 2',
           kind: 'text',
           initialText: '',
         },
         {
           key: 'wrong3',
-          label: 'Mauvaise rÃƒÂ©ponse 3',
+          label: 'Mauvaise réponse 3',
           kind: 'text',
           initialText: '',
         },
@@ -228,7 +233,7 @@ export function applyArcheMnemoAdminAction(input: {
       });
       return input.appendLog(
         { ...input.state, metadata: { ...input.meta, prompt: null } },
-        'Question ajoutÃƒÂ©e.',
+        'Question ajoutée.',
       );
     } catch (err) {
       return input.appendLog(
@@ -271,7 +276,7 @@ export function applyArcheMnemoAdminAction(input: {
       input.store.updateQuestion(questionId, { status });
       return input.appendLog(
         { ...input.state, metadata: { ...input.meta, prompt: null } },
-        `Statut mis ÃƒÂ  jour (${input.statusLabel(status)}).`,
+        `Statut mis à jour (${input.statusLabel(status)}).`,
       );
     } catch (err) {
       return input.appendLog(
@@ -307,25 +312,25 @@ export function applyArcheMnemoAdminAction(input: {
         },
         {
           key: 'correct',
-          label: 'Bonne rÃƒÂ©ponse',
+          label: 'Bonne réponse',
           kind: 'text',
           initialText: question.correct,
         },
         {
           key: 'wrong1',
-          label: 'Mauvaise rÃƒÂ©ponse 1',
+          label: 'Mauvaise réponse 1',
           kind: 'text',
           initialText: question.wrong1,
         },
         {
           key: 'wrong2',
-          label: 'Mauvaise rÃƒÂ©ponse 2',
+          label: 'Mauvaise réponse 2',
           kind: 'text',
           initialText: question.wrong2,
         },
         {
           key: 'wrong3',
-          label: 'Mauvaise rÃƒÂ©ponse 3',
+          label: 'Mauvaise réponse 3',
           kind: 'text',
           initialText: question.wrong3,
         },
@@ -346,7 +351,7 @@ export function applyArcheMnemoAdminAction(input: {
       });
       return input.appendLog(
         { ...input.state, metadata: { ...input.meta, prompt: null } },
-        'Question modifiÃƒÂ©e.',
+        'Question modifiée.',
       );
     } catch (err) {
       return input.appendLog(
@@ -358,5 +363,3 @@ export function applyArcheMnemoAdminAction(input: {
 
   return null;
 }
-
-

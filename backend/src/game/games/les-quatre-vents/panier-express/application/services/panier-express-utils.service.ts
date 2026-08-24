@@ -2,34 +2,34 @@ import {
   GameStateEntity,
   PlayerStateEntity,
 } from '../../../../../application/models/game-state.model';
-import { PanierExpressPlayer } from './panier-express-state.model';
+import { PanierExpressPlayer } from '../../model/panier-express-state.model';
 
 /**
- * Utilitaires partagÃ©s Panier Express.
- * Centralise les helpers liÃ©s aux joueurs pour Ã©viter les accÃ¨s non typÃ©s.
+ * Utilitaires partagés Panier Express.
+ * Centralise les helpers liés aux joueurs pour éviter les accès non typés.
  */
 export class PanierExpressUtils {
   private static readonly COURSE_LABELS: Record<string, string> = {
-    cepe: 'cÃ¨pe',
-    'celeri-branche': 'cÃ©leri-branche',
-    chataigne: 'chÃ¢taigne',
-    clementine: 'clÃ©mentine',
-    echalote: 'Ã©chalote',
-    epinard: 'Ã©pinard',
-    feve: 'fÃ¨ve',
+    cepe: 'cèpe',
+    'celeri-branche': 'céleri-branche',
+    chataigne: 'châtaigne',
+    clementine: 'clémentine',
+    echalote: 'échalote',
+    epinard: 'épinard',
+    feve: 'fève',
     'jeune-pousse-d-ortie': "jeune pousse d'ortie",
-    mais: 'maÃ¯s',
-    mure: 'mÃ»re',
-    nefle: 'nÃ¨fle',
-    patisson: 'pÃ¢tisson',
-    peche: 'pÃªche',
-    'pois-casse': 'pois cassÃ©s',
+    mais: 'maïs',
+    mure: 'mûre',
+    nefle: 'nèfle',
+    patisson: 'pâtisson',
+    peche: 'pêche',
+    'pois-casse': 'pois cassés',
   };
 
   private static readonly EVENT_LABELS: Record<string, string> = {
-    'produit-avarie': 'Produit avariÃ©',
-    'producteur-genereux': 'Producteur gÃ©nÃ©reux',
-    'troc-improvise': 'Troc improvisÃ©',
+    'produit-avarie': 'Produit avarié',
+    'producteur-genereux': 'Producteur généreux',
+    'troc-improvise': 'Troc improvisé',
   };
 
   playerName(state: GameStateEntity, playerId: number): string {
@@ -55,12 +55,13 @@ export class PanierExpressUtils {
   normalizePlayer(
     player: Partial<PanierExpressPlayer> | PlayerStateEntity,
   ): PanierExpressPlayer {
+    const parsedId =
+      typeof player.id === 'number' ? player.id : Number(player.id);
+    const id = Number.isFinite(parsedId) ? parsedId : 0;
     return {
-      id: player.id,
+      id,
       username:
-        typeof player.username === 'string'
-          ? player.username
-          : `Joueur ${player.id}`,
+        typeof player.username === 'string' ? player.username : `Joueur ${id}`,
       isBot: player.isBot === true,
       shoppingList: this.toStringArray(player.shoppingList),
       basket: this.toStringArray(player.basket),
@@ -70,7 +71,9 @@ export class PanierExpressUtils {
   }
 
   normalizePlayers(
-    players: Array<Partial<PanierExpressPlayer> | PlayerStateEntity> | undefined,
+    players:
+      | Array<Partial<PanierExpressPlayer> | PlayerStateEntity>
+      | undefined,
   ): PanierExpressPlayer[] {
     if (!Array.isArray(players)) return [];
     return players.map((p) => this.normalizePlayer(p));
@@ -179,23 +182,23 @@ export class PanierExpressUtils {
     if (direct) return direct;
 
     const tokenMap: Record<string, string> = {
-      echange: 'Ã©change',
-      journee: 'journÃ©e',
-      marche: 'marchÃ©',
-      intemperie: 'intempÃ©rie',
-      avarie: 'avariÃ©',
-      controle: 'contrÃ´le',
-      ephemere: 'Ã©phÃ©mÃ¨re',
-      fidelite: 'fidÃ©litÃ©',
-      abime: 'abÃ®mÃ©',
-      detrempe: 'dÃ©trempÃ©',
-      derriere: 'derriÃ¨re',
-      arriere: 'arriÃ¨re',
-      impose: 'imposÃ©',
-      perce: 'percÃ©',
-      spontane: 'spontanÃ©',
-      genereux: 'gÃ©nÃ©reux',
-      improvise: 'improvisÃ©',
+      echange: 'échange',
+      journee: 'journée',
+      marche: 'marché',
+      intemperie: 'intempérie',
+      avarie: 'avarié',
+      controle: 'contrôle',
+      ephemere: 'éphémère',
+      fidelite: 'fidélité',
+      abime: 'abîmé',
+      detrempe: 'détrempé',
+      derriere: 'derrière',
+      arriere: 'arrière',
+      impose: 'imposé',
+      perce: 'percé',
+      spontane: 'spontané',
+      genereux: 'généreux',
+      improvise: 'improvisé',
     };
     const extraTokenMap: Record<string, string> = {
       recompensee: 'r\u00e9compens\u00e9e',
@@ -205,8 +208,8 @@ export class PanierExpressUtils {
       bonde: 'bond\u00e9',
       defectueux: 'd\u00e9fectueux',
       oublie: 'oubli\u00e9',
-      anime: 'animÃ©',
-      spontanee: 'spontanÃ©e',
+      anime: 'animé',
+      spontanee: 'spontanée',
     };
     const words = raw
       .split('-')
@@ -224,15 +227,15 @@ export class PanierExpressUtils {
 
     switch (tile.type) {
       case 'start':
-        return 'dÃ©part';
+        return 'départ';
       case 'rest':
         return 'repos';
       case 'stand':
         return `stand ${tile.standId ?? 'inconnu'}`;
       case 'event':
-        return 'Ã©vÃ©nement';
+        return 'événement';
       case 'exchange':
-        return 'Ã©change';
+        return 'échange';
       case 'quiz':
         return 'quiz';
       case 'move':
@@ -248,10 +251,3 @@ export class PanierExpressUtils {
     }
   }
 }
-
-
-
-
-
-
-

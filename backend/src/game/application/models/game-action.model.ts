@@ -6,14 +6,15 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import {
-  GameStateEntity,
-  PendingState,
-} from '../models/game-state.model';
+import { GameStateEntity, PendingState } from '../models/game-state.model';
 
 export class GameSingleActionDto {
   @IsString()
   type!: string;
+
+  @IsOptional()
+  @IsString()
+  label?: string;
 
   @IsOptional()
   @IsObject()
@@ -33,7 +34,7 @@ export class GameActionListDto {
 
 export type GameStateResponse = GameStateWithActions;
 
-// Ã‰tend la rÃ©ponse d'Ã©tat pour inclure les actions/pending exposÃ©es au client gÃ©nÃ©rique.
+// Étend la réponse d'état pour inclure les actions/pending exposées au client générique.
 export interface GameStateWithActions extends GameStateEntity {
   actions?: Array<{ type: string; label?: string; payload?: unknown }>;
   pending?: PendingState | null;
@@ -41,6 +42,3 @@ export interface GameStateWithActions extends GameStateEntity {
   catalog?: Record<string, unknown>;
   [key: string]: unknown;
 }
-
-
-

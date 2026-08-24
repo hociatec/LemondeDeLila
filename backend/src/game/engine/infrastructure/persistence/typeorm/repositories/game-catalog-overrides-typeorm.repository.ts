@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { GameCatalogOverrideRecord } from '../../../application/models/game-catalog-override.model';
-import type { GameCatalogOverridesRepository } from '../../../application/ports/game-catalog-overrides.repository';
+import type { GameCatalogOverrideRecord } from '../../../../application/models/game-catalog-override.model';
+import type { GameCatalogOverridesRepository } from '../../../../application/ports/game-catalog-overrides.repository';
 import { GameCatalogOverrideEntity } from '../entities/game-catalog-override.entity';
 
 @Injectable()
@@ -42,14 +42,9 @@ export class GameCatalogOverridesTypeormRepository implements GameCatalogOverrid
 }
 
 function compact(update: GameCatalogOverrideRecord): GameCatalogOverrideRecord {
-  const next: GameCatalogOverrideRecord = {};
-  for (const [key, value] of Object.entries(update)) {
-    if (value !== undefined) {
-      next[key as keyof GameCatalogOverrideRecord] =
-        value as GameCatalogOverrideRecord[keyof GameCatalogOverrideRecord];
-    }
-  }
-  return next;
+  return Object.fromEntries(
+    Object.entries(update).filter(([, value]) => value !== undefined),
+  ) as GameCatalogOverrideRecord;
 }
 
 function toRecord(row: GameCatalogOverrideEntity): GameCatalogOverrideRecord {

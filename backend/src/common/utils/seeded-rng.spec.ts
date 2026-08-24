@@ -36,12 +36,10 @@ describe('seeded-rng', () => {
     expect(a).not.toBe(b);
   });
 
-  it('falls back to Math.random when context missing', () => {
-    const spy = jest.spyOn(Math, 'random').mockReturnValue(0.5);
-    try {
-      expect(ensureSeededRng({}).seed).toBe(2 ** 31);
-    } finally {
-      spy.mockRestore();
-    }
+  it('falls back to a valid cryptographic seed when context is missing', () => {
+    const seed = ensureSeededRng({}).seed;
+    expect(Number.isInteger(seed)).toBe(true);
+    expect(seed).toBeGreaterThanOrEqual(0);
+    expect(seed).toBeLessThanOrEqual(0xffffffff);
   });
 });

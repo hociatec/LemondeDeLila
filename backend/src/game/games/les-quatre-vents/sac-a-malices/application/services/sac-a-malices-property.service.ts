@@ -10,7 +10,7 @@ import {
   mortgageSacAMalicesTile,
   sellSacAMalicesProperty,
   unmortgageSacAMalicesTile,
-} from './sac-a-malices-property-management.helper';
+} from '../../actions/sac-a-malices-property-management.helper';
 
 function clamp(value: number, min: number, max: number): number {
   if (value < min) return min;
@@ -22,7 +22,7 @@ function normalize(value: string): string {
   return String(value ?? '')
     .trim()
     .toLowerCase()
-    .replace(/[ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢'`]/g, "'")
+    .replace(/[’'`]/g, "'")
     .replace(/\s+/g, ' ');
 }
 

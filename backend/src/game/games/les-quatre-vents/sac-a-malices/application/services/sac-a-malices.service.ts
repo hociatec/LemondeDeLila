@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { SAC_A_MALICES_GAME } from '../../definitions/sac-a-malices.definition';
 import { SacAMalicesSetupService } from './sac-a-malices-setup.service';
 import { SacAMalicesActionService } from './sac-a-malices-action.service';

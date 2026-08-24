@@ -1,6 +1,6 @@
 import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import { resolvePlayerNameFromState } from '../../../../application/helpers/player-name.helper';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import {
   SAC_VARIANT_BY_ID,
   parseVariantInput,
@@ -36,7 +36,7 @@ type ApplySacAMalicesVariantConfigInput = {
   setupStep: string | undefined;
   applyVariantSelection: (
     state: GameStateEntity,
-    variantId: string,
+    variantId: SacVariantId,
   ) => GameStateEntity;
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
 };
@@ -55,15 +55,17 @@ export function applySacAMalicesVariantConfig(
   const parsedCandidate = parseVariantInput(candidateVariant ?? null);
   const parsed = parsedCandidate ?? 'classic';
   const variant = SAC_VARIANT_BY_ID[parsed] ?? SAC_VARIANT_BY_ID['classic'];
-  const chosenId = variant?.id ?? 'classic';
+  const chosenId = (variant?.id ?? 'classic') as SacVariantId;
 
   let next = input.applyVariantSelection(input.state, chosenId);
-  const actionMeta = asRecord((input.action as unknown as { meta?: unknown }).meta);
+  const actionMeta = asRecord(
+    (input.action as unknown as { meta?: unknown }).meta,
+  );
   const actorId = toNumberValue(actionMeta.actorId);
   const label = variant?.label ?? chosenId;
 
   if (!parsedCandidate) {
-    return input.appendLog(next, `Variante inconnue, dÃƒÂ©faut "${label}".`);
+    return input.appendLog(next, `Variante inconnue, défaut "${label}".`);
   }
 
   if (actorId != null) {
@@ -75,7 +77,3 @@ export function applySacAMalicesVariantConfig(
 
   return input.appendLog(next, `Variante choisie : ${label}.`);
 }
-
-
-
-

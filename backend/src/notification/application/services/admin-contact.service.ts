@@ -28,7 +28,7 @@ import {
 import type {
   NotificationInboxPayload,
 } from '../models/notification-inbox-item.model';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 export type AdminContactItem = {
   kind: 'admin_contact';

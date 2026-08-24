@@ -1,5 +1,7 @@
 #include "modules/messaging/application/MessagingService.h"
 
+#include "shared/audio/AudioService.h"
+
 namespace lila::modules::messaging::application
 {
 MessagingService::MessagingService(IMessagingGateway& api)
@@ -22,7 +24,12 @@ std::optional<domain::MessagingMessage> MessagingService::Send(
     const std::string& text,
     const std::optional<std::string>& subject) const
 {
-    return api_.Send(recipientId, text, subject);
+    auto sent = api_.Send(recipientId, text, subject);
+    if (sent.has_value())
+    {
+        lila::shared::audio::AudioService::PlayGlobal(lila::shared::audio::SoundCue::PrivateMessageSent);
+    }
+    return sent;
 }
 
 std::optional<domain::MessagingMessage> MessagingService::Delete(const std::string& messageId) const

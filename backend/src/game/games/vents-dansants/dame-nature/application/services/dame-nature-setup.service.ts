@@ -38,7 +38,9 @@ export class DameNatureSetupService {
       for (let i = 0; i < 5 && remaining.length; i += 1) {
         const cardId = remaining.shift()!;
         hand.push(cardId);
-        const familyId = DAME_NATURE_CARD_BY_ID[cardId]?.familyId ?? 'unknown';
+        const definition = DAME_NATURE_CARD_BY_ID[cardId];
+        const familyId =
+          definition?.type === 'family' ? definition.familyId : 'unknown';
         familyMap[familyId] = [...(familyMap[familyId] ?? []), cardId];
       }
       hands[player.id] = hand;
@@ -70,6 +72,3 @@ export class DameNatureSetupService {
     return { ...baseState, metadata };
   }
 }
-
-
-

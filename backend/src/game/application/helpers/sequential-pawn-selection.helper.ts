@@ -58,7 +58,7 @@ export function continueSequentialPawnSelection(params: {
       },
     };
     if (params.core) {
-      const prompt = `C'est Ã  ${resolvePlayerNameFromState(withPending, pendingInfo.playerId)} de choisir son pion.`;
+      const prompt = `C'est à ${resolvePlayerNameFromState(withPending, pendingInfo.playerId)} de choisir son pion.`;
       const hasPrompt = Array.isArray(withPending.log)
         ? withPending.log
             .slice(-6)

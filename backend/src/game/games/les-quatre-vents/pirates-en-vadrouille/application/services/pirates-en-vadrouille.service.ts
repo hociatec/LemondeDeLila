@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { PIRATES_GAME } from '../../definitions/pirates-en-vadrouille.definition';
 import { PiratesEnVadrouilleSetupService } from './pirates-en-vadrouille-setup.service';
 import { PiratesEnVadrouilleActionService } from './pirates-en-vadrouille-action.service';
@@ -22,7 +22,7 @@ export class PiratesEnVadrouilleService extends AbstractGameService {
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = PIRATES_GAME.displayName;
   readonly description =
-    'Parcourez lÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â®le Papayousse, piochez bonus ou obstacles et rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©coltez trÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©sors et piÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨ces dÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢or.';
+    'Parcourez l’île Papayousse, piochez bonus ou obstacles et récoltez trésors et pièces d’or.';
   readonly minPlayers = PIRATES_GAME.minPlayers;
   readonly maxPlayers = PIRATES_GAME.maxPlayers;
 

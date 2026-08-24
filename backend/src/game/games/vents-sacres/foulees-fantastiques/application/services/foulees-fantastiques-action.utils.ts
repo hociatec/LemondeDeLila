@@ -11,11 +11,11 @@ export function describeFouleesProgress(
   progress: number,
 ): string {
   if (!Number.isFinite(progress) || progress < 0) {
-    return 'dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©part';
+    return 'départ';
   }
   const arrivalProgress = meta.trackLength + meta.homeLength - 1;
   if (progress >= arrivalProgress) {
-    return 'arrivÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e';
+    return 'arrivée';
   }
   if (progress < meta.trackLength) {
     const offset = meta.offsets?.[playerId] ?? 0;
@@ -68,18 +68,18 @@ export function describeFouleesHabitatLabel(
     typeof meta?.habitatByPlayer?.[playerId] === 'string'
       ? String(meta.habitatByPlayer[playerId]).trim()
       : '';
-  return habitat || 'abri de dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©part';
+  return habitat || 'abri de départ';
 }
 
 export function describeFouleesFromHabitat(habitat: string): string {
   const raw = String(habitat ?? '').trim();
   const h = raw.toLowerCase();
-  if (!raw) return "de l'abri de dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©part";
-  if (h === 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©curie' || h === 'ecurie') return "de l'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©curie";
-  if (h === 'voliÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨re' || h === 'voliere') return 'de la voliÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨re';
+  if (!raw) return "de l'abri de départ";
+  if (h === 'écurie' || h === 'ecurie') return "de l'écurie";
+  if (h === 'volière' || h === 'voliere') return 'de la volière';
   if (h === 'primaterie') return 'de la primaterie';
   if (h === 'aquarium') return "de l'aquarium";
-  if (/^[aeiouyhÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚ÂªÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â«ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â®ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â´ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¹ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â»ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼]/i.test(raw)) {
+  if (/^[aeiouyhàâäéèêëîïôöùûü]/i.test(raw)) {
     return `de l'${raw}`;
   }
   return `du ${raw}`;

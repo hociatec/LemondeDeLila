@@ -24,7 +24,8 @@ export type PlayerStateEntity = {
 };
 
 export type PendingState = {
-  type: string;
+  /** Some legacy games identify their pending state with `step` only. */
+  type?: string;
   /**
    * Libellé prêt à afficher pour la liste de choix (serveur source de vérité).
    */

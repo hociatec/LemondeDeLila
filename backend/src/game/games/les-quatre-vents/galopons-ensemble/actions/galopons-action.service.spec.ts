@@ -11,6 +11,7 @@ import { GaloponsBotService } from '../application/services/galopons-bot.service
 import * as Rulebook from '../rulebook/rulebook';
 import boardJson from '../model/content/board.json';
 import cardsJson from '../model/content/cards.json';
+import { resolveGaloponsPawnLabel } from '../application/services/galopons-action.utils';
 
 function buildTiles() {
   const tiles = Array.from({ length: 40 }, (_, i) => ({
@@ -134,9 +135,7 @@ function makeSetupRuntime() {
   const setupFlow = new SetupFlowService();
   const contentLoader = {
     validators: {
-      version:
-        (_expected: number) =>
-        (_payload: unknown) => {},
+      version: (_expected: number) => (_payload: unknown) => {},
       arrayField:
         (_field: string, _minItems = 0) =>
         (_payload: unknown) => {},
@@ -257,7 +256,7 @@ describe('GaloponsActionService', () => {
           tiles: [
             {
               n: 1,
-              title: 'DÃƒÂ©part',
+              title: 'Départ',
               type: 'start',
               region: 'prairie',
               description: "L'aventure commence ici.",
@@ -525,7 +524,7 @@ describe('GaloponsActionService', () => {
     const { service } = makeRuntime();
     const out = (service as any).applyCard(makeState(), 1, {
       id: 15,
-      text: 'Vous aidez un poulain perdu ÃƒÂ  retrouver son chemin. Donnez-lui une pomme en la dÃƒÂ©faussant, puis rejouez immÃƒÂ©diatement.',
+      text: 'Vous aidez un poulain perdu à retrouver son chemin. Donnez-lui une pomme en la défaussant, puis rejouez immédiatement.',
     });
 
     expect(meta(out).apples[1]).toBe(1);
@@ -653,9 +652,9 @@ describe('GaloponsActionService', () => {
       'Tous les joueurs restent sur place pendant un tour',
       "Choisissez un joueur et avancez tout les deux d'une case",
       'aidez un autre joueur en le faisant avancer de 2 cases',
-      "DÃƒÂ©faussez-vous d'une pomme",
-      "Avancez jusqu'ÃƒÂ  la prochaine case forÃƒÂªt",
-      "Avancez jusqu'ÃƒÂ  la prochaine case montagne",
+      "Défaussez-vous d'une pomme",
+      "Avancez jusqu'à la prochaine case forêt",
+      "Avancez jusqu'à la prochaine case montagne",
       'Avancez de 3 cases',
       'Reculez de 2 cases',
     ];
@@ -674,7 +673,7 @@ describe('GaloponsActionService', () => {
     expect(draw).toBeDefined();
 
     expect((service as any).findOccupant(meta(state), 1, 1)).toBe(2);
-    expect((service as any).pawnLabel(state, 1)).toContain('son');
+    expect(resolveGaloponsPawnLabel(state, meta(state), 1)).toContain('son');
 
     const finished = (service as any).finishGame({
       ...state,
@@ -737,7 +736,7 @@ describe('GaloponsActionService', () => {
     expect(
       skipMessages.some((message) => /passe 1 tour\(s\)\./i.test(message)),
     ).toBe(false);
-    expect(finishMessages).not.toContain('Ãƒâ€°curie finale.');
+    expect(finishMessages).not.toContain('Écurie finale.');
   });
 
   it('only lets the bot act when it is the current player or the pending owner', () => {
@@ -782,13 +781,3 @@ describe('GaloponsActionService', () => {
     );
   });
 });
-
-
-
-
-
-
-
-
-
-

@@ -53,6 +53,8 @@ function createDefaultContentLoader(): MinimalContentLoader {
     validators: {
       version: () => () => undefined,
       arrayField: () => () => undefined,
+      requiredFields: () => () => undefined,
+      positiveNumber: () => () => undefined,
     },
     loadContent: () => {
       throw new Error(
@@ -71,7 +73,8 @@ export function createMissionGalaxieRuntime(
   const turns =
     overrides.turns ??
     new TurnFlowService(new TurnService(), new TurnPoliciesService(core));
-  const deckPolicies = overrides.deckPolicies ?? new DeckPoliciesService(random);
+  const deckPolicies =
+    overrides.deckPolicies ?? new DeckPoliciesService(random);
   const boardPayload = overrides.boardPayload ?? new BoardPayloadService();
   const botRunner =
     overrides.botRunner ?? new BotRunnerService(new BotStrategyService());

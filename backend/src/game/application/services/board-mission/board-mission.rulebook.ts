@@ -54,7 +54,7 @@ export function validateBoardMissionAction<
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas dÃƒÆ’Ã‚Â©marrÃƒÆ’Ã‚Â©e.", {
+    throw new PlayerActionError("La partie n'est pas démarrée.", {
       gameType: definition.id,
     });
   }

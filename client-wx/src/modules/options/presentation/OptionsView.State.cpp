@@ -1,6 +1,8 @@
 #include "modules/options/presentation/OptionsView.h"
 #include "modules/options/presentation/OptionsViewStateAdapter.h"
 
+#include <wx/button.h>
+
 namespace lila::modules::options::presentation
 {
 wxWindow* OptionsView::GetFirstSectionControl(std::size_t sectionIndex) const
@@ -20,9 +22,12 @@ void OptionsView::WriteState(const domain::OptionsState& state)
 
 void OptionsView::SetUnsavedChanges(bool hasUnsavedChanges)
 {
-    if (cancelButton != nullptr)
+    for (wxButton* saveButton : {generalSaveButton, soundsSaveButton, chatSaveButton})
     {
-        cancelButton->Enable(hasUnsavedChanges);
+        if (saveButton != nullptr)
+        {
+            saveButton->Enable(hasUnsavedChanges);
+        }
     }
 }
 

@@ -32,7 +32,7 @@ export class RealtimeApiConnectionService {
     );
     if (!ticketValidation.ok) {
       this.logger.warn(
-        `Connexion WS refusÃ©e (ticket) reason=${ticketValidation.reason} hasToken=${Boolean(token)} clientVersion=${clientVersion ?? 'n/a'} connectionId=${connectionId}`,
+        `Connexion WS refusée (ticket) reason=${ticketValidation.reason} hasToken=${Boolean(token)} clientVersion=${clientVersion ?? 'n/a'} connectionId=${connectionId}`,
       );
       try {
         const reason =

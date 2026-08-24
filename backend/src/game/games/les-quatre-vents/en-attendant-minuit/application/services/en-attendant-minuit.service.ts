@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { MINUIT_GAME } from '../../definitions/minuit.definition';
 import { MinuitSetupService } from './minuit-setup.service';
 import { MinuitActionService } from './minuit-action.service';
@@ -21,7 +21,7 @@ export class EnAttendantMinuitService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = MINUIT_GAME.displayName;
-  readonly description = "Course de NoÃƒÆ’Ã‚Â«l jusqu'ÃƒÆ’Ã‚Â  Minuit.";
+  readonly description = "Course de Noël jusqu'à Minuit.";
   readonly minPlayers = MINUIT_GAME.minPlayers;
   readonly maxPlayers = MINUIT_GAME.maxPlayers;
 

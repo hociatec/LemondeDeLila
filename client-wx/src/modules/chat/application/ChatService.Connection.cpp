@@ -11,6 +11,7 @@
 #include "shared/errors/ErrorMessages.h"
 #include "shared/logging/Logger.h"
 #include "shared/network/http/WsTicketProvider.h"
+#include "shared/audio/AudioService.h"
 
 namespace lila::modules::chat::application
 {
@@ -138,6 +139,7 @@ void ChatService::Send(const std::string& text)
     try
     {
         SendRawJson(protocol_.BuildSendPayload(text));
+        lila::shared::audio::AudioService::PlayGlobal(lila::shared::audio::SoundCue::ChatMessageSent);
     }
     catch (const std::exception& exception)
     {

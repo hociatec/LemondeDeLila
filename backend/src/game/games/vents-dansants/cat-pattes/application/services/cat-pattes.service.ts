@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { CatPattesActionService } from './cat-pattes-action.service';
 import { CatPattesPresenterService } from './cat-pattes-presenter.service';
@@ -21,7 +21,7 @@ export class CatPattesService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'VentsDansants';
   readonly displayName = CAT_PATTES_GAME.displayName;
-  readonly description = 'Course fÃƒÆ’Ã‚Â©line jusquÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â  1 000 pattes.';
+  readonly description = 'Course féline jusqu’à 1 000 pattes.';
   readonly minPlayers = CAT_PATTES_GAME.minPlayers;
   readonly maxPlayers = CAT_PATTES_GAME.maxPlayers;
 

@@ -125,7 +125,10 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
       turns: {} as any,
       store: { listCategories: () => [], listQuestions: () => [] } as any,
       random: {
-        pickIntInclusive: (_meta: any, min: number) => ({ value: min, meta: {} }),
+        pickIndex: (_meta: any, length: number) => ({
+          index: length > 0 ? 0 : 0,
+          meta: {},
+        }),
       } as any,
       initializeStore: false,
     });
@@ -218,9 +221,6 @@ describe('ArcheDeMnemosyneService prompt actions', () => {
 
     const exposed: any = service.exposeStateForUser(state, 1);
     expect(String(exposed?.pending?.type ?? '')).toBe('quiz');
-    expect(String(exposed?.pending?.label ?? '')).toBe('RÃ©ponses possibles');
+    expect(String(exposed?.pending?.label ?? '')).toBe('Réponses possibles');
   });
 });
-
-
-

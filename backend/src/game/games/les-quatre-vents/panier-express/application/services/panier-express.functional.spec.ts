@@ -57,7 +57,7 @@ function resolveBlockingPending(
         : game.getAvailableActions(next, actorId);
     if (!actions.length) {
       throw new Error(
-        `Aucune action disponible pour rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©soudre le pending (type=${pending.type}, kind=${pending?.data?.kind ?? ''}).`,
+        `Aucune action disponible pour résoudre le pending (type=${pending.type}, kind=${pending?.data?.kind ?? ''}).`,
       );
     }
     next = game.applyActions(
@@ -65,7 +65,7 @@ function resolveBlockingPending(
       actions.slice(0, 1).map((a: any) => ({ ...a, meta: { actorId } })),
     );
   }
-  throw new Error('pending bloquant non rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©solu (limite atteinte)');
+  throw new Error('pending bloquant non résolu (limite atteinte)');
 }
 
 describe('PanierExpress - tests fonctionnels (simulation)', () => {
@@ -78,7 +78,7 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
     exchange = moduleRef.get(PanierExpressExchangeService);
   });
 
-  it('rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©sout chaque carte ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©nement (sans crash + pending bloquants rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©solubles)', () => {
+  it('résout chaque carte événement (sans crash + pending bloquants résolubles)', () => {
     const events = loadContentArray('events.json', 'events');
     for (const card of events) {
       const base = makeStartedState(
@@ -114,7 +114,7 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
     }
   });
 
-  it('rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©sout chaque carte ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©change (sans crash + pending bloquants rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©solubles)', () => {
+  it('résout chaque carte échange (sans crash + pending bloquants résolubles)', () => {
     const exchanges = loadContentArray('exchanges.json', 'exchanges');
     for (const card of exchanges) {
       const base = makeStartedState(
@@ -152,7 +152,7 @@ describe('PanierExpress - tests fonctionnels (simulation)', () => {
     }
   });
 
-  it('simule une partie jouÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e (actions rulebook) sans deadlock', () => {
+  it('simule une partie jouée (actions rulebook) sans deadlock', () => {
     let state: any = makeStartedState(
       game,
       [

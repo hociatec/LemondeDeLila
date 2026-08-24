@@ -145,6 +145,7 @@ struct NetworkComposition final
     void Assemble(const StepLogger& setStep);
 
     std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> realtimeWebSocketClient;
+    std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> authenticatedRealtimeWebSocketClient;
     std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> presenceChatWebSocketClient;
     std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> presenceWebSocketClient;
     std::unique_ptr<lila::shared::network::http::WsTicketProvider> wsTicketProvider;

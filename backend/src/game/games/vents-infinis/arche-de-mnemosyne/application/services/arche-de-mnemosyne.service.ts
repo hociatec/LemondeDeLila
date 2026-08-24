@@ -3,7 +3,7 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
@@ -12,7 +12,7 @@ import {
   actionShortcut,
   interfaceShortcut,
 } from '../../../../../application/helpers/shortcut-utils';
-import type { GameShortcutsContext } from '../../../../../models/game-shortcuts.model';
+import type { GameShortcutsContext } from '../../../../../application/models/game-shortcuts.model';
 import {
   MNEMO_QUIZ_STORE,
   type MnemoQuizStore,
@@ -30,7 +30,7 @@ import type {
   MnemoQuizMetadata,
 } from '../../model/mnemo-quiz.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 import { applyArcheMnemoAdminAction } from '../../arche-mnemo-admin-action.helper';
 import {
   buildArcheActionsForUser,
@@ -88,8 +88,8 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
   readonly gameType = 'arche-de-mnemosyne';
   readonly category = 'Quiz';
   readonly subcategory = 'VentsInfinis';
-  readonly displayName = "L'Arche de MnÃƒÂ©mosyne";
-  readonly description = 'Quiz ÃƒÂ  catÃƒÂ©gories (questions alÃƒÂ©atoires).';
+  readonly displayName = "L'Arche de Mnémosyne";
+  readonly description = 'Quiz à catégories (questions aléatoires).';
   readonly minPlayers = 1;
   readonly maxPlayers = 8;
 
@@ -156,7 +156,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     if (adminActions.has(type)) {
-      throw new GameActionRejectedError('Administration dÃƒÂ©sactivÃƒÂ©e pour ce jeu.');
+      throw new GameActionRejectedError(
+        'Administration désactivée pour ce jeu.',
+      );
     }
 
     if (type === 'mnemo_start') {
@@ -180,7 +182,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         throw new GameTurnViolationError();
       }
       if (meta.currentQuestion) {
-        throw new GameActionRejectedError('Une question est dÃƒÂ©jÃƒÂ  en cours.');
+        throw new GameActionRejectedError(
+          'Une question est déjà en cours.',
+        );
       }
       return { ...action, type, payload: action.payload ?? {} };
     }
@@ -201,11 +205,11 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         throw new GameActionRejectedError('Trop tard.');
       }
       if (this.stateSvc.getQuizAnswers(meta)[actorId] != null) {
-        throw new GameActionRejectedError('Vous avez dÃƒÂ©jÃƒÂ  rÃƒÂ©pondu.');
+        throw new GameActionRejectedError('Vous avez déjà répondu.');
       }
       const idx = Number(this.stateSvc.asRecord(action.payload).answerIndex);
       if (!Number.isFinite(idx) || idx < 0 || idx >= 4) {
-        throw new GamePayloadValidationError('RÃƒÂ©ponse invalide.');
+        throw new GamePayloadValidationError('Réponse invalide.');
       }
       return { ...action, type, payload: { answerIndex: idx } };
     }
@@ -220,15 +224,15 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         return { ...action, type, payload: action.payload ?? {} };
       }
 
-      // Autoriser le joueur courant ÃƒÂ  configurer la partie pendant le setup.
+      // Autoriser le joueur courant à configurer la partie pendant le setup.
       if (type === 'mnemo_open_config') {
         if (this.stateSvc.canConfigure(state, actorId)) {
           return { ...action, type, payload: action.payload ?? {} };
         }
-        throw new GameConfigurationError('Configuration refusÃƒÂ©e.');
+        throw new GameConfigurationError('Configuration refusée.');
       }
 
-      // Les prompts (config) sont visibles uniquement pour leur propriÃƒÂ©taire.
+      // Les prompts (config) sont visibles uniquement pour leur propriétaire.
       if (type === 'mnemo_set_config' || type === 'mnemo_prompt_cancel') {
         const ownerId = this.stateSvc.getPromptOwnerId(meta);
         if (actorId != null && ownerId != null && actorId === ownerId) {
@@ -237,7 +241,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         throw new GameActionRejectedError('Action invalide.');
       }
 
-      throw new GameActionRejectedError('Action rÃƒÂ©servÃƒÂ©e ÃƒÂ  Lila.');
+      throw new GameActionRejectedError('Action réservée à Lila.');
     }
 
     return { ...action, type, payload: action.payload ?? {} };
@@ -250,15 +254,13 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return this.syncBotPending(this.resolveQuizIfReady(next));
   }
 
-  getShortcuts(
-    ctx: Partial<GameShortcutsContext<MnemoQuizMetadata>> | null | undefined,
-  ) {
+  getShortcuts(ctx: GameShortcutsContext<unknown>) {
     const started = Boolean(ctx?.started);
     if (!started) {
       return [];
     }
 
-    // "S" : afficher le score (panneau UI gÃƒÂ©rÃƒÂ© cÃƒÂ´tÃƒÂ© client).
+    // "S" : afficher le score (panneau UI géré côté client).
     return [interfaceShortcut('S', 'score'), actionShortcut('SPACE', 'draw')];
   }
 
@@ -275,7 +277,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           this.buildPendingForUser(value, currentUserId),
         buildActionsForUser: (value, currentUserId) =>
           this.buildActionsForUser(value, currentUserId),
-        asRecord: (value) => this.asRecord(value),
+        asRecord: (value) => this.stateSvc.asRecord(value),
       },
       state,
       userId,
@@ -322,7 +324,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         ...state,
         metadata: { ...meta, prompt: null, promptOwnerId: null },
       };
-      return this.core.appendLog(cleared, 'Configuration fermÃƒÂ©e.');
+      return this.core.appendLog(cleared, 'Configuration fermée.');
     }
 
     if (type === 'mnemo_open_config') {
@@ -395,7 +397,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         ...state,
         metadata: { ...meta, config, prompt: null, promptOwnerId: null },
       };
-      return this.core.appendLog(next, 'Configuration enregistrÃƒÂ©e.');
+      return this.core.appendLog(next, 'Configuration enregistrée.');
     }
 
     if (type === 'mnemo_start') {
@@ -428,16 +430,16 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       if (actorId != null) {
         const label = selected
           ? (categories.find((c) => c.id === selected)?.name ?? selected)
-          : 'MÃƒÂ©lange (toutes catÃƒÂ©gories)';
+          : 'Mélange (toutes catégories)';
         started = this.core.appendLog(
           started,
-          `${resolvePlayerNameFromState(started, actorId, ARCHE_PLAYER_NAME_OPTIONS)} choisit la catÃƒÂ©gorie : ${label}.`,
+          `${resolvePlayerNameFromState(started, actorId, ARCHE_PLAYER_NAME_OPTIONS)} choisit la catégorie : ${label}.`,
         );
       }
 
       return this.core.appendLog(
         started,
-        'Quiz : appuyez sur Espace pour piocher la premiÃƒÂ¨re question.',
+        'Quiz : appuyez sur Espace pour piocher la première question.',
       );
     }
 
@@ -473,8 +475,8 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
 
       answers[actorId] = answerIndex;
 
-      // Ne pas annoncer les rÃƒÂ©ponses/ÃƒÂ©tat des autres joueurs pendant la question (ÃƒÂ©vite l'effet "triche").
-      // Les rÃƒÂ©sultats sont annoncÃƒÂ©s ÃƒÂ  la fin (quand tout le monde a rÃƒÂ©pondu / temps ÃƒÂ©coulÃƒÂ©).
+      // Ne pas annoncer les réponses/état des autres joueurs pendant la question (évite l'effet "triche").
+      // Les résultats sont annoncés à la fin (quand tout le monde a répondu / temps écoulé).
       return {
         ...state,
         metadata: { ...meta, quizAnswersByPlayerId: answers },
@@ -482,7 +484,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     }
 
     if (!this.stateSvc.isOwner(state, this.stateSvc.getActionActorId(action))) {
-      // SÃƒÂ©curitÃƒÂ©: aucune action admin si pas owner.
+      // Sécurité: aucune action admin si pas owner.
       return state;
     }
 
@@ -535,8 +537,8 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     if (type === 'mnemo_open_add_category') {
       const prompt: MnemoPrompt = {
         type: 'text_prompt',
-        title: 'Ajouter une catÃƒÂ©gorie',
-        label: 'Nom de catÃƒÂ©gorie',
+        title: 'Ajouter une catégorie',
+        label: 'Nom de catégorie',
         actionType: 'mnemo_add_category',
         payloadKey: 'name',
         cancelActionType: 'mnemo_prompt_cancel',
@@ -549,7 +551,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         this.store.createCategory(stringOrEmpty(payload.name));
         return this.core.appendLog(
           { ...state, metadata: { ...meta, prompt: null } },
-          'CatÃƒÂ©gorie ajoutÃƒÂ©e.',
+          'Catégorie ajoutée.',
         );
       } catch (err) {
         return this.core.appendLog(
@@ -565,7 +567,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
       if (!cat) return state;
       const prompt: MnemoPrompt = {
         type: 'text_prompt',
-        title: 'Renommer une catÃƒÂ©gorie',
+        title: 'Renommer une catégorie',
         label: 'Nouveau nom',
         actionType: 'mnemo_rename_category',
         payloadKey: 'name',
@@ -589,7 +591,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         this.store.renameCategory(view.categoryId, stringOrEmpty(payload.name));
         return this.core.appendLog(
           { ...state, metadata: { ...meta, prompt: null } },
-          'CatÃƒÂ©gorie renommÃƒÂ©e.',
+          'Catégorie renommée.',
         );
       } catch (err) {
         return this.core.appendLog(
@@ -609,7 +611,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
             ...state,
             metadata: { ...meta, adminView: nextView, prompt: null },
           },
-          'CatÃƒÂ©gorie supprimÃƒÂ©e (questions mises ÃƒÂ  la corbeille).',
+          'Catégorie supprimée (questions mises à la corbeille).',
         );
       } catch (err) {
         return this.core.appendLog(
@@ -646,25 +648,25 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           { key: 'question', label: 'Question', kind: 'text', initialText: '' },
           {
             key: 'correct',
-            label: 'Bonne rÃƒÂ©ponse',
+            label: 'Bonne réponse',
             kind: 'text',
             initialText: '',
           },
           {
             key: 'wrong1',
-            label: 'Mauvaise rÃƒÂ©ponse 1',
+            label: 'Mauvaise réponse 1',
             kind: 'text',
             initialText: '',
           },
           {
             key: 'wrong2',
-            label: 'Mauvaise rÃƒÂ©ponse 2',
+            label: 'Mauvaise réponse 2',
             kind: 'text',
             initialText: '',
           },
           {
             key: 'wrong3',
-            label: 'Mauvaise rÃƒÂ©ponse 3',
+            label: 'Mauvaise réponse 3',
             kind: 'text',
             initialText: '',
           },
@@ -695,7 +697,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         });
         return this.core.appendLog(
           { ...state, metadata: { ...meta, prompt: null } },
-          'Question ajoutÃƒÂ©e.',
+          'Question ajoutée.',
         );
       } catch (err) {
         return this.core.appendLog(
@@ -738,7 +740,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         this.store.updateQuestion(questionId, { status });
         return this.core.appendLog(
           { ...state, metadata: { ...meta, prompt: null } },
-          `Statut mis ÃƒÂ  jour (${this.statusLabel(status)}).`,
+          `Statut mis à jour (${this.statusLabel(status)}).`,
         );
       } catch (err) {
         return this.core.appendLog(
@@ -772,25 +774,25 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
           },
           {
             key: 'correct',
-            label: 'Bonne rÃƒÂ©ponse',
+            label: 'Bonne réponse',
             kind: 'text',
             initialText: q.correct,
           },
           {
             key: 'wrong1',
-            label: 'Mauvaise rÃƒÂ©ponse 1',
+            label: 'Mauvaise réponse 1',
             kind: 'text',
             initialText: q.wrong1,
           },
           {
             key: 'wrong2',
-            label: 'Mauvaise rÃƒÂ©ponse 2',
+            label: 'Mauvaise réponse 2',
             kind: 'text',
             initialText: q.wrong2,
           },
           {
             key: 'wrong3',
-            label: 'Mauvaise rÃƒÂ©ponse 3',
+            label: 'Mauvaise réponse 3',
             kind: 'text',
             initialText: q.wrong3,
           },
@@ -811,7 +813,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
         });
         return this.core.appendLog(
           { ...state, metadata: { ...meta, prompt: null } },
-          'Question modifiÃƒÂ©e.',
+          'Question modifiée.',
         );
       } catch (err) {
         return this.core.appendLog(
@@ -908,7 +910,7 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     userId: number,
   ): GameSingleActionDto[] {
     return buildArcheActionsForUser(
-      { stateSvc: this.stateSvc, store: this.store },
+      { stateSvc: this.stateSvc, store: this.store, now: () => this.nowMs() },
       state,
       userId,
     );
@@ -940,9 +942,9 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
   private statusLabel(value: unknown): string {
     const raw = stringOrEmpty(value).trim().toLowerCase();
     if (raw === 'all') return 'toutes';
-    if (raw === 'validated') return 'validÃƒÂ©e';
+    if (raw === 'validated') return 'validée';
     if (raw === 'pending') return 'en attente';
-    if (raw === 'to_edit') return 'ÃƒÂ  modifier';
+    if (raw === 'to_edit') return 'à modifier';
     if (raw === 'trash') return 'corbeille';
     return stringOrEmpty(value).trim() || raw || 'en attente';
   }
@@ -965,13 +967,3 @@ export class ArcheDeMnemosyneService extends AbstractGameService {
     return Date.now();
   }
 }
-
-
-
-
-
-
-
-
-
-

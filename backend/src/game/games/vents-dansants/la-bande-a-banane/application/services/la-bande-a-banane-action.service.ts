@@ -1,11 +1,11 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
-import { resolvePlayerNameFromState } from '../../../../application/helpers/player-name.helper';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
-import { GameCoreService } from '../../../../application/services/game-core.service';
-import { TurnFlowService } from '../../../../application/services/turn-flow.service';
-import { RandomService } from '../../../../application/services/random.service';
-import { DeckPoliciesService } from '../../../../application/features/deck-policies/services/deck-policies.service';
+import { GameCoreService } from '../../../../../application/services/game-core.service';
+import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
+import { RandomService } from '../../../../../application/services/random.service';
+import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
 import {
   BANDE_A_BANANE_CARD_BY_ID,
   BandeABananeCardDefinition,
@@ -14,7 +14,7 @@ import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../application/helpers/action-service.helper';
+} from '../../../../../application/helpers/action-service.helper';
 import type {
   BandeABananeMetadata,
   BandeABananeTroopEntry,
@@ -182,7 +182,7 @@ export class BandeABananeActionService {
       let next = this.discardRandomCard(state, playerId);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} chute sur un tigre et lÃƒÆ’Ã‚Â¢che une carte.`,
+        `${resolvePlayerNameFromState(next, playerId)} chute sur un tigre et lâche une carte.`,
       );
       return next;
     }
@@ -209,7 +209,7 @@ export class BandeABananeActionService {
     let next = this.setMeta(state, nextMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} vole ${this.getCardName(stolen)} ÃƒÆ’Ã‚Â  ${resolvePlayerNameFromState(
+      `${resolvePlayerNameFromState(next, playerId)} vole ${this.getCardName(stolen)} à ${resolvePlayerNameFromState(
         next,
         targetId,
       )}.`,
@@ -245,7 +245,7 @@ export class BandeABananeActionService {
       next = this.setMeta(next, nextMeta);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ÃƒÆ’Ã‚Â©change ${this.getCardName(
+        `${resolvePlayerNameFromState(next, playerId)} échange ${this.getCardName(
           returned,
         )} avec ${resolvePlayerNameFromState(next, targetId)}.`,
       );
@@ -256,7 +256,7 @@ export class BandeABananeActionService {
     next = this.setMeta(next, nextMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} donne une carte ÃƒÆ’Ã‚Â  ${resolvePlayerNameFromState(
+      `${resolvePlayerNameFromState(next, playerId)} donne une carte à ${resolvePlayerNameFromState(
         next,
         targetId,
       )}.`,
@@ -315,7 +315,7 @@ export class BandeABananeActionService {
     if (this.hasWinningTroupe(this.getMeta(next), playerId)) {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} crie ÃƒÆ’Ã‚Â  BANAAAANE ! ÃƒÆ’Ã‚Â  et devient le chef de la Bande ÃƒÆ’Ã‚Â  Banane !`,
+        `${resolvePlayerNameFromState(next, playerId)} crie à BANAAAANE ! à et devient le chef de la Bande à Banane !`,
       );
       next = {
         ...next,
@@ -349,7 +349,7 @@ export class BandeABananeActionService {
       next = this.setMeta(next, nextMeta);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} dÃƒÆ’Ã‚Â©passe 7 cartes et dÃƒÆ’Ã‚Â©fausse ${this.getCardName(
+        `${resolvePlayerNameFromState(next, playerId)} dépasse 7 cartes et défausse ${this.getCardName(
           cardId,
         )}.`,
       );

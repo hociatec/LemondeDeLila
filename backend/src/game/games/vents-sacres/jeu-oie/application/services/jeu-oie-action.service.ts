@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
 import { RandomService } from '../../../../../application/services/random.service';
@@ -169,14 +169,14 @@ export class JeuOieActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(state, currentId)} lance le dÃ© : "${roll}".`,
+      `${resolvePlayerNameFromState(state, currentId)} lance le dé : "${roll}".`,
     );
 
     if (inWell) {
       if (roll !== 1) {
         const logged = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, currentId)} reste bloquÃ© dans le puits.`,
+          `${resolvePlayerNameFromState(next, currentId)} reste bloqué dans le puits.`,
         );
         return this.turns.advanceTurn(logged, {
           playerNameResolver: (s, id) => resolvePlayerNameFromState(s, id),
@@ -246,7 +246,7 @@ export class JeuOieActionService {
     if (tile.type === 'finish') {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} a gagnÃ© !`,
+        `${resolvePlayerNameFromState(next, playerId)} a gagné !`,
       );
       meta = this.getMeta(next);
       meta = { ...meta, winnerId: playerId };
@@ -257,20 +257,20 @@ export class JeuOieActionService {
       const jumpTo = 12;
       next = this.core.appendLog(
         next,
-        `Pont : avance directement Ã  la case ${jumpTo}.`,
+        `Pont : avance directement à la case ${jumpTo}.`,
       );
       return this.applyLanding(next, playerId, jumpTo, roll);
     }
 
     if (tile.type === 'death') {
-      next = this.core.appendLog(next, 'Mort : retour au dÃ©part.');
+      next = this.core.appendLog(next, 'Mort : retour au départ.');
       return this.applyLanding(next, playerId, tile.backTo, roll);
     }
 
     if (tile.type === 'labyrinth') {
       next = this.core.appendLog(
         next,
-        `Labyrinthe : retour Ã  la case ${tile.backTo}.`,
+        `Labyrinthe : retour à la case ${tile.backTo}.`,
       );
       return this.applyLanding(next, playerId, tile.backTo, roll);
     }
@@ -302,15 +302,15 @@ export class JeuOieActionService {
       };
       next = this.core.appendLog(
         next,
-        `DÃ© magique : ${resolvePlayerNameFromState(next, playerId)} lance "${magicRoll}".`,
+        `Dé magique : ${resolvePlayerNameFromState(next, playerId)} lance "${magicRoll}".`,
       );
       const delta = magicRoll <= 3 ? magicRoll : -magicRoll;
       const moved = this.move(position, delta);
       next = this.core.appendLog(
         next,
         magicRoll <= 3
-          ? `DÃ© magique : avance de ${magicRoll} case(s).`
-          : `DÃ© magique : recule de ${magicRoll} case(s).`,
+          ? `Dé magique : avance de ${magicRoll} case(s).`
+          : `Dé magique : recule de ${magicRoll} case(s).`,
       );
       return this.applyLanding(next, playerId, moved, magicRoll);
     }
@@ -321,7 +321,7 @@ export class JeuOieActionService {
       well[playerId] = true;
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} est bloquÃ© dans le puits (il faut faire 1 pour sortir).`,
+        `${resolvePlayerNameFromState(next, playerId)} est bloqué dans le puits (il faut faire 1 pour sortir).`,
       );
       return {
         ...next,
@@ -336,7 +336,7 @@ export class JeuOieActionService {
     if (tile.type === 'goose') {
       next = this.core.appendLog(
         next,
-        `Oie : avance Ã  nouveau de ${roll} case(s).`,
+        `Oie : avance à nouveau de ${roll} case(s).`,
       );
       const moved = this.move(position, roll);
       return this.applyLanding(next, playerId, moved, roll);

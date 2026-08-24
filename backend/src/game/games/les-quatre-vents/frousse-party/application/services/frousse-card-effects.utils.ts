@@ -3,6 +3,7 @@ import type {
   PendingState,
 } from '../../../../../application/models/game-state.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+import { fixMojibakeString } from '../../../../../../common/utils/public-api';
 import type {
   FrousseCard,
   FrousseMetadata,
@@ -55,6 +56,29 @@ export function applyFrousseCardEffect(params: {
   let next = state;
   let meta = params.meta;
   const text = card.text;
+  const searchableText = fixMojibakeString(String(text ?? ''))
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  if (/si le resultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(searchableText)) {
+    meta = {
+      ...meta,
+      statuses: {
+        ...meta.statuses,
+        blocked: {
+          ...(meta.statuses.blocked ?? {}),
+          [playerId]: { kind: 'need_roll_even' },
+        },
+      },
+      keepTurnNow: true,
+    };
+    return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
+  }
+
+  if (isFrousseTeleportToCase40(text)) {
+    next = deps.setPos(next, playerId, 39);
+    return deps.applyLanding(next, playerId);
+  }
 
   if (/Bonus/i.test(card.category) && card.localNumber === 13) {
     next = deps.appendLog(
@@ -66,9 +90,9 @@ export function applyFrousseCardEffect(params: {
   }
 
   if (
-    /FantÃƒÆ’Ã‚Â´me/i.test(card.category) &&
-    /fantÃƒÆ’Ã‚Â´me farceur/i.test(text) &&
-    /ÃƒÆ’Ã‚Â©chang|ÃƒÆ’Ã‚Â©change/i.test(text)
+    /Fantôme/i.test(card.category) &&
+    /fantôme farceur/i.test(text) &&
+    /échang|échange/i.test(text)
   ) {
     const targets = deps.otherPlayers(next, playerId);
     if (!targets.length) return next;
@@ -90,13 +114,13 @@ export function applyFrousseCardEffect(params: {
     };
     next = deps.appendLog(
       { ...next, metadata: { ...(next.metadata ?? {}), ...meta } },
-      `${resolvePlayerNameFromState(next, playerId)} ÃƒÆ’Ã‚Â©change sa position avec ${resolvePlayerNameFromState(next, target.id)}.`,
+      `${resolvePlayerNameFromState(next, playerId)} échange sa position avec ${resolvePlayerNameFromState(next, target.id)}.`,
     );
     return next;
   }
 
   if (
-    /ÃƒÆ’Ã‚Â©chang|echange/i.test(text) &&
+    /échang|echange/i.test(text) &&
     (/votre place/i.test(text) || /vos places/i.test(text))
   ) {
     const targets = deps.otherPlayers(next, playerId);
@@ -104,10 +128,10 @@ export function applyFrousseCardEffect(params: {
     const pending: PendingState = {
       type: 'choose_target',
       label:
-        'Choisissez le joueur avec qui ÃƒÆ’Ã‚Â©changer votre position, ou "Refuser l\'ÃƒÆ’Ã‚Â©change".',
+        'Choisissez le joueur avec qui échanger votre position, ou "Refuser l\'échange".',
       playerId,
       blocking: true,
-      choices: [...targets.map((t) => t.username), "Refuser l'ÃƒÆ’Ã‚Â©change."],
+      choices: [...targets.map((t) => t.username), "Refuser l'échange."],
       data: {
         canDecline: true,
         targets: targets.map((t) => ({
@@ -124,7 +148,7 @@ export function applyFrousseCardEffect(params: {
     };
   }
 
-  if (/Ignorez les piÃƒÆ’Ã‚Â¨ges jusqu['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]au prochain symbole/i.test(text)) {
+  if (/Ignorez les pièges jusqu['’]au prochain symbole/i.test(text)) {
     meta = {
       ...meta,
       statuses: {
@@ -139,8 +163,8 @@ export function applyFrousseCardEffect(params: {
   }
 
   if (
-    /Ignorez le prochain piÃƒÆ’Ã‚Â¨ge/i.test(text) ||
-    /Ignorez les piÃƒÆ’Ã‚Â¨ges/i.test(text)
+    /Ignorez le prochain piège/i.test(text) ||
+    /Ignorez les pièges/i.test(text)
   ) {
     meta = {
       ...meta,
@@ -155,7 +179,7 @@ export function applyFrousseCardEffect(params: {
     return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
   }
 
-  if (/Ignorez la prochaine carte FantÃƒÆ’Ã‚Â´me/i.test(text)) {
+  if (/Ignorez la prochaine carte Fantôme/i.test(text)) {
     meta = {
       ...meta,
       statuses: {
@@ -181,7 +205,7 @@ export function applyFrousseCardEffect(params: {
       },
     };
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-    return deps.appendLog(next, 'Protection farce activÃƒÆ’Ã‚Â©e.');
+    return deps.appendLog(next, 'Protection farce activée.');
   }
 
   if (/Sautez\s+6\s+cases/i.test(text)) {
@@ -254,7 +278,7 @@ export function applyFrousseCardEffect(params: {
     return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
   }
 
-  if (/n['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]avancerez que d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢](une|un)e seule case/i.test(text)) {
+  if (/n['’]avancerez que d['’](une|un)e seule case/i.test(text)) {
     meta = {
       ...meta,
       statuses: {
@@ -333,8 +357,8 @@ export function applyFrousseCardEffect(params: {
   }
 
   if (
-    /Relancez le dÃƒÆ’Ã‚Â©/i.test(text) ||
-    (/Relancez/i.test(text) && /dÃƒÆ’Ã‚Â©/i.test(text))
+    /Relancez le dé/i.test(text) ||
+    (/Relancez/i.test(text) && /dé/i.test(text))
   ) {
     meta.keepTurnNow = true;
     return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
@@ -357,7 +381,7 @@ export function applyFrousseCardEffect(params: {
   }
 
   if (
-    /si le rÃƒÆ’Ã‚Â©sultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
+    /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
   ) {
     meta = {
       ...meta,
@@ -390,7 +414,7 @@ export function applyFrousseCardEffect(params: {
   }
 
   if (
-    /case dÃƒÆ’Ã‚Â©part/i.test(text) ||
+    /case départ/i.test(text) ||
     /Retour a la case une/i.test(text) ||
     (/Retournez/i.test(text) && /case une/i.test(text))
   ) {

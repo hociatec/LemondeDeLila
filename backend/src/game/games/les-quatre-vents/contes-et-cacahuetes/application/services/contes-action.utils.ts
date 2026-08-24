@@ -61,8 +61,9 @@ export function recordContesNarrationState(
 }
 
 export function buildContesNarrationFromTile(
-  tile: ContesCacahuetesTile,
+  tile: ContesCacahuetesTile | undefined,
 ): ContesCard | null {
+  if (!tile) return null;
   const title = normalizeConteTileTitle(toContesText(tile.label));
   const text = toContesText(tile.description).trim();
   if (!title || !text) {

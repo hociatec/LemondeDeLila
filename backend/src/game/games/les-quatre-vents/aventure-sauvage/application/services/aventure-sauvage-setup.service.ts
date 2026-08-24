@@ -196,31 +196,31 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        "Vous pÃ©nÃ©trez dans la jungle par un sentier Ã©troit. L'air est chaud, chargÃ© d'odeurs de feuilles et de terre humide. L'aventure commence.",
+        "Vous pénétrez dans la jungle par un sentier étroit. L'air est chaud, chargé d'odeurs de feuilles et de terre humide. L'aventure commence.",
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        'Vous avancez sous une canopÃ©e dense. Des gouttes tombent encore des branches, comme si la jungle respirait autour de vous.',
+        'Vous avancez sous une canopée dense. Des gouttes tombent encore des branches, comme si la jungle respirait autour de vous.',
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        'Vous marchez sur un sol souple recouvert de mousse. Chaque pas devient une petite aventure imprÃ©visible.',
+        'Vous marchez sur un sol souple recouvert de mousse. Chaque pas devient une petite aventure imprévisible.',
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        'Vous traversez une clairiÃ¨re silencieuse. Le calme est Ã©trange, presque trop parfait.',
+        'Vous traversez une clairière silencieuse. Le calme est étrange, presque trop parfait.',
     },
     {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        'Vous suivez un ancien chemin tracÃ© par les saisons, mais quelque chose ralentit soudain votre progression.',
+        'Vous suivez un ancien chemin tracé par les saisons, mais quelque chose ralentit soudain votre progression.',
     },
     {
       type: 'animal',
@@ -232,7 +232,7 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        "Vous passez prÃ¨s d'un grand arbre aux racines apparentes. Elles serpentent au sol comme un labyrinthe naturel.",
+        "Vous passez près d'un grand arbre aux racines apparentes. Elles serpentent au sol comme un labyrinthe naturel.",
     },
     {
       type: 'animal',
@@ -244,37 +244,37 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        'Vous progressez dans une zone plus sombre. La lumiÃ¨re filtre Ã  peine entre les feuilles Ã©paisses.',
+        'Vous progressez dans une zone plus sombre. La lumière filtre à peine entre les feuilles épaisses.',
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        'Vous atteignez un passage Ã©troit envahi de lianes. Votre avancÃ©e devient maladroite et imprÃ©visible.',
+        'Vous atteignez un passage étroit envahi de lianes. Votre avancée devient maladroite et imprévisible.',
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        "Vous dÃ©bouchez dans un espace plus ouvert. L'air circule mieux, et vous respirez plus librement.",
+        "Vous débouchez dans un espace plus ouvert. L'air circule mieux, et vous respirez plus librement.",
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Le sol devient irrÃ©gulier. Racines et pierres transforment chaque pas en jeu d'Ã©quilibre.",
+        "Le sol devient irrégulier. Racines et pierres transforment chaque pas en jeu d'équilibre.",
     },
     {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        'Vous traversez une zone marÃ©cageuse. Chaque mouvement demande prudence et patience.',
+        'Vous traversez une zone marécageuse. Chaque mouvement demande prudence et patience.',
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        'Vous suivez une lÃ©gÃ¨re montÃ©e. Vos muscles travaillent, mais la progression est satisfaisante.',
+        'Vous suivez une légère montée. Vos muscles travaillent, mais la progression est satisfaisante.',
     },
     {
       type: 'animal',
@@ -286,91 +286,91 @@ function buildTiles(): AventureSauvageTile[] {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        "Vous redescendez vers une zone plus humide. L'atmosphÃ¨re devient lourde et collante.",
+        "Vous redescendez vers une zone plus humide. L'atmosphère devient lourde et collante.",
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        'Vous avancez sur un chemin bordÃ© de grandes feuilles. Elles frÃ´lent vos bras Ã  chaque pas.',
+        'Vous avancez sur un chemin bordé de grandes feuilles. Elles frôlent vos bras à chaque pas.',
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        'Vous traversez une clairiÃ¨re balayÃ©e par une brise plus fraÃ®che. Le contraste est agrÃ©able.',
+        'Vous traversez une clairière balayée par une brise plus fraîche. Le contraste est agréable.',
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        'La vÃ©gÃ©tation devient trÃ¨s dense. Le sol disparaÃ®t presque sous les plantes.',
+        'La végétation devient très dense. Le sol disparaît presque sous les plantes.',
     },
     {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        "Un tronc tombÃ© barre le chemin. Vous devez ralentir et contourner l'obstacle.",
+        "Un tronc tombé barre le chemin. Vous devez ralentir et contourner l'obstacle.",
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        "Vous marchez sur une terre plus sÃ¨che. L'ambiance change subtilement autour de vous.",
+        "Vous marchez sur une terre plus sèche. L'ambiance change subtilement autour de vous.",
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        'Les sons semblent amplifiÃ©s, comme si la jungle rÃ©agissait Ã  chacun de vos mouvements.',
+        'Les sons semblent amplifiés, comme si la jungle réagissait à chacun de vos mouvements.',
     },
     {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        "Le sentier devient sinueux et instable. Votre progression est mise Ã  l'Ã©preuve.",
+        "Le sentier devient sinueux et instable. Votre progression est mise à l'épreuve.",
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        'Le sol est tapissÃ© de feuilles mortes. Elles craquent sous vos pieds de faÃ§on imprÃ©visible.',
+        'Le sol est tapissé de feuilles mortes. Elles craquent sous vos pieds de façon imprévisible.',
     },
     {
       type: 'neutral',
       label: 'Case Neutre (verte)',
       description:
-        'Le passage se resserre. La vÃ©gÃ©tation se fait plus pressante, presque oppressante.',
+        'Le passage se resserre. La végétation se fait plus pressante, presque oppressante.',
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        "Le chemin s'Ã©claircit soudain. Vous vous sentez encouragÃ© Ã  continuer.",
+        "Le chemin s'éclaircit soudain. Vous vous sentez encouragé à continuer.",
     },
     {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        "L'atmosphÃ¨re change. Vous sentez que vous approchez d'un lieu important, mais la jungle rÃ©siste encore.",
+        "L'atmosphère change. Vous sentez que vous approchez d'un lieu important, mais la jungle résiste encore.",
     },
     {
       type: 'animal',
       label: 'Case Animal rigolo (rouge)',
       description:
-        'Le terrain devient stable et dÃ©gagÃ©. Votre progression est fluide et assurÃ©e.',
+        'Le terrain devient stable et dégagé. Votre progression est fluide et assurée.',
     },
     {
       type: 'patte',
       label: 'Case Coup de patte (jaune)',
       description:
-        'Vous traversez une derniÃ¨re zone dense. La jungle semble tester votre dÃ©termination une ultime fois.',
+        'Vous traversez une dernière zone dense. La jungle semble tester votre détermination une ultime fois.',
     },
     {
       type: 'finish',
-      label: 'Case Neutre - ArrivÃ©e (verte)',
+      label: 'Case Neutre - Arrivée (verte)',
       description:
-        "Vous atteignez enfin la mare au coeur de la jungle. L'eau est calme, l'air plus frais, et le sentier s'arrÃªte ici. Votre aventure prend fin.",
+        "Vous atteignez enfin la mare au coeur de la jungle. L'eau est calme, l'air plus frais, et le sentier s'arrête ici. Votre aventure prend fin.",
     },
   ];
 }
@@ -380,43 +380,43 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 1,
       deck: 'animal',
-      text: "Vous entendez soudain le rire strident d'une hyÃ¨ne tout prÃ¨s de vous. Surpris, vous trÃ©buchez, tombez au sol et effectuez un roulÃ©-boulÃ© incontrÃ´lÃ© qui vous propulse plus loin sur le chemin. Avancez de deux cases.",
+      text: "Vous entendez soudain le rire strident d'une hyène tout près de vous. Surpris, vous trébuchez, tombez au sol et effectuez un roulé-boulé incontrôlé qui vous propulse plus loin sur le chemin. Avancez de deux cases.",
       moveDelta: 2,
     },
     {
       id: 2,
       deck: 'animal',
-      text: "Vous surprenez un hippopotame en train de bÃ¢iller largement dans l'eau. EffrayÃ© par sa gueule immense, vous reculez d'une case avant de retrouver votre Ã©quilibre en riant.",
+      text: "Vous surprenez un hippopotame en train de bâiller largement dans l'eau. Effrayé par sa gueule immense, vous reculez d'une case avant de retrouver votre équilibre en riant.",
       moveDelta: -1,
     },
     {
       id: 3,
       deck: 'animal',
-      text: 'Vous voyez un impala sauter agilement devant vous. Vous dÃ©cidez de le suivre et avancez de 3 cases.',
+      text: 'Vous voyez un impala sauter agilement devant vous. Vous décidez de le suivre et avancez de 3 cases.',
       moveDelta: 3,
     },
     {
       id: 4,
       deck: 'animal',
-      text: 'Vous apercevez un suricate se redresser curieusement. Relancez le dÃ©.',
+      text: 'Vous apercevez un suricate se redresser curieusement. Relancez le dé.',
       reroll: true,
     },
     {
       id: 5,
       deck: 'animal',
-      text: "Vous observez un flamant rose glisser avec grÃ¢ce Ã  la surface de l'eau. FascinÃ© par sa dÃ©marche Ã©lÃ©gante, vous restez un instant figÃ© Ã  le contempler. Passez votre tour.",
+      text: "Vous observez un flamant rose glisser avec grâce à la surface de l'eau. Fasciné par sa démarche élégante, vous restez un instant figé à le contempler. Passez votre tour.",
       skipTurns: 1,
     },
     {
       id: 6,
       deck: 'animal',
-      text: "Vous entendez le cri joyeux d'un guÃ©pard. Avancez de 1 case.",
+      text: "Vous entendez le cri joyeux d'un guépard. Avancez de 1 case.",
       moveDelta: 1,
     },
     {
       id: 7,
       deck: 'animal',
-      text: "Vous surprenez un buffle en train de se secouer aprÃ¨s s'Ãªtre roulÃ© dans la boue. Ce spectacle vous amuse et vous fait avancer d'une case.",
+      text: "Vous surprenez un buffle en train de se secouer après s'être roulé dans la boue. Ce spectacle vous amuse et vous fait avancer d'une case.",
       moveDelta: 1,
     },
     {
@@ -428,37 +428,37 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 9,
       deck: 'animal',
-      text: "Vous apercevez un calao majestueux battre des ailes au-dessus de vous. Le souffle de son vol vous pousse lÃ©gÃ¨rement : avancez d'une case.",
+      text: "Vous apercevez un calao majestueux battre des ailes au-dessus de vous. Le souffle de son vol vous pousse légèrement : avancez d'une case.",
       moveDelta: 1,
     },
     {
       id: 10,
       deck: 'animal',
-      text: 'Vous Ãªtes surpris par un babouin facÃ©tieux faisant tomber un rÃ©gime de bananes sur votre tÃªte. Ã‰tourdi, vous passez votre tour.',
+      text: 'Vous êtes surpris par un babouin facétieux faisant tomber un régime de bananes sur votre tête. Étourdi, vous passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 11,
       deck: 'animal',
-      text: "Vous entendez le chant joyeux d'un tisserin aux couleurs vives perchÃ© dans un arbre. Son rythme farfelu vous fait battre des mains et taper des pieds : avancez de 2 cases.",
+      text: "Vous entendez le chant joyeux d'un tisserin aux couleurs vives perché dans un arbre. Son rythme farfelu vous fait battre des mains et taper des pieds : avancez de 2 cases.",
       moveDelta: 2,
     },
     {
       id: 12,
       deck: 'animal',
-      text: 'Vous improvisez une mÃ©lodie avec des branches, des feuilles et des fruits tombÃ©s autour de vous. La musique de la jungle vous emporte, et sans vous en rendre compte, vous avancez de 3 cases.',
+      text: 'Vous improvisez une mélodie avec des branches, des feuilles et des fruits tombés autour de vous. La musique de la jungle vous emporte, et sans vous en rendre compte, vous avancez de 3 cases.',
       moveDelta: 3,
     },
     {
       id: 13,
       deck: 'animal',
-      text: "Vous voyez un phacochÃ¨re tournoyer sur lui-mÃªme dans un Ã©lan de folie. Vous rigolez tellement que vous avancez d'une case en suivant son rythme.",
+      text: "Vous voyez un phacochère tournoyer sur lui-même dans un élan de folie. Vous rigolez tellement que vous avancez d'une case en suivant son rythme.",
       moveDelta: 1,
     },
     {
       id: 14,
       deck: 'animal',
-      text: "Vous surprenez un gecko en train de taper du pied sur une feuille. L'effet est si drÃ´le que vous avancez d'une case.",
+      text: "Vous surprenez un gecko en train de taper du pied sur une feuille. L'effet est si drôle que vous avancez d'une case.",
       moveDelta: 1,
     },
     {
@@ -476,24 +476,24 @@ function defaultAnimalDeck(): AventureSauvageCard[] {
     {
       id: 17,
       deck: 'animal',
-      text: "Vous poursuivez une grenouille gÃ©ante de nÃ©nuphar en nÃ©nuphar. Ã€ chaque saut, vous glissez, tournez en rond et finissez par reculer d'une case avant de rebondir aussitÃ´t en avant d'une case, en Ã©clatant de rire.",
+      text: "Vous poursuivez une grenouille géante de nénuphar en nénuphar. À chaque saut, vous glissez, tournez en rond et finissez par reculer d'une case avant de rebondir aussitôt en avant d'une case, en éclatant de rire.",
     },
     {
       id: 18,
       deck: 'animal',
-      text: "Vous apercevez une petite mangouste curieuse sur votre chemin. En essayant de l'Ã©viter, vous bondissez maladroitement et atterrissez avec un petit plouf sur une racine. Avancez de 1 case en riant de vous-mÃªme.",
+      text: "Vous apercevez une petite mangouste curieuse sur votre chemin. En essayant de l'éviter, vous bondissez maladroitement et atterrissez avec un petit plouf sur une racine. Avancez de 1 case en riant de vous-même.",
       moveDelta: 1,
     },
     {
       id: 19,
       deck: 'animal',
-      text: 'Un rhinocÃ©ros passe juste Ã  cÃ´tÃ© de vous. Vous grimpez sur son dos et, Ã©merveillÃ©, vous avancez de trois cases.',
+      text: 'Un rhinocéros passe juste à côté de vous. Vous grimpez sur son dos et, émerveillé, vous avancez de trois cases.',
       moveDelta: 3,
     },
     {
       id: 20,
       deck: 'animal',
-      text: 'Vous tentez de grimper Ã  un arbre pour observer la savane, mais vous vous retrouvez coincÃ© dans les branches, les pieds dans le vide ! Vous passez votre tour bÃªtement.',
+      text: 'Vous tentez de grimper à un arbre pour observer la savane, mais vous vous retrouvez coincé dans les branches, les pieds dans le vide ! Vous passez votre tour bêtement.',
       skipTurns: 1,
     },
   ];
@@ -505,31 +505,31 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     {
       id: 1,
       deck: 'patte',
-      text: 'Vous croisez une civette endormie en travers du chemin. Surpris, vous restez immobile pour ne pas la rÃ©veiller. Passez votre tour.',
+      text: 'Vous croisez une civette endormie en travers du chemin. Surpris, vous restez immobile pour ne pas la réveiller. Passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 2,
       deck: 'patte',
-      text: "Une pluie tropicale tombe soudainement. Vous vous faites Ã©clabousser et glissez un peu. Reculez d'une case.",
+      text: "Une pluie tropicale tombe soudainement. Vous vous faites éclabousser et glissez un peu. Reculez d'une case.",
       moveDelta: -1,
     },
     {
       id: 3,
       deck: 'patte',
-      text: "Le vent fait tomber un nid d'aigles serpentier juste devant vous. Vous restez bouche bÃ©e Ã  observer les petits oisillons s'agiter dans le nid. Passez votre tour.",
+      text: "Le vent fait tomber un nid d'aigles serpentier juste devant vous. Vous restez bouche bée à observer les petits oisillons s'agiter dans le nid. Passez votre tour.",
       skipTurns: 1,
     },
     {
       id: 4,
       deck: 'patte',
-      text: "Un jeune scorpion forestier bloque votre chemin et s'amuse Ã  faire des pirouettes, sa queue tourbillonnant dans les airs. Vous sursautez en riant et reculez d'une case.",
+      text: "Un jeune scorpion forestier bloque votre chemin et s'amuse à faire des pirouettes, sa queue tourbillonnant dans les airs. Vous sursautez en riant et reculez d'une case.",
       moveDelta: -1,
     },
     {
       id: 5,
       deck: 'patte',
-      text: "Un trÃ¨s jeune fourmilier curieux s'approche de vous et renifle vos bottes comme un petit enfant intriguÃ©. AmusÃ©, il se jette au sol et se roule Ã  vos pieds. Ã‰clatant de rire, vous restez bloquÃ© un instant et ne bougez pas de votre case. Passez votre tour.",
+      text: "Un très jeune fourmilier curieux s'approche de vous et renifle vos bottes comme un petit enfant intrigué. Amusé, il se jette au sol et se roule à vos pieds. Éclatant de rire, vous restez bloqué un instant et ne bougez pas de votre case. Passez votre tour.",
       skipTurns: 1,
     },
     {
@@ -541,25 +541,25 @@ function defaultPatteDeck(): AventureSauvageCard[] {
     {
       id: 7,
       deck: 'patte',
-      text: 'Vous vous arrÃªtez sous un manguier oÃ¹ un loriquet farceur vous pique votre casquette. Passez votre tour pour la rÃ©cupÃ©rer.',
+      text: 'Vous vous arrêtez sous un manguier où un loriquet farceur vous pique votre casquette. Passez votre tour pour la récupérer.',
       skipTurns: 1,
     },
     {
       id: 8,
       deck: 'patte',
-      text: 'Vous glissez sur des feuilles de bananier humides tombÃ©es au sol. Passez votre tour.',
+      text: 'Vous glissez sur des feuilles de bananier humides tombées au sol. Passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 9,
       deck: 'patte',
-      text: 'Votre parcours est interrompu par un camÃ©lÃ©on changeant de couleur juste devant vous. Vous restez Ã©bahi. Passez votre tour.',
+      text: 'Votre parcours est interrompu par un caméléon changeant de couleur juste devant vous. Vous restez ébahi. Passez votre tour.',
       skipTurns: 1,
     },
     {
       id: 10,
       deck: 'patte',
-      text: "Un perroquet gris du Gabon se met Ã  grimper le long d'un tronc et tombe juste Ã  cÃ´tÃ© de vous. Vous sursautez et reculez d'une case.",
+      text: "Un perroquet gris du Gabon se met à grimper le long d'un tronc et tombe juste à côté de vous. Vous sursautez et reculez d'une case.",
       moveDelta: -1,
     },
   ];
@@ -604,9 +604,3 @@ function toText(value: unknown): string {
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   return '';
 }
-
-
-
-
-
-

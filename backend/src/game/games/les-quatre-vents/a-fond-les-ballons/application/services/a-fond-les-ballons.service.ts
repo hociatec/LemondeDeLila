@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { A_FOND_LES_BALLONS_GAME } from '../../definitions/game.definition';
 import { AFondLesBallonsSetupService } from './a-fond-les-ballons-setup.service';
 import { AFondLesBallonsActionService } from './a-fond-les-ballons-action.service';
@@ -21,7 +21,7 @@ export class AFondLesBallonsService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = A_FOND_LES_BALLONS_GAME.displayName;
-  readonly description = "Course dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©jantÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e jusqu'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  la Grosse Noix DorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e.";
+  readonly description = "Course déjantée jusqu'à la Grosse Noix Dorée.";
   readonly minPlayers = A_FOND_LES_BALLONS_GAME.minPlayers;
   readonly maxPlayers = A_FOND_LES_BALLONS_GAME.maxPlayers;
 

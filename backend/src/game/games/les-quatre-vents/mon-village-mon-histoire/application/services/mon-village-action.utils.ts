@@ -2,7 +2,7 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 
 import type { MonVillageMetadata } from '../../model/mon-village-state.model';
 
-const ZONE_MAP: Array<{ min: number; max: number; id: number }> = [
+export const ZONE_MAP: Array<{ min: number; max: number; id: number }> = [
   { min: 1, max: 6, id: 1 },
   { min: 7, max: 13, id: 2 },
   { min: 14, max: 20, id: 3 },
@@ -38,7 +38,7 @@ export function describeMonVillagePawnLabel(
   const lower = pawn.toLowerCase();
   const feminine = lower.startsWith('la ') || lower.startsWith('une ');
   const inner = pawn
-    .replace(/^l['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*/i, '')
+    .replace(/^l['’]\s*/i, '')
     .replace(/^(le|la|les|un|une)\s+/i, '')
     .trim();
   const core = inner || pawn;

@@ -1,4 +1,4 @@
-import { createLamaServiceForTest } from './lama-test-harness';
+import { createLamaServiceForTest } from '../../tests/lama-test-harness';
 
 describe('LamaService', () => {
   it('does not assign setup ownership to a bot (prefers first human)', async () => {

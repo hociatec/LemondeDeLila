@@ -1,12 +1,12 @@
 ﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
 import { SAC_A_MALICES_GAME } from '../../definitions/sac-a-malices.definition';
 import * as Rulebook from '../../rulebook/rulebook';
 import type { SacMetadata } from '../../model/sac-a-malices.types';
-import { SAC_VARIANTS } from '../sac-a-malices-variants';
+import { SAC_VARIANTS } from '../../sac-a-malices-variants';
 
 export class SacAMalicesPresenterService {
   constructor(private readonly boardPayload: BoardPayloadService) {}
@@ -47,26 +47,26 @@ export class SacAMalicesPresenterService {
           panels: {
             cash: {
               title: 'Caisse',
-              message: `${money} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬`,
+              message: `${money} €`,
             },
             parcGratuit: {
               title: 'Parc Gratuit',
-              message: `Pot: ${meta.pot ?? 0} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬`,
+              message: `Pot: ${meta.pot ?? 0} €`,
             },
             properties_all: {
-              title: 'PropriÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©s',
+              title: 'Propriétés',
               message: propertyPanels.all,
             },
             properties_mine: {
-              title: 'Mes propriÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©s',
+              title: 'Mes propriétés',
               message: propertyPanels.mine,
             },
             properties_others: {
-              title: 'PropriÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©s des autres',
+              title: 'Propriétés des autres',
               message: propertyPanels.others,
             },
             properties_available: {
-              title: 'PropriÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©s disponibles',
+              title: 'Propriétés disponibles',
               message: propertyPanels.available,
             },
           },
@@ -167,10 +167,10 @@ export class SacAMalicesPresenterService {
       );
 
     return {
-      all: all.length ? all.join('\n') : 'Aucune propriÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©.',
-      mine: mine.length ? mine.join('\n') : 'Aucune propriÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©.',
-      others: others.length ? others.join('\n') : 'Aucune propriÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©.',
-      available: available.length ? available.join('\n') : 'Aucune propriÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©.',
+      all: all.length ? all.join('\n') : 'Aucune propriété.',
+      mine: mine.length ? mine.join('\n') : 'Aucune propriété.',
+      others: others.length ? others.join('\n') : 'Aucune propriété.',
+      available: available.length ? available.join('\n') : 'Aucune propriété.',
     };
   }
 }

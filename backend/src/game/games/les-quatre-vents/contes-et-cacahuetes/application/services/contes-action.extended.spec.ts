@@ -7,6 +7,7 @@ import { TurnService } from '../../../../../application/services/turn.service';
 import { TurnPoliciesService } from '../../../../../application/services/turn-policies.service';
 import { ContesCacahuetesSetupService } from '../../application/services/contes-et-cacahuetes-setup.service';
 import { ContesActionService } from '../../application/services/contes-action.service';
+import { ContesTargetingService } from '../../application/services/contes-targeting.service';
 
 function deepClone<T>(value: T): T {
   try {
@@ -26,8 +27,8 @@ function makeBaseState() {
     log: [],
     players: [
       { id: 1, username: 'P1', pawn: 'Aika - Mongolie' },
-      { id: 2, username: 'P2', pawn: 'Freja - SuÃƒÂ¨de' },
-      { id: 3, username: 'P3', pawn: 'Lani - ÃƒÅ½les Marshall' },
+      { id: 2, username: 'P2', pawn: 'Freja - Suède' },
+      { id: 3, username: 'P3', pawn: 'Lani - Îles Marshall' },
     ],
     turn: { currentPlayerId: 1, direction: 1 },
     metadata: {},
@@ -66,12 +67,14 @@ function makeRuntime() {
   const turnPolicies = new TurnPoliciesService(core);
   const turns = new TurnFlowService(new TurnService(), turnPolicies);
   const deckPolicies = new DeckPoliciesService(random);
+  const targeting = new ContesTargetingService(core);
   const actions = new ContesActionService(
     core,
     random,
     turns,
     setupFlow,
     deckPolicies,
+    targeting,
     turnPolicies,
   );
   const state = setup.hydrateInitialState(makeBaseState());
@@ -302,12 +305,3 @@ describe('ContesActionService extended coverage', () => {
     expect(rerollNo).toBeDefined();
   });
 });
-
-
-
-
-
-
-
-
-

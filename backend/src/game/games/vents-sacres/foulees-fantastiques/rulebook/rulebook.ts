@@ -1,5 +1,5 @@
 ﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import {
   FOULEES_FANTASTIQUES_GAME,
   type FouleesFantastiquesActionType,
@@ -147,7 +147,7 @@ export function validateAction(
         String(fid ?? '').trim() === familyId,
     );
     if (taken) {
-      throw new GameValidationError('Famille dÃƒÂ©jÃƒÂ  choisie.', {
+      throw new GameValidationError('Famille déjà choisie.', {
         gameType: 'foulees-fantastiques',
         playerId: actorId ?? undefined,
         payload,

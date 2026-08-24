@@ -2,14 +2,14 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type { MorpionMetadata } from '../../model/morpion.model';
 import { MorpionPresenter } from './morpion.presenter';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { interfaceShortcut } from '../../../../../application/helpers/shortcut-utils';
 import {
   applyActionsSequentially,
@@ -21,7 +21,7 @@ import {
 } from '../../../../../application/helpers/game-log-text.helper';
 import { normalizeGameLogMessage } from '../../../../../application/helpers/log-style.helper';
 import { MORPION_PAWNS } from '../../definitions/morpion.pawns';
-import { nextRngInt } from '../../../../../../common/utils/seeded-rng';
+import { nextRngInt } from '../../../../../../common/utils/public-api';
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
 import {
@@ -70,9 +70,9 @@ type MorpionRuntimeMetadata = MorpionMetadata & {
 export class MorpionService extends AbstractGameService {
   readonly gameType = 'morpion';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Les Vents SacrÃƒÆ’Ã‚Â©s';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = 'Morpion';
-  readonly description = 'Alignez 3 symboles sur une grille 3ÃƒÆ’Ã¢â‚¬â€3.';
+  readonly description = 'Alignez 3 symboles sur une grille 3×3.';
   readonly minPlayers = 2;
   readonly maxPlayers = 2;
   private static readonly PawnChoices = MORPION_PAWNS;
@@ -368,7 +368,7 @@ export class MorpionService extends AbstractGameService {
       log = this.appendLog(log, 'Fin de la partie.');
       log = this.appendLog(log, victoryAnnouncement(actorName));
       if (opponentName) {
-        log = this.appendLog(log, `DÃƒÆ’Ã‚Â©faite de ${opponentName}.`);
+        log = this.appendLog(log, `Défaite de ${opponentName}.`);
       }
       nextMeta.winnerPlayerId = winnerId;
       nextMeta.winnerId = winnerId;

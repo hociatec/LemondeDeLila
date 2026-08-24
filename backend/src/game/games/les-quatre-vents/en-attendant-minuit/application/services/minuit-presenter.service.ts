@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
@@ -23,7 +23,7 @@ export class MinuitPresenterService {
       meta.pendingQuiz && meta.pendingQuiz.playerId === userId
         ? {
             type: 'quiz',
-            label: 'RÃƒÂ©ponses possibles',
+            label: 'Réponses possibles',
             question: meta.pendingQuiz.question,
             choices: meta.pendingQuiz.choices,
             playerId: meta.pendingQuiz.playerId,

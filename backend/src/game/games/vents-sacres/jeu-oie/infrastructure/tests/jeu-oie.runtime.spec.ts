@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { createJeuOieRuntime } from '../../jeu-oie.runtime';
 
 describe('JeuOie runtime', () => {
@@ -11,7 +11,7 @@ describe('JeuOie runtime', () => {
         },
         loadContent: () => ({
           version: 1,
-          cases: [{ index: 1, title: 'DÃ©part', text: 'Go' }],
+          cases: [{ index: 1, title: 'Départ', text: 'Go' }],
         }),
       },
       core: { appendLog: (state: any) => state } as any,

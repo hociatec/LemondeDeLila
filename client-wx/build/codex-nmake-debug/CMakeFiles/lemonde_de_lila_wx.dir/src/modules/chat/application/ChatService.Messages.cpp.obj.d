@@ -151,6 +151,9 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/Session.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/SecurityUtils.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/infrastructure/ChatProtocol.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/AudioService.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/SoundCatalog.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sstream
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/istream
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ostream.hpp

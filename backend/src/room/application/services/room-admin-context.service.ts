@@ -65,7 +65,7 @@ export class RoomAdminContextService {
   ensureOwner(room: RoomRecord, userId: number): void {
     if (!room.owner || room.owner.id !== userId) {
       throw new ForbiddenException(
-        'Seul le propriÃ©taire peut effectuer cette action',
+        'Seul le propriétaire peut effectuer cette action',
       );
     }
   }

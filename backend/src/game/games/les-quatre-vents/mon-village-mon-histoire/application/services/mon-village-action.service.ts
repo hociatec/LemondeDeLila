@@ -6,7 +6,7 @@ import {
 } from '../../../../../application/helpers/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import { RandomService } from '../../../../../application/services/random.service';
@@ -21,6 +21,7 @@ import {
   asMonVillagePartialMeta,
   describeMonVillagePawnLabel,
   getMonVillageZoneForTile,
+  ZONE_MAP,
 } from './mon-village-action.utils';
 
 export class MonVillageActionService {
@@ -95,7 +96,7 @@ export class MonVillageActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} lance le dÃƒÂ© : "${rng.roll}".`,
+      `${resolvePlayerNameFromState(next, playerId)} lance le dé : "${rng.roll}".`,
     );
 
     next = this.move(next, playerId, rng.roll);
@@ -148,7 +149,7 @@ export class MonVillageActionService {
     if (!card) {
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} nÃ¢â‚¬â„¢a plus de cartes dans la zone ${zoneId}.`,
+        `${resolvePlayerNameFromState(next, playerId)} n’a plus de cartes dans la zone ${zoneId}.`,
       );
     }
 
@@ -306,7 +307,7 @@ export class MonVillageActionService {
     const lower = pawn.toLowerCase();
     const feminine = lower.startsWith('la ') || lower.startsWith('une ');
     const inner = pawn
-      .replace(/^l['Ã¢â‚¬â„¢]\s*/i, '')
+      .replace(/^l['’]\s*/i, '')
       .replace(/^(le|la|les|un|une)\s+/i, '')
       .trim();
     const core = inner || pawn;
@@ -317,9 +318,3 @@ export class MonVillageActionService {
     return `"${feminine ? 'sa' : 'son'} ${lowered}"`;
   }
 }
-
-
-
-
-
-

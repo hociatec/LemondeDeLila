@@ -99,20 +99,6 @@ void MainMenuFrame::OnMenuActivated(std::size_t index)
         return;
     case MainMenuAction::Logout:
     {
-        if (optionsStore_.Current().confirmExit)
-        {
-            const int answer = wxMessageBox(
-                wxString(L"Voulez-vous vous déconnecter de la session en cours ?"),
-                wxString(L"Confirmer la déconnexion"),
-                wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION,
-                this);
-            if (answer != wxYES)
-            {
-                SetStatus(wxString(L"Déconnexion annulée."));
-                return;
-            }
-        }
-
         wxCommandEvent event;
         OnLogoutClicked(event);
         return;

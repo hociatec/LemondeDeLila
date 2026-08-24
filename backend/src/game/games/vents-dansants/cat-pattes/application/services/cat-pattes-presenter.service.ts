@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
@@ -7,7 +7,7 @@ import { CAT_PATTES_GAME } from '../../definitions/game.definition';
 import type { CatPattesMetadata } from '../../model/cat-pattes-state.model';
 import { CAT_PATTES_CARD_BY_ID } from '../../model/cat-pattes-cards';
 import { CAT_PATTES_DEFAULT_ROUNDS } from '../../model/cat-pattes-state.model';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 export class CatPattesPresenterService {
   private sanitizePlayerName(raw: unknown): string {
     return stringOrEmpty(raw).trim();
@@ -62,9 +62,9 @@ export class CatPattesPresenterService {
     const obstacleLabels: Record<string, string> = {
       gamelle: 'Gamelle vide',
       pluie: 'Pluie torrentielle',
-      chien: 'Chien enragÃƒÂ©',
-      coussin: 'Coussin piÃƒÂ©gÃƒÂ©',
-      sol: 'Sol cirÃƒÂ©',
+      chien: 'Chien enragé',
+      coussin: 'Coussin piégé',
+      sol: 'Sol ciré',
     };
     const botLabels: Record<string, string> = {
       reserve: 'Reserve secrete',
@@ -79,9 +79,9 @@ export class CatPattesPresenterService {
       const obstacleLabel = obstacle ? obstacleLabels[obstacle] : null;
       const bots = Array.isArray(meta.bots?.[pid]) ? meta.bots[pid] : [];
       const botNames = bots.map((b) => botLabels[b] ?? String(b));
-      const status = obstacleLabel ? `arrÃƒÂªtÃƒÂ© par ${obstacleLabel}` : 'libre';
+      const status = obstacleLabel ? `arrêté par ${obstacleLabel}` : 'libre';
       const immunities = botNames.length
-        ? `, immunitÃƒÂ©s ${botNames.join(', ')}`
+        ? `, immunités ${botNames.join(', ')}`
         : '';
       return `${name} : ${status}${immunities}.`;
     });
@@ -91,7 +91,7 @@ export class CatPattesPresenterService {
         ([id, cards]) =>
           `Joueur ${id}: ${Array.isArray(cards) ? cards.length : 0}`,
       )
-      .join(' Ã¢â‚¬Â¢ ');
+      .join(' • ');
     const lastDiscardId = Array.isArray(meta.discard)
       ? (meta.discard[meta.discard.length - 1] ?? null)
       : null;
@@ -125,19 +125,19 @@ export class CatPattesPresenterService {
               : 'Mains : (inconnues)',
           },
           play: {
-            title: 'Ãƒâ‚¬ jouer',
+            title: 'À jouer',
             message:
-              '(Ã¢â€ â€˜/Ã¢â€ â€œ choisir, EntrÃƒÂ©e jouer, Espace piocher, D dÃƒÂ©fausser, C derniÃƒÂ¨re carte, S score, P progression, I infos)',
+              '(↑/↓ choisir, Entrée jouer, Espace piocher, D défausser, C dernière carte, S score, P progression, I infos)',
           },
           score: {
             title: 'Score',
             message: `${scoreLines.join(', ')}. Manches: ${Math.min(completedRounds, roundsToPlay)}/${roundsToPlay}.`,
           },
           discard: {
-            title: 'DerniÃƒÂ¨re carte',
+            title: 'Dernière carte',
             message: lastDiscardName
-              ? `DerniÃƒÂ¨re carte jouÃƒÂ©e : ${lastDiscardName}.`
-              : 'DerniÃƒÂ¨re carte jouÃƒÂ©e : (aucune).',
+              ? `Dernière carte jouée : ${lastDiscardName}.`
+              : 'Dernière carte jouée : (aucune).',
           },
           info: {
             title: 'Effets en cours',

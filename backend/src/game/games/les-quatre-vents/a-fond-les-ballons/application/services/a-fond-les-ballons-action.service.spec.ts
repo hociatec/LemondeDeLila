@@ -79,7 +79,7 @@ describe('AFondLesBallonsActionService', () => {
 
     expect(next.pending).toBeNull();
     expect(next.turn?.currentPlayerId).toBe(1);
-    expect(messages).toContain("C'est au tour de Lilas de dÃ©buter.");
+    expect(messages).toContain("C'est au tour de Lilas de débuter.");
   });
 
   it('announces the next pawn chooser immediately after a human choice', () => {
@@ -92,14 +92,14 @@ describe('AFondLesBallonsActionService', () => {
         { id: 1, username: 'hacene' },
         { id: -2, username: 'Karaba', isBot: true },
       ],
-      log: [{ message: "C'est Ã  hacene de choisir son pion." }],
+      log: [{ message: "C'est à hacene de choisir son pion." }],
       pending: {
         type: 'choose_pawn',
         playerId: 1,
         blocking: true,
         data: {
           pawns: [
-            { id: 'cap', label: 'Capitaine CacahuÃ¨te', description: '' },
+            { id: 'cap', label: 'Capitaine Cacahuète', description: '' },
             { id: 'ham', label: 'Hamstero Dynamite', description: '' },
           ],
         },
@@ -107,7 +107,7 @@ describe('AFondLesBallonsActionService', () => {
       metadata: {
         setupStarterId: 1,
         pawns: [
-          { id: 'cap', label: 'Capitaine CacahuÃ¨te', description: '' },
+          { id: 'cap', label: 'Capitaine Cacahuète', description: '' },
           { id: 'ham', label: 'Hamstero Dynamite', description: '' },
         ],
         pawnByPlayerId: {},
@@ -122,10 +122,9 @@ describe('AFondLesBallonsActionService', () => {
 
     expect(next.pending?.playerId).toBe(-2);
     expect(messages).toEqual([
-      "C'est Ã  hacene de choisir son pion.",
-      'hacene a choisi le pion: Capitaine CacahuÃ¨te.',
-      "C'est Ã  Karaba de choisir son pion.",
+      "C'est à hacene de choisir son pion.",
+      'hacene a choisi le pion: Capitaine Cacahuète.',
+      "C'est à Karaba de choisir son pion.",
     ]);
   });
 });
-

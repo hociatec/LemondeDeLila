@@ -270,6 +270,8 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialFriendRequ
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialUser.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialProfile.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/ISocialGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/cache/SingleFlightCache.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/infrastructure/SocialApi.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppConfig.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/WebSocketConstants.h

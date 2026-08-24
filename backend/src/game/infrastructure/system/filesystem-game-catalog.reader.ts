@@ -24,7 +24,8 @@ export class FilesystemGameCatalogReader implements GameCatalogReader {
       params.contentDir ?? '',
       params.filename,
     );
-    return JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
+    const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
+    return JSON.parse(raw) as T;
   }
 
   readTextFile(filePath: string): string {

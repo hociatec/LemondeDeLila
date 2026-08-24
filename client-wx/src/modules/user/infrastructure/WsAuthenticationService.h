@@ -14,6 +14,7 @@ class WsAuthenticationService final : public domain::IAuthenticationService
 public:
     explicit WsAuthenticationService(remote::UserAuthRemoteDataSource& remoteDataSource);
 
+    void WarmUp() override;
     [[nodiscard]] domain::AuthenticationResult Login(const domain::LoginCredentials& credentials) override;
     [[nodiscard]] domain::RegistrationResult Register(const domain::RegisterRequest& request) override;
 

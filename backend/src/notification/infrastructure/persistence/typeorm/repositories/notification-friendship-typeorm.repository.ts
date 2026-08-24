@@ -1,14 +1,22 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import type { NotificationFriendshipRepository } from '../../../../application/ports/notification-friendship.repository';
-import { SocialRelationshipEntity } from '../../../../../social/infrastructure/persistence/typeorm/entities/social-relationship.entity';
+
+export const NOTIFICATION_SOCIAL_RELATIONSHIPS_TYPEORM_REPOSITORY = Symbol(
+  'NOTIFICATION_SOCIAL_RELATIONSHIPS_TYPEORM_REPOSITORY',
+);
+
+type SocialRelationshipRow = {
+  requester?: { id: number } | null;
+  addressee?: { id: number } | null;
+  status: string;
+};
 
 @Injectable()
 export class NotificationFriendshipTypeormRepository implements NotificationFriendshipRepository {
   constructor(
-    @InjectRepository(SocialRelationshipEntity)
-    private readonly relationships: Repository<SocialRelationshipEntity>,
+    @Inject(NOTIFICATION_SOCIAL_RELATIONSHIPS_TYPEORM_REPOSITORY)
+    private readonly relationships: Repository<SocialRelationshipRow>,
   ) {}
 
   async listAcceptedFriendIds(userId: number): Promise<number[]> {

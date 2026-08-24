@@ -5,12 +5,12 @@ describe('pawn setup common flow', () => {
   const root = path.resolve(__dirname, '../../..');
   const setupFiles = [
     'games/vents-sacres/jeu-oie/application/services/jeu-oie-setup.service.ts',
-    'games/les-quatre-vents/galopons-ensemble/setup/galopons-setup.service.ts',
-    'games/les-quatre-vents/aventure-sauvage/setup/aventure-sauvage-setup.service.ts',
-    'games/les-quatre-vents/frousse-party/setup/frousse-setup.service.ts',
-    'games/les-quatre-vents/a-fond-les-ballons/setup/a-fond-les-ballons-setup.service.ts',
-    'games/les-quatre-vents/contes-et-cacahuetes/setup/contes-et-cacahuetes-setup.service.ts',
-    'games/les-quatre-vents/en-attendant-minuit/setup/minuit-setup.service.ts',
+    'games/les-quatre-vents/galopons-ensemble/application/services/galopons-setup.service.ts',
+    'games/les-quatre-vents/aventure-sauvage/application/services/aventure-sauvage-setup.service.ts',
+    'games/les-quatre-vents/frousse-party/application/services/frousse-setup.service.ts',
+    'games/les-quatre-vents/a-fond-les-ballons/application/services/a-fond-les-ballons-setup.service.ts',
+    'games/les-quatre-vents/contes-et-cacahuetes/application/services/contes-et-cacahuetes-setup.service.ts',
+    'games/les-quatre-vents/en-attendant-minuit/application/services/minuit-setup.service.ts',
   ];
 
   it('routes pawn setup services through the shared configured helper', () => {
@@ -23,4 +23,3 @@ describe('pawn setup common flow', () => {
     }
   });
 });
-

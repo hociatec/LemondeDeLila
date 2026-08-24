@@ -1,8 +1,11 @@
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+} from '../../../../../application/models/game-action.model';
+import type {
+  GameStateEntity,
+  PendingState,
+} from '../../../../../application/models/game-state.model';
 import { BasePresenterService } from '../../../../../application/services/base-presenter.service';
 import type { CorridorMetadata } from '../../model/corridor.model';
 import * as CorridorRulebook from '../../rulebook/rulebook';
@@ -16,6 +19,7 @@ type CorridorActionPayload = {
 };
 
 type CorridorPresenterPending = {
+  type?: string;
   playerId?: number;
   data?: {
     pawns?: Array<{ id?: string; label?: string }>;
@@ -64,7 +68,7 @@ export class CorridorPresenterService extends BasePresenterService {
             ? String(payload.o).trim().toLowerCase()
             : '';
 
-        if (type === 'corridor_move') return 'DÃƒÂ©placer ici';
+        if (type === 'corridor_move') return 'Déplacer ici';
         if (type === 'corridor_place_wall' && o === 'h')
           return 'Mur horizontal ici';
         if (type === 'corridor_place_wall' && o === 'v')
@@ -122,7 +126,7 @@ export class CorridorPresenterService extends BasePresenterService {
           cellActions,
           cellTags,
           statusLines: [
-            viewerIsTurn ? 'Ãƒâ‚¬ vous de jouer.' : "Tour de l'adversaire.",
+            viewerIsTurn ? 'À vous de jouer.' : "Tour de l'adversaire.",
             `Murs restants : ${(meta?.wallsRemainingByPlayerId ?? {})[String(userId)] ?? 0}`,
           ],
         },
@@ -210,7 +214,8 @@ export class CorridorPresenterService extends BasePresenterService {
       if (state.pending?.playerId !== userId) {
         return [];
       }
-      const pending = (state.pending ?? null) as CorridorPresenterPending | null;
+      const pending = (state.pending ??
+        null) as CorridorPresenterPending | null;
       const pawns = Array.isArray(pending?.data?.pawns)
         ? pending.data.pawns
         : [];
@@ -225,7 +230,7 @@ export class CorridorPresenterService extends BasePresenterService {
             label,
           };
         })
-        .filter((a): a is GameSingleActionDto => a != null);
+        .filter((a): a is NonNullable<typeof a> => a != null);
     }
     const current = this.getCurrentPlayerId(state);
     if (current == null || current !== userId) return [];
@@ -259,9 +264,9 @@ export class CorridorPresenterService extends BasePresenterService {
     _metadata: Record<string, unknown>,
     userId: number,
     _currentPlayerId: number | null,
-  ): unknown {
+  ): PendingState | null {
     return this.filterPendingForUser(
-      ((state.pending ?? null) as CorridorPresenterPending | null) ?? null,
+      ((state.pending ?? null) as PendingState | null) ?? null,
       userId,
     );
   }
@@ -283,8 +288,3 @@ export class CorridorPresenterService extends BasePresenterService {
     return this.getBaseExtras(state);
   }
 }
-
-
-
-
-

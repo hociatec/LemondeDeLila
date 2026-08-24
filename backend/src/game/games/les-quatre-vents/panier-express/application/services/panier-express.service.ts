@@ -3,24 +3,24 @@ import {
   GameStateEntity,
   PendingState,
 } from '../../../../../application/models/game-state.model';
-import { GameSingleActionDto } from '../../../../../models/game-action.model';
-import { GameStateWithActions } from '../../../../../models/game-action.model';
+import { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import { GameStateWithActions } from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
-import { TurnService } from '../../../application/services/turn.service';
+import { TurnService } from '../../../../../application/services/turn.service';
 import {
   DeckPoolService,
   DeckPoolState,
-} from '../../../application/services/deck-pool.service';
-import { BoardMovementService } from '../../../application/services/board-movement.service';
-import { TileEffectRegistryService } from '../../../application/features/effects/services/tile-effect-registry.service';
-import { TurnActionsService } from '../../../application/services/turn-actions.service';
-import { StandEffectRegistryService } from '../../../application/features/effects/services/stand-effect-registry.service';
-import { ActionResolverService } from '../../../application/features/action-resolver/services/action-resolver.service';
-import { TurnStatusService } from '../../../application/services/turn-status.service';
-import { QuizRunnerService } from '../../../application/features/quiz/services/quiz-runner.service';
-import { VictoryService } from '../../../application/features/victory/services/victory.service';
+} from '../../../../../application/services/deck-pool.service';
+import { BoardMovementService } from '../../../../../application/services/board-movement.service';
+import { TileEffectRegistryService } from '../../../../../application/features/effects/services/tile-effect-registry.service';
+import { TurnActionsService } from '../../../../../application/services/turn-actions.service';
+import { StandEffectRegistryService } from '../../../../../application/features/effects/services/stand-effect-registry.service';
+import { ActionResolverService } from '../../../../../application/features/action-resolver/services/action-resolver.service';
+import { TurnStatusService } from '../../../../../application/services/turn-status.service';
+import { QuizRunnerService } from '../../../../../application/features/quiz/services/quiz-runner.service';
+import { VictoryService } from '../../../../../application/features/victory/services/victory.service';
 import { BotRunnerService } from '../../../../../application/services/bot-runner.service';
-import { ActionLogService } from '../../../application/features/actionlog/services/action-log.service';
+import { ActionLogService } from '../../../../../application/features/actionlog/services/action-log.service';
 import {
   PanierExpressMetadata,
   PanierExpressTile,
@@ -48,7 +48,7 @@ import { resolvePendingPawnChoiceAction } from '../../../../../application/helpe
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { hydratePanierExpressInitialState } from '../../panier-express-initial-state.helpers';
 import {
   asStringDeckPool,
@@ -78,8 +78,8 @@ import {
   handlePanierExpressSeasonChangeDraw,
 } from '../../panier-express-draw.helpers';
 import { applyPanierExpressEventAction } from '../../actions/panier-express-event-action.helper';
-import { applyBasicPanierExpressEvent } from './panier-express-event-basic.helpers';
-import { applyAdvancedPanierExpressEvent } from './panier-express-event-advanced.helpers';
+import { applyBasicPanierExpressEvent } from '../../panier-express-event-basic.helpers';
+import { applyAdvancedPanierExpressEvent } from '../../panier-express-event-advanced.helpers';
 import { applyPanierExpressChoosePawnAction } from '../../actions/panier-express-choose-pawn-action.helper';
 import { applyPanierExpressDrawAction } from '../../actions/panier-express-draw-action.helper';
 import { applyPanierExpressPickChoiceAction } from '../../actions/panier-express-pick-choice-action.helper';
@@ -120,9 +120,7 @@ import {
   toText,
   toUnknownArray,
 } from '../../panier-express-state.helpers';
-import {
-  drawPanierExpressCardFromPoolBlock,
-} from './panier-express-state-block.utils';
+import { drawPanierExpressCardFromPoolBlock } from './panier-express-state-block.utils';
 
 export class PanierExpressService extends AbstractGameService {
   readonly gameType = 'panier-express';
@@ -130,7 +128,7 @@ export class PanierExpressService extends AbstractGameService {
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = 'Panier Express';
   readonly description =
-    'Course au marchÃƒÆ’Ã‚Â© : complÃƒÆ’Ã‚Â©ter sa liste puis revenir pile sur la case dÃƒÆ’Ã‚Â©part.';
+    'Course au marché : compléter sa liste puis revenir pile sur la case départ.';
   readonly minPlayers = 2;
   readonly maxPlayers = 10;
   private static readonly SHOPPING_LIST_SIZE = 3;
@@ -272,7 +270,7 @@ export class PanierExpressService extends AbstractGameService {
       default:
         return this.core.appendLog(
           state,
-          `[Panier Express] Action non gÃƒÆ’Ã‚Â©rÃƒÆ’Ã‚Â©e: ${action.type}`,
+          `[Panier Express] Action non gérée: ${action.type}`,
         );
     }
   }
@@ -465,7 +463,8 @@ export class PanierExpressService extends AbstractGameService {
       appendActionLog: (value, playerId, actionType, details) =>
         this.appendActionLog(value, playerId, actionType, details),
       playerName: (value, playerId) => this.utils.playerName(value, playerId),
-      movePlayer: (value, playerId, roll) => this.movePlayer(value, playerId, roll),
+      movePlayer: (value, playerId, roll) =>
+        this.movePlayer(value, playerId, roll),
       resolveTile: (value, playerId) => this.resolveTile(value, playerId),
       getAvailableActions: (value, playerId) =>
         this.getAvailableActions(value, playerId),
@@ -497,8 +496,13 @@ export class PanierExpressService extends AbstractGameService {
           drawPool: (pool, deckKey, rng) =>
             this.deckPool.draw<string>(asStringDeckPool(pool), deckKey, rng),
           discardPool: (pool, deckKey, card) =>
-            this.deckPool.discard<string>(asStringDeckPool(pool), deckKey, card),
-          appendLog: (current, message) => this.core.appendLog(current, message),
+            this.deckPool.discard<string>(
+              asStringDeckPool(pool),
+              deckKey,
+              card,
+            ),
+          appendLog: (current, message) =>
+            this.core.appendLog(current, message),
           advanceAfterDraw: (current) => this.advanceAfterDraw(current),
           withPending: (current, pendingState) =>
             this.withPending(current, pendingState),
@@ -514,8 +518,13 @@ export class PanierExpressService extends AbstractGameService {
           drawPool: (pool, deckKey, rng) =>
             this.deckPool.draw<string>(asStringDeckPool(pool), deckKey, rng),
           discardPool: (pool, deckKey, card) =>
-            this.deckPool.discard<string>(asStringDeckPool(pool), deckKey, card),
-          appendLog: (current, message) => this.core.appendLog(current, message),
+            this.deckPool.discard<string>(
+              asStringDeckPool(pool),
+              deckKey,
+              card,
+            ),
+          appendLog: (current, message) =>
+            this.core.appendLog(current, message),
           advanceAfterDraw: (current) => this.advanceAfterDraw(current),
           withPending: (current, pendingState) =>
             this.withPending(current, pendingState),
@@ -529,7 +538,8 @@ export class PanierExpressService extends AbstractGameService {
             this.drawSvc.drawCourse(current, targetPlayerId, standId),
           toUnknownArray,
           toStringArray: (current) => this.utils.toStringArray(current),
-          appendLog: (current, message) => this.core.appendLog(current, message),
+          appendLog: (current, message) =>
+            this.core.appendLog(current, message),
           advanceAfterDraw: (current) => this.advanceAfterDraw(current),
           withPending: (current, pendingState) =>
             this.withPending(current, pendingState),
@@ -682,8 +692,7 @@ export class PanierExpressService extends AbstractGameService {
       ensureMetadata: (value) => this.ensureMetadata(value),
       courseItems: () => this.setup.courseItems(),
       getMetadata: (value) => this.getMetadata(value),
-      createMetaRng: (metadata) =>
-        this.random.createMetaRng(metadata as Record<string, unknown>),
+      createMetaRng: (metadata) => this.random.createMetaRng(metadata),
       pickOne: (metadata, items) => this.random.pickOne(metadata, items),
       formatCourseLabel: (ingredient) =>
         this.utils.formatCourseLabel(ingredient),
@@ -905,8 +914,7 @@ export class PanierExpressService extends AbstractGameService {
           },
         }),
       appendLog: (value, message) => this.core.appendLog(value, message),
-      getPlayers: (value) =>
-        this.getPlayers(value) as Array<Record<string, unknown>>,
+      getPlayers: (value) => this.getPlayers(value),
       playerName: (value, playerId) => this.utils.playerName(value, playerId),
       ensureStarted: (value) => this.ensureStarted(value),
       queuePawnSelection: (value) => this.queuePawnSelection(value),
@@ -930,7 +938,11 @@ export class PanierExpressService extends AbstractGameService {
       toStringArray: (value) => this.utils.toStringArray(value),
       removeOne: (items, value) => this.utils.removeOne(items, value),
       discardMany: (pool, deckKey, cards) =>
-        this.deckPool.discardMany<string>(asStringDeckPool(pool), deckKey, cards),
+        this.deckPool.discardMany<string>(
+          asStringDeckPool(pool),
+          deckKey,
+          cards,
+        ),
       appendActionLog: (value, playerId, type, payload) =>
         this.appendActionLog(value, playerId, type, payload),
       playerName: (value, playerId) => this.utils.playerName(value, playerId),
@@ -974,9 +986,9 @@ export class PanierExpressService extends AbstractGameService {
     return this.quizSvc.applyQuiz(state, playerId);
   }
 
-  // RÃƒÆ’Ã‚Â©solution de quiz : PanierExpressQuizService ne fait que mettre une question en pending.
-  // La validation de la rÃƒÆ’Ã‚Â©ponse et la levÃƒÆ’Ã‚Â©e du pending restent ici via QuizRunner
-  // pour garder la logique de tour et de scoring centralisÃƒÆ’Ã‚Â©e dans le service principal.
+  // Résolution de quiz : PanierExpressQuizService ne fait que mettre une question en pending.
+  // La validation de la réponse et la levée du pending restent ici via QuizRunner
+  // pour garder la logique de tour et de scoring centralisée dans le service principal.
   private handleAnswerQuiz(
     state: GameStateEntity,
     action: GameSingleActionDto,
@@ -1189,26 +1201,3 @@ export class PanierExpressService extends AbstractGameService {
     return this.stateSvc.ensureMetadata(state);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

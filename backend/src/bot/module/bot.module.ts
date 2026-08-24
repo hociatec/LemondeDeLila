@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { RoomBot } from '../../room/infrastructure/persistence/typeorm/entities/room-bot.entity';
 import { Room } from '../../room/infrastructure/persistence/typeorm/entities/room.entity';
 import { RoomParticipant } from '../../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
@@ -37,7 +37,12 @@ import { UpdateBotNameService } from '../application/use-cases/bot-names/update-
 import { BotName } from '../infrastructure/persistence/typeorm/entities/bot-name.entity';
 import { createBotNameCacheConfig } from '../infrastructure/config/bot-name-cache.config';
 import { BotNameTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/bot-name-typeorm.repository';
-import { BotRoomTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository';
+import {
+  BOT_ROOM_BOTS_TYPEORM_REPOSITORY,
+  BOT_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY,
+  BOT_ROOM_ROOMS_TYPEORM_REPOSITORY,
+  BotRoomTypeormRepository,
+} from '../infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository';
 
 @Module({
   imports: [
@@ -45,6 +50,18 @@ import { BotRoomTypeormRepository } from '../infrastructure/persistence/typeorm/
     TypeOrmModule.forFeature([RoomBot, Room, RoomParticipant, User, BotName]),
   ],
   providers: [
+    {
+      provide: BOT_ROOM_BOTS_TYPEORM_REPOSITORY,
+      useExisting: getRepositoryToken(RoomBot),
+    },
+    {
+      provide: BOT_ROOM_ROOMS_TYPEORM_REPOSITORY,
+      useExisting: getRepositoryToken(Room),
+    },
+    {
+      provide: BOT_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY,
+      useExisting: getRepositoryToken(RoomParticipant),
+    },
     BotRoomTypeormRepository,
     BotNameTypeormRepository,
     {

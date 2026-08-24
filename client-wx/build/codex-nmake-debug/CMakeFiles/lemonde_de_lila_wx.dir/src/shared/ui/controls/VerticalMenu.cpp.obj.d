@@ -582,3 +582,5 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/AccessibleMenu.h
 C:/vcpkg/installed/x64-windows/include/wx/weakref.h
 C:/vcpkg/installed/x64-windows/include/wx/meta/int2type.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/Logger.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/AudioService.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/SoundCatalog.h

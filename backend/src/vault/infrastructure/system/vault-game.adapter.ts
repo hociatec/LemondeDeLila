@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   GameEngineService,
   GameRegistryService,
+  type GameStateEntity,
 } from '../../../game/public-api';
 import type { VaultGameState } from '../../application/models/vault-game-state.model';
 import type { VaultGamePort } from '../../application/ports/vault-game.port';
@@ -13,11 +14,12 @@ export class VaultGameAdapter implements VaultGamePort {
     private readonly registry: GameRegistryService,
   ) {}
 
-  exportState(
+  async exportState(
     roomId: number,
     gameType: string,
   ): Promise<VaultGameState | null> {
-    return this.engine.exportInternalState(roomId, gameType);
+    const state = await this.engine.exportInternalState(roomId, gameType);
+    return state as unknown as VaultGameState | null;
   }
 
   restoreState(
@@ -25,7 +27,11 @@ export class VaultGameAdapter implements VaultGamePort {
     gameType: string,
     state: VaultGameState,
   ): Promise<void> {
-    return this.engine.restoreInternalState(roomId, gameType, state);
+    return this.engine.restoreInternalState(
+      roomId,
+      gameType,
+      state as unknown as GameStateEntity,
+    );
   }
 
   getDisplayName(gameType: string): string | null {

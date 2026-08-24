@@ -1,11 +1,11 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
-import { resolvePlayerNameFromState } from '../../../../application/helpers/player-name.helper';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
-import { GameCoreService } from '../../../../application/services/game-core.service';
-import { TurnFlowService } from '../../../../application/services/turn-flow.service';
-import { RandomService } from '../../../../application/services/random.service';
-import { DeckPoliciesService } from '../../../../application/features/deck-policies/services/deck-policies.service';
+import { GameCoreService } from '../../../../../application/services/game-core.service';
+import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
+import { RandomService } from '../../../../../application/services/random.service';
+import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
 import {
   LA_GRANDE_MINE_CARD_BY_ID,
   type LaGrandeMineCard,
@@ -14,7 +14,7 @@ import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../application/helpers/action-service.helper';
+} from '../../../../../application/helpers/action-service.helper';
 import type { LaGrandeMineMetadata } from '../../model/la-grande-mine-state.model';
 import {
   addLaGrandeMineCardToDiscardMeta,
@@ -167,7 +167,7 @@ export class LaGrandeMineDeBarbakActionService {
     let next = this.setMeta(state, { ...meta, domains });
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} pose le trÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©sor ${card.name} (+${card.points ?? 0} pts).`,
+      `${resolvePlayerNameFromState(next, playerId)} pose le trésor ${card.name} (+${card.points ?? 0} pts).`,
     );
     return next;
   }
@@ -199,7 +199,7 @@ export class LaGrandeMineDeBarbakActionService {
   ): GameStateEntity {
     const message = played
       ? `${resolvePlayerNameFromState(state, playerId)} utilise ${card.name} (${card.description}).`
-      : `${resolvePlayerNameFromState(state, playerId)} dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©clenche ${card.name} (${card.description}).`;
+      : `${resolvePlayerNameFromState(state, playerId)} déclenche ${card.name} (${card.description}).`;
     return this.core.appendLog(state, message);
   }
 
@@ -258,7 +258,7 @@ export class LaGrandeMineDeBarbakActionService {
       next = this.finishGame(next);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©clenche un effondrement final !`,
+        `${resolvePlayerNameFromState(next, playerId)} déclenche un effondrement final !`,
       );
     }
     if (played) {
@@ -277,7 +277,7 @@ export class LaGrandeMineDeBarbakActionService {
       if (player?.id == null) continue;
       next = this.discardRandomFromHand(next, player.id, 1);
     }
-    return this.core.appendLog(next, 'Un ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©boulement mineur secoue la mine !');
+    return this.core.appendLog(next, 'Un éboulement mineur secoue la mine !');
   }
 
   private applyMajorCollapse(state: GameStateEntity): GameStateEntity {
@@ -289,7 +289,7 @@ export class LaGrandeMineDeBarbakActionService {
     }
     return this.core.appendLog(
       next,
-      'Un ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©boulement majeur fait voler les trÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©sors !',
+      'Un éboulement majeur fait voler les trésors !',
     );
   }
 
@@ -322,7 +322,7 @@ export class LaGrandeMineDeBarbakActionService {
         next = this.addCardToDiscard(next, cardId);
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId)} dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©fausse ${cardId}.`,
+          `${resolvePlayerNameFromState(next, playerId)} défausse ${cardId}.`,
         );
       }
     }
@@ -362,7 +362,7 @@ export class LaGrandeMineDeBarbakActionService {
         next = this.addCardToDiscard(next, cardId);
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId)} perd le trÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©sor ${cardId}.`,
+          `${resolvePlayerNameFromState(next, playerId)} perd le trésor ${cardId}.`,
         );
       }
     }
@@ -405,7 +405,7 @@ export class LaGrandeMineDeBarbakActionService {
       return this.addCardToDiscard(
         this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId)} perd ${cardId} face ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  une attaque.`,
+          `${resolvePlayerNameFromState(next, playerId)} perd ${cardId} face à une attaque.`,
         ),
         cardId,
       );
@@ -425,7 +425,7 @@ export class LaGrandeMineDeBarbakActionService {
       next = this.addCardToDiscard(next, removed);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©duit sa main et dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©fausse ${removed}.`,
+        `${resolvePlayerNameFromState(next, playerId)} réduit sa main et défausse ${removed}.`,
       );
       meta = this.getMeta(next);
     }
@@ -482,7 +482,7 @@ export class LaGrandeMineDeBarbakActionService {
     return this.core.appendLog(
       next,
       winnerId
-        ? `${resolvePlayerNameFromState(next, winnerId)} devient le Nain suprÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªme !`
+        ? `${resolvePlayerNameFromState(next, winnerId)} devient le Nain suprême !`
         : "La mine s'effondre et personne ne l'emporte.",
     );
   }

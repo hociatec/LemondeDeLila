@@ -3,7 +3,7 @@ import { GameConfigurationError } from '../../../../../domain/errors/game-domain
 import { CORRIDOR_GAME } from '../../definitions/game.definition';
 import { CORRIDOR_PAWNS } from '../../definitions/corridor.pawns';
 import type { CorridorMetadata } from '../../model/corridor.model';
-import { nextRngInt } from '../../../../../../common/utils/seeded-rng';
+import { nextRngInt } from '../../../../../../common/utils/public-api';
 import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import {

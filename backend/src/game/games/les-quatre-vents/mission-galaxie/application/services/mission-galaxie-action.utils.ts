@@ -57,7 +57,7 @@ export function describeMissionGalaxiePawnLabel(
   const lower = pawn.toLowerCase();
   const feminine = lower.startsWith('la ') || lower.startsWith('une ');
   const inner = pawn
-    .replace(/^l['ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢]\s*/i, '')
+    .replace(/^l['’]\s*/i, '')
     .replace(/^(le|la|les|un|une)\s+/i, '')
     .trim();
   const core = inner || pawn;

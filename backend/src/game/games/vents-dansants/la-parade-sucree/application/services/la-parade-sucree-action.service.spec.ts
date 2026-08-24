@@ -6,6 +6,12 @@ import { GameCoreService } from '../../../../../application/services/game-core.s
 import { LaParadeSucreeSetupService } from '../../application/services/la-parade-sucree-setup.service';
 import { LaParadeSucreeActionService } from '../../application/services/la-parade-sucree-action.service';
 import { LA_PARADE_SEQUENCE } from '../../model/la-parade-sucree-cards';
+import {
+  computeLaParadeCandyValue,
+  determineLaParadeWinner,
+  isLaParadeGameFinished,
+  scoreLaParadeCandies,
+} from './la-parade-sucree-action.utils';
 
 function makeBaseState(players = 3) {
   return {
@@ -111,7 +117,7 @@ describe('LaParadeSucreeActionService', () => {
     expect(finished.status).toBe('finished');
     expect(meta(finished).winnerId).toBe(1);
 
-    const tieWinner = (actions as any).determineWinner({
+    const tieWinner = determineLaParadeWinner({
       ...meta(initial),
       candies: {
         1: { Chamallow: 2, Chocobon: 0, Balisto: 0 },
@@ -124,20 +130,20 @@ describe('LaParadeSucreeActionService', () => {
   it('covers helper methods and finish conditions', () => {
     const { actions, state: initial } = makeRuntime();
     expect(
-      (actions as any).computeCandyValue({ Chamallow: 2, Chocobon: 1 }),
+      computeLaParadeCandyValue({ Chamallow: 2, Chocobon: 1 }),
     ).toBeGreaterThan(0);
     expect(
-      (actions as any).scoreCandies({ Chamallow: 1, Chocobon: 1, Balisto: 1 }),
+      scoreLaParadeCandies({ Chamallow: 1, Chocobon: 1, Balisto: 1 }),
     ).toBeGreaterThan(0);
 
-    const bySequence = (actions as any).isGameFinished({
+    const bySequence = isLaParadeGameFinished({
       ...meta(initial),
       sequenceIndex: LA_PARADE_SEQUENCE.length,
       hands: { 1: ['x'] },
     });
     expect(bySequence).toBe(true);
 
-    const byHands = (actions as any).isGameFinished({
+    const byHands = isLaParadeGameFinished({
       ...meta(initial),
       sequenceIndex: 1,
       hands: { 1: [], 2: [] },
@@ -145,9 +151,3 @@ describe('LaParadeSucreeActionService', () => {
     expect(byHands).toBe(true);
   });
 });
-
-
-
-
-
-

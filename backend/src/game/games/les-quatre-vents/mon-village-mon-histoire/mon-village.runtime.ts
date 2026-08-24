@@ -14,13 +14,18 @@ import { MonVillagePresenterService } from './application/services/mon-village-p
 import { MonVillageSetupService } from './application/services/mon-village-setup.service';
 import { MonVillageService } from './application/services/mon-village-mon-histoire.service';
 
-type MinimalContentLoader = Pick<GameContentLoaderService, 'loadContent' | 'validators'>;
+type MinimalContentLoader = Pick<
+  GameContentLoaderService,
+  'loadContent' | 'validators'
+>;
 
 function createDefaultContentLoader(): MinimalContentLoader {
   return {
     validators: {
       version: () => () => undefined,
       arrayField: () => () => undefined,
+      requiredFields: () => () => undefined,
+      positiveNumber: () => () => undefined,
     },
     loadContent: () => {
       throw new Error(
@@ -47,7 +52,8 @@ export function createMonVillageRuntime(
   const turns =
     overrides.turns ??
     new TurnFlowService(new TurnService(), new TurnPoliciesService(core));
-  const deckPolicies = overrides.deckPolicies ?? new DeckPoliciesService(random);
+  const deckPolicies =
+    overrides.deckPolicies ?? new DeckPoliciesService(random);
   const boardPayload = overrides.boardPayload ?? new BoardPayloadService();
   const botRunner =
     overrides.botRunner ?? new BotRunnerService(new BotStrategyService());
@@ -55,7 +61,12 @@ export function createMonVillageRuntime(
     contentLoader as GameContentLoaderService,
     random,
   );
-  const actions = new MonVillageActionService(random, turns, core, deckPolicies);
+  const actions = new MonVillageActionService(
+    random,
+    turns,
+    core,
+    deckPolicies,
+  );
   const presenter = new MonVillagePresenterService(boardPayload);
   const bots = new MonVillageBotService(botRunner);
 

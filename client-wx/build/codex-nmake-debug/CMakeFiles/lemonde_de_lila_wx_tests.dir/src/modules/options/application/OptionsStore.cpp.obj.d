@@ -104,6 +104,9 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsRepository.h
@@ -112,4 +115,58 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
+C:/vcpkg/installed/x64-windows/include/wx/string.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/platform.h
+C:/vcpkg/installed/x64-windows/include/wx/compiler.h
+C:/vcpkg/installed/x64-windows/include/wx/setup.h
+C:/vcpkg/installed/x64-windows/include/wx/../../debug/lib/mswud/wx/setup.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/libraries.h
+C:/vcpkg/installed/x64-windows/include/wx/chkconf.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/chkconf.h
+C:/vcpkg/installed/x64-windows/include/wx/version.h
+C:/vcpkg/installed/x64-windows/include/wx/cpp.h
+C:/vcpkg/installed/x64-windows/include/wx/dlimpexp.h
+C:/vcpkg/installed/x64-windows/include/wx/types.h
+C:/vcpkg/installed/x64-windows/include/wx/debug.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/assert.h
+C:/vcpkg/installed/x64-windows/include/wx/chartype.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/tchar.h
+C:/vcpkg/installed/x64-windows/include/wx/features.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdarg.h
+C:/vcpkg/installed/x64-windows/include/wx/wxcrtbase.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/wctype.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/io.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_io.h
+C:/vcpkg/installed/x64-windows/include/wx/strvararg.h
+C:/vcpkg/installed/x64-windows/include/wx/strconv.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/buffer.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/iosfwrap.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+C:/vcpkg/installed/x64-windows/include/wx/fontenc.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/unichar.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
+C:/vcpkg/installed/x64-windows/include/wx/stringops.h
+C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
+C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
+C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/unordered_map
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xhash
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextKeys.def
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept

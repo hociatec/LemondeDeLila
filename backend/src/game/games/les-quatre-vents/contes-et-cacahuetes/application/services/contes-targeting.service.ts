@@ -32,8 +32,6 @@ import type {
   ContesPending,
 } from '../../model/contes-et-cacahuetes-state.model';
 
-type ContesStatusKey = keyof ContesCacahuetesMetadata['statuses'];
-
 export class ContesTargetingService {
   constructor(private readonly core: GameCoreService) {}
 
@@ -143,8 +141,18 @@ export class ContesTargetingService {
       setPending: (current, pending) => this.setPending(current, pending),
       transferBonusToken: (current, currentFromId, currentToId, bonusId) =>
         this.transferBonusToken(current, currentFromId, currentToId, bonusId),
-      transferSurpriseToken: (current, currentFromId, currentToId, surpriseId) =>
-        this.transferSurpriseToken(current, currentFromId, currentToId, surpriseId),
+      transferSurpriseToken: (
+        current,
+        currentFromId,
+        currentToId,
+        surpriseId,
+      ) =>
+        this.transferSurpriseToken(
+          current,
+          currentFromId,
+          currentToId,
+          surpriseId,
+        ),
     });
   }
 
@@ -282,7 +290,7 @@ export class ContesTargetingService {
 
   private setStatusCount(
     state: GameStateEntity,
-    key: ContesStatusKey,
+    key: string,
     playerId: number,
     value: number,
   ): GameStateEntity {
@@ -297,7 +305,7 @@ export class ContesTargetingService {
 
   private setStatusBool(
     state: GameStateEntity,
-    key: ContesStatusKey,
+    key: string,
     playerId: number,
     value: boolean,
   ): GameStateEntity {
@@ -312,7 +320,7 @@ export class ContesTargetingService {
 
   private addStatusCount(
     state: GameStateEntity,
-    key: ContesStatusKey,
+    key: string,
     playerId: number,
     delta: number,
   ): GameStateEntity {
@@ -329,7 +337,3 @@ export class ContesTargetingService {
     return (state.metadata ?? {}) as ContesCacahuetesMetadata;
   }
 }
-
-
-
-

@@ -1,20 +1,20 @@
-import type { GameStateEntity } from '../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../models/game-action.model';
-import { AbstractGameService } from '../../../application/services/abstract-game.service';
+} from '../../../../../application/models/game-action.model';
+import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { PimpMyRideActionService } from './pimp-my-ride-action.service';
 import { PimpMyRidePresenterService } from './pimp-my-ride-presenter.service';
 import { PimpMyRideSetupService } from './pimp-my-ride-setup.service';
 import { PimpMyRideBotService } from './pimp-my-ride-bot.service';
 import { PIMP_MY_RIDE_GAME } from '../../definitions/game.definition';
-import { buildPimpMyRideShortcuts } from './pimp-my-ride.shortcuts';
+import { buildPimpMyRideShortcuts } from '../../pimp-my-ride.shortcuts';
 
 export class PimpMyRideService extends AbstractGameService {
   readonly gameType = 'pimp-my-ride';
@@ -22,7 +22,7 @@ export class PimpMyRideService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = PIMP_MY_RIDE_GAME.displayName;
   readonly description =
-    'Soyez le premier ÃƒÆ’Ã‚Â  construire trois voitures complÃƒÆ’Ã‚Â¨tes en respectant lÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ordre de construction classique.';
+    'Soyez le premier à construire trois voitures complètes en respectant l’ordre de construction classique.';
   readonly minPlayers = PIMP_MY_RIDE_GAME.minPlayers;
   readonly maxPlayers = PIMP_MY_RIDE_GAME.maxPlayers;
 

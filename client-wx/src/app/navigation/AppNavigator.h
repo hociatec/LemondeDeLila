@@ -5,6 +5,7 @@
 
 #include "modules/user/domain/AuthenticationResult.h"
 #include "shared/accessibility/FocusTransition.h"
+#include "shared/audio/AudioService.h"
 
 class wxFrame;
 class wxWindow;
@@ -143,17 +144,8 @@ public:
     bool Start();
 
 private:
-    enum class InitialFocusTiming
-    {
-        Immediate,
-        NextEventLoop,
-        AfterWindowAnnouncement,
-    };
-
-    void ShowHome(InitialFocusTiming focusTiming = InitialFocusTiming::Immediate);
-    void ShowSession(
-        std::size_t selectedIndex = 0,
-        InitialFocusTiming focusTiming = InitialFocusTiming::Immediate);
+    void ShowHome();
+    void ShowSession(std::size_t selectedIndex = 0, bool resetInitialFocus = false);
     void ShowCatalog(std::size_t selectedIndex);
     void ShowJoinRooms();
     void ShowVault();
@@ -172,11 +164,7 @@ private:
     void ShowOptions(std::size_t selectedIndex);
     void CloseApplication();
     void PrewarmSessionData();
-    void PrewarmSessionViews();
-    void ReplaceView(
-        detail::ViewId nextViewId,
-        wxWindow* nextView,
-        InitialFocusTiming focusTiming = InitialFocusTiming::Immediate);
+    void ReplaceView(detail::ViewId nextViewId, wxWindow* nextView);
     void ShowLegacyWindow(wxFrame* nextWindow);
     void OnLoginSucceeded(const lila::modules::user::domain::AuthenticationResult& result);
     void OnLogoutRequested(std::size_t selectedIndex);
@@ -201,6 +189,7 @@ private:
     lila::modules::messaging::application::MessagingService& messagingService_;
     lila::modules::social::application::SocialService& socialService_;
     lila::modules::presence::application::PresenceMonitor& presenceMonitor_;
+    std::unique_ptr<lila::shared::audio::AudioService> audioService_;
     HostFrame* hostFrame_ = nullptr;
     detail::ViewId currentViewId_ = detail::ViewId::None;
     wxWindow* currentView_ = nullptr;
@@ -224,8 +213,6 @@ private:
     bool messagingOpenedFromSocial_ = false;
     bool resetVaultFocusOnNextOpen_ = false;
     bool sessionDataPrewarmed_ = false;
-    bool sessionViewsPrewarmed_ = false;
-    bool suppressFocusRememberOnViewCreation_ = false;
     detail::ViewId previousViewBeforePresence_ = detail::ViewId::MainMenu;
     detail::ViewId storyBookReturnView_ = detail::ViewId::Catalog;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> catalogPrewarmTask_;

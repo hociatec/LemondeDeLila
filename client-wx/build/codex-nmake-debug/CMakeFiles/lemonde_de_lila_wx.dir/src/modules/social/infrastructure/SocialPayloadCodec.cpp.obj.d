@@ -225,8 +225,14 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialUser.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialProfile.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/infrastructure/SocialProtocolFields.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/SocialProtocolFields.generated.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonApiHelpers.h

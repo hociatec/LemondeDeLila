@@ -21,7 +21,7 @@ export class PanierExpressDeckService {
     card: T | null;
     metadata: PanierExpressMetadata;
   } {
-    const metaRng = this.random.createMetaRng(meta as Record<string, unknown>);
+    const metaRng = this.random.createMetaRng(meta);
     const { card, pool } = this.deckPool.draw<T>(
       meta.decks as DeckPoolState<T>,
       key,
@@ -61,7 +61,7 @@ export class PanierExpressDeckService {
     key: string,
     cards: T[],
   ): PanierExpressMetadata {
-    const metaRng = this.random.createMetaRng(meta as Record<string, unknown>);
+    const metaRng = this.random.createMetaRng(meta);
     const pool = this.deckPool.set<T>(
       meta.decks as DeckPoolState<T>,
       key,
@@ -73,10 +73,3 @@ export class PanierExpressDeckService {
     };
   }
 }
-
-
-
-
-
-
-

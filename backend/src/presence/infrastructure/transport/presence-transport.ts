@@ -1,4 +1,4 @@
-import { RedisPubSubTransport } from '../../../common/pubsub/redis-pubsub.transport';
+import { RedisPubSubTransport } from '../../../common/pubsub/public-api';
 import {
   PresenceEvent,
   PresenceTransport,

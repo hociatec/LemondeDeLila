@@ -118,11 +118,11 @@ export class PanierExpressDrawService {
     const message = discarded
       ? discarded === 'duplicate'
         ? duplicateSource === 'panier'
-          ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚  dans le panier. Cet ingrÃƒÆ’Ã‚Â©dient part donc ÃƒÆ’Ã‚  la dÃƒÆ’Ã‚Â©fausse.`
+          ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà dans le panier. Cet ingrédient part donc à la défausse.`
           : duplicateSource === 'inventaire'
-            ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'ingrÃƒÆ’Ã‚Â©dient est dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚  prÃƒÆ’Ã‚Â©sent dans l'inventaire. Cet ingrÃƒÆ’Ã‚Â©dient part donc ÃƒÆ’Ã‚  la dÃƒÆ’Ã‚Â©fausse.`
-            : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚ . Cet ingrÃƒÆ’Ã‚Â©dient part donc ÃƒÆ’Ã‚  la dÃƒÆ’Ã‚Â©fausse.`
-        : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'inventaire est plein. Cet ingrÃƒÆ’Ã‚Â©dient part donc ÃƒÆ’Ã‚  la dÃƒÆ’Ã‚Â©fausse.`
+            ? `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'ingrédient est déjà présent dans l'inventaire. Cet ingrédient part donc à la défausse.`
+            : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'a déjà. Cet ingrédient part donc à la défausse.`
+        : `[Panier Express] ${playerLabel} pioche "${courseLabel}" mais l'inventaire est plein. Cet ingrédient part donc à la défausse.`
       : `[Panier Express] ${playerLabel} pioche "${courseLabel}".`;
     const logged = this.core.appendLog(nextState, message);
 

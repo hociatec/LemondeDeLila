@@ -35,7 +35,10 @@ export function applyCaSpecialAfterMove(args: {
       positions: { ...(meta.positions ?? {}), [actorId]: target },
     };
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-    return appendLog(next, resolvePlayerName(next, actorId) + ' prend la premi?re place.');
+    return appendLog(
+      next,
+      resolvePlayerName(next, actorId) + ' prend la premi?re place.',
+    );
   }
 
   if (card.id === 34) {
@@ -94,7 +97,7 @@ export function applyCaSpecialAfterMove(args: {
     return appendLog(
       next,
       resolvePlayerName(next, actorId) +
-        " avance jusqu'ÃƒÆ’Ã‚Â  une case multiple de 5.",
+        " avance jusqu'à une case multiple de 5.",
     );
   }
 
@@ -103,7 +106,7 @@ export function applyCaSpecialAfterMove(args: {
 
 export function drawCaCard(args: {
   meta: CaMetadata;
-  drawOne: <TCard, TDeckState>(input: {
+  drawOne: <TCard, TDeckState extends object>(input: {
     meta: TDeckState;
     deckKey: keyof TDeckState & string;
     discardKey: keyof TDeckState & string;

@@ -6,6 +6,7 @@
 #include <wx/weakref.h>
 #include <wx/window.h>
 
+#include <chrono>
 #include <exception>
 
 #include "app/navigation/HostFrame.h"
@@ -38,10 +39,8 @@
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/user/application/LoginUseCase.h"
 #include "modules/user/application/RegisterUseCase.h"
-#include "shared/accessibility/AccessibilityUtils.h"
-#include "shared/accessibility/FocusCoordinator.h"
 #include "shared/accessibility/FocusPlanView.h"
-#include "shared/accessibility/NavigationController.h"
+#include "shared/audio/AudioService.h"
 #include "shared/concurrency/BackgroundExecutor.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/logging/Logger.h"
@@ -51,7 +50,6 @@ namespace lila::app::navigation
 namespace
 {
 using ViewId = lila::app::navigation::detail::ViewId;
-constexpr int WindowAnnouncementFocusDelayMilliseconds = 300;
 }
 
 AppNavigator::AppNavigator(
@@ -73,6 +71,7 @@ AppNavigator::AppNavigator(
       socialService_(social.socialService),
       presenceMonitor_(social.presenceMonitor)
 {
+    audioService_ = std::make_unique<lila::shared::audio::AudioService>(optionsStore_);
 }
 
 bool AppNavigator::Start()
@@ -82,11 +81,29 @@ bool AppNavigator::Start()
     {
         hostFrame_ = new HostFrame();
         hostFrame_->SetPresenceRequestedHandler([this]() { ShowPresence(); });
+        hostFrame_->SetCloseRequestedHandler(
+            [this]()
+            {
+                if (optionsStore_.Current().confirmExit &&
+                    wxMessageBox(
+                        wxString(L"Voulez-vous vraiment fermer l'application ?"),
+                        wxString(L"Confirmer la fermeture"),
+                        wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION,
+                        hostFrame_) != wxYES)
+                {
+                    return false;
+                }
+                audioService_->ShutdownImmediately();
+                presenceMonitor_.Stop();
+                return true;
+            });
         if (wxTheApp != nullptr)
         {
             wxTheApp->SetTopWindow(hostFrame_);
         }
     }
+
+    audioService_->Play(lila::shared::audio::SoundCue::ClientOpened);
 
     lila::shared::logging::LogInfo(
         "Navigator",
@@ -98,7 +115,7 @@ bool AppNavigator::Start()
             if (sessionStore_.Restore())
             {
                 lila::shared::logging::LogInfo("Navigator", "Stored session restored. Opening main menu.");
-                ShowSession(0, InitialFocusTiming::AfterWindowAnnouncement);
+                ShowSession(0, true);
                 return true;
             }
         }
@@ -116,14 +133,13 @@ bool AppNavigator::Start()
     return true;
 }
 
-void AppNavigator::ShowHome(InitialFocusTiming focusTiming)
+void AppNavigator::ShowHome()
 {
     auto* view = GetOrCreateView(ViewId::Home);
-    if (focusTiming != InitialFocusTiming::Immediate) focusTransition_.Forget(view);
-    ReplaceView(ViewId::Home, view, focusTiming);
+    ReplaceView(ViewId::Home, view);
 }
 
-void AppNavigator::ShowSession(std::size_t selectedIndex, InitialFocusTiming focusTiming)
+void AppNavigator::ShowSession(std::size_t selectedIndex, bool resetInitialFocus)
 {
     lila::shared::logging::LogInfo("Navigator", "ShowSession(): begin.");
     lastMainMenuSelection_ = selectedIndex;
@@ -136,10 +152,9 @@ void AppNavigator::ShowSession(std::size_t selectedIndex, InitialFocusTiming foc
 
     presenceMonitor_.Start();
     auto* view = GetOrCreateView(ViewId::MainMenu);
-    if (focusTiming != InitialFocusTiming::Immediate) focusTransition_.Forget(view);
-    ReplaceView(ViewId::MainMenu, view, focusTiming);
+    if (resetInitialFocus) focusTransition_.Forget(view);
+    ReplaceView(ViewId::MainMenu, view);
     PrewarmSessionData();
-    PrewarmSessionViews();
 }
 
 void AppNavigator::ShowChat(std::size_t selectedIndex)
@@ -158,7 +173,12 @@ void AppNavigator::ShowChat(std::size_t selectedIndex)
 void AppNavigator::ShowCatalog(std::size_t selectedIndex)
 {
     lastMainMenuSelection_ = selectedIndex;
-    ReplaceView(ViewId::Catalog, GetOrCreateView(ViewId::Catalog));
+    auto* view = GetOrCreateView(ViewId::Catalog);
+    if (auto* panel = dynamic_cast<modules::catalog::presentation::CatalogPanel*>(view))
+    {
+        panel->ResetToRootForNextShow();
+    }
+    ReplaceView(ViewId::Catalog, view);
 }
 
 void AppNavigator::ShowJoinRooms()
@@ -340,6 +360,7 @@ void AppNavigator::ShowOptions(std::size_t selectedIndex)
 
 void AppNavigator::CloseApplication()
 {
+    audioService_->ShutdownImmediately();
     presenceMonitor_.Stop();
     if (hostFrame_ != nullptr) hostFrame_->Hide();
     if (currentLegacyWindow_ != nullptr) currentLegacyWindow_->Hide();
@@ -369,43 +390,31 @@ void AppNavigator::PrewarmSessionData()
     }
 
     sessionDataPrewarmed_ = true;
-    auto* service = &catalogService_;
+    auto* catalogService = &catalogService_;
+    auto* socialService = &socialService_;
     catalogPrewarmTask_ = lila::shared::concurrency::RunAsync(
-        [service](std::stop_token stopToken)
+        [catalogService, socialService](std::stop_token stopToken)
         {
-            static_cast<void>(service->LoadShelves(stopToken));
+            static_cast<void>(catalogService->LoadShelves(stopToken));
+            if (stopToken.stop_requested()) return;
+
+            static_cast<void>(socialService->LoadFriends());
+            if (stopToken.stop_requested()) return;
+
+            static_cast<void>(socialService->LoadBlockedUsers());
+            if (stopToken.stop_requested()) return;
+
+            static_cast<void>(socialService->LoadProfile());
         },
         [](std::optional<lila::shared::errors::AppError> error)
         {
             if (error.has_value())
             {
-                lila::shared::logging::LogWarning("Catalog", "Background cache prewarm failed.");
+                lila::shared::logging::LogWarning("SessionCache", "Background cache prewarm failed.");
             }
         },
         lila::shared::concurrency::BackgroundTaskPriority::Low,
         lila::shared::errors::CatalogLoadFailed);
-}
-
-void AppNavigator::PrewarmSessionViews()
-{
-    if (sessionViewsPrewarmed_ || hostFrame_ == nullptr)
-    {
-        return;
-    }
-
-    sessionViewsPrewarmed_ = true;
-    hostFrame_->CallAfter(
-        [this]()
-        {
-            if (hostFrame_ == nullptr || currentViewId_ != ViewId::MainMenu)
-            {
-                return;
-            }
-
-            suppressFocusRememberOnViewCreation_ = true;
-            static_cast<void>(GetOrCreateView(ViewId::Social));
-            suppressFocusRememberOnViewCreation_ = false;
-        });
 }
 
 void AppNavigator::ReturnToCatalogAfterRoomClose(bool resetVaultFocus, bool resetCatalogFocus)
@@ -423,9 +432,11 @@ void AppNavigator::ReturnToCatalogAfterRoomClose(bool resetVaultFocus, bool rese
     ReplaceView(ViewId::Catalog, view);
 }
 
-void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView, InitialFocusTiming focusTiming)
+void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
 {
+    const auto transitionStartedAt = std::chrono::steady_clock::now();
     lila::shared::logging::LogInfo("Navigator", "ReplaceView(): begin.");
+    const ViewId previousViewId = currentViewId_;
     if (currentView_ != nullptr && currentView_ != nextView)
     {
         focusTransition_.Remember(currentView_);
@@ -444,41 +455,26 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView, InitialFoc
         return;
     }
 
-    const bool hostWasShown = hostFrame_->IsShown();
     hostFrame_->SetContent(currentView_);
-    if (!hostWasShown)
+    if (previousViewId != ViewId::None && previousViewId != nextViewId)
+    {
+        audioService_->Play(lila::shared::audio::SoundCue::Navigation);
+    }
+    const auto background = nextViewId == ViewId::MainMenu
+        ? lila::shared::audio::AudioBackground::MainMenu
+        : (nextViewId == ViewId::Catalog
+            ? lila::shared::audio::AudioBackground::Tavern
+            : lila::shared::audio::AudioBackground::None);
+    audioService_->SetBackground(background);
+    if (nextViewId == ViewId::Catalog && previousViewId != ViewId::Catalog)
+    {
+        audioService_->Play(lila::shared::audio::SoundCue::TavernOpened);
+    }
+    if (!hostFrame_->IsShown())
     {
         hostFrame_->Show(true);
     }
-    wxWeakRef<wxWindow> weakInitialView(currentView_);
-    auto applyInitialFocus = [this, weakInitialView]()
-    {
-        wxWindow* initialView = weakInitialView.get();
-        if (initialView != nullptr &&
-            !lila::shared::accessibility::NavigationController::IsDescendantOf(
-                wxWindow::FindFocus(),
-                initialView))
-        {
-            ApplyViewFocus(initialView);
-        }
-    };
-
-    if (focusTiming == InitialFocusTiming::AfterWindowAnnouncement)
-    {
-        hostFrame_->ScheduleContentFocus(
-            std::move(applyInitialFocus),
-            WindowAnnouncementFocusDelayMilliseconds);
-    }
-    else if (focusTiming == InitialFocusTiming::NextEventLoop || !hostWasShown)
-    {
-        lila::shared::accessibility::FocusCoordinator::ScheduleAction(
-            *currentView_,
-            std::move(applyInitialFocus));
-    }
-    else
-    {
-        ApplyViewFocus(currentView_);
-    }
+    ApplyViewFocus(currentView_);
 
     if (currentLegacyWindow_ != nullptr)
     {
@@ -487,19 +483,36 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView, InitialFoc
         legacyToDestroy->Destroy();
     }
 
+    const auto transitionElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - transitionStartedAt);
+    if (transitionElapsed >= std::chrono::milliseconds(100))
+    {
+        lila::shared::logging::LogWarning(
+            "Navigator",
+            "Slow view transition: " + std::to_string(transitionElapsed.count()) + " ms.");
+    }
+
 }
 
 void AppNavigator::ApplyViewFocus(wxWindow* view)
 {
-    if (view == nullptr || focusTransition_.Restore(view))
+    if (view == nullptr || hostFrame_ == nullptr)
     {
         return;
     }
 
-    if (auto* focusView = dynamic_cast<lila::shared::accessibility::FocusPlanView*>(view))
-    {
-        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusView->BuildFocusPlan()));
-    }
+    wxWeakRef<wxWindow> weakView(view);
+    focusTransition_.Schedule(
+        *hostFrame_,
+        view,
+        [weakView]()
+        {
+            auto* resolvedView = weakView.get();
+            auto* focusView = dynamic_cast<lila::shared::accessibility::FocusPlanView*>(resolvedView);
+            return focusView != nullptr
+                ? focusView->BuildFocusPlan()
+                : lila::shared::accessibility::FocusManager::Plan{};
+        });
 }
 
 void AppNavigator::ShowLegacyWindow(wxFrame* nextWindow)
@@ -541,19 +554,21 @@ void AppNavigator::ShowLegacyWindow(wxFrame* nextWindow)
 
 void AppNavigator::OnLoginSucceeded(const modules::user::domain::AuthenticationResult& result)
 {
+    audioService_->Play(lila::shared::audio::SoundCue::ClientConnected);
     modules::session::domain::Session session;
     session.userId = result.userId;
     session.username = result.username;
     session.token = result.token;
     session.expiresAt = result.expiresAt;
     sessionStore_.Open(std::move(session), result.rememberSession && optionsStore_.Current().restoreSessionOnStartup);
-    ShowSession(0, InitialFocusTiming::AfterWindowAnnouncement);
+    ShowSession(0, true);
 }
 
 void AppNavigator::OnLogoutRequested(std::size_t selectedIndex)
 {
     static_cast<void>(selectedIndex);
     lastMainMenuSelection_ = 0;
+    audioService_->Play(lila::shared::audio::SoundCue::ClientDisconnected);
     messagingOpenedFromSocial_ = false;
     presenceMonitor_.Stop();
     sessionStore_.Clear();
@@ -561,8 +576,9 @@ void AppNavigator::OnLogoutRequested(std::size_t selectedIndex)
     if (home != nullptr)
     {
         home->PrepareForLogout();
+        focusTransition_.Forget(home);
     }
-    ShowHome(InitialFocusTiming::NextEventLoop);
+    ShowHome();
     ResetSessionViews();
 }
 
@@ -621,6 +637,7 @@ wxWindow* AppNavigator::CreateView(ViewId viewId)
         return new modules::catalog::presentation::CatalogPanel(
             hostFrame_->ContentParent(),
             catalogService_,
+            optionsStore_,
             [this]()
             {
                 ShowJoinRooms();
@@ -787,11 +804,9 @@ wxWindow* AppNavigator::CreateView(ViewId viewId)
             optionsStore_,
             [this]()
             {
+                chatService_.Close();
+                ResetView(ViewId::Chat);
                 ShowSession(lastMainMenuSelection_);
-            },
-            [this]()
-            {
-                CloseApplication();
             });
     case ViewId::None:
         break;
@@ -853,8 +868,7 @@ wxWindow* AppNavigator::GetOrCreateView(ViewId viewId)
 
     if (*slot == nullptr)
     {
-        if (!suppressFocusRememberOnViewCreation_ &&
-            currentView_ != nullptr &&
+        if (currentView_ != nullptr &&
             currentViewId_ != viewId)
         {
             focusTransition_.Remember(currentView_);
@@ -942,13 +956,13 @@ void AppNavigator::ResetSessionViews()
 {
     messagingOpenedFromSocial_ = false;
     sessionDataPrewarmed_ = false;
-    sessionViewsPrewarmed_ = false;
     if (catalogPrewarmTask_ != nullptr)
     {
         catalogPrewarmTask_->RequestCancel();
         catalogPrewarmTask_.reset();
     }
     catalogService_.ClearCache();
+    socialService_.ClearCache();
     ResetView(ViewId::MainMenu);
     ResetView(ViewId::Catalog);
     ResetView(ViewId::JoinRooms);

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { PendingState } from '../models/game-state.model';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 type SetupPlayer = { id: number; username?: string | null };
 type SetupChoice = { id: string; label: string; [key: string]: unknown };
@@ -53,7 +53,7 @@ export class SetupFlowService {
     const label =
       typeof params.labelForPlayer === 'function'
         ? params.labelForPlayer(playerLabel)
-        : `C'est a ${playerLabel} de faire un choix.`;
+        : `C'est à ${playerLabel} de faire un choix.`;
     const pending: PendingState = {
       type: String(params.pendingType ?? '').trim() || 'setup_choice',
       playerId,
@@ -104,7 +104,7 @@ export class SetupFlowService {
       })),
       labelForPlayer:
         params.labelForPlayer ??
-        ((playerLabel) => `C'est a ${playerLabel} de choisir son pion.`),
+        ((playerLabel) => `C'est à ${playerLabel} de choisir son pion.`),
       dataBuilder: (availableChoices) => ({
         ...(params.extraPendingData ?? {}),
         ...(params.includeChoiceMapData === true

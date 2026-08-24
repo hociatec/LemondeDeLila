@@ -16,13 +16,18 @@ import { FroussePresenterService } from './application/services/frousse-presente
 import { FroussePartyService } from './application/services/frousse-party.service';
 import { FrousseSetupService } from './application/services/frousse-setup.service';
 
-type MinimalContentLoader = Pick<GameContentLoaderService, 'loadContent' | 'validators'>;
+type MinimalContentLoader = Pick<
+  GameContentLoaderService,
+  'loadContent' | 'validators'
+>;
 
 function createDefaultContentLoader(): MinimalContentLoader {
   return {
     validators: {
       version: () => () => undefined,
       arrayField: () => () => undefined,
+      requiredFields: () => () => undefined,
+      positiveNumber: () => () => undefined,
     },
     loadContent: () => {
       throw new Error(
@@ -54,7 +59,8 @@ export function createFroussePartyRuntime(
     new TurnFlowService(new TurnService(), new TurnPoliciesService(core));
   const boardEffects =
     overrides.boardEffects ?? new BoardEffectsPoliciesService();
-  const deckPolicies = overrides.deckPolicies ?? new DeckPoliciesService(random);
+  const deckPolicies =
+    overrides.deckPolicies ?? new DeckPoliciesService(random);
   const boardPayload = overrides.boardPayload ?? new BoardPayloadService();
   const botRunner =
     overrides.botRunner ?? new BotRunnerService(new BotStrategyService(random));

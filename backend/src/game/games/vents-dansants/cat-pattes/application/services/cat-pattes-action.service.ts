@@ -1,6 +1,6 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import type { PlayerStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
@@ -25,6 +25,13 @@ import {
   CAT_PATTES_DEFAULT_ROUNDS,
   CAT_PATTES_GOAL,
 } from '../../model/cat-pattes-state.model';
+import {
+  areCatPattesPlayerIdsEqual,
+  getCatPattesGoal,
+  getCatPattesRoundsToPlay,
+  resolveCatPattesWinnerByTotalPattes,
+  toCatPattesPlayerId,
+} from './cat-pattes-action.utils';
 import {
   CAT_PATTES_OBSTACLE_TO_PARADE,
   canPlayPattes,
@@ -141,7 +148,8 @@ export class CatPattesActionService {
     if (currentId == null) return state;
     const meta = this.getMeta(state);
     if ((meta.setupStep ?? '') === 'setup_config') return state;
-    if (!areCatPattesPlayerIdsEqual(meta.drawnPlayerId, currentId)) return state;
+    if (!areCatPattesPlayerIdsEqual(meta.drawnPlayerId, currentId))
+      return state;
 
     const payload = (action.payload ?? {}) as CatPattesActionPayload;
     let cardId = String(payload.cardId ?? '').trim();
@@ -156,7 +164,7 @@ export class CatPattesActionService {
     let next = this.setMeta(state, updatedMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} dÃ©fausse ${CAT_PATTES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
+      `${resolvePlayerNameFromState(next, currentId)} défausse ${CAT_PATTES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
     );
     next = this.clearDrawn(next);
     return this.turns.advanceTurn(next);
@@ -247,11 +255,13 @@ export class CatPattesActionService {
     if (this.getMeta(next).winnerId != null) {
       return this.clearDrawn(next);
     }
-    if (!areCatPattesPlayerIdsEqual(this.getMeta(next).drawnPlayerId, currentId)) {
+    if (
+      !areCatPattesPlayerIdsEqual(this.getMeta(next).drawnPlayerId, currentId)
+    ) {
       return next;
     }
 
-    // RÃ¨gle: un Pouvoir rejoue immÃ©diatement.
+    // Règle: un Pouvoir rejoue immédiatement.
     if (definition.type === 'bot') {
       return this.clearDrawn(next);
     }
@@ -297,7 +307,7 @@ export class CatPattesActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} fixe la partie Ã  ${roundsToPlay} manche(s), objectif ${CAT_PATTES_GOAL} pattes par manche.`,
+      `${resolvePlayerNameFromState(next, currentId)} fixe la partie à ${roundsToPlay} manche(s), objectif ${CAT_PATTES_GOAL} pattes par manche.`,
     );
 
     const players = Array.isArray(next.players) ? next.players : [];
@@ -324,7 +334,7 @@ export class CatPattesActionService {
 
     next = this.core.appendLog(
       next,
-      `DÃ©but de partie : ${resolvePlayerNameFromState(next, resolvedStarterId ?? 0)} commence.`,
+      `Début de partie : ${resolvePlayerNameFromState(next, resolvedStarterId ?? 0)} commence.`,
     );
     return this.getTurnPolicies().appendTurnAnnouncement(
       next,
@@ -383,7 +393,10 @@ export class CatPattesActionService {
         `${resolvePlayerNameFromState(next, playerId)} atteint ${goalPattes} pattes et remporte la manche.`,
       );
       if (completedRounds >= roundsToPlay) {
-        const winnerId = resolveCatPattesWinnerByTotalPattes(next);
+        const winnerId = resolveCatPattesWinnerByTotalPattes(
+          next,
+          this.getMeta(next),
+        );
         const winnerName =
           winnerId != null ? resolvePlayerNameFromState(next, winnerId) : null;
         next = this.setMeta(next, {
@@ -394,8 +407,8 @@ export class CatPattesActionService {
         next = this.core.appendLog(
           next,
           winnerName
-            ? `${winnerName} remporte la partie avec le plus de pattes cumulÃ©es.`
-            : 'Partie terminÃ©e.',
+            ? `${winnerName} remporte la partie avec le plus de pattes cumulées.`
+            : 'Partie terminée.',
         );
         return { ...next, status: 'finished' };
       }
@@ -446,7 +459,7 @@ export class CatPattesActionService {
       next = this.setMeta(next, meta);
       meta = this.getMeta(next);
     } else if (!currentObstacle && parade === 'rayon') {
-      // Rayon autorisÃ© sans obstacle (dÃ©but de manche / aprÃ¨s parade).
+      // Rayon autorisé sans obstacle (début de manche / après parade).
     } else {
       return state;
     }
@@ -653,9 +666,7 @@ export class CatPattesActionService {
     const starterId = playerIds.includes(roundWinnerId)
       ? roundWinnerId
       : (playerIds[0] ?? roundWinnerId);
-    const starterIndex = players.findIndex(
-      (p) => p.id === starterId,
-    );
+    const starterIndex = players.findIndex((p) => p.id === starterId);
     let next = this.setMeta(state, {
       ...meta,
       rng: shuffled.meta,
@@ -696,11 +707,3 @@ export class CatPattesActionService {
     );
   }
 }
-
-
-
-
-
-
-
-

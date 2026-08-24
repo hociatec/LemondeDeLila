@@ -4,7 +4,7 @@ import { RandomService } from '../../../../../application/services/random.servic
 import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
 import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
 import type { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { ContesCacahuetesSetupService } from './contes-et-cacahuetes-setup.service';
 import { ContesActionService } from './contes-action.service';
 import { ContesTargetingService } from './contes-targeting.service';

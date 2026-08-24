@@ -9,7 +9,7 @@ import {
   GameTurnViolationError,
   GameUnknownActionError,
 } from '../../../../domain/errors/game-domain.errors';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import {
   PIMP_MY_RIDE_CARD_BY_ID,
   PIMP_MY_RIDE_CATEGORY_ORDER,

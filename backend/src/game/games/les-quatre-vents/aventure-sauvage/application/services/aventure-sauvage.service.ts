@@ -2,7 +2,7 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import { AVENTURE_SAUVAGE_GAME } from '../../definitions/game.definition';
 import { AventureSauvageSetupService } from './aventure-sauvage-setup.service';
@@ -13,7 +13,7 @@ import * as Rulebook from '../../rulebook/rulebook';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { buildAventureSauvageShortcuts } from '../../aventure-sauvage.shortcuts';
 
 export class AventureSauvageService extends AbstractGameService {
@@ -21,7 +21,7 @@ export class AventureSauvageService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = AVENTURE_SAUVAGE_GAME.displayName;
-  readonly description = "Course en jungle jusqu'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  la mare.";
+  readonly description = "Course en jungle jusqu'à la mare.";
   readonly minPlayers = AVENTURE_SAUVAGE_GAME.minPlayers;
   readonly maxPlayers = AVENTURE_SAUVAGE_GAME.maxPlayers;
 

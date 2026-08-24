@@ -562,3 +562,12 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/MessagingProtocolFi
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/SocialService.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialFriendRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/ISocialGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/cache/SingleFlightCache.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token

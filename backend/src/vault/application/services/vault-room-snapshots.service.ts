@@ -14,10 +14,7 @@ import {
   VAULT_PRESENCE_PORT,
   type VaultPresencePort,
 } from '../ports/vault-presence.port';
-import {
-  ROOM_VAULT_PORT,
-  type RoomVaultPort,
-} from '../../../room/public-api';
+import { ROOM_VAULT_PORT, type RoomVaultPort } from '../../../room/public-api';
 import type { VaultRoomSnapshotRecord } from '../models/vault-room-snapshot.model';
 import type { VaultGameState } from '../models/vault-game-state.model';
 import type { VaultRoomSnapshot } from '../../vault.types';
@@ -88,11 +85,11 @@ export class VaultRoomSnapshotsService {
     const isOwner = payload?.room?.owner?.id === ownerUserId;
     const isPlayer = payload?.room?.players?.some((p) => p?.id === ownerUserId);
     if (!isOwner && !isPlayer) {
-      throw new BadRequestException("Vous n'Ãªtes pas sur cette table.");
+      throw new BadRequestException("Vous n'êtes pas sur cette table.");
     }
     if (!isOwner) {
       throw new BadRequestException(
-        'Seul le propriÃ©taire de la table peut sauvegarder.',
+        'Seul le propriétaire de la table peut sauvegarder.',
       );
     }
     const started =
@@ -100,7 +97,7 @@ export class VaultRoomSnapshotsService {
       Boolean(payload?.room?.startedAt);
     if (!started) {
       throw new BadRequestException(
-        'Sauvegarde impossible : la partie doit Ãªtre dÃ©marrÃ©e.',
+        'Sauvegarde impossible : la partie doit être démarrée.',
       );
     }
 
@@ -112,7 +109,7 @@ export class VaultRoomSnapshotsService {
     const state = await this.game.exportState(roomId, gameType);
     if (!state) {
       throw new BadRequestException(
-        "Ã‰tat de jeu introuvable (la table n'est peut-Ãªtre pas dÃ©marrÃ©e).",
+        "État de jeu introuvable (la table n'est peut-être pas démarrée).",
       );
     }
 
@@ -132,8 +129,8 @@ export class VaultRoomSnapshotsService {
         isPrivate: Boolean(payload.room.isPrivate),
         maxPlayers: Number(payload.room.maxPlayers ?? 4) || 4,
         tableAmbienceSoundId:
-          typeof (payload.room as VaultRoomPayloadLike)?.tableAmbienceSoundId ===
-          'string'
+          typeof (payload.room as VaultRoomPayloadLike)
+            ?.tableAmbienceSoundId === 'string'
             ? String(
                 (payload.room as VaultRoomPayloadLike).tableAmbienceSoundId,
               ).trim() || null
@@ -302,7 +299,7 @@ export class VaultRoomSnapshotsService {
     const created = await this.rooms.createRoom(
       ownerUserId,
       gameType,
-      `${roomName} (restaurÃ©e)`,
+      `${roomName} (restaurée)`,
       snapshot.room.maxPlayers,
       snapshot.room.isPrivate,
     );
@@ -389,16 +386,16 @@ export class VaultRoomSnapshotsService {
 
     await this.game.restoreState(created.id, gameType, restored);
 
-    // Note: la sauvegarde reste visible dans le coffre aprÃ¨s restauration.
-    // Elle sera Ã©crasÃ©e si la table restaurÃ©e est re-sauvegardÃ©e, ou supprimÃ©e
-    // si la table restaurÃ©e est abandonnÃ©e/rÃ©initialisÃ©e.
+    // Note: la sauvegarde reste visible dans le coffre après restauration.
+    // Elle sera écrasée si la table restaurée est re-sauvegardée, ou supprimée
+    // si la table restaurée est abandonnée/réinitialisée.
 
     // Notify players to open the restored table.
     for (const p of humans) {
       await this.notifier.notifyRoomRestoreReady({
         userId: p.id,
         roomId: created.id,
-        roomName: `${roomName} (restaurÃ©e)`,
+        roomName: `${roomName} (restaurée)`,
         ownerUserId,
       });
     }
@@ -407,8 +404,8 @@ export class VaultRoomSnapshotsService {
   }
 
   /**
-   * Supprime une table crÃ©Ã©e via restauration et sa sauvegarde liÃ©e.
-   * UtilisÃ© quand le propriÃ©taire quitte la table (Q) sans la re-sauvegarder.
+   * Supprime une table créée via restauration et sa sauvegarde liée.
+   * Utilisé quand le propriétaire quitte la table (Q) sans la re-sauvegarder.
    */
   async abandonRestoredRoom(
     ownerUserId: number,
@@ -478,11 +475,8 @@ export class VaultRoomSnapshotsService {
       botNamesByNewId: Map<number, string>;
     },
   ): VaultGameState {
-    const replaceId = (value: unknown): unknown => {
-      if (typeof value === 'number' && opts.botIdMap.has(value)) {
-        return opts.botIdMap.get(value);
-      }
-      return value;
+    const replaceId = (value: number): number => {
+      return opts.botIdMap.get(value) ?? value;
     };
 
     const deep = (value: unknown): unknown => {

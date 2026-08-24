@@ -1,13 +1,23 @@
 import { Test } from '@nestjs/testing';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import { GAME_CATALOG_READER } from '../../../../application/ports/game-catalog.reader';
-import { GameCoreService } from '../../../../application/services/game-core.service';
-import { GameContentLoaderService } from '../../../../engine/public-api';
-import { FilesystemGameCatalogReader } from '../../../../infrastructure/system/filesystem-game-catalog.reader';
-import { RandomService } from '../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../application/services/setup-flow.service';
-import { JeuOieActionService } from '../application/services/jeu-oie-action.service';
-import { JeuOieSetupService } from '../application/services/jeu-oie-setup.service';
+import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import { GAME_CATALOG_READER } from '../../../../../application/ports/game-catalog.reader';
+import { GameCoreService } from '../../../../../application/services/game-core.service';
+import { GameContentLoaderService } from '../../../../../engine/public-api';
+import { FilesystemGameCatalogReader } from '../../../../../infrastructure/system/filesystem-game-catalog.reader';
+import { RandomService } from '../../../../../application/services/random.service';
+import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
+import { JeuOieActionService } from './jeu-oie-action.service';
+import { JeuOieSetupService } from './jeu-oie-setup.service';
+
+const jeuOieSetupProvider = {
+  provide: JeuOieSetupService,
+  useFactory: (
+    core: GameCoreService,
+    contentLoader: GameContentLoaderService,
+    setupFlow: SetupFlowService,
+  ) => new JeuOieSetupService(core, contentLoader, setupFlow),
+  inject: [GameCoreService, GameContentLoaderService, SetupFlowService],
+};
 
 function baseState(): GameStateEntity {
   return {
@@ -49,7 +59,7 @@ describe('JeuOieActionService', () => {
           provide: 'TurnFlowService',
           useValue: { advanceTurn: (s: any) => s },
         },
-        JeuOieSetupService,
+        jeuOieSetupProvider,
         {
           provide: JeuOieActionService,
           useFactory: (
@@ -110,7 +120,7 @@ describe('JeuOieActionService', () => {
 
     expect(
       messages.some((m) =>
-        m.includes('Otis place "son coq rockeur" en case 4 (Case neutre).'),
+        m.includes('Otis place son coq rockeur en case 4 (Case neutre).'),
       ),
     ).toBe(true);
     expect(
@@ -129,7 +139,7 @@ describe('JeuOieActionService', () => {
         },
         GameContentLoaderService,
         SetupFlowService,
-        JeuOieSetupService,
+        jeuOieSetupProvider,
       ],
     }).compile();
 
@@ -168,7 +178,7 @@ describe('JeuOieActionService', () => {
           provide: 'TurnFlowService',
           useValue: { advanceTurn: (s: any) => s },
         },
-        JeuOieSetupService,
+        jeuOieSetupProvider,
         {
           provide: JeuOieActionService,
           useFactory: (

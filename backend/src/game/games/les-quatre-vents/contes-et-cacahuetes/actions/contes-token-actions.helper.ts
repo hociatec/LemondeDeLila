@@ -7,7 +7,11 @@ import type {
 } from '../model/contes-et-cacahuetes-state.model';
 
 type TokenDescriptor = { cardId: number; title: string };
-type ChoiceCard = { cardType: 'bonus' | 'surprise'; cardId: number; title: string };
+type ChoiceCard = {
+  cardType: 'bonus' | 'surprise';
+  cardId: number;
+  title: string;
+};
 
 export function listContesBonusTokens(
   meta: ContesCacahuetesMetadata,
@@ -58,9 +62,15 @@ export function startContesGiveBonusChoice(input: {
     playerId: number,
   ) => TokenDescriptor[];
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
-  setPending: (state: GameStateEntity, pending: ContesPending) => GameStateEntity;
+  setPending: (
+    state: GameStateEntity,
+    pending: Exclude<ContesPending, null>,
+  ) => GameStateEntity;
 }): GameStateEntity {
-  const tokens = input.listBonusTokens(input.getMeta(input.state), input.giverId);
+  const tokens = input.listBonusTokens(
+    input.getMeta(input.state),
+    input.giverId,
+  );
   if (!tokens.length) {
     return input.appendLog(
       input.state,
@@ -98,7 +108,10 @@ export function startContesStealTokenChoice(input: {
     playerId: number,
   ) => TokenDescriptor[];
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
-  setPending: (state: GameStateEntity, pending: ContesPending) => GameStateEntity;
+  setPending: (
+    state: GameStateEntity,
+    pending: Exclude<ContesPending, null>,
+  ) => GameStateEntity;
   transferBonusToken: (
     state: GameStateEntity,
     fromId: number,
@@ -113,18 +126,20 @@ export function startContesStealTokenChoice(input: {
   ) => GameStateEntity;
 }): GameStateEntity {
   const meta = input.getMeta(input.state);
-  const bonus: ChoiceCard[] = input.listBonusTokens(meta, input.fromId).map((token) => ({
-    cardType: 'bonus',
-    cardId: token.cardId,
-    title: token.title,
-  }));
-  const surprise: ChoiceCard[] = input.listSurpriseTokens(meta, input.fromId).map(
-    (token) => ({
+  const bonus: ChoiceCard[] = input
+    .listBonusTokens(meta, input.fromId)
+    .map((token) => ({
+      cardType: 'bonus',
+      cardId: token.cardId,
+      title: token.title,
+    }));
+  const surprise: ChoiceCard[] = input
+    .listSurpriseTokens(meta, input.fromId)
+    .map((token) => ({
       cardType: 'surprise',
       cardId: token.cardId,
       title: token.title,
-    }),
-  );
+    }));
   const cards = [...bonus, ...surprise];
 
   if (!cards.length) {
@@ -142,7 +157,12 @@ export function startContesStealTokenChoice(input: {
     );
     return only.cardType === 'bonus'
       ? input.transferBonusToken(next, input.fromId, input.thiefId, only.cardId)
-      : input.transferSurpriseToken(next, input.fromId, input.thiefId, only.cardId);
+      : input.transferSurpriseToken(
+          next,
+          input.fromId,
+          input.thiefId,
+          only.cardId,
+        );
   }
 
   return input.setPending(input.state, {
@@ -202,8 +222,18 @@ export function transferContesBonusToken(input: {
   }
   if (input.bonusId === 4) {
     if (!meta.statuses.ignoreNextConteAndAdvance?.[input.fromId]) return next;
-    next = input.setStatusBool(next, 'ignoreNextConteAndAdvance', input.fromId, false);
-    next = input.setStatusBool(next, 'ignoreNextConteAndAdvance', input.toId, true);
+    next = input.setStatusBool(
+      next,
+      'ignoreNextConteAndAdvance',
+      input.fromId,
+      false,
+    );
+    next = input.setStatusBool(
+      next,
+      'ignoreNextConteAndAdvance',
+      input.toId,
+      true,
+    );
     return input.appendLog(
       next,
       `${resolvePlayerNameFromState(next, input.fromId)} donne une Cape d’invisibilité à ${resolvePlayerNameFromState(next, input.toId)}.`,
@@ -294,7 +324,10 @@ export function takeOneContesBonusToken(input: {
     bonusId: number,
   ) => GameStateEntity;
 }): GameStateEntity {
-  const tokens = input.listBonusTokens(input.getMeta(input.state), input.fromId);
+  const tokens = input.listBonusTokens(
+    input.getMeta(input.state),
+    input.fromId,
+  );
   if (!tokens.length) {
     return input.appendLog(
       input.state,
@@ -308,7 +341,3 @@ export function takeOneContesBonusToken(input: {
     tokens[0].cardId,
   );
 }
-
-
-
-

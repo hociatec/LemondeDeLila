@@ -1,4 +1,7 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type {
+  GameStateEntity,
+  PlayerStateEntity,
+} from '../../../../application/models/game-state.model';
 
 type ResolvePendingPawnChoiceResult = {
   playerId: number;
@@ -9,7 +12,7 @@ export function applyPanierExpressChoosePawnAction(input: {
   state: GameStateEntity;
   resolvePendingPawnChoiceAction: () => ResolvePendingPawnChoiceResult | null;
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
-  getPlayers: (state: GameStateEntity) => Array<Record<string, unknown>>;
+  getPlayers: (state: GameStateEntity) => PlayerStateEntity[];
   playerName: (state: GameStateEntity, playerId: number) => string;
   ensureStarted: (state: GameStateEntity) => GameStateEntity;
   queuePawnSelection: (state: GameStateEntity) => GameStateEntity;
@@ -30,11 +33,13 @@ export function applyPanierExpressChoosePawnAction(input: {
   let next: GameStateEntity = {
     ...input.state,
     pending: null,
-    players: input.getPlayers(input.state).map((player) =>
-      Number(player.id) === resolved.playerId
-        ? { ...player, pawn: chosen }
-        : player,
-    ),
+    players: input
+      .getPlayers(input.state)
+      .map((player) =>
+        Number(player.id) === resolved.playerId
+          ? { ...player, pawn: chosen }
+          : player,
+      ),
   };
   next = input.appendLog(
     next,
@@ -51,7 +56,3 @@ export function applyPanierExpressChoosePawnAction(input: {
     status: input.state.status ?? 'open',
   });
 }
-
-
-
-

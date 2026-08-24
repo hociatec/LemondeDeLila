@@ -10,11 +10,11 @@ import type {
 } from '../models/game-shortcuts.model';
 
 /**
- * Interface principale pour les adaptateurs de rÃƒÆ’Ã‚Â¨gles de jeu.
+ * Interface principale pour les adaptateurs de règles de jeu.
  *
- * Chaque jeu doit implÃƒÆ’Ã‚Â©menter cette interface pour s'intÃƒÆ’Ã‚Â©grer au moteur de jeu.
- * L'adaptateur gÃƒÆ’Ã‚Â¨re l'initialisation, la validation et l'application des actions,
- * ainsi que l'exposition de l'ÃƒÆ’Ã‚Â©tat pour les clients.
+ * Chaque jeu doit implémenter cette interface pour s'intégrer au moteur de jeu.
+ * L'adaptateur gère l'initialisation, la validation et l'application des actions,
+ * ainsi que l'exposition de l'état pour les clients.
  *
  * @example
  * ```typescript
@@ -41,17 +41,17 @@ import type {
 export interface GameRulesAdapter {
   /**
    * Identifiant unique du type de jeu (ex: 'dame-nature', 'corridor').
-   * Doit correspondre au gameType dans les manifests et la base de donnÃƒÆ’Ã‚Â©es.
+   * Doit correspondre au gameType dans les manifests et la base de données.
    */
   readonly gameType: string;
 
   /**
-   * CatÃƒÆ’Ã‚Â©gorie principale du jeu (ex: 'cartes', 'plateau', 'action').
+   * Catégorie principale du jeu (ex: 'cartes', 'plateau', 'action').
    */
   readonly category: string;
 
   /**
-   * Sous-catÃƒÆ’Ã‚Â©gorie optionnelle pour une classification plus fine.
+   * Sous-catégorie optionnelle pour une classification plus fine.
    */
   readonly subcategory?: string;
 
@@ -66,30 +66,30 @@ export interface GameRulesAdapter {
   readonly description?: string;
 
   /**
-   * Nombre minimum de joueurs requis pour dÃƒÆ’Ã‚Â©marrer une partie.
+   * Nombre minimum de joueurs requis pour démarrer une partie.
    */
   readonly minPlayers?: number;
 
   /**
-   * Nombre maximum de joueurs autorisÃƒÆ’Ã‚Â©s dans une partie.
+   * Nombre maximum de joueurs autorisés dans une partie.
    */
   readonly maxPlayers?: number;
 
   /**
-   * Demande au moteur de journaliser automatiquement les arrivÃƒÆ’Ã‚Â©es sur le plateau.
-   * Retourne `false` par dÃƒÆ’Ã‚Â©faut si la logique reste dÃƒÆ’Ã‚Â©portÃƒÆ’Ã‚Â©e dans le jeu lui-mÃƒÆ’Ã‚Âªme.
+   * Demande au moteur de journaliser automatiquement les arrivées sur le plateau.
+   * Retourne `false` par défaut si la logique reste déportée dans le jeu lui-même.
    */
   shouldAnnounceBoardArrivals?(): boolean;
 
   /**
-   * Hydrate l'ÃƒÆ’Ã‚Â©tat initial du jeu avec les mÃƒÆ’Ã‚Â©tadonnÃƒÆ’Ã‚Â©es et structures spÃƒÆ’Ã‚Â©cifiques.
+   * Hydrate l'état initial du jeu avec les métadonnées et structures spécifiques.
    *
-   * Cette mÃƒÆ’Ã‚Â©thode est appelÃƒÆ’Ã‚Â©e lors de la crÃƒÆ’Ã‚Â©ation d'une nouvelle partie.
-   * Elle doit initialiser les mÃƒÆ’Ã‚Â©tadonnÃƒÆ’Ã‚Â©es du jeu, distribuer les ressources initiales,
-   * et prÃƒÆ’Ã‚Â©parer l'ÃƒÆ’Ã‚Â©tat pour le dÃƒÆ’Ã‚Â©but de la partie.
+   * Cette méthode est appelée lors de la création d'une nouvelle partie.
+   * Elle doit initialiser les métadonnées du jeu, distribuer les ressources initiales,
+   * et préparer l'état pour le début de la partie.
    *
-   * @param baseState - ÃƒÆ’Ã¢â‚¬Â°tat de base fourni par le moteur (joueurs, room, etc.)
-   * @returns ÃƒÆ’Ã¢â‚¬Â°tat enrichi avec les donnÃƒÆ’Ã‚Â©es spÃƒÆ’Ã‚Â©cifiques au jeu
+   * @param baseState - État de base fourni par le moteur (joueurs, room, etc.)
+   * @returns État enrichi avec les données spécifiques au jeu
    *
    * @example
    * ```typescript
@@ -112,21 +112,21 @@ export interface GameRulesAdapter {
   hydrateInitialState(baseState: GameStateEntity): GameStateEntity;
 
   /**
-   * Applique une liste d'actions ÃƒÆ’Ã‚Â  l'ÃƒÆ’Ã‚Â©tat actuel et retourne le nouvel ÃƒÆ’Ã‚Â©tat.
+   * Applique une liste d'actions à l'état actuel et retourne le nouvel état.
    *
-   * Cette mÃƒÆ’Ã‚Â©thode est le cÃƒâ€¦Ã¢â‚¬Å“ur de la logique du jeu. Elle doit :
-   * - Traiter chaque action de maniÃƒÆ’Ã‚Â¨re sÃƒÆ’Ã‚Â©quentielle
-   * - Mettre ÃƒÆ’Ã‚Â  jour l'ÃƒÆ’Ã‚Â©tat du jeu en consÃƒÆ’Ã‚Â©quence
-   * - GÃƒÆ’Ã‚Â©rer les transitions de phase/tour
-   * - DÃƒÆ’Ã‚Â©clencher les bots si nÃƒÆ’Ã‚Â©cessaire
-   * - VÃƒÆ’Ã‚Â©rifier les conditions de victoire
+   * Cette méthode est le cœur de la logique du jeu. Elle doit :
+   * - Traiter chaque action de manière séquentielle
+   * - Mettre à jour l'état du jeu en conséquence
+   * - Gérer les transitions de phase/tour
+   * - Déclencher les bots si nécessaire
+   * - Vérifier les conditions de victoire
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @param actions - Liste des actions ÃƒÆ’Ã‚Â  appliquer
-   * @returns Nouvel ÃƒÆ’Ã‚Â©tat aprÃƒÆ’Ã‚Â¨s application des actions
+   * @param state - État actuel du jeu
+   * @param actions - Liste des actions à appliquer
+   * @returns Nouvel état après application des actions
    *
-   * @throws {GameStateError} Si l'ÃƒÆ’Ã‚Â©tat est invalide
-   * @throws {PlayerActionError} Si une action n'est pas autorisÃƒÆ’Ã‚Â©e
+   * @throws {GameStateError} Si l'état est invalide
+   * @throws {PlayerActionError} Si une action n'est pas autorisée
    *
    * @example
    * ```typescript
@@ -147,16 +147,16 @@ export interface GameRulesAdapter {
     actions: GameSingleActionDto[],
   ): GameStateEntity;
   /**
-   * Optionnel : SuggÃƒÆ’Ã‚Â¨re des actions pour un bot dans l'ÃƒÆ’Ã‚Â©tat courant.
+   * Optionnel : Suggère des actions pour un bot dans l'état courant.
    *
-   * Cette mÃƒÆ’Ã‚Â©thode permet d'implÃƒÆ’Ã‚Â©menter une IA simple pour les bots.
-   * Elle doit retourner une liste d'actions que le bot devrait exÃƒÆ’Ã‚Â©cuter.
+   * Cette méthode permet d'implémenter une IA simple pour les bots.
+   * Elle doit retourner une liste d'actions que le bot devrait exécuter.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
+   * @param state - État actuel du jeu
    * @param botPlayerId - ID du joueur bot
-   * @returns Liste d'actions suggÃƒÆ’Ã‚Â©rÃƒÆ’Ã‚Â©es ou null si aucune action
+   * @returns Liste d'actions suggérées ou null si aucune action
    *
-   * @deprecated PrÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rer getBotStrategy() pour une IA plus sophistiquÃƒÆ’Ã‚Â©e
+   * @deprecated Préférer getBotStrategy() pour une IA plus sophistiquée
    */
   getBotActions?(
     state: GameStateEntity,
@@ -164,22 +164,22 @@ export interface GameRulesAdapter {
   ): GameSingleActionDto[] | null;
 
   /**
-   * Optionnel : Fournit une stratÃƒÆ’Ã‚Â©gie de bot plus riche (IA, heuristique).
+   * Optionnel : Fournit une stratégie de bot plus riche (IA, heuristique).
    *
-   * Permet d'implÃƒÆ’Ã‚Â©menter des bots avec diffÃƒÆ’Ã‚Â©rents niveaux de difficultÃƒÆ’Ã‚Â©
-   * et stratÃƒÆ’Ã‚Â©gies (agressif, dÃƒÆ’Ã‚Â©fensif, alÃƒÆ’Ã‚Â©atoire, etc.).
+   * Permet d'implémenter des bots avec différents niveaux de difficulté
+   * et stratégies (agressif, défensif, aléatoire, etc.).
    *
-   * @returns StratÃƒÆ’Ã‚Â©gie de bot ou null si non implÃƒÆ’Ã‚Â©mentÃƒÆ’Ã‚Â©
+   * @returns Stratégie de bot ou null si non implémenté
    */
   getBotStrategy?(): BotStrategy | null;
 
   /**
-   * Optionnel : Liste des actions lÃƒÆ’Ã‚Â©gales pour un joueur donnÃƒÆ’Ã‚Â©.
+   * Optionnel : Liste des actions légales pour un joueur donné.
    *
-   * Retourne toutes les actions qu'un joueur peut effectuer dans l'ÃƒÆ’Ã‚Â©tat actuel.
-   * UtilisÃƒÆ’Ã‚Â© par l'interface utilisateur pour afficher les options disponibles.
+   * Retourne toutes les actions qu'un joueur peut effectuer dans l'état actuel.
+   * Utilisé par l'interface utilisateur pour afficher les options disponibles.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
+   * @param state - État actuel du jeu
    * @param playerId - ID du joueur
    * @returns Liste des actions disponibles
    *
@@ -208,19 +208,19 @@ export interface GameRulesAdapter {
   ): GameSingleActionDto[];
 
   /**
-   * Optionnel : Validation et normalisation d'une action pour un acteur donnÃƒÆ’Ã‚Â©.
+   * Optionnel : Validation et normalisation d'une action pour un acteur donné.
    *
-   * Cette mÃƒÆ’Ã‚Â©thode est appelÃƒÆ’Ã‚Â©e par le moteur aprÃƒÆ’Ã‚Â¨s les validations gÃƒÆ’Ã‚Â©nÃƒÆ’Ã‚Â©riques.
-   * Elle doit vÃƒÆ’Ã‚Â©rifier que l'action est lÃƒÆ’Ã‚Â©gale dans le contexte actuel du jeu
-   * et normaliser le payload si nÃƒÆ’Ã‚Â©cessaire.
+   * Cette méthode est appelée par le moteur après les validations génériques.
+   * Elle doit vérifier que l'action est légale dans le contexte actuel du jeu
+   * et normaliser le payload si nécessaire.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @param action - Action ÃƒÆ’Ã‚Â  valider
-   * @param actorId - ID de l'acteur effectuant l'action (peut ÃƒÆ’Ã‚Âªtre null)
-   * @returns Action validÃƒÆ’Ã‚Â©e et normalisÃƒÆ’Ã‚Â©e
+   * @param state - État actuel du jeu
+   * @param action - Action à valider
+   * @param actorId - ID de l'acteur effectuant l'action (peut être null)
+   * @returns Action validée et normalisée
    *
    * @throws {GameValidationError} Si l'action est invalide
-   * @throws {PlayerActionError} Si l'action n'est pas autorisÃƒÆ’Ã‚Â©e pour ce joueur
+   * @throws {PlayerActionError} Si l'action n'est pas autorisée pour ce joueur
    *
    * @example
    * ```typescript
@@ -231,7 +231,7 @@ export interface GameRulesAdapter {
    * ): GameSingleActionDto {
    *   const type = action.type as MyGameActionType;
    *
-   *   // VÃƒÆ’Ã‚Â©rifier que c'est bien le tour du joueur
+   *   // Vérifier que c'est bien le tour du joueur
    *   if (state.turn?.currentPlayerId !== actorId) {
    *     throw new PlayerActionError("Ce n'est pas votre tour", {
    *       gameType: this.gameType,
@@ -243,7 +243,7 @@ export interface GameRulesAdapter {
    *   // Normaliser le payload
    *   const payload = { ...action.payload };
    *   if (type === 'draw') {
-   *     // Pas de payload nÃƒÆ’Ã‚Â©cessaire
+   *     // Pas de payload nécessaire
    *     return { ...action, type, payload: {} };
    *   }
    *
@@ -258,16 +258,16 @@ export interface GameRulesAdapter {
   ): GameSingleActionDto;
 
   /**
-   * Optionnel : Validation personnalisÃƒÆ’Ã‚Â©e des acteurs.
+   * Optionnel : Validation personnalisée des acteurs.
    *
-   * Permet de contrÃƒÆ’Ã‚Â´ler finement qui peut effectuer des actions.
+   * Permet de contrôler finement qui peut effectuer des actions.
    * Si retourne true, le moteur ne bloque pas sur currentPlayerId.
    *
-   * Utile pour les jeux oÃƒÆ’Ã‚Â¹ plusieurs joueurs peuvent agir simultanÃƒÆ’Ã‚Â©ment
-   * ou oÃƒÆ’Ã‚Â¹ certaines actions ne sont pas liÃƒÆ’Ã‚Â©es au systÃƒÆ’Ã‚Â¨me de tours.
+   * Utile pour les jeux où plusieurs joueurs peuvent agir simultanément
+   * ou où certaines actions ne sont pas liées au système de tours.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @param actions - Actions ÃƒÆ’Ã‚Â  valider
+   * @param state - État actuel du jeu
+   * @param actions - Actions à valider
    * @param actorId - ID de l'acteur
    * @returns true si l'acteur est valide, false sinon
    */
@@ -278,25 +278,25 @@ export interface GameRulesAdapter {
   ): boolean;
 
   /**
-   * Optionnel : Fournit un ÃƒÆ’Ã‚Â©tat enrichi avec actions/pending pour le client.
+   * Optionnel : Fournit un état enrichi avec actions/pending pour le client.
    *
-   * Permet de personnaliser l'ÃƒÆ’Ã‚Â©tat exposÃƒÆ’Ã‚Â© au client en ajoutant des
-   * informations complÃƒÆ’Ã‚Â©mentaires (actions disponibles, ÃƒÆ’Ã‚Â©tat en attente, etc.).
+   * Permet de personnaliser l'état exposé au client en ajoutant des
+   * informations complémentaires (actions disponibles, état en attente, etc.).
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @returns ÃƒÆ’Ã¢â‚¬Â°tat enrichi pour tous les utilisateurs
+   * @param state - État actuel du jeu
+   * @returns État enrichi pour tous les utilisateurs
    */
   exposeState?(state: GameStateEntity): GameStateWithActions;
 
   /**
-   * Optionnel : Fournit un ÃƒÆ’Ã‚Â©tat enrichi personnalisÃƒÆ’Ã‚Â© pour un utilisateur.
+   * Optionnel : Fournit un état enrichi personnalisé pour un utilisateur.
    *
    * Permet de masquer certaines informations selon le joueur
-   * (main des adversaires, cartes cachÃƒÆ’Ã‚Â©es, etc.).
+   * (main des adversaires, cartes cachées, etc.).
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
+   * @param state - État actuel du jeu
    * @param userId - ID de l'utilisateur
-   * @returns ÃƒÆ’Ã¢â‚¬Â°tat enrichi personnalisÃƒÆ’Ã‚Â© pour cet utilisateur
+   * @returns État enrichi personnalisé pour cet utilisateur
    *
    * @example
    * ```typescript
@@ -327,9 +327,9 @@ export interface GameRulesAdapter {
   ): GameStateWithActions;
 
   /**
-   * Optionnel : dÃƒÆ’Ã¢â‚¬Â¡Ãƒâ€šÃ‚Â¸clare les raccourcis clavier gÃƒÆ’Ã¢â‚¬Â¡Ãƒâ€šÃ‚Â¸rÃƒÆ’Ã¢â‚¬Â¡Ãƒâ€šÃ‚Â¸s par ce jeu.
+   * Optionnel : déclare les raccourcis clavier gérés par ce jeu.
    *
-   * Le client ne doit pas dÃƒÆ’Ã¢â‚¬Â¡Ãƒâ€šÃ‚Â¸duire de rÃƒÆ’Ã¢â‚¬Â¡ÃƒÆ’Ã‚Â¹gles : il affiche simplement ces hints
+   * Le client ne doit pas déduire de règles : il affiche simplement ces hints
    * et envoie les touches au serveur (`game.key`). Le moteur route ensuite
    * vers le jeu en cours.
    */
@@ -337,14 +337,14 @@ export interface GameRulesAdapter {
 }
 
 /**
- * DÃƒÆ’Ã‚Â©finition statique d'un jeu pour l'enregistrement dans le moteur.
+ * Définition statique d'un jeu pour l'enregistrement dans le moteur.
  *
- * Contient les mÃƒÆ’Ã‚Â©tadonnÃƒÆ’Ã‚Â©es de base d'un jeu utilisÃƒÆ’Ã‚Â©es pour la dÃƒÆ’Ã‚Â©couverte,
+ * Contient les métadonnées de base d'un jeu utilisées pour la découverte,
  * le catalogue et l'initialisation.
  */
 export type GameDefinition = {
   /**
-   * Identifiant unique du jeu (doit correspondre ÃƒÆ’Ã‚Â  gameType de l'adaptateur).
+   * Identifiant unique du jeu (doit correspondre à gameType de l'adaptateur).
    */
   id: string;
 
@@ -354,12 +354,12 @@ export type GameDefinition = {
   name: string;
 
   /**
-   * CatÃƒÆ’Ã‚Â©gorie principale (ex: 'cartes', 'plateau', 'action').
+   * Catégorie principale (ex: 'cartes', 'plateau', 'action').
    */
   category: string;
 
   /**
-   * Sous-catÃƒÆ’Ã‚Â©gorie optionnelle.
+   * Sous-catégorie optionnelle.
    */
   subcategory?: string;
 
@@ -379,21 +379,21 @@ export type GameDefinition = {
   maxPlayers?: number;
 
   /**
-   * Active/dÃƒÆ’Ã‚Â©sactive le chat ÃƒÆ’Ã‚Â©phÃƒÆ’Ã‚Â©mÃƒÆ’Ã‚Â¨re en table pour ce jeu.
-   * Par dÃƒÆ’Ã‚Â©faut: true.
+   * Active/désactive le chat éphémère en table pour ce jeu.
+   * Par défaut: true.
    */
   chatEnabled?: boolean;
 
   /**
-   * Active/dÃƒÆ’Ã‚Â©sactive les sons liÃƒÆ’Ã‚Â©s au chat de table.
-   * Par dÃƒÆ’Ã‚Â©faut: true.
+   * Active/désactive les sons liés au chat de table.
+   * Par défaut: true.
    */
   chatSoundsEnabled?: boolean;
 
   /**
    * Statut catalogue du jeu.
    * - construction : visible admins uniquement
-   * - beta : visible admins + utilisateurs ayant activÃƒÆ’Ã‚Â© l'option bÃƒÆ’Ã‚Âªta
+   * - beta : visible admins + utilisateurs ayant activé l'option bêta
    * - finished : visible pour tous
    */
   status?: 'construction' | 'beta' | 'finished';
@@ -404,7 +404,7 @@ export type GameDefinition = {
   manifestPath?: string;
 
   /**
-   * Chemin vers le fichier de rÃƒÆ’Ã‚Â¨gles (Markdown).
+   * Chemin vers le fichier de règles (Markdown).
    */
   rulesPath?: string;
 };

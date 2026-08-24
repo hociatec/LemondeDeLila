@@ -197,11 +197,11 @@ export function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
   return [
     {
       id: 1,
-      text: 'Vous glissez sur une peau de banane sÃƒÆ’Ã‚Â©chÃƒÆ’Ã‚Â©e. Reculez de 2 cases.',
+      text: 'Vous glissez sur une peau de banane séchée. Reculez de 2 cases.',
     },
     {
       id: 2,
-      text: 'Un muscardin vous livre un cookie gÃƒÆ’Ã‚Â©ant, beaucoup trop lourd. Passez votre tour.',
+      text: 'Un muscardin vous livre un cookie géant, beaucoup trop lourd. Passez votre tour.',
     },
     {
       id: 3,
@@ -209,11 +209,11 @@ export function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 4,
-      text: "Une noix ÃƒÆ’Ã‚Â©trange chante et perturbe la taniÃƒÆ’Ã‚Â¨re. La partie est figÃƒÆ’Ã‚Â©e : aucun joueur n'agit pendant ce tour.",
+      text: "Une noix étrange chante et perturbe la tanière. La partie est figée : aucun joueur n'agit pendant ce tour.",
     },
     {
       id: 5,
-      text: 'Un ÃƒÆ’Ã‚Â©cureuil volant vous prend pour un ami et vous emporte dans les airs. Avancez de 4 cases.',
+      text: 'Un écureuil volant vous prend pour un ami et vous emporte dans les airs. Avancez de 4 cases.',
     },
     {
       id: 6,
@@ -221,16 +221,16 @@ export function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 7,
-      text: 'Vous trouvez une corde ÃƒÆ’Ã‚Â  sauter en rÃƒÆ’Ã‚Â©glisse enchantÃƒÆ’Ã‚Â©e. Avancez de 2 cases.',
+      text: 'Vous trouvez une corde à sauter en réglisse enchantée. Avancez de 2 cases.',
     },
-    { id: 8, text: "Le Grand Chaton ÃƒÆ’Ã‚Â©ternue violemment. Reculez d'une case." },
+    { id: 8, text: "Le Grand Chaton éternue violemment. Reculez d'une case." },
     {
       id: 9,
       text: 'Vous vous prenez les pattes dans du chewing-gum collant. Passez votre tour.',
     },
     {
       id: 10,
-      text: "Un lÃƒÆ’Ã‚Â©rot ninja surgit et vous tend une noisette turbo. Avancez jusqu'ÃƒÆ’Ã‚Â  la prochaine case Bonus.",
+      text: "Un lérot ninja surgit et vous tend une noisette turbo. Avancez jusqu'à la prochaine case Bonus.",
     },
     {
       id: 11,
@@ -238,7 +238,7 @@ export function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 12,
-      text: "Votre museau vous dÃƒÆ’Ã‚Â©mange sans raison. Reculez d'une case.",
+      text: "Votre museau vous démange sans raison. Reculez d'une case.",
     },
     {
       id: 13,
@@ -250,19 +250,19 @@ export function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 15,
-      text: "Vous faites tomber une montagne de cacahuÃƒÆ’Ã‚Â¨tes. Distrait, vous reculez d'une case.",
+      text: "Vous faites tomber une montagne de cacahuètes. Distrait, vous reculez d'une case.",
     },
     {
       id: 16,
-      text: "Une bulle de savon gÃƒÆ’Ã‚Â©ante vous emporte. Avancez jusqu'ÃƒÆ’Ã‚Â  la prochaine case Folie.",
+      text: "Une bulle de savon géante vous emporte. Avancez jusqu'à la prochaine case Folie.",
     },
     {
       id: 17,
-      text: 'Un capybara vous invite ÃƒÆ’Ã‚Â  une sieste improvisÃƒÆ’Ã‚Â©e. Passez votre tour et ronflez ÃƒÆ’Ã‚Â  ses cÃƒÆ’Ã‚Â´tÃƒÆ’Ã‚Â©s.',
+      text: 'Un capybara vous invite à une sieste improvisée. Passez votre tour et ronflez à ses côtés.',
     },
     {
       id: 18,
-      text: 'Une souris malicieuse vous pique une noisette et file ÃƒÆ’Ã‚Â  toute vitesse. Vous la poursuivez et avancez de 2 cases.',
+      text: 'Une souris malicieuse vous pique une noisette et file à toute vitesse. Vous la poursuivez et avancez de 2 cases.',
     },
     {
       id: 19,
@@ -280,7 +280,7 @@ export function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
       id: 22,
       text: 'Une baguette magique vous transforme temporairement en fromage. Passez deux tours.',
     },
-    { id: 23, text: 'Vous trouvez un trampoline gÃƒÆ’Ã‚Â©ant. Avancez de 4 cases.' },
+    { id: 23, text: 'Vous trouvez un trampoline géant. Avancez de 4 cases.' },
     {
       id: 24,
       text: 'Un agouti philosophe vous parle longuement. Passez votre tour.',
@@ -291,7 +291,7 @@ export function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 26,
-      text: 'Vous ÃƒÆ’Ã‚Â©ternuez des confettis multicolores. Tous les joueurs avancent du mÃƒÆ’Ã‚Âªme nombre de cases obtenu prÃƒÆ’Ã‚Â©cÃƒÆ’Ã‚Â©demment.',
+      text: 'Vous éternuez des confettis multicolores. Tous les joueurs avancent du même nombre de cases obtenu précédemment.',
     },
     {
       id: 27,
@@ -299,24 +299,24 @@ export function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 28,
-      text: 'Vous lisez un vieux grimoire ronronique. ÃƒÆ’Ã¢â‚¬Â°changez votre position avec le joueur de votre choix.',
+      text: 'Vous lisez un vieux grimoire ronronique. Échangez votre position avec le joueur de votre choix.',
     },
     { id: 29, text: 'Une catapulte de fromage rebondit sur vous. Allez en case 13.' },
     {
       id: 30,
-      text: "Vous tombez dans une mare d'ÃƒÆ’Ã‚Â©paisse mousse. Passez votre tour.",
+      text: "Vous tombez dans une mare d'épaisse mousse. Passez votre tour.",
     },
     {
       id: 31,
-      text: "Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d'une case un peu ÃƒÆ’Ã‚Â©tourdi.",
+      text: "Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d'une case un peu étourdi.",
     },
     {
       id: 32,
-      text: 'Un fromage qui parle vous raconte une irrÃƒÆ’Ã‚Â©sistible blague. Avancez de 2 cases.',
+      text: 'Un fromage qui parle vous raconte une irrésistible blague. Avancez de 2 cases.',
     },
     {
       id: 33,
-      text: 'Vous jouez ÃƒÆ’Ã‚Â  saute-rongeur avec un paca. Avancez de 3 cases.',
+      text: 'Vous jouez à saute-rongeur avec un paca. Avancez de 3 cases.',
     },
     {
       id: 34,
@@ -324,21 +324,21 @@ export function defaultLoufoqueDeck(): AFondLesBallonsCard[] {
     },
     {
       id: 35,
-      text: 'Un tunnel dÃƒÆ’Ã‚Â©fectueux vous mÃƒÆ’Ã‚Â¨ne droit chez le Chaton gourmand. Retournez ÃƒÆ’Ã‚Â  la case dÃƒÆ’Ã‚Â©part.',
+      text: 'Un tunnel défectueux vous mène droit chez le Chaton gourmand. Retournez à la case départ.',
     },
     {
       id: 36,
-      text: 'Vous devenez temporairement invisible. Durant deux tours, vous ignorez les effets des cases PiÃƒÆ’Ã‚Â¨ge.',
+      text: 'Vous devenez temporairement invisible. Durant deux tours, vous ignorez les effets des cases Piège.',
     },
     { id: 37, text: 'Vous mangez un piment super piquant. Reculez de 5 cases.' },
     {
       id: 38,
-      text: "Un biscuit gÃƒÆ’Ã‚Â©ant explose. Tous les joueurs se dÃƒÆ’Ã‚Â©placent d'une case alÃƒÆ’Ã‚Â©atoire.",
+      text: "Un biscuit géant explose. Tous les joueurs se déplacent d'une case aléatoire.",
     },
     { id: 39, text: 'Une pluie de bonbons tombe sur vous. Avancez de 2 cases.' },
     {
       id: 40,
-      text: "La Reine des Rongeurs vous envoie un message. Si vous ÃƒÆ’Ã‚Âªtes sur une case Glissade, avancez jusqu'ÃƒÆ’Ã‚Â  la case 40.",
+      text: "La Reine des Rongeurs vous envoie un message. Si vous êtes sur une case Glissade, avancez jusqu'à la case 40.",
     },
   ];
 }

@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { createMorpionRuntime } from '../../morpion.runtime';
 
 describe('Morpion runtime', () => {

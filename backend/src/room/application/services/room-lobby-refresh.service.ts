@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { WsApiHubService } from '../../../common/ws/application/services/ws-api-hub.service';
+import { WsApiHubService } from '../../../common/ws/public-api';
 
 type Subscription = {
   gameType: string | null;

@@ -9,7 +9,7 @@ import {
 } from '../../../../../application/helpers/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import { RandomService } from '../../../../../application/services/random.service';
@@ -49,7 +49,10 @@ export class FrousseActionService {
     private readonly turns: TurnFlowService,
     private readonly core: GameCoreService,
     private readonly setupFlow: SetupFlowService,
-    private readonly boardEffects: BoardEffectsPoliciesService,
+    private readonly boardEffects: Pick<
+      BoardEffectsPoliciesService,
+      'createPlacementLog' | 'resolveLanding'
+    >,
     private readonly deckPolicies: DeckPoliciesService,
   ) {}
 
@@ -167,7 +170,7 @@ export class FrousseActionService {
 
     let meta = this.getMeta(state);
 
-    // Saut de tour: si l'ÃƒÂ©tat courant indique un tour ÃƒÂ  passer, on consomme et on avance.
+    // Saut de tour: si l'état courant indique un tour à passer, on consomme et on avance.
     const skipNow = meta.statuses?.skipTurn?.[currentId] ?? 0;
     if (skipNow > 0) {
       meta = {
@@ -206,7 +209,7 @@ export class FrousseActionService {
       const rollLabel = this.formatRollLabel(roll);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} tente de se libÃƒÂ©rer : dÃƒÂ© = "${rollLabel}".`,
+        `${resolvePlayerNameFromState(next, currentId)} tente de se libérer : dé = "${rollLabel}".`,
       );
       const ok =
         blocked.kind === 'need_roll_one_of'
@@ -219,7 +222,7 @@ export class FrousseActionService {
       if (!ok) {
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, currentId)} reste bloquÃƒÂ©.`,
+          `${resolvePlayerNameFromState(next, currentId)} reste bloqué.`,
         );
         return this.advanceTurnWithAnnouncement(next);
       }
@@ -234,7 +237,7 @@ export class FrousseActionService {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} se libÃƒÂ¨re !`,
+        `${resolvePlayerNameFromState(next, currentId)} se libère !`,
       );
       return this.advanceTurnWithAnnouncement(next);
     }
@@ -263,13 +266,13 @@ export class FrousseActionService {
     if (roll.rolls && roll.rolls.length >= 2) {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} lance deux dÃƒÂ©s : "${roll.rolls[0]}" et "${roll.rolls[1]}" (garde "${roll.value}").`,
+        `${resolvePlayerNameFromState(next, currentId)} lance deux dés : "${roll.rolls[0]}" et "${roll.rolls[1]}" (garde "${roll.value}").`,
       );
     } else {
       const rollLabel = this.formatRollLabel(roll);
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} lance le dÃƒÂ© : "${rollLabel}".`,
+        `${resolvePlayerNameFromState(next, currentId)} lance le dé : "${rollLabel}".`,
       );
     }
 
@@ -300,7 +303,7 @@ export class FrousseActionService {
     if (meta.winnerId != null) return { ...next, status: 'finished' };
     if (next.pending) return next;
 
-    // Relance immÃƒÂ©diate (cartes bonus/farces).
+    // Relance immédiate (cartes bonus/farces).
     if (meta.keepTurnNow === true) {
       next = this.clearKeepTurnNow(next);
       return this.core.appendLog(
@@ -328,7 +331,9 @@ export class FrousseActionService {
     )
       return state;
 
-    const targetPlayerId = Number(asFrousseRecord(action.payload).targetPlayerId);
+    const targetPlayerId = Number(
+      asFrousseRecord(action.payload).targetPlayerId,
+    );
     if (!Number.isFinite(targetPlayerId)) return state;
 
     let meta = this.getMeta(state);
@@ -355,7 +360,7 @@ export class FrousseActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} ÃƒÂ©change sa position avec ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
+      `${resolvePlayerNameFromState(next, currentId)} échange sa position avec ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
     );
     return this.advanceTurnWithAnnouncement(next);
   }
@@ -386,7 +391,7 @@ export class FrousseActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} refuse l'ÃƒÂ©change de position.`,
+      `${resolvePlayerNameFromState(next, currentId)} refuse l'échange de position.`,
     );
     return this.advanceTurnWithAnnouncement(next);
   }
@@ -456,7 +461,7 @@ export class FrousseActionService {
       meta = { ...meta, winnerId: playerId };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} s'ÃƒÂ©chappe du manoir !`,
+        `${resolvePlayerNameFromState(next, playerId)} s'échappe du manoir !`,
       );
       return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     }
@@ -508,14 +513,14 @@ export class FrousseActionService {
         },
       };
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-      if (/PiÃƒÂ¨ge/i.test(draw.card.category)) {
+      if (/Piège/i.test(draw.card.category)) {
         ignored = true;
       }
     }
 
     // Ignore ghost/trap/prank.
     if (
-      /FantÃƒÂ´me/i.test(draw.card.category) &&
+      /Fantôme/i.test(draw.card.category) &&
       meta.statuses.ignoreNextGhost?.[playerId]
     ) {
       meta = {
@@ -549,7 +554,7 @@ export class FrousseActionService {
       ignored = true;
     }
     if (
-      /PiÃƒÂ¨ge/i.test(draw.card.category) &&
+      /Piège/i.test(draw.card.category) &&
       meta.statuses.ignoreNextTrap?.[playerId]
     ) {
       meta = {
@@ -567,7 +572,7 @@ export class FrousseActionService {
     }
 
     const effectLabel = ignored
-      ? 'Effet ignorÃƒÂ©.'
+      ? 'Effet ignoré.'
       : describeFrousseCardEffect(draw.card);
     const cardText = normalizeFrousseCardText(draw.card.text);
     const withEffect = formatFrousseCardDrawLog(
@@ -721,7 +726,7 @@ export class FrousseActionService {
     if (roll.doubledFrom != null) {
       const beforeDouble =
         roll.malusApplied !== 0 ? label : `${roll.doubledFrom}`;
-      label = `${beforeDouble} (doublÃƒÂ© = ${roll.value})`;
+      label = `${beforeDouble} (doublé = ${roll.value})`;
     }
 
     return label;
@@ -751,7 +756,10 @@ export class FrousseActionService {
     const meta = this.getMeta(state);
     const nextMeta: FrousseMetadata = {
       ...meta,
-      positions: { ...(meta.positions ?? {}), [playerId]: clampFrousse(pos, 0, 49) },
+      positions: {
+        ...(meta.positions ?? {}),
+        [playerId]: clampFrousse(pos, 0, 49),
+      },
     };
     return { ...state, metadata: { ...(state.metadata ?? {}), ...nextMeta } };
   }
@@ -843,7 +851,7 @@ export class FrousseActionService {
     if (typeof starter?.id === 'number') {
       next = this.core.appendLog(
         next,
-        `[Frousse Party] DÃƒÂ©but de partie : ${resolvePlayerNameFromState(next, starter.id)} commence.`,
+        `[Frousse Party] Début de partie : ${resolvePlayerNameFromState(next, starter.id)} commence.`,
       );
       next = this.core.appendLog(
         next,
@@ -853,7 +861,3 @@ export class FrousseActionService {
     return next;
   }
 }
-
-
-
-

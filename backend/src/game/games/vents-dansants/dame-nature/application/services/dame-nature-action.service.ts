@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
@@ -71,7 +71,7 @@ export class DameNatureActionService {
       return this.drawAndAdvance(
         state,
         currentId,
-        `La carte ${this.getCardName(cardId)} n'est pas chez le joueur demandÃ©.`,
+        `La carte ${this.getCardName(cardId)} n'est pas chez le joueur demandé.`,
       );
     }
 
@@ -83,7 +83,7 @@ export class DameNatureActionService {
     );
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} rÃ©cupÃ¨re ${this.getCardName(cardId)} de ${resolvePlayerNameFromState(next, targetId)}.`,
+      `${resolvePlayerNameFromState(next, currentId)} récupère ${this.getCardName(cardId)} de ${resolvePlayerNameFromState(next, targetId)}.`,
     );
 
     next = this.registerFamilyCard(next, currentId, cardId);
@@ -113,7 +113,7 @@ export class DameNatureActionService {
     if (!cardId) {
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus aucune carte Ã  piocher.`,
+        `${resolvePlayerNameFromState(next, playerId)} ne trouve plus aucune carte à piocher.`,
       );
     }
 

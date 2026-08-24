@@ -364,3 +364,9 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/um/mcx.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/um/imm.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/um/ime_cmodes.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic_wait.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xthreads.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime

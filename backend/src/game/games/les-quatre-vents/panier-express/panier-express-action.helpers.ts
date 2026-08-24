@@ -1,5 +1,5 @@
 import { GameStateEntity } from '../../../application/models/game-state.model';
-import { GameSingleActionDto } from '../../../models/game-action.model';
+import { GameSingleActionDto } from '../../../application/models/game-action.model';
 import { PanierExpressMetadata } from './model/panier-express-state.model';
 import { asRecord, toText } from './panier-express-state.helpers';
 
@@ -20,7 +20,7 @@ export function handlePanierExpressExchangeChooseTarget(args: {
   if (typeof playerId !== 'number' || typeof targetPlayerId !== 'number') {
     return args.appendLog(
       args.state,
-      "[Panier Express] Choix cible d'ÃƒÂ©change invalide.",
+      "[Panier Express] Choix cible d'échange invalide.",
     );
   }
 
@@ -44,7 +44,7 @@ export function handlePanierExpressExchangeChooseGive(args: {
   if (typeof playerId !== 'number' || typeof give !== 'string') {
     return args.appendLog(
       args.state,
-      "[Panier Express] Choix carte d'ÃƒÂ©change invalide.",
+      "[Panier Express] Choix carte d'échange invalide.",
     );
   }
 
@@ -63,7 +63,7 @@ export function handlePanierExpressExchangeAccept(args: {
   if (typeof actorId !== 'number') {
     return args.appendLog(
       args.state,
-      "[Panier Express] Acceptation d'ÃƒÂ©change invalide.",
+      "[Panier Express] Acceptation d'échange invalide.",
     );
   }
 
@@ -89,7 +89,7 @@ export function handlePanierExpressExchangeRefuse(args: {
   if (typeof actorId !== 'number') {
     return args.appendLog(
       args.state,
-      "[Panier Express] Refus d'ÃƒÂ©change invalide.",
+      "[Panier Express] Refus d'échange invalide.",
     );
   }
 
@@ -112,7 +112,7 @@ export function handlePanierExpressExchangeRefuse(args: {
     const withQuiz = args.applyQuiz(resolved, initiatorId);
     return args.appendLog(
       withQuiz,
-      `[Panier Express] Troc ÃƒÂ©quitable : ÃƒÂ©change refusÃƒÂ©, quiz pour ${args.playerName(args.state, initiatorId)}.`,
+      `[Panier Express] Troc équitable : échange refusé, quiz pour ${args.playerName(args.state, initiatorId)}.`,
     );
   }
 
@@ -177,7 +177,7 @@ export function handlePanierExpressMerchantRequestAccept(args: {
   if (!inventory.includes(ingredient)) {
     return args.appendLog(
       args.state,
-      `[Panier Express] Case Ãƒâ€°change : ${args.playerName(args.state, actorId)} n'a pas "${args.formatCourseLabel(ingredient)}".`,
+      `[Panier Express] Case Échange : ${args.playerName(args.state, actorId)} n'a pas "${args.formatCourseLabel(ingredient)}".`,
     );
   }
 
@@ -187,7 +187,7 @@ export function handlePanierExpressMerchantRequestAccept(args: {
   const label = args.formatCourseLabel(ingredient);
   next = args.appendLog(
     next,
-    `[Panier Express] Case Ãƒâ€°change : ${args.playerName(next, actorId)} accepte et donne "${label}".`,
+    `[Panier Express] Case Échange : ${args.playerName(next, actorId)} accepte et donne "${label}".`,
   );
   next = args.appendActionLog(next, actorId, 'event', {
     effect: 'merchant_request_accept',
@@ -242,7 +242,7 @@ export function handlePanierExpressMerchantRequestRefuse(args: {
   const label = ingredient ? ` "${args.formatCourseLabel(ingredient)}"` : '';
   next = args.appendLog(
     next,
-    `[Panier Express] Case Ãƒâ€°change : ${args.playerName(next, actorId)} refuse${label} et perd 2 tours.`,
+    `[Panier Express] Case Échange : ${args.playerName(next, actorId)} refuse${label} et perd 2 tours.`,
   );
   next = args.appendActionLog(next, actorId, 'event', {
     effect: 'merchant_request_refuse',

@@ -5,7 +5,7 @@ import type {
 } from '../../../../../application/models/game-state.model';
 
 import { getSafePlayers } from '../../../../../application/helpers/setup-service.helper';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { createPendingState } from '../../../../../application/services/pending-action.service';
 import { optionalInt } from '../../../../../application/helpers/payload-validators.helper';
 import type { LamaMetadata } from '../../model/lama.model';
@@ -80,7 +80,10 @@ export class LamaSetupService {
     }
 
     const meta: LamaMetadata = {
-      rng: baseMeta.rng,
+      rng:
+        baseMeta.rng && typeof baseMeta.rng === 'object'
+          ? (baseMeta.rng as Record<string, unknown>)
+          : {},
       ownerPlayerId,
       loseAtScore: null,
       roundPauseSeconds: null,
@@ -122,8 +125,8 @@ export class LamaSetupService {
           currentPlayerId: ownerPlayerId,
           direction: 1,
           label: ownerPlayerId
-            ? `RÃƒÂ©glages LAMA : ${this.shared.playerLabel(players as PlayerStateEntity[], ownerPlayerId)}`
-            : 'RÃƒÂ©glages LAMA',
+            ? `Réglages LAMA : ${this.shared.playerLabel(players as PlayerStateEntity[], ownerPlayerId)}`
+            : 'Réglages LAMA',
         },
       },
       {
@@ -239,7 +242,7 @@ export class LamaSetupService {
       const name = this.shared.playerLabel(players, actorId);
       const nextLog = this.logger.append(
         state.log,
-        `${name} propose une configuration invalide: ${startingHandSize} cartes de dÃƒÂ©part avec ${activePlayers} joueurs et ${copiesPerCardValue} exemplaires par carte. Maximum autorisÃƒÂ©: ${Math.max(maxHandSize, 1)} cartes.`,
+        `${name} propose une configuration invalide: ${startingHandSize} cartes de départ avec ${activePlayers} joueurs et ${copiesPerCardValue} exemplaires par carte. Maximum autorisé: ${Math.max(maxHandSize, 1)} cartes.`,
       );
       return {
         ...state,
@@ -274,15 +277,15 @@ export class LamaSetupService {
     const name = this.shared.playerLabel(players, actorId);
     log = this.logger.append(
       log,
-      `${name} fixe la dÃƒÂ©faite ÃƒÂ  ${loseAtScore} jetons.`,
+      `${name} fixe la défaite à ${loseAtScore} jetons.`,
     );
     log = this.logger.append(
       log,
-      `${name} rÃƒÂ¨gle la pause entre manches ÃƒÂ  ${roundPauseSeconds}s.`,
+      `${name} règle la pause entre manches à ${roundPauseSeconds}s.`,
     );
     log = this.logger.append(
       log,
-      `${name} ${updatedMeta.allowPlayAfterDraw ? 'autorise' : 'interdit'} de rejouer aprÃƒÂ¨s une pioche.`,
+      `${name} ${updatedMeta.allowPlayAfterDraw ? 'autorise' : 'interdit'} de rejouer après une pioche.`,
     );
     log = this.logger.append(
       log,
@@ -290,17 +293,17 @@ export class LamaSetupService {
     );
     log = this.logger.append(
       log,
-      `${name} rÃƒÂ¨gle le paquet ÃƒÂ  ${copiesPerCardValue} exemplaires par valeur.`,
+      `${name} règle le paquet à ${copiesPerCardValue} exemplaires par valeur.`,
     );
     log = this.logger.append(
       log,
-      `${name} ${updatedMeta.allowDrawAfterFirstQuit ? 'autorise' : 'interdit'} la pioche aprÃƒÂ¨s le premier retrait.`,
+      `${name} ${updatedMeta.allowDrawAfterFirstQuit ? 'autorise' : 'interdit'} la pioche après le premier retrait.`,
     );
     log = this.logger.append(
       log,
-      `${name} autorise le rendu de jetons ÃƒÂ  partir de la manche ${returnTokenFromRound}.`,
+      `${name} autorise le rendu de jetons à partir de la manche ${returnTokenFromRound}.`,
     );
-    log = this.logger.append(log, `DÃƒÂ©but de la partie.`);
+    log = this.logger.append(log, `Début de la partie.`);
 
     return this.round.startNewRound(
       {

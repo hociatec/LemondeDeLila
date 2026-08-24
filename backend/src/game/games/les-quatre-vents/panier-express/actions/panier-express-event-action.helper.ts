@@ -1,4 +1,7 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type {
+  GameStateEntity,
+  PendingState,
+} from '../../../../application/models/game-state.model';
 import type { DeckPoolState } from '../../../../application/services/deck-pool.service';
 import type {
   PanierExpressDeckPool,
@@ -20,9 +23,9 @@ import {
 import { applyBasicPanierExpressEvent } from '../panier-express-event-basic.helpers';
 import { applyAdvancedPanierExpressEvent } from '../panier-express-event-advanced.helpers';
 
-type MetaRngState = { getMeta: () => Record<string, unknown> };
-type PickOneResult<T> = { value: T | undefined; meta: Record<string, unknown> };
-type PendingStateLike = Record<string, unknown> | null;
+type MetaRngState = { getMeta: () => PanierExpressMetadata };
+type PickOneResult<T> = { value: T | null; meta: PanierExpressMetadata };
+type PendingStateLike = PendingState;
 
 export function applyPanierExpressEventAction(input: {
   state: GameStateEntity;
@@ -72,23 +75,20 @@ export function applyPanierExpressEventAction(input: {
     playerId: number,
     delta: number,
   ) => GameStateEntity;
-  resolveTile: (
-    state: GameStateEntity,
-    playerId: number,
-  ) => GameStateEntity;
+  resolveTile: (state: GameStateEntity, playerId: number) => GameStateEntity;
   moveCircular: (
     length: number,
     currentPosition: number,
     delta: number,
   ) => number;
   createMetaRng: (metadata: PanierExpressMetadata) => MetaRngState;
-  pickOne: <T>(
-    metadata: Record<string, unknown>,
-    items: T[],
-  ) => PickOneResult<T>;
+  pickOne: <T>(metadata: PanierExpressMetadata, items: T[]) => PickOneResult<T>;
   formatCourseLabel: (card: string) => string;
   courseItems: () => string[];
-  withPending: (state: GameStateEntity, pending: PendingStateLike) => GameStateEntity;
+  withPending: (
+    state: GameStateEntity,
+    pending: PendingStateLike,
+  ) => GameStateEntity;
 }): GameStateEntity {
   const ensured = input.ensureMetadata(input.state);
   const meta = input.getMetadata(ensured);
@@ -297,7 +297,8 @@ export function applyPanierExpressEventAction(input: {
     formatCourseLabel: (card) => input.formatCourseLabel(card),
     courseItems: () => input.courseItems(),
     setPickPending,
-    withPending: (value, pendingState) => input.withPending(value, pendingState),
+    withPending: (value, pendingState) =>
+      input.withPending(value, pendingState),
     addOneCourseToPlayer: addOneCourseToPlayerState,
     addToDiscard: addToDiscardState,
     ensureDiscardCourses: (value) => {
@@ -321,9 +322,3 @@ export function applyPanierExpressEventAction(input: {
   });
   return next;
 }
-
-
-
-
-
-

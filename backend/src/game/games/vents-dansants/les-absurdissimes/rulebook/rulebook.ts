@@ -9,7 +9,7 @@ import {
   GameTurnViolationError,
   GameUnknownActionError,
 } from '../../../../domain/errors/game-domain.errors';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import type { AbsurdissimesMetadata } from '../model/les-absurdissimes-state.model';
 
 type AbsurdissimesActionPayload = {

@@ -6,7 +6,7 @@ export class RoomClientPolicyService {
   canSpectate(
     payload: RoomPayload,
     userId: number,
-    invitesCanSpectate: boolean,
+    invitesCanSpectate: boolean | (() => boolean),
   ): boolean {
     if (!payload?.room) {
       return false;
@@ -25,7 +25,10 @@ export class RoomClientPolicyService {
     const started =
       (payload.room.status || '').toLowerCase() === 'started' ||
       Boolean(payload.room.startedAt);
-    return started && invitesCanSpectate;
+    if (!started) return false;
+    return typeof invitesCanSpectate === 'function'
+      ? invitesCanSpectate()
+      : invitesCanSpectate;
   }
 
   listAllowedActions(payload: RoomPayload, userId: number): string[] {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#include <mutex>
 #include <string>
 
 #include "shared/network/websocket/IWebSocketClient.h"
@@ -47,11 +48,13 @@ public:
         websocket::WebSocketHeaders headers,
         websocket::IWebSocketClient& webSocketClient);
 
+    void WarmUp();
     [[nodiscard]] RealtimeApiResponse Send(const RealtimeApiRequest& request);
 
 private:
     std::string endpoint_;
     websocket::WebSocketHeaders headers_;
     websocket::IWebSocketClient& webSocketClient_;
+    std::mutex requestMutex_;
 };
 }

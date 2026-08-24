@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import {
   DEFAULT_MESSAGE_MAX_LENGTH,
   sanitizeMessage,
-} from '../../../common/utils/message-sanitizer';
+} from '../../../common/utils/public-api';
 
 @Injectable()
 export class MessageValidatorService {

@@ -1,7 +1,7 @@
 ﻿import { BandeABananeService } from '../../application/services/la-bande-a-banane.service';
 
 describe('BandeABananeService', () => {
-  it('devrait Ãªtre dÃ©fini', () => {
+  it('devrait être défini', () => {
     const registry = { register: jest.fn() } as any;
     const service = new BandeABananeService(
       registry,

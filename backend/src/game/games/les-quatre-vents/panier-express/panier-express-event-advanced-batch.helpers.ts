@@ -1,5 +1,8 @@
 import { GameStateEntity } from '../../../application/models/game-state.model';
-import { PanierExpressMetadata } from './model/panier-express-state.model';
+import {
+  PanierExpressMetadata,
+  PanierExpressPlayer,
+} from './model/panier-express-state.model';
 import { toText } from './panier-express-state.helpers';
 
 export function applyAdvancedPanierExpressEventBatch(args: {
@@ -8,13 +11,7 @@ export function applyAdvancedPanierExpressEventBatch(args: {
   state: GameStateEntity;
   next: GameStateEntity;
   playerId: number;
-  getPlayers: (state: GameStateEntity) => Array<{
-    id: number;
-    username?: string | null;
-    inventory?: unknown;
-    basket?: unknown;
-    shoppingList?: unknown;
-  }>;
+  getPlayers: (state: GameStateEntity) => PanierExpressPlayer[];
   toStringArray: (value: unknown) => string[];
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
   appendActionLog: (
@@ -480,7 +477,3 @@ export function applyAdvancedPanierExpressEventBatch(args: {
       return null;
   }
 }
-
-
-
-

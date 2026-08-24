@@ -25,10 +25,8 @@ HostFrame::HostFrame()
           lila::shared::text::FromUtf8(lila::shared::config::AppConfig::AppTitle.data()),
           wxDefaultPosition,
           wxSize(HostWindowWidth, HostWindowHeight),
-          wxDEFAULT_FRAME_STYLE),
-      contentFocusTimer_(this)
+          wxDEFAULT_FRAME_STYLE)
 {
-    Bind(wxEVT_TIMER, &HostFrame::OnContentFocusTimer, this, contentFocusTimer_.GetId());
     Bind(wxEVT_CLOSE_WINDOW, &HostFrame::OnClose, this);
     Bind(wxEVT_CHAR_HOOK, &HostFrame::OnCharHook, this);
     contentRoot_ = new lila::shared::accessibility::NonFocusablePanel(this);
@@ -40,7 +38,11 @@ HostFrame::HostFrame()
 
 void HostFrame::OnClose(wxCloseEvent& event)
 {
-    CancelScheduledContentFocus();
+    if (event.CanVeto() && onCloseRequested_ && !onCloseRequested_())
+    {
+        event.Veto();
+        return;
+    }
     Hide();
     event.Skip();
 }
@@ -53,6 +55,11 @@ wxWindow* HostFrame::ContentParent() const noexcept
 void HostFrame::SetPresenceRequestedHandler(PresenceRequestedHandler handler)
 {
     onPresenceRequested_ = std::move(handler);
+}
+
+void HostFrame::SetCloseRequestedHandler(CloseRequestedHandler handler)
+{
+    onCloseRequested_ = std::move(handler);
 }
 
 void HostFrame::OnCharHook(wxKeyEvent& event)
@@ -72,7 +79,6 @@ void HostFrame::OnCharHook(wxKeyEvent& event)
 
 void HostFrame::SetContent(wxWindow* content)
 {
-    CancelScheduledContentFocus();
     if (contentRoot_ == nullptr)
     {
         return;
@@ -85,7 +91,6 @@ void HostFrame::SetContent(wxWindow* content)
         contentRoot_->SetSizer(sizer);
     }
 
-    Freeze();
     if (currentContent_ != nullptr && currentContent_ != content)
     {
         currentContent_->Hide();
@@ -102,42 +107,10 @@ void HostFrame::SetContent(wxWindow* content)
     }
 
     contentRoot_->Layout();
-    Layout();
-    Thaw();
-}
-
-void HostFrame::ScheduleContentFocus(std::function<void()> focusAction, int delayMilliseconds)
-{
-    CancelScheduledContentFocus();
-    if (!focusAction)
-    {
-        return;
-    }
-
-    pendingContentFocus_ = std::move(focusAction);
-    contentFocusTimer_.StartOnce(delayMilliseconds);
-}
-
-void HostFrame::CancelScheduledContentFocus()
-{
-    contentFocusTimer_.Stop();
-    pendingContentFocus_ = {};
-}
-
-void HostFrame::OnContentFocusTimer(wxTimerEvent& event)
-{
-    (void)event;
-    auto focusAction = std::move(pendingContentFocus_);
-    pendingContentFocus_ = {};
-    if (focusAction)
-    {
-        focusAction();
-    }
 }
 
 void HostFrame::RemoveContent(wxWindow* content)
 {
-    CancelScheduledContentFocus();
     if (contentRoot_ == nullptr || content == nullptr)
     {
         return;
@@ -149,7 +122,6 @@ void HostFrame::RemoveContent(wxWindow* content)
         return;
     }
 
-    Freeze();
     if (currentContent_ == content)
     {
         currentContent_->Hide();
@@ -162,7 +134,5 @@ void HostFrame::RemoveContent(wxWindow* content)
 
     sizer->Detach(content);
     contentRoot_->Layout();
-    Layout();
-    Thaw();
 }
 }

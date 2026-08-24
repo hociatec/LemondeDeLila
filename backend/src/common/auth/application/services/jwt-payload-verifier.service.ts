@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { verify as jwtVerify, type Algorithm } from 'jsonwebtoken';
 
-import type { WsAuthPayload } from '../../../interfaces/ws-auth-payload';
+import type { WsAuthPayload } from '../../../interfaces/public-api';
 import {
   readAuthRuntimeConfigFromEnv,
   type AuthRuntimeConfig,

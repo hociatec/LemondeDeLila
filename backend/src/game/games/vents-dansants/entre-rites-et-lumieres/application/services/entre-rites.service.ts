@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { EntreRitesActionService } from './entre-rites-action.service';
 import { EntreRitesPresenterService } from './entre-rites-presenter.service';
@@ -22,7 +22,7 @@ export class EntreRitesService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = ENTRE_RITES_GAME.displayName;
   readonly description =
-    'Un sept familles illuminÃƒÆ’Ã‚Â© oÃƒÆ’Ã‚Â¹ familles et cartes spÃƒÆ’Ã‚Â©ciales sÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢affrontent.';
+    'Un sept familles illuminé où familles et cartes spéciales s’affrontent.';
   readonly minPlayers = ENTRE_RITES_GAME.minPlayers;
   readonly maxPlayers = ENTRE_RITES_GAME.maxPlayers;
 

@@ -1,4 +1,4 @@
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { BotRunnerService } from '../../../../../application/services/bot-runner.service';
 import { TurnStatusService } from '../../../../../application/services/turn-status.service';
@@ -119,7 +119,7 @@ export class PanierExpressBotService {
           return -5;
         }
 
-        // Choix dÃƒÆ’Ã‚Â©terministe: on prÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â¨re les premiers items pour progresser.
+        // Choix déterministe: on préfère les premiers items pour progresser.
         return 8 - Math.max(0, Math.min(6, index));
       }
       if (type === 'exchange_accept' || type === 'exchange_refuse') {
@@ -137,7 +137,7 @@ export class PanierExpressBotService {
         const takeNeeded = take != null && take.length > 0 && missing.has(take);
         const bonusRequested = offer.bonusRequested === true;
 
-        // Si accepter fait perdre 2 tours (cible sans cartes), on prÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â¨re refuser.
+        // Si accepter fait perdre 2 tours (cible sans cartes), on préfère refuser.
         if (bonusRequested) {
           return type === 'exchange_refuse' ? 9 : -10;
         }
@@ -209,7 +209,7 @@ export class PanierExpressBotService {
     const pending = meta.quiz?.pending?.[playerId];
     const choices = Array.isArray(pending?.choices) ? pending?.choices : [];
     if (!pending || !choices.length) return actions;
-    // DÃƒÆ’Ã‚Â©terministe (ÃƒÆ’Ã‚Â©vite de dÃƒÆ’Ã‚Â©pendre de Math.random cÃƒÆ’Ã‚Â´tÃƒÆ’Ã‚Â© bot).
+    // Déterministe (évite de dépendre de Math.random côté bot).
     const answer = choices[0];
     return actions.map((a) => {
       if (!a || (a.type || '').toLowerCase() !== 'answer_quiz') return a;

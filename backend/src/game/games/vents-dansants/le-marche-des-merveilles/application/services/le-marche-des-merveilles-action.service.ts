@@ -1,13 +1,13 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
-import { GameCoreService } from '../../../../application/services/game-core.service';
-import { TurnFlowService } from '../../../../application/services/turn-flow.service';
-import { resolvePlayerNameFromState } from '../../../../application/helpers/player-name.helper';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import { GameCoreService } from '../../../../../application/services/game-core.service';
+import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
+import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../application/helpers/action-service.helper';
+} from '../../../../../application/helpers/action-service.helper';
 import {
   GOOD_LABELS,
   PROTECT_COST,

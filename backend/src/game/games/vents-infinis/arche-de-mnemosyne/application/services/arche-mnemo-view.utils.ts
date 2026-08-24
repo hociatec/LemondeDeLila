@@ -2,7 +2,7 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import type { MnemoQuizMetadata } from '../../model/mnemo-quiz.model';
 import type { ArcheMnemoStateService } from './arche-mnemo-state.service';

@@ -1,5 +1,5 @@
-﻿import type { GameSingleActionDto } from '../../../../models/game-action.model';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+﻿import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { BotRunnerService } from '../../../../../application/services/bot-runner.service';
 import type { NawakMetadata } from '../../model/nawak-state.model';
 import * as Rulebook from '../../rulebook/rulebook';

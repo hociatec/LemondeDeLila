@@ -1,19 +1,19 @@
 import { BoardPayloadService } from '../../../application/services/board-payload.service';
 import type { GameStateEntity } from '../../../application/models/game-state.model';
-import { AventureSauvagePresenterService } from '../../les-quatre-vents/aventure-sauvage/presenter/aventure-sauvage-presenter.service';
-import { AFondLesBallonsPresenterService } from '../../les-quatre-vents/a-fond-les-ballons/presenter/a-fond-les-ballons-presenter.service';
-import { CaPresenterService } from '../../les-quatre-vents/ca-derape/presenter/ca-presenter.service';
-import { ContesPresenterService } from '../../les-quatre-vents/contes-et-cacahuetes/presenter/contes-presenter.service';
-import { FroussePresenterService } from '../../les-quatre-vents/frousse-party/presenter/frousse-presenter.service';
-import { GaloponsPresenterService } from '../../les-quatre-vents/galopons-ensemble/presenter/galopons-presenter.service';
-import { MinuitPresenterService } from '../../les-quatre-vents/en-attendant-minuit/presenter/minuit-presenter.service';
-import { MissionGalaxiePresenterService } from '../../les-quatre-vents/mission-galaxie/presenter/mission-galaxie-presenter.service';
-import { MonVillagePresenterService } from '../../les-quatre-vents/mon-village-mon-histoire/presenter/mon-village-presenter.service';
-import { PiratesEnVadrouillePresenterService } from '../../les-quatre-vents/pirates-en-vadrouille/presenter/pirates-en-vadrouille-presenter.service';
-import { PrimalisPresenterService } from '../../les-quatre-vents/primalis/presenter/primalis-presenter.service';
-import { SacAMalicesPresenterService } from '../../les-quatre-vents/sac-a-malices/presenter/sac-a-malices-presenter.service';
-import { ToutPresDeMamanPresenterService } from '../../les-quatre-vents/tout-pres-de-maman/presenter/tout-pres-de-maman-presenter.service';
-import { VoyagePresenterService } from '../../les-quatre-vents/voyage-en-terre-de-brumes/presenter/voyage-presenter.service';
+import { AventureSauvagePresenterService } from '../../les-quatre-vents/aventure-sauvage/application/services/aventure-sauvage-presenter.service';
+import { AFondLesBallonsPresenterService } from '../../les-quatre-vents/a-fond-les-ballons/application/services/a-fond-les-ballons-presenter.service';
+import { CaPresenterService } from '../../les-quatre-vents/ca-derape/application/services/ca-presenter.service';
+import { ContesPresenterService } from '../../les-quatre-vents/contes-et-cacahuetes/application/services/contes-presenter.service';
+import { FroussePresenterService } from '../../les-quatre-vents/frousse-party/application/services/frousse-presenter.service';
+import { GaloponsPresenterService } from '../../les-quatre-vents/galopons-ensemble/application/services/galopons-presenter.service';
+import { MinuitPresenterService } from '../../les-quatre-vents/en-attendant-minuit/application/services/minuit-presenter.service';
+import { MissionGalaxiePresenterService } from '../../les-quatre-vents/mission-galaxie/application/services/mission-galaxie-presenter.service';
+import { MonVillagePresenterService } from '../../les-quatre-vents/mon-village-mon-histoire/application/services/mon-village-presenter.service';
+import { PiratesEnVadrouillePresenterService } from '../../les-quatre-vents/pirates-en-vadrouille/application/services/pirates-en-vadrouille-presenter.service';
+import { PrimalisPresenterService } from '../../les-quatre-vents/primalis/application/services/primalis-presenter.service';
+import { SacAMalicesPresenterService } from '../../les-quatre-vents/sac-a-malices/application/services/sac-a-malices-presenter.service';
+import { ToutPresDeMamanPresenterService } from '../../les-quatre-vents/tout-pres-de-maman/application/services/tout-pres-de-maman-presenter.service';
+import { VoyagePresenterService } from '../../les-quatre-vents/voyage-en-terre-de-brumes/application/services/voyage-presenter.service';
 import { JeuOiePresenterService } from '../../vents-sacres/jeu-oie/application/services/jeu-oie-presenter.service';
 import { BoardMissionPresenterService } from '../../../application/services/board-mission/board-mission-presenter.service';
 import { BoardMissionRuntimeSupportService } from '../../../application/services/board-mission/board-mission-runtime-support.service';
@@ -71,17 +71,17 @@ describe('Position panels', () => {
       metadata: { tiles: sharedTiles, positions: sharedPositions },
     },
     {
-      label: 'ÃƒÆ’Ã¢â€šÂ¬ fond les ballons',
+      label: 'À fond les ballons',
       presenter: new AFondLesBallonsPresenterService(board),
       metadata: { tiles: sharedTiles, positions: sharedPositions },
     },
     {
-      label: 'ÃƒÆ’Ã¢â‚¬Â¡a dÃƒÆ’Ã‚Â©rape',
+      label: 'Ça dérape',
       presenter: new CaPresenterService(board),
       metadata: { tiles: sharedTiles, positions: sharedPositions },
     },
     {
-      label: 'Contes et CacahuÃƒÆ’Ã‚Â¨tes',
+      label: 'Contes et Cacahuètes',
       presenter: new ContesPresenterService(board),
       metadata: { tiles: sharedTiles, positions: sharedPositions },
     },
@@ -105,7 +105,7 @@ describe('Position panels', () => {
       },
     },
     {
-      label: 'Jeu de lÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢oie',
+      label: 'Jeu de l’oie',
       presenter: new JeuOiePresenterService(board),
       metadata: { tiles: sharedTiles, positions: sharedPositions, laps: {} },
     },
@@ -146,7 +146,7 @@ describe('Position panels', () => {
       },
     },
     {
-      label: 'Sac ÃƒÆ’Ã‚Â  malices',
+      label: 'Sac à malices',
       presenter: new SacAMalicesPresenterService(board),
       metadata: {
         tiles: [
@@ -203,7 +203,7 @@ describe('Position panels', () => {
       },
     },
     {
-      label: 'Tout prÃƒÆ’Ã‚Â¨s de Maman',
+      label: 'Tout près de Maman',
       presenter: new ToutPresDeMamanPresenterService(board),
       metadata: {
         tiles: sharedTiles,

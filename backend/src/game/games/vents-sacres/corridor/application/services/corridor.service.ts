@@ -2,7 +2,7 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import { CorridorSetupService } from './corridor-setup.service';
 import { CorridorActionService } from './corridor-action.service';
@@ -13,12 +13,9 @@ import * as CorridorRulebook from '../../rulebook/rulebook';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { interfaceShortcut } from '../../../../../application/helpers/shortcut-utils';
-import type {
-  CorridorMetadata,
-  CorridorPos,
-} from '../../model/corridor.model';
+import type { CorridorMetadata, CorridorPos } from '../../model/corridor.model';
 import type { CorridorWall } from '../../rulebook/rulebook';
 
 type CorridorPending = {
@@ -31,10 +28,10 @@ type CorridorPending = {
 export class CorridorService extends AbstractGameService {
   readonly gameType = 'corridor';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Les Vents SacrÃƒÆ’Ã‚Â©s';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = CORRIDOR_GAME.displayName;
   readonly description =
-    'DÃƒÆ’Ã‚Â©placez votre pion sur une grille (9ÃƒÆ’Ã¢â‚¬â€9) et atteignez le bord opposÃƒÆ’Ã‚Â©.';
+    'Déplacez votre pion sur une grille (9×9) et atteignez le bord opposé.';
   readonly minPlayers = CORRIDOR_GAME.minPlayers;
   readonly maxPlayers = CORRIDOR_GAME.maxPlayers;
 
@@ -111,7 +108,7 @@ export class CorridorService extends AbstractGameService {
             label: String(pawn?.label ?? id).trim(),
           };
         })
-        .filter((a): a is GameSingleActionDto => a != null);
+        .filter((a): a is NonNullable<typeof a> => a != null);
     }
 
     // Any other pending state blocks gameplay actions for everyone.
@@ -123,8 +120,7 @@ export class CorridorService extends AbstractGameService {
       return [];
     }
 
-    const moves =
-      CorridorRulebook.listLegalPawnMoves(state, playerId) ?? [];
+    const moves = CorridorRulebook.listLegalPawnMoves(state, playerId) ?? [];
     const walls =
       CorridorRulebook.listLegalWallPlacements(state, playerId) ?? [];
     return [
@@ -165,8 +161,3 @@ export class CorridorService extends AbstractGameService {
     ];
   }
 }
-
-
-
-
-

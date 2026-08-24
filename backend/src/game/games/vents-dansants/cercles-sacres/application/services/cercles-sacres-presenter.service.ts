@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
@@ -26,7 +26,7 @@ export class CerclesSacresPresenterService {
     const panels = buildLamaLikePanels({
       hand,
       handCounts,
-      discardLabel: 'DÃƒÂ©fausse',
+      discardLabel: 'Défausse',
       tableMessage: `Ronde: ${state.status ?? 'en attente'}`,
     });
     const extras = {

@@ -34,7 +34,7 @@ export class PanierExpressQuizService {
         '[Panier Express] Quiz : deck indisponible.',
       );
     }
-    const metaRng = this.random.createMetaRng(meta as Record<string, unknown>);
+    const metaRng = this.random.createMetaRng(meta);
     const { card, pool } = this.deckPool.draw<QuizQuestion>(
       meta.decks as DeckPoolState<QuizQuestion>,
       'quizzes',
@@ -99,14 +99,3 @@ export class PanierExpressQuizService {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-

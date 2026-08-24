@@ -1,18 +1,21 @@
-﻿import { MorpionService } from '../../morpion.service';
-import { MorpionPresenter } from '../../morpion.presenter';
+﻿import { MorpionService } from './morpion.service';
+import { MorpionPresenter } from './morpion.presenter';
 import { GridCellActionsService } from '../../../../../application/features/grid/services/grid-cell-actions.service';
 import { MORPION_PAWNS } from '../../definitions/morpion.pawns';
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
 
+function makeService(): MorpionService {
+  return new MorpionService(
+    new MorpionPresenter(new GridCellActionsService()),
+    new GameCoreService(),
+    new SetupFlowService(),
+  );
+}
+
 describe('MorpionService', () => {
   it('starts pawn selection with a human even if a bot is first', async () => {
-    const service = new MorpionService(
-      { register: () => {} } as any,
-      new MorpionPresenter(new GridCellActionsService()),
-      new GameCoreService(),
-      new SetupFlowService(),
-    );
+    const service = makeService();
 
     const state: any = service.hydrateInitialState({
       status: 'started',
@@ -36,16 +39,11 @@ describe('MorpionService', () => {
         message.startsWith('Bot a choisi le pion: '),
       ),
     ).toBe(true);
-    expect(messages).toContain("C'est Ã  Human de choisir son pion.");
+    expect(messages).toContain("C'est à Human de choisir son pion.");
   });
 
   it('requires pawn selection before exposing playable cells', async () => {
-    const service = new MorpionService(
-      { register: () => {} } as any,
-      new MorpionPresenter(new GridCellActionsService()),
-      new GameCoreService(),
-      new SetupFlowService(),
-    );
+    const service = makeService();
 
     let state: any = service.hydrateInitialState({
       status: 'started',
@@ -78,7 +76,7 @@ describe('MorpionService', () => {
       String(entry?.message ?? ''),
     );
     expect(messages).toContain(
-      `C'est Ã  ${otherId === 1 ? 'A' : 'B'} de choisir son pion.`,
+      `C'est à ${otherId === 1 ? 'A' : 'B'} de choisir son pion.`,
     );
     state = service.applyActions(state, [choose(otherId, MORPION_PAWNS[1].id)]);
     messages = (state.log ?? []).map((entry: any) =>
@@ -93,12 +91,7 @@ describe('MorpionService', () => {
   });
 
   it('logs a chooser prompt before each automatic bot pawn choice', async () => {
-    const service = new MorpionService(
-      { register: () => {} } as any,
-      new MorpionPresenter(new GridCellActionsService()),
-      new GameCoreService(),
-      new SetupFlowService(),
-    );
+    const service = makeService();
 
     const state: any = service.hydrateInitialState({
       status: 'started',
@@ -115,7 +108,7 @@ describe('MorpionService', () => {
       String(entry?.message ?? ''),
     );
     const botPromptIndex = messages.findIndex(
-      (message: string) => message === "C'est Ã  Bot de choisir son pion.",
+      (message: string) => message === "C'est à Bot de choisir son pion.",
     );
     const botChoiceIndex = messages.findIndex((message: string) =>
       message.startsWith('Bot a choisi le pion: '),
@@ -126,12 +119,7 @@ describe('MorpionService', () => {
   });
 
   it('detects a winner', async () => {
-    const service = new MorpionService(
-      { register: () => {} } as any,
-      new MorpionPresenter(new GridCellActionsService()),
-      new GameCoreService(),
-      new SetupFlowService(),
-    );
+    const service = makeService();
 
     let state: any = service.hydrateInitialState({
       status: 'started',
@@ -167,12 +155,7 @@ describe('MorpionService', () => {
   });
 
   it('logs correct cell refs (A1..C3) with inverted rows', async () => {
-    const service = new MorpionService(
-      { register: () => {} } as any,
-      new MorpionPresenter(new GridCellActionsService()),
-      new GameCoreService(),
-      new SetupFlowService(),
-    );
+    const service = makeService();
 
     let state: any = service.hydrateInitialState({
       status: 'started',
@@ -229,12 +212,7 @@ describe('MorpionService', () => {
   });
 
   it('suggests a bot move on its turn', async () => {
-    const service = new MorpionService(
-      { register: () => {} } as any,
-      new MorpionPresenter(new GridCellActionsService()),
-      new GameCoreService(),
-      new SetupFlowService(),
-    );
+    const service = makeService();
 
     const state: any = service.hydrateInitialState({
       status: 'started',
@@ -262,12 +240,7 @@ describe('MorpionService', () => {
   });
 
   it('exposes ui panels for info shortcuts', async () => {
-    const service = new MorpionService(
-      { register: () => {} } as any,
-      new MorpionPresenter(new GridCellActionsService()),
-      new GameCoreService(),
-      new SetupFlowService(),
-    );
+    const service = makeService();
 
     const state: any = service.hydrateInitialState({
       status: 'started',

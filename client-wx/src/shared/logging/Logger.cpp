@@ -14,6 +14,12 @@ namespace
 {
 std::mutex g_logMutex;
 
+std::ofstream& LogFile()
+{
+    static std::ofstream file("client.log", std::ios::app);
+    return file;
+}
+
 const char* LevelToString(LogLevel level)
 {
     switch (level)
@@ -51,10 +57,14 @@ void Log(LogLevel level, std::string_view category, std::string_view message)
     std::string formatted = oss.str();
     std::clog << formatted;
 
-    std::ofstream file("client.log", std::ios::app);
+    auto& file = LogFile();
     if (file.is_open())
     {
         file << formatted;
+        if (level == LogLevel::Warning || level == LogLevel::Error)
+        {
+            file.flush();
+        }
     }
 }
 

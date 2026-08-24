@@ -3,7 +3,9 @@
 #include "shared/accessibility/FocusCoordinator.h"
 #include "shared/ui/BackgroundTask.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/logging/Logger.h"
 
+#include <chrono>
 #include <memory>
 #include <thread>
 
@@ -22,6 +24,21 @@
 
 namespace lila::modules::home::presentation
 {
+void HomeFrame::StartAuthenticationWarmUp()
+{
+    auto* loginUseCase = &loginUseCase_;
+    static_cast<void>(lila::shared::concurrency::RunAsync(
+        [loginUseCase](std::stop_token stopToken)
+        {
+            if (!stopToken.stop_requested())
+            {
+                loginUseCase->WarmUp();
+            }
+        },
+        {},
+        lila::shared::concurrency::BackgroundTaskPriority::Low));
+}
+
 void HomeFrame::SetBusyState(bool isBusy, const wxString& statusMessage)
 {
     isBusy_ = isBusy;
@@ -104,8 +121,7 @@ void HomeFrame::OnLoginSubmit(wxCommandEvent& event)
     }
 
     const bool rememberSession = loginRememberMeCheck_->GetValue();
-    SetBusyState(true, lila::shared::text::FromUtf8("Connexion au serveur..."));
-    SetStatus(lila::shared::text::FromUtf8("Authentification..."));
+    SetBusyState(true);
 
     wxWeakRef<HomeFrame> weakSelf(this);
 
@@ -113,7 +129,14 @@ void HomeFrame::OnLoginSubmit(wxCommandEvent& event)
         this,
         [this, credentials = std::move(credentials)]()
         {
-            return loginUseCase_.Execute(credentials);
+            const auto startedAt = std::chrono::steady_clock::now();
+            auto result = loginUseCase_.Execute(credentials);
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - startedAt);
+            lila::shared::logging::LogInfo(
+                "Authentication",
+                "Login request completed in " + std::to_string(elapsed.count()) + " ms.");
+            return result;
         },
         [weakSelf, rememberSession](std::string errorMessage, std::optional<user::domain::AuthenticationResult> result) mutable
         {
@@ -183,8 +206,7 @@ void HomeFrame::OnRegisterSubmit(wxCommandEvent& event)
         return;
     }
 
-    SetBusyState(true, lila::shared::text::FromUtf8("Connexion au serveur..."));
-    SetStatus(lila::shared::text::FromUtf8("Authentification..."));
+    SetBusyState(true);
 
     auto result = std::make_shared<std::optional<user::domain::RegistrationResult>>();
     wxWeakRef<HomeFrame> weakSelf(this);

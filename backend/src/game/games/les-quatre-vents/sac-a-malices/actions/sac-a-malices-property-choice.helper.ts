@@ -2,7 +2,7 @@ import type {
   GameStateEntity,
   PendingState,
 } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import type { SacMetadata, SacTile } from '../model/sac-a-malices.types';
 
 export type SacPropertyChoiceKind =
@@ -58,7 +58,7 @@ export function openSacAMalicesPropertyChoice(input: {
   if (!options.length) {
     return input.appendLog(
       state,
-      'Aucune propriÃƒÂ©tÃƒÂ© disponible pour cette action.',
+      'Aucune propriété disponible pour cette action.',
     );
   }
 
@@ -68,12 +68,12 @@ export function openSacAMalicesPropertyChoice(input: {
     blocking: true,
     label:
       kind === 'build'
-        ? 'Construire oÃƒÂ¹ ?'
+        ? 'Construire où ?'
         : kind === 'sell_building'
-          ? 'Vendre une habitation oÃƒÂ¹ ?'
+          ? 'Vendre une habitation où ?'
           : kind === 'mortgage'
-            ? 'HypothÃƒÂ©quer quoi ?'
-            : 'Lever lÃ¢â‚¬â„¢hypothÃƒÂ¨que de quoi ?',
+            ? 'Hypothéquer quoi ?'
+            : 'Lever l’hypothèque de quoi ?',
     choices: options.map((option) => option.label),
     data: {
       kind,

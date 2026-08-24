@@ -10,18 +10,21 @@ if (!fs.existsSync(reportFile)) {
 }
 
 const report = JSON.parse(fs.readFileSync(reportFile, 'utf8'));
-const regressions = Object.entries(report.regressions || {}).filter(
+const violations = Object.entries(report.violations || {}).filter(
   ([, value]) => Boolean(value),
 );
 
-if (regressions.length > 0) {
-  console.error('quality-check: regression detected');
-  for (const [name] of regressions) {
+if (violations.length > 0) {
+  console.error('quality-check: violation detected');
+  for (const [name] of violations) {
     const current = report.metrics?.[name];
-    const baseline = report.baseline?.[name];
-    console.error(`- ${name}: ${current} (baseline ${baseline})`);
+    const limit = report.limits?.[name];
+    console.error(`- ${name}: ${current} (limit ${limit})`);
   }
   process.exit(2);
 }
 
-console.log('quality-check: OK (no regression vs baseline)');
+console.log('quality-check: OK (0 violations)');
+for (const [name, value] of Object.entries(report.observations || {})) {
+  console.log(`- observation ${name}: ${value}`);
+}

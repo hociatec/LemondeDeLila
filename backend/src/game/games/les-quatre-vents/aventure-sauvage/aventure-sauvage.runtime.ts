@@ -68,7 +68,7 @@ export function createAventureSauvageRuntime(): {
         pending: {
           type: 'draw',
           playerId: params.playerId,
-          blocking: true,
+          blocking: true as const,
           label: drawPolicy.pendingLabel ?? 'Piocher une carte.',
           data: drawPolicy.data ?? {},
         },

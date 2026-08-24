@@ -13,7 +13,10 @@ export type ContesCardFlowDeps = {
   random: RandomService;
   deckPolicies: DeckPoliciesService;
   getMeta: (state: GameStateEntity) => ContesCacahuetesMetadata;
-  setPending: (state: GameStateEntity, pending: ContesPending | null) => GameStateEntity;
+  setPending: (
+    state: GameStateEntity,
+    pending: Exclude<ContesPending, null>,
+  ) => GameStateEntity;
   setStatusBool: (
     state: GameStateEntity,
     key: string,
@@ -53,7 +56,8 @@ export function applyContesAbondance(
 ): GameStateEntity {
   return deps.setPending(state, {
     type: 'draw',
-    label: 'Corne dÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢abondance : piocher une carte Bonus (Espace).',
+    label:
+      'Corne d’abondance : piocher une carte Bonus (Espace).',
     playerId,
     blocking: true,
     data: {
@@ -79,7 +83,10 @@ export function applyContesCoffreMerveilles(
     value === 0 ? 'bonus' : value === 1 ? 'malus' : 'surprise';
   const t1 = t(out1.value);
   const t2 = t(out2.value);
-  next = deps.appendLog(next, `Coffre aux merveilles : 2 cartes (${t1}, ${t2}).`);
+  next = deps.appendLog(
+    next,
+    `Coffre aux merveilles : 2 cartes (${t1}, ${t2}).`,
+  );
   return deps.queueDraws(next, playerId, [t1, t2], depth);
 }
 
@@ -103,15 +110,16 @@ export function drawContesCard(
   const pile = toContesCardArray(decks[pileKey]);
   const discard = toContesCardArray(decks[discardKey]);
 
-  const draw = deps.deckPolicies.drawFromPile<ContesCard, ContesCacahuetesMetadata>(
-    {
-      meta,
-      pile: [...pile],
-      discard: [...discard],
-      useWholeMetaRng: true,
-      discardDrawnCard: true,
-    },
-  );
+  const draw = deps.deckPolicies.drawFromPile<
+    ContesCard,
+    ContesCacahuetesMetadata
+  >({
+    meta,
+    pile: [...pile],
+    discard: [...discard],
+    useWholeMetaRng: true,
+    discardDrawnCard: true,
+  });
 
   const nextMeta = {
     ...draw.meta,

@@ -10,7 +10,7 @@ import {
   GameTurnViolationError,
   GameUnknownActionError,
 } from '../../../../domain/errors/game-domain.errors';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import { LA_GRANDE_MINE_CARD_BY_ID } from '../model/la-grande-mine-cards';
 import type { LaGrandeMineMetadata } from '../model/la-grande-mine-state.model';
 

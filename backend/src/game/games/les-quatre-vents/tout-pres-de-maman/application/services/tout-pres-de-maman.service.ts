@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { TOUT_PRES_DE_MAMAN_GAME } from '../../definitions/tout-pres-de-maman.definition';
 import { ToutPresDeMamanActionService } from './tout-pres-de-maman-action.service';
 import { ToutPresDeMamanPresenterService } from './tout-pres-de-maman-presenter.service';
@@ -22,7 +22,7 @@ export class ToutPresDeMamanService extends AbstractGameService {
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = TOUT_PRES_DE_MAMAN_GAME.displayName;
   readonly description =
-    'Guide votre bÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©bÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© marsupial jusquÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  maman avec au moins trois jetons eucalyptus.';
+    'Guide votre bébé marsupial jusqu’à maman avec au moins trois jetons eucalyptus.';
   readonly minPlayers = TOUT_PRES_DE_MAMAN_GAME.minPlayers;
   readonly maxPlayers = TOUT_PRES_DE_MAMAN_GAME.maxPlayers;
 

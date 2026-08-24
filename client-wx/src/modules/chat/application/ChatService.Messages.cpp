@@ -7,6 +7,7 @@
 #include "modules/chat/infrastructure/ChatProtocol.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/logging/Logger.h"
+#include "shared/audio/AudioService.h"
 #include <limits>
 #include <sstream>
 
@@ -46,12 +47,20 @@ void ChatService::ProcessIncomingMessage(const std::string& rawJson, bool fatalE
             return;
         }
     case infrastructure::ChatEventType::MessageUpserted:
+        {
+        bool receivedMessage = false;
         for (const auto& message : event.messages)
         {
+            receivedMessage = receivedMessage || !message.isMine;
             UpsertMessage(message);
         }
         NotifyMessagesChanged();
+        if (receivedMessage)
+        {
+            lila::shared::audio::AudioService::PlayGlobal(lila::shared::audio::SoundCue::ChatMessageReceived);
+        }
         return;
+        }
     case infrastructure::ChatEventType::MessageDeleted:
         RemoveMessageById(event.deletedMessageId);
         NotifyMessagesChanged();

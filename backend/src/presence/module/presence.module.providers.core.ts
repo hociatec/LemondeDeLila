@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { RedisClientFactory } from '../../common/redis/infrastructure/redis-client.factory';
 import { PresenceConfigurationError } from '../domain/errors/presence-domain.errors';
 import { PRESENCE_CHAT_PORT } from '../application/ports/presence-chat.port';
@@ -15,11 +16,19 @@ import {
 } from '../infrastructure/transport/presence-transport';
 import { PresenceChatService } from '../application/services/presence-chat.service';
 import { PresenceService } from '../application/services/presence.service';
-import { PresenceRoomParticipantTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/presence-room-participant-typeorm.repository';
+import { RoomParticipant } from '../../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
+import {
+  PRESENCE_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY,
+  PresenceRoomParticipantTypeormRepository,
+} from '../infrastructure/persistence/typeorm/repositories/presence-room-participant-typeorm.repository';
 import { PresenceUserTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/presence-user-typeorm.repository';
 import { PresenceChatAdapter } from '../infrastructure/system/presence-chat.adapter';
 
 export const PRESENCE_CORE_PROVIDERS = [
+  {
+    provide: PRESENCE_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY,
+    useExisting: getRepositoryToken(RoomParticipant),
+  },
   {
     provide: PresenceTransport,
     inject: [ConfigService, RedisClientFactory],

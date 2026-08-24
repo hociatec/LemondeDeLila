@@ -1,5 +1,5 @@
-import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
-import { ToutPresDeMamanPresenterService } from './tout-pres-de-maman-presenter.service';
+import { BoardPayloadService } from '../../../../application/services/board-payload.service';
+import { ToutPresDeMamanPresenterService } from '../application/services/tout-pres-de-maman-presenter.service';
 
 describe('ToutPresDeMamanPresenterService', () => {
   it('does not expose a local position panel', () => {

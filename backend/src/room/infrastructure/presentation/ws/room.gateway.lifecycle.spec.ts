@@ -11,6 +11,8 @@ import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
 import { RoomGatewayStateService } from './room-gateway-state.service';
 import { RoomClientPolicyService } from '../../../application/services/room-client-policy.service';
 import { RoomJoinPolicyService } from '../../../application/services/room-join-policy.service';
+import { RoomAdminPolicyService } from '../../../application/services/room-admin-policy.service';
+import { RoomGatewayPresenter } from './room-gateway.presenter';
 
 type GatewayFixture = {
   gateway: any;
@@ -167,6 +169,8 @@ function createGatewayFixture(): GatewayFixture {
   const lifecyclePresenter = new RoomGatewayLifecyclePresenter();
   const sessionPresenter = new RoomGatewaySessionPresenter();
   const statePresenter = new RoomGatewayStatePresenter();
+  const adminPolicy = new RoomAdminPolicyService();
+  const gatewayPresenter = new RoomGatewayPresenter();
   const lifecycle = new RoomGatewayLifecycleService(
     roomsService,
     roomsService,
@@ -181,11 +185,13 @@ function createGatewayFixture(): GatewayFixture {
     roomsService,
     roomsService,
     roomState,
+    adminPolicy,
     addBotToRoom,
     getLastRoomBot,
     removeBotFromRoom,
     perf,
     realtimeTracker,
+    gatewayPresenter,
   ) as any;
   const commands = new RoomGatewayCommandService() as any;
   const connection = new RoomGatewayConnectionService(
@@ -467,7 +473,7 @@ describe('RoomGateway lifecycle scenarios', () => {
     expect(gateway.sendRoomState).toHaveBeenCalledWith(10);
   });
 
-  it('join: throws when room started and spectate is denied', async () => {
+  it('join: requires an invitation when started-room spectate is denied', async () => {
     const { gateway, deps } = createGatewayFixture();
     const socket = createSocket();
     const meta = {
@@ -497,7 +503,7 @@ describe('RoomGateway lifecycle scenarios', () => {
         { roomId: 10, spectator: false },
         Date.now(),
       ),
-    ).rejects.toThrow('Table déjà démarrée');
+    ).rejects.toThrow('Table privée: invitation requise');
   });
 
   it('set role: rejects role change when game already started', async () => {

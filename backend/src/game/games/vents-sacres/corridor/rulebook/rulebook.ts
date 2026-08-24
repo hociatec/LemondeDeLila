@@ -1,4 +1,4 @@
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import {
   GameActorRequiredError,
@@ -104,9 +104,9 @@ export function isEdgeBlocked(
     return true;
   }
 
-  // Mouvement vertical : vÃƒÂ©rifier mur horizontal entre les 2 rangÃƒÂ©es.
+  // Mouvement vertical : vérifier mur horizontal entre les 2 rangées.
   if (dy === 1) {
-    // vers le bas, frontiÃƒÂ¨re entre y=from.y et y=from.y+1 => wall y=from.y
+    // vers le bas, frontière entre y=from.y et y=from.y+1 => wall y=from.y
     const y = from.y;
     const x = from.x;
     return (
@@ -121,7 +121,7 @@ export function isEdgeBlocked(
     );
   }
 
-  // Mouvement horizontal : vÃƒÂ©rifier mur vertical entre les 2 colonnes.
+  // Mouvement horizontal : vérifier mur vertical entre les 2 colonnes.
   if (dx === 1) {
     const x = from.x;
     const y = from.y;
@@ -199,7 +199,7 @@ export function listLegalPawnMoves(
     results.push(step);
   }
 
-  // dÃƒÂ©doublonnage
+  // dédoublonnage
   const seen = new Set<string>();
   return results.filter((p) => {
     const k = key(p.x, p.y);
@@ -261,9 +261,9 @@ export function overlapsOrCrosses(
   const sets = wallSets(meta);
   const k = key(wall.x, wall.y);
   if (wall.o === 'h') {
-    // chevauchement (mÃƒÂªme spot) uniquement ; l'adjacence est autorisÃƒÂ©e (mur "collÃƒÂ©").
+    // chevauchement (même spot) uniquement ; l'adjacence est autorisée (mur "collé").
     if (sets.h.has(k)) return true;
-    // croisement avec mur vertical au mÃƒÂªme spot
+    // croisement avec mur vertical au même spot
     if (sets.v.has(k)) return true;
     return false;
   }
@@ -409,7 +409,7 @@ export function validateMoveAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): { to: CorridorPos; actorId: number } {
-  // Les bots ont des IDs nÃƒÂ©gatifs dans l'ÃƒÂ©tat de jeu (GameCoreService),
+  // Les bots ont des IDs négatifs dans l'état de jeu (GameCoreService),
   // donc on ne doit pas rejeter actorId <= 0 ici.
   if (actorId == null) {
     throw new GameActorRequiredError('Acteur requis');
@@ -426,7 +426,7 @@ export function validateMoveAction(
     (p) => p.x === x && p.y === y,
   );
   if (!legal) {
-    throw new GameActionRejectedError('DÃƒÂ©placement illÃƒÂ©gal');
+    throw new GameActionRejectedError('Déplacement illégal');
   }
 
   return { to: { x, y }, actorId };
@@ -437,7 +437,7 @@ export function validatePlaceWallAction(
   action: GameSingleActionDto,
   actorId: number | null,
 ): { wall: CorridorWall; actorId: number } {
-  // Les bots ont des IDs nÃƒÂ©gatifs dans l'ÃƒÂ©tat de jeu (GameCoreService),
+  // Les bots ont des IDs négatifs dans l'état de jeu (GameCoreService),
   // donc on ne doit pas rejeter actorId <= 0 ici.
   if (actorId == null) {
     throw new GameActorRequiredError('Acteur requis');

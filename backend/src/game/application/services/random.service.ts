@@ -3,7 +3,7 @@ import { nextRngFloat, nextRngInt } from '../../../common/utils/public-api';
 
 @Injectable()
 export class RandomService {
-  createMetaRng<TMeta extends Record<string, unknown>>(
+  createMetaRng<TMeta extends object>(
     meta: TMeta,
   ): {
     rng: () => number;
@@ -20,25 +20,25 @@ export class RandomService {
     };
   }
 
-  nextFloat<TMeta extends Record<string, unknown>>(
+  nextFloat<TMeta extends object>(
     meta: TMeta,
   ): {
     value: number;
     meta: TMeta;
   } {
-    const out = nextRngFloat(meta);
+    const out = nextRngFloat(meta as Record<string, unknown>);
     return { value: out.value, meta: out.meta as TMeta };
   }
 
-  nextInt<TMeta extends Record<string, unknown>>(
+  nextInt<TMeta extends object>(
     meta: TMeta,
     maxExclusive: number,
   ): { value: number; meta: TMeta } {
-    const out = nextRngInt(meta, maxExclusive);
+    const out = nextRngInt(meta as Record<string, unknown>, maxExclusive);
     return { value: out.value, meta: out.meta as TMeta };
   }
 
-  rollDice<TMeta extends Record<string, unknown>>(
+  rollDice<TMeta extends object>(
     meta: TMeta,
     sides: number,
   ): { roll: number; meta: TMeta } {
@@ -47,7 +47,7 @@ export class RandomService {
     return { roll: out.value + 1, meta: out.meta };
   }
 
-  pickIndex<TMeta extends Record<string, unknown>>(
+  pickIndex<TMeta extends object>(
     meta: TMeta,
     length: number,
   ): { index: number; meta: TMeta } {
@@ -57,7 +57,7 @@ export class RandomService {
     return { index: out.value, meta: out.meta };
   }
 
-  pickOne<T, TMeta extends Record<string, unknown>>(
+  pickOne<T, TMeta extends object>(
     meta: TMeta,
     values: readonly T[],
   ): { value: T | null; meta: TMeta } {
@@ -67,7 +67,7 @@ export class RandomService {
     return { value: safe[index] ?? null, meta: updated };
   }
 
-  shuffle<T, TMeta extends Record<string, unknown>>(
+  shuffle<T, TMeta extends object>(
     meta: TMeta,
     values: readonly T[],
   ): { values: T[]; meta: TMeta } {

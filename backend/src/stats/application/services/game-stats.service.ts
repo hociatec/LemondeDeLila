@@ -154,13 +154,13 @@ export class GameStatsService {
       const bucket = byGame.get(key)!;
       const target = match.withBots ? bucket.withBots : bucket.withoutBots;
 
-      // Quit = partie quittÃ©e avant la fin (ou reset)
+      // Quit = partie quittée avant la fin (ou reset)
       if (r.outcome === 'quit') {
         target.quit += 1;
         continue;
       }
 
-      // On ne compte "terminÃ©e" que si le match est clÃ´turÃ©.
+      // On ne compte "terminée" que si le match est clôturé.
       if (match.endedAt) {
         target.finished += 1;
       }

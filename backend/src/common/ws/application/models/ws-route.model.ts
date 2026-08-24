@@ -1,4 +1,4 @@
-import type { WsAuthPayload } from '../../../interfaces/ws-auth-payload';
+import type { WsAuthPayload } from '../../../interfaces/public-api';
 
 export type WsIncomingMessage = {
   type?: string;

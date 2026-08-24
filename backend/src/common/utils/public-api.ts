@@ -8,3 +8,5 @@ export {
 export { sanitizeText } from './sanitize-text';
 export { ensureSeededRng, nextRngFloat, nextRngInt, type SeededRngState } from './seeded-rng';
 export { seededShuffle } from './seeded-shuffle';
+export { stringOrEmpty } from './string-value.utils';
+export { getBuildInfo, type BuildInfo } from './build-info.utils';

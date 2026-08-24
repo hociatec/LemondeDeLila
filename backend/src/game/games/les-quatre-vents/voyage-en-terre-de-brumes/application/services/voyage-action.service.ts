@@ -9,7 +9,7 @@ import {
 } from '../../../../../application/helpers/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import { RandomService } from '../../../../../application/services/random.service';
@@ -93,10 +93,10 @@ export class VoyageActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} lance le dÃƒÂ© : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance le dé : "${roll}".`,
     );
 
-    // DÃƒÂ©placement (rebond sur la case finale)
+    // Déplacement (rebond sur la case finale)
     next = this.move(next, currentId, roll);
     next = this.applyLanding(next, currentId, { kind: 'none' });
 
@@ -187,20 +187,20 @@ export class VoyageActionService {
 
     next = this.core.appendLog(
       next,
-      ok ? 'Bonne rÃƒÂ©ponse !' : 'Mauvaise rÃƒÂ©ponse.',
+      ok ? 'Bonne réponse !' : 'Mauvaise réponse.',
     );
 
-    // LÃƒÂ©gende : si bonne rÃƒÂ©ponse, on conserve la carte et on applique ÃƒÂ©ventuellement un bonus.
+    // Légende : si bonne réponse, on conserve la carte et on applique éventuellement un bonus.
     if (ok) {
       next = this.incrementCollection(next, playerId, 'legend');
       if (typeof quiz.successDelta === 'number' && quiz.successDelta !== 0) {
         const delta = Math.trunc(quiz.successDelta);
-        next = this.core.appendLog(next, `Bonus : dÃƒÂ©placement ${delta}.`);
+        next = this.core.appendLog(next, `Bonus : déplacement ${delta}.`);
         next = this.move(next, playerId, delta);
         next = this.applyLanding(next, playerId, { kind: 'none' });
       }
     } else {
-      // Mauvaise rÃƒÂ©ponse : la carte est dÃƒÂ©faussÃƒÂ©e.
+      // Mauvaise réponse : la carte est défaussée.
       next = this.discardDrawnCard(next, 'legend', quiz.card, { keep: false });
     }
 
@@ -231,17 +231,17 @@ export class VoyageActionService {
     const kind = toText(asRecord(pending.data).kind).trim();
     const last = meta0.statuses?.lastTargetByActor?.[playerId] ?? null;
     if (last != null && last === targetId) {
-      // RÃƒÂ¨gle : aucun joueur ne peut ÃƒÂªtre ciblÃƒÂ© deux fois de suite par une mÃƒÂªme personne.
+      // Règle : aucun joueur ne peut être ciblé deux fois de suite par une même personne.
       next = this.core.appendLog(
         next,
-        'Cible invalide : vous ne pouvez pas viser le mÃƒÂªme joueur deux fois de suite.',
+        'Cible invalide : vous ne pouvez pas viser le même joueur deux fois de suite.',
       );
       return { ...next, pending }; // on laisse le pending ouvert
     }
     if (kind === 'swap') {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ÃƒÂ©change sa place avec ${resolvePlayerNameFromState(next, targetId)}.`,
+        `${resolvePlayerNameFromState(next, playerId)} échange sa place avec ${resolvePlayerNameFromState(next, targetId)}.`,
       );
       next = this.swapPositions(next, playerId, targetId);
       next = this.setLastTarget(next, playerId, targetId);
@@ -258,7 +258,7 @@ export class VoyageActionService {
       const count = Math.max(1, Math.trunc(Number(pending?.data?.count ?? 1)));
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ÃƒÂ©change ${count} carte(s) avec ${resolvePlayerNameFromState(next, targetId)}.`,
+        `${resolvePlayerNameFromState(next, playerId)} échange ${count} carte(s) avec ${resolvePlayerNameFromState(next, targetId)}.`,
       );
       next = this.exchangeRandomCards(next, playerId, targetId, count);
       next = this.setLastTarget(next, playerId, targetId);
@@ -310,7 +310,7 @@ export class VoyageActionService {
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...updated } };
         next = this.core.appendLog(
           next,
-          `ArrivÃƒÂ©e atteinte ! Les autres joueurs jouent encore ${remainingTurns} tour(s).`,
+          `Arrivée atteinte ! Les autres joueurs jouent encore ${remainingTurns} tour(s).`,
         );
       }
       return next;
@@ -327,12 +327,12 @@ export class VoyageActionService {
     if (tile.type === 'passage') {
       if (context.kind === 'from_passage') return next;
       const otherPlayers = this.otherPlayers(next, playerId);
-      if (/\bÃƒÂ©change\b/i.test(tile.description ?? '') && otherPlayers.length) {
+      if (/\béchange\b/i.test(tile.description ?? '') && otherPlayers.length) {
         const pending: PendingState = {
           type: 'choose_target',
           playerId,
           blocking: true,
-          label: 'Choisir un joueur (ÃƒÂ©changer de place).',
+          label: 'Choisir un joueur (échanger de place).',
           data: {
             kind: 'swap',
             targets: otherPlayers.map((p) => ({ targetPlayerId: p.id })),
@@ -344,7 +344,7 @@ export class VoyageActionService {
 
       const delta = extractMoveDelta(tile.description ?? '');
       if (delta !== 0) {
-        next = this.core.appendLog(next, `Passage : dÃƒÂ©placement ${delta}.`);
+        next = this.core.appendLog(next, `Passage : déplacement ${delta}.`);
         next = this.move(next, playerId, delta);
         return this.applyLanding(next, playerId, { kind: 'from_passage' });
       }
@@ -385,7 +385,7 @@ export class VoyageActionService {
           type: 'quiz',
           playerId,
           blocking: true,
-          label: 'RÃƒÂ©pondre au quiz.',
+          label: 'Répondre au quiz.',
           question: quiz.question,
           choices: quiz.choices,
           data: { cardId: card.id },
@@ -398,7 +398,7 @@ export class VoyageActionService {
           pending,
         };
       }
-      // Pas un quiz : on conserve par dÃƒÂ©faut
+      // Pas un quiz : on conserve par défaut
       next = this.incrementCollection(next, playerId, 'legend');
       next = this.discardDrawnCard(next, 'legend', card, { keep: true });
       return this.applyGenericEffect(next, playerId, card.effect);
@@ -411,7 +411,7 @@ export class VoyageActionService {
     }
 
     if (deckType === 'landscape') {
-      const keep = !/dÃƒÂ©fauss/i.test(card.effect ?? '');
+      const keep = !/défauss/i.test(card.effect ?? '');
       if (keep) next = this.incrementCollection(next, playerId, 'landscape');
       next = this.discardDrawnCard(next, 'landscape', card, { keep });
       return this.applyGenericEffect(next, playerId, card.effect);
@@ -462,9 +462,9 @@ export class VoyageActionService {
       /tirez\s+au\s+hasard\s+une\s+carte/i.test(text) &&
       /vous\s+la\s+perdez/i.test(text)
     ) {
-      const wantLegend = /l[ÃƒÂ©e]gende/i.test(text);
+      const wantLegend = /l[ée]gende/i.test(text);
       const wantLandscape = /paysage/i.test(text);
-      const wantTreasure = /tr[ÃƒÂ©e]sor/i.test(text);
+      const wantTreasure = /tr[ée]sor/i.test(text);
       const wantFarce = /farce/i.test(text);
       next = this.loseRandomCard(next, playerId, {
         legend: wantLegend,
@@ -476,7 +476,7 @@ export class VoyageActionService {
     }
     const delta = extractMoveDelta(text);
     if (delta !== 0) {
-      next = this.core.appendLog(next, `DÃƒÂ©placement ${delta}.`);
+      next = this.core.appendLog(next, `Déplacement ${delta}.`);
       next = this.move(next, playerId, delta);
       return this.applyLanding(next, playerId, { kind: 'none' });
     }
@@ -486,11 +486,11 @@ export class VoyageActionService {
       return this.addSkip(next, playerId, skip);
     }
 
-    // Ãƒâ€°changes de cartes
-    if (/ÃƒÂ©change/i.test(text) && /carte/i.test(text)) {
+    // Échanges de cartes
+    if (/échange/i.test(text) && /carte/i.test(text)) {
       const count = extractCardCount(text);
 
-      // Cas "second joueur installÃƒÂ© ÃƒÂ  la table" : on cible automatiquement.
+      // Cas "second joueur installé à la table" : on cible automatiquement.
       if (/second\s+joueur/i.test(text)) {
         const players = Array.isArray(next.players) ? next.players : [];
         const ids = players
@@ -501,7 +501,7 @@ export class VoyageActionService {
         if (targetId != null) {
           next = this.core.appendLog(
             next,
-            `Ãƒâ€°change automatique avec ${resolvePlayerNameFromState(next, targetId)}.`,
+            `Échange automatique avec ${resolvePlayerNameFromState(next, targetId)}.`,
           );
           next = this.exchangeRandomCards(next, playerId, targetId, count);
           return this.setLastTarget(next, playerId, targetId);
@@ -514,7 +514,7 @@ export class VoyageActionService {
           type: 'choose_target',
           playerId,
           blocking: true,
-          label: `Choisir un joueur (ÃƒÂ©changer ${count} carte(s)).`,
+          label: `Choisir un joueur (échanger ${count} carte(s)).`,
           data: {
             kind: 'swap_card',
             count,
@@ -526,8 +526,8 @@ export class VoyageActionService {
       }
     }
 
-    // Ãƒâ€°changes de position
-    if (/ÃƒÂ©change/i.test(text) && /position/i.test(text)) {
+    // Échanges de position
+    if (/échange/i.test(text) && /position/i.test(text)) {
       if (/dernier\s+joueur/i.test(text)) {
         const other = this.otherPlayers(next, playerId);
         if (other.length) {
@@ -539,7 +539,7 @@ export class VoyageActionService {
             )[0];
           next = this.core.appendLog(
             next,
-            `${resolvePlayerNameFromState(next, playerId)} ÃƒÂ©change sa place avec ${resolvePlayerNameFromState(next, last)}.`,
+            `${resolvePlayerNameFromState(next, playerId)} échange sa place avec ${resolvePlayerNameFromState(next, last)}.`,
           );
           next = this.swapPositions(next, playerId, last);
           return this.setLastTarget(next, playerId, last);
@@ -552,7 +552,7 @@ export class VoyageActionService {
           type: 'choose_target',
           playerId,
           blocking: true,
-          label: 'Choisir un joueur (ÃƒÂ©changer de place).',
+          label: 'Choisir un joueur (échanger de place).',
           data: {
             kind: 'swap',
             targets: otherPlayers.map((p) => ({ targetPlayerId: p.id })),
@@ -698,7 +698,7 @@ export class VoyageActionService {
     options: { keep: boolean },
   ): GameStateEntity {
     if (options.keep) {
-      // Carte conservÃƒÂ©e : elle sort du circuit (pas remise en dÃƒÂ©fausse).
+      // Carte conservée : elle sort du circuit (pas remise en défausse).
       return state;
     }
     const meta = this.getMeta(state);
@@ -846,7 +846,7 @@ export class VoyageActionService {
     if (allow('farce') && (c.farce ?? 0) > 0) candidates.push('farce');
 
     if (!candidates.length) {
-      return this.core.appendLog(state, 'Aucune carte ÃƒÂ  perdre.');
+      return this.core.appendLog(state, 'Aucune carte à perdre.');
     }
 
     const picked = this.random.pickOne(meta, candidates);

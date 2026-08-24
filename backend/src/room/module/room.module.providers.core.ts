@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { RoomAdminMaintenanceService } from '../application/services/room-admin-maintenance.service';
 import { RoomAccessService } from '../application/services/room-access.service';
 import { RoomAdminContextService } from '../application/services/room-admin-context.service';
@@ -42,12 +43,20 @@ import { RoomLobbyTypeormRepository } from '../infrastructure/persistence/typeor
 import { RoomParticipantTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-participant-typeorm.repository';
 import { RoomTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-typeorm.repository';
 import { RoomUserTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-user-typeorm.repository';
-import { RoomVaultSnapshotTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-vault-snapshot-typeorm.repository';
+import { VaultRoomSnapshotEntity } from '../../vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity';
+import {
+  ROOM_VAULT_SNAPSHOTS_TYPEORM_REPOSITORY,
+  RoomVaultSnapshotTypeormRepository,
+} from '../infrastructure/persistence/typeorm/repositories/room-vault-snapshot-typeorm.repository';
 import { RoomEventPublisherAdapter } from '../infrastructure/system/room-event-publisher.adapter';
 import { RoomEventsBusService } from '../infrastructure/system/room-events-bus.service';
 import { createRoomMaintenanceDefaults } from '../infrastructure/config/room-maintenance-defaults.config';
 
 export const ROOM_CORE_PROVIDERS = [
+  {
+    provide: ROOM_VAULT_SNAPSHOTS_TYPEORM_REPOSITORY,
+    useExisting: getRepositoryToken(VaultRoomSnapshotEntity),
+  },
   RoomEventsBusService,
   RoomEventPublisherAdapter,
   RoomAdminAdapter,

@@ -20,7 +20,7 @@ export function describePiratesEnVadrouillePawnLabel(
   const lower = pawn.toLowerCase();
   const feminine = lower.startsWith('la ') || lower.startsWith('une ');
   const inner = pawn
-    .replace(/^l['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*/i, '')
+    .replace(/^l['’]\s*/i, '')
     .replace(/^(le|la|les|un|une)\s+/i, '')
     .trim();
   const core = inner || pawn;

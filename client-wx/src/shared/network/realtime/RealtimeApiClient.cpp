@@ -16,8 +16,15 @@ RealtimeApiClient::RealtimeApiClient(
 {
 }
 
+void RealtimeApiClient::WarmUp()
+{
+    std::scoped_lock requestLock(requestMutex_);
+    webSocketClient_.Connect(endpoint_, headers_);
+}
+
 RealtimeApiResponse RealtimeApiClient::Send(const RealtimeApiRequest& request)
 {
+    std::scoped_lock requestLock(requestMutex_);
     RealtimeApiResponse response;
     response.type = request.type;
 

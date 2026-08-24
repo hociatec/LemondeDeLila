@@ -11,6 +11,7 @@ class LoginUseCase final
 public:
     explicit LoginUseCase(domain::IAuthenticationService& authenticationService);
 
+    void WarmUp() const;
     [[nodiscard]] domain::AuthenticationResult Execute(const domain::LoginCredentials& credentials) const;
 
 private:

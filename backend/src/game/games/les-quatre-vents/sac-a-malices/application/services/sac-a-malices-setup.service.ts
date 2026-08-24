@@ -136,7 +136,7 @@ export class SacAMalicesSetupService {
       pendingType: 'sac_variant_choice',
       choices: candidateVariants,
       labelForPlayer: (playerLabel) =>
-        `C'est ÃƒÂ  ${playerLabel} de choisir la variante de Sac ÃƒÂ  Malices.`,
+        `C'est à ${playerLabel} de choisir la variante de Sac à Malices.`,
       dataBuilder: () => ({ variants: candidateVariants }),
     });
   }

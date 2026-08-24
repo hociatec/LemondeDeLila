@@ -1,5 +1,5 @@
 ﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
@@ -73,7 +73,7 @@ export class PrimalisActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} lance le dÃƒÆ’Ã‚Â© : "${rng.roll}".`,
+      `${resolvePlayerNameFromState(next, playerId)} lance le dé : "${rng.roll}".`,
     );
 
     if (face === 'relance') {
@@ -156,7 +156,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, addition);
           next = this.core.appendLog(
             next,
-            `${resolvePlayerNameFromState(next, playerId)} double sa rÃƒÆ’Ã‚Â©colte sur la case 1.`,
+            `${resolvePlayerNameFromState(next, playerId)} double sa récolte sur la case 1.`,
           );
         }
         break;
@@ -174,7 +174,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, { leaves: 1 });
           next = this.core.appendLog(
             next,
-            `${resolvePlayerNameFromState(next, playerId)} gagne une feuille supplÃƒÆ’Ã‚Â©mentaire (case 3).`,
+            `${resolvePlayerNameFromState(next, playerId)} gagne une feuille supplémentaire (case 3).`,
           );
         }
         break;
@@ -183,7 +183,7 @@ export class PrimalisActionService {
           next = this.addResources(next, playerId, { eggs: 1 });
           next = this.core.appendLog(
             next,
-            `${resolvePlayerNameFromState(next, playerId)} rÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â¨re un Ãƒâ€¦Ã¢â‚¬Å“uf bonus (case 4).`,
+            `${resolvePlayerNameFromState(next, playerId)} récupère un œuf bonus (case 4).`,
           );
         }
         break;
@@ -221,7 +221,7 @@ export class PrimalisActionService {
     let next = state;
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} dÃƒÆ’Ã‚Â©clenche un Danger : la comÃƒÆ’Ã‚Â¨te avance.`,
+      `${resolvePlayerNameFromState(next, playerId)} déclenche un Danger : la comète avance.`,
     );
     next = this.advanceAllPlayers(next, 1);
     if (this.getMeta(next).statuses.dangerAmplified) {
@@ -235,7 +235,7 @@ export class PrimalisActionService {
     if (tile?.n === 9) {
       next = this.core.appendLog(
         next,
-        'Case 9 : le Danger est amplifiÃƒÆ’Ã‚Â©, tout le monde avance de deux cases supplÃƒÆ’Ã‚Â©mentaires.',
+        'Case 9 : le Danger est amplifié, tout le monde avance de deux cases supplémentaires.',
       );
       next = this.advanceAllPlayers(next, 1);
     }
@@ -347,7 +347,7 @@ export class PrimalisActionService {
     };
     return this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, best.id)} survit ÃƒÆ’Ã‚Â  la comÃƒÆ’Ã‚Â¨te avec ${
+      `${resolvePlayerNameFromState(next, best.id)} survit à la comète avec ${
         best.resources.herbivores + best.resources.carnivores
       } dinosaures et ${best.resources.leaves} feuilles.`,
     );

@@ -1,22 +1,29 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import type { RoomVaultSnapshotRepository } from '../../../../application/ports/room-vault-snapshot.repository';
-import { VaultRoomSnapshotEntity } from '../../../../../vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity';
+
+export const ROOM_VAULT_SNAPSHOTS_TYPEORM_REPOSITORY = Symbol(
+  'ROOM_VAULT_SNAPSHOTS_TYPEORM_REPOSITORY',
+);
+
+type VaultRoomSnapshotRow = {
+  id: string;
+  ownerUserId: number;
+};
 
 @Injectable()
 export class RoomVaultSnapshotTypeormRepository
   implements RoomVaultSnapshotRepository
 {
   constructor(
-    @InjectRepository(VaultRoomSnapshotEntity)
-    private readonly snapshots: Repository<VaultRoomSnapshotEntity>,
+    @Inject(ROOM_VAULT_SNAPSHOTS_TYPEORM_REPOSITORY)
+    private readonly snapshots: Repository<VaultRoomSnapshotRow>,
   ) {}
 
   async deleteOwnedSnapshot(id: string, ownerUserId: number): Promise<void> {
     await this.snapshots.delete({
       id,
       ownerUserId,
-    } as VaultRoomSnapshotEntity);
+    });
   }
 }

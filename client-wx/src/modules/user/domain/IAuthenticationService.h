@@ -12,6 +12,7 @@ class IAuthenticationService
 public:
     virtual ~IAuthenticationService() = default;
 
+    virtual void WarmUp() = 0;
     [[nodiscard]] virtual AuthenticationResult Login(const LoginCredentials& credentials) = 0;
     [[nodiscard]] virtual RegistrationResult Register(const RegisterRequest& request) = 0;
 };

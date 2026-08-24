@@ -1,17 +1,31 @@
-import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { FindOptionsWhere, In, IsNull, Repository } from 'typeorm';
 import type { PresenceRoomParticipantRepository } from '../../../../application/ports/presence-room-participant.repository';
 import type { PresenceActiveRoomParticipant } from '../../../../application/models/presence-active-room-participant.model';
-import { RoomParticipant } from '../../../../../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
+
+export const PRESENCE_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY = Symbol(
+  'PRESENCE_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY',
+);
+
+type PresenceRoomParticipantRow = {
+  leftAt: Date | null;
+  joinedAt: Date;
+  user: { id: number };
+  room: {
+    id: number;
+    name: string;
+    status: string | null;
+    startedAt: Date | null;
+  } | null;
+};
 
 @Injectable()
 export class PresenceRoomParticipantTypeormRepository
   implements PresenceRoomParticipantRepository
 {
   constructor(
-    @InjectRepository(RoomParticipant)
-    private readonly participants: Repository<RoomParticipant>,
+    @Inject(PRESENCE_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY)
+    private readonly participants: Repository<PresenceRoomParticipantRow>,
   ) {}
 
   async listActiveRoomsByUserIds(
@@ -28,7 +42,7 @@ export class PresenceRoomParticipantTypeormRepository
       where: {
         leftAt: IsNull(),
         user: { id: In(normalizedUserIds) },
-      } as FindOptionsWhere<RoomParticipant>,
+      } as FindOptionsWhere<PresenceRoomParticipantRow>,
       relations: ['room', 'user'],
       order: { joinedAt: 'DESC' },
     });

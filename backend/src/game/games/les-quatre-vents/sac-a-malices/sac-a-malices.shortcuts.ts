@@ -1,4 +1,4 @@
-import type { GameShortcutsBuilder } from '../../../models/game-shortcuts.model';
+import type { GameShortcutsBuilder } from '../../../application/models/game-shortcuts.model';
 import {
   interfaceShortcut,
   actionShortcut,

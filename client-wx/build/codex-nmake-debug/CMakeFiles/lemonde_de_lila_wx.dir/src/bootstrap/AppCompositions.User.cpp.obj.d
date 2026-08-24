@@ -114,6 +114,8 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsRepository.h
@@ -149,8 +151,6 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/abi_macros.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/conversions/from_json.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/array
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/forward_list
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/valarray
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/exceptions.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
@@ -247,5 +247,11 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/ordered_map.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h

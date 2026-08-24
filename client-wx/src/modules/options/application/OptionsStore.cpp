@@ -1,5 +1,6 @@
 #include "modules/options/application/OptionsStore.h"
 #include "shared/errors/ErrorMessages.h"
+#include "shared/text/Encoding.h"
 
 #include <stdexcept>
 #include <utility>
@@ -18,6 +19,7 @@ OptionsStore::OptionsStore(std::unique_ptr<domain::IOptionsRepository> repositor
 void OptionsStore::Load()
 {
     current_ = repository_->Load();
+    lila::shared::text::SetBrokenAccentRepairEnabled(current_.repairBrokenAccents);
 }
 
 const domain::OptionsState& OptionsStore::Current() const
@@ -29,6 +31,7 @@ void OptionsStore::Apply(const domain::OptionsState& state)
 {
     current_ = state;
     current_.Normalize();
+    lila::shared::text::SetBrokenAccentRepairEnabled(current_.repairBrokenAccents);
 }
 
 void OptionsStore::Update(domain::OptionsState state)
@@ -36,5 +39,6 @@ void OptionsStore::Update(domain::OptionsState state)
     state.Normalize();
     repository_->Save(state);
     current_ = state;
+    lila::shared::text::SetBrokenAccentRepairEnabled(current_.repairBrokenAccents);
 }
 }

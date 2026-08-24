@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { createCorridorRuntime } from '../../corridor.runtime';
 
 describe('Corridor runtime', () => {

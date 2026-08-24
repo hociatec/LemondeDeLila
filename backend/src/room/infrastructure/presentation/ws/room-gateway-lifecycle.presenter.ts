@@ -46,7 +46,7 @@ export class RoomGatewayLifecyclePresenter {
   }
 
   presentSilentModeForbiddenReason(): string {
-    return 'Mode cache reserve aux admins';
+    return 'Mode caché réservé aux admins';
   }
 
   presentSpectatorForbiddenReason(): string {

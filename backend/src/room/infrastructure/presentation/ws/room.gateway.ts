@@ -1,13 +1,12 @@
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
-  OnModuleInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, WebSocket } from 'ws';
-import { Inject, Logger, forwardRef } from '@nestjs/common';
+import { Inject, Logger, OnModuleInit, forwardRef } from '@nestjs/common';
 import type { RoomPayload } from '../../../public-api';
 import type { RoomIntent } from './dto/room-intent.ws.dto';
 import { CatalogService } from '../../../../catalog/public-api';
@@ -22,8 +21,13 @@ import { RoomGatewayPresenceService } from './room-gateway-presence.service';
 import { RoomGatewaySessionService } from './room-gateway-session.service';
 import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
 import { RoomGatewayStateService } from './room-gateway-state.service';
-import type { AuthedClient, ClientMeta, ClientRole, IncomingPayload } from './room-gateway.types';
-import { SoundsService } from '../../../../sounds/infrastructure/storage/sounds.service';
+import type {
+  AuthedClient,
+  ClientMeta,
+  ClientRole,
+  IncomingPayload,
+} from './room-gateway.types';
+import { SoundsService } from '../../../../sounds/public-api';
 import { RoomChatStore } from './room-chat-state';
 import type { RoomSnapshot } from './room-announcement.helpers';
 import { addSocketToRoomMembership } from './room-socket-membership.helpers';
@@ -78,7 +82,12 @@ export class RoomGateway
   onModuleInit(): void {
     this.roomEvents.onRoomStateUpdated(async (roomId: number) => {
       const message = this.statePresenter.presentStateUpdated(roomId);
-      await this.broadcast(roomId, message.type, message.payload, message.roomId);
+      await this.broadcast(
+        roomId,
+        message.type,
+        message.payload,
+        message.roomId,
+      );
       await this.sendRoomState(roomId);
     });
     this.roomEvents.onRoomDeleted(async (roomId: number) => {
@@ -159,8 +168,8 @@ export class RoomGateway
     payload: RoomPayload,
   ): string[] {
     return (
-      this.state.withAllowedActionsForClient(payload, meta).room.allowedActions ??
-      []
+      this.state.withAllowedActionsForClient(payload, meta).room
+        .allowedActions ?? []
     );
   }
 
@@ -527,7 +536,6 @@ export class RoomGateway
     };
   }
 
-
   private buildSessionContext() {
     return {
       clients: this.clients,
@@ -743,10 +751,8 @@ export class RoomGateway
   }
 
   private async canSpectate(roomId: number, userId: number): Promise<boolean> {
-    return this.session.canSpectate(
-      roomId,
-      userId,
-      (nextRoomId, nextUserId) => this.invites.canSpectate(nextRoomId, nextUserId),
+    return this.session.canSpectate(roomId, userId, (nextRoomId, nextUserId) =>
+      this.invites.canSpectate(nextRoomId, nextUserId),
     );
   }
 
@@ -771,6 +777,3 @@ export class RoomGateway
       : {};
   }
 }
-
-
-

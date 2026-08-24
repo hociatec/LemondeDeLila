@@ -33,17 +33,13 @@ domain::OptionsState OptionsViewStateAdapter::ReadState(const OptionsView& view,
     const auto audio = view.AudioControls();
     const auto chat = view.ChatControls();
 
-    if (general.restoreSessionCheckbox != nullptr)
-    {
-        state.restoreSessionOnStartup = general.restoreSessionCheckbox->GetValue();
-    }
-    if (general.showNavigationStatusCheckbox != nullptr)
-    {
-        state.showNavigationStatus = general.showNavigationStatusCheckbox->GetValue();
-    }
     if (general.confirmExitCheckbox != nullptr)
     {
         state.confirmExit = general.confirmExitCheckbox->GetValue();
+    }
+    if (general.repairBrokenAccentsCheckbox != nullptr)
+    {
+        state.repairBrokenAccents = general.repairBrokenAccentsCheckbox->GetValue();
     }
     if (general.enableBetaGamesCheckbox != nullptr)
     {
@@ -81,6 +77,11 @@ domain::OptionsState OptionsViewStateAdapter::ReadState(const OptionsView& view,
     {
         state.soundTavernAmbienceVolume = audio.soundTavernAmbienceSlider->GetValue();
     }
+    if (state.soundMenuAmbienceVolume != baseState.soundMenuAmbienceVolume ||
+        state.soundTavernAmbienceVolume != baseState.soundTavernAmbienceVolume)
+    {
+        state.soundAmbienceSplit = true;
+    }
     if (audio.soundAppLaunchSlider != nullptr)
     {
         state.soundAppLaunchVolume = audio.soundAppLaunchSlider->GetValue();
@@ -96,6 +97,18 @@ domain::OptionsState OptionsViewStateAdapter::ReadState(const OptionsView& view,
     if (audio.soundChatMessagesSlider != nullptr)
     {
         state.soundChatMessagesVolume = audio.soundChatMessagesSlider->GetValue();
+    }
+    for (const auto& control : view.AudioCueControls())
+    {
+        auto& cue = state.audio.cues[control.key];
+        if (control.enabledCheckbox != nullptr)
+        {
+            cue.enabled = control.enabledCheckbox->GetValue();
+        }
+        if (control.volumeSlider != nullptr)
+        {
+            cue.volume = control.volumeSlider->GetValue();
+        }
     }
     if (chat.chatEnabledCheckbox != nullptr)
     {
@@ -129,13 +142,12 @@ void OptionsViewStateAdapter::WriteState(OptionsView& view, const domain::Option
         }
         if (label != nullptr)
         {
-            label->SetLabel(wxString::Format(wxString(L"%s : %d %%"), prefix, value));
+            label->SetLabel(wxString::Format(wxString(L"%s : %d%%"), prefix, value));
         }
     };
 
-    setCheckbox(general.restoreSessionCheckbox, state.restoreSessionOnStartup);
-    setCheckbox(general.showNavigationStatusCheckbox, state.showNavigationStatus);
     setCheckbox(general.confirmExitCheckbox, state.confirmExit);
+    setCheckbox(general.repairBrokenAccentsCheckbox, state.repairBrokenAccents);
     setCheckbox(general.enableBetaGamesCheckbox, state.enableBetaGames);
     setCheckbox(audio.muteAllCheckbox, state.muteAll);
     setCheckbox(audio.soundAmbienceCheckbox, state.soundAmbience);
@@ -146,12 +158,25 @@ void OptionsViewStateAdapter::WriteState(OptionsView& view, const domain::Option
     setCheckbox(chat.chatEnabledCheckbox, state.chatEnabled);
     setCheckbox(chat.confirmChatExitCheckbox, state.confirmChatExit);
 
-    setSlider(audio.soundMenuAmbienceSlider, audio.soundMenuAmbienceValueLabel, state.soundMenuAmbienceVolume, wxString(L"Ambiance (menu)"));
-    setSlider(audio.soundTavernAmbienceSlider, audio.soundTavernAmbienceValueLabel, state.soundTavernAmbienceVolume, wxString(L"Ambiance (table)"));
-    setSlider(audio.soundAppLaunchSlider, audio.soundAppLaunchValueLabel, state.soundAppLaunchVolume, wxString(L"Lancement"));
-    setSlider(audio.soundNavigateSlider, audio.soundNavigateValueLabel, state.soundNavigateVolume, wxString(L"Navigation"));
-    setSlider(audio.soundSelectSlider, audio.soundSelectValueLabel, state.soundSelectVolume, wxString(L"Selection"));
-    setSlider(audio.soundChatMessagesSlider, audio.soundChatMessagesValueLabel, state.soundChatMessagesVolume, wxString(L"Sons de tchat"));
+    setSlider(audio.soundMenuAmbienceSlider, audio.soundMenuAmbienceValueLabel, state.soundMenuAmbienceVolume, wxString(L"Volume menu"));
+    setSlider(audio.soundTavernAmbienceSlider, audio.soundTavernAmbienceValueLabel, state.soundTavernAmbienceVolume, wxString(L"Volume taverne"));
+    setSlider(audio.soundAppLaunchSlider, audio.soundAppLaunchValueLabel, state.soundAppLaunchVolume, wxString(L"Volume connexion"));
+    setSlider(audio.soundNavigateSlider, audio.soundNavigateValueLabel, state.soundNavigateVolume, wxString(L"Volume navigation"));
+    setSlider(audio.soundSelectSlider, audio.soundSelectValueLabel, state.soundSelectVolume, wxString(L"Volume sélection"));
+    setSlider(audio.soundChatMessagesSlider, audio.soundChatMessagesValueLabel, state.soundChatMessagesVolume, wxString(L"Volume messages"));
+    for (const auto& control : view.AudioCueControls())
+    {
+        const auto iterator = state.audio.cues.find(control.key);
+        const domain::SoundCueOptions value = iterator != state.audio.cues.end()
+            ? iterator->second
+            : domain::SoundCueOptions{};
+        setCheckbox(control.enabledCheckbox, value.enabled);
+        setSlider(
+            control.volumeSlider,
+            control.volumeLabel,
+            value.volume,
+            wxString(L"Volume individuel"));
+    }
 
     UpdateSoundControlInteractivity(view);
 }
@@ -190,6 +215,14 @@ void OptionsViewStateAdapter::UpdateSoundControlInteractivity(OptionsView& view)
     {
         audio.soundChatMessagesSlider->Enable(
             canInteract && audio.soundChatMessagesCheckbox != nullptr && audio.soundChatMessagesCheckbox->GetValue());
+    }
+    for (const auto& control : view.AudioCueControls())
+    {
+        if (control.volumeSlider != nullptr)
+        {
+            control.volumeSlider->Enable(
+                canInteract && control.enabledCheckbox != nullptr && control.enabledCheckbox->GetValue());
+        }
     }
 }
 }

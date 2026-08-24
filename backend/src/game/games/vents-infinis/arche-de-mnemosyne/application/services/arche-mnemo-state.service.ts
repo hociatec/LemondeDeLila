@@ -1,6 +1,6 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import { stringOrEmpty } from '@common/utils/public-api';
 import type {
   MnemoAdminPage,
   MnemoPrompt,
@@ -26,9 +26,9 @@ export class ArcheMnemoStateService {
   statusLabel(value: unknown): string {
     const raw = stringOrEmpty(value).trim().toLowerCase();
     if (raw === 'all') return 'toutes';
-    if (raw === 'validated') return 'validÃƒÂ©e';
+    if (raw === 'validated') return 'validée';
     if (raw === 'pending') return 'en attente';
-    if (raw === 'to_edit') return 'ÃƒÂ  modifier';
+    if (raw === 'to_edit') return 'à modifier';
     if (raw === 'trash') return 'corbeille';
     return stringOrEmpty(value).trim() || raw || 'en attente';
   }
@@ -36,18 +36,18 @@ export class ArcheMnemoStateService {
   buildConfigPrompt(config: MnemoQuizConfig): MnemoPrompt {
     return {
       type: 'config_prompt',
-      title: 'Configuration - Arche de MnÃƒÂ©mosyne',
+      title: 'Configuration - Arche de Mnémosyne',
       actionType: 'mnemo_set_config',
       cancelActionType: 'mnemo_prompt_cancel',
       fields: [
-        { key: 'correctSoloPoints', label: 'Points accordÃƒÂ©s si un seul joueur rÃƒÂ©pond correctement', kind: 'number', initialText: String(config?.correctSoloPoints ?? 2) },
-        { key: 'correctMultiPoints', label: 'Points accordÃƒÂ©s par joueur en cas de bonnes rÃƒÂ©ponses multiples', kind: 'number', initialText: String(config?.correctMultiPoints ?? 1) },
-        { key: 'wrongPoints', label: 'Points appliquÃƒÂ©s en cas de mauvaise rÃƒÂ©ponse', kind: 'number', initialText: String(config?.wrongPoints ?? 0) },
-        { key: 'timeoutPoints', label: 'Points appliquÃƒÂ©s si le joueur ne rÃƒÂ©pond pas ÃƒÂ  temps', kind: 'number', initialText: String(config?.timeoutPoints ?? -1) },
+        { key: 'correctSoloPoints', label: 'Points accordés si un seul joueur répond correctement', kind: 'number', initialText: String(config?.correctSoloPoints ?? 2) },
+        { key: 'correctMultiPoints', label: 'Points accordés par joueur en cas de bonnes réponses multiples', kind: 'number', initialText: String(config?.correctMultiPoints ?? 1) },
+        { key: 'wrongPoints', label: 'Points appliqués en cas de mauvaise réponse', kind: 'number', initialText: String(config?.wrongPoints ?? 0) },
+        { key: 'timeoutPoints', label: 'Points appliqués si le joueur ne répond pas à temps', kind: 'number', initialText: String(config?.timeoutPoints ?? -1) },
         { key: 'targetPoints', label: 'Score cible pour gagner la partie', kind: 'number', initialText: String(config?.targetPoints ?? 20) },
         { key: 'useTimer', label: 'Activer le chrono par question (oui/non)', kind: 'boolean', initialText: config?.useTimer ? 'oui' : 'non' },
-        { key: 'timerSeconds', label: 'DurÃƒÂ©e du chrono par question (secondes)', kind: 'number', initialText: String(config?.timerSeconds ?? 30) },
-        { key: 'interQuestionSeconds', label: 'DÃƒÂ©lai avant la question suivante (secondes)', kind: 'number', initialText: String(config?.interQuestionSeconds ?? 15) },
+        { key: 'timerSeconds', label: 'Durée du chrono par question (secondes)', kind: 'number', initialText: String(config?.timerSeconds ?? 30) },
+        { key: 'interQuestionSeconds', label: 'Délai avant la question suivante (secondes)', kind: 'number', initialText: String(config?.interQuestionSeconds ?? 15) },
       ],
     };
   }

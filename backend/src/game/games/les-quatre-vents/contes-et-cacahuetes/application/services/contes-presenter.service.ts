@@ -2,7 +2,7 @@ import type {
   GameLogEntry,
   GameStateEntity,
 } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
@@ -134,22 +134,22 @@ export class ContesPresenterService {
         }
       };
 
-      addCount('skipTurn', 'tour passÃƒÆ’Ã‚Â©');
+      addCount('skipTurn', 'tour passé');
       addCount('rerollToken', 'parchemin');
       addCount('shieldMalus', 'amulette');
-      addCount('forcedRollOneTurns', 'dÃƒÆ’Ã‚Â© limitÃƒÆ’Ã‚Â©');
+      addCount('forcedRollOneTurns', 'dé limité');
       addCount('noBonusCardsTurns', 'bonus muets');
-      addFlag('reverseNextTurn', 'livre ÃƒÆ’Ã‚Â  lÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢envers');
+      addFlag('reverseNextTurn', 'livre à l’envers');
       addFlag('protectNextMalus', 'dragon');
       addFlag('ignoreNextConteAndAdvance', 'cape');
       addFlag('replaceOneOn1By4', 'feuille magique');
-      addFlag('keyOfGold', 'clÃƒÆ’Ã‚Â© dÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢or');
+      addFlag('keyOfGold', 'clé d’or');
       if (
         typeof (statusMap.blockedUntilPassed as Record<number, unknown>)?.[
           pid
         ] === 'number'
       ) {
-        statuses.push('bloquÃƒÆ’Ã‚Â© par le loup');
+        statuses.push('bloqué par le loup');
       }
 
       return `${name} : ${statuses.length ? statuses.join(', ') : 'aucun statut'}.`;

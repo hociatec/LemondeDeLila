@@ -866,8 +866,14 @@ CMakeFiles/lemonde_de_lila_wx_parser_fuzz.dir/src/shared/network/realtime/Realti
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
  C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
  C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
- C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
  C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeProtocolFields.h
  C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppConfig.h
  C:/wamp64/www/lemondeDeLila/client-wx/src/shared/data/JsonReaders.h
@@ -1247,6 +1253,12 @@ CMakeFiles/lemonde_de_lila_wx_parser_fuzz.dir/src/shared/text/Encoding.cpp.obj
  C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/um/imm.h
  C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/um/ime_cmodes.h
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic_wait.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xthreads.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 
 CMakeFiles/lemonde_de_lila_wx_parser_fuzz.dir/src/shared/text/UiTextCatalog.cpp.obj
  C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTextCatalog.cpp
@@ -1766,8 +1778,14 @@ CMakeFiles/lemonde_de_lila_wx_parser_fuzz.dir/tests/ParserFuzzHarness.cpp.obj
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
  C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
  C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
- C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
  C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
  C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/Encoding.h
  C:/vcpkg/installed/x64-windows/include/wx/string.h
  C:/vcpkg/installed/x64-windows/include/wx/defs.h

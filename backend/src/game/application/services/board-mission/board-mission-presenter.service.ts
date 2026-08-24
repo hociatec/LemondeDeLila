@@ -64,7 +64,7 @@ export class BoardMissionPresenterService {
       },
       actions: formatPresenterActions(
         actions,
-        () => game.actionsLabel ?? 'Lancer le dÃƒÆ’Ã‚Â©',
+        () => game.actionsLabel ?? 'Lancer le dé',
       ),
       pending: state.pending ?? null,
       extras: {
@@ -72,13 +72,13 @@ export class BoardMissionPresenterService {
         taxi: {
           currentClient: client
             ? `${client.clientName} vers ${this.support.tileTitleById(meta, client.destinationId)}`
-            : (game.idleClientText ?? 'Aucun client ÃƒÆ’Ã‚Â  bord.'),
+            : (game.idleClientText ?? 'Aucun client à bord.'),
           route:
             client?.route ?? game.idleRouteText ?? 'Aucun trajet en cours.',
-          stats: `Trajets complÃƒÆ’Ã‚Â©tÃƒÆ’Ã‚Â©s : ${completed} / ${model.rules.victory.target}`,
+          stats: `Trajets complétés : ${completed} / ${model.rules.victory.target}`,
           event: event
             ? `${event.title} bloque ${this.support.tileTitleById(meta, event.blockedTileId)}.`
-            : (game.idleEventText ?? 'Pas dÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢obstacle identifiÃƒÆ’Ã‚Â©.'),
+            : (game.idleEventText ?? 'Pas d’obstacle identifié.'),
         },
         ui: {
           panels: {

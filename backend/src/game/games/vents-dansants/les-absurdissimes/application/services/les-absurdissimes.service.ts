@@ -1,20 +1,20 @@
-import type { GameStateEntity } from '../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../models/game-action.model';
-import { AbstractGameService } from '../../../application/services/abstract-game.service';
+} from '../../../../../application/models/game-action.model';
+import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { AbsurdissimesActionService } from './les-absurdissimes-action.service';
 import { AbsurdissimesBotService } from './les-absurdissimes-bot.service';
 import { AbsurdissimesPresenterService } from './les-absurdissimes-presenter.service';
 import { AbsurdissimesSetupService } from './les-absurdissimes-setup.service';
 import { ABSURDISSIMES_GAME } from '../../definitions/game.definition';
-import { buildAbsurdissimesShortcuts } from './les-absurdissimes.shortcuts';
+import { buildAbsurdissimesShortcuts } from '../../les-absurdissimes.shortcuts';
 
 export class LesAbsurdissimesService extends AbstractGameService {
   readonly gameType = ABSURDISSIMES_GAME.id;
@@ -22,7 +22,7 @@ export class LesAbsurdissimesService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = ABSURDISSIMES_GAME.displayName;
   readonly description =
-    'Proposez les rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ponses les plus absurdes et convainquez le juge pour remporter la manche.';
+    'Proposez les réponses les plus absurdes et convainquez le juge pour remporter la manche.';
   readonly minPlayers = ABSURDISSIMES_GAME.minPlayers;
   readonly maxPlayers = ABSURDISSIMES_GAME.maxPlayers;
 

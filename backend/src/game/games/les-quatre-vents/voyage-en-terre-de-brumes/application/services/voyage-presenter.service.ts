@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
@@ -48,7 +48,7 @@ export class VoyagePresenterService {
           panels: {
             cards: {
               title: 'Cartes',
-              message: `Total ${total} (LÃƒÆ’Ã‚Â©gendes ${c.legend}, TrÃƒÆ’Ã‚Â©sors ${c.treasure}, Paysages ${c.landscape}).`,
+              message: `Total ${total} (Légendes ${c.legend}, Trésors ${c.treasure}, Paysages ${c.landscape}).`,
             },
           },
         },

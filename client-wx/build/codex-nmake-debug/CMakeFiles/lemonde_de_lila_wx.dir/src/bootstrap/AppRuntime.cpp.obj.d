@@ -511,5 +511,8 @@ C:/vcpkg/installed/x64-windows/include/wx/settings.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/NavigationController.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/AudioService.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/SoundCatalog.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/http/WsTicketProvider.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept

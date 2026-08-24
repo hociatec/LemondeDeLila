@@ -120,6 +120,23 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/SocialService.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialFriendRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/ISocialGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/cache/SingleFlightCache.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h

@@ -9,7 +9,7 @@ import {
   GameTurnViolationError,
   GameUnknownActionError,
 } from '../../../../domain/errors/game-domain.errors';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import {
   GOOD_LABELS,
   PROTECT_COST,

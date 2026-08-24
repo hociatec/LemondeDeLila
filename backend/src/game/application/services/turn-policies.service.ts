@@ -6,7 +6,7 @@ import {
   starterTurnAnnouncement,
   turnAnnouncement,
 } from '../helpers/game-log-text.helper';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 @Injectable()
 export class TurnPoliciesService {
@@ -67,7 +67,7 @@ export class TurnPoliciesService {
       if (pendingPlayerId !== playerId) {
         return state;
       }
-      const prompt = `C'est a ${label} de choisir son pion.`;
+      const prompt = `C'est à ${label} de choisir son pion.`;
       const recentMessages = Array.isArray(state.log)
         ? state.log
             .slice(-6)

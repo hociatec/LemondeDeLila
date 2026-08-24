@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { LaParadeSucreeActionService } from './la-parade-sucree-action.service';
 import { LaParadeSucreePresenterService } from './la-parade-sucree-presenter.service';
@@ -22,7 +22,7 @@ export class LaParadeSucreeService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = LA_PARADE_SUCREE_GAME.displayName;
   readonly description =
-    'Posez les cartes dans lÃƒâ€šÃ¢â‚¬â„¢ordre et collectionnez les friandises des cases spÃƒÆ’Ã‚Â©ciales.';
+    'Posez les cartes dans l’ordre et collectionnez les friandises des cases spéciales.';
   readonly minPlayers = LA_PARADE_SUCREE_GAME.minPlayers;
   readonly maxPlayers = LA_PARADE_SUCREE_GAME.maxPlayers;
 

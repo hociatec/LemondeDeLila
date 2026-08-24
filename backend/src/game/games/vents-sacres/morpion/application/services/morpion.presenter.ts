@@ -1,8 +1,11 @@
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+} from '../../../../../application/models/game-action.model';
+import type {
+  GameStateEntity,
+  PendingState,
+} from '../../../../../application/models/game-state.model';
 import { BasePresenterService } from '../../../../../application/services/base-presenter.service';
 import { GridCellActionsService } from '../../../../../application/features/grid/services/grid-cell-actions.service';
 import type { MorpionMetadata } from '../../model/morpion.model';
@@ -91,7 +94,7 @@ export class MorpionPresenter extends BasePresenterService {
         : draw
           ? 'Match nul.'
           : currentPlayerId === userId
-            ? 'Ãƒâ‚¬ vous de jouer.'
+            ? 'À vous de jouer.'
             : "Tour de l'adversaire.",
     ];
 
@@ -169,7 +172,7 @@ export class MorpionPresenter extends BasePresenterService {
     state: GameStateEntity,
     _metadata: Record<string, unknown>,
     _currentPlayerId: number | null,
-  ): unknown {
+  ): PendingState | null {
     return state.pending ?? null;
   }
 
@@ -193,8 +196,8 @@ export class MorpionPresenter extends BasePresenterService {
     const emptyCount = board.filter((v) => Number(v ?? 0) === 0).length;
     const playInfo =
       String(state.status ?? '').toLowerCase() === 'started'
-        ? `Cases libres: ${emptyCount}. EntrÃƒÂ©e: jouer sur la case focus.`
-        : 'Partie non dÃƒÂ©marrÃƒÂ©e.';
+        ? `Cases libres: ${emptyCount}. Entrée: jouer sur la case focus.`
+        : 'Partie non démarrée.';
 
     return {
       ...base,
@@ -226,7 +229,3 @@ export class MorpionPresenter extends BasePresenterService {
       : null;
   }
 }
-
-
-
-

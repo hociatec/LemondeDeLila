@@ -1,4 +1,5 @@
-import type { OlympiaDeckType, OlympiaMetadata } from '../../model/olympia-state.model';
+import type { OlympiaDeckType } from '../../model/olympia-cards';
+import type { OlympiaMetadata } from '../../model/olympia-state.model';
 
 export function drawOneOlympiaCard(
   meta: OlympiaMetadata,

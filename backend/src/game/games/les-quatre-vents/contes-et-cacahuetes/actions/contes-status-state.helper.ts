@@ -1,4 +1,4 @@
-import { fixMojibakeDeep } from '../../../../../common/utils/mojibake';
+import { fixMojibakeDeep } from '../../../../../common/utils/public-api';
 import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import type {
   ContesCacahuetesMetadata,

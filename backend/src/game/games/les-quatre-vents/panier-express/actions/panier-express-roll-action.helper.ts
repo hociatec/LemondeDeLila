@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import type { PanierExpressMetadata } from '../model/panier-express-state.model';
 
 export function applyPanierExpressRollAction(input: {
@@ -71,7 +71,7 @@ export function applyPanierExpressRollAction(input: {
   next.lastRoll = roll;
   next = input.appendLog(
     next,
-    `${input.playerName(input.state, currentId)} lance le dÃƒÂ© : "${roll}"`,
+    `${input.playerName(input.state, currentId)} lance le dé : "${roll}"`,
   );
   next = input.appendActionLog(next, currentId, 'roll', { roll });
 

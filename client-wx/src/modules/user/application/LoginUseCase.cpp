@@ -10,6 +10,11 @@ LoginUseCase::LoginUseCase(domain::IAuthenticationService& authenticationService
 {
 }
 
+void LoginUseCase::WarmUp() const
+{
+    authenticationService_.WarmUp();
+}
+
 domain::AuthenticationResult LoginUseCase::Execute(const domain::LoginCredentials& credentials) const
 {
     domain::LoginCredentials normalized = credentials;

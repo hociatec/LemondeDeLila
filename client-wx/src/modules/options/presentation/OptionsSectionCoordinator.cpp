@@ -32,6 +32,11 @@ OptionsSectionCoordinator::OptionsSectionCoordinator(
 
 void OptionsSectionCoordinator::ActivateSection(std::size_t index)
 {
+    if (navigationState_.insideSection && navigationState_.currentSectionIndex == index)
+    {
+        ApplyNavigationState();
+        return;
+    }
     focusTransition_.Remember(CurrentFocusScope());
     navigationState_.EnterSection(index);
     ApplyNavigationState();
@@ -118,14 +123,18 @@ void OptionsSectionCoordinator::ApplyState(
 
 void OptionsSectionCoordinator::SaveState()
 {
-    ApplyState(view_.ReadState(editorController_.BaseState()), true, wxString(L"Options enregistrees automatiquement."));
+    ApplyState(view_.ReadState(editorController_.BaseState()), true, wxString(L"Options enregistrées."));
     RefreshUnsavedState();
 }
 
 void OptionsSectionCoordinator::CancelChanges()
 {
-    ApplyState(editorController_.CancelState(), false, wxString(L"Modifications annulees."));
+    ApplyState(editorController_.CancelState(), false, wxString(L"Modifications annulées."));
     RefreshUnsavedState();
+    if (callbacks_.onCloseRequested)
+    {
+        callbacks_.onCloseRequested();
+    }
 }
 
 void OptionsSectionCoordinator::RefreshUnsavedState()
@@ -140,22 +149,12 @@ void OptionsSectionCoordinator::RefreshUnsavedState()
         return;
     }
 
-    callbacks_.updateStatus(wxString(L"Les options sont enregistrees automatiquement."), false);
+    callbacks_.updateStatus(wxString(L"Aucune modification en attente."), false);
 }
 
 void OptionsSectionCoordinator::HandleEscape()
 {
-    focusTransition_.Remember(CurrentFocusScope());
-    if (navigationState_.GoBack())
-    {
-        ApplyNavigationState();
-        return;
-    }
-
-    if (callbacks_.onCloseRequested)
-    {
-        callbacks_.onCloseRequested();
-    }
+    CancelChanges();
 }
 
 wxWindow* OptionsSectionCoordinator::CurrentFocusScope() const

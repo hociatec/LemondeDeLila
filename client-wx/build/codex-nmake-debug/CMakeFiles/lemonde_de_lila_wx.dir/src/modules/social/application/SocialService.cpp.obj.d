@@ -108,6 +108,31 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialProfile.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/ISocialGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/cache/SingleFlightCache.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/memory
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic_wait.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xthreads.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/infrastructure/SocialProtocolFields.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/SocialProtocolFields.generated.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view

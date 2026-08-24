@@ -47,6 +47,17 @@ configure_file(
     COPYONLY
 )
 
+file(COPY resources/sounds DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/resources)
+
+if(WIN32)
+    set(LILA_BASS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/bass")
+    configure_file(
+        "${LILA_BASS_ROOT}/bin/x64/bass.dll"
+        "${CMAKE_CURRENT_BINARY_DIR}/bass.dll"
+        COPYONLY
+    )
+endif()
+
 set(
     LILA_BACKEND_WS_EVENTS_FILE
     "${CMAKE_CURRENT_SOURCE_DIR}/../backend/src/common/ws/ws-events.ts"
@@ -332,6 +343,9 @@ add_executable(lemonde_de_lila_wx WIN32
     src/shared/accessibility/FocusTransition.cpp
     src/shared/accessibility/NavigationController.cpp
 
+    src/shared/audio/AudioService.cpp
+    src/shared/audio/SoundCatalog.cpp
+
     src/shared/config/AppConfig.cpp
     src/shared/config/AppDataPaths.cpp
 
@@ -361,6 +375,7 @@ add_dependencies(lemonde_de_lila_wx generate_protocol_fields)
 target_include_directories(lemonde_de_lila_wx PRIVATE
     src
     ${CMAKE_CURRENT_BINARY_DIR}/generated
+    $<$<BOOL:${WIN32}>:${LILA_BASS_ROOT}/include>
 )
 
 target_link_libraries(lemonde_de_lila_wx PRIVATE
@@ -370,7 +385,11 @@ target_link_libraries(lemonde_de_lila_wx PRIVATE
 )
 
 if(WIN32)
-    target_link_libraries(lemonde_de_lila_wx PRIVATE winhttp crypt32)
+    target_link_libraries(lemonde_de_lila_wx PRIVATE
+        winhttp
+        crypt32
+        "${LILA_BASS_ROOT}/lib/x64/bass.lib"
+    )
 endif()
 
 if(MSVC)
@@ -449,6 +468,8 @@ if(BUILD_TESTING)
             src/shared/concurrency/BackgroundExecutor.cpp
             src/shared/accessibility/ActionButton.cpp
             src/shared/accessibility/NavigationController.cpp
+            src/shared/audio/AudioService.cpp
+            src/shared/audio/SoundCatalog.cpp
             src/shared/config/AppConfig.cpp
             src/shared/config/AppDataPaths.cpp
             src/shared/network/http/WsTicketProvider.cpp
@@ -465,6 +486,7 @@ if(BUILD_TESTING)
         target_include_directories(lemonde_de_lila_wx_tests PRIVATE
             src
             ${CMAKE_CURRENT_BINARY_DIR}/generated
+            $<$<BOOL:${WIN32}>:${LILA_BASS_ROOT}/include>
         )
 
         target_link_libraries(lemonde_de_lila_wx_tests PRIVATE
@@ -475,7 +497,10 @@ if(BUILD_TESTING)
         )
 
         if(WIN32)
-            target_link_libraries(lemonde_de_lila_wx_tests PRIVATE winhttp)
+            target_link_libraries(lemonde_de_lila_wx_tests PRIVATE
+                winhttp
+                "${LILA_BASS_ROOT}/lib/x64/bass.lib"
+            )
         endif()
 
         if(MSVC)

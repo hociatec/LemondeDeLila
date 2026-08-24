@@ -546,6 +546,8 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/presentation/ChatFocusController.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/application/OptionsStore.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsRepository.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/application/SessionStore.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/domain/ISessionRepository.h

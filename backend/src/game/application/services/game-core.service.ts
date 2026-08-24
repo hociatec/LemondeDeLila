@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { RoomPayload } from '../../../room/public-api';
 import {
   GameLogEntry,
   GameStateEntity,
@@ -11,6 +10,18 @@ import { normalizeGameLogMessage } from '../helpers/log-style.helper';
 
 type RoomWithOptionalRunId = {
   runId?: unknown;
+};
+
+type GameRoomPayload = {
+  room: {
+    id: number;
+    status: string;
+    startedAt?: Date | string | null;
+    runId?: number | null;
+    owner: { id: number } | null;
+    players: Array<{ id: number; username: string }>;
+    bots: Array<{ id: number; name: string }>;
+  };
 };
 
 function toPlayerNameText(raw: unknown): string {
@@ -41,7 +52,7 @@ function extractPawnPromptToken(message: string): string | null {
   }
 
   const withPlayer =
-    /^c['â€™]est Ã {2}(.+?) de choisir (?:son|un) pion(?:[.,!?]|$)/i.exec(text);
+    /^c['’]est \u00c3 {2}(.+?) de choisir (?:son|un) pion(?:[.,!?]|$)/i.exec(text);
   if (withPlayer) {
     return `prompt:choose-pawn:${normalizePromptToken(withPlayer[1])}`;
   }
@@ -115,7 +126,7 @@ export class GameCoreService {
     return name;
   }
 
-  buildBaseState(payload: RoomPayload, gameType: string): GameStateEntity {
+  buildBaseState(payload: GameRoomPayload, gameType: string): GameStateEntity {
     const status = payload.room.status || 'setup';
     const roomOwnerId =
       typeof payload?.room?.owner?.id === 'number'
@@ -140,8 +151,8 @@ export class GameCoreService {
       ? this.shufflePlayers(playersBase, rng.seed)
       : playersBase;
 
-    // ownerPlayerId: identifiant du "propriÃ©taire de la table" (par id joueur).
-    // Important: ne pas l'utiliser pour la seed RNG (donc le calculer aprÃ¨s ensureSeededRng).
+    // ownerPlayerId: identifiant du "propriétaire de la table" (par id joueur).
+    // Important: ne pas l'utiliser pour la seed RNG (donc le calculer après ensureSeededRng).
     metadata.ownerPlayerId =
       roomOwnerId != null && players.some((p) => p?.id === roomOwnerId)
         ? roomOwnerId
@@ -204,7 +215,7 @@ export class GameCoreService {
     return next;
   }
 
-  private buildPlayers(payload: RoomPayload): PlayerStateEntity[] {
+  private buildPlayers(payload: GameRoomPayload): PlayerStateEntity[] {
     const players: PlayerStateEntity[] = [];
     payload.room.players.forEach((p) =>
       players.push({

@@ -3,7 +3,9 @@
 #include <span>
 
 #include <wx/button.h>
+#include <wx/font.h>
 #include <wx/panel.h>
+#include <wx/scrolwin.h>
 #include <wx/simplebook.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -27,24 +29,34 @@ void OptionsView::BuildLayout()
     auto* headerPanel = new lila::shared::accessibility::NonFocusablePanel(this);
     auto* headerSizer = new wxBoxSizer(wxVERTICAL);
     auto* titleLabel = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Options"));
-    auto* subtitleLabel = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Préférences du client"));
-    titleLabel->Hide();
-    subtitleLabel->Hide();
-    headerSizer->Add(titleLabel, 0, wxALIGN_CENTER_HORIZONTAL);
-    headerSizer->Add(subtitleLabel, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 6);
+    auto* subtitleLabel = new wxStaticText(headerPanel, wxID_ANY, wxString(L"Général, sons, tchat"));
+    wxFont titleFont = titleLabel->GetFont();
+    titleFont.SetPointSize(28);
+    titleFont.SetWeight(wxFONTWEIGHT_BOLD);
+    titleLabel->SetFont(titleFont);
+    headerSizer->Add(titleLabel, 0);
+    headerSizer->Add(subtitleLabel, 0, wxTOP, 4);
     headerPanel->SetSizer(headerSizer);
 
+    auto* optionsCard = new lila::shared::accessibility::NonFocusablePanel(this);
     auto* optionsLayout = new wxBoxSizer(wxHORIZONTAL);
-    sectionsPanel = new lila::shared::accessibility::NonFocusablePanel(this);
+    sectionsPanel = new lila::shared::accessibility::NonFocusablePanel(optionsCard);
     sectionsPanel->SetMinSize(wxSize(SectionMenuMinWidth, -1));
     BuildSectionMenu(sectionsPanel);
 
-    auto* contentPanel = new lila::shared::accessibility::NonFocusablePanel(this);
+    auto* contentPanel = new lila::shared::accessibility::NonFocusablePanel(optionsCard);
     auto* contentSizer = new wxBoxSizer(wxVERTICAL);
     BuildSectionPages(contentPanel);
     contentSizer->Add(sectionBook, 1, wxEXPAND);
+    contentPanel->SetSizer(contentSizer);
 
-    auto* actionFooterPanel = new lila::shared::accessibility::NonFocusablePanel(contentPanel);
+    optionsLayout->Add(sectionsPanel, 0, wxEXPAND | wxRIGHT, 16);
+    optionsLayout->Add(contentPanel, 1, wxEXPAND);
+    auto* optionsCardSizer = new wxBoxSizer(wxVERTICAL);
+    optionsCardSizer->Add(optionsLayout, 1, wxEXPAND | wxALL, 16);
+    optionsCard->SetSizer(optionsCardSizer);
+
+    auto* actionFooterPanel = new lila::shared::accessibility::NonFocusablePanel(this);
     auto* actionFooterSizer = new wxBoxSizer(wxHORIZONTAL);
     statusLabel = new wxStaticText(actionFooterPanel, wxID_ANY, wxEmptyString);
     cancelButton = new wxButton(actionFooterPanel, wxID_ANY, wxString(L"Annuler"));
@@ -52,18 +64,15 @@ void OptionsView::BuildLayout()
     actionFooterSizer->Add(cancelButton, 0);
     actionFooterPanel->SetSizer(actionFooterSizer);
 
-    contentSizer->Add(actionFooterPanel, 0, wxEXPAND | wxTOP, 8);
-    contentPanel->SetSizer(contentSizer);
-
-    optionsLayout->Add(sectionsPanel, 0, wxEXPAND | wxRIGHT, 16);
-    optionsLayout->Add(contentPanel, 1, wxEXPAND);
-
-    rootSizer->Add(headerPanel, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 20);
-    rootSizer->Add(optionsLayout, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 16);
+    rootSizer->Add(headerPanel, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 24);
+    rootSizer->AddSpacer(12);
+    rootSizer->Add(optionsCard, 1, wxEXPAND | wxLEFT | wxRIGHT, 24);
+    rootSizer->AddSpacer(16);
+    rootSizer->Add(actionFooterPanel, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 24);
     SetSizer(rootSizer);
 
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*titleLabel, wxString(L"Options"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*subtitleLabel, wxString(L"Préférences du client"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*subtitleLabel, wxString(L"Général, sons, tchat"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*statusLabel, wxString(L"État"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*cancelButton, wxString(L"Annuler"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*sectionBook, wxString(L"Contenu des options"));
@@ -102,9 +111,15 @@ void OptionsView::BuildSectionPages(wxWindow* parent)
     }
 
     sectionBook = new wxSimplebook(parent, wxID_ANY);
-    generalPage = new lila::shared::accessibility::NonFocusablePanel(sectionBook);
-    soundsPage = new lila::shared::accessibility::NonFocusablePanel(sectionBook);
-    chatPage = new lila::shared::accessibility::NonFocusablePanel(sectionBook);
+    const auto createPage = [this]() -> wxScrolledWindow*
+    {
+        auto* page = new wxScrolledWindow(sectionBook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+        page->SetScrollRate(0, 12);
+        return page;
+    };
+    generalPage = createPage();
+    soundsPage = createPage();
+    chatPage = createPage();
 
     BuildGeneralPage(generalPage);
     BuildSoundsPage(soundsPage);

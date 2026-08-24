@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as JeuOieRulebook from '../../rulebook/rulebook';
 import { JeuOieActionService } from './jeu-oie-action.service';
 import { JeuOiePhaseService } from './jeu-oie-phase.service';
@@ -20,7 +20,7 @@ import { buildJeuOieShortcuts } from '../../jeu-oie.shortcuts';
 export class JeuOieService extends AbstractGameService {
   readonly gameType = 'jeu-oie';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Les Vents SacrÃƒÆ’Ã‚Â©s';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = JEU_OIE_GAME.displayName;
   readonly description = "Le jeu de l'oie (course sur 63 cases).";
   readonly minPlayers = JEU_OIE_GAME.minPlayers;

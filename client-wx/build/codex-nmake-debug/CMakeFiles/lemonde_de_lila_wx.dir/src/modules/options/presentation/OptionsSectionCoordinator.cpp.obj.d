@@ -151,6 +151,8 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusTransition.h
@@ -580,7 +582,6 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsReposit
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/presentation/OptionsEditSession.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/presentation/OptionsFocusController.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/presentation/OptionsNavigationState.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/presentation/OptionsView.h
 C:/vcpkg/installed/x64-windows/include/wx/button.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h

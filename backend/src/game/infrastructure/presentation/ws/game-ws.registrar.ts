@@ -1,6 +1,6 @@
 ﻿import { Injectable, OnModuleInit } from '@nestjs/common';
-import { type WsSession } from '../../../../../realtime/public-api';
-import { WsRouteRegistry } from '../../../../../realtime/public-api';
+import { type WsSession } from '../../../../realtime/public-api';
+import { WsRouteRegistry } from '../../../../realtime/public-api';
 import { GameWsHandler } from './game-ws.handler';
 
 @Injectable()

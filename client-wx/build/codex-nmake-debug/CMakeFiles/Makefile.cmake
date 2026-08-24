@@ -62,6 +62,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.31.6/CMakeSystem.cmake"
   "C:/wamp64/www/lemondeDeLila/client-wx/resources/texts.fr.json"
   "C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/AppBuildInfo.h.in"
+  "C:/wamp64/www/lemondeDeLila/client-wx/third_party/bass/bin/x64/bass.dll"
   )
 
 # The corresponding makefile is:
@@ -75,6 +76,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "DartConfiguration.tcl"
   "generated/AppBuildInfo.h"
   "resources/texts.fr.json"
+  "bass.dll"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 

@@ -20,7 +20,7 @@ function normalize(value: string): string {
   return String(value ?? '')
     .trim()
     .toLowerCase()
-    .replace(/[ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢'`]/g, "'")
+    .replace(/[’'`]/g, "'")
     .replace(/\s+/g, ' ');
 }
 
@@ -30,10 +30,7 @@ export class SacAMalicesEconomyService {
     private readonly propertySvc: SacAMalicesPropertyService,
   ) {}
 
-  findTileByName(
-    tiles: SacTile[] | undefined,
-    rawName: string,
-  ): number | null {
+  findTileByName(tiles: SacTile[] | undefined, rawName: string): number | null {
     const name = normalize(rawName);
     if (!name) return null;
     const list = Array.isArray(tiles) ? tiles : [];
@@ -66,7 +63,10 @@ export class SacAMalicesEconomyService {
     }
 
     if (!ownedWithInfra.length) {
-      return this.core.appendLog(state, 'Aucune infrastructure ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  perdre.');
+      return this.core.appendLog(
+        state,
+        'Aucune infrastructure à perdre.',
+      );
     }
 
     const picked = pickOne(meta0, ownedWithInfra);
@@ -93,21 +93,26 @@ export class SacAMalicesEconomyService {
     if (supportsHotel && b.hotel) {
       next = this.core.appendLog(
         next,
-        `Infrastructure perdue : hÃ´tel sur "${tile?.title ?? 'propriÃ©tÃ©'}".`,
+        `Infrastructure perdue : hôtel sur "${tile?.title ?? 'propriété'}".`,
       );
-      return this.propertySvc.setBuilding(next, tileIndex, {
-        hotel: false,
-        houses: 4,
-      });
+      return this.propertySvc.setBuilding(
+        next,
+        tileIndex,
+        { hotel: false, houses: 4 },
+        getMeta,
+      );
     }
     if (b.houses > 0) {
       next = this.core.appendLog(
         next,
-        `Infrastructure perdue : -1 sur "${tile?.title ?? 'propriÃ©tÃ©'}".`,
+        `Infrastructure perdue : -1 sur "${tile?.title ?? 'propriété'}".`,
       );
-      return this.propertySvc.setBuilding(next, tileIndex, {
-        houses: Math.max(0, b.houses - 1),
-      });
+      return this.propertySvc.setBuilding(
+        next,
+        tileIndex,
+        { houses: Math.max(0, b.houses - 1) },
+        getMeta,
+      );
     }
     return next;
   }
@@ -152,8 +157,12 @@ export class SacAMalicesEconomyService {
     getMeta: (state: GameStateEntity) => SacMetadata,
   ): GameStateEntity {
     const meta = getMeta(state);
-    const ownership = { ...(meta.ownership ?? {}) } as Record<string, unknown>;
-    const buildings = { ...(meta.buildings ?? {}) } as Record<string, unknown>;
+    const ownership = { ...(meta.ownership ?? {}) } as NonNullable<
+      SacMetadata['ownership']
+    >;
+    const buildings = { ...(meta.buildings ?? {}) } as NonNullable<
+      SacMetadata['buildings']
+    >;
     for (const [k, v] of Object.entries(ownership)) {
       if (Number(v) === playerId) {
         delete ownership[k];
@@ -232,7 +241,8 @@ export class SacAMalicesEconomyService {
         .map((name) => this.findTileByName(meta.tiles, name))
         .filter((idx) => idx != null)
         .filter((idx) => meta.ownership?.[idx] === ownerId).length;
-      const rents = meta.data?.stations?.rents ?? ({} as Record<string, number>);
+      const rents =
+        meta.data?.stations?.rents ?? ({} as Record<string, number>);
       const key = String(clamp(count, 1, 4)) as '1' | '2' | '3' | '4';
       return Number(rents[key] ?? 0) || 0;
     }
@@ -275,10 +285,6 @@ export class SacAMalicesEconomyService {
     type SacRulesRecord = Record<string, unknown> & {
       jail?: Record<string, unknown>;
     };
-
-    type SacRulesRecord = Record<string, unknown> & {
-      jail?: Record<string, unknown>;
-    };
     const defaults: NonNullable<SacMetadata['rules']> = {
       startMoney: 2000,
       passStartBonus: 200,
@@ -300,7 +306,3 @@ export class SacAMalicesEconomyService {
     };
   }
 }
-
-
-
-

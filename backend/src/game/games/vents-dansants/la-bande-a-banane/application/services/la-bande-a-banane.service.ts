@@ -1,20 +1,20 @@
-import type { GameStateEntity } from '../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../models/game-action.model';
-import { AbstractGameService } from '../../../application/services/abstract-game.service';
+} from '../../../../../application/models/game-action.model';
+import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { BandeABananeActionService } from './la-bande-a-banane-action.service';
 import { BandeABananePresenterService } from './la-bande-a-banane-presenter.service';
 import { BandeABananeSetupService } from './la-bande-a-banane-setup.service';
 import { BandeABananeBotService } from './la-bande-a-banane-bot.service';
 import { BANDE_A_BANANE_GAME } from '../../definitions/game.definition';
-import { buildLaBandeABananeShortcuts } from './la-bande-a-banane.shortcuts';
+import { buildLaBandeABananeShortcuts } from '../../la-bande-a-banane.shortcuts';
 
 export class BandeABananeService extends AbstractGameService {
   readonly gameType = 'la-bande-a-banane';
@@ -22,7 +22,7 @@ export class BandeABananeService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = BANDE_A_BANANE_GAME.displayName;
   readonly description =
-    'Collectez cinq espÃƒÆ’Ã‚Â¨ces diffÃƒÆ’Ã‚Â©rentes pour devenir le chef de la Bande ÃƒÆ’Ã‚Â  Banane !';
+    'Collectez cinq espèces différentes pour devenir le chef de la Bande à Banane !';
   readonly minPlayers = BANDE_A_BANANE_GAME.minPlayers;
   readonly maxPlayers = BANDE_A_BANANE_GAME.maxPlayers;
 

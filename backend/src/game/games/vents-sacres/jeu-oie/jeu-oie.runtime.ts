@@ -15,13 +15,18 @@ import { JeuOiePresenterService } from './application/services/jeu-oie-presenter
 import { JeuOieSetupService } from './application/services/jeu-oie-setup.service';
 import { JeuOieService } from './application/services/jeu-oie.service';
 
-type MinimalContentLoader = Pick<GameContentLoaderService, 'loadContent' | 'validators'>;
+type MinimalContentLoader = Pick<
+  GameContentLoaderService,
+  'loadContent' | 'validators'
+>;
 
 function createDefaultContentLoader(): MinimalContentLoader {
   return {
     validators: {
       version: () => () => undefined,
       arrayField: () => () => undefined,
+      requiredFields: () => () => undefined,
+      positiveNumber: () => () => undefined,
     },
     loadContent: () => {
       throw new Error(

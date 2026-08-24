@@ -104,6 +104,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ctime
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/time.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xstring
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_string_view.hpp
@@ -508,8 +510,6 @@ C:/vcpkg/installed/x64-windows/include/wx/panel.h
 C:/vcpkg/installed/x64-windows/include/wx/containr.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
 C:/vcpkg/installed/x64-windows/include/wx/stattext.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
@@ -538,6 +538,11 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/application/OptionsStore.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/IOptionsRepository.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/FocusCoordinator.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/concurrency/BackgroundExecutor.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/AppError.h

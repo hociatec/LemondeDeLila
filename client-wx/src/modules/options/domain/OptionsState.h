@@ -2,10 +2,19 @@
 
 #include <string>
 #include <algorithm>
+#include <map>
 #include <optional>
 
 namespace lila::modules::options::domain
 {
+struct SoundCueOptions final
+{
+    bool enabled = true;
+    int volume = 100;
+
+    [[nodiscard]] bool operator==(const SoundCueOptions&) const = default;
+};
+
 struct AudioOptions
 {
     bool muteAll = false;
@@ -25,6 +34,7 @@ struct AudioOptions
     int soundSelectVolume = 50;
     int soundChatMessagesVolume = 50;
     int soundTableAmbienceVolume = 15;
+    std::map<std::string, SoundCueOptions, std::less<>> cues;
 
     [[nodiscard]] bool operator==(const AudioOptions&) const = default;
 };
@@ -63,6 +73,7 @@ struct GeneralOptions
     bool restoreSessionOnStartup = true;
     bool showNavigationStatus = true;
     bool confirmExit = false;
+    bool repairBrokenAccents = true;
     bool enableBetaGames = false;
 
     [[nodiscard]] bool operator==(const GeneralOptions&) const = default;
@@ -70,7 +81,7 @@ struct GeneralOptions
 
 struct OptionsState final
 {
-    static constexpr int SchemaVersion = 3;
+    static constexpr int SchemaVersion = 5;
     static constexpr int MinimumVolume = 0;
     static constexpr int MaximumVolume = 100;
     static constexpr int MinimumModerationLoadLimit = 1;
@@ -89,6 +100,7 @@ struct OptionsState final
     bool& showNavigationStatus = general.showNavigationStatus;
     bool& muteAll = audio.muteAll;
     bool& confirmExit = general.confirmExit;
+    bool& repairBrokenAccents = general.repairBrokenAccents;
     bool& enableBetaGames = general.enableBetaGames;
     bool& soundAmbience = audio.soundAmbience;
     bool& soundAppLaunch = audio.soundAppLaunch;
@@ -181,6 +193,11 @@ struct OptionsState final
         audio.soundSelectVolume = std::clamp(audio.soundSelectVolume, MinimumVolume, MaximumVolume);
         audio.soundChatMessagesVolume = std::clamp(audio.soundChatMessagesVolume, MinimumVolume, MaximumVolume);
         audio.soundTableAmbienceVolume = std::clamp(audio.soundTableAmbienceVolume, MinimumVolume, MaximumVolume);
+        for (auto& [key, cue] : audio.cues)
+        {
+            static_cast<void>(key);
+            cue.volume = std::clamp(cue.volume, MinimumVolume, MaximumVolume);
+        }
         internal.admin.adminChatModerationLoadLimit = std::clamp(
             internal.admin.adminChatModerationLoadLimit,
             MinimumModerationLoadLimit,

@@ -1,6 +1,8 @@
 #include "modules/catalog/presentation/CatalogPanel.h"
 
 #include <optional>
+#include <algorithm>
+#include <cctype>
 #include <stop_token>
 #include <string>
 #include <utility>
@@ -9,6 +11,7 @@
 #include <wx/weakref.h>
 
 #include "modules/catalog/application/CatalogService.h"
+#include "modules/options/application/OptionsStore.h"
 #include "shared/accessibility/FocusCoordinator.h"
 #include "shared/concurrency/BackgroundExecutor.h"
 #include "shared/errors/ErrorMessages.h"
@@ -117,8 +120,45 @@ void CatalogPanel::CancelCatalogLoad()
 
 void CatalogPanel::ApplyShelves(std::vector<domain::CatalogShelf> shelves)
 {
-    shelfNavigator_.Reset(std::move(shelves));
+    allShelves_ = std::move(shelves);
+    appliedBetaSetting_.reset();
+    RebuildFilteredShelves();
     ShowCurrentShelves();
+}
+
+void CatalogPanel::RebuildFilteredShelves()
+{
+    const bool betaEnabled = optionsStore_.Current().enableBetaGames;
+    if (appliedBetaSetting_ == betaEnabled)
+    {
+        shelfNavigator_.ResetToRoot();
+        return;
+    }
+    auto filtered = allShelves_;
+    const auto filterShelf = [betaEnabled](auto&& self, domain::CatalogShelf& shelf) -> void
+    {
+        std::erase_if(
+            shelf.games,
+            [betaEnabled](const domain::CatalogGame& game)
+            {
+                std::string status = game.status;
+                std::transform(status.begin(), status.end(), status.begin(), [](unsigned char value)
+                {
+                    return static_cast<char>(std::tolower(value));
+                });
+                return status == "construction" || (status == "beta" && !betaEnabled);
+            });
+        for (auto& child : shelf.children)
+        {
+            self(self, child);
+        }
+    };
+    for (auto& shelf : filtered)
+    {
+        filterShelf(filterShelf, shelf);
+    }
+    shelfNavigator_.Reset(std::move(filtered));
+    appliedBetaSetting_ = betaEnabled;
 }
 
 void CatalogPanel::ShowCurrentShelves()

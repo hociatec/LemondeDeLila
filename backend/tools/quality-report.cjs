@@ -31,8 +31,8 @@ function readBaseline() {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-function getBaselineMetric(baseline, key, fallbackCurrent) {
-  const raw = baseline?.metrics?.[key];
+function getLimit(baseline, key, fallbackCurrent) {
+  const raw = baseline?.limits?.[key];
   const n = typeof raw === 'number' ? raw : Number(raw);
   return Number.isFinite(n) ? n : fallbackCurrent;
 }
@@ -46,7 +46,10 @@ const productionDirectPendingAssignments = rgCount(
   'src/game',
   ['-g', '!*.spec.ts'],
 );
-const mojibakeMatches = rgCount('Ã|â€™|â€œ|â€|Â|ï»¿|�', 'src');
+const mojibakeMatches = rgCount(
+  'Ã|â€™|â€œ|â€|â‚|Â|Ì€|ï»¿|�|[\\x80-\\x9F]',
+  'src',
+);
 const scoresByPlayerIdMentionsInGames = rgCount(
   '\\bscoresByPlayerId\\b',
   'src/game/games',
@@ -57,53 +60,34 @@ const targetScoreMentionsInGames = rgCount(
 );
 
 const baseline = readBaseline();
-const baselineManualActionPayloadParsing = getBaselineMetric(
+const manualActionPayloadParsingLimit = getLimit(
   baseline,
   'manualActionPayloadParsing',
   manualActionPayloadParsing,
 );
-const baselineDirectPendingAssignments = getBaselineMetric(
-  baseline,
-  'directPendingAssignments',
-  productionDirectPendingAssignments,
-);
-const baselineMojibakeMatches = getBaselineMetric(
+const mojibakeMatchesLimit = getLimit(
   baseline,
   'mojibakeMatches',
   mojibakeMatches,
 );
-const baselineScoresByPlayerIdMentionsInGames = getBaselineMetric(
-  baseline,
-  'scoresByPlayerIdMentionsInGames',
-  scoresByPlayerIdMentionsInGames,
-);
-const baselineTargetScoreMentionsInGames = getBaselineMetric(
-  baseline,
-  'targetScoreMentionsInGames',
-  targetScoreMentionsInGames,
-);
 const report = {
+  contractVersion: baseline.contractVersion ?? 2,
   generatedAt: new Date().toISOString(),
-  baselineUpdatedAt: baseline.updatedAt,
+  contractUpdatedAt: baseline.updatedAt,
   metrics: {
     manualActionPayloadParsing,
-    directPendingAssignments: productionDirectPendingAssignments,
     mojibakeMatches,
+  },
+  observations: {
+    directPendingAssignments: productionDirectPendingAssignments,
     scoresByPlayerIdMentionsInGames,
     targetScoreMentionsInGames,
   },
-  baseline: baseline.metrics,
-  regressions: {
+  limits: baseline.limits,
+  violations: {
     manualActionPayloadParsing:
-      manualActionPayloadParsing > baselineManualActionPayloadParsing,
-    directPendingAssignments:
-      productionDirectPendingAssignments > baselineDirectPendingAssignments,
-    mojibakeMatches: mojibakeMatches > baselineMojibakeMatches,
-    scoresByPlayerIdMentionsInGames:
-      scoresByPlayerIdMentionsInGames >
-      baselineScoresByPlayerIdMentionsInGames,
-    targetScoreMentionsInGames:
-      targetScoreMentionsInGames > baselineTargetScoreMentionsInGames,
+      manualActionPayloadParsing > manualActionPayloadParsingLimit,
+    mojibakeMatches: mojibakeMatches > mojibakeMatchesLimit,
   },
 };
 

@@ -4,7 +4,7 @@ import {
   DeckPoolState,
 } from '../../../../../application/services/deck-pool.service';
 import { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { seededShuffle } from '../../../../../../common/utils/seeded-shuffle';
+import { seededShuffle } from '../../../../../../common/utils/public-api';
 import {
   PanierExpressDeckPool,
   PanierExpressMetadata,
@@ -170,7 +170,7 @@ export class PanierExpressSetupService {
     const seed = this.extractSeed(baseState);
     const shuffle = <T>(items: readonly T[], salt: string): T[] => {
       if (seed != null) return seededShuffle(items, seed, salt);
-      // Fallback dÃ©terministe (important pour Ã©viter les tests flaky).
+      // Fallback déterministe (important pour éviter les tests flaky).
       // Le seed sera disponible ensuite via `metadata.rng` (room context / tests).
       return [...items];
     };
@@ -265,8 +265,8 @@ export class PanierExpressSetupService {
   }
 
   /**
-   * Les stands doivent pouvoir Ãªtre revisitÃ©s plusieurs fois au cours d'une mÃªme partie.
-   * On duplique volontairement les cartes disponibles pour simuler le rÃ©assort permanent.
+   * Les stands doivent pouvoir être revisités plusieurs fois au cours d'une même partie.
+   * On duplique volontairement les cartes disponibles pour simuler le réassort permanent.
    */
   buildReplenishableDeck(items?: string[]): string[] {
     const source = items && items.length ? [...items] : [...this.courseItems()];

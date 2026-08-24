@@ -1,6 +1,6 @@
 import type { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
-import { LA_GRANDE_MINE_CARD_BY_ID } from '../../model/la-grande-mine-de-barbak-cards';
-import type { LaGrandeMineMetadata } from '../../model/la-grande-mine-de-barbak-state.model';
+import { LA_GRANDE_MINE_CARD_BY_ID } from '../../model/la-grande-mine-cards';
+import type { LaGrandeMineMetadata } from '../../model/la-grande-mine-state.model';
 
 export function drawOneLaGrandeMineCard(
   deckPolicies: DeckPoliciesService,

@@ -8,6 +8,7 @@
 #include "modules/social/domain/SocialProfile.h"
 #include "modules/social/domain/SocialUser.h"
 #include "modules/social/application/ISocialGateway.h"
+#include "shared/cache/SingleFlightCache.h"
 
 namespace lila::modules::social::application
 {
@@ -30,8 +31,16 @@ public:
     void UnblockUser(int userId) const;
     void RequestFriend(int userId) const;
     [[nodiscard]] std::vector<domain::SocialUser> SearchUsers(const std::string& query) const;
+    void ClearCache();
 
 private:
+    void ClearRelationshipCache() const;
+
     ISocialGateway& api_;
+    mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialUser>> friendsCache_;
+    mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialFriendRequest>> incomingRequestsCache_;
+    mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialFriendRequest>> outgoingRequestsCache_;
+    mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialUser>> blockedUsersCache_;
+    mutable lila::shared::cache::SingleFlightCache<std::optional<domain::SocialProfile>> ownProfileCache_;
 };
 }

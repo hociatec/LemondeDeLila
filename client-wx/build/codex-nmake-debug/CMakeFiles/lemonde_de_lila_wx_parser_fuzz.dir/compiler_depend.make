@@ -865,8 +865,14 @@ CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\Realti
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\realtime\RealtimeProtocolFields.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\AppConfig.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\network\realtime\RealtimeProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\data\JsonReaders.h
@@ -1246,6 +1252,12 @@ CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: 
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\Encoding.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
 
 
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\shared\text\UiTextCatalog.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\UiTextCatalog.cpp
@@ -1765,8 +1777,14 @@ CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\Encoding.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\string.h
 CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\tests\ParserFuzzHarness.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h

@@ -29,6 +29,6 @@ export class AdminUserBanPolicyService {
       return until;
     }
 
-    throw new BadRequestException('DurÃ©e ou date de fin requise');
+    throw new BadRequestException('Durée ou date de fin requise');
   }
 }

@@ -1,5 +1,5 @@
-import type { FrousseMetadata } from '../model/frousse.types';
-import { buildPawnSelectionPending } from '../pawn-selection';
+import type { FrousseMetadata } from './model/frousse.types';
+import { buildPawnSelectionPending } from './pawn-selection';
 
 function makeMeta(
   pawns: Array<{ id: string; name: string; description?: string }>,

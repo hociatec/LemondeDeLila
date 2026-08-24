@@ -55,7 +55,7 @@ export class RoomTypeormRepository implements RoomRepository {
   async update(id: number, patch: Partial<RoomRecord>): Promise<void> {
     await this.rooms.update(
       { id },
-      toRoomEntity(this.create({ ...patch, id })),
+      toRoomEntity(this.create({ ...patch, id })) as never,
     );
   }
 

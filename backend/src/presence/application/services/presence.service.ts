@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
 import { Inject } from '@nestjs/common';
-import { WsAuthPayload } from '../../../common/interfaces/ws-auth-payload';
+import { WsAuthPayload } from '../../../common/interfaces/public-api';
 import {
   PresenceEvent,
   PresenceTransport,

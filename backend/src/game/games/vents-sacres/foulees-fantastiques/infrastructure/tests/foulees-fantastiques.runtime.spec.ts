@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { createFouleesFantastiquesRuntime } from '../../foulees-fantastiques.runtime';
 
 describe('FouleesFantastiques runtime', () => {
@@ -14,7 +14,7 @@ describe('FouleesFantastiques runtime', () => {
           version: 1,
           trackLength: 40,
           homeLength: 4,
-          tiles: [{ id: 'start', label: 'DÃ©part' }],
+          tiles: [{ id: 'start', label: 'Départ' }],
         }),
       },
       core: { appendLog: (state: any) => state } as any,

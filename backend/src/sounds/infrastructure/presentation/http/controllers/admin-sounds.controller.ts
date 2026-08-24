@@ -74,7 +74,9 @@ export class AdminSoundsController {
 
   @Post('table-ambiences')
   async createTableAmbience(@Body() body: TableAmbienceNameBody) {
-    return this.sounds.createTableAmbience(body?.name);
+    return this.sounds.createTableAmbience(
+      typeof body?.name === 'string' ? body.name : '',
+    );
   }
 
   @Put('table-ambiences/:soundId')
@@ -82,7 +84,10 @@ export class AdminSoundsController {
     @Param('soundId') soundId: string,
     @Body() body: TableAmbienceNameBody,
   ) {
-    return this.sounds.renameTableAmbience(soundId, body?.name);
+    return this.sounds.renameTableAmbience(
+      soundId,
+      typeof body?.name === 'string' ? body.name : '',
+    );
   }
 
   @Delete('table-ambiences/:soundId')

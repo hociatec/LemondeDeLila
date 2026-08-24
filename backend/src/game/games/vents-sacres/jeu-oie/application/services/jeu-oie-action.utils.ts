@@ -35,7 +35,24 @@ export function describeJeuOiePawnLabel(
   const players = Array.isArray(state.players) ? state.players : [];
   const player = players.find((entry) => entry?.id === playerId) ?? null;
   const pawn = typeof player?.pawn === 'string' ? String(player.pawn).trim() : '';
-  return pawn || 'pion';
+  if (pawn) return pawn;
+
+  const metadata =
+    state.metadata && typeof state.metadata === 'object'
+      ? (state.metadata as Record<string, unknown>)
+      : {};
+  const assignments =
+    metadata.pawnByPlayerId && typeof metadata.pawnByPlayerId === 'object'
+      ? (metadata.pawnByPlayerId as Record<string, unknown>)
+      : {};
+  const assignedId = String(assignments[playerId] ?? '').trim();
+  const catalog = Array.isArray(metadata.pawns) ? metadata.pawns : [];
+  const assignedPawn = catalog.find((entry) => {
+    if (!entry || typeof entry !== 'object') return false;
+    return String((entry as Record<string, unknown>).id ?? '').trim() === assignedId;
+  }) as Record<string, unknown> | undefined;
+  const assignedLabel = String(assignedPawn?.label ?? '').trim();
+  return assignedLabel || assignedId || 'pion';
 }
 
 export function describeJeuOiePawnPossessiveLabel(

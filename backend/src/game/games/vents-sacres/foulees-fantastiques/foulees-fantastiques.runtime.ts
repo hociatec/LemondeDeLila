@@ -15,13 +15,17 @@ import { FouleesFantastiquesPresenterService } from './application/services/foul
 import { FouleesFantastiquesSetupService } from './application/services/foulees-fantastiques-setup.service';
 import { FouleesFantastiquesService } from './application/services/foulees-fantastiques.service';
 
-type MinimalContentLoader = Pick<GameContentLoaderService, 'loadContent' | 'validators'>;
+type MinimalContentLoader = Pick<
+  GameContentLoaderService,
+  'loadContent' | 'validators'
+>;
 
 function createDefaultContentLoader(): MinimalContentLoader {
   return {
     validators: {
       version: () => () => undefined,
       arrayField: () => () => undefined,
+      requiredFields: () => () => undefined,
       positiveNumber: () => () => undefined,
     } as GameContentLoaderService['validators'],
     loadContent: () => {

@@ -46,6 +46,7 @@ domain::OptionsState ParseStateFromDocument(const nlohmann::json& migrated)
     state.general.restoreSessionOnStartup = lila::shared::data::json::ReadOptionalBool(general, keys::RestoreSessionOnStartup.data(), state.general.restoreSessionOnStartup);
     state.general.showNavigationStatus = lila::shared::data::json::ReadOptionalBool(general, keys::ShowNavigationStatus.data(), state.general.showNavigationStatus);
     state.general.confirmExit = lila::shared::data::json::ReadOptionalBool(general, keys::ConfirmExit.data(), state.general.confirmExit);
+    state.general.repairBrokenAccents = lila::shared::data::json::ReadOptionalBool(general, keys::RepairBrokenAccents.data(), state.general.repairBrokenAccents);
     state.general.enableBetaGames = lila::shared::data::json::ReadOptionalBool(general, keys::EnableBetaGames.data(), state.general.enableBetaGames);
 
     state.audio.muteAll = lila::shared::data::json::ReadOptionalBool(audio, keys::MuteAll.data(), state.audio.muteAll);
@@ -64,6 +65,23 @@ domain::OptionsState ParseStateFromDocument(const nlohmann::json& migrated)
     state.audio.soundSelectVolume = lila::shared::data::json::ReadOptionalInteger(audio, keys::SoundSelectVolume.data(), state.audio.soundSelectVolume);
     state.audio.soundChatMessagesVolume = lila::shared::data::json::ReadOptionalInteger(audio, keys::SoundChatMessagesVolume.data(), state.audio.soundChatMessagesVolume);
     state.audio.soundTableAmbienceVolume = lila::shared::data::json::ReadOptionalInteger(audio, keys::SoundTableAmbienceVolume.data(), state.audio.soundTableAmbienceVolume);
+    const auto cuesIterator = audio.find(std::string(keys::SoundCues));
+    if (cuesIterator != audio.end() && cuesIterator->is_object())
+    {
+        for (auto iterator = cuesIterator->begin(); iterator != cuesIterator->end(); ++iterator)
+        {
+            if (!iterator.value().is_object())
+            {
+                continue;
+            }
+            domain::SoundCueOptions cue;
+            cue.enabled = lila::shared::data::json::ReadOptionalBool(
+                iterator.value(), keys::Enabled.data(), cue.enabled);
+            cue.volume = lila::shared::data::json::ReadOptionalInteger(
+                iterator.value(), keys::Volume.data(), cue.volume);
+            state.audio.cues[iterator.key()] = cue;
+        }
+    }
 
     state.chat.chatEnabled = lila::shared::data::json::ReadOptionalBool(chat, keys::ChatEnabled.data(), state.chat.chatEnabled);
     state.chat.confirmChatExit = lila::shared::data::json::ReadOptionalBool(chat, keys::ConfirmChatExit.data(), state.chat.confirmChatExit);
@@ -86,12 +104,22 @@ domain::OptionsState ParseStateFromDocument(const nlohmann::json& migrated)
 
 nlohmann::json BuildStateDocument(const domain::OptionsState& state)
 {
+    nlohmann::json soundCues = nlohmann::json::object();
+    for (const auto& [key, cue] : state.audio.cues)
+    {
+        soundCues[key] = {
+            {std::string(keys::Enabled), cue.enabled},
+            {std::string(keys::Volume), cue.volume},
+        };
+    }
+
     nlohmann::json document = {
         {std::string(keys::SchemaVersion), domain::OptionsState::SchemaVersion},
         {std::string(keys::General), {
             {std::string(keys::RestoreSessionOnStartup), state.general.restoreSessionOnStartup},
             {std::string(keys::ShowNavigationStatus), state.general.showNavigationStatus},
             {std::string(keys::ConfirmExit), state.general.confirmExit},
+            {std::string(keys::RepairBrokenAccents), state.general.repairBrokenAccents},
             {std::string(keys::EnableBetaGames), state.general.enableBetaGames},
         }},
         {std::string(keys::Audio), {
@@ -111,6 +139,7 @@ nlohmann::json BuildStateDocument(const domain::OptionsState& state)
             {std::string(keys::SoundSelectVolume), state.audio.soundSelectVolume},
             {std::string(keys::SoundChatMessagesVolume), state.audio.soundChatMessagesVolume},
             {std::string(keys::SoundTableAmbienceVolume), state.audio.soundTableAmbienceVolume},
+            {std::string(keys::SoundCues), std::move(soundCues)},
         }},
         {std::string(keys::Chat), {
             {std::string(keys::ChatEnabled), state.chat.chatEnabled},

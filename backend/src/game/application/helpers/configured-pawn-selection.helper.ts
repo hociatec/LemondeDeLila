@@ -5,8 +5,6 @@
 import type { GameSingleActionDto } from '../models/game-action.model';
 import { resolvePlayerNameFromState } from '../helpers/player-name.helper';
 import type { ResolvePlayerNameOptions } from '../helpers/player-name.helper';
-import type { SetupFlowService } from '../services/setup-flow.service';
-import type { GameCoreService } from '../services/game-core.service';
 import { resolvePendingPawnChoiceAction } from './pawn-choice-action.helper';
 
 export type ConfiguredPawnChoice = {
@@ -18,11 +16,20 @@ export type ConfiguredPawnChoice = {
 
 type ConfiguredPlayer = PlayerStateEntity & Record<string, unknown>;
 
+type PawnChoiceResolver = Pick<
+  import('../services/setup-flow.service').SetupFlowService,
+  'resolvePawnChoice'
+>;
+type PawnSelectionLogger = Pick<
+  import('../services/game-core.service').GameCoreService,
+  'appendLog'
+>;
+
 export function applyConfiguredPawnSelection(params: {
   state: GameStateEntity;
   action: GameSingleActionDto;
-  setupFlow: SetupFlowService;
-  core: GameCoreService;
+  setupFlow: PawnChoiceResolver;
+  core: PawnSelectionLogger;
   pendingType?: 'choose_pawn' | 'pick_pawn';
   metadataCatalogKey?: string;
   metadataAssignmentKey?: string;
@@ -261,7 +268,3 @@ function toText(value: unknown): string {
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   return '';
 }
-
-
-
-

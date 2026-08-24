@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GameStateEntity } from '../models/game-state.model';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 @Injectable()
 export class TurnLabelService {

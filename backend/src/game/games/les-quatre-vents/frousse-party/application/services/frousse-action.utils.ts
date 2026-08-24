@@ -1,4 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import { fixMojibakeString } from '../../../../../../common/utils/public-api';
 import type {
   FrousseCard,
   FrousseMetadata,
@@ -126,7 +127,7 @@ export function extractFrousseMoveDelta(text: string): number {
 
   let total = 0;
   const forwardOrBackPattern =
-    /(avancez|reculez)\s+(?:de|d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢])\s*(\d+|un|une|deux|trois|quatre|cinq|six)(?:\s+cases?)?/gi;
+    /(avancez|reculez)\s+(?:de|d['’])\s*(\d+|un|une|deux|trois|quatre|cinq|six)(?:\s+cases?)?/gi;
   let fbMatch: RegExpExecArray | null;
   while ((fbMatch = forwardOrBackPattern.exec(text)) !== null) {
     const amount = parseNumberish(fbMatch[2]);
@@ -144,19 +145,19 @@ export function extractFrousseMoveDelta(text: string): number {
   if (total !== 0) return total;
 
   const narrativeForward = text.match(
-    /avancez[\s\S]*?d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /avancez[\s\S]*?d['’]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (narrativeForward) return parseNumberish(narrativeForward[1]);
 
   const narrativeBack = text.match(
-    /recul(?:ez|ant|e|es)?[\s\S]*?d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /recul(?:ez|ant|e|es)?[\s\S]*?d['’]\s*(\d+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (narrativeBack) return -parseNumberish(narrativeBack[1]);
 
-  const forwardApos = text.match(/Avancez\s+d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*(\d+)\s+case/i);
+  const forwardApos = text.match(/Avancez\s+d['’]\s*(\d+)\s+case/i);
   if (forwardApos) return Number(forwardApos[1]) || 0;
   const forwardAposWords = text.match(
-    /Avancez\s+d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /Avancez\s+d['’]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (forwardAposWords) return parseNumberish(forwardAposWords[1]);
 
@@ -167,10 +168,10 @@ export function extractFrousseMoveDelta(text: string): number {
   );
   if (forwardWords) return parseNumberish(forwardWords[1]);
 
-  const backApos = text.match(/Reculez\s+d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*(\d+)\s+case/i);
+  const backApos = text.match(/Reculez\s+d['’]\s*(\d+)\s+case/i);
   if (backApos) return -(Number(backApos[1]) || 0);
   const backAposWords = text.match(
-    /Reculez\s+d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
+    /Reculez\s+d['’]\s*(un|une|deux|trois|quatre|cinq|six)\s+case/i,
   );
   if (backAposWords) return -parseNumberish(backAposWords[1]);
 
@@ -200,31 +201,43 @@ export function extractFrousseSkipTurns(text: string): number {
 }
 
 export function isFrousseTeleportToCase40(text: string): boolean {
-  return /jusqu['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]?(?:a|ÃƒÆ’Ã‚Â )\s+la case 40/i.test(text);
+  if (/jusqu[\s\S]{0,24}la case 40/i.test(String(text ?? ''))) return true;
+  let repaired = String(text ?? '');
+  for (let pass = 0; pass < 4; pass += 1) {
+    const next = fixMojibakeString(repaired);
+    if (next === repaired) break;
+    repaired = next;
+  }
+  const searchable = repaired
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[’']/g, "'");
+  if (/jusqu'?a\s+la case 40/i.test(searchable)) return true;
+  return /jusqu['’]?(?:a|à)\s+la case 40/i.test(text);
 }
 
 export function describeFrousseCardEffect(card: FrousseCard): string {
   const text = card.text ?? '';
 
   if (
-    /FantÃƒÆ’Ã‚Â´me/i.test(card.category) &&
-    /fantÃƒÆ’Ã‚Â´me farceur/i.test(text) &&
-    /ÃƒÆ’Ã‚Â©chang|echange/i.test(text)
+    /Fantôme/i.test(card.category) &&
+    /fantôme farceur/i.test(text) &&
+    /échang|echange/i.test(text)
   ) {
-    return 'ÃƒÆ’Ã¢â‚¬Â°change alÃƒÆ’Ã‚Â©atoire de place.';
+    return 'Échange aléatoire de place.';
   }
   if (
-    /ÃƒÆ’Ã‚Â©chang|echange/i.test(text) &&
+    /échang|echange/i.test(text) &&
     (/votre place/i.test(text) || /vos places/i.test(text))
   ) {
-    return 'ÃƒÆ’Ã¢â‚¬Â°changez votre place avec un autre joueur.';
+    return 'Échangez votre place avec un autre joueur.';
   }
-  if (/Ignorez le prochain piÃƒÆ’Ã‚Â¨ge/i.test(text))
-    return 'Ignorez le prochain piÃƒÆ’Ã‚Â¨ge.';
-  if (/Ignorez les piÃƒÆ’Ã‚Â¨ges jusqu['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]au prochain symbole/i.test(text))
-    return 'Ignorez les piÃƒÆ’Ã‚Â¨ges jusquÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢au prochain symbole.';
-  if (/Ignorez la prochaine carte FantÃƒÆ’Ã‚Â´me/i.test(text))
-    return 'Ignorez la prochaine carte FantÃƒÆ’Ã‚Â´me.';
+  if (/Ignorez le prochain piège/i.test(text))
+    return 'Ignorez le prochain piège.';
+  if (/Ignorez les pièges jusqu['’]au prochain symbole/i.test(text))
+    return 'Ignorez les pièges jusqu’au prochain symbole.';
+  if (/Ignorez la prochaine carte Fantôme/i.test(text))
+    return 'Ignorez la prochaine carte Fantôme.';
   if (/annule une farce/i.test(text) || /rien ne vous arrive/i.test(text))
     return 'Ignorez la prochaine farce.';
   if (
@@ -233,28 +246,28 @@ export function describeFrousseCardEffect(card: FrousseCard): string {
   )
     return 'Sautez 6 cases.';
   if (/Doublez votre prochain lancer/i.test(text))
-    return 'Doublez le prochain lancer de dÃƒÆ’Ã‚Â©.';
+    return 'Doublez le prochain lancer de dé.';
   if (
     /gardez le plus petit/i.test(text) ||
     /gardez le chiffre le plus bas/i.test(text)
   )
-    return 'Rejouez en gardant le plus petit rÃƒÆ’Ã‚Â©sultat.';
+    return 'Rejouez en gardant le plus petit résultat.';
   if (/malus de moins 2/i.test(text) || /malus de -2/i.test(text))
     return 'Rejouez avec un malus de -2 au lancer.';
   if (/Si vous faites un trois, reculez de 2 cases/i.test(text))
     return 'Si vous faites un trois, reculez de 2 cases.';
   if (isFrousseTeleportToCase40(text)) return 'Allez directement a la case 40.';
   if (
-    /Relancez le dÃƒÆ’Ã‚Â©/i.test(text) ||
-    (/Relancez/i.test(text) && /dÃƒÆ’Ã‚Â©/i.test(text))
+    /Relancez le dé/i.test(text) ||
+    (/Relancez/i.test(text) && /dé/i.test(text))
   )
-    return 'Rejouez immÃƒÆ’Ã‚Â©diatement.';
+    return 'Rejouez immédiatement.';
   if (/laissant les autres joueurs (filer|avancer) de 3 cases/i.test(text))
     return 'Les autres avancent de 3 cases, vous passez 1 tour.';
   if (
-    /si le rÃƒÆ’Ã‚Â©sultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
+    /si le résultat est impair, passez (?:votre|un|une|1)?\s*tour/i.test(text)
   ) {
-    return 'Lancez le dÃƒÆ’Ã‚Â© : si le rÃƒÆ’Ã‚Â©sultat est impair, passez 1 tour.';
+    return 'Lancez le dé : si le résultat est impair, passez 1 tour.';
   }
   const skip = extractFrousseSkipTurns(text);
   if (skip > 0) return `Passez ${skip} tour${skip > 1 ? 's' : ''}.`;
@@ -274,20 +287,20 @@ export function describeFrousseCardEffect(card: FrousseCard): string {
 
   const need56 = text.match(/lancer un (\d) ou un (\d)/i);
   if (need56)
-    return `BloquÃƒÆ’Ã‚Â© : lancez un ${need56[1]} ou un ${need56[2]} pour vous libÃƒÆ’Ã‚Â©rer.`;
+    return `Bloqué : lancez un ${need56[1]} ou un ${need56[2]} pour vous libérer.`;
   const need6 = text.match(/obtenir un 6/i);
   if (need6 && /jusqu/i.test(text))
-    return 'BloquÃƒÆ’Ã‚Â© : obtenez un 6 pour vous libÃƒÆ’Ã‚Â©rer.';
+    return 'Bloqué : obtenez un 6 pour vous libérer.';
   const needMin = text.match(/obtenez pas un (\d) ou plus/i);
   if (needMin)
-    return `BloquÃƒÆ’Ã‚Â© : obtenez ${needMin[1]} ou plus pour vous libÃƒÆ’Ã‚Â©rer.`;
+    return `Bloqué : obtenez ${needMin[1]} ou plus pour vous libérer.`;
   if (/nombre pair/i.test(text))
-    return 'BloquÃƒÆ’Ã‚Â© : obtenez un nombre pair pour vous libÃƒÆ’Ã‚Â©rer.';
+    return 'Bloqué : obtenez un nombre pair pour vous libérer.';
 
-  if (/n['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]avancerez que d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢](une|un)e seule case/i.test(text))
-    return 'Au prochain tour, avancez dÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢une seule case.';
+  if (/n['’]avancerez que d['’](une|un)e seule case/i.test(text))
+    return 'Au prochain tour, avancez d’une seule case.';
 
-  return 'Effet immÃƒÆ’Ã‚Â©diat.';
+  return 'Effet immédiat.';
 }
 
 export function normalizeFrousseCardText(text: string): string {
@@ -351,7 +364,7 @@ export function describeFroussePawnPossessive(
   }
   const stripped = inner
     .replace(/^(un|une|le|la|les)\s+/i, '')
-    .replace(/^l['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*/i, '')
+    .replace(/^l['’]\s*/i, '')
     .trim();
   const base = lowercaseFrousseFirst(stripped || inner);
   const feminine = /^(une|la)\s+/i.test(inner);

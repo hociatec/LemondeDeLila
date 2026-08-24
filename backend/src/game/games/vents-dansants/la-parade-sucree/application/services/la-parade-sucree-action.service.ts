@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
@@ -149,7 +149,7 @@ export class LaParadeSucreeActionService {
     return this.core.appendLog(
       next,
       winnerId
-        ? `${resolvePlayerNameFromState(next, winnerId)} rafle la Parade SucrÃƒÂ©e !`
+        ? `${resolvePlayerNameFromState(next, winnerId)} rafle la Parade Sucrée !`
         : 'Match nul gourmand !',
     );
   }

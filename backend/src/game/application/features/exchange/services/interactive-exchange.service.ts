@@ -65,7 +65,7 @@ export class InteractiveExchangeService {
       card,
       step: 'choose_target',
       blocking: true,
-      label: "Choisissez un joueur pour l echange dans la liste, puis Entree.",
+      label: 'Choisissez un joueur pour l echange dans la liste, puis Entree.',
       targets,
     };
 
@@ -152,10 +152,10 @@ export class InteractiveExchangeService {
       : { card: null, state };
 
     const initiator = (state.players ?? []).find(
-      (p): p is ExchangePlayer => Number(p?.id) === playerId,
+      (p) => Number(p?.id) === playerId,
     );
     const target = (state.players ?? []).find(
-      (p): p is ExchangePlayer => Number(p?.id) === targetPlayerId,
+      (p) => Number(p?.id) === targetPlayerId,
     );
 
     const offer: Extract<InteractiveExchangePending, { step: 'confirm' }> = {

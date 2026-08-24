@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 @Injectable()
 export class BoardPayloadService {

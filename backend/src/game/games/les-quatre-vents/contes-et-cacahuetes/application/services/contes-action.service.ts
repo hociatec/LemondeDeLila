@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
@@ -10,7 +10,7 @@ import { TurnFlowService } from '../../../../../application/services/turn-flow.s
 import { TurnPoliciesService } from '../../../../../application/services/turn-policies.service';
 import { continueSequentialPawnSelection } from '../../../../../application/helpers/sequential-pawn-selection.helper';
 import { applyConfiguredPawnSelection } from '../../../../../application/helpers/configured-pawn-selection.helper';
-import { fixMojibakeDeep } from '../../../../../../common/utils/mojibake';
+import { fixMojibakeDeep } from '../../../../../../common/utils/public-api';
 import { applyContesDrawAction } from '../../actions/contes-draw-action.helper';
 import {
   resolveContesAbondanceDraw,
@@ -34,7 +34,10 @@ import {
   blockContesUntilPassed,
   clearContesBlockedPlayers,
   goToContesPreviousMalusAndApply,
+  moveContesTargetToPlayerAndAdvance,
+  setContesTurnSwap,
   setContesWinner,
+  swapContesPositions,
   swapContesWithClosestBehind,
   teleportContesPlayer,
 } from '../../actions/contes-position-actions.helper';
@@ -48,15 +51,12 @@ import {
 } from '../../actions/contes-queued-draw.helper';
 import { applyContesRerollDecision } from '../../actions/contes-reroll-action.helper';
 import {
-  findContesCardTitle,
-  moveContesTargetToPlayerAndAdvance,
-  setContesTurnSwap,
   startContesStealTokenChoice,
-  swapContesPositions,
   takeOneContesBonusToken,
   transferContesBonusToken,
   transferContesSurpriseToken,
 } from '../../actions/contes-token-actions.helper';
+import { findContesCardTitle } from '../../actions/contes-targeting.helper';
 import {
   applyContesTurnSwapIfNeeded,
   autoSkipContesBlockedPlayer,
@@ -322,7 +322,13 @@ export class ContesActionService {
     delta: number,
     depth: number,
   ): GameStateEntity {
-    return moveContesBy(this.getProgressionDeps(), state, playerId, delta, depth);
+    return moveContesBy(
+      this.getProgressionDeps(),
+      state,
+      playerId,
+      delta,
+      depth,
+    );
   }
 
   private applyTileEffect(
@@ -356,7 +362,7 @@ export class ContesActionService {
         state,
         playerId,
         'key_gold_choose_target',
-        'ClÃƒÂ© dÃ¢â‚¬â„¢or : choisissez un joueur.',
+        'Clé d’or : choisissez un joueur.',
       );
     }
 
@@ -365,7 +371,12 @@ export class ContesActionService {
       return this.drawAndApply(state, playerId, 'conte', depth);
     }
 
-    return recordContesNarrationState(state, this.getMeta(state), playerId, conte);
+    return recordContesNarrationState(
+      state,
+      this.getMeta(state),
+      playerId,
+      conte,
+    );
   }
 
   private drawAndApply(
@@ -402,7 +413,12 @@ export class ContesActionService {
     queue: string[],
     depth: number,
   ): GameStateEntity {
-    return continueContesQueuedDraw(state, { playerId, queue, depth, ...this.getDrawResolutionDeps() });
+    return continueContesQueuedDraw(state, {
+      playerId,
+      queue,
+      depth,
+      ...this.getDrawResolutionDeps(),
+    });
   }
 
   private queueDraws(
@@ -412,7 +428,13 @@ export class ContesActionService {
     depth: number,
     label: string = 'Piocher une carte (Espace).',
   ): GameStateEntity {
-    return queueContesDraws(state, { playerId, queue, depth, label, ...this.getDrawResolutionDeps() });
+    return queueContesDraws(state, {
+      playerId,
+      queue,
+      depth,
+      label,
+      ...this.getDrawResolutionDeps(),
+    });
   }
 
   private resolveAbondanceDraw(
@@ -474,7 +496,8 @@ export class ContesActionService {
   ): GameStateEntity {
     return attachContesQueuedDrawContinuationFromPending(state, {
       pending,
-      setPending: (current, nextPending) => this.setPending(current, nextPending),
+      setPending: (current, nextPending) =>
+        this.setPending(current, nextPending),
       extractQueuedDrawContinuationData: (data) =>
         extractContesQueuedDrawContinuationData(data),
     });
@@ -527,7 +550,11 @@ export class ContesActionService {
       nextPos,
       tile,
       describePlayerPawn: (current, targetPlayerId) =>
-        describeContesPlayerPawn(current, this.getMeta(current), targetPlayerId),
+        describeContesPlayerPawn(
+          current,
+          this.getMeta(current),
+          targetPlayerId,
+        ),
       formatArrivalTarget: (label) => formatContesArrivalTarget(label),
       appendLog: (current, message) => this.core.appendLog(current, message),
     });
@@ -552,7 +579,12 @@ export class ContesActionService {
       canUseBonusCards: (current, targetPlayerId) =>
         this.canUseBonusCards(current, targetPlayerId),
       startChooseTarget: (current, targetPlayerId, context, label) =>
-        this.targeting.startChooseTarget(current, targetPlayerId, context, label),
+        this.targeting.startChooseTarget(
+          current,
+          targetPlayerId,
+          context,
+          label,
+        ),
       moveBy: (current, targetPlayerId, delta, effectDepth) =>
         this.moveBy(current, targetPlayerId, delta, effectDepth),
       getMeta: (current) => this.getMeta(current),
@@ -629,7 +661,12 @@ export class ContesActionService {
         this.applyCoffreMerveilles(current, targetPlayerId, effectDepth),
       setPending: (current, pending) => this.setPending(current, pending),
       startChooseTarget: (current, targetPlayerId, context, label) =>
-        this.targeting.startChooseTarget(current, targetPlayerId, context, label),
+        this.targeting.startChooseTarget(
+          current,
+          targetPlayerId,
+          context,
+          label,
+        ),
       getMeta: (current) => this.getMeta(current),
       rollDice: (meta, faces) => this.random.rollDice(meta, faces),
     });
@@ -666,7 +703,11 @@ export class ContesActionService {
     state: GameStateEntity,
     playerId: number,
   ): { protected: boolean; state: GameStateEntity } {
-    return protectContesPlayerFromMalus(this.getCardFlowDeps(), state, playerId);
+    return protectContesPlayerFromMalus(
+      this.getCardFlowDeps(),
+      state,
+      playerId,
+    );
   }
 
   private onAnyPlayerPassedBlocked(
@@ -712,7 +753,11 @@ export class ContesActionService {
     previous: GameStateEntity,
     next: GameStateEntity,
   ): GameStateEntity {
-    return finalizeContesPendingResolution(this.getCardFlowDeps(), previous, next);
+    return finalizeContesPendingResolution(
+      this.getCardFlowDeps(),
+      previous,
+      next,
+    );
   }
 
   private applyTurnSwapIfNeeded(state: GameStateEntity): GameStateEntity {
@@ -921,8 +966,7 @@ export class ContesActionService {
         this.moveBy(state, playerId, delta, depth),
       drawAndApply: (state, playerId, type, depth) =>
         this.drawAndApply(state, playerId, type, depth),
-      buildConteNarrationFromTile: (tile) =>
-        buildContesNarrationFromTile(tile),
+      buildConteNarrationFromTile: (tile) => buildContesNarrationFromTile(tile),
       recordConteNarration: (state, playerId, card) =>
         recordContesNarrationState(state, this.getMeta(state), playerId, card),
       maybeProtectFromMalus: (state, playerId) =>
@@ -959,10 +1003,16 @@ export class ContesActionService {
     return buildContesChoiceDeps({
       appendLog: (state: GameStateEntity, message: string) =>
         this.core.appendLog(state, message),
-      swapPositions: (state: GameStateEntity, playerId: number, targetPlayerId: number) =>
-        this.targeting.swapPositions(state, playerId, targetPlayerId),
-      setTurnSwap: (state: GameStateEntity, playerId: number, targetPlayerId: number) =>
-        this.targeting.setTurnSwap(state, playerId, targetPlayerId),
+      swapPositions: (
+        state: GameStateEntity,
+        playerId: number,
+        targetPlayerId: number,
+      ) => this.targeting.swapPositions(state, playerId, targetPlayerId),
+      setTurnSwap: (
+        state: GameStateEntity,
+        playerId: number,
+        targetPlayerId: number,
+      ) => this.targeting.setTurnSwap(state, playerId, targetPlayerId),
       takeOneBonusToken: (
         state: GameStateEntity,
         fromPlayerId: number,
@@ -972,7 +1022,8 @@ export class ContesActionService {
         state: GameStateEntity,
         playerId: number,
         targetPlayerId: number,
-      ) => this.targeting.startStealTokenChoice(state, playerId, targetPlayerId),
+      ) =>
+        this.targeting.startStealTokenChoice(state, playerId, targetPlayerId),
       moveTargetToPlayerAndAdvance: (
         state: GameStateEntity,
         playerId: number,
@@ -987,8 +1038,10 @@ export class ContesActionService {
           (current, currentPlayerId, moveDelta, depth) =>
             this.moveBy(current, currentPlayerId, moveDelta, depth),
         ),
-      setPending: (state: GameStateEntity, pending: Exclude<ContesPending, null>) =>
-        this.setPending(state, pending),
+      setPending: (
+        state: GameStateEntity,
+        pending: Exclude<ContesPending, null>,
+      ) => this.setPending(state, pending),
       startGiveBonusChoice: (
         state: GameStateEntity,
         playerId: number,
@@ -1006,6 +1059,12 @@ export class ContesActionService {
         type: 'bonus' | 'malus' | 'surprise' | 'conte',
         depth: number,
       ) => this.drawAndApply(state, playerId, type, depth),
+      startChooseTarget: (
+        state: GameStateEntity,
+        playerId: number,
+        context: string,
+        label: string,
+      ) => this.targeting.startChooseTarget(state, playerId, context, label),
       setStatusBool: (
         state: GameStateEntity,
         key: string,
@@ -1034,7 +1093,13 @@ export class ContesActionService {
         state: GameStateEntity,
         cardType: ContesCardType,
         cardId: number,
-      ) => this.targeting.findCardTitle(state, cardType, cardId, toContesCardArray),
+      ) =>
+        this.targeting.findCardTitle(
+          state,
+          cardType,
+          cardId,
+          toContesCardArray,
+        ),
     });
   }
 
@@ -1091,8 +1156,10 @@ export class ContesActionService {
         depth: number,
         playerId: number,
       ) => this.attachQueuedDrawContinuation(state, queue, depth, playerId),
-      setPending: (state: GameStateEntity, pending: Exclude<ContesPending, null>) =>
-        this.setPending(state, pending),
+      setPending: (
+        state: GameStateEntity,
+        pending: Exclude<ContesPending, null>,
+      ) => this.setPending(state, pending),
     });
   }
 
@@ -1111,7 +1178,3 @@ export class ContesActionService {
     return getContesStatusMap(meta, key);
   }
 }
-
-
-
-

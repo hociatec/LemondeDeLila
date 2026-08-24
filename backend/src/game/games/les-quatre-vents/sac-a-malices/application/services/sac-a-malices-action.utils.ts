@@ -139,7 +139,7 @@ export function normalizeSacText(value: string): string {
   return String(value ?? '')
     .trim()
     .toLowerCase()
-    .replace(/[ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢'`]/g, "'")
+    .replace(/[’'`]/g, "'")
     .replace(/\s+/g, ' ');
 }
 

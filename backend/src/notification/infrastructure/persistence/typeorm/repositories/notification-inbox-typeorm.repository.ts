@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import type {
-  NotificationInboxRepository,
-} from '../../../../application/ports/notification-inbox.repository';
+import { IsNull, Repository } from 'typeorm';
+import type { NotificationInboxRepository } from '../../../../application/ports/notification-inbox.repository';
 import type {
   CreateNotificationInboxItemInput,
   NotificationInboxContactRow,
@@ -15,9 +13,7 @@ import { User } from '../../../../../user/public-api';
 import { NotificationInboxItemEntity } from '../entities/notification-inbox-item.entity';
 
 @Injectable()
-export class NotificationInboxTypeormRepository
-  implements NotificationInboxRepository
-{
+export class NotificationInboxTypeormRepository implements NotificationInboxRepository {
   private readonly logger = new Logger(NotificationInboxTypeormRepository.name);
 
   constructor(
@@ -53,7 +49,7 @@ export class NotificationInboxTypeormRepository
     const items = await this.repo.find({
       where: {
         user: { id: userId },
-        deletedAt: null,
+        deletedAt: IsNull(),
       },
       order: { createdAt: 'DESC' },
       take: limit,
@@ -74,7 +70,7 @@ export class NotificationInboxTypeormRepository
       where: {
         id: cleanId,
         user: { id: userId },
-        deletedAt: null,
+        deletedAt: IsNull(),
       },
       relations: ['user'],
     });
@@ -133,8 +129,8 @@ export class NotificationInboxTypeormRepository
     return this.repo.count({
       where: {
         user: { id: userId },
-        deletedAt: null,
-        readAt: null,
+        deletedAt: IsNull(),
+        readAt: IsNull(),
       },
     });
   }
@@ -203,7 +199,7 @@ export class NotificationInboxTypeormRepository
     const res = await this.repo
       .createQueryBuilder()
       .update(NotificationInboxItemEntity)
-      .set({ payload: payload ?? null })
+      .set({ payload: payload ?? null } as never)
       .where('id = :id', { id: clean })
       .execute();
     return (res.affected ?? 0) > 0;
@@ -225,7 +221,9 @@ export class NotificationInboxTypeormRepository
     return res.affected ?? 0;
   }
 
-  private async getByIdOrThrow(id: string): Promise<NotificationInboxItemRecord> {
+  private async getByIdOrThrow(
+    id: string,
+  ): Promise<NotificationInboxItemRecord> {
     const item = await this.repo.findOne({
       where: { id },
       relations: ['user'],
@@ -238,7 +236,9 @@ export class NotificationInboxTypeormRepository
     return this.toModel(item);
   }
 
-  private toModel(entity: NotificationInboxItemEntity): NotificationInboxItemRecord {
+  private toModel(
+    entity: NotificationInboxItemEntity,
+  ): NotificationInboxItemRecord {
     return {
       id: entity.id,
       userId: entity.user?.id ?? 0,

@@ -1,5 +1,6 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { ArcheDeMnemosyneService } from './arche-de-mnemosyne.service';
+import { ArcheMnemoStateService } from './arche-mnemo-state.service';
 
 class InMemoryMnemoStore {
   categories = [
@@ -25,7 +26,7 @@ class InMemoryMnemoStore {
       question: 'Question 2 ?',
       correct: 'Oui',
       wrong1: 'Non',
-      wrong2: 'Peut-ÃƒÂªtre',
+      wrong2: 'Peut-être',
       wrong3: 'Jamais',
       status: 'validated',
       createdAt: '2026-01-01T00:00:00.000Z',
@@ -102,8 +103,8 @@ class InMemoryMnemoStore {
 
 function makeService() {
   const store = new InMemoryMnemoStore();
+  const stateService = new ArcheMnemoStateService();
   const service = new ArcheDeMnemosyneService(
-    { register: jest.fn() } as any,
     {
       appendLog: (s: any, message: string) => ({
         ...s,
@@ -132,8 +133,9 @@ function makeService() {
       }),
       shuffle: (meta: any, arr: any[]) => ({ meta, values: [...arr] }),
     } as any,
+    stateService,
   );
-  return { service, store };
+  return { service, stateService, store };
 }
 
 function makeBaseState(): GameStateEntity {
@@ -261,7 +263,7 @@ describe('ArcheDeMnemosyneService admin/game flow', () => {
         type: 'mnemo_edit_question',
         payload: {
           questionId: 'q1',
-          question: 'Q1 ÃƒÂ©ditÃƒÂ©e ?',
+          question: 'Q1 éditée ?',
           correct: 'A',
           wrong1: 'B',
           wrong2: 'C',
@@ -271,7 +273,7 @@ describe('ArcheDeMnemosyneService admin/game flow', () => {
       { type: 'mnemo_open_rename_category', payload: { categoryId: 'c1' } },
       {
         type: 'mnemo_rename_category',
-        payload: { name: 'CatÃƒÂ©gorie 1 RenommÃƒÂ©e' },
+        payload: { name: 'Catégorie 1 Renommée' },
       },
       { type: 'mnemo_delete_category', payload: { categoryId: 'c2' } },
       { type: 'mnemo_back', payload: {} },
@@ -289,7 +291,7 @@ describe('ArcheDeMnemosyneService admin/game flow', () => {
   });
 
   it('covers validation guards and helpers', () => {
-    const { service } = makeService();
+    const { service, stateService } = makeService();
     let state = service.hydrateInitialState(makeBaseState());
 
     expect(() =>
@@ -324,11 +326,9 @@ describe('ArcheDeMnemosyneService admin/game flow', () => {
     expect(service.getAvailableActions(state, 1).length).toBeGreaterThan(0);
     expect(service.getShortcuts({ started: true }).length).toBeGreaterThan(0);
     expect((service as any).parseBool('oui', false)).toBe(true);
-    expect((service as any).clampInt('999', 1, 10, 5)).toBe(10);
-    expect((service as any).compactQuestionLabel('a'.repeat(120)).length).toBe(
+    expect(stateService.clampInt('999', 1, 10, 5)).toBe(10);
+    expect(stateService.compactQuestionLabel('a'.repeat(120)).length).toBe(
       80,
     );
   });
 });
-
-

@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { GALOPONS_GAME } from '../../definitions/galopons.definition';
 import { GaloponsSetupService } from './galopons-setup.service';
 import { GaloponsActionService } from './galopons-action.service';
@@ -21,7 +21,7 @@ export class GaloponsEnsembleService extends AbstractGameService {
   readonly category = 'JeuxDePlateaux';
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = GALOPONS_GAME.displayName;
-  readonly description = 'Course ÃƒÆ’Ã‚Â©questre avec pommes et cartes.';
+  readonly description = 'Course équestre avec pommes et cartes.';
   readonly minPlayers = GALOPONS_GAME.minPlayers;
   readonly maxPlayers = GALOPONS_GAME.maxPlayers;
 

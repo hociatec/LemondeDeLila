@@ -74,6 +74,6 @@ export function hydrateArcheInitialState(
 
   return deps.appendLog(
     state,
-    'Quiz : choisissez une catÃƒÂ©gorie (ou MÃƒÂ©lange) pour dÃƒÂ©marrer.',
+    'Quiz : choisissez une catégorie (ou Mélange) pour démarrer.',
   );
 }

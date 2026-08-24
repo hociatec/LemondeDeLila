@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { ZigEtZagActionService } from './zig-et-zag-action.service';
 import { ZigEtZagPresenterService } from './zig-et-zag-presenter.service';
@@ -22,7 +22,7 @@ export class ZigEtZagService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = ZIG_ET_ZAG_GAME.displayName;
   readonly description =
-    'Bataille tendre oÃƒÂ¹ chaque duel ramasse les cartes en jeu.';
+    'Bataille tendre où chaque duel ramasse les cartes en jeu.';
   readonly minPlayers = ZIG_ET_ZAG_GAME.minPlayers;
   readonly maxPlayers = ZIG_ET_ZAG_GAME.maxPlayers;
 

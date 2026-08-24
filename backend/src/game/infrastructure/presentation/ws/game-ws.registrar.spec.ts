@@ -1,4 +1,4 @@
-﻿import { WsRouteRegistry } from '../../../../../realtime/public-api';
+﻿import { WsRouteRegistry } from '../../../../realtime/public-api';
 import { GameWsRegistrar } from './game-ws.registrar';
 
 describe('GameWsRegistrar', () => {
@@ -20,4 +20,3 @@ describe('GameWsRegistrar', () => {
     expect(registry.has('game.modules')).toBe(true);
   });
 });
-

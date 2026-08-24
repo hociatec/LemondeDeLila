@@ -2,7 +2,7 @@ import type {
   GameStateEntity,
   PendingState,
 } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
@@ -32,7 +32,10 @@ import {
   BONUS_CARD_EFFECTS,
   PiratesCardEffect,
 } from '../../actions/pirate-card-effects';
-import { asPiratesEnVadrouilleRecord } from './pirates-en-vadrouille-action.utils';
+import {
+  asPiratesEnVadrouilleRecord,
+  describePiratesEnVadrouillePawnLabel,
+} from './pirates-en-vadrouille-action.utils';
 
 type DeckName = 'bonus' | 'treasure' | 'obstacle';
 
@@ -109,7 +112,7 @@ export class PiratesEnVadrouilleActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} lance le dÃƒÂ© : "${rng.roll}".`,
+      `${resolvePlayerNameFromState(next, playerId)} lance le dé : "${rng.roll}".`,
     );
 
     next = this.move(next, playerId, rng.roll);
@@ -234,7 +237,7 @@ export class PiratesEnVadrouilleActionService {
     if (!card) {
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} nÃ¢â‚¬â„¢a plus de cartes ${deckName}.`,
+        `${resolvePlayerNameFromState(next, playerId)} n’a plus de cartes ${deckName}.`,
       );
     }
 
@@ -314,7 +317,7 @@ export class PiratesEnVadrouilleActionService {
       };
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} est protÃƒÂ©gÃƒÂ© et ignore l'obstacle "${card.title}".`,
+        `${resolvePlayerNameFromState(next, playerId)} est protégé et ignore l'obstacle "${card.title}".`,
       );
     }
 
@@ -349,7 +352,7 @@ export class PiratesEnVadrouilleActionService {
         next,
         `${resolvePlayerNameFromState(next, ctx.actorId)} applique ${
           ctx.delta >= 0 ? 'un boost' : 'un ralentissement'
-        } ÃƒÂ  ${resolvePlayerNameFromState(next, targetPlayerId)} (${ctx.delta}).`,
+        } à ${resolvePlayerNameFromState(next, targetPlayerId)} (${ctx.delta}).`,
       );
       next = this.move(next, targetPlayerId, ctx.delta);
       return next;
@@ -360,10 +363,10 @@ export class PiratesEnVadrouilleActionService {
       if (!stolen) {
         return this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, ctx.actorId)} tente de voler un trÃƒÂ©sor mais ${resolvePlayerNameFromState(
+          `${resolvePlayerNameFromState(next, ctx.actorId)} tente de voler un trésor mais ${resolvePlayerNameFromState(
             next,
             targetPlayerId,
-          )} n'en possÃƒÂ¨de pas.`,
+          )} n'en possède pas.`,
         );
       }
       const trimmed = targetCollection.treasures.slice(0, -1);
@@ -374,7 +377,7 @@ export class PiratesEnVadrouilleActionService {
       next = this.addCardToCollection(next, ctx.actorId, 'treasure', stolen);
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, ctx.actorId)} dÃƒÂ©robe "${stolen.title}" ÃƒÂ  ${resolvePlayerNameFromState(
+        `${resolvePlayerNameFromState(next, ctx.actorId)} dérobe "${stolen.title}" à ${resolvePlayerNameFromState(
           next,
           targetPlayerId,
         )}.`,
@@ -439,12 +442,12 @@ export class PiratesEnVadrouilleActionService {
       };
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} ouvre le coffre lÃƒÂ©gendaire et gagne la partie !`,
+        `${resolvePlayerNameFromState(next, playerId)} ouvre le coffre légendaire et gagne la partie !`,
       );
     }
     const next = this.core.appendLog(
       state,
-      `${resolvePlayerNameFromState(state, playerId)} n'a pas assez de trÃƒÂ©sors ou piÃƒÂ¨ces d'or et recule de deux cases.`,
+      `${resolvePlayerNameFromState(state, playerId)} n'a pas assez de trésors ou pièces d'or et recule de deux cases.`,
     );
     return this.move(next, playerId, -2);
   }
@@ -464,7 +467,7 @@ export class PiratesEnVadrouilleActionService {
     if (!force && total >= 5) {
       return this.core.appendLog(
         state,
-        `${resolvePlayerNameFromState(state, playerId)} a dÃƒÂ©jÃƒÂ  cinq cartes et ne peut pas en ajouter.`,
+        `${resolvePlayerNameFromState(state, playerId)} a déjà cinq cartes et ne peut pas en ajouter.`,
       );
     }
     const updated = { ...collection };
@@ -603,17 +606,17 @@ export class PiratesEnVadrouilleActionService {
         case 'skip':
           return `saute ${effect.turns} tour(s)`;
         case 'immunity':
-          return `est protÃƒÂ©gÃƒÂ© contre ${effect.turns} obstacle(s)`;
+          return `est protégé contre ${effect.turns} obstacle(s)`;
         case 'gainGold':
-          return `gagne ${effect.amount} piÃƒÂ¨ce(s) d'or`;
+          return `gagne ${effect.amount} pièce(s) d'or`;
         case 'loseGold':
-          return `perd ${effect.amount} piÃƒÂ¨ce(s) d'or`;
+          return `perd ${effect.amount} pièce(s) d'or`;
         case 'reroll':
-          return 'relance immÃƒÂ©diatement le dÃƒÂ©';
+          return 'relance immédiatement le dé';
         case 'targetMove':
-          return `rÃƒÂ©trograde un adversaire de ${Math.abs(effect.delta)} case(s)`;
+          return `rétrograde un adversaire de ${Math.abs(effect.delta)} case(s)`;
         case 'stealTreasure':
-          return `tente de voler ${effect.count} trÃƒÂ©sor(s)`;
+          return `tente de voler ${effect.count} trésor(s)`;
         default:
           return 'applique un effet';
       }
@@ -677,14 +680,3 @@ export class PiratesEnVadrouilleActionService {
     return (state.metadata ?? {}) as PiratesEnVadrouilleMetadata;
   }
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
@@ -45,7 +45,7 @@ export class FouleesFantastiquesPresenterService {
         (pawn: FouleesFantastiquesPawnState) =>
           (pawn?.progress ?? -1) >= arrivalProgress,
       ).length;
-      return `${name} : ${arrived} arrivÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©${arrived > 1 ? 's' : ''}`;
+      return `${name} : ${arrived} arrivé${arrived > 1 ? 's' : ''}`;
     });
     const myPawns = Array.isArray(meta.pawnsByPlayer?.[userId])
       ? meta.pawnsByPlayer[userId]
@@ -74,9 +74,9 @@ export class FouleesFantastiquesPresenterService {
 
     const stableLines: string[] = [];
     if (myColor) stableLines.push(`Couleur: ${myColor}.`);
-    stableLines.push(`DÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©part: ${inStable}/4.`);
+    stableLines.push(`Départ: ${inStable}/4.`);
     stableLines.push(`Abri: ${inHome}/4.`);
-    stableLines.push(`ArrivÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©s: ${finished}/4.`);
+    stableLines.push(`Arrivés: ${finished}/4.`);
 
     if (out.length) {
       const offset = meta.offsets?.[userId] ?? 0;
@@ -101,9 +101,9 @@ export class FouleesFantastiquesPresenterService {
         homeLengthRaw: meta.homeLength,
         offsetsRaw: meta.offsets,
         pawnNamesByPlayerRaw: meta.pawnNamesByPlayer,
-        stableLabel: 'DÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©part',
+        stableLabel: 'Départ',
         homeLabel: 'Abri',
-        arrivedLabel: 'ArrivÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©s',
+        arrivedLabel: 'Arrivés',
       });
 
     const extras = {
@@ -117,10 +117,10 @@ export class FouleesFantastiquesPresenterService {
       ui: {
         panels: {
           stable: {
-            title: 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â°tat',
+            title: 'État',
             message: stableLines.length
               ? stableLines.join(' ')
-              : 'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â°tat: inconnu.',
+              : 'État: inconnu.',
           },
           score: {
             title: 'Scores',

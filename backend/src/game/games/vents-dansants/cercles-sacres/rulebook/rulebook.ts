@@ -9,7 +9,7 @@ import {
   GameTurnViolationError,
   GameUnknownActionError,
 } from '../../../../domain/errors/game-domain.errors';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import type { CerclesSacresActionType } from '../definitions/game.definition';
 import type { CerclesSacresTheme } from '../model/cercles-sacres-cards';
 import { CERCLES_SACRES_CARD_BY_ID } from '../model/cercles-sacres-cards';

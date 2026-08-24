@@ -1,6 +1,6 @@
-﻿import { CAT_PATTES_CARD_BY_ID } from '../../model/cat-pattes-cards';
-import type { CatPattesMetadata } from '../../model/cat-pattes-state.model';
-import { canPlayPattes, playerCanReceiveObstacle } from '../../rulebook/rulebook';
+﻿import { CAT_PATTES_CARD_BY_ID } from '../model/cat-pattes-cards';
+import type { CatPattesMetadata } from '../model/cat-pattes-state.model';
+import { canPlayPattes, playerCanReceiveObstacle } from './rulebook';
 
 function buildMeta(): CatPattesMetadata {
   return {

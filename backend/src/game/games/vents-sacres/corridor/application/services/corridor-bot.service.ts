@@ -1,4 +1,4 @@
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { BotRunnerService } from '../../../../../application/services/bot-runner.service';
 import { RandomService } from '../../../../../application/services/random.service';
@@ -59,14 +59,14 @@ export class CorridorBotService {
     }));
 
     // Heuristique simple:
-    // - si un coup gagne immÃƒÂ©diatement, le prendre
+    // - si un coup gagne immédiatement, le prendre
     for (const to of moveTargets) {
       if (CorridorRulebook.isWinningPos(state, botPlayerId, to)) {
         return [{ type: 'corridor_move', payload: { x: to.x, y: to.y } }];
       }
     }
 
-    // - sinon, avancer vers lÃ¢â‚¬â„¢objectif (rÃƒÂ©duit la distance en Y)
+    // - sinon, avancer vers l’objectif (réduit la distance en Y)
     const players = state.players ?? [];
     const oppId = players.find((p) => p?.id !== botPlayerId)?.id ?? null;
     const myGoalY = CorridorRulebook.getGoalYForPlayer(state, botPlayerId);
@@ -92,7 +92,7 @@ export class CorridorBotService {
       (meta?.wallsRemainingByPlayerId ?? {})[String(botPlayerId)] ?? 0;
 
     // Bot agressif:
-    // 1) Anti-victoire: si l'adversaire a un coup gagnant au prochain tour, poser un mur qui l'empÃƒÂªche.
+    // 1) Anti-victoire: si l'adversaire a un coup gagnant au prochain tour, poser un mur qui l'empêche.
     if (
       remaining > 0 &&
       oppId != null &&
@@ -143,7 +143,7 @@ export class CorridorBotService {
       shouldConsiderWalls &&
       (oppDist <= 3 ||
         (myDist != null && oppDist < myDist) ||
-        // Initiative: un peu d'alÃƒÂ©atoire pour que le bot place aussi des murs en dÃƒÂ©but de partie.
+        // Initiative: un peu d'aléatoire pour que le bot place aussi des murs en début de partie.
         this.random.nextFloat({}).value < 0.35);
 
     if (
@@ -190,7 +190,7 @@ export class CorridorBotService {
       payload: { x: w.x, y: w.y, o: w.o },
     }));
 
-    // Fallback: choix alÃƒÂ©atoire, avec prÃƒÂ©fÃƒÂ©rence au dÃƒÂ©placement.
+    // Fallback: choix aléatoire, avec préférence au déplacement.
     return this.botRunner.choose(
       [...moveActions, ...wallActions],
       { state, playerId: botPlayerId },
@@ -274,7 +274,7 @@ export class CorridorBotService {
       }
     }
 
-    // Seuil volontairement bas: bot plus "mÃƒÂ©chant", il doit oser poser des murs.
+    // Seuil volontairement bas: bot plus "méchant", il doit oser poser des murs.
     if (bestScore >= 2) {
       return best;
     }

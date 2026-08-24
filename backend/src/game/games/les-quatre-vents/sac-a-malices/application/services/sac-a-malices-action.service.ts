@@ -9,12 +9,12 @@ import {
 } from '../../../../../application/helpers/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import { RandomService } from '../../../../../application/services/random.service';
 import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
-import { SacAMalicesSetupService } from '../application/services/sac-a-malices-setup.service';
+import { SacAMalicesSetupService } from './sac-a-malices-setup.service';
 import type {
   SacCard,
   SacDeck,
@@ -22,31 +22,31 @@ import type {
   SacMetadata,
   SacTile,
 } from '../../model/sac-a-malices.types';
-import { applySacAMalicesVariantConfig } from './sac-a-malices-variant-action.helper';
+import { applySacAMalicesVariantConfig } from '../../actions/sac-a-malices-variant-action.helper';
 import {
   openSacAMalicesPropertyChoice,
   resolveSacAMalicesPropertyChoice,
   type SacPropertyChoiceKind,
-} from './sac-a-malices-property-choice.helper';
-import { applySacAMalicesLanding } from './sac-a-malices-landing.helper';
+} from '../../actions/sac-a-malices-property-choice.helper';
+import { applySacAMalicesLanding } from '../../actions/sac-a-malices-landing.helper';
 import {
   applySacAMalicesCardEffect,
   shouldKeepSacAMalicesCard,
-} from './sac-a-malices-card-effect.helper';
+} from '../../actions/sac-a-malices-card-effect.helper';
 import {
   moveSacAMalicesForward,
   moveSacAMalicesTo,
   sendSacAMalicesToJail,
-} from './sac-a-malices-movement.helper';
+} from '../../actions/sac-a-malices-movement.helper';
 import {
   applySacAMalicesBuyDecision,
   applySacAMalicesPayFine,
   applySacAMalicesUseJailCard,
-} from './sac-a-malices-turn-actions.helper';
+} from '../../actions/sac-a-malices-turn-actions.helper';
 import {
   applySacAMalicesDrawAndApply,
   drawSacAMalicesCard,
-} from './sac-a-malices-draw-card.helper';
+} from '../../actions/sac-a-malices-draw-card.helper';
 import { SacAMalicesPropertyService } from './sac-a-malices-property.service';
 import { SacAMalicesEconomyService } from './sac-a-malices-economy.service';
 import {
@@ -58,7 +58,7 @@ import {
   setSacOwner,
   setSacPosition,
   setSacPot,
-} from './sac-a-malices-state-updates.helper';
+} from '../../actions/sac-a-malices-state-updates.helper';
 import {
   advanceSacTurn,
   asSacRecord as asRecord,
@@ -72,7 +72,6 @@ import {
   toSacNumberValue as toNumberValue,
   toSacStringValue as toStringValue,
 } from './sac-a-malices-action.utils';
-
 
 export class SacAMalicesActionService {
   constructor(
@@ -177,7 +176,7 @@ export class SacAMalicesActionService {
     const jailTurns = meta.statuses?.inJail?.[currentId] ?? 0;
     if (jailTurns > 0) {
       if (rules.jail.allowDoubleEscape) {
-        // 2d6 : si double => sortie immÃƒÆ’Ã‚Â©diate et dÃƒÆ’Ã‚Â©placement ; sinon on attend.
+        // 2d6 : si double => sortie immédiate et déplacement ; sinon on attend.
         const r1 = this.random.rollDice(meta as Record<string, unknown>, 6);
         const r2 = this.random.rollDice(r1.meta, 6);
         meta = { ...meta, ...r2.meta };
@@ -193,7 +192,7 @@ export class SacAMalicesActionService {
         };
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, currentId)} lance les dÃƒÆ’Ã‚Â©s : "${d1}" + "${d2}" = "${sum}".`,
+          `${resolvePlayerNameFromState(next, currentId)} lance les dés : "${d1}" + "${d2}" = "${sum}".`,
         );
 
         if (!isDouble) {
@@ -203,7 +202,7 @@ export class SacAMalicesActionService {
             if (rules.jail.autoFine > 0) {
               next = this.core.appendLog(
                 next,
-                `Sortie automatique : amende ${rules.jail.autoFine} ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬.`,
+                `Sortie automatique : amende ${rules.jail.autoFine} €.`,
               );
               next = this.addMoney(next, currentId, -rules.jail.autoFine, {
                 toPot: true,
@@ -228,7 +227,7 @@ export class SacAMalicesActionService {
         next = this.setJailTurns(next, currentId, 0);
         next = this.setConsecutiveDoubles(next, currentId, 0);
 
-        // On rejoue / on se dÃƒÆ’Ã‚Â©place normalement aprÃƒÆ’Ã‚Â¨s la sortie.
+        // On rejoue / on se déplace normalement après la sortie.
         next = this.moveForward(next, currentId, sum);
         next = this.applyLanding(next, currentId);
         next = this.checkWinner(next);
@@ -243,7 +242,7 @@ export class SacAMalicesActionService {
         return next;
       }
 
-      // Version "attente" : on attend N tours, puis amende auto (si configurÃƒÆ’Ã‚Â©e).
+      // Version "attente" : on attend N tours, puis amende auto (si configurée).
       let next = this.setJailTurns(
         state,
         currentId,
@@ -254,7 +253,7 @@ export class SacAMalicesActionService {
         if (rules.jail.autoFine > 0) {
           next = this.core.appendLog(
             next,
-            `Sortie automatique : amende ${rules.jail.autoFine} ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬.`,
+            `Sortie automatique : amende ${rules.jail.autoFine} €.`,
           );
           next = this.addMoney(next, currentId, -rules.jail.autoFine, {
             toPot: true,
@@ -274,7 +273,7 @@ export class SacAMalicesActionService {
       return this.advanceTurn(next);
     }
 
-    // On consomme l'ÃƒÆ’Ã‚Â©ventuel bonus "rejouer" ÃƒÆ’Ã‚Â  l'entrÃƒÆ’Ã‚Â©e du lancer.
+    // On consomme l'éventuel bonus "rejouer" à l'entrée du lancer.
     state = this.setExtraRoll(state, currentId, false);
     meta = this.getMeta(state);
 
@@ -295,10 +294,10 @@ export class SacAMalicesActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} lance les dÃƒÆ’Ã‚Â©s : "${d1}" + "${d2}" = "${sum}".`,
+      `${resolvePlayerNameFromState(next, currentId)} lance les dés : "${d1}" + "${d2}" = "${sum}".`,
     );
 
-    // Doubles : rejouer, 3 doubles consÃƒÆ’Ã‚Â©cutifs => prison.
+    // Doubles : rejouer, 3 doubles consécutifs => prison.
     const prevDoubles =
       this.getMeta(next).statuses?.consecutiveDoubles?.[currentId] ?? 0;
     const doubles = isDouble ? prevDoubles + 1 : 0;
@@ -322,9 +321,9 @@ export class SacAMalicesActionService {
       return this.advanceTurn(next);
     }
 
-    // (prison gÃƒÆ’Ã‚Â©rÃƒÆ’Ã‚Â©e avant le lancer)
+    // (prison gérée avant le lancer)
 
-    // DÃƒÆ’Ã‚Â©placement
+    // Déplacement
     next = this.moveForward(next, currentId, sum);
     next = this.applyLanding(next, currentId);
     next = this.checkWinner(next);
@@ -484,7 +483,10 @@ export class SacAMalicesActionService {
             ? Number(group.hotelPrice ?? 0) || 0
             : houseCost;
         if (!Number.isFinite(cost) || cost <= 0 || myCash < cost) continue;
-        options.push({ tileIndex, label: `${tile.title} (coÃƒÆ’Ã‚Â»t ${cost} ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬)` });
+        options.push({
+          tileIndex,
+          label: `${tile.title} (coût ${cost} €)`,
+        });
         continue;
       }
 
@@ -504,25 +506,37 @@ export class SacAMalicesActionService {
           const cost = this.propertySvc.getHouseCost(group, level);
           return Math.floor(cost / 2);
         })();
-        options.push({ tileIndex, label: `${tile.title} (remb. ${refund} ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬)` });
+        options.push({
+          tileIndex,
+          label: `${tile.title} (remb. ${refund} €)`,
+        });
         continue;
       }
 
       if (kind === 'mortgage') {
         if (building.mortgaged) continue;
-        if (tile.type === 'property' && (building.hotel || building.houses > 0)) {
+        if (
+          tile.type === 'property' &&
+          (building.hotel || building.houses > 0)
+        ) {
           continue;
         }
         const amount = this.propertySvc.getMortgageValue(meta, tile);
         if (!Number.isFinite(amount) || amount <= 0) continue;
-        options.push({ tileIndex, label: `${tile.title} (+${amount} ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬)` });
+        options.push({
+          tileIndex,
+          label: `${tile.title} (+${amount} €)`,
+        });
         continue;
       }
 
       if (!building.mortgaged) continue;
       const cost = this.propertySvc.getUnmortgageCost(meta, tile);
       if (!Number.isFinite(cost) || cost <= 0 || myCash < cost) continue;
-      options.push({ tileIndex, label: `${tile.title} (-${cost} ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬)` });
+      options.push({
+        tileIndex,
+        label: `${tile.title} (-${cost} €)`,
+      });
     }
 
     return options;
@@ -750,7 +764,12 @@ export class SacAMalicesActionService {
     playerId: number,
     value: number,
   ): GameStateEntity {
-    return setSacConsecutiveDoubles(state, this.getMeta(state), playerId, value);
+    return setSacConsecutiveDoubles(
+      state,
+      this.getMeta(state),
+      playerId,
+      value,
+    );
   }
 
   private advanceTurnOrExtraRoll(
@@ -766,7 +785,6 @@ export class SacAMalicesActionService {
     }
     return this.advanceTurn(state);
   }
-
 
   private buildOne(
     state: GameStateEntity,
@@ -838,7 +856,9 @@ export class SacAMalicesActionService {
     tileIndex: number,
     patch: Partial<{ houses: number; hotel: boolean; mortgaged: boolean }>,
   ): GameStateEntity {
-    return this.propertySvc.setBuilding(state, tileIndex, patch);
+    return this.propertySvc.setBuilding(state, tileIndex, patch, (value) =>
+      this.getMeta(value),
+    );
   }
 
   private getGroup(meta: SacMetadata, color: string) {
@@ -873,7 +893,7 @@ export class SacAMalicesActionService {
     }
 
     if (!ownedWithInfra.length) {
-      return this.core.appendLog(state, 'Aucune infrastructure ÃƒÆ’Ã‚Â  perdre.');
+      return this.core.appendLog(state, 'Aucune infrastructure à perdre.');
     }
 
     const picked = this.random.pickOne(
@@ -903,14 +923,14 @@ export class SacAMalicesActionService {
     if (supportsHotel && b.hotel) {
       next = this.core.appendLog(
         next,
-        `Infrastructure perdue : hÃƒÆ’Ã‚Â´tel sur "${tile?.title ?? 'propriÃƒÆ’Ã‚Â©tÃƒÆ’Ã‚Â©'}".`,
+        `Infrastructure perdue : hôtel sur "${tile?.title ?? 'propriété'}".`,
       );
       return this.setBuilding(next, tileIndex, { hotel: false, houses: 4 });
     }
     if (b.houses > 0) {
       next = this.core.appendLog(
         next,
-        `Infrastructure perdue : -1 sur "${tile?.title ?? 'propriÃƒÆ’Ã‚Â©tÃƒÆ’Ã‚Â©'}".`,
+        `Infrastructure perdue : -1 sur "${tile?.title ?? 'propriété'}".`,
       );
       return this.setBuilding(next, tileIndex, {
         houses: Math.max(0, b.houses - 1),
@@ -939,10 +959,8 @@ export class SacAMalicesActionService {
     state: GameStateEntity,
     playerId: number,
   ): GameStateEntity {
-    return this.economySvc.releaseAssets(
-      state,
-      playerId,
-      (current) => this.getMeta(current),
+    return this.economySvc.releaseAssets(state, playerId, (current) =>
+      this.getMeta(current),
     );
   }
 
@@ -951,11 +969,8 @@ export class SacAMalicesActionService {
     playerId: number,
     value: boolean,
   ): GameStateEntity {
-    return this.economySvc.setEliminated(
-      state,
-      playerId,
-      value,
-      (current) => this.getMeta(current),
+    return this.economySvc.setEliminated(state, playerId, value, (current) =>
+      this.getMeta(current),
     );
   }
 
@@ -1006,15 +1021,4 @@ export class SacAMalicesActionService {
   private getMeta(state: GameStateEntity): SacMetadata {
     return (state.metadata ?? {}) as SacMetadata;
   }
-
 }
-
-
-
-
-
-
-
-
-
-

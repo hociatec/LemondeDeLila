@@ -1,16 +1,16 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../models/game-action.model';
-import { resolvePlayerName } from '../../../../application/helpers/player-name.helper';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
+import { resolvePlayerName } from '../../../../../application/helpers/player-name.helper';
 
-import { formatPresenterActions } from '../../../../application/helpers/actions-presenter.helper';
+import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
 import { ABSURDISSIMES_GAME } from '../../definitions/game.definition';
 import type { AbsurdissimesMetadata } from '../../model/les-absurdissimes-state.model';
 import {
   buildLamaLikePanels,
   summarizeHandCounts,
-} from '../../../../application/helpers/lamalike-presenter.helper';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+} from '../../../../../application/helpers/lamalike-presenter.helper';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 export class AbsurdissimesPresenterService {
   exposeStateForUser(
@@ -25,7 +25,7 @@ export class AbsurdissimesPresenterService {
     const panels = buildLamaLikePanels({
       hand,
       handCounts,
-      discardLabel: 'DÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©fausse du juge',
+      discardLabel: 'Défausse du juge',
       scoreLines: Object.entries(meta.scores ?? {}).map(
         ([playerId, score]) => `Joueur ${playerId}: ${score ?? 0}`,
       ),

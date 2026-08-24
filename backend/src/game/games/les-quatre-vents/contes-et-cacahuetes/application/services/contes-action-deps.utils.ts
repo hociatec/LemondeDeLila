@@ -6,6 +6,7 @@ import type {
   ContesCard,
   ContesCardType,
   ContesCacahuetesMetadata,
+  ContesCacahuetesTile,
   ContesPending,
 } from '../../model/contes-et-cacahuetes-state.model';
 import type { ContesProgressionDeps } from './contes-progression.utils';
@@ -34,50 +35,57 @@ type BaseDepsCallbacks = {
   endTurn: (state: GameStateEntity, playerId: number) => GameStateEntity;
 };
 
-export function buildContesProgressionDeps(callbacks: BaseDepsCallbacks & {
-  random: RandomService;
-  autoSkipIfBlocked: (state: GameStateEntity, playerId: number) => GameStateEntity;
-  onAnyPlayerPassedBlocked: (
-    state: GameStateEntity,
-    playerId: number,
-    nextPos: number,
-  ) => GameStateEntity;
-  appendTileArrivalLog: (
-    state: GameStateEntity,
-    playerId: number,
-    nextPos: number,
-    tile: unknown,
-  ) => GameStateEntity;
-  setWinner: (state: GameStateEntity, playerId: number) => GameStateEntity;
-  moveBy: (
-    state: GameStateEntity,
-    playerId: number,
-    delta: number,
-    depth: number,
-  ) => GameStateEntity;
-  drawAndApply: (
-    state: GameStateEntity,
-    playerId: number,
-    type: 'bonus' | 'malus' | 'surprise' | 'conte',
-    depth: number,
-  ) => GameStateEntity;
-  buildConteNarrationFromTile: (tile: unknown) => ContesCard | null;
-  recordConteNarration: (
-    state: GameStateEntity,
-    playerId: number,
-    card: ContesCard,
-  ) => GameStateEntity;
-  maybeProtectFromMalus: (
-    state: GameStateEntity,
-    playerId: number,
-  ) => { protected: boolean; state: GameStateEntity };
-  startChooseTarget: (
-    state: GameStateEntity,
-    playerId: number,
-    context: string,
-    label: string,
-  ) => GameStateEntity;
-}): ContesProgressionDeps {
+export function buildContesProgressionDeps(
+  callbacks: BaseDepsCallbacks & {
+    random: RandomService;
+    autoSkipIfBlocked: (
+      state: GameStateEntity,
+      playerId: number,
+    ) => GameStateEntity;
+    onAnyPlayerPassedBlocked: (
+      state: GameStateEntity,
+      playerId: number,
+      nextPos: number,
+    ) => GameStateEntity;
+    appendTileArrivalLog: (
+      state: GameStateEntity,
+      playerId: number,
+      nextPos: number,
+      tile: ContesCacahuetesTile | undefined,
+    ) => GameStateEntity;
+    setWinner: (state: GameStateEntity, playerId: number) => GameStateEntity;
+    moveBy: (
+      state: GameStateEntity,
+      playerId: number,
+      delta: number,
+      depth: number,
+    ) => GameStateEntity;
+    drawAndApply: (
+      state: GameStateEntity,
+      playerId: number,
+      type: 'bonus' | 'malus' | 'surprise' | 'conte',
+      depth: number,
+    ) => GameStateEntity;
+    buildConteNarrationFromTile: (
+      tile: ContesCacahuetesTile | undefined,
+    ) => ContesCard | null;
+    recordConteNarration: (
+      state: GameStateEntity,
+      playerId: number,
+      card: ContesCard,
+    ) => GameStateEntity;
+    maybeProtectFromMalus: (
+      state: GameStateEntity,
+      playerId: number,
+    ) => { protected: boolean; state: GameStateEntity };
+    startChooseTarget: (
+      state: GameStateEntity,
+      playerId: number,
+      context: string,
+      label: string,
+    ) => GameStateEntity;
+  },
+): ContesProgressionDeps {
   return {
     random: callbacks.random,
     getMeta: callbacks.getMeta,
@@ -100,25 +108,27 @@ export function buildContesProgressionDeps(callbacks: BaseDepsCallbacks & {
   };
 }
 
-export function buildContesCardFlowDeps(callbacks: BaseDepsCallbacks & {
-  random: RandomService;
-  deckPolicies: DeckPoliciesService;
-  queueDraws: (
-    state: GameStateEntity,
-    playerId: number,
-    queue: Array<'bonus' | 'malus' | 'surprise' | 'conte'>,
-    depth: number,
-    label?: string,
-  ) => GameStateEntity;
-  attachQueuedDrawContinuationFromPending: (
-    state: GameStateEntity,
-    pending: ContesPending | null,
-  ) => GameStateEntity;
-  resumeQueuedDrawContinuation: (
-    state: GameStateEntity,
-    pending: ContesPending | null,
-  ) => GameStateEntity;
-}): ContesCardFlowDeps {
+export function buildContesCardFlowDeps(
+  callbacks: BaseDepsCallbacks & {
+    random: RandomService;
+    deckPolicies: DeckPoliciesService;
+    queueDraws: (
+      state: GameStateEntity,
+      playerId: number,
+      queue: Array<'bonus' | 'malus' | 'surprise' | 'conte'>,
+      depth: number,
+      label?: string,
+    ) => GameStateEntity;
+    attachQueuedDrawContinuationFromPending: (
+      state: GameStateEntity,
+      pending: ContesPending | null,
+    ) => GameStateEntity;
+    resumeQueuedDrawContinuation: (
+      state: GameStateEntity,
+      pending: ContesPending | null,
+    ) => GameStateEntity;
+  },
+): ContesCardFlowDeps {
   return {
     random: callbacks.random,
     deckPolicies: callbacks.deckPolicies,
@@ -185,6 +195,12 @@ export function buildContesChoiceDeps(callbacks: {
     type: 'bonus' | 'malus' | 'surprise' | 'conte',
     depth: number,
   ) => GameStateEntity;
+  startChooseTarget: (
+    state: GameStateEntity,
+    playerId: number,
+    context: string,
+    label: string,
+  ) => GameStateEntity;
   setStatusBool: (
     state: GameStateEntity,
     key: string,
@@ -228,6 +244,7 @@ export function buildContesChoiceDeps(callbacks: {
     startGiveBonusChoice: callbacks.startGiveBonusChoice,
     moveBy: callbacks.moveBy,
     drawAndApply: callbacks.drawAndApply,
+    startChooseTarget: callbacks.startChooseTarget,
     setStatusBool: callbacks.setStatusBool,
     applyBonusEffectById: callbacks.applyBonusEffectById,
     transferBonusToken: callbacks.transferBonusToken,

@@ -1,5 +1,5 @@
-import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
-import { VoyagePresenterService } from './voyage-presenter.service';
+import { BoardPayloadService } from '../../../../application/services/board-payload.service';
+import { VoyagePresenterService } from '../application/services/voyage-presenter.service';
 
 describe('VoyagePresenterService', () => {
   it('does not expose a local position panel', () => {

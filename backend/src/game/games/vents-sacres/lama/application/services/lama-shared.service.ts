@@ -1,6 +1,6 @@
 import type { LamaMetadata } from '../../model/lama.model';
 import type { PlayerStateEntity } from '../../../../../application/models/game-state.model';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 export class LamaSharedService {
   sanitizePlayerName(raw: unknown): string {

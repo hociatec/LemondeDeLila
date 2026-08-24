@@ -1,10 +1,10 @@
-Start testing: Aug 24 03:43 Paris, Madrid (heure d’été)
+Start testing: Aug 24 05:50 Paris, Madrid (heure d’été)
 ----------------------------------------------------------
 1/1 Testing: lemonde_de_lila_wx_tests
 1/1 Test: lemonde_de_lila_wx_tests
 Command: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/lemonde_de_lila_wx_tests.exe"
 Directory: C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug
-"lemonde_de_lila_wx_tests" start time: Aug 24 03:43 Paris, Madrid (heure d’été)
+"lemonde_de_lila_wx_tests" start time: Aug 24 05:50 Paris, Madrid (heure d’été)
 Output:
 ----------------------------------------------------------
 Running automated unit tests for client-wx...
@@ -24,6 +24,8 @@ Running automated unit tests for client-wx...
 [TEST PASSED] JsonFileStorageRejectsCorruptedFiles
 [RUNNING] OptionsCodecMigratesLegacyFieldsAndSchema
 [TEST PASSED] OptionsCodecMigratesLegacyFieldsAndSchema
+[RUNNING] SoundCatalogAndPerCueOptionsRoundTrip
+[TEST PASSED] SoundCatalogAndPerCueOptionsRoundTrip
 [RUNNING] SessionClearWipesRefreshToken
 [TEST PASSED] SessionClearWipesRefreshToken
 [RUNNING] SessionMovePreservesSecrets
@@ -36,10 +38,12 @@ Running automated unit tests for client-wx...
 [TEST PASSED] EncodingRoundTripUnicode
 [RUNNING] EncodingRejectsInvalidUtf8
 [TEST PASSED] EncodingRejectsInvalidUtf8
+[RUNNING] BrokenAccentRepairCanBeToggled
+[TEST PASSED] BrokenAccentRepairCanBeToggled
 [RUNNING] RealtimeProtocolFallbackTypeAndPayloadValidation
 [TEST PASSED] RealtimeProtocolFallbackTypeAndPayloadValidation
 [RUNNING] ChatProtocolHandlesMalformedAndUnknownEvents
-2026-08-24 03:43:46.407 [WARN ] [ChatProtocol] Le tableau 'messages' doit Ãªtre un tableau JSON.
+2026-08-24 05:50:29.532 [WARN ] [ChatProtocol] Le tableau 'messages' doit Ãªtre un tableau JSON.
 [TEST PASSED] ChatProtocolHandlesMalformedAndUnknownEvents
 [RUNNING] ChatMessageStoreEnforcesLimits
 [TEST PASSED] ChatMessageStoreEnforcesLimits
@@ -58,7 +62,7 @@ Running automated unit tests for client-wx...
 [RUNNING] RoomSessionGatewayUsesWpfHandshakeContract
 [TEST PASSED] RoomSessionGatewayUsesWpfHandshakeContract
 [RUNNING] RoomSessionServiceReconnectsAndRepublishesState
-2026-08-24 03:43:46.436 [WARN ] [Rooms] socket lost
+2026-08-24 05:50:29.547 [WARN ] [Rooms] socket lost
 [TEST PASSED] RoomSessionServiceReconnectsAndRepublishesState
 [RUNNING] AsyncRequestSlotRejectsStaleCompletion
 [TEST PASSED] AsyncRequestSlotRejectsStaleCompletion
@@ -79,21 +83,21 @@ Running automated unit tests for client-wx...
 [RUNNING] ChatServiceCloseInterruptsReceiveLoop
 [TEST PASSED] ChatServiceCloseInterruptsReceiveLoop
 [RUNNING] ChatServiceReconnectsAfterTransientFailure
-2026-08-24 03:43:47.642 [WARN ] [Chat] Reconnexion au serveur... : socket lost
-2026-08-24 03:43:47.965 [WARN ] [Chat] Connexion au serveur interrompue : open failed
-2026-08-24 03:43:48.639 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-24 05:50:30.760 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-24 05:50:31.081 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-24 05:50:31.749 [WARN ] [Chat] Reconnexion au serveur... : interrupted
 [TEST PASSED] ChatServiceReconnectsAfterTransientFailure
 [RUNNING] ChatServiceSendReportsTransportFailure
-2026-08-24 03:43:48.641 [ERROR] [Chat] Envoi tchat Ã©chouÃ© : send failed
-2026-08-24 03:43:48.641 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-24 05:50:31.749 [ERROR] [Chat] Envoi tchat Ã©chouÃ© : send failed
+2026-08-24 05:50:31.750 [WARN ] [Chat] Reconnexion au serveur... : interrupted
 [TEST PASSED] ChatServiceSendReportsTransportFailure
 All tests completed successfully!
 <end of output>
-Test time =   2.34 sec
+Test time =   2.28 sec
 ----------------------------------------------------------
 Test Passed.
-"lemonde_de_lila_wx_tests" end time: Aug 24 03:43 Paris, Madrid (heure d’été)
+"lemonde_de_lila_wx_tests" end time: Aug 24 05:50 Paris, Madrid (heure d’été)
 "lemonde_de_lila_wx_tests" time elapsed: 00:00:02
 ----------------------------------------------------------
 
-End testing: Aug 24 03:43 Paris, Madrid (heure d’été)
+End testing: Aug 24 05:50 Paris, Madrid (heure d’été)

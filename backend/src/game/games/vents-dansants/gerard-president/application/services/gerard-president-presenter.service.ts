@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 import { resolvePlayerName } from '../../../../../application/helpers/player-name.helper';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
@@ -13,9 +13,9 @@ import {
 import { buildLamaLikePanels } from '../../../../../application/helpers/lamalike-presenter.helper';
 
 const ACTION_LABELS: Record<string, string> = {
-  set_theme: 'DÃƒÂ©finir un thÃƒÂ¨me',
-  play_name: 'Jouer un prÃƒÂ©nom',
-  play_special: 'Jouer une carte spÃƒÂ©ciale',
+  set_theme: 'Définir un thème',
+  play_name: 'Jouer un prénom',
+  play_special: 'Jouer une carte spéciale',
   pass: 'Passer',
   choose_winner: 'Choisir le gagnant',
 };
@@ -34,10 +34,10 @@ export class GerardPresidentPresenterService {
     const isMaster = metadata.masterId === userId;
     const themeHidden =
       metadata.themeSecretActive && metadata.masterId != null && !isMaster;
-    const currentTheme = themeHidden ? 'ThÃƒÂ¨me secret' : metadata.currentTheme;
+    const currentTheme = themeHidden ? 'Thème secret' : metadata.currentTheme;
     const secondTheme =
       themeHidden && metadata.secondTheme
-        ? 'ThÃƒÂ¨me secret'
+        ? 'Thème secret'
         : metadata.secondTheme;
     const actions = Rulebook.getAvailableActions(state, userId);
     const catalog = this.buildCatalog();
@@ -169,7 +169,7 @@ export class GerardPresidentPresenterService {
           (card) => card.id === cardId,
         );
         const label = special
-          ? `${special.name} Ã¢â‚¬â€œ ${special.description}`
+          ? `${special.name} – ${special.description}`
           : cardId;
         return { familyId: 'special', memberId: cardId, label };
       }),

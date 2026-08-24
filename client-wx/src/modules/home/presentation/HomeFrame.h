@@ -65,6 +65,7 @@ private:
     void OnLoginSubmit(wxCommandEvent& event);
     void OnRegisterSubmit(wxCommandEvent& event);
     void OnQuit(wxCommandEvent& event);
+    void StartAuthenticationWarmUp();
     void SetBusyState(bool isBusy, const wxString& statusMessage = wxEmptyString);
     void SetFormInteractivity(Page page, bool enabled);
 

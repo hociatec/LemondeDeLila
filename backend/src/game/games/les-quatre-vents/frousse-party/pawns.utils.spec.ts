@@ -1,4 +1,4 @@
-import { formatPawnChoiceLabel, resolvePawnId } from '../pawns.utils';
+import { formatPawnChoiceLabel, resolvePawnId } from './pawns.utils';
 
 describe('frousse pawns utils', () => {
   it('resolves pawn ids from different primitive values', () => {

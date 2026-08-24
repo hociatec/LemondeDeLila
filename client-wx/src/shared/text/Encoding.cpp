@@ -6,8 +6,13 @@
 #endif
 
 #include <stdexcept>
+#include <atomic>
 
 namespace lila::shared::text {
+namespace
+{
+std::atomic_bool repairBrokenAccentsEnabled{true};
+}
 
 wxString FromUtf8(std::string_view value)
 {
@@ -21,7 +26,9 @@ wxString FromUtf8(std::string_view value)
     {
         throw std::runtime_error(lila::shared::errors::Utf8DecodeFailed);
     }
-    return converted;
+    return repairBrokenAccentsEnabled.load(std::memory_order_relaxed)
+        ? RepairBrokenAccents(converted)
+        : converted;
 }
 
 wxString FromUtf8(const char* value)
@@ -51,6 +58,39 @@ std::string ToUtf8(const wxString& value)
         throw std::runtime_error(lila::shared::errors::Utf8EncodeFailed);
     }
     return std::string(converted.data(), converted.length());
+}
+
+void SetBrokenAccentRepairEnabled(bool enabled) noexcept
+{
+    repairBrokenAccentsEnabled.store(enabled, std::memory_order_relaxed);
+}
+
+bool IsBrokenAccentRepairEnabled() noexcept
+{
+    return repairBrokenAccentsEnabled.load(std::memory_order_relaxed);
+}
+
+wxString RepairBrokenAccents(const wxString& value)
+{
+    wxString repaired = value;
+    const std::pair<const wchar_t*, const wchar_t*> replacements[] = {
+        {L"Ã€", L"À"}, {L"Ã‚", L"Â"}, {L"Ã„", L"Ä"}, {L"Ã‡", L"Ç"},
+        {L"Ãˆ", L"È"}, {L"Ã‰", L"É"}, {L"ÃŠ", L"Ê"}, {L"Ã‹", L"Ë"},
+        {L"ÃŽ", L"Î"}, {L"Ã", L"Ï"}, {L"Ã”", L"Ô"}, {L"Ã–", L"Ö"},
+        {L"Ã™", L"Ù"}, {L"Ã›", L"Û"}, {L"Ãœ", L"Ü"},
+        {L"Ã©", L"é"}, {L"Ã¨", L"è"}, {L"Ãª", L"ê"}, {L"Ã«", L"ë"},
+        {L"Ã ", L"à"}, {L"Ã¡", L"á"}, {L"Ã¢", L"â"}, {L"Ã¤", L"ä"},
+        {L"Ã§", L"ç"}, {L"Ã¬", L"ì"}, {L"Ã­", L"í"}, {L"Ã®", L"î"},
+        {L"Ã¯", L"ï"}, {L"Ã²", L"ò"}, {L"Ã³", L"ó"}, {L"Ã´", L"ô"},
+        {L"Ã¶", L"ö"}, {L"Ã¹", L"ù"}, {L"Ãº", L"ú"}, {L"Ã»", L"û"},
+        {L"Ã¼", L"ü"}, {L"Å“", L"œ"}, {L"Å’", L"Œ"},
+        {L"â€™", L"’"}, {L"â€œ", L"“"}, {L"â€", L"”"}, {L"â€“", L"–"},
+        {L"â€”", L"—"}, {L"â€¦", L"…"}, {L"Â ", L" "}};
+    for (const auto& [broken, correct] : replacements)
+    {
+        repaired.Replace(broken, correct, true);
+    }
+    return repaired;
 }
 
 std::wstring Utf8ToWide(const std::string& value)

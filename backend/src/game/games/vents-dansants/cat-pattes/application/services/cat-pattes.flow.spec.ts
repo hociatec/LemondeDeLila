@@ -363,7 +363,9 @@ describe('CatPattes flow', () => {
     expect(rawLog.some((m: string) => m.startsWith('Hacene pioche '))).toBe(
       true,
     );
-    expect(rawLog.some((m: string) => m.includes('Petite foulÃƒÆ’Ã‚Â©e'))).toBe(true);
+    expect(rawLog.some((m: string) => m.includes('Petite foulée'))).toBe(
+      true,
+    );
 
     const exposedP2: any = presenter.exposeStateForUser(state, 2);
     const exposedLog = (exposedP2.log ?? []).map((e: any) =>
@@ -372,9 +374,9 @@ describe('CatPattes flow', () => {
     expect(
       exposedLog.some((m: string) => m === 'Hacene pioche une carte.'),
     ).toBe(true);
-    expect(exposedLog.some((m: string) => m.includes('Petite foulÃƒÆ’Ã‚Â©e'))).toBe(
-      false,
-    );
+    expect(
+      exposedLog.some((m: string) => m.includes('Petite foulée')),
+    ).toBe(false);
   });
 
   it('does not expose opponents hands in presenter extras', async () => {
@@ -478,9 +480,3 @@ describe('CatPattes flow', () => {
     expect((next.metadata as any)?.drawnPlayerId ?? null).toBeNull();
   });
 });
-
-
-
-
-
-

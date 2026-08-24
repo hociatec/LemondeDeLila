@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { createLaParadeSucreeRuntime } from '../../la-parade-sucree.runtime';
 
 describe('LaParadeSucree runtime', () => {

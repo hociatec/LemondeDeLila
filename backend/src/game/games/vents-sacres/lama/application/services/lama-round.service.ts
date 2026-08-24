@@ -86,12 +86,12 @@ export class LamaRoundService {
         : null;
     let log = this.logger.append(
       state.log,
-      `DÃ©but de la manche ${meta.roundNumber}.`,
+      `Début de la manche ${meta.roundNumber}.`,
     );
     if (starterName) {
       log = this.logger.append(log, `C'est au tour de ${starterName}.`);
     }
-    log = this.logger.append(log, `DÃ©fausse: ${lamaCardLabel(firstDiscard)}.`);
+    log = this.logger.append(log, `Défausse: ${lamaCardLabel(firstDiscard)}.`);
     const nextMeta: LamaMetadata & { winnerPlayerId?: number | null } = {
       ...meta,
       roundStarterIndex: normalizedStarterIndex,
@@ -224,7 +224,7 @@ export class LamaRoundService {
       if (gained > 0) {
         log = this.logger.append(
           log,
-          `${this.shared.playerLabel(players as PlayerStateEntity[], pid)} prend ${gained} jeton${gained > 1 ? 's' : ''} (pÃ©nalitÃ©).`,
+          `${this.shared.playerLabel(players as PlayerStateEntity[], pid)} prend ${gained} jeton${gained > 1 ? 's' : ''} (pénalité).`,
         );
       }
     }
@@ -250,7 +250,7 @@ export class LamaRoundService {
         ? [winnerPlayerId]
         : [];
     if (winnerName && eligible.length === 0) {
-      log = this.logger.append(log, `${winnerName} n'a rien Ã  rendre.`);
+      log = this.logger.append(log, `${winnerName} n'a rien à rendre.`);
     }
     const nextMeta: LamaMetadata = {
       ...meta,
@@ -321,7 +321,7 @@ export class LamaRoundService {
       const score = Number(scores[String(pid)] ?? 0);
       log = this.logger.append(
         log,
-        `${this.shared.playerLabel(players as PlayerStateEntity[], pid)} est Ã©liminÃ©${p?.isBot ? '' : '(e)'} (${score} jetons).`,
+        `${this.shared.playerLabel(players as PlayerStateEntity[], pid)} est éliminé${p?.isBot ? '' : '(e)'} (${score} jetons).`,
       );
     }
 
@@ -341,7 +341,7 @@ export class LamaRoundService {
           }
         }
       }
-      log = this.logger.append(log, `Partie terminÃ©e.`);
+      log = this.logger.append(log, `Partie terminée.`);
       if (winnerId) {
         log = this.logger.append(
           log,

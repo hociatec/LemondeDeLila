@@ -52,7 +52,7 @@ export class FouleesFantastiquesSetupService {
     const pawnNamesByPlayer: Record<number, string[]> = {};
     const offsets: Record<number, number> = {};
 
-    // 2 joueurs => opposÃƒÂ©s (0 et 20). Jusqu'ÃƒÂ  4 joueurs supportÃƒÂ©s.
+    // 2 joueurs => opposés (0 et 20). Jusqu'à 4 joueurs supportés.
     const half = Math.floor(trackLength / 2);
     const quarter = Math.floor(trackLength / 4);
     const threeQuarter = Math.floor((trackLength * 3) / 4);
@@ -81,7 +81,7 @@ export class FouleesFantastiquesSetupService {
             typeof t?.label === 'string' && t.label.trim()
               ? t.label.trim()
               : i === 0
-                ? 'DÃƒÂ©part'
+                ? 'Départ'
                 : `Case ${i + 1}`,
         }))
       : [];
@@ -107,7 +107,7 @@ export class FouleesFantastiquesSetupService {
       homeLength,
       pawnsByPlayer,
       colorsByPlayer,
-      // Choix au dÃƒÂ©marrage: rempli par action `choose_family`.
+      // Choix au démarrage: rempli par action `choose_family`.
       familyIdByPlayer: {},
       familyByPlayer,
       habitatByPlayer,
@@ -135,7 +135,7 @@ export class FouleesFantastiquesSetupService {
       return withBoard;
     }
 
-    // PremiÃƒÂ¨re ÃƒÂ©tape: choix de la famille d'animaux.
+    // Première étape: choix de la famille d'animaux.
     const familyChoices = FOULEES_FAMILY_PACKS.map(toFouleesFamilyChoice);
 
     const withPending = {

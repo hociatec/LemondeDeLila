@@ -30,7 +30,7 @@ export class StatsWsHandler {
     if (!isAdmin) {
       const profile = await this.social.getProfile(user.id, dto.userId);
       if (!profile.isOwner && !profile.canView) {
-        throw new HttpException('Profil privÃ©.', 403);
+        throw new HttpException('Profil privé.', 403);
       }
     }
 

@@ -28,9 +28,9 @@ Navigator::Scope BuildSectionScope(OptionsView& view, int sectionIndex)
     case 0:
         scope.Add({
             general.confirmExitCheckbox,
-            general.restoreSessionCheckbox,
-            general.showNavigationStatusCheckbox,
-            general.enableBetaGamesCheckbox});
+            general.repairBrokenAccentsCheckbox,
+            general.enableBetaGamesCheckbox,
+            general.saveButton});
         break;
     case 1:
         scope.Add({
@@ -45,10 +45,11 @@ Navigator::Scope BuildSectionScope(OptionsView& view, int sectionIndex)
             audio.soundSelectCheckbox,
             audio.soundSelectSlider,
             audio.soundChatMessagesCheckbox,
-            audio.soundChatMessagesSlider});
+            audio.soundChatMessagesSlider,
+            audio.saveButton});
         break;
     case 2:
-        scope.Add({chat.chatEnabledCheckbox, chat.confirmChatExitCheckbox});
+        scope.Add({chat.chatEnabledCheckbox, chat.confirmChatExitCheckbox, chat.saveButton});
         break;
     default:
         break;

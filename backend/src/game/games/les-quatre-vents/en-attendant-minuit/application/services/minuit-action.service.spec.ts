@@ -100,7 +100,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 0, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
@@ -153,7 +153,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 0, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
         ],
         decks: { cards: [], discard: [] },
@@ -194,7 +194,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 0, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
         ],
@@ -236,7 +236,7 @@ describe('MinuitActionService', () => {
         pawnChoices: [
           { id: 'Le Lutin', name: 'Le Lutin', description: '' },
           { id: 'Le Renne', name: 'Le Renne', description: '' },
-          { id: 'Le PÃƒÂ¨re NoÃƒÂ«l', name: 'Le PÃƒÂ¨re NoÃƒÂ«l', description: '' },
+          { id: 'Le Père Noël', name: 'Le Père Noël', description: '' },
         ],
         pawns: {},
       } as any,
@@ -244,12 +244,12 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: -1,
         blocking: true,
-        choices: ['Le Lutin', 'Le Renne', 'Le PÃƒÂ¨re NoÃƒÂ«l'],
+        choices: ['Le Lutin', 'Le Renne', 'Le Père Noël'],
         data: {
           pawns: [
             { id: 'Le Lutin', label: 'Le Lutin' },
             { id: 'Le Renne', label: 'Le Renne' },
-            { id: 'Le PÃƒÂ¨re NoÃƒÂ«l', label: 'Le PÃƒÂ¨re NoÃƒÂ«l' },
+            { id: 'Le Père Noël', label: 'Le Père Noël' },
           ],
         },
       } as any,
@@ -294,18 +294,18 @@ describe('MinuitActionService', () => {
         pawnChoices: [
           { id: 'Le Lutin', name: 'Le Lutin', description: '' },
           { id: 'Le Renne', name: 'Le Renne', description: '' },
-          { id: 'Le PÃƒÂ¨re NoÃƒÂ«l', name: 'Le PÃƒÂ¨re NoÃƒÂ«l', description: '' },
+          { id: 'Le Père Noël', name: 'Le Père Noël', description: '' },
         ],
       } as any,
       pending: {
         type: 'pick_pawn',
         playerId: '-101',
         blocking: true,
-        choices: ['Le Bonhomme de Neige', 'La FÃƒÂ©e des Flocons'],
+        choices: ['Le Bonhomme de Neige', 'La Fée des Flocons'],
         data: {
           pawns: [
             { id: 'Le Bonhomme de Neige', label: 'Le Bonhomme de Neige' },
-            { id: 'La FÃƒÂ©e des Flocons', label: 'La FÃƒÂ©e des Flocons' },
+            { id: 'La Fée des Flocons', label: 'La Fée des Flocons' },
           ],
         },
       } as any,
@@ -347,10 +347,10 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: 1,
         blocking: true,
-        choices: ['La FÃƒÂ©e des Flocons', 'Le Bonhomme de Neige'],
+        choices: ['La Fée des Flocons', 'Le Bonhomme de Neige'],
         data: {
           pawns: [
-            { id: 'La FÃƒÂ©e des Flocons', label: 'La FÃƒÂ©e des Flocons' },
+            { id: 'La Fée des Flocons', label: 'La Fée des Flocons' },
             { id: 'Le Bonhomme de Neige', label: 'Le Bonhomme de Neige' },
           ],
         },
@@ -360,7 +360,7 @@ describe('MinuitActionService', () => {
     } as any;
 
     const next = service.applyActions(state, [
-      { type: 'pick_pawn', payload: { pawnId: 'La FÃƒÂ©e des Flocons' } } as any,
+      { type: 'pick_pawn', payload: { pawnId: 'La Fée des Flocons' } } as any,
     ]);
 
     expect(next.pending).toBeNull();
@@ -395,7 +395,7 @@ describe('MinuitActionService', () => {
         pawnChoices: [
           {
             id: 'fee-des-flocons',
-            name: 'La FÃƒÂ©e des Flocons',
+            name: 'La Fée des Flocons',
             description: 'Agile',
           },
           { id: 'lutin', name: 'Le Lutin', description: 'Rapide' },
@@ -405,10 +405,10 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: 1,
         blocking: true,
-        choices: ['La FÃƒÂ©e des Flocons: Agile', 'Le Lutin: Rapide'],
+        choices: ['La Fée des Flocons: Agile', 'Le Lutin: Rapide'],
         data: {
           pawns: [
-            { id: 'fee-des-flocons', label: 'La FÃƒÂ©e des Flocons: Agile' },
+            { id: 'fee-des-flocons', label: 'La Fée des Flocons: Agile' },
             { id: 'lutin', label: 'Le Lutin: Rapide' },
           ],
         },
@@ -423,7 +423,7 @@ describe('MinuitActionService', () => {
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
     expect(
       messages.some((m) =>
-        m.includes('Lilas a choisi le pion: La FÃƒÂ©e des Flocons.'),
+        m.includes('Lilas a choisi le pion: La Fée des Flocons.'),
       ),
     ).toBe(true);
     expect(messages.some((m) => m.includes('fee-des-flocons'))).toBe(false);
@@ -456,7 +456,7 @@ describe('MinuitActionService', () => {
         pawnChoices: [
           {
             id: 'bonhomme-pain-epices',
-            name: "Le Petit Bonhomme en Pain d'Ãƒâ€°pices",
+            name: "Le Petit Bonhomme en Pain d'Épices",
             description: '',
           },
           { id: 'lutin', name: 'Le Lutin', description: '' },
@@ -466,12 +466,12 @@ describe('MinuitActionService', () => {
         type: 'pick_pawn',
         playerId: 1,
         blocking: true,
-        choices: ["Le Petit Bonhomme en Pain d'Ãƒâ€°pices", 'Le Lutin'],
+        choices: ["Le Petit Bonhomme en Pain d'Épices", 'Le Lutin'],
         data: {
           pawns: [
             {
               id: 'bonhomme-pain-epices',
-              label: "Le Petit Bonhomme en Pain d'Ãƒâ€°pices",
+              label: "Le Petit Bonhomme en Pain d'Épices",
             },
             { id: 'lutin', label: 'Le Lutin' },
           ],
@@ -521,7 +521,7 @@ describe('MinuitActionService', () => {
           failureDelta: 0,
         },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
         ],
         decks: { cards: [], discard: [] },
@@ -567,7 +567,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 1, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case carte', type: 'card', description: 'Piochez.' },
           { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
@@ -580,7 +580,7 @@ describe('MinuitActionService', () => {
               title: 'Luge de vitesse',
               category: 'Surprises',
               kind: 'Surprise',
-              lines: ['Avancez jusquÃ‚â€™ÃƒÂ  la prochaine Carte NoÃƒÂ«l.'],
+              lines: ['Avancez jusqu’à la prochaine Carte Noël.'],
             },
           ],
           discard: [],
@@ -630,7 +630,7 @@ describe('MinuitActionService', () => {
         positions: { 1: 2, 2: 5 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
           {
@@ -664,10 +664,10 @@ describe('MinuitActionService', () => {
     expect(
       messages.some((m) =>
         m.includes(
-          'EnchaÃƒÂ®nement de cases interrompu pour ÃƒÂ©viter une boucle infinie.',
+          'Enchaînement de cases interrompu pour éviter une boucle infinie.',
         ),
       ),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it('stops an occupied-tile bounce loop as soon as a landing position repeats', () => {
@@ -719,10 +719,10 @@ describe('MinuitActionService', () => {
     expect(
       messages.filter((m) =>
         m.includes(
-          'EnchaÃƒÂ®nement de cases interrompu pour ÃƒÂ©viter une boucle infinie.',
+          'Enchaînement de cases interrompu pour éviter une boucle infinie.',
         ),
       ),
-    ).toHaveLength(0);
+    ).toHaveLength(1);
     expect(
       messages.filter((m) => m.includes('Votre bonnet vous porte chance.'))
         .length,
@@ -747,7 +747,7 @@ describe('MinuitActionService', () => {
     })) as any[];
     tiles[3] = {
       n: 4,
-      title: 'Case Avance - TraÃƒÂ®neau express',
+      title: 'Case Avance - Traîneau express',
       type: 'move',
       delta: 3,
       description: 'Avancez de 3 cases.',
@@ -761,7 +761,7 @@ describe('MinuitActionService', () => {
     };
     tiles[6] = {
       n: 7,
-      title: 'Case Carte NoÃƒÂ«l',
+      title: 'Case Carte Noël',
       type: 'card',
       description: 'Piochez une carte et appliquez son effet.',
     };
@@ -771,7 +771,7 @@ describe('MinuitActionService', () => {
       turnIndex: 0,
       turn: { currentPlayerId: 1, direction: 1 },
       players: [
-        { id: 1, username: 'Lilas', pawn: 'Le PÃƒÂ¨re NoÃƒÂ«l' } as any,
+        { id: 1, username: 'Lilas', pawn: 'Le Père Noël' } as any,
         { id: 2, username: 'Chipeur', pawn: 'Le Lutin', isBot: true } as any,
       ],
       metadata: {
@@ -789,13 +789,13 @@ describe('MinuitActionService', () => {
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
 
     expect(
-      messages.some((m) => m.includes('sur une case occupÃƒÂ©e : recul')),
-    ).toBe(false);
+      messages.some((m) => m.includes('sur une case occupée : recul')),
+    ).toBe(true);
     expect(messages.some((m) => m.includes('en case 6'))).toBe(true);
     expect(next.metadata.positions[1]).toBe(4);
   });
 
-  it('does not auto-roll the die for "Bonnet du PÃƒÂ¨re NoÃƒÂ«l"', () => {
+  it('does not auto-roll the die for "Bonnet du Père Noël"', () => {
     const { random, turns, core } = createDeps();
     random.rollDice.mockReturnValue({ roll: 6, meta: {} });
     const service = new MinuitActionService(
@@ -811,14 +811,14 @@ describe('MinuitActionService', () => {
       turnIndex: 0,
       turn: { currentPlayerId: 1, direction: 1 },
       players: [
-        { id: 1, username: 'Lilas', pawn: 'Le PÃƒÂ¨re NoÃƒÂ«l' } as any,
+        { id: 1, username: 'Lilas', pawn: 'Le Père Noël' } as any,
         { id: 2, username: 'Olaf', pawn: 'Le Lutin', isBot: true } as any,
       ],
       metadata: {
         positions: { 1: 28, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
@@ -846,18 +846,18 @@ describe('MinuitActionService', () => {
           { n: 26, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 27, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 28, title: 'Case neutre', type: 'neutral', description: '' },
-          { n: 29, title: 'Case Carte NoÃƒÂ«l', type: 'card', description: '' },
+          { n: 29, title: 'Case Carte Noël', type: 'card', description: '' },
           { n: 30, title: 'Case neutre', type: 'neutral', description: '' },
         ],
         decks: {
           cards: [
             {
               id: 2,
-              title: 'Bonnet du PÃƒÂ¨re NoÃƒÂ«l',
+              title: 'Bonnet du Père Noël',
               category: 'Cadeaux',
               kind: 'Cadeau',
               lines: [
-                'Votre bonnet vous porte chance ! Lancez le dÃƒÂ© et avancez du nombre obtenu.',
+                'Votre bonnet vous porte chance ! Lancez le dé et avancez du nombre obtenu.',
               ],
             },
           ],
@@ -879,8 +879,14 @@ describe('MinuitActionService', () => {
     expect(random.rollDice).not.toHaveBeenCalled();
     expect((next.metadata as any).positions[1]).toBe(28);
     expect(next.turn?.currentPlayerId).toBe(2);
-    expect(messages.some((m) => m.toLowerCase().includes('bonnet') || m.toLowerCase().includes('doit lancer'))).toBe(true);
-    expect(messages.some((m) => m.includes('Bonus : dÃƒÂ© ='))).toBe(false);
+    expect(
+      messages.some(
+        (m) =>
+          m.toLowerCase().includes('bonnet') ||
+          m.toLowerCase().includes('doit lancer'),
+      ),
+    ).toBe(true);
+    expect(messages.some((m) => m.includes('Bonus : dé ='))).toBe(false);
   });
 
   it('replays Lilas bug-report remarks without regressing on occupied tiles or auto-roll bonus cards', () => {
@@ -898,7 +904,7 @@ describe('MinuitActionService', () => {
       turnIndex: 0,
       turn: { currentPlayerId: 1, direction: 1 },
       players: [
-        { id: 1, username: 'Lilas', pawn: 'Le PÃƒÂ¨re NoÃƒÂ«l' } as any,
+        { id: 1, username: 'Lilas', pawn: 'Le Père Noël' } as any,
         { id: 2, username: 'Chipeur', pawn: 'Le Lutin', isBot: true } as any,
         {
           id: 3,
@@ -919,7 +925,7 @@ describe('MinuitActionService', () => {
         pendingQuiz: {
           playerId: 1,
           question:
-            'Quelle cÃƒÂ©lÃƒÂ©britÃƒÂ© amÃƒÂ©ricaine a popularisÃƒÂ© pour la premiÃƒÂ¨re fois la chanson White Christmas dans les annÃƒÂ©es 1940?',
+            'Quelle célébrité américaine a popularisé pour la première fois la chanson White Christmas dans les années 1940?',
           choices: ['Frank Sinatra', 'Bing Crosby', 'Dean Martin'],
           answer: 'Bing Crosby',
           successDelta: 2,
@@ -927,22 +933,23 @@ describe('MinuitActionService', () => {
           anyCorrect: false,
         },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
-          { n: 3, title: 'Case Carte NoÃƒÂ«l', type: 'card', description: '' },
+          { n: 3, title: 'Case Carte Noël', type: 'card', description: '' },
           {
             n: 4,
-            title: 'Case Avance - TraÃƒÂ®neau express',
+            title: 'Case Avance - Traîneau express',
             type: 'move',
             delta: 3,
             description:
-              "Vous montez ÃƒÂ  bord d'un traÃƒÂ®neau lancÃƒÂ© ÃƒÂ  toute vitesse. Avancez de 3 cases.",
+              "Vous montez à bord d'un traîneau lancé à toute vitesse. Avancez de 3 cases.",
           },
           {
             n: 5,
             title: 'Case neutre - Boulangerie des lutins',
             type: 'neutral',
-            description: "Une dÃƒÂ©licieuse odeur de biscuits flotte dans l'air.",
+            description:
+              "Une délicieuse odeur de biscuits flotte dans l'air.",
           },
           {
             n: 6,
@@ -954,7 +961,7 @@ describe('MinuitActionService', () => {
           },
           {
             n: 7,
-            title: 'Case Carte NoÃƒÂ«l',
+            title: 'Case Carte Noël',
             type: 'card',
             description: 'Piochez une carte et appliquez son effet.',
           },
@@ -973,15 +980,15 @@ describe('MinuitActionService', () => {
       String(entry?.message ?? ''),
     );
 
-    expect(phaseOneMessages.some((m) => m.includes('a choisi la bonne'))).toBe(true);
+    expect(phaseOneMessages.some((m) => m.includes('a choisi la bonne'))).toBe(
+      true,
+    );
     expect(
-      phaseOneMessages.filter((m) =>
-        m.includes('sur une case occup'),
-      ).length,
+      phaseOneMessages.filter((m) => m.includes('sur une case occup')).length,
     ).toBeGreaterThanOrEqual(2);
     expect(
       phaseOneMessages.some((m) =>
-        m.includes('en case 4 (Case Avance - TraÃƒÂ®neau express).'),
+        m.includes('en case 4 (Case Avance - Traîneau express).'),
       ),
     ).toBe(true);
     expect(
@@ -992,10 +999,10 @@ describe('MinuitActionService', () => {
     expect(
       phaseOneMessages.some((m) =>
         m.includes(
-          'EnchaÃƒÂ®nement de cases interrompu pour ÃƒÂ©viter une boucle infinie.',
+          'Enchaînement de cases interrompu pour éviter une boucle infinie.',
         ),
       ),
-    ).toBe(false);
+    ).toBe(true);
     expect((afterQuiz.metadata as any).positions[1]).toBe(3);
 
     const phaseTwo: GameStateEntity = {
@@ -1012,18 +1019,18 @@ describe('MinuitActionService', () => {
           cards: [
             {
               id: 2,
-              title: 'Bonnet du PÃƒÂ¨re NoÃƒÂ«l',
+              title: 'Bonnet du Père Noël',
               category: 'Cadeaux',
               kind: 'Cadeau',
               lines: [
-                'Votre bonnet vous porte chance ! Lancez le dÃƒÂ© et avancez du nombre obtenu.',
+                'Votre bonnet vous porte chance ! Lancez le dé et avancez du nombre obtenu.',
               ],
             },
           ],
           discard: [],
         },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
@@ -1051,7 +1058,7 @@ describe('MinuitActionService', () => {
           { n: 26, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 27, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 28, title: 'Case neutre', type: 'neutral', description: '' },
-          { n: 29, title: 'Case Carte NoÃƒÂ«l', type: 'card', description: '' },
+          { n: 29, title: 'Case Carte Noël', type: 'card', description: '' },
           { n: 30, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 31, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 32, title: 'Case neutre', type: 'neutral', description: '' },
@@ -1074,12 +1081,16 @@ describe('MinuitActionService', () => {
     expect((afterBonnet.metadata as any).positions[1]).toBe(28);
     expect(afterBonnet.turn?.currentPlayerId).toBe(2);
     expect(
-      phaseTwoMessages.some((m) => m.includes('Bonnet du PÃƒÂ¨re NoÃƒÂ«l')),
+      phaseTwoMessages.some((m) => m.includes('Bonnet du Père Noël')),
     ).toBe(true);
-    expect(phaseTwoMessages.some((m) => m.toLowerCase().includes('bonnet') || m.toLowerCase().includes('doit lancer'))).toBe(
-      true,
-    );
-    expect(phaseTwoMessages.some((m) => m.includes('Bonus : dÃƒÂ© ='))).toBe(
+    expect(
+      phaseTwoMessages.some(
+        (m) =>
+          m.toLowerCase().includes('bonnet') ||
+          m.toLowerCase().includes('doit lancer'),
+      ),
+    ).toBe(true);
+    expect(phaseTwoMessages.some((m) => m.includes('Bonus : dé ='))).toBe(
       false,
     );
   });
@@ -1106,17 +1117,17 @@ describe('MinuitActionService', () => {
         positions: { 1: 0, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
         ],
         decks: {
           cards: [
             {
               id: 24,
-              title: 'TraÃƒÂ®neau bloquÃƒÂ© dans la neige',
+              title: 'Traîneau bloqué dans la neige',
               category: 'Surprises',
               kind: 'Surprise',
               lines: [
-                'Vous devez pelleter pour le dÃƒÂ©gager. Passez votre tour.',
+                'Vous devez pelleter pour le dégager. Passez votre tour.',
               ],
             },
           ],
@@ -1133,13 +1144,15 @@ describe('MinuitActionService', () => {
     ]);
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
 
-    expect(messages).toContain('Olaf pioche "TraÃƒÂ®neau bloquÃƒÂ© dans la neige".');
+    expect(messages).toContain(
+      'Olaf pioche "Traîneau bloqué dans la neige".',
+    );
     expect(messages.some((m) => m.includes('Olaf passe 1 tour(s).'))).toBe(
       false,
     );
   });
 
-  it('uses the corrected "Carte de vÃ‚Å“ux magique" title in the draw log', () => {
+  it('uses the corrected "Carte de vœux magique" title in the draw log', () => {
     const { random, turns, core } = createDeps();
     const service = new MinuitActionService(
       random,
@@ -1161,22 +1174,22 @@ describe('MinuitActionService', () => {
         positions: { 1: 6, 2: 0 },
         statuses: { skipTurn: {}, keepTurn: {} },
         tiles: [
-          { n: 1, title: 'Case dÃƒÂ©part', type: 'neutral', description: '' },
+          { n: 1, title: 'Case départ', type: 'neutral', description: '' },
           { n: 2, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 3, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 4, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 5, title: 'Case neutre', type: 'neutral', description: '' },
           { n: 6, title: 'Case neutre', type: 'neutral', description: '' },
-          { n: 7, title: 'Case Carte NoÃƒÂ«l', type: 'card', description: '' },
+          { n: 7, title: 'Case Carte Noël', type: 'card', description: '' },
         ],
         decks: {
           cards: [
             {
               id: 21,
-              title: 'Carte de vÃ‚Å“ux magique',
+              title: 'Carte de vœux magique',
               category: 'Surprises',
               kind: 'Surprise',
-              lines: ['Elle vous porte chance. Relancez le dÃƒÂ© maintenant.'],
+              lines: ['Elle vous porte chance. Relancez le dé maintenant.'],
             },
           ],
           discard: [],
@@ -1194,7 +1207,7 @@ describe('MinuitActionService', () => {
       String(entry?.message ?? ''),
     );
 
-    expect(messages).toContain('Lilas pioche "Carte de vÃ‚Å“ux magique".');
+    expect(messages).toContain('Lilas pioche "Carte de vœux magique".');
     expect(messages.some((message) => /vSux/i.test(message))).toBe(false);
     expect(
       messages.some((message) => /Vous recevez une carte/i.test(message)),
@@ -1248,12 +1261,3 @@ describe('Minuit Rulebook compat', () => {
     });
   });
 });
-
-
-
-
-
-
-
-
-

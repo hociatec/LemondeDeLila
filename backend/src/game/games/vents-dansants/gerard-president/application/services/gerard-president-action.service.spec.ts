@@ -3,6 +3,7 @@ import { DeckPoliciesService } from '../../../../../application/features/deck-po
 import { GerardPresidentSetupService } from '../../application/services/gerard-president-setup.service';
 import { GerardPresidentActionService } from '../../application/services/gerard-president-action.service';
 import { GERARD_PRESIDENT_SPECIAL_CARDS } from '../../model/gerard-president-cards';
+import { filterGerardPlayableNames } from './gerard-president-action.utils';
 
 function makeBaseState(players = 4) {
   return {
@@ -171,7 +172,7 @@ describe('GerardPresidentActionService', () => {
             cardId: special.id,
             targetPlayerId: 2,
             secondaryTargetId: 3,
-            name: 'PrÃ©nom Test',
+            name: 'Prénom Test',
           },
         },
       ]);
@@ -187,10 +188,7 @@ describe('GerardPresidentActionService', () => {
 
     expect((actions as any).findNeighbor(state.players, 2)).toBe(3);
     expect((actions as any).pickRandomPlayer(state.players, 1)).toBe(2);
-    expect((actions as any).filterPlayableNames(['A', 'A', 'B', ''])).toEqual([
-      'A',
-      'B',
-    ]);
+    expect(filterGerardPlayableNames(['A', 'A', 'B', ''])).toEqual(['A', 'B']);
     expect((actions as any).getNextPlayer(state.players, 4)).toBe(1);
 
     const removed = (actions as any).removeRandomFromHand(
@@ -204,8 +202,3 @@ describe('GerardPresidentActionService', () => {
     expect(removed.length).toBeGreaterThan(0);
   });
 });
-
-
-
-
-

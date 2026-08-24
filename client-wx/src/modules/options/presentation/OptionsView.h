@@ -1,5 +1,7 @@
 #pragma once
 #include <cstddef>
+#include <string>
+#include <vector>
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/panel.h>
@@ -20,6 +22,14 @@ class OptionsViewPagesBuilder;
 class OptionsView final : public wxPanel
 {
 public:
+    struct AudioCueControl final
+    {
+        std::string key;
+        wxCheckBox* enabledCheckbox = nullptr;
+        wxSlider* volumeSlider = nullptr;
+        wxStaticText* volumeLabel = nullptr;
+    };
+
     struct ShellControls final
     {
         lila::shared::ui::controls::VerticalMenu* sectionsMenu;
@@ -32,9 +42,9 @@ public:
     struct GeneralSectionControls final
     {
         wxCheckBox* confirmExitCheckbox;
+        wxCheckBox* repairBrokenAccentsCheckbox;
         wxCheckBox* enableBetaGamesCheckbox;
-        wxCheckBox* restoreSessionCheckbox;
-        wxCheckBox* showNavigationStatusCheckbox;
+        wxButton* saveButton;
     };
 
     struct AudioSectionControls final
@@ -57,12 +67,14 @@ public:
         wxStaticText* soundNavigateValueLabel;
         wxStaticText* soundSelectValueLabel;
         wxStaticText* soundChatMessagesValueLabel;
+        wxButton* saveButton;
     };
 
     struct ChatSectionControls final
     {
         wxCheckBox* chatEnabledCheckbox;
         wxCheckBox* confirmChatExitCheckbox;
+        wxButton* saveButton;
     };
 
     explicit OptionsView(wxWindow* parent);
@@ -77,6 +89,7 @@ public:
     [[nodiscard]] GeneralSectionControls GeneralControls() const noexcept;
     [[nodiscard]] AudioSectionControls AudioControls() const noexcept;
     [[nodiscard]] ChatSectionControls ChatControls() const noexcept;
+    [[nodiscard]] const std::vector<AudioCueControl>& AudioCueControls() const noexcept;
 
 private:
     void BuildLayout();
@@ -92,6 +105,7 @@ private:
     wxStaticText* statusLabel = nullptr;
 
     wxCheckBox* confirmExitCheckbox = nullptr;
+    wxCheckBox* repairBrokenAccentsCheckbox = nullptr;
     wxCheckBox* enableBetaGamesCheckbox = nullptr;
     wxCheckBox* muteAllCheckbox = nullptr;
     wxCheckBox* soundAmbienceCheckbox = nullptr;
@@ -113,11 +127,13 @@ private:
     wxStaticText* soundNavigateValueLabel = nullptr;
     wxStaticText* soundSelectValueLabel = nullptr;
     wxStaticText* soundChatMessagesValueLabel = nullptr;
+    std::vector<AudioCueControl> audioCueControls;
 
     wxCheckBox* chatEnabledCheckbox = nullptr;
     wxCheckBox* confirmChatExitCheckbox = nullptr;
-    wxCheckBox* restoreSessionCheckbox = nullptr;
-    wxCheckBox* showNavigationStatusCheckbox = nullptr;
+    wxButton* generalSaveButton = nullptr;
+    wxButton* soundsSaveButton = nullptr;
+    wxButton* chatSaveButton = nullptr;
     wxButton* cancelButton = nullptr;
 
     wxWindow* generalPage = nullptr;

@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
@@ -95,7 +95,7 @@ export class CerclesSacresActionService {
 
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} dÃƒÆ’Ã‚Â©fausse ${CERCLES_SACRES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
+      `${resolvePlayerNameFromState(next, currentId)} défausse ${CERCLES_SACRES_CARD_BY_ID[cardId]?.name ?? 'une carte'}.`,
     );
 
     return next;
@@ -153,7 +153,7 @@ export class CerclesSacresActionService {
       .join(', ');
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId)} pose son cercle sacrÃƒÆ’Ã‚Â© nÃƒâ€šÃ‚Â°${playerCircles.length} (${cardNames}).`,
+      `${resolvePlayerNameFromState(next, currentId)} pose son cercle sacré n°${playerCircles.length} (${cardNames}).`,
     );
 
     next = this.fillHandToMinimum(next, currentId);
@@ -209,7 +209,7 @@ export class CerclesSacresActionService {
         .join(', ');
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} complÃƒÆ’Ã‚Â¨te sa main (${drawnCards.length} carte(s)) : ${names}.`,
+        `${resolvePlayerNameFromState(next, playerId)} complète sa main (${drawnCards.length} carte(s)) : ${names}.`,
       );
     }
     return next;

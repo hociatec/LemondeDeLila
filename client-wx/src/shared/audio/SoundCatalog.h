@@ -1,0 +1,98 @@
+#pragma once
+
+#include <cstddef>
+#include <span>
+#include <string_view>
+
+namespace lila::shared::audio
+{
+enum class SoundCue : std::size_t
+{
+    ClientOpened,
+    ClientConnected,
+    ClientDisconnected,
+    ClientClosing,
+    ClientUpdateWarning,
+    MainMenuMusic,
+    TavernAmbience,
+    TavernOpened,
+    DiceRolled,
+    DrawCard,
+    ChatMessageSent,
+    ChatMessageReceived,
+    TableChatMessageSent,
+    TableChatMessageReceived,
+    PrivateMessageSent,
+    PrivateMessageReceived,
+    FriendConnected,
+    FriendDisconnected,
+    FriendInvitationSent,
+    FriendInvitationReceived,
+    GameVictory,
+    GameDefeat,
+    QuizCorrect,
+    QuizWrong,
+    RoundEnded,
+    InvitationSent,
+    InvitationReceived,
+    AdminContactSent,
+    AdminContactReceived,
+    BugReportCommentReceived,
+    RoomOpened,
+    RoomJoined,
+    RoomExit,
+    TableStarted,
+    PawnPicked,
+    PawnPlacedSelf,
+    PawnPlacedOpponent,
+    WallPlacedSelf,
+    WallPlacedOpponent,
+    TableAmbience1,
+    TableAmbience2,
+    TableAmbience3,
+    TableAmbience4,
+    TableAmbience5,
+    TableAmbience6,
+    TableAmbience7,
+    TableAmbience8,
+    TableAmbience9,
+    TableAmbience10,
+    TableAmbience11,
+    TableAmbience12,
+    TableAmbience13,
+    TableAmbience14,
+    TableAmbience15,
+    TableAmbience16,
+    TableAmbience17,
+    TableAmbience18,
+    TableAmbience19,
+    TableAmbience20,
+    Navigation,
+    Selection,
+    Count,
+};
+
+enum class SoundFamily
+{
+    AppLaunch,
+    Ambience,
+    Navigate,
+    Select,
+    Messages,
+    TableAmbience,
+};
+
+struct SoundDescriptor final
+{
+    SoundCue cue;
+    std::string_view key;
+    std::wstring_view groupLabel;
+    std::wstring_view label;
+    std::wstring_view fileName;
+    SoundFamily family;
+    bool loop;
+};
+
+[[nodiscard]] std::span<const SoundDescriptor> GetSoundCatalog() noexcept;
+[[nodiscard]] const SoundDescriptor& GetSoundDescriptor(SoundCue cue) noexcept;
+}

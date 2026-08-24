@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Redis } from 'ioredis';
-import { RedisClientFactory } from '../../../common/redis/infrastructure/redis-client.factory';
+import { RedisClientFactory } from '../../../common/redis/public-api';
 import { RoomPayload } from '../../application/models/room-payload.model';
 
 @Injectable()

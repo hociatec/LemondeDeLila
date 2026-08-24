@@ -113,3 +113,12 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/application/IMessagi
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/infrastructure/MessagingProtocolFields.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/MessagingProtocolFields.generated.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/AudioService.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/memory
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/atomic
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xatomic_wait.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xthreads.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_threads_core.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtimec.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/audio/SoundCatalog.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span

@@ -72,7 +72,7 @@ export class NawakActionService {
 
     let next = this.setMeta(state, meta);
     const answerLabel =
-      meta.currentChallenge.answers?.[answerIndex] ?? 'rÃƒÂ©ponse inconnue';
+      meta.currentChallenge.answers?.[answerIndex] ?? 'réponse inconnue';
     next = this.core.appendLog(
       next,
       `${resolvePlayerName(state.players, currentId)} choisit "${answerLabel}".`,
@@ -90,7 +90,7 @@ export class NawakActionService {
       next = this.setMeta(next, updatedMeta);
       next = this.core.appendLog(
         next,
-        'Tous les choix sont faits : votez maintenant pour une rÃƒÂ©ponse ÃƒÂ©trangÃƒÂ¨re !',
+        'Tous les choix sont faits : votez maintenant pour une réponse étrangère !',
       );
     }
 
@@ -228,7 +228,7 @@ export class NawakActionService {
     if (tie) {
       next = this.core.appendLog(
         next,
-        'ÃƒÂ©galitÃƒÂ© dÃƒÂ©tectÃƒÂ©e : un nouveau dÃƒÂ©fi va dÃƒÂ©partager les joueurs.',
+        'égalité détectée : un nouveau défi va départager les joueurs.',
       );
     }
 

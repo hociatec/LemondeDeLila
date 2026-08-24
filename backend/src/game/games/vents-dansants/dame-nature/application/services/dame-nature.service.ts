@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { DameNatureActionService } from './dame-nature-action.service';
 import { DameNaturePresenterService } from './dame-nature-presenter.service';
@@ -22,7 +22,7 @@ export class DameNatureService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = DAME_NATURE_GAME.displayName;
   readonly description =
-    'Collectez quatre familles complÃƒÂ¨tes tout en protÃƒÂ©geant Dame Nature des pollutions.';
+    'Collectez quatre familles complètes tout en protégeant Dame Nature des pollutions.';
   readonly minPlayers = DAME_NATURE_GAME.minPlayers;
   readonly maxPlayers = DAME_NATURE_GAME.maxPlayers;
 

@@ -557,9 +557,49 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ErrorFormatting.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/ModuleErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/NetworkErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/Logger.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfilesystem_abi.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_tzdb.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/format
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_format_ucd_tables.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_formatter.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_print.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ranges_tuple_formatter.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/bit
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocale
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfacet
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocinfo
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_xlocinfo_types.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/clocale
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/locale.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/charconv
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv_ryu.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv_ryu_tables.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcharconv_tables.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/locale
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocbuf
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/streambuf
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xiosbase
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/share.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocmes
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocmon
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocnum
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xloctime
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/forward_list
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iomanip
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/istream
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ostream.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ios
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sstream
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
@@ -583,24 +623,6 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/beforestd.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/iostream
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/istream
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ostream.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ios
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocnum
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/streambuf
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xiosbase
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/share.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocale
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfacet
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocinfo
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_xlocinfo_types.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/clocale
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/locale.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ostream
 C:/vcpkg/installed/x64-windows/include/wx/afterstd.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
-import { WsAuthPayload } from '../../../common/interfaces/ws-auth-payload';
+import { WsAuthPayload } from '../../../common/interfaces/public-api';
 import type { PresenceChatHistory } from '../models/presence-chat-history.model';
 import { PRESENCE_CHAT_PORT, type PresenceChatPort } from '../ports/presence-chat.port';
 import {

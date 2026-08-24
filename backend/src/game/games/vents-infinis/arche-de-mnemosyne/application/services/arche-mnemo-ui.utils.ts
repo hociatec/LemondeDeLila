@@ -1,12 +1,12 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import type { MnemoQuizStore } from '../ports/mnemo-quiz-store.port';
 import type {
   MnemoQuestionStatus,
   MnemoQuizMetadata,
 } from '../../model/mnemo-quiz.model';
 import type { ArcheMnemoStateService } from './arche-mnemo-state.service';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 type ArcheUiDeps = {
   stateSvc: ArcheMnemoStateService;
@@ -175,7 +175,7 @@ export function buildArchePendingForUser(
   if (meta.currentQuestion && deps.stateSvc.getQuizAnswers(meta)?.[userId] == null) {
     return {
       type: 'quiz',
-      label: 'RÃ©ponses possibles',
+      label: 'Réponses possibles',
       playerId: userId,
       question: meta.currentQuestion.question,
       choices: meta.currentQuestion.choices,
@@ -200,12 +200,12 @@ export function buildArchePendingForUser(
       for (const category of categories) {
         choices.push(category.name);
       }
-      choices.push('MÃƒÂ©lange (toutes catÃƒÂ©gories)');
+      choices.push('Mélange (toutes catégories)');
     }
     if (choices.length === 0) return null;
     return {
       type: 'mnemo_setup',
-      label: "L'Arche de MnÃƒÂ©mosyne",
+      label: "L'Arche de Mnémosyne",
       playerId: userId,
       choices,
     };
@@ -216,12 +216,12 @@ export function buildArchePendingForUser(
     const categories = deps.store.listCategories();
     return {
       type: 'mnemo_admin',
-      label: 'Administration - CatÃƒÂ©gories',
+      label: 'Administration - Catégories',
       playerId: userId,
       choices: [
         'Voir toutes les questions',
-        ...categories.map((category) => `CatÃƒÂ©gorie: ${category.name}`),
-        'Ajouter une catÃƒÂ©gorie',
+        ...categories.map((category) => `Catégorie: ${category.name}`),
+        'Ajouter une catégorie',
         'Retour',
       ],
     };
@@ -254,9 +254,9 @@ export function buildArchePendingForUser(
           return `[${deps.stateSvc.statusLabel(status)}] ${category}: ${deps.stateSvc.compactQuestionLabel(question.question)}`;
         }),
         'Filtrer: toutes',
-        'Filtrer: validÃƒÂ©es',
+        'Filtrer: validées',
         'Filtrer: en attente',
-        'Filtrer: ÃƒÂ  modifier',
+        'Filtrer: à modifier',
         'Filtrer: corbeille',
         'Retour',
       ],
@@ -270,16 +270,16 @@ export function buildArchePendingForUser(
     const name = category?.name ?? view.categoryId;
     return {
       type: 'mnemo_admin',
-      label: `CatÃƒÂ©gorie - ${name}`,
+      label: `Catégorie - ${name}`,
       playerId: userId,
       choices: [
         'Ajouter une question',
-        'Lister: ValidÃƒÂ©es',
+        'Lister: Validées',
         'Lister: En attente',
-        'Lister: Ãƒâ‚¬ modifier',
+        'Lister: À modifier',
         'Lister: Corbeille',
-        'Renommer la catÃƒÂ©gorie',
-        'Supprimer la catÃƒÂ©gorie',
+        'Renommer la catégorie',
+        'Supprimer la catégorie',
         'Retour',
       ],
     };
@@ -309,9 +309,9 @@ export function buildArchePendingForUser(
       label: 'Question',
       playerId: userId,
       choices: [
-        'Passer en: validÃƒÂ©e',
+        'Passer en: validée',
         'Passer en: en attente',
-        'Passer en: ÃƒÂ  modifier',
+        'Passer en: à modifier',
         'Passer en: corbeille',
         'Modifier contenu',
         'Retour',

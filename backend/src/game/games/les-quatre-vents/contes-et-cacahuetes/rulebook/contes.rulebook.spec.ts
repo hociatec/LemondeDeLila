@@ -1,9 +1,9 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../../domain/errors/public-api';
-import { getAvailableActions, validateAction } from '../../rulebook/rulebook';
+} from '../../../../domain/errors/public-api';
+import { getAvailableActions, validateAction } from './rulebook';
 
 function makeState(overrides: Partial<GameStateEntity> = {}): GameStateEntity {
   return {

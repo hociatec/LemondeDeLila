@@ -1,6 +1,6 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 import type { MnemoQuizMetadata } from '../../model/mnemo-quiz.model';
 import type { MnemoQuizStore } from '../ports/mnemo-quiz-store.port';
 import type { ArcheMnemoStateService } from './arche-mnemo-state.service';
@@ -92,7 +92,7 @@ export function resolveArcheQuizIfReady(
   let next = state;
 
   if (correctIds.length === 0) {
-    next = deps.appendLog(next, `Personne n'a trouvÃƒÂ© la bonne rÃƒÂ©ponse.`);
+    next = deps.appendLog(next, `Personne n'a trouvé la bonne réponse.`);
   } else if (correctIds.length === 1) {
     const id = correctIds[0];
     nextScores[id] = (nextScores[id] ?? 0) + correctSoloPoints;
@@ -112,10 +112,10 @@ export function resolveArcheQuizIfReady(
       .join(', ');
     const msg =
       correctMultiPoints === 0
-        ? `Plusieurs bonnes rÃƒÂ©ponses (${labels}) : aucun point.`
+        ? `Plusieurs bonnes réponses (${labels}) : aucun point.`
         : correctMultiPoints > 0
-          ? `Plusieurs bonnes rÃƒÂ©ponses (${labels}) : +${correctMultiPoints} points chacun.`
-          : `Plusieurs bonnes rÃƒÂ©ponses (${labels}) : -${Math.abs(correctMultiPoints)} points chacun.`;
+          ? `Plusieurs bonnes réponses (${labels}) : +${correctMultiPoints} points chacun.`
+          : `Plusieurs bonnes réponses (${labels}) : -${Math.abs(correctMultiPoints)} points chacun.`;
     next = deps.appendLog(next, msg);
   }
 
@@ -141,10 +141,10 @@ export function resolveArcheQuizIfReady(
         .join(', ');
       const msg =
         timeoutPoints === 0
-          ? `Temps ÃƒÂ©coulÃƒÂ©: ${labels} ne marque aucun point.`
+          ? `Temps écoulé: ${labels} ne marque aucun point.`
           : timeoutPoints > 0
-            ? `Temps ÃƒÂ©coulÃƒÂ©: ${labels} gagne +${timeoutPoints} points.`
-            : `Temps ÃƒÂ©coulÃƒÂ©: ${labels} perd ${Math.abs(timeoutPoints)} points.`;
+            ? `Temps écoulé: ${labels} gagne +${timeoutPoints} points.`
+            : `Temps écoulé: ${labels} perd ${Math.abs(timeoutPoints)} points.`;
       next = deps.appendLog(next, msg);
     }
   }
@@ -157,7 +157,7 @@ export function resolveArcheQuizIfReady(
       const idx = answers[id];
       const who = resolvePlayerNameFromState(state, id, ARCHE_PLAYER_NAME_OPTIONS);
       if (idx == null) {
-        next = deps.appendLog(next, `${who} rÃƒÂ©pond : Temps ÃƒÂ©coulÃƒÂ©.`);
+        next = deps.appendLog(next, `${who} répond : Temps écoulé.`);
         continue;
       }
       const choice = q.choices[Number(idx)] ?? '';
@@ -165,15 +165,15 @@ export function resolveArcheQuizIfReady(
       next = deps.appendLog(
         next,
         correct
-          ? `${who} rÃƒÂ©pond : Bonne rÃƒÂ©ponse.`
-          : `${who} rÃƒÂ©pond : Mauvaise rÃƒÂ©ponse.`,
+          ? `${who} répond : Bonne réponse.`
+          : `${who} répond : Mauvaise réponse.`,
       );
     }
 
     if (wrongAnsweredIds.length && correctIds.length > 0) {
       next = deps.appendLog(
         next,
-        `La bonne rÃƒÂ©ponse ÃƒÂ©tait : ${q.correctChoice}.`,
+        `La bonne réponse était : ${q.correctChoice}.`,
       );
     }
     next = deps.appendLog(next, `Fin de la manche ${currentRound}.`);
@@ -220,7 +220,7 @@ export function resolveArcheQuizIfReady(
     const winnerId = reached[0].id;
     const finished = deps.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, winnerId, ARCHE_PLAYER_NAME_OPTIONS)} a gagnÃƒÂ© !`,
+      `${resolvePlayerNameFromState(next, winnerId, ARCHE_PLAYER_NAME_OPTIONS)} a gagné !`,
     );
     return {
       ...finished,
@@ -268,7 +268,7 @@ export function drawNextArcheQuestionOrStay(
   if (categories.length === 0) {
     return deps.appendLog(
       state,
-      'Aucune catÃƒÂ©gorie : utilisez Administration > Ajouter une catÃƒÂ©gorie.',
+      'Aucune catégorie : utilisez Administration > Ajouter une catégorie.',
     );
   }
   if (all.length === 0) {

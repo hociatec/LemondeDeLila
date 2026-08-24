@@ -88,10 +88,8 @@ export class SoundsService {
     action: string,
     err: unknown,
   ): InternalServerErrorException {
-    return buildStorageIoError(
-      action,
-      err,
-      (message, stack) => this.logger.error(message, stack),
+    return buildStorageIoError(action, err, (message, stack) =>
+      this.logger.error(message, stack),
     );
   }
 
@@ -158,14 +156,14 @@ export class SoundsService {
   private async readManifest(): Promise<SoundManifest> {
     const file = this.manifestPath();
     try {
-        const raw = await fs.promises.readFile(file, 'utf-8');
-        const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as SoundManifest;
-        if (!parsed?.sounds || typeof parsed?.sounds !== 'object') {
-          throw new BadRequestException('manifest invalide');
-        }
-        return parsed;
-      } catch {
-        return { updatedAt: new Date().toISOString(), sounds: {} };
+      const raw = await fs.promises.readFile(file, 'utf-8');
+      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as SoundManifest;
+      if (!parsed?.sounds || typeof parsed?.sounds !== 'object') {
+        throw new BadRequestException('manifest invalide');
+      }
+      return parsed;
+    } catch {
+      return { updatedAt: new Date().toISOString(), sounds: {} };
     }
   }
 
@@ -371,11 +369,11 @@ export class SoundsService {
     return entry;
   }
 
-  async clearSound(soundIdRaw: string) {
+  async clearSound(soundIdRaw: string): Promise<{ ok: true }> {
     const soundId = this.normalizeSoundKey(soundIdRaw);
     const manifest = await this.readManifest();
     if (!manifest.sounds?.[soundId]) {
-      return { ok: true };
+      return { ok: true as const };
     }
     const next = {
       updatedAt: new Date().toISOString(),
@@ -400,7 +398,7 @@ export class SoundsService {
       url: null,
       updatedAt: next.updatedAt,
     });
-    return { ok: true };
+    return { ok: true as const };
   }
 
   async reencodeAllSounds() {

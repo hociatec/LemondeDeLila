@@ -5391,6 +5391,60 @@ src\shared\accessibility\NavigationController.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\accessibility\NavigationController.cpp.s
 .PHONY : src\shared\accessibility\NavigationController.cpp.s
 
+src\shared\audio\AudioService.obj: src\shared\audio\AudioService.cpp.obj
+.PHONY : src\shared\audio\AudioService.obj
+
+# target to build an object file
+src\shared\audio\AudioService.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\audio\AudioService.cpp.obj
+.PHONY : src\shared\audio\AudioService.cpp.obj
+
+src\shared\audio\AudioService.i: src\shared\audio\AudioService.cpp.i
+.PHONY : src\shared\audio\AudioService.i
+
+# target to preprocess a source file
+src\shared\audio\AudioService.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\audio\AudioService.cpp.i
+.PHONY : src\shared\audio\AudioService.cpp.i
+
+src\shared\audio\AudioService.s: src\shared\audio\AudioService.cpp.s
+.PHONY : src\shared\audio\AudioService.s
+
+# target to generate assembly for a file
+src\shared\audio\AudioService.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\AudioService.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\audio\AudioService.cpp.s
+.PHONY : src\shared\audio\AudioService.cpp.s
+
+src\shared\audio\SoundCatalog.obj: src\shared\audio\SoundCatalog.cpp.obj
+.PHONY : src\shared\audio\SoundCatalog.obj
+
+# target to build an object file
+src\shared\audio\SoundCatalog.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\audio\SoundCatalog.cpp.obj
+.PHONY : src\shared\audio\SoundCatalog.cpp.obj
+
+src\shared\audio\SoundCatalog.i: src\shared\audio\SoundCatalog.cpp.i
+.PHONY : src\shared\audio\SoundCatalog.i
+
+# target to preprocess a source file
+src\shared\audio\SoundCatalog.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\audio\SoundCatalog.cpp.i
+.PHONY : src\shared\audio\SoundCatalog.cpp.i
+
+src\shared\audio\SoundCatalog.s: src\shared\audio\SoundCatalog.cpp.s
+.PHONY : src\shared\audio\SoundCatalog.s
+
+# target to generate assembly for a file
+src\shared\audio\SoundCatalog.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\audio\SoundCatalog.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\audio\SoundCatalog.cpp.s
+.PHONY : src\shared\audio\SoundCatalog.cpp.s
+
 src\shared\concurrency\BackgroundExecutor.obj: src\shared\concurrency\BackgroundExecutor.cpp.obj
 .PHONY : src\shared\concurrency\BackgroundExecutor.obj
 
@@ -6605,6 +6659,12 @@ help:
 	@echo ... src/shared/accessibility/NavigationController.obj
 	@echo ... src/shared/accessibility/NavigationController.i
 	@echo ... src/shared/accessibility/NavigationController.s
+	@echo ... src/shared/audio/AudioService.obj
+	@echo ... src/shared/audio/AudioService.i
+	@echo ... src/shared/audio/AudioService.s
+	@echo ... src/shared/audio/SoundCatalog.obj
+	@echo ... src/shared/audio/SoundCatalog.i
+	@echo ... src/shared/audio/SoundCatalog.s
 	@echo ... src/shared/concurrency/BackgroundExecutor.obj
 	@echo ... src/shared/concurrency/BackgroundExecutor.i
 	@echo ... src/shared/concurrency/BackgroundExecutor.s

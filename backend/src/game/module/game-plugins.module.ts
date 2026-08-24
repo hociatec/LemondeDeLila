@@ -8,8 +8,8 @@ import { EnAttendantMinuitModule } from '../games/les-quatre-vents/en-attendant-
 import { FroussePartyModule } from '../games/les-quatre-vents/frousse-party/frousse-party.module';
 import { GaloponsEnsembleModule } from '../games/les-quatre-vents/galopons-ensemble/galopons-ensemble.module';
 import { MissionGalaxieModule } from '../games/les-quatre-vents/mission-galaxie/mission-galaxie.module';
-import { MonVillageMonHistoireModule } from '../games/les-quatre-vents/mon-village-mon-histoire/mon-village-mon-histoire.module';
-import { OdysseeModule } from '../games/les-quatre-vents/odyssee-quatre-cieux/odyssee.module';
+import { MonVillageModule } from '../games/les-quatre-vents/mon-village-mon-histoire/mon-village-mon-histoire.module';
+import { OdysseeQuatreCieuxModule } from '../games/les-quatre-vents/odyssee-quatre-cieux/odyssee.module';
 import { PanierExpressModule } from '../games/les-quatre-vents/panier-express/panier-express.module';
 import { PiratesEnVadrouilleModule } from '../games/les-quatre-vents/pirates-en-vadrouille/pirates-en-vadrouille.module';
 import { PrimalisModule } from '../games/les-quatre-vents/primalis/primalis.module';
@@ -21,7 +21,7 @@ import { CerclesSacresModule } from '../games/vents-dansants/cercles-sacres/cerc
 import { DameNatureModule } from '../games/vents-dansants/dame-nature/dame-nature.module';
 import { EntreRitesModule } from '../games/vents-dansants/entre-rites-et-lumieres/entre-rites.module';
 import { GerardPresidentModule } from '../games/vents-dansants/gerard-president/gerard-president.module';
-import { LaBandeABananeModule } from '../games/vents-dansants/la-bande-a-banane/la-bande-a-banane.module';
+import { BandeABananeModule } from '../games/vents-dansants/la-bande-a-banane/la-bande-a-banane.module';
 import { LaGrandeMineDeBarbakModule } from '../games/vents-dansants/la-grande-mine-de-barbak/la-grande-mine-de-barbak.module';
 import { LaParadeSucreeModule } from '../games/vents-dansants/la-parade-sucree/la-parade-sucree.module';
 import { LeMarcheDesMerveillesModule } from '../games/vents-dansants/le-marche-des-merveilles/le-marche-des-merveilles.module';
@@ -50,8 +50,8 @@ const GAME_PLUGIN_IMPORTS = [
   FroussePartyModule,
   GaloponsEnsembleModule,
   MissionGalaxieModule,
-  MonVillageMonHistoireModule,
-  OdysseeModule,
+  MonVillageModule,
+  OdysseeQuatreCieuxModule,
   PanierExpressModule,
   PiratesEnVadrouilleModule,
   PrimalisModule,
@@ -63,7 +63,7 @@ const GAME_PLUGIN_IMPORTS = [
   DameNatureModule,
   EntreRitesModule,
   GerardPresidentModule,
-  LaBandeABananeModule,
+  BandeABananeModule,
   LaGrandeMineDeBarbakModule,
   LaParadeSucreeModule,
   LeMarcheDesMerveillesModule,

@@ -168,7 +168,7 @@ export class PanierExpressPhaseService {
     const winnerName =
       winnerId != null
         ? this.utils.playerName(state, winnerId)
-        : 'Partie terminÃ©e';
+        : 'Partie terminée';
     const logged = this.core.appendLog(
       nextState,
       `[Panier Express] ${winnerName} remporte la partie !`,

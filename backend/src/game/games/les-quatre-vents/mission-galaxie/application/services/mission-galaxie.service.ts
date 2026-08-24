@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { MISSION_GALAXIE_GAME } from '../../definitions/mission-galaxie.definition';
 import { MissionGalaxieSetupService } from './mission-galaxie-setup.service';
 import { MissionGalaxieActionService } from './mission-galaxie-action.service';
@@ -22,7 +22,7 @@ export class MissionGalaxieService extends AbstractGameService {
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = MISSION_GALAXIE_GAME.displayName;
   readonly description =
-    'Course cosmique autour de 50 cases : questions, dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©fis et ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©nements vous propulsent vers la planÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨te lÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©gendaire.';
+    'Course cosmique autour de 50 cases : questions, défis et événements vous propulsent vers la planète légendaire.';
   readonly minPlayers = MISSION_GALAXIE_GAME.minPlayers;
   readonly maxPlayers = MISSION_GALAXIE_GAME.maxPlayers;
 

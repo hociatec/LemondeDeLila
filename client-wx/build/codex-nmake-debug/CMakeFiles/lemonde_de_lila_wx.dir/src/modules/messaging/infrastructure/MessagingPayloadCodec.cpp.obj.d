@@ -225,8 +225,14 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingMess
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/domain/MessagingUser.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/domain/DomainTypes.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/realtime/RealtimeApiClient.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/websocket/IWebSocketClient.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/messaging/infrastructure/MessagingProtocolFields.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/generated/protocol/MessagingProtocolFields.generated.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/user/infrastructure/remote/UserAuthFields.h

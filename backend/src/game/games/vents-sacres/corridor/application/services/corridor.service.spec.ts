@@ -1,4 +1,4 @@
-﻿import { CorridorService } from '../../corridor.service';
+﻿import { CorridorService } from './corridor.service';
 import { CorridorSetupService } from '../../application/services/corridor-setup.service';
 import { CorridorActionService } from '../../application/services/corridor-action.service';
 import { CorridorPresenterService } from '../../application/services/corridor-presenter.service';
@@ -21,7 +21,6 @@ function createSvc(): CorridorService {
     { buildFromActions: () => ({}) } as any,
   );
   return new CorridorService(
-    { register: () => {} } as any,
     setup,
     new CorridorActionService(setup, new SetupFlowService()),
     presenter,
@@ -274,9 +273,9 @@ describe('Corridor', () => {
     const messages = (configured.log ?? []).map((entry: any) =>
       String(entry?.message ?? ''),
     );
-    expect(messages).toContain("C'est Ã  Donatello de choisir son pion.");
+    expect(messages).toContain("C'est à Donatello de choisir son pion.");
     expect(messages).toContain('Donatello a choisi le pion: Le vent.');
-    expect(messages).toContain("C'est Ã  hacene de choisir son pion.");
+    expect(messages).toContain("C'est à hacene de choisir son pion.");
     expect(messages).not.toContain('Donatello choisit Le vent.');
   });
 
@@ -482,5 +481,3 @@ describe('Corridor', () => {
     expect(String(score)).toContain('B : 3/3 mur(s).');
   });
 });
-
-

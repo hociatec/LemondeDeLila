@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { createMissionGalaxieRuntime } from '../../mission-galaxie.runtime';
 
 describe('MissionGalaxie runtime', () => {
@@ -11,13 +11,13 @@ describe('MissionGalaxie runtime', () => {
         },
         loadContent: ({ filename }: { filename: string }) => {
           if (filename === 'board.json') {
-            return { version: 1, tiles: [{ id: 'start', title: 'DÃ©part' }] };
+            return { version: 1, tiles: [{ id: 'start', title: 'Départ' }] };
           }
           if (filename === 'questions.json') {
             return { version: 1, questions: [{ id: 'q1', question: 'Q?' }] };
           }
           if (filename === 'challenges.json') {
-            return { version: 1, challenges: [{ id: 'c1', title: 'DÃ©fi' }] };
+            return { version: 1, challenges: [{ id: 'c1', title: 'Défi' }] };
           }
           if (filename === 'events.json') {
             return { version: 1, events: [{ id: 'e1', title: 'Event' }] };

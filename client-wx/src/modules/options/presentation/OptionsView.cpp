@@ -25,7 +25,7 @@ OptionsView::ShellControls OptionsView::Shell() const noexcept
 
 OptionsView::GeneralSectionControls OptionsView::GeneralControls() const noexcept
 {
-    return {confirmExitCheckbox, enableBetaGamesCheckbox, restoreSessionCheckbox, showNavigationStatusCheckbox};
+    return {confirmExitCheckbox, repairBrokenAccentsCheckbox, enableBetaGamesCheckbox, generalSaveButton};
 }
 
 OptionsView::AudioSectionControls OptionsView::AudioControls() const noexcept
@@ -48,11 +48,17 @@ OptionsView::AudioSectionControls OptionsView::AudioControls() const noexcept
         soundAppLaunchValueLabel,
         soundNavigateValueLabel,
         soundSelectValueLabel,
-        soundChatMessagesValueLabel};
+        soundChatMessagesValueLabel,
+        soundsSaveButton};
 }
 
 OptionsView::ChatSectionControls OptionsView::ChatControls() const noexcept
 {
-    return {chatEnabledCheckbox, confirmChatExitCheckbox};
+    return {chatEnabledCheckbox, confirmChatExitCheckbox, chatSaveButton};
+}
+
+const std::vector<OptionsView::AudioCueControl>& OptionsView::AudioCueControls() const noexcept
+{
+    return audioCueControls;
 }
 }

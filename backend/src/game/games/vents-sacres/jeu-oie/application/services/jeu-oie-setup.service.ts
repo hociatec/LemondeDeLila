@@ -35,6 +35,7 @@ export class JeuOieSetupService {
     return loadV1Content<JeuOieCaseTextsJsonV1>(this.contentLoader, {
       gameType: 'jeu-oie',
       baseDir: __dirname,
+      contentDir: '../../model/content',
       filename: 'descriptions.json',
       arrayField: 'cases',
       minItems: 1,

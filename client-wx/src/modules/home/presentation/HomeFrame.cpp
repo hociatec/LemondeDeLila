@@ -30,5 +30,6 @@ HomeFrame::HomeFrame(
     ApplyTheme();
     BindEvents();
     ShowPage(Page::Landing);
+    StartAuthenticationWarmUp();
 }
 }

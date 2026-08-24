@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
@@ -82,7 +82,7 @@ export class ToutPresDeMamanActionService {
       return this.turns.advanceTurn(
         this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId)} reste sur place (tour sautÃƒÂ©).`,
+          `${resolvePlayerNameFromState(next, playerId)} reste sur place (tour sauté).`,
         ),
       );
     }
@@ -406,7 +406,7 @@ export class ToutPresDeMamanActionService {
     if (current <= 0) {
       return this.core.appendLog(
         state,
-        `${resolvePlayerNameFromState(state, playerId)} nÃ¢â‚¬â„¢a pas de jeton ÃƒÂ  perdre.`,
+        `${resolvePlayerNameFromState(state, playerId)} n’a pas de jeton à perdre.`,
       );
     }
     const updatedMeta: ToutPresDeMamanMetadata = {
@@ -445,7 +445,7 @@ export class ToutPresDeMamanActionService {
     const label =
       'text' in tileOrCard
         ? `carte ${tileOrCard.id}`
-        : (tileOrCard?.title ?? 'effet spÃƒÂ©cial');
+        : (tileOrCard?.title ?? 'effet spécial');
     return this.core.appendLog(
       next,
       `${resolvePlayerNameFromState(
@@ -473,7 +473,7 @@ export class ToutPresDeMamanActionService {
     const next = this.replaceMeta(state, updatedMeta);
     return this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} pourra relancer le dÃƒÂ© au prochain tour.`,
+      `${resolvePlayerNameFromState(next, playerId)} pourra relancer le dé au prochain tour.`,
     );
   }
 
@@ -579,7 +579,7 @@ export class ToutPresDeMamanActionService {
     let next = this.replaceMeta(state, nextMeta);
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} relance le dÃƒÂ© et avance de ${roll.roll}.`,
+      `${resolvePlayerNameFromState(next, playerId)} relance le dé et avance de ${roll.roll}.`,
     );
     return this.moveAndApply(next, playerId, roll.roll, depth);
   }
@@ -594,12 +594,12 @@ export class ToutPresDeMamanActionService {
     let next = this.replaceMeta(state, { ...meta, ...roll.meta });
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, playerId)} fait ${roll.roll} au dÃƒÂ©.`,
+      `${resolvePlayerNameFromState(next, playerId)} fait ${roll.roll} au dé.`,
     );
     if (roll.roll >= 4) {
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} avance dÃ¢â‚¬â„¢une case grÃƒÂ¢ce ÃƒÂ  la rÃƒÂ©ussite.`,
+        `${resolvePlayerNameFromState(next, playerId)} avance d’une case grâce à la réussite.`,
       );
       return this.moveAndApply(next, playerId, 1, depth);
     }

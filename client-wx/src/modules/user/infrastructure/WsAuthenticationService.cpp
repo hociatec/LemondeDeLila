@@ -13,6 +13,11 @@ WsAuthenticationService::WsAuthenticationService(remote::UserAuthRemoteDataSourc
 {
 }
 
+void WsAuthenticationService::WarmUp()
+{
+    remoteDataSource_.WarmUp();
+}
+
 domain::AuthenticationResult WsAuthenticationService::Login(const domain::LoginCredentials& credentials)
 {
     const auto response = remoteDataSource_.Login(credentials.username, credentials.password);

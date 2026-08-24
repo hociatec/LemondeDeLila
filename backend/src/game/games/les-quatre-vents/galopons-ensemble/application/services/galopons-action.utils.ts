@@ -55,10 +55,10 @@ export function extractGaloponsMoveDelta(text: string): number {
     return numWords[key] ?? 0;
   };
 
-  const forwardApos = text.match(/Avancez\s+d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*(\d+)\s+case/i);
+  const forwardApos = text.match(/Avancez\s+d['’]\s*(\d+)\s+case/i);
   if (forwardApos) return Number(forwardApos[1]) || 0;
   const forwardOneApos = text.match(
-    /Avancez\s+d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*(un|une)\s+case/i,
+    /Avancez\s+d['’]\s*(un|une)\s+case/i,
   );
   if (forwardOneApos) return 1;
 
@@ -69,10 +69,10 @@ export function extractGaloponsMoveDelta(text: string): number {
   );
   if (forwardWords) return parseNumberish(forwardWords[1]);
 
-  const backApos = text.match(/Reculez\s+d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*(\d+)\s+case/i);
+  const backApos = text.match(/Reculez\s+d['’]\s*(\d+)\s+case/i);
   if (backApos) return -(Number(backApos[1]) || 0);
   const backOneApos = text.match(
-    /Reculez\s+d['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*(un|une)\s+case/i,
+    /Reculez\s+d['’]\s*(un|une)\s+case/i,
   );
   if (backOneApos) return -1;
 
@@ -159,7 +159,7 @@ export function resolveGaloponsPawnLabel(
   const lower = pawn.toLowerCase();
   const feminine = lower.startsWith('la ') || lower.startsWith('une ');
   const inner = pawn
-    .replace(/^l['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]\s*/i, '')
+    .replace(/^l['’]\s*/i, '')
     .replace(/^(le|la|les|un|une)\s+/i, '')
     .trim();
   const core = inner || pawn;

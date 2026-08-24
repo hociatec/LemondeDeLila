@@ -20,6 +20,11 @@ UserAuthRemoteDataSource::UserAuthRemoteDataSource(shared::network::realtime::Re
 {
 }
 
+void UserAuthRemoteDataSource::WarmUp() const
+{
+    client_.WarmUp();
+}
+
 shared::network::realtime::RealtimeApiResponse UserAuthRemoteDataSource::Login(
     const std::string& username,
     const std::string& password) const

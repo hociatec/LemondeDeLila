@@ -33,7 +33,7 @@ describe('ZigEtZag compat', () => {
       pending: null,
       metadata: {
         playerDecks: { '1': ['zig-1'], '2': ['zig-2'] },
-        // Simule une serialisation JSON "agressive" ou stockage non typÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©.
+        // Simule une sérialisation JSON « agressive » ou un stockage non typé.
         roundState: {
           stage: 'selection',
           plays: [
@@ -161,7 +161,7 @@ describe('ZigEtZag compat', () => {
     expect(afterP2Messages).toContain('Lila pioche.');
     expect(
       afterP2Messages.some((message) =>
-        /Hacene et Lila d[ÃƒÆ’Ã‚Â©e?]voilent leurs cartes\./.test(message),
+        /Hacene et Lila dévoilent leurs cartes\./.test(message),
       ),
     ).toBe(true);
   });
@@ -229,8 +229,3 @@ describe('ZigEtZag compat', () => {
     expect((afterP2.metadata?.playerDecks?.['2'] ?? []).length).toBe(0);
   });
 });
-
-
-
-
-

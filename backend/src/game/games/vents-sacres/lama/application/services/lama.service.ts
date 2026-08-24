@@ -3,11 +3,11 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { LamaPresenter } from './lama.presenter';
 import { LamaActionService } from './lama-action.service';
 import { LamaSetupService } from './lama-setup.service';
@@ -17,10 +17,10 @@ import { LamaShortcutsService } from './lama-shortcuts.service';
 export class LamaService extends AbstractGameService {
   readonly gameType = 'lama';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Les Vents SacrÃƒÆ’Ã‚Â©s';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = 'LAMA';
   readonly description =
-    'DÃƒÆ’Ã‚Â©faussez vos cartes ou sortez de la manche pour minimiser vos jetons.';
+    'Défaussez vos cartes ou sortez de la manche pour minimiser vos jetons.';
   readonly minPlayers = 2;
   readonly maxPlayers = 6;
 

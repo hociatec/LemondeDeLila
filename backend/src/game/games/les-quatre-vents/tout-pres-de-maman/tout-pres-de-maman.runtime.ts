@@ -14,7 +14,10 @@ import { ToutPresDeMamanPresenterService } from './application/services/tout-pre
 import { ToutPresDeMamanService } from './application/services/tout-pres-de-maman.service';
 import { ToutPresDeMamanSetupService } from './application/services/tout-pres-de-maman-setup.service';
 
-type MinimalContentLoader = Pick<GameContentLoaderService, 'loadContent' | 'validators'>;
+type MinimalContentLoader = Pick<
+  GameContentLoaderService,
+  'loadContent' | 'validators'
+>;
 
 export type ToutPresDeMamanRuntimeOverrides = {
   contentLoader?: MinimalContentLoader;
@@ -35,6 +38,8 @@ function createDefaultContentLoader(): MinimalContentLoader {
     validators: {
       version: () => () => undefined,
       arrayField: () => () => undefined,
+      requiredFields: () => () => undefined,
+      positiveNumber: () => () => undefined,
     },
     loadContent: () => {
       throw new Error(
@@ -53,7 +58,8 @@ export function createToutPresDeMamanRuntime(
   const turns =
     overrides.turns ??
     new TurnFlowService(new TurnService(), new TurnPoliciesService(core));
-  const deckPolicies = overrides.deckPolicies ?? new DeckPoliciesService(random);
+  const deckPolicies =
+    overrides.deckPolicies ?? new DeckPoliciesService(random);
   const boardPayload = overrides.boardPayload ?? new BoardPayloadService();
   const botRunner =
     overrides.botRunner ?? new BotRunnerService(new BotStrategyService());

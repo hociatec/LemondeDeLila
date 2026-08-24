@@ -6,7 +6,7 @@ import {
   NotificationTransport,
   NotificationEvent,
 } from '../../infrastructure/transport/notification-transport';
-import { fixMojibakeDeep } from '../../../common/utils/mojibake';
+import { fixMojibakeDeep } from '../../../common/utils/public-api';
 
 @Injectable()
 export class NotificationDispatchService

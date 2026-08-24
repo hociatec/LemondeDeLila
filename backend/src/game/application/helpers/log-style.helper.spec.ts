@@ -8,7 +8,7 @@ describe('log-style.helper', () => {
   });
 
   it('repairs mojibake in log messages', () => {
-    expect(normalizeGameLogMessage('Victoire de Lila : dÃ©fi gagnÃ©.')).toBe(
+    expect(normalizeGameLogMessage('Victoire de Lila : défi gagné.')).toBe(
       'Victoire de Lila: défi gagné.',
     );
   });

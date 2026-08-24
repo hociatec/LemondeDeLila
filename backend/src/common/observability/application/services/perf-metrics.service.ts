@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { playingLog } from '../../../utils/playing-logger';
+import { playingLog } from '../../../utils/public-api';
 
 type PerfEntry = {
   ts: number;

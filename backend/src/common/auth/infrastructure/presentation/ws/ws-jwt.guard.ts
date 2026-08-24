@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import type { WsAuthPayload } from '../../../../interfaces/ws-auth-payload';
+import type { WsAuthPayload } from '../../../../interfaces/public-api';
 import { JwtPayloadVerifierService } from '../../../application/services/jwt-payload-verifier.service';
 
 @Injectable()

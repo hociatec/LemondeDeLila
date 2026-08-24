@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../application/models/game-action.model';
 import type {
   MnemoPrompt,
   MnemoQuizConfig,
@@ -30,7 +30,7 @@ export function applyArcheMnemoConfigAction(input: {
       ...input.state,
       metadata: { ...input.meta, prompt: null, promptOwnerId: null },
     };
-    return input.appendLog(cleared, 'Configuration fermÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e.');
+    return input.appendLog(cleared, 'Configuration fermée.');
   }
 
   if (input.type === 'mnemo_open_config') {
@@ -103,7 +103,7 @@ export function applyArcheMnemoConfigAction(input: {
       ...input.state,
       metadata: { ...input.meta, config, prompt: null, promptOwnerId: null },
     };
-    return input.appendLog(next, 'Configuration enregistrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e.');
+    return input.appendLog(next, 'Configuration enregistrée.');
   }
 
   return null;

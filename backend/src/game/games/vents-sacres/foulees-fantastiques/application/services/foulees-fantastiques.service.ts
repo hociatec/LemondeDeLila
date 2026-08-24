@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as FouleesFantastiquesRulebook from '../../rulebook/rulebook';
 import { FouleesFantastiquesActionService } from './foulees-fantastiques-action.service';
 import { FouleesFantastiquesPhaseService } from './foulees-fantastiques-phase.service';
@@ -20,7 +20,7 @@ import { buildFouleesFantastiquesShortcuts } from '../../foulees-fantastiques.sh
 export class FouleesFantastiquesService extends AbstractGameService {
   readonly gameType = 'foulees-fantastiques';
   readonly category = 'JeuxDePlateaux';
-  readonly subcategory = 'Les Vents SacrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©s';
+  readonly subcategory = 'Les Vents Sacrés';
   readonly displayName = FOULEES_FANTASTIQUES_GAME.displayName;
   readonly description = 'le jeu classique des petits chevaux';
   readonly minPlayers = FOULEES_FANTASTIQUES_GAME.minPlayers;
@@ -70,7 +70,7 @@ export class FouleesFantastiquesService extends AbstractGameService {
   }
 
   exposeState(state: GameStateEntity): GameStateWithActions {
-    // Fallback (non personnalisÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©) : aucune action.
+    // Fallback (non personnalisé) : aucune action.
     return { ...state, actions: [] };
   }
 

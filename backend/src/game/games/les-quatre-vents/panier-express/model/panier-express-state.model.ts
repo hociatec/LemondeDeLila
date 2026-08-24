@@ -55,7 +55,7 @@ export type PanierExpressDeckPool = DeckPoolState<unknown>;
 export type PanierExpressActionLogEntry = {
   type: string;
   actorId: number | null;
-  payload?: unknown;
+  payload?: Record<string, unknown>;
   timestamp: number;
 };
 
@@ -91,6 +91,7 @@ export type PanierExpressPendingExchange = InteractiveExchangePending;
  * Métadonnées Panier Express
  */
 export type PanierExpressMetadata = {
+  rng?: Record<string, unknown>;
   stands: string[];
   tiles: PanierExpressTile[];
   decks: PanierExpressDeckPool;
@@ -123,10 +124,3 @@ export type PanierExpressMetadata = {
     noDrawCourses?: Record<number, number>;
   };
 };
-
-
-
-
-
-
-

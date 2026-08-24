@@ -1,0 +1,139 @@
+{
+  "version": 3,
+  "components": {
+    "common": [
+      "auth",
+      "interfaces",
+      "observability",
+      "pubsub",
+      "redis",
+      "session",
+      "utils",
+      "validation",
+      "ws"
+    ],
+    "gameFamilies": [
+      "les-quatre-vents",
+      "vents-dansants",
+      "vents-infinis",
+      "vents-sacres"
+    ]
+  },
+  "layers": {
+    "domain": ["domain", "model", "rulebook"],
+    "application": ["application"],
+    "infrastructure": ["infrastructure"],
+    "module": ["module"]
+  },
+  "aliases": {
+    "@common": "common"
+  },
+  "publicEntryFiles": ["public-api.ts", "index.ts"],
+  "composition": {
+    "rootComponents": ["root", "database", "migrations"],
+    "rootFiles": ["app.module.ts", "data-source.ts"],
+    "layers": ["module"],
+    "fileSuffixes": [".module.ts"]
+  },
+  "boundaries": {
+    "exemptSourceComponents": ["root", "database", "migrations"],
+    "exemptSourceFiles": ["app.module.ts", "data-source.ts"],
+    "allowCompositionDeepImports": true,
+    "allowCompositionTypeOrmEntities": true,
+    "allowedDeepImports": [
+      {
+        "source": "game.games.*",
+        "target": "game"
+      },
+      {
+        "source": "game",
+        "target": "game.games.*"
+      },
+      {
+        "source": "game",
+        "target": "game.engine"
+      },
+      {
+        "source": "game.engine",
+        "target": "game"
+      },
+      {
+        "source": "game.games.*",
+        "target": "game.engine"
+      }
+    ]
+  },
+  "dependencies": {
+    "allowed": [
+      { "source": "*", "target": "common.*" },
+      { "source": "admin", "target": "bot" },
+      { "source": "admin", "target": "bug-reports" },
+      { "source": "admin", "target": "game" },
+      {
+        "source": "admin",
+        "target": "game.games.vents-infinis.arche-de-mnemosyne"
+      },
+      { "source": "admin", "target": "notification" },
+      { "source": "admin", "target": "realtime" },
+      { "source": "admin", "target": "room" },
+      { "source": "admin", "target": "user" },
+      { "source": "bot", "target": "room" },
+      { "source": "catalog", "target": "game" },
+      { "source": "catalog", "target": "realtime" },
+      { "source": "chat", "target": "user" },
+      { "source": "game", "target": "game.engine" },
+      { "source": "game.engine", "target": "game" },
+      { "source": "game", "target": "game.games.*" },
+      { "source": "game.games.*", "target": "game" },
+      { "source": "game.games.*", "target": "game.engine" },
+      { "source": "game", "target": "realtime" },
+      { "source": "game", "target": "room" },
+      { "source": "messaging", "target": "notification" },
+      { "source": "messaging", "target": "realtime" },
+      { "source": "messaging", "target": "user" },
+      { "source": "notification", "target": "client-updates" },
+      { "source": "notification", "target": "messaging" },
+      { "source": "notification", "target": "realtime" },
+      { "source": "notification", "target": "social" },
+      { "source": "notification", "target": "user" },
+      { "source": "presence", "target": "chat" },
+      { "source": "presence", "target": "realtime" },
+      { "source": "presence", "target": "room" },
+      { "source": "presence", "target": "user" },
+      { "source": "realtime", "target": "client-updates" },
+      { "source": "room", "target": "bot" },
+      { "source": "room", "target": "catalog" },
+      { "source": "room", "target": "client-updates" },
+      { "source": "room", "target": "notification" },
+      { "source": "room", "target": "presence" },
+      { "source": "room", "target": "realtime" },
+      { "source": "room", "target": "sounds" },
+      { "source": "room", "target": "stats" },
+      { "source": "room", "target": "user" },
+      { "source": "room", "target": "vault" },
+      { "source": "social", "target": "notification" },
+      { "source": "social", "target": "realtime" },
+      { "source": "social", "target": "user" },
+      { "source": "sounds", "target": "notification" },
+      { "source": "stats", "target": "catalog" },
+      { "source": "stats", "target": "game" },
+      { "source": "stats", "target": "realtime" },
+      { "source": "stats", "target": "social" },
+      { "source": "user", "target": "realtime" },
+      { "source": "vault", "target": "bot" },
+      { "source": "vault", "target": "game" },
+      { "source": "vault", "target": "notification" },
+      { "source": "vault", "target": "presence" },
+      { "source": "vault", "target": "realtime" },
+      { "source": "vault", "target": "room" }
+    ]
+  },
+  "cycles": {
+    "aggregate": [
+      { "source": "game.games.*", "target": "game" },
+      { "source": "game.engine", "target": "game" },
+      { "source": "common.*", "target": "common" }
+    ]
+  },
+  "legacyRootDirectories": ["dto", "entities", "gateways", "services", "ws"]
+}

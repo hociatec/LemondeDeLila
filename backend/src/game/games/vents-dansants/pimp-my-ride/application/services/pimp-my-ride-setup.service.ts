@@ -1,7 +1,7 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 
-import { getSafePlayers } from '../../../../application/helpers/setup-service.helper';
-import { RandomService } from '../../../../application/services/random.service';
+import { getSafePlayers } from '../../../../../application/helpers/setup-service.helper';
+import { RandomService } from '../../../../../application/services/random.service';
 import { PIMP_MY_RIDE_DECK } from '../../model/pimp-my-ride-cards';
 import type {
   PimpMyRideMetadata,

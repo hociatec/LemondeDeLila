@@ -7,7 +7,7 @@ import {
   ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { User } from '../../../../user/public-api';
+import { User } from '../../../../../user/public-api';
 
 @Entity({ name: 'notification_inbox_items' })
 @Index('idx_notification_inbox_user_created', ['user', 'createdAt'])

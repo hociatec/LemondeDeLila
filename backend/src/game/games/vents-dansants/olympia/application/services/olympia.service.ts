@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { OlympiaActionService } from './olympia-action.service';
 import { OlympiaPresenterService } from './olympia-presenter.service';
@@ -22,7 +22,7 @@ export class OlympiaService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = OLYMPIA_GAME.displayName;
   readonly description =
-    'Accumulez un maximum de prestige divin en jouant vos hÃƒÆ’Ã‚Â©ros, exploits, crÃƒÆ’Ã‚Â©atures, actions, attaques et ÃƒÆ’Ã‚Â©vÃƒÆ’Ã‚Â©nements.';
+    'Accumulez un maximum de prestige divin en jouant vos héros, exploits, créatures, actions, attaques et événements.';
   readonly minPlayers = OLYMPIA_GAME.minPlayers;
   readonly maxPlayers = OLYMPIA_GAME.maxPlayers;
 

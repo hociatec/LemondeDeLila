@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
@@ -306,7 +306,7 @@ export class OlympiaActionService {
     if (removed.length) {
       return this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId)} dÃƒÂ©fausse ${removed.length} carte(s).`,
+        `${resolvePlayerNameFromState(next, playerId)} défausse ${removed.length} carte(s).`,
       );
     }
     return next;
@@ -356,7 +356,7 @@ export class OlympiaActionService {
     next = this.addPrestige(next, target.id, -amount);
     return this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, actorId)} vole ${amount} point(s) ÃƒÂ  ${resolvePlayerNameFromState(next, target.id)}.`,
+      `${resolvePlayerNameFromState(next, actorId)} vole ${amount} point(s) à ${resolvePlayerNameFromState(next, target.id)}.`,
     );
   }
 

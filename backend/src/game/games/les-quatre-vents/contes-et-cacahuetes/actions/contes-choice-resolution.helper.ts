@@ -1,6 +1,6 @@
 import type { GameStateEntity } from '../../../../application/models/game-state.model';
 import { resolvePlayerNameFromState } from '../../../../application/helpers/player-name.helper';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import type {
   ContesCardType,
   ContesPending,
@@ -19,7 +19,10 @@ function toText(value: unknown): string {
 export function applyContesChooseNumber(input: {
   state: GameStateEntity;
   action: GameSingleActionDto;
-  setPending: (state: GameStateEntity, pending: ContesPending) => GameStateEntity;
+  setPending: (
+    state: GameStateEntity,
+    pending: Exclude<ContesPending, null>,
+  ) => GameStateEntity;
   appendLog: (state: GameStateEntity, message: string) => GameStateEntity;
   moveBy: (
     state: GameStateEntity,
@@ -62,7 +65,7 @@ export function applyContesChooseNumber(input: {
     );
     return input.setPending(next, {
       type: 'choose_number',
-      label: `PoussiÃƒÂ¨re de rire : ${resolvePlayerNameFromState(next, nextPlayerId)}, choisissez un nombre entre 1 et 3 puis EntrÃƒÂ©e.`,
+      label: `Poussière de rire : ${resolvePlayerNameFromState(next, nextPlayerId)}, choisissez un nombre entre 1 et 3 puis Entrée.`,
       playerId: nextPlayerId,
       blocking: true,
       choices: ['1', '2', '3'],
@@ -85,7 +88,7 @@ export function applyContesChooseNumber(input: {
 
   next = input.appendLog(
     next,
-    `PoussiÃƒÂ¨re de rire : plus grand choix = ${max}. ${winners.map((id) => resolvePlayerNameFromState(next, id)).join(', ')} ${winners.length > 1 ? 'avancent' : 'avance'} d'1 case.`,
+    `Poussière de rire : plus grand choix = ${max}. ${winners.map((id) => resolvePlayerNameFromState(next, id)).join(', ')} ${winners.length > 1 ? 'avancent' : 'avance'} d'1 case.`,
   );
   for (const id of winners) {
     next = input.moveBy(next, id, 1, 0);
@@ -147,12 +150,12 @@ export function applyContesChooseOption(input: {
 
   if (ctx === 'wish_ephemere') {
     if (option === 'Avancer de 2') return input.moveBy(next, playerId, 2, 0);
-    if (option === 'Ãƒâ€°changer') {
+    if (option === 'Échanger') {
       return input.startChooseTarget(
         next,
         playerId,
         'wish_swap',
-        'Choisissez un joueur pour ÃƒÂ©changer vos positions.',
+        'Choisissez un joueur pour échanger vos positions.',
       );
     }
     if (option === 'Tirer une carte Bonus') {
@@ -215,7 +218,7 @@ export function applyContesChooseCard(input: {
   if (ctx.startsWith('abondance_keep_one:')) {
     next = input.appendLog(
       next,
-      `Corne dÃ¢â‚¬â„¢abondance : ${resolvePlayerNameFromState(next, playerId)} garde "${pick.title}".`,
+      `Corne d’abondance : ${resolvePlayerNameFromState(next, playerId)} garde "${pick.title}".`,
     );
     return input.applyBonusEffectById(next, playerId, cardId, 0);
   }
@@ -243,7 +246,3 @@ export function applyContesChooseCard(input: {
 
   return next;
 }
-
-
-
-

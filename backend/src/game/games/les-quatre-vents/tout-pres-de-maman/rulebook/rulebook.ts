@@ -1,5 +1,5 @@
 ﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import {
   GameValidationError,
   PlayerActionError,
@@ -44,7 +44,7 @@ export function validateAction(
 
   const status = String(state.status ?? '').toLowerCase();
   if (status !== 'started') {
-    throw new PlayerActionError("La partie n'est pas dÃƒÂ©marrÃƒÂ©e.", {
+    throw new PlayerActionError("La partie n'est pas démarrée.", {
       gameType: TOUT_PRES_DE_MAMAN_GAME.id,
     });
   }

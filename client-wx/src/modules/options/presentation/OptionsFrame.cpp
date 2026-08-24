@@ -22,7 +22,7 @@
 namespace
 {
 constexpr int WindowWidth = 960;
-constexpr int WindowHeight = 780;
+constexpr int WindowHeight = 680;
 }
 
 namespace lila::modules::options::presentation
@@ -32,13 +32,11 @@ OptionsFrame::~OptionsFrame() = default;
 OptionsFrame::OptionsFrame(
     wxWindow* parent,
     application::OptionsStore& optionsStore,
-    CloseRequestedHandler onCloseRequested,
-    ExitRequestedHandler onExitRequested)
+    CloseRequestedHandler onCloseRequested)
     : lila::shared::accessibility::NonFocusablePanel(
           parent,
           0),
-      onCloseRequested_(std::move(onCloseRequested)),
-      onExitRequested_(std::move(onExitRequested))
+      onCloseRequested_(std::move(onCloseRequested))
 {
     SetMinSize(wxSize(WindowWidth, WindowHeight));
     editorController_ = std::make_unique<OptionsEditorController>(optionsStore);
@@ -67,7 +65,7 @@ OptionsFrame::OptionsFrame(
     view_->ApplyTheme();
     BindEvents();
     sectionCoordinator_->LoadState();
-    UpdateStatus(wxString(L"Les options sont enregistrees automatiquement."));
+    UpdateStatus(wxString(L"Aucune modification en attente."));
 }
 
 
@@ -98,18 +96,12 @@ void OptionsFrame::BindEvents()
         *focusController_,
         OptionsEventBinder::Handlers{
             [this](std::size_t index) { ActivateSection(index); },
-            [this](std::size_t index) { navigationState_.SetCurrentSection(index); },
+            [this](std::size_t index) { ActivateSection(index); },
             [this]() { CancelChanges(); },
+            [this]() { RefreshUnsavedState(); },
             [this]() { SaveState(); },
             [this]() { HandleEscape(); },
-            [this]() { return navigationState_.insideSection; },
-            [this]()
-            {
-                if (onExitRequested_)
-                {
-                    onExitRequested_();
-                }
-            }});
+            [this]() { return navigationState_.insideSection; }});
     sectionCoordinator_->RefreshUnsavedState();
 }
 

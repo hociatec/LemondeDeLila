@@ -1,5 +1,5 @@
 ﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
@@ -44,7 +44,7 @@ export class PrimalisPresenterService {
         victory: null,
       },
       actions: formatPresenterActions(actions, (action) =>
-        action.type === 'roll' ? 'Lancer le dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©' : action.type,
+        action.type === 'roll' ? 'Lancer le dé' : action.type,
       ),
       pending: state.pending ?? null,
       extras: {
@@ -79,7 +79,7 @@ export class PrimalisPresenterService {
     const pieces = [
       `Herbivores: ${resources.herbivores}`,
       `Carnivores: ${resources.carnivores}`,
-      `ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ufs: ${resources.eggs}`,
+      `Œufs: ${resources.eggs}`,
       `Feuilles: ${resources.leaves}`,
     ];
     return pieces.join(' | ');

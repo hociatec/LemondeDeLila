@@ -61,6 +61,7 @@ void HomeFrame::PrepareForLogout()
     currentPage_ = Page::Login;
     pages_->SetSelection(1);
     Layout();
+    StartAuthenticationWarmUp();
 }
 
 void HomeFrame::ShowPage(Page page)

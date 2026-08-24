@@ -43,6 +43,31 @@ export class GameContentLoaderService {
           );
         }
       },
+    requiredFields:
+      (...fields: string[]): ContentValidator =>
+      (payload: unknown) => {
+        const record = asRecord(payload);
+        const missing = fields.filter((field) => record[field] == null);
+        if (missing.length > 0) {
+          throw new GameContentValidationError(
+            `Missing required content fields: ${missing.join(', ')}`,
+          );
+        }
+      },
+    positiveNumber:
+      (field: string): ContentValidator =>
+      (payload: unknown) => {
+        const value = asRecord(payload)[field];
+        if (
+          typeof value !== 'number' ||
+          !Number.isFinite(value) ||
+          value <= 0
+        ) {
+          throw new GameContentValidationError(
+            `Invalid positive number field: ${field}`,
+          );
+        }
+      },
   };
 
   loadContent<T>(params: LoadContentParams): T {

@@ -5,7 +5,7 @@ import {
 import {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../models/game-action.model';
+} from '../../../application/models/game-action.model';
 import { QuizQuestion } from '../../../application/features/quiz/services/quiz-runner.service';
 import { PanierExpressMetadata } from './model/panier-express-state.model';
 import { toPlayerIdValue } from './panier-express-state.helpers';

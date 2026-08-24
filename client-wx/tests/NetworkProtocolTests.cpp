@@ -12,6 +12,7 @@
 #include <thread>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include <wx/init.h>
@@ -51,6 +52,7 @@
 #include "shared/concurrency/BackgroundExecutor.h"
 #include "shared/concurrency/AsyncRequestSlot.h"
 #include "shared/accessibility/NavigationController.h"
+#include "shared/audio/SoundCatalog.h"
 #include "shared/domain/DomainTypes.h"
 #include "shared/errors/ErrorMessages.h"
 #include "shared/logging/Logger.h"
@@ -638,6 +640,7 @@ void TestOptionsCodecMigratesLegacyFieldsAndSchema()
 
     const auto state = lila::modules::options::infrastructure::json::Parse(legacyDocument);
     Expect(state.confirmExit, "confirmExit migre attendu");
+    Expect(state.repairBrokenAccents, "repairBrokenAccents doit etre actif par defaut");
     Expect(state.muteAll, "muteAll migre attendu");
     Expect(state.runtime.currentVersion == std::optional<std::string>("1.2.3"), "currentVersion migree attendue");
     Expect(
@@ -649,6 +652,7 @@ void TestOptionsCodecMigratesLegacyFieldsAndSchema()
         serialized.at("schemaVersion") == lila::modules::options::domain::OptionsState::SchemaVersion,
         "Schema serialise invalide");
     Expect(serialized.at("general").at("confirmExit") == true, "confirmExit serialise attendu");
+    Expect(serialized.at("general").at("repairBrokenAccents") == true, "repairBrokenAccents serialise attendu");
     Expect(!serialized.contains("confirmLogout"), "confirmLogout legacy ne doit plus etre serialise");
     Expect(serialized.at("currentVersion") == "1.2.3", "currentVersion top-level attendue");
     Expect(serialized.at("runtime").at("currentVersion") == "1.2.3", "currentVersion runtime attendue");
@@ -657,6 +661,40 @@ void TestOptionsCodecMigratesLegacyFieldsAndSchema()
         "Limite admin serialisee inattendue");
 
     std::cout << "[TEST PASSED] OptionsCodecMigratesLegacyFieldsAndSchema\n";
+}
+
+void TestSoundCatalogAndPerCueOptionsRoundTrip()
+{
+    const auto catalog = lila::shared::audio::GetSoundCatalog();
+    Expect(
+        catalog.size() == static_cast<std::size_t>(lila::shared::audio::SoundCue::Count),
+        "Tous les sons doivent etre presents dans le catalogue");
+
+    std::unordered_set<std::string> keys;
+    for (const auto& descriptor : catalog)
+    {
+        Expect(keys.insert(std::string(descriptor.key)).second, "Cle de son dupliquee");
+        Expect(!descriptor.label.empty(), "Libelle de son requis");
+        Expect(
+            std::filesystem::exists(std::filesystem::current_path() / "resources" / "sounds" / descriptor.fileName),
+            "Fichier sonore ou fichier de repli manquant");
+    }
+
+    lila::modules::options::domain::OptionsState state;
+    state.audio.cues["clientConnected"] = {false, 37};
+    state.audio.cues["tableAmbience20"] = {true, 72};
+    const auto parsed = lila::modules::options::infrastructure::json::Parse(
+        lila::modules::options::infrastructure::json::Serialize(state));
+    Expect(!parsed.audio.cues.at("clientConnected").enabled, "Activation individuelle non conservee");
+    Expect(parsed.audio.cues.at("clientConnected").volume == 37, "Volume individuel non conserve");
+    Expect(parsed.audio.cues.at("tableAmbience20").volume == 72, "Volume ambiance de table non conserve");
+
+    auto normalized = parsed;
+    normalized.audio.cues.at("clientConnected").volume = 500;
+    normalized.Normalize();
+    Expect(normalized.audio.cues.at("clientConnected").volume == 100, "Volume individuel non borne");
+
+    std::cout << "[TEST PASSED] SoundCatalogAndPerCueOptionsRoundTrip\n";
 }
 
 void TestSessionClearWipesRefreshToken()
@@ -763,6 +801,18 @@ void TestEncodingRejectsInvalidUtf8()
     Expect(threw, "UTF-8 invalide devait echouer");
 
     std::cout << "[TEST PASSED] EncodingRejectsInvalidUtf8\n";
+}
+
+void TestBrokenAccentRepairCanBeToggled()
+{
+    const std::string broken = "cafÃ©";
+    lila::shared::text::SetBrokenAccentRepairEnabled(false);
+    Expect(lila::shared::text::FromUtf8(broken) == wxString(L"cafÃ©"), "Texte casse doit rester intact si option desactivee");
+
+    lila::shared::text::SetBrokenAccentRepairEnabled(true);
+    Expect(lila::shared::text::FromUtf8(broken) == wxString(L"café"), "Accent casse devait etre repare");
+
+    std::cout << "[TEST PASSED] BrokenAccentRepairCanBeToggled\n";
 }
 
 void TestRealtimeProtocolFallbackTypeAndPayloadValidation()
@@ -1848,12 +1898,14 @@ int main()
         run("JsonFileStorageRejectsOversizedFiles", TestJsonFileStorageRejectsOversizedFiles);
         run("JsonFileStorageRejectsCorruptedFiles", TestJsonFileStorageRejectsCorruptedFiles);
         run("OptionsCodecMigratesLegacyFieldsAndSchema", TestOptionsCodecMigratesLegacyFieldsAndSchema);
+        run("SoundCatalogAndPerCueOptionsRoundTrip", TestSoundCatalogAndPerCueOptionsRoundTrip);
         run("SessionClearWipesRefreshToken", TestSessionClearWipesRefreshToken);
         run("SessionMovePreservesSecrets", TestSessionMovePreservesSecrets);
         run("SessionStoreRestoreLoadsPersistedSession", TestSessionStoreRestoreLoadsPersistedSession);
         run("AtomicFileWriterReplacesExistingContent", TestAtomicFileWriterReplacesExistingContent);
         run("EncodingRoundTripUnicode", TestEncodingRoundTripUnicode);
         run("EncodingRejectsInvalidUtf8", TestEncodingRejectsInvalidUtf8);
+        run("BrokenAccentRepairCanBeToggled", TestBrokenAccentRepairCanBeToggled);
         run("RealtimeProtocolFallbackTypeAndPayloadValidation", TestRealtimeProtocolFallbackTypeAndPayloadValidation);
         run("ChatProtocolHandlesMalformedAndUnknownEvents", TestChatProtocolHandlesMalformedAndUnknownEvents);
         run("ChatMessageStoreEnforcesLimits", TestChatMessageStoreEnforcesLimits);

@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
@@ -18,8 +18,8 @@ const ZONE_LABELS: Record<number, string> = {
   4: 'Bouche',
   5: 'Quotidien & Services',
   6: 'Savoir & Culture',
-  7: 'Protection & SociÃƒÆ’Ã‚Â©tÃƒÆ’Ã‚Â©',
-  8: 'TrÃƒÆ’Ã‚Â¨s anciens & universels',
+  7: 'Protection & Société',
+  8: 'Très anciens & universels',
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -56,7 +56,7 @@ export class MonVillagePresenterService {
         victory: null,
       },
       actions: formatPresenterActions(actions, (action) =>
-        action.type === 'roll' ? 'Lancer le dÃƒÆ’Ã‚Â©' : action.type,
+        action.type === 'roll' ? 'Lancer le dé' : action.type,
       ),
       pending: state.pending ?? null,
       extras: {

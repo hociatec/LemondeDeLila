@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { createMonVillageRuntime } from '../../mon-village.runtime';
 
 describe('MonVillage runtime', () => {
@@ -11,7 +11,7 @@ describe('MonVillage runtime', () => {
         },
         loadContent: ({ filename }: { filename: string }) => {
           if (filename === 'board.json') {
-            return { version: 1, tiles: [{ id: 'start', title: 'DÃ©part' }] };
+            return { version: 1, tiles: [{ id: 'start', title: 'Départ' }] };
           }
           return {
             version: 1,

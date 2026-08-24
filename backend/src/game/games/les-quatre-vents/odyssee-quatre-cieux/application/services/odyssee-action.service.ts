@@ -7,7 +7,7 @@ import {
   dispatchByActionType,
   normalizeActionType,
 } from '../../../../../application/helpers/action-service.helper';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import { RandomService } from '../../../../../application/services/random.service';
 import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
@@ -80,7 +80,7 @@ export class OdysseeActionService {
     };
     next = this.core.appendLog(
       next,
-      `${describeOdysseePlayerName(next, currentId)} lance le dÃƒÆ’Ã‚Â© : "${roll}".`,
+      `${describeOdysseePlayerName(next, currentId)} lance le dé : "${roll}".`,
     );
 
     const moves = this.computeMoves(next, currentId, roll);

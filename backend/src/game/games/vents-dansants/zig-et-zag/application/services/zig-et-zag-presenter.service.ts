@@ -2,7 +2,7 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
@@ -33,7 +33,7 @@ export class ZigEtZagPresenterService {
       hand: [],
       handCounts,
       discardLabel: 'Paquet',
-      playMessage: 'Main : (cachÃƒÂ©e). Espace piocher.',
+      playMessage: 'Main : (cachée). Espace piocher.',
       tableMessage: `Statut: ${state.status ?? 'en attente'}`,
     });
     Object.entries(meta.playerDecks ?? {}).forEach(([key, cards]) => {

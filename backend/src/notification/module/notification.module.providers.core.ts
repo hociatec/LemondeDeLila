@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { RedisClientFactory } from '../../common/redis/public-api';
 import { PRIVATE_MESSAGE_REPOSITORY } from '../../messaging/public-api';
 import { PrivateMessageTypeormRepository } from '../../messaging/public-api';
@@ -13,12 +14,20 @@ import {
   NotificationTransport,
   RedisNotificationTransport,
 } from '../infrastructure/transport/notification-transport';
-import { NotificationFriendshipTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/notification-friendship-typeorm.repository';
+import { SocialRelationshipEntity } from '../../social/infrastructure/persistence/typeorm/entities/social-relationship.entity';
+import {
+  NOTIFICATION_SOCIAL_RELATIONSHIPS_TYPEORM_REPOSITORY,
+  NotificationFriendshipTypeormRepository,
+} from '../infrastructure/persistence/typeorm/repositories/notification-friendship-typeorm.repository';
 import { NotificationInboxTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/notification-inbox-typeorm.repository';
 import { NotificationDispatchService } from '../infrastructure/system/notification-dispatch.service';
 import { UserBadgeCountsService } from '../application/services/user-badge-counts.service';
 
 export const NOTIFICATION_CORE_PROVIDERS = [
+  {
+    provide: NOTIFICATION_SOCIAL_RELATIONSHIPS_TYPEORM_REPOSITORY,
+    useExisting: getRepositoryToken(SocialRelationshipEntity),
+  },
   PrivateMessageTypeormRepository,
   NotificationFriendshipTypeormRepository,
   NotificationInboxTypeormRepository,

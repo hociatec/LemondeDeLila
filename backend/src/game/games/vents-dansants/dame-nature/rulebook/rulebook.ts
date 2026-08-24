@@ -9,7 +9,7 @@ import {
   GameTurnViolationError,
   GameUnknownActionError,
 } from '../../../../domain/errors/game-domain.errors';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import { DAME_NATURE_CARD_BY_ID } from '../model/dame-nature-cards';
 import type { DameNatureMetadata } from '../model/dame-nature-state.model';
 

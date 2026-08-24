@@ -29,11 +29,11 @@ export function extractMinuitMoveDelta(text: string): number {
     return map[v] ?? 0;
   };
   const forward = text.match(
-    /avancez?\s+(?:de|d['ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
+    /avancez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
   );
   if (forward) return parse(forward[1]);
   const backward = text.match(
-    /reculez?\s+(?:de|d['ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
+    /reculez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
   );
   if (backward) return -parse(backward[1]);
   return 0;
@@ -56,11 +56,11 @@ export function extractMinuitFailureDelta(text: string): number {
     return map[v] ?? 0;
   };
   const backward = text.match(
-    /sinon[^.]*reculez?\s+(?:de|d['ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
+    /sinon[^.]*reculez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
   );
   if (backward) return -parse(backward[1]);
   const forward = text.match(
-    /sinon[^.]*avancez?\s+(?:de|d['ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
+    /sinon[^.]*avancez?\s+(?:de|d['’])\s*([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+cases?/i,
   );
   if (forward) return parse(forward[1]);
   return 0;
@@ -197,7 +197,7 @@ export function describeMinuitPawnPossessive(args: {
   if (!inner) return '"son pion"';
   const stripped = inner
     .replace(/^(le|la|les|un|une)\s+/i, '')
-    .replace(/^l['ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢]\s*/i, '')
+    .replace(/^l['’]\s*/i, '')
     .trim();
   const base = lowercaseMinuitFirst(stripped || inner);
   const feminine = /^(la|une)\s+/i.test(inner);

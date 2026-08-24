@@ -48,7 +48,7 @@ export class RealtimeApiHandlerService {
     const decoded = this.decode(raw);
     if (!decoded?.type) {
       this.logger.debug(
-        `Message WS ignorÃ© (invalide ou sans type) connectionId=${session.connectionId}`,
+        `Message WS ignoré (invalide ou sans type) connectionId=${session.connectionId}`,
       );
       return;
     }
@@ -62,7 +62,7 @@ export class RealtimeApiHandlerService {
     ) {
       this.sendError(
         client,
-        `Mise Ã  jour requise (version minimale: ${minRequired}).`,
+        `Mise à jour requise (version minimale: ${minRequired}).`,
         type,
         requestId,
       );

@@ -6,7 +6,7 @@ import { verify as jwtVerify } from 'jsonwebtoken';
 
 import type { IncomingHttpHeaders, IncomingMessage } from 'http';
 
-import type { WsAuthPayload } from '../../../interfaces/ws-auth-payload';
+import type { WsAuthPayload } from '../../../interfaces/public-api';
 import {
   WS_RUNTIME_CONFIG,
   type WsRuntimeConfig,
@@ -14,7 +14,7 @@ import {
 import {
   getJwtVerifyAlgorithms,
   requireJwtVerifyKey,
-} from '../../../auth/application/services/jwt-config.service';
+} from '../../../auth/public-api';
 
 export type WsRequestLike = IncomingMessage & {
   url?: string;

@@ -593,6 +593,8 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/stattext.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/options/domain/OptionsState.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h

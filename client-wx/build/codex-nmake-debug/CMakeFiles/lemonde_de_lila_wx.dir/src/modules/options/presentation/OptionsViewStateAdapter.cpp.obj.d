@@ -94,6 +94,9 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtree
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/vcpkg/installed/x64-windows/include/wx/checkbox.h
@@ -157,7 +160,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xhash
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cmath
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/vcpkg/installed/x64-windows/include/wx/xti.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/rtti.h

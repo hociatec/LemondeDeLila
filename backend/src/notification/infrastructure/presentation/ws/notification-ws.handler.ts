@@ -34,6 +34,10 @@ export class NotificationWsHandler {
     requestId: string | null,
   ): Promise<void> {
     const type = typeof parsed.type === 'string' ? parsed.type : '';
+    const payload =
+      parsed.payload && typeof parsed.payload === 'object'
+        ? (parsed.payload as Record<string, unknown>)
+        : {};
     if (!type) {
       return;
     }
@@ -88,8 +92,7 @@ export class NotificationWsHandler {
     }
 
     if (type === WS_EVENTS.notify.inbox.delete) {
-      const id =
-        typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
+      const id = typeof payload.id === 'string' ? payload.id.trim() : '';
       if (!id) {
         return;
       }
@@ -117,8 +120,7 @@ export class NotificationWsHandler {
     }
 
     if (type === WS_EVENTS.notify.inbox.markRead) {
-      const id =
-        typeof parsed?.payload?.id === 'string' ? parsed.payload.id.trim() : '';
+      const id = typeof payload.id === 'string' ? payload.id.trim() : '';
       if (!id) {
         return;
       }
@@ -139,9 +141,7 @@ export class NotificationWsHandler {
     if (type === WS_EVENTS.notify.inbox.send) {
       try {
         const message =
-          typeof parsed?.payload?.message === 'string'
-            ? parsed.payload.message
-            : '';
+          typeof payload.message === 'string' ? payload.message : '';
         const item = await this.adminContacts.sendFromUserToStaff(
           this.toInboxActor(meta),
           message,
@@ -167,17 +167,11 @@ export class NotificationWsHandler {
       try {
         const from = this.toInboxActor(meta);
         const message =
-          typeof parsed?.payload?.message === 'string'
-            ? parsed.payload.message
-            : '';
+          typeof payload.message === 'string' ? payload.message : '';
         const contactId =
-          typeof parsed?.payload?.contactId === 'string'
-            ? parsed.payload.contactId
-            : '';
+          typeof payload.contactId === 'string' ? payload.contactId : '';
         const toUserId =
-          typeof parsed?.payload?.toUserId === 'number'
-            ? parsed.payload.toUserId
-            : 0;
+          typeof payload.toUserId === 'number' ? payload.toUserId : 0;
         const isStaff =
           Array.isArray(from.roles) &&
           (from.roles.includes('ROLE_ADMIN') ||
@@ -216,10 +210,8 @@ export class NotificationWsHandler {
     if (type === WS_EVENTS.notify.inbox.setHandled) {
       try {
         const contactId =
-          typeof parsed?.payload?.contactId === 'string'
-            ? parsed.payload.contactId
-            : '';
-        const handled = Boolean(parsed?.payload?.handled);
+          typeof payload.contactId === 'string' ? payload.contactId : '';
+        const handled = Boolean(payload.handled);
         await this.adminContacts.setHandledForContact(
           this.toInboxActor(meta),
           contactId,
@@ -245,15 +237,9 @@ export class NotificationWsHandler {
     if (type === WS_EVENTS.notify.inbox.setStatus) {
       try {
         const contactId =
-          typeof parsed?.payload?.contactId === 'string'
-            ? parsed.payload.contactId
-            : '';
-        const inboxItemId =
-          typeof parsed?.payload?.id === 'string' ? parsed.payload.id : '';
-        const status =
-          typeof parsed?.payload?.status === 'string'
-            ? parsed.payload.status
-            : '';
+          typeof payload.contactId === 'string' ? payload.contactId : '';
+        const inboxItemId = typeof payload.id === 'string' ? payload.id : '';
+        const status = typeof payload.status === 'string' ? payload.status : '';
         const from = this.toInboxActor(meta);
         if (contactId) {
           await this.adminContacts.setStatusForContact(from, contactId, status);
@@ -287,11 +273,8 @@ export class NotificationWsHandler {
     if (type === WS_EVENTS.notify.inbox.cycleStatus) {
       try {
         const contactId =
-          typeof parsed?.payload?.contactId === 'string'
-            ? parsed.payload.contactId
-            : '';
-        const inboxItemId =
-          typeof parsed?.payload?.id === 'string' ? parsed.payload.id : '';
+          typeof payload.contactId === 'string' ? payload.contactId : '';
+        const inboxItemId = typeof payload.id === 'string' ? payload.id : '';
         const from = this.toInboxActor(meta);
         const result = contactId
           ? await this.adminContacts.cycleStatusForContact(from, contactId)
@@ -324,9 +307,7 @@ export class NotificationWsHandler {
     if (type === WS_EVENTS.notify.inbox.threads) {
       try {
         const limitThreads =
-          typeof parsed?.payload?.limit === 'number'
-            ? parsed.payload.limit
-            : undefined;
+          typeof payload.limit === 'number' ? payload.limit : undefined;
         const threads = await this.adminContacts.listThreads(meta.userId, {
           limitThreads,
         });
@@ -356,7 +337,7 @@ export class NotificationWsHandler {
               },
               {
                 id: 'handled',
-                title: 'TraitÃ©',
+                title: 'Traité',
                 collapsed: true,
                 items: sections.handled,
               },
@@ -379,9 +360,7 @@ export class NotificationWsHandler {
     if (type === WS_EVENTS.notify.inbox.deleteThread) {
       try {
         const contactId =
-          typeof parsed?.payload?.contactId === 'string'
-            ? parsed.payload.contactId
-            : '';
+          typeof payload.contactId === 'string' ? payload.contactId : '';
         await this.adminContacts.deleteThreadForContact(
           this.toInboxActor(meta),
           contactId,
@@ -408,9 +387,7 @@ export class NotificationWsHandler {
     }
 
     const version =
-      typeof parsed?.payload?.version === 'string'
-        ? parsed.payload.version.trim()
-        : '';
+      typeof payload.version === 'string' ? payload.version.trim() : '';
     if (!version) {
       return;
     }
@@ -435,7 +412,7 @@ export class NotificationWsHandler {
               currentVersion: version,
               message:
                 latest?.message ??
-                'Une mise Ã  jour du client est requise pour continuer.',
+                'Une mise à jour du client est requise pour continuer.',
               publishedAt: latest?.publishedAt ?? null,
               url,
             },
@@ -465,7 +442,7 @@ export class NotificationWsHandler {
         }
       }
     } catch (err) {
-      this.logger.debug('Echec vÃ©rification version client', err as Error);
+      this.logger.debug('Echec vérification version client', err as Error);
     }
   }
 
@@ -476,12 +453,9 @@ export class NotificationWsHandler {
     try {
       client.send(JSON.stringify(payload));
     } catch (err) {
+      const record = payload as Record<string, unknown> | null;
       const type =
-        payload &&
-        typeof payload === 'object' &&
-        typeof payload.type === 'string'
-          ? payload.type
-          : 'unknown';
+        record && typeof record.type === 'string' ? record.type : 'unknown';
       this.logger.warn(
         `Echec envoi WS notify (type=${type}) : ${(err as Error).message}`,
       );
@@ -517,4 +491,3 @@ export class NotificationWsHandler {
     return error instanceof Error && error.message ? error.message : 'Erreur';
   }
 }
-

@@ -5,7 +5,7 @@ import type {
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { BasePresenterService } from '../../../../../application/services/base-presenter.service';
 import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
 import { GALOPONS_GAME } from '../../definitions/galopons.definition';

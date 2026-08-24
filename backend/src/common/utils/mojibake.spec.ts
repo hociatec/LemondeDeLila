@@ -37,12 +37,12 @@ describe('Mojibake utilities', () => {
     });
 
     it('should fix mojibake from Windows-1252 to UTF-8', () => {
-      // "Ã©" is how "é" appears when UTF-8 is decoded as Windows-1252
-      const mojibaked = 'Ã©tÃ©';
+      // Keep the malformed fixture escaped so the source itself remains UTF-8 clean.
+      const mojibaked = '\u00c3\u00a9t\u00c3\u00a9';
       const fixed = fixMojibakeString(mojibaked);
       // Should fix to "été" or similar
       expect(fixed).not.toBe(mojibaked);
-      expect(fixed.includes('Ã')).toBe(false);
+      expect(fixed.includes('\u00c3')).toBe(false);
     });
 
     it('should handle replacement characters', () => {
@@ -54,10 +54,10 @@ describe('Mojibake utilities', () => {
     });
 
     it('should handle mixed content', () => {
-      const input = 'Normal text with Ã© mojibake';
+      const input = 'Normal text with \u00c3\u00a9 mojibake';
       const result = fixMojibakeString(input);
       expect(result).toContain('é');
-      expect(result.includes('Ã')).toBe(false);
+      expect(result.includes('\u00c3')).toBe(false);
     });
 
     it('should handle empty string', () => {
@@ -66,7 +66,7 @@ describe('Mojibake utilities', () => {
 
     it('repairs mixed clean + mojibake text without damaging clean accents', () => {
       const input =
-        'Lancez le dé maintenant. BloquÃ©: lancez un 5 ou un 6 pour vous libÃ©rer.';
+        'Lancez le dé maintenant. Bloqu\u00c3\u00a9: lancez un 5 ou un 6 pour vous lib\u00c3\u00a9rer.';
       expect(fixMojibakeString(input)).toBe(
         'Lancez le dé maintenant. Bloqué: lancez un 5 ou un 6 pour vous libérer.',
       );
@@ -76,35 +76,39 @@ describe('Mojibake utilities', () => {
   describe('fixMojibakeDeep', () => {
     it('should fix strings in nested objects', () => {
       const input = {
-        name: 'Ã©cole',
+        name: '\u00c3\u00a9cole',
         nested: {
-          value: 'forÃªt',
+          value: 'for\u00c3\u00aat',
         },
       };
       const result = fixMojibakeDeep(input);
-      expect(result.name).not.toBe('Ã©cole');
-      expect(result.nested.value).not.toBe('forÃªt');
+      expect(result.name).not.toBe('\u00c3\u00a9cole');
+      expect(result.nested.value).not.toBe('for\u00c3\u00aat');
     });
 
     it('should fix strings in arrays', () => {
-      const input = ['Ã©tÃ©', 'normal', 'forÃªt'];
+      const input = [
+        '\u00c3\u00a9t\u00c3\u00a9',
+        'normal',
+        'for\u00c3\u00aat',
+      ];
       const result = fixMojibakeDeep(input);
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBe(3);
-      expect(result[0]).not.toBe('Ã©tÃ©');
+      expect(result[0]).not.toBe('\u00c3\u00a9t\u00c3\u00a9');
     });
 
     it('should handle mixed array with objects', () => {
       const input = [
-        { name: 'Ã©cole' },
+        { name: '\u00c3\u00a9cole' },
         'normal string',
-        { nested: { value: 'forÃªt' } },
+        { nested: { value: 'for\u00c3\u00aat' } },
       ];
       const result = fixMojibakeDeep(input);
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBe(3);
       const first = result[0] as { name?: string };
-      expect(first.name).not.toBe('Ã©cole');
+      expect(first.name).not.toBe('\u00c3\u00a9cole');
     });
 
     it('should preserve clean strings', () => {
@@ -136,24 +140,28 @@ describe('Mojibake utilities', () => {
 
     it('should handle circular references without crashing', () => {
       type Circular = { label: string; self?: Circular };
-      const input: Circular = { label: 'ÃƒÂ©cole' };
+      const input: Circular = {
+        label: '\u00c3\u0192\u00c2\u00a9cole',
+      };
       input.self = input;
 
       const result = fixMojibakeDeep(input);
       expect(result).toBeDefined();
       expect(result.self).toBe(result);
-      expect(result.label).not.toBe('ÃƒÂ©cole');
+      expect(result.label).not.toBe('\u00c3\u0192\u00c2\u00a9cole');
     });
 
     it('should preserve shared references', () => {
       type SharedNode = { value: string };
       type SharedRoot = { a: SharedNode; b: SharedNode };
-      const shared: SharedNode = { value: 'forÃƒÂªt' };
+      const shared: SharedNode = {
+        value: 'for\u00c3\u0192\u00c2\u00aat',
+      };
       const input: SharedRoot = { a: shared, b: shared };
 
       const result = fixMojibakeDeep(input);
       expect(result.a).toBe(result.b);
-      expect(result.a.value).not.toBe('forÃƒÂªt');
+      expect(result.a.value).not.toBe('for\u00c3\u0192\u00c2\u00aat');
     });
 
     it('normalizes common missing accents for display keys only', () => {
@@ -231,18 +239,25 @@ describe('Mojibake utilities', () => {
     it('should fix mojibake in JSON strings', () => {
       const testFile = path.join(tempDir, 'mojibake.json');
       // Simulate mojibake in JSON
-      const data = { name: 'Ã©cole', description: 'forÃªt' };
+      const data = {
+        name: '\u00c3\u00a9cole',
+        description: 'for\u00c3\u00aat',
+      };
       fs.writeFileSync(testFile, JSON.stringify(data), 'utf8');
 
       const result = readJsonFileWithFallback<typeof data>(testFile);
-      expect(result.name).not.toBe('Ã©cole');
-      expect(result.description).not.toBe('forÃªt');
+      expect(result.name).not.toBe('\u00c3\u00a9cole');
+      expect(result.description).not.toBe('for\u00c3\u00aat');
     });
 
     it('should handle JSON with arrays', () => {
       const testFile = path.join(tempDir, 'array.json');
       const data = {
-        items: ['Ã©tÃ©', 'normal', { nested: 'forÃªt' }],
+        items: [
+          '\u00c3\u00a9t\u00c3\u00a9',
+          'normal',
+          { nested: 'for\u00c3\u00aat' },
+        ],
       };
       fs.writeFileSync(testFile, JSON.stringify(data), 'utf8');
 

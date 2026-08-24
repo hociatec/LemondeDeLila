@@ -13,7 +13,10 @@ export function continueContesQueuedDraw(
     playerId: number;
     queue: string[];
     depth: number;
-    setPending: (state: GameStateEntity, pending: ContesPending) => GameStateEntity;
+    setPending: (
+      state: GameStateEntity,
+      pending: Exclude<ContesPending, null>,
+    ) => GameStateEntity;
   },
 ): GameStateEntity {
   if (!input.queue.length) return state;
@@ -37,7 +40,10 @@ export function queueContesDraws(
     queue: Array<'bonus' | 'malus' | 'surprise' | 'conte'>;
     depth: number;
     label?: string;
-    setPending: (state: GameStateEntity, pending: ContesPending) => GameStateEntity;
+    setPending: (
+      state: GameStateEntity,
+      pending: Exclude<ContesPending, null>,
+    ) => GameStateEntity;
   },
 ): GameStateEntity {
   if (!input.queue.length) return state;
@@ -78,7 +84,10 @@ export function attachContesQueuedDrawContinuation(
     queue: string[];
     depth: number;
     playerId: number;
-    setPending: (state: GameStateEntity, pending: ContesPending) => GameStateEntity;
+    setPending: (
+      state: GameStateEntity,
+      pending: Exclude<ContesPending, null>,
+    ) => GameStateEntity;
     extractQueuedDrawContinuationData: (
       data: Record<string, unknown>,
     ) => Record<string, unknown>;
@@ -103,7 +112,10 @@ export function attachContesQueuedDrawContinuationFromPending(
   state: GameStateEntity,
   input: {
     pending: ContesPending | null;
-    setPending: (state: GameStateEntity, pending: ContesPending) => GameStateEntity;
+    setPending: (
+      state: GameStateEntity,
+      pending: Exclude<ContesPending, null>,
+    ) => GameStateEntity;
     extractQueuedDrawContinuationData: (
       data: Record<string, unknown>,
     ) => Record<string, unknown>;
@@ -158,7 +170,3 @@ export function resumeContesQueuedDrawContinuation(
   if (playerId == null) return state;
   return input.continueQueuedDraw(state, playerId, queue, depth);
 }
-
-
-
-

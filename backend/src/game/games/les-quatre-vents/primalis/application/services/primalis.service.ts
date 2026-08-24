@@ -2,12 +2,12 @@
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { PRIMALIS_GAME } from '../../definitions/primalis.definition';
 import { PrimalisSetupService } from './primalis-setup.service';
 import { PrimalisActionService } from './primalis-action.service';
@@ -22,7 +22,7 @@ export class PrimalisService extends AbstractGameService {
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = PRIMALIS_GAME.displayName;
   readonly description =
-    'Survivez ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  la comÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨te : construisez votre tribu de dinosaures et nourrissez-la avant la catastrophe finale.';
+    'Survivez à la comète : construisez votre tribu de dinosaures et nourrissez-la avant la catastrophe finale.';
   readonly minPlayers = PRIMALIS_GAME.minPlayers;
   readonly maxPlayers = PRIMALIS_GAME.maxPlayers;
 

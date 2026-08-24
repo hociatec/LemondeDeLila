@@ -1,20 +1,20 @@
-import type { GameStateEntity } from '../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../models/game-action.model';
-import { AbstractGameService } from '../../../application/services/abstract-game.service';
+} from '../../../../../application/models/game-action.model';
+import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { LesMainsActionService } from './les-mains-de-la-terre-action.service';
 import { LesMainsDeLaTerreBotService } from './les-mains-de-la-terre-bot.service';
 import { LesMainsPresenterService } from './les-mains-de-la-terre-presenter.service';
 import { LesMainsSetupService } from './les-mains-de-la-terre-setup.service';
 import { LES_MAINS_GAME } from '../../definitions/game.definition';
-import { buildLesMainsDeLaTerreShortcuts } from './les-mains-de-la-terre.shortcuts';
+import { buildLesMainsDeLaTerreShortcuts } from '../../les-mains-de-la-terre.shortcuts';
 
 export class LesMainsDeLaTerreService extends AbstractGameService {
   readonly gameType = LES_MAINS_GAME.id;
@@ -22,7 +22,7 @@ export class LesMainsDeLaTerreService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = LES_MAINS_GAME.displayName;
   readonly description =
-    'ComplÃƒÆ’Ã‚Â©tez des familles de mÃƒÆ’Ã‚Â©tiers tout en jouant des cartes spÃƒÆ’Ã‚Â©ciales dÃƒÆ’Ã‚Â©boussolantes.';
+    'Complétez des familles de métiers tout en jouant des cartes spéciales déboussolantes.';
   readonly minPlayers = LES_MAINS_GAME.minPlayers;
   readonly maxPlayers = LES_MAINS_GAME.maxPlayers;
 

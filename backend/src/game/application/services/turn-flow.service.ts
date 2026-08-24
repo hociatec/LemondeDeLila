@@ -24,7 +24,10 @@ export class TurnFlowService {
 
     const meta = this.asRecord(state.metadata);
     const statuses = this.asRecord(meta.statuses);
-    const skipTurn: Record<number, number> = statuses.skipTurn ?? {};
+    const skipTurn =
+      statuses.skipTurn && typeof statuses.skipTurn === 'object'
+        ? (statuses.skipTurn as Record<number, number>)
+        : {};
 
     const currentId = state.turn?.currentPlayerId ?? null;
     const currentIndex =
@@ -81,13 +84,24 @@ export class TurnFlowService {
       : {};
   }
 
-  private getSkipped(value: unknown): number[] {
+  private getSkipped(value: unknown): Array<{
+    id: number;
+    remainingBefore: number;
+    remainingAfter: number;
+  }> {
     const record = this.asRecord(value);
-    return Array.isArray(record.skipped)
-      ? record.skipped.filter(
-          (entry): entry is number =>
-            typeof entry === 'number' && Number.isFinite(entry),
-        )
-      : [];
+    if (!Array.isArray(record.skipped)) return [];
+
+    return record.skipped.flatMap((entry) => {
+      const skipped = this.asRecord(entry);
+      const id = Number(skipped.id);
+      const remainingBefore = Number(skipped.remainingBefore);
+      const remainingAfter = Number(skipped.remainingAfter);
+      return Number.isFinite(id) &&
+        Number.isFinite(remainingBefore) &&
+        Number.isFinite(remainingAfter)
+        ? [{ id, remainingBefore, remainingAfter }]
+        : [];
+    });
   }
 }

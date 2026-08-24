@@ -19,7 +19,7 @@ import { AFondLesBallonsBotService } from './application/services/a-fond-les-bal
 
 const emptyCatalogReader: GameCatalogReader = {
   listEntries: () => [],
-  loadJsonFile: () => null,
+  loadJsonFile: <T>() => null as T,
   readTextFile: () => '',
 };
 
@@ -101,8 +101,3 @@ const emptyCatalogReader: GameCatalogReader = {
   exports: [AFondLesBallonsService],
 })
 export class AFondLesBallonsModule {}
-
-
-
-
-

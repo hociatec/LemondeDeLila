@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
@@ -45,7 +45,7 @@ export class ToutPresDeMamanPresenterService {
               }
             : null,
       },
-      actions: formatPresenterActions(actions, () => 'Lancer le dÃƒÂ©'),
+      actions: formatPresenterActions(actions, () => 'Lancer le dé'),
       pending: state.pending ?? null,
       extras: {
         ...baseExtras,

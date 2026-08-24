@@ -36,13 +36,11 @@ class OptionsFrame final : public lila::shared::accessibility::NonFocusablePanel
 {
 public:
     using CloseRequestedHandler = std::function<void()>;
-    using ExitRequestedHandler = std::function<void()>;
 
     OptionsFrame(
         wxWindow* parent,
         application::OptionsStore& optionsStore,
-        CloseRequestedHandler onCloseRequested,
-        ExitRequestedHandler onExitRequested);
+        CloseRequestedHandler onCloseRequested);
     ~OptionsFrame() override;
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
@@ -61,7 +59,6 @@ private:
     void UpdateStatus(const wxString& message, bool isError = false);
 
     CloseRequestedHandler onCloseRequested_;
-    ExitRequestedHandler onExitRequested_;
     OptionsNavigationState navigationState_;
     std::unique_ptr<OptionsEditorController> editorController_;
     std::unique_ptr<OptionsFocusController> focusController_;

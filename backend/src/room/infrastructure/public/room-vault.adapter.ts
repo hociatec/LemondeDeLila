@@ -8,6 +8,7 @@ import { RoomLifecycleFacadeService } from '../../application/services/room-life
 import { RoomMembershipFacadeService } from '../../application/services/room-membership-facade.service';
 import { RoomStateService } from '../../application/services/room-state.service';
 import type { Room } from '../persistence/typeorm/entities/room.entity';
+import type { RoomRecord } from '../../application/models/room-record.model';
 
 @Injectable()
 export class RoomVaultAdapter implements RoomVaultPort {
@@ -102,7 +103,7 @@ export class RoomVaultAdapter implements RoomVaultPort {
     return this.roomState.notifyRoomStateUpdated(roomId);
   }
 
-  private toRecord(room: Room): RoomVaultRoomRecord {
+  private toRecord(room: Room | RoomRecord): RoomVaultRoomRecord {
     return {
       id: room.id,
       name: room.name,

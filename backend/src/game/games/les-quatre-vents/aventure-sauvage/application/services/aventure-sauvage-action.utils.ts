@@ -6,6 +6,7 @@ import type {
 } from '../../model/aventure-sauvage-state.model';
 
 export type AventureRuntimeMetadata = AventureSauvageMetadata & {
+  rng?: Record<string, unknown>;
   aventureReroll?: boolean;
 };
 
@@ -26,12 +27,14 @@ export function toAventureText(value: unknown): string {
 export function asAventurePendingRecord(value: unknown): {
   type?: string;
   playerId?: unknown;
+  data?: Record<string, unknown>;
 } | null {
   if (!value || typeof value !== 'object') return null;
   const record = asAventureRecord(value);
   return {
     type: toAventureText(record.type),
     playerId: record.playerId,
+    data: asAventureRecord(record.data),
   };
 }
 
@@ -48,8 +51,8 @@ export function normalizeAventureMeta(input: unknown): AventureRuntimeMetadata {
       : [],
     pawnByPlayerId:
       (asAventureRecord(raw.pawnByPlayerId) as Record<number, string>) ?? {},
-    starterPlayerId:
-      typeof raw.starterPlayerId === 'number' ? raw.starterPlayerId : null,
+    setupStarterId:
+      typeof raw.setupStarterId === 'number' ? raw.setupStarterId : null,
     statuses: {
       skipTurn:
         (asAventureRecord(asAventureRecord(raw.statuses).skipTurn) as Record<
@@ -57,12 +60,19 @@ export function normalizeAventureMeta(input: unknown): AventureRuntimeMetadata {
           number
         >) ?? {},
     },
+    winnerId: typeof raw.winnerId === 'number' ? raw.winnerId : null,
     decks: {
       animal: Array.isArray(asAventureRecord(raw.decks).animal)
         ? (asAventureRecord(raw.decks).animal as AventureSauvageCard[])
         : [],
       patte: Array.isArray(asAventureRecord(raw.decks).patte)
         ? (asAventureRecord(raw.decks).patte as AventureSauvageCard[])
+        : [],
+      discardAnimal: Array.isArray(asAventureRecord(raw.decks).discardAnimal)
+        ? (asAventureRecord(raw.decks).discardAnimal as AventureSauvageCard[])
+        : [],
+      discardPatte: Array.isArray(asAventureRecord(raw.decks).discardPatte)
+        ? (asAventureRecord(raw.decks).discardPatte as AventureSauvageCard[])
         : [],
     },
     aventureReroll: raw.aventureReroll === true,

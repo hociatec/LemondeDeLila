@@ -6,7 +6,7 @@ import {
   HealthIndicatorResult,
 } from '@nestjs/terminus';
 import Redis from 'ioredis';
-import { RedisClientFactory } from '../../../common/redis/infrastructure/redis-client.factory';
+import { RedisClientFactory } from '../../../common/redis/public-api';
 
 @Injectable()
 export class RedisHealthIndicator extends HealthIndicator {
@@ -23,7 +23,7 @@ export class RedisHealthIndicator extends HealthIndicator {
       this.config.get<string>('SESSION_STORE_REDIS_URL');
     if (!url) {
       return this.getStatus(key, true, {
-        message: 'Redis non configurÃ©',
+        message: 'Redis non configuré',
       });
     }
 

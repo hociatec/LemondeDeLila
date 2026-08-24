@@ -1,5 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Inject, Injectable } from '@nestjs/common';
 import { IsNull, Repository } from 'typeorm';
 import type {
   BotRoomRepository,
@@ -9,19 +8,46 @@ import type {
   BotManagedRoomRecord,
   BotRoomRecord,
 } from '../../../../application/models/bot-room.record';
-import { RoomBot } from '../../../../../room/infrastructure/persistence/typeorm/entities/room-bot.entity';
-import { RoomParticipant } from '../../../../../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
-import { Room } from '../../../../../room/infrastructure/persistence/typeorm/entities/room.entity';
+
+export const BOT_ROOM_BOTS_TYPEORM_REPOSITORY = Symbol(
+  'BOT_ROOM_BOTS_TYPEORM_REPOSITORY',
+);
+export const BOT_ROOM_ROOMS_TYPEORM_REPOSITORY = Symbol(
+  'BOT_ROOM_ROOMS_TYPEORM_REPOSITORY',
+);
+export const BOT_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY = Symbol(
+  'BOT_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY',
+);
+
+type BotRow = {
+  id: number;
+  name: string;
+  createdAt?: Date;
+  room: { id: number };
+};
+
+type ManagedRoomRow = {
+  id: number;
+  maxPlayers: number;
+  status: string;
+  startedAt?: Date | null;
+  owner?: { id: number } | null;
+};
+
+type ParticipantRow = {
+  room: { id: number };
+  leftAt: Date | null;
+};
 
 @Injectable()
 export class BotRoomTypeormRepository implements BotRoomRepository {
   constructor(
-    @InjectRepository(RoomBot)
-    private readonly bots: Repository<RoomBot>,
-    @InjectRepository(Room)
-    private readonly rooms: Repository<Room>,
-    @InjectRepository(RoomParticipant)
-    private readonly participants: Repository<RoomParticipant>,
+    @Inject(BOT_ROOM_BOTS_TYPEORM_REPOSITORY)
+    private readonly bots: Repository<BotRow>,
+    @Inject(BOT_ROOM_ROOMS_TYPEORM_REPOSITORY)
+    private readonly rooms: Repository<ManagedRoomRow>,
+    @Inject(BOT_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY)
+    private readonly participants: Repository<ParticipantRow>,
   ) {}
 
   async findRoomById(roomId: number): Promise<BotManagedRoomRecord | null> {
@@ -48,7 +74,7 @@ export class BotRoomTypeormRepository implements BotRoomRepository {
 
   async createBot(input: CreateBotForRoomInput): Promise<BotRoomRecord> {
     const entity = this.bots.create({
-      room: { id: input.roomId } as Room,
+      room: { id: input.roomId },
       name: input.name,
     });
     const saved = await this.bots.save(entity);
@@ -77,7 +103,7 @@ export class BotRoomTypeormRepository implements BotRoomRepository {
     await this.bots.save({
       id: botId,
       name,
-    } as RoomBot);
+    });
   }
 
   async deleteBot(botId: number): Promise<void> {
@@ -102,7 +128,7 @@ export class BotRoomTypeormRepository implements BotRoomRepository {
     });
   }
 
-  private toBotRecord(entity: RoomBot): BotRoomRecord {
+  private toBotRecord(entity: BotRow): BotRoomRecord {
     return {
       id: entity.id,
       name: entity.name,

@@ -5,7 +5,7 @@ import type {
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import type { QuizQuestion } from '../../../../../application/features/quiz/services/quiz-runner.service';
 import { sanitizeText } from '../../../../../../common/utils/public-api';
 import type { PanierExpressMetadata } from '../../model/panier-express-state.model';
@@ -46,7 +46,7 @@ type PanierPlayerLike = {
 };
 
 export class PanierExpressPresenterService extends BasePresenterService {
-  // RÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence au pending quiz pour le partager entre les mÃƒÆ’Ã‚Â©thodes
+  // Référence au pending quiz pour le partager entre les méthodes
   private pendingQuizRef: QuizQuestion | undefined;
   private rawPendingRef: PendingState | null = null;
 
@@ -66,7 +66,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
   }): GameStateWithActions {
     const { state, actions, rawPending, pendingQuiz } = params;
 
-    // Stocker les rÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rences pour buildPendingState
+    // Stocker les références pour buildPendingState
     this.pendingQuizRef = pendingQuiz;
     this.rawPendingRef = rawPending;
 
@@ -76,7 +76,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
     // IMPORTANT:
     // `BasePresenterService.buildExposedState(...)` utilise toujours `turn.currentPlayerId`
     // pour calculer pending/extras. Pour Panier Express, les vues `shoppingList/basket/inventory`
-    // doivent reflÃƒÆ’Ã‚Â©ter l'utilisateur connectÃƒÆ’Ã‚Â© (pas forcÃƒÆ’Ã‚Â©ment le joueur dont c'est le tour,
+    // doivent refléter l'utilisateur connecté (pas forcément le joueur dont c'est le tour,
     // par exemple quand un bot joue).
     const pending = this.buildPendingState(state, meta, currentId);
     const extras = this.buildExtras(state, meta, currentId);
@@ -100,7 +100,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
   }
 
   // ============================================================================
-  // MÃƒÆ’Ã‚Â©thodes de template (implÃƒÆ’Ã‚Â©mentation de BasePresenterService)
+  // Méthodes de template (implémentation de BasePresenterService)
   // ============================================================================
 
   protected buildCatalog(): { phases: string[]; victory: unknown } {
@@ -172,7 +172,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
   }
 
   // ============================================================================
-  // MÃƒÆ’Ã‚Â©thodes utilitaires privÃƒÆ’Ã‚Â©es
+  // Méthodes utilitaires privées
   // ============================================================================
 
   private buildBoardTurns(
@@ -197,7 +197,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
     if (quizPayload) {
       return {
         type: 'quiz',
-        label: 'RÃƒÆ’Ã‚Â©ponses possibles',
+        label: 'Réponses possibles',
         question: quizPayload.question,
         choices: quizPayload.choices,
         playerId: params.currentId,
@@ -223,7 +223,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
           type: 'exchange',
           playerId: exchangePlayerId,
           blocking: true,
-          question: "Choisir un joueur pour l'ÃƒÆ’Ã‚Â©change.",
+          question: "Choisir un joueur pour l'échange.",
           choices,
           data: { step: 'choose_target', targets },
         };
@@ -242,8 +242,8 @@ export class PanierExpressPresenterService extends BasePresenterService {
           targetPlayerId: toNumber(exchangePending.targetPlayerId),
           blocking: true,
           question: targetUsername
-            ? `Choisir une carte ÃƒÆ’Ã‚Â  donner ÃƒÆ’Ã‚Â  ${targetUsername}.`
-            : 'Choisir une carte ÃƒÆ’Ã‚Â  donner.',
+            ? `Choisir une carte à donner à ${targetUsername}.`
+            : 'Choisir une carte à donner.',
           choices,
           data: {
             step: 'choose_give',
@@ -266,8 +266,8 @@ export class PanierExpressPresenterService extends BasePresenterService {
               )
             : '';
         const question = take
-          ? `${initiator} vous propose un ÃƒÆ’Ã‚Â©change : il vous donne "${give}" et vous lui donnez "${take}". (A = accepter, R = refuser)`
-          : `${initiator} vous propose un ÃƒÆ’Ã‚Â©change : il vous donne "${give}". (A = accepter, R = refuser)`;
+          ? `${initiator} vous propose un échange : il vous donne "${give}" et vous lui donnez "${take}". (A = accepter, R = refuser)`
+          : `${initiator} vous propose un échange : il vous donne "${give}". (A = accepter, R = refuser)`;
         return {
           type: 'exchange',
           playerId: exchangePlayerId,
@@ -428,7 +428,7 @@ export class PanierExpressPresenterService extends BasePresenterService {
             : params.revealInventory[p.id] > 0;
 
         if (!canSee) {
-          return `${name} : inventaire (cachÃƒÆ’Ã‚Â©)`;
+          return `${name} : inventaire (caché)`;
         }
         const items = Array.isArray(p.inventory) ? p.inventory : [];
         if (items.length === 0) {

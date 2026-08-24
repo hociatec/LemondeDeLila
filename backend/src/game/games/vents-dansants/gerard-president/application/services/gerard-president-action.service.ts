@@ -8,7 +8,7 @@ import {
   normalizeActionType,
 } from '../../../../../application/helpers/action-service.helper';
 
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 
 import { RandomService } from '../../../../../application/services/random.service';
 import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
@@ -99,7 +99,7 @@ export class GerardPresidentActionService {
     let nextState = this.setCurrentPlayer(state, players, nextId);
     nextState = this.appendLog(
       nextState,
-      `Le MaÃ®tre du ThÃ¨me a dÃ©voilÃ© le thÃ¨me "${metadata.currentTheme}".`,
+      `Le Maître du Thème a dévoilé le thème "${metadata.currentTheme}".`,
     );
     return {
       ...nextState,
@@ -153,7 +153,7 @@ export class GerardPresidentActionService {
     };
     const nextState = this.appendLog(
       this.setCurrentPlayer(state, players, nextId),
-      `Le joueur ${formatGerardPlayer(playerId)} a jouÃ© ${removed.join(', ')}.`,
+      `Le joueur ${formatGerardPlayer(playerId)} a joué ${removed.join(', ')}.`,
     );
 
     return {
@@ -197,7 +197,7 @@ export class GerardPresidentActionService {
     const nextState = this.appendLog(
       state,
       effectMessage ||
-        `${formatGerardPlayer(playerId)} a utilisÃ© une carte spÃ©ciale.`,
+        `${formatGerardPlayer(playerId)} a utilisé une carte spéciale.`,
     );
 
     return {
@@ -344,7 +344,7 @@ export class GerardPresidentActionService {
       (card) => card.id === cardId,
     );
     const actorLabel = formatGerardPlayer(playerId);
-    if (!definition) return `${actorLabel} a jouÃ© une carte spÃ©ciale.`;
+    if (!definition) return `${actorLabel} a joué une carte spéciale.`;
 
     const resolveTarget = (id?: number | null): number | null => {
       if (id == null) return null;
@@ -364,20 +364,21 @@ export class GerardPresidentActionService {
           ...metadata.extraNamesAllowed,
           [playerId]: Math.max(metadata.extraNamesAllowed[playerId] ?? 0, 1),
         };
-        return `${actorLabel} peut jouer deux prÃ©noms cette manche.`;
+        return `${actorLabel} peut jouer deux prénoms cette manche.`;
       case 'double-theme': {
         const extra = this.drawCards(metadata, 'themeDeck', 'themeDiscard', 1);
         if (!extra.length)
-          return `${actorLabel} voulait ajouter un deuxiÃ¨me thÃ¨me mais la pioche est vide.`;
+          return `${actorLabel} voulait ajouter un deuxième thème mais la pioche est vide.`;
         metadata.secondTheme = extra[0];
         metadata.themeSecretActive = false;
-        return `${actorLabel} ajoute le thÃ¨me "${extra[0]}" Ã  cÃ´tÃ© de celui dÃ©jÃ  en cours.`;
+        return `${actorLabel} ajoute le thème "${extra[0]}" à côté de celui déjà en cours.`;
       }
       case 'interdiction': {
         const name = String(payload.name ?? '').trim();
-        if (!name) return `${actorLabel} n'a pas prÃ©cisÃ© de prÃ©nom interdit.`;
+        if (!name)
+          return `${actorLabel} n'a pas précisé de prénom interdit.`;
         metadata.lockedName = name;
-        return `${actorLabel} interdit le prÃ©nom "${name}" pour cette manche.`;
+        return `${actorLabel} interdit le prénom "${name}" pour cette manche.`;
       }
       case 'main-fantome': {
         if (targetId == null) return `${actorLabel} devait choisir un joueur.`;
@@ -390,14 +391,14 @@ export class GerardPresidentActionService {
           metadata.pendingPlayers.length === 0
             ? 'choosing_winner'
             : 'collecting_names';
-        return `${actorLabel} force ${formatGerardPlayer(targetId)} Ã  jouer ${removed.join(', ')}.`;
+        return `${actorLabel} force ${formatGerardPlayer(targetId)} à jouer ${removed.join(', ')}.`;
       }
       case 'defense-totale':
         metadata.defenseActive = {
           ...metadata.defenseActive,
           [playerId]: true,
         };
-        return `${actorLabel} se protÃ¨ge contre un effet ciblÃ©.`;
+        return `${actorLabel} se protège contre un effet ciblé.`;
       case 'echange-force': {
         if (targetId == null) return `${actorLabel} devait choisir un joueur.`;
         const ownCard = this.removeRandomFromHand(metadata, playerId);
@@ -414,7 +415,7 @@ export class GerardPresidentActionService {
             [playerId]: [...(metadata.hands[playerId] ?? []), ...targetCard],
           };
         }
-        return `${actorLabel} Ã©change des prÃ©noms avec ${formatGerardPlayer(targetId)}.`;
+        return `${actorLabel} échange des prénoms avec ${formatGerardPlayer(targetId)}.`;
       }
       case 'panique-generale': {
         players.forEach((player) => {
@@ -431,7 +432,7 @@ export class GerardPresidentActionService {
             [player.id]: [...(metadata.hands[player.id] ?? []), ...drawn],
           };
         });
-        return `${actorLabel} dÃ©clenche une panique gÃ©nÃ©rale : tout le monde refait sa main.`;
+        return `${actorLabel} déclenche une panique générale : tout le monde refait sa main.`;
       }
       case 'sabotage': {
         if (targetId == null)
@@ -441,7 +442,7 @@ export class GerardPresidentActionService {
             ...metadata.defenseActive,
             [targetId]: false,
           };
-          return `${actorLabel} a tentÃ© un sabotage, mais ${formatGerardPlayer(targetId)} Ã©tait protÃ©gÃ©.`;
+          return `${actorLabel} a tenté un sabotage, mais ${formatGerardPlayer(targetId)} était protégé.`;
         }
         const removed = this.removeRandomFromHand(metadata, targetId);
         metadata.nameDiscard = [...metadata.nameDiscard, ...removed];
@@ -455,18 +456,18 @@ export class GerardPresidentActionService {
           [playerId]: attackers,
         };
         if (attacker == null)
-          return `${actorLabel} n'avait aucun effet Ã  renvoyer.`;
+          return `${actorLabel} n'avait aucun effet à renvoyer.`;
         const removed = this.removeRandomFromHand(metadata, attacker);
         metadata.nameDiscard = [...metadata.nameDiscard, ...removed];
         return `${actorLabel} renvoie le sabotage vers ${formatGerardPlayer(attacker)}.`;
       }
       case 'theme-secret':
         metadata.themeSecretActive = true;
-        return `${actorLabel} garde le thÃ¨me secret jusqu'au prochain tour.`;
+        return `${actorLabel} garde le thème secret jusqu'au prochain tour.`;
       case 'chuchotement-confus': {
         if (targetId == null) return `${actorLabel} devait choisir un joueur.`;
         const neighbor = this.findNeighbor(players, targetId);
-        if (neighbor == null) return `${actorLabel} n'a pas trouvÃ© de voisin.`;
+        if (neighbor == null) return `${actorLabel} n'a pas trouvé de voisin.`;
         const first = this.removeRandomFromHand(metadata, targetId);
         const second = this.removeRandomFromHand(metadata, neighbor);
         if (first.length) {
@@ -481,21 +482,21 @@ export class GerardPresidentActionService {
             [targetId]: [...(metadata.hands[targetId] ?? []), ...second],
           };
         }
-        return `${actorLabel} crÃ©e de la confusion entre ${formatGerardPlayer(targetId)} et ${formatGerardPlayer(neighbor)}.`;
+        return `${actorLabel} crée de la confusion entre ${formatGerardPlayer(targetId)} et ${formatGerardPlayer(neighbor)}.`;
       }
       case 'mega-combo':
         metadata.extraNamesAllowed = {
           ...metadata.extraNamesAllowed,
           [playerId]: Math.max(metadata.extraNamesAllowed[playerId] ?? 0, 2),
         };
-        return `${actorLabel} peut jouer trois prÃ©noms d'un coup.`;
+        return `${actorLabel} peut jouer trois prénoms d'un coup.`;
       case 'inversion':
         metadata.pendingPlayers = [...metadata.pendingPlayers].reverse();
         return `${actorLabel} inverse l'ordre des joueurs encore actifs.`;
       case 'jury-mystere': {
         const target = targetId ?? this.pickRandomPlayer(players, playerId);
         metadata.juryOverrideId = target;
-        return `${actorLabel} dÃ©signe ${formatGerardPlayer(target)} comme jury mystÃ¨re.`;
+        return `${actorLabel} désigne ${formatGerardPlayer(target)} comme jury mystère.`;
       }
       case 'effet-domino':
         metadata.pendingPlayers.forEach((id) => {
@@ -504,20 +505,20 @@ export class GerardPresidentActionService {
             [id]: (metadata.extraNamesAllowed[id] ?? 0) + 1,
           };
         });
-        return `${actorLabel} dÃ©clenche un effet domino : chaque joueur suivant joue un prÃ©nom en plus.`;
+        return `${actorLabel} déclenche un effet domino : chaque joueur suivant joue un prénom en plus.`;
       case 'prenom-fantome':
-        metadata.ghostNames = [...metadata.ghostNames, 'PrÃ©nom FantÃ´me'];
-        return `${actorLabel} ajoute un prÃ©nom fantÃ´me pour tromper le jury.`;
+        metadata.ghostNames = [...metadata.ghostNames, 'Prénom Fantôme'];
+        return `${actorLabel} ajoute un prénom fantôme pour tromper le jury.`;
       case 'inversion-role':
         metadata.masterId = playerId;
-        return `${actorLabel} inverse les rÃ´les et devient MaÃ®tre du ThÃ¨me pour cette manche.`;
+        return `${actorLabel} inverse les rôles et devient Maître du Thème pour cette manche.`;
       case 'chaos-temporel':
         metadata.submissions = {};
         metadata.pendingPlayers = players
           .map((player) => player.id)
           .filter((id) => id != null && id !== metadata.masterId);
         metadata.roundPhase = 'collecting_names';
-        return `${actorLabel} rembobine le temps : tout le monde rejoue les prÃ©noms.`;
+        return `${actorLabel} rembobine le temps : tout le monde rejoue les prénoms.`;
       case 'ultra-sabotage': {
         const targets = [targetId, secondaryId].filter(
           (id): id is number => id != null,
@@ -533,10 +534,10 @@ export class GerardPresidentActionService {
           .join(' et ')}.`;
       }
       case 'prenom-volant': {
-        if (targetId == null) return `${actorLabel} n'a pas ciblÃ© de joueur.`;
+        if (targetId == null) return `${actorLabel} n'a pas ciblé de joueur.`;
         if (!metadata.hands[playerId]) metadata.hands[playerId] = [];
         if (!metadata.hands[targetId]?.length) {
-          return `${actorLabel} voulait voler un prÃ©nom mais la main ciblÃ©e est vide.`;
+          return `${actorLabel} voulait voler un prénom mais la main ciblée est vide.`;
         }
         const stolen = metadata.hands[targetId].shift()!;
         metadata.hands = {
@@ -544,7 +545,7 @@ export class GerardPresidentActionService {
           [playerId]: [...(metadata.hands[playerId] ?? []), stolen],
           [targetId]: [...metadata.hands[targetId]],
         };
-        return `${actorLabel} vole un prÃ©nom Ã  ${formatGerardPlayer(targetId)}.`;
+        return `${actorLabel} vole un prénom à ${formatGerardPlayer(targetId)}.`;
       }
       default:
         return `${actorLabel} active ${definition.name}.`;
@@ -633,7 +634,7 @@ export class GerardPresidentActionService {
     while (drawn.length < count) {
       const out = this.deckPolicies.drawFromPile<
         string,
-        { deck: string[]; discard: string[]; rng: unknown }
+        { deck: string[]; discard: string[]; rng: Record<string, unknown> }
       >({
         meta: { deck, discard, rng },
         pile: deck,
@@ -668,9 +669,3 @@ export class GerardPresidentActionService {
     return ordered[currentIndex + 1];
   }
 }
-
-
-
-
-
-

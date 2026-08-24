@@ -1,11 +1,12 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { ArcheDeMnemosyneService } from './arche-de-mnemosyne.service';
+import { ArcheMnemoStateService } from './arche-mnemo-state.service';
 
 function makeService() {
   const store = {
     listCategories: () => [
-      { id: 'c1', name: 'CatÃƒÂ©gorie 1' },
-      { id: 'c2', name: 'CatÃƒÂ©gorie 2' },
+      { id: 'c1', name: 'Catégorie 1' },
+      { id: 'c2', name: 'Catégorie 2' },
     ],
     listQuestions: () => [
       {
@@ -22,7 +23,6 @@ function makeService() {
   };
 
   const service = new ArcheDeMnemosyneService(
-    { register: jest.fn() } as any,
     {
       appendLog: (state: any, message: string) => ({
         ...state,
@@ -37,6 +37,7 @@ function makeService() {
       pickIndex: (_meta: any, _len: number) => ({ index: 0, meta: {} }),
       shuffle: (meta: any, values: any[]) => ({ meta, values: [...values] }),
     } as any,
+    new ArcheMnemoStateService(),
   );
 
   return { service, store };
@@ -235,8 +236,8 @@ describe('ArcheDeMnemosyneService helper branches', () => {
     expect((service as any).normalizeStatus('invalid')).toBe('pending');
 
     expect((service as any).statusLabel('all')).toBe('toutes');
-    expect((service as any).statusLabel('validated')).toBe('validÃƒÂ©e');
-    expect((service as any).statusLabel('to_edit')).toBe('ÃƒÂ  modifier');
+    expect((service as any).statusLabel('validated')).toBe('validée');
+    expect((service as any).statusLabel('to_edit')).toBe('à modifier');
     expect((service as any).statusLabel('something')).toBe('something');
 
     expect((service as any).back({ page: 'categories' })).toEqual({
@@ -259,5 +260,3 @@ describe('ArcheDeMnemosyneService helper branches', () => {
     });
   });
 });
-
-

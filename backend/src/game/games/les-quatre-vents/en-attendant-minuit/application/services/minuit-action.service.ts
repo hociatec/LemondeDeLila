@@ -9,7 +9,7 @@ import {
 } from '../../../../../application/helpers/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
 import { RandomService } from '../../../../../application/services/random.service';
@@ -33,7 +33,6 @@ import type {
   MinuitCard,
   MinuitMetadata,
   MinuitPendingQuiz,
-  MinuitPawnChoice,
   MinuitTile,
 } from '../../model/minuit.types';
 import {
@@ -55,10 +54,10 @@ import { applyMinuitCardEffect } from './minuit-card-effects.utils';
 const MINUIT_PAWNS = [
   'Le Lutin',
   'Le Bonhomme de Neige',
-  'La FÃƒÂ©e des Flocons',
-  'Le PÃƒÂ¨re NoÃƒÂ«l',
+  'La Fée des Flocons',
+  'Le Père Noël',
   'Le Renne',
-  "Le Petit Bonhomme en Pain d'Ãƒâ€°pices",
+  "Le Petit Bonhomme en Pain d'Épices",
 ];
 
 const MINUIT_PLAYER_NAME_OPTIONS = {
@@ -163,7 +162,7 @@ export class MinuitActionService {
 
     let meta = meta0;
 
-    // "Piochez ÃƒÂ  nouveau une carte au lieu de lancer le dÃƒÂ©" (tour suivant).
+    // "Piochez à nouveau une carte au lieu de lancer le dé" (tour suivant).
     if (meta.statuses?.forceDrawNextTurn?.[currentId] === true) {
       meta = {
         ...meta,
@@ -183,7 +182,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} pioche une carte au lieu de lancer le dÃƒÂ©.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} pioche une carte au lieu de lancer le dé.`,
       );
       return {
         ...next,
@@ -191,7 +190,7 @@ export class MinuitActionService {
           type: 'draw',
           playerId: currentId,
           blocking: true,
-          label: 'Piocher une carte NoÃƒÂ«l (Espace).',
+          label: 'Piocher une carte Noël (Espace).',
           data: { context: 'force_draw' },
         },
       };
@@ -208,7 +207,7 @@ export class MinuitActionService {
     };
     next = this.core.appendLog(
       next,
-      `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} lance le dÃƒÂ© : "${roll}".`,
+      `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} lance le dé : "${roll}".`,
     );
 
     next = this.move(next, currentId, roll);
@@ -288,12 +287,15 @@ export class MinuitActionService {
     if (correct) {
       const delta =
         typeof pending.successDelta === 'number' ? pending.successDelta : 0;
-      next = this.core.appendLog(next, `${who} a choisi la bonne rÃƒÂ©ponse !`);
+      next = this.core.appendLog(next, `${who} a choisi la bonne réponse !`);
       if (delta > 0) {
         next = this.move(next, currentId, delta);
       }
     } else {
-      next = this.core.appendLog(next, `${who} a validÃƒÂ© la mauvaise rÃƒÂ©ponse.`);
+      next = this.core.appendLog(
+        next,
+        `${who} a validé la mauvaise réponse.`,
+      );
       const failDelta =
         typeof pending.failureDelta === 'number' ? pending.failureDelta : 0;
       if (failDelta !== 0) {
@@ -349,7 +351,7 @@ export class MinuitActionService {
           next,
           currentId,
           MINUIT_PLAYER_NAME_OPTIONS,
-        )} refuse lÃ¢â‚¬â„¢ÃƒÂ©change.`,
+        )} refuse l’échange.`,
       );
       return this.advanceTurnOrKeep(next, currentId);
     }
@@ -372,7 +374,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} ÃƒÂ©change sa position avec ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} échange sa position avec ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
       );
       return this.advanceTurnOrKeep(next, currentId);
     }
@@ -385,7 +387,7 @@ export class MinuitActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} offre un cadeau ÃƒÂ  ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+        `${resolvePlayerNameFromState(next, currentId, MINUIT_PLAYER_NAME_OPTIONS)} offre un cadeau à ${resolvePlayerNameFromState(next, targetPlayerId, MINUIT_PLAYER_NAME_OPTIONS)}.`,
       );
       next = this.move(next, targetPlayerId, 1);
       next = this.move(next, currentId, 2);
@@ -623,7 +625,7 @@ export class MinuitActionService {
       if (occupant != null) {
         next = this.core.appendLog(
           next,
-          `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${describeMinuitPawnPossessive({ state: next, meta, playerId })} sur une case occupÃƒÂ©e : recul d'une case.`,
+          `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} place ${describeMinuitPawnPossessive({ state: next, meta, playerId })} sur une case occupée : recul d'une case.`,
         );
         next = this.move(next, playerId, -1);
         meta = this.getMeta(next);
@@ -636,7 +638,7 @@ export class MinuitActionService {
       if (visitedPositions.has(afterPos)) {
         return this.core.appendLog(
           next,
-          'EnchaÃƒÂ®nement de cases interrompu pour ÃƒÂ©viter une boucle infinie.',
+          'Enchaînement de cases interrompu pour éviter une boucle infinie.',
         );
       }
       visitedPositions.add(afterPos);
@@ -673,7 +675,7 @@ export class MinuitActionService {
             },
           };
           next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-          return this.core.appendLog(next, 'Malus ignorÃƒÂ©.');
+          return this.core.appendLog(next, 'Malus ignoré.');
         }
         if (delta === 0) return next;
 
@@ -699,7 +701,7 @@ export class MinuitActionService {
             },
           };
           next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-          return this.core.appendLog(next, 'Passe ton tour ignorÃƒÂ©.');
+          return this.core.appendLog(next, 'Passe ton tour ignoré.');
         }
         const turns = typeof tile.skipTurns === 'number' ? tile.skipTurns : 1;
         const curr = meta.statuses?.skipTurn?.[playerId] ?? 0;
@@ -724,7 +726,7 @@ export class MinuitActionService {
             type: 'draw',
             playerId,
             blocking: true,
-            label: 'Piocher une carte NoÃƒÂ«l (Espace).',
+            label: 'Piocher une carte Noël (Espace).',
           },
         };
       }
@@ -734,7 +736,7 @@ export class MinuitActionService {
 
     return this.core.appendLog(
       next,
-      'EnchaÃƒÂ®nement de cases interrompu pour ÃƒÂ©viter une boucle infinie.',
+      'Enchaînement de cases interrompu pour éviter une boucle infinie.',
     );
   }
 
@@ -762,7 +764,7 @@ export class MinuitActionService {
     const lines = Array.isArray(card.lines) ? card.lines : [];
     const filtered = lines.filter(
       (line) =>
-        !/^si le joueur a la bonne rÃƒÂ©ponse/i.test(String(line ?? '').trim()),
+        !/^si le joueur a la bonne réponse/i.test(String(line ?? '').trim()),
     );
     const withoutChoices = filtered.filter(
       (line) => !/^[*]?[abc]\)/i.test(String(line ?? '').trim()),
@@ -849,7 +851,7 @@ export class MinuitActionService {
       ? answerLine.replace(/^[*]?[abc]\)\s*/i, '').trim()
       : undefined;
     const anyCorrect = lines.some((l) =>
-      /Les trois rÃƒÂ©ponses sont just(e|es)/i.test(l),
+      /Les trois réponses sont just(e|es)/i.test(l),
     );
     const fullText = lines.join(' ');
     const successDelta = extractMinuitMoveDelta(fullText);
@@ -999,7 +1001,3 @@ export class MinuitActionService {
     return this.appendTurnAnnouncement(advanced);
   }
 }
-
-
-
-

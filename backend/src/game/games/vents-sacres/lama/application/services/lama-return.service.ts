@@ -2,7 +2,7 @@ import type {
   GameStateEntity,
   PendingState,
 } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import type { LamaMetadata } from '../../model/lama.model';
 import { LamaSharedService } from './lama-shared.service';
 import { LamaRoundService } from './lama-round.service';

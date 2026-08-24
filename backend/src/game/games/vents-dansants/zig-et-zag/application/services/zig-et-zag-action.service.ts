@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { resolvePlayerName } from '../../../../../application/helpers/player-name.helper';
 
 import { GameCoreService } from '../../../../../application/services/game-core.service';
@@ -184,7 +184,7 @@ export class ZigEtZagActionService {
     if (this.hasSelectionJoker(round)) {
       nextState = this.core.appendLog(
         nextState,
-        'Joker jouÃ© hors bataille : les cartes sont dÃ©faussÃ©es.',
+        'Joker joué hors bataille : les cartes sont défaussées.',
       );
       return this.finishRound(nextState, players, round, null);
     }
@@ -192,7 +192,7 @@ export class ZigEtZagActionService {
     const evaluation = this.evaluateFaceUpPlays(round);
     if (evaluation.tiePlayers.length > 1) {
       const nextRound = this.prepareBattle(round, evaluation.tiePlayers, meta);
-      nextState = this.core.appendLog(nextState, 'Bataille dÃ©clenchÃ©e !');
+      nextState = this.core.appendLog(nextState, 'Bataille déclenchée !');
       if (!nextRound.waitingPlayers.length) {
         return this.finishRound(
           nextState,
@@ -205,7 +205,7 @@ export class ZigEtZagActionService {
       return this.setCurrentPlayerWithAnnouncement(
         nextState,
         players,
-        this.pickNextCurrentPlayerId(
+        pickZigEtZagNextCurrentPlayerId(
           nextRound,
           nextState.turn?.currentPlayerId ?? 0,
         ),
@@ -249,7 +249,7 @@ export class ZigEtZagActionService {
       tiedPlayers: waitingPlayers,
       triggerColors,
       triggerFamilies,
-      battleLog: [...round.battleLog, 'Bataille dÃ©clenchÃ©e !'],
+      battleLog: [...round.battleLog, 'Bataille déclenchée !'],
     };
   }
 
@@ -304,7 +304,7 @@ export class ZigEtZagActionService {
     return this.setCurrentPlayerWithAnnouncement(
       nextState,
       players,
-      this.pickNextCurrentPlayerId(
+      pickZigEtZagNextCurrentPlayerId(
         nextRound,
         nextState.turn?.currentPlayerId ?? 0,
       ),
@@ -354,7 +354,7 @@ export class ZigEtZagActionService {
     if (!results.length) {
       nextState = this.core.appendLog(
         nextState,
-        'Aucune carte valide : les cartes sont dÃ©faussÃ©es.',
+        'Aucune carte valide : les cartes sont défaussées.',
       );
       return this.finishRound(nextState, players, round, null);
     }
@@ -394,19 +394,19 @@ export class ZigEtZagActionService {
       triggerFamilies,
       battleLog: [
         ...round.battleLog,
-        'Ã‰galitÃ© persistante, la bataille continue !',
+        'Égalité persistante, la bataille continue !',
       ],
     };
 
     nextState = this.core.appendLog(
       nextState,
-      'Ã‰galitÃ© persistante, la bataille continue !',
+      'Égalité persistante, la bataille continue !',
     );
     nextState = this.setRoundState(nextState, meta, nextRound);
     return this.setCurrentPlayerWithAnnouncement(
       nextState,
       players,
-      this.pickNextCurrentPlayerId(
+      pickZigEtZagNextCurrentPlayerId(
         nextRound,
         nextState.turn?.currentPlayerId ?? 0,
       ),
@@ -465,7 +465,7 @@ export class ZigEtZagActionService {
       nextState = this.setCurrentPlayerWithAnnouncement(
         ensured.state,
         players,
-        this.pickNextCurrentPlayerId(
+        pickZigEtZagNextCurrentPlayerId(
           ensured.round,
           ensured.state.turn?.currentPlayerId ?? 0,
         ),
@@ -516,7 +516,7 @@ export class ZigEtZagActionService {
       if (play.faceUpCard) {
         next = this.core.appendLog(
           next,
-          `${resolvePlayerName(players, play.playerId)} dÃ©voile ${this.formatCardLabel(play.faceUpCard)}.`,
+          `${resolvePlayerName(players, play.playerId)} dévoile ${this.formatCardLabel(play.faceUpCard)}.`,
         );
       }
     }
@@ -547,8 +547,8 @@ export class ZigEtZagActionService {
 
     const summary =
       revealPlayers.length === 2
-        ? `${revealPlayers[0]} et ${revealPlayers[1]} dÃ©voilent leurs cartes.`
-        : `${revealPlayers.slice(0, -1).join(', ')} et ${revealPlayers[revealPlayers.length - 1]} dÃ©voilent leurs cartes.`;
+        ? `${revealPlayers[0]} et ${revealPlayers[1]} dévoilent leurs cartes.`
+        : `${revealPlayers.slice(0, -1).join(', ')} et ${revealPlayers[revealPlayers.length - 1]} dévoilent leurs cartes.`;
     return this.core.appendLog(state, summary);
   }
 
@@ -846,7 +846,3 @@ export class ZigEtZagActionService {
     return state.turn?.currentPlayerId ?? null;
   }
 }
-
-
-
-

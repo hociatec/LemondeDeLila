@@ -53,12 +53,12 @@ export function applyMinuitCardEffect(params: {
   let meta = params.meta;
   const text = (card.lines ?? []).join(' ');
 
-  if (/ÃƒÆ’Ã‚Â©changez votre position avec un autre joueur/i.test(text)) {
+  if (/échangez votre position avec un autre joueur/i.test(text)) {
     const targets = deps.otherPlayers(next, playerId);
-    targets.push({ id: -1, username: 'Refuser lÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â©change' });
+    targets.push({ id: -1, username: 'Refuser l’échange' });
     const pending: PendingState = {
       type: 'choose_target',
-      label: 'Choisissez un joueur dans la liste, puis EntrÃƒÆ’Ã‚Â©e.',
+      label: 'Choisissez un joueur dans la liste, puis Entrée.',
       playerId,
       blocking: true,
       choices: targets.map((t) => t.username),
@@ -77,11 +77,11 @@ export function applyMinuitCardEffect(params: {
     };
   }
 
-  if (/vous offrez un cadeau ÃƒÆ’Ã‚Â  un autre joueur/i.test(text)) {
+  if (/vous offrez un cadeau à un autre joueur/i.test(text)) {
     const targets = deps.otherPlayers(next, playerId);
     const pending: PendingState = {
       type: 'choose_target',
-      label: 'Choisissez un joueur dans la liste, puis EntrÃƒÆ’Ã‚Â©e.',
+      label: 'Choisissez un joueur dans la liste, puis Entrée.',
       playerId,
       blocking: true,
       choices: targets.map((t) => t.username),
@@ -112,7 +112,7 @@ export function applyMinuitCardEffect(params: {
       },
     };
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-    return deps.appendLog(next, 'Protection malus activÃƒÆ’Ã‚Â©e.');
+    return deps.appendLog(next, 'Protection malus activée.');
   }
 
   if (/Ignorez la prochaine case.*Passe ton tour/i.test(text)) {
@@ -129,7 +129,7 @@ export function applyMinuitCardEffect(params: {
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     return deps.appendLog(
       next,
-      'Protection Ãƒâ€šÃ‚Â« passe ton tour Ãƒâ€šÃ‚Â» activÃƒÆ’Ã‚Â©e.',
+      'Protection « passe ton tour » activée.',
     );
   }
 
@@ -145,7 +145,7 @@ export function applyMinuitCardEffect(params: {
     return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
   }
 
-  if (/Piochez ÃƒÆ’Ã‚Â  nouveau une carte au lieu de lancer le dÃƒÆ’Ã‚Â©/i.test(text)) {
+  if (/Piochez à nouveau une carte au lieu de lancer le dé/i.test(text)) {
     meta = {
       ...meta,
       statuses: {
@@ -159,17 +159,17 @@ export function applyMinuitCardEffect(params: {
     next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
     return deps.appendLog(
       next,
-      'Au prochain tour, piochez une carte ÃƒÆ’Ã‚Â  la place du dÃƒÆ’Ã‚Â©.',
+      'Au prochain tour, piochez une carte à la place du dé.',
     );
   }
 
-  if (/case neutre la plus proche derriÃƒÆ’Ã‚Â¨re/i.test(text)) {
+  if (/case neutre la plus proche derrière/i.test(text)) {
     const pos = meta.positions[playerId] ?? 0;
     const prevPos = findPrevMinuit(meta.tiles, pos, (t) => t.type === 'neutral');
     if (prevPos != null) {
       next = deps.appendLog(
         next,
-        'Retour ÃƒÆ’Ã‚Â  la case neutre la plus proche derriÃƒÆ’Ã‚Â¨re.',
+        'Retour à la case neutre la plus proche derrière.',
       );
       next = deps.setPos(next, playerId, prevPos);
       return deps.applyLanding(next, playerId);
@@ -192,7 +192,7 @@ export function applyMinuitCardEffect(params: {
     return { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
   }
 
-  if (/jusqu['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]ÃƒÆ’Ã‚Â  la prochaine Carte NoÃƒÆ’Ã‚Â«l/i.test(text)) {
+  if (/jusqu['’]à la prochaine Carte Noël/i.test(text)) {
     const nextPos = findNextMinuit(
       meta.tiles,
       meta.positions[playerId] ?? 0,
@@ -204,7 +204,7 @@ export function applyMinuitCardEffect(params: {
     }
   }
 
-  if (/jusqu['ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢]ÃƒÆ’Ã‚Â  la case prÃƒÆ’Ã‚Â©cÃƒÆ’Ã‚Â©dente Carte NoÃƒÆ’Ã‚Â«l/i.test(text)) {
+  if (/jusqu['’]à la case précédente Carte Noël/i.test(text)) {
     const prevPos = findPrevMinuit(
       meta.tiles,
       meta.positions[playerId] ?? 0,
@@ -213,14 +213,14 @@ export function applyMinuitCardEffect(params: {
     if (prevPos != null) {
       next = deps.appendLog(
         next,
-        "Recule jusqu'ÃƒÆ’Ã‚Â  la prÃƒÆ’Ã‚Â©cÃƒÆ’Ã‚Â©dente Carte NoÃƒÆ’Ã‚Â«l.",
+        "Recule jusqu'à la précédente Carte Noël.",
       );
       next = deps.setPos(next, playerId, prevPos);
       return deps.applyLanding(next, playerId);
     }
   }
 
-  if (/position avec le joueur juste derriÃƒÆ’Ã‚Â¨re/i.test(text)) {
+  if (/position avec le joueur juste derrière/i.test(text)) {
     const behind = findBehindMinuit(meta.positions, playerId);
     if (behind != null) {
       const actorPos = meta.positions[playerId] ?? 0;
@@ -236,15 +236,15 @@ export function applyMinuitCardEffect(params: {
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
       next = deps.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} ÃƒÆ’Ã‚Â©change sa position avec ${resolvePlayerNameFromState(next, behind, MINUIT_PLAYER_NAME_OPTIONS)}.`,
+        `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} échange sa position avec ${resolvePlayerNameFromState(next, behind, MINUIT_PLAYER_NAME_OPTIONS)}.`,
       );
       return next;
     }
   }
 
   if (
-    /Relancez immÃƒÆ’Ã‚Â©diatement le dÃƒÆ’Ã‚Â©/i.test(text) ||
-    /Relancez le dÃƒÆ’Ã‚Â© maintenant/i.test(text)
+    /Relancez immédiatement le dé/i.test(text) ||
+    /Relancez le dé maintenant/i.test(text)
   ) {
     meta = {
       ...meta,
@@ -260,24 +260,6 @@ export function applyMinuitCardEffect(params: {
     return deps.appendLog(
       next,
       `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} rejoue.`,
-    );
-  }
-
-  if (/Lancez le dÃƒÆ’Ã‚Â© et avancez du nombre obtenu/i.test(text)) {
-    meta = {
-      ...meta,
-      statuses: {
-        ...meta.statuses,
-        keepTurn: {
-          ...(meta.statuses.keepTurn ?? {}),
-          [playerId]: (meta.statuses.keepTurn?.[playerId] ?? 0) + 1,
-        },
-      },
-    };
-    next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-    return deps.appendLog(
-      next,
-      `${resolvePlayerNameFromState(next, playerId, MINUIT_PLAYER_NAME_OPTIONS)} doit lancer le dÃƒÆ’Ã‚Â© pour appliquer ce bonus.`,
     );
   }
 

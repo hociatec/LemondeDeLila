@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import type { CorridorMetadata } from '../../model/corridor.model';
 import * as CorridorRulebook from '../../rulebook/rulebook';
 import {
@@ -30,13 +30,6 @@ type CorridorChoosePawnPayload = {
   pawnId?: string | number;
   pawn?: string | number;
   id?: string | number;
-};
-
-type CorridorSetupLike = {
-  resolvePawnChoice: (
-    rawPawn: unknown,
-    options: Array<Record<string, unknown>>,
-  ) => Record<string, unknown> | null;
 };
 
 type CorridorCoreLike = {
@@ -171,32 +164,10 @@ export class CorridorActionService {
       appendLog: (current: GameStateEntity, message: string) =>
         this.appendUniqueLogMessages(current, [message]),
     };
-    const setupLike: CorridorSetupLike = {
-      resolvePawnChoice: (
-        _rawPawn: unknown,
-        options: Array<Record<string, unknown>>,
-      ) => {
-        const payload = (action.payload ?? {}) as CorridorChoosePawnPayload;
-        const raw = String(
-          payload.pawnId ?? payload.pawn ?? payload.id ?? '',
-        ).trim();
-        return (
-          options.find((entry) => {
-            const entryId =
-              typeof entry?.id === 'string'
-                ? entry.id.trim()
-                : typeof entry?.id === 'number'
-                  ? String(entry.id)
-                  : '';
-            return entryId === raw;
-          }) ?? null
-        );
-      },
-    };
     const applied = applyConfiguredPawnSelection({
       state,
       action,
-      setupFlow: setupLike,
+      setupFlow: this.setupFlow,
       core: coreLike,
       pendingType: 'choose_pawn',
       metadataCatalogKey: 'pawns',
@@ -363,9 +334,16 @@ export class CorridorActionService {
     const other = players.find((p) => p?.id !== actorId);
     const nextPlayerId = other?.id ?? actorId;
 
+    const winnerPos =
+      options.maybeWinnerPos && typeof options.maybeWinnerPos === 'object'
+        ? (options.maybeWinnerPos as { x?: unknown; y?: unknown })
+        : null;
     const won =
-      options.maybeWinnerPos != null
-        ? CorridorRulebook.isWinningPos(state, actorId, options.maybeWinnerPos)
+      typeof winnerPos?.x === 'number' && typeof winnerPos?.y === 'number'
+        ? CorridorRulebook.isWinningPos(state, actorId, {
+            x: winnerPos.x,
+            y: winnerPos.y,
+          })
         : false;
 
     const safeMeta: CorridorRuntimeMetadata = {
@@ -412,6 +390,3 @@ export class CorridorActionService {
     };
   }
 }
-
-
-

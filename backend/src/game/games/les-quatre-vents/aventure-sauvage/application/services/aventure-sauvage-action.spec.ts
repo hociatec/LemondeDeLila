@@ -1,5 +1,5 @@
-﻿import type { GameStateEntity } from '../../../../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../../../../models/game-action.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 import { createAventureSauvageRuntime } from '../../aventure-sauvage.runtime';
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -52,7 +52,7 @@ describe('AventureSauvageActionService', () => {
     const next = actions.applyActions(state, []);
 
     expect(String(next.pending?.label ?? '')).toContain(
-      "C'est a Lilas de choisir son pion.",
+      "C'est à Lilas de choisir son pion.",
     );
   });
 
@@ -74,13 +74,13 @@ describe('AventureSauvageActionService', () => {
 
     const messages = messagesOf(state);
     const botPromptIndex = messages.findIndex(
-      (message) => message === "C'est a Balto de choisir son pion.",
+      (message) => message === "C'est à Balto de choisir son pion.",
     );
     const botChoiceIndex = messages.findIndex((message) =>
       message.startsWith('Balto a choisi le pion: '),
     );
     const humanPromptIndex = messages.findIndex(
-      (message) => message === "C'est a Lilas de choisir son pion.",
+      (message) => message === "C'est à Lilas de choisir son pion.",
     );
 
     expect(botChoiceIndex).toBeGreaterThanOrEqual(0);
@@ -92,19 +92,19 @@ describe('AventureSauvageActionService', () => {
     }
   });
 
-  it("corrige l'accent de la grenouille gÃƒÂ©ante dans le deck Animal rigolo", async () => {
+  it("corrige l'accent de la grenouille géante dans le deck Animal rigolo", async () => {
     const { setup } = createAventureSauvageRuntime();
     const state = setup.hydrateInitialState(makeBaseState());
     const metadata = asRecord(state.metadata);
     const decks = asRecord(metadata.decks);
     const animalDeck = Array.isArray(decks.animal) ? decks.animal : [];
     const frogCard = animalDeck.find((card) =>
-      toText(asRecord(card).text).includes('grenouille gÃƒÂ©ante'),
+      toText(asRecord(card).text).includes('grenouille géante'),
     );
     const frogText = toText(asRecord(frogCard).text);
 
-    expect(frogText).toContain('Ãƒâ‚¬ chaque saut');
-    expect(frogText).not.toContain('ÃƒÅ’ chaque saut');
+    expect(frogText).toContain('À chaque saut');
+    expect(frogText).not.toContain('\u00cc\u20ac chaque saut');
   });
 
   it('avance le tour apres une pioche avec Passez un tour', async () => {
@@ -237,11 +237,3 @@ describe('AventureSauvageActionService', () => {
     expect(animalIds).not.toEqual(sorted);
   });
 });
-
-
-
-
-
-
-
-

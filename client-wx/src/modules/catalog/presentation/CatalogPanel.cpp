@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "modules/catalog/application/CatalogService.h"
+#include "modules/options/application/OptionsStore.h"
 #include "shared/concurrency/BackgroundExecutor.h"
 #include "shared/ui/controls/VerticalMenu.h"
 
@@ -11,6 +12,7 @@ namespace lila::modules::catalog::presentation
 CatalogPanel::CatalogPanel(
     wxWindow* parent,
     application::CatalogService& catalogService,
+    lila::modules::options::application::OptionsStore& optionsStore,
     OpenJoinRoomsRequestedHandler onOpenJoinRoomsRequested,
     OpenStoryBookRequestedHandler onOpenStoryBookRequested,
     OpenVaultRequestedHandler onOpenVaultRequested,
@@ -18,6 +20,7 @@ CatalogPanel::CatalogPanel(
     CloseRequestedHandler onCloseRequested)
     : lila::shared::accessibility::NonFocusablePanel(parent, 0),
       catalogService_(catalogService),
+      optionsStore_(optionsStore),
       onOpenJoinRoomsRequested_(std::move(onOpenJoinRoomsRequested)),
       onOpenStoryBookRequested_(std::move(onOpenStoryBookRequested)),
       onOpenVaultRequested_(std::move(onOpenVaultRequested)),
@@ -39,9 +42,13 @@ CatalogPanel::~CatalogPanel()
 
 void CatalogPanel::ResetToRootForNextShow()
 {
+    if (state_ == State::Loading && allShelves_.empty())
+    {
+        return;
+    }
     CancelCatalogLoad();
     rootSelectedIndex_ = 0;
-    shelfNavigator_.ResetToRoot();
+    RebuildFilteredShelves();
     if (state_ == State::Ready)
     {
         ShowCurrentShelves();

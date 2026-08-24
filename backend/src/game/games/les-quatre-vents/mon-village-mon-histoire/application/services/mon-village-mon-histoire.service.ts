@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { MON_VILLAGE_GAME } from '../../definitions/mon-village.definition';
 import { MonVillageActionService } from './mon-village-action.service';
 import { MonVillagePresenterService } from './mon-village-presenter.service';
@@ -22,7 +22,7 @@ export class MonVillageService extends AbstractGameService {
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = MON_VILLAGE_GAME.displayName;
   readonly description =
-    'Parcourez les mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tiers et collectionnez les cartes qui feront la richesse de votre village.';
+    'Parcourez les métiers et collectionnez les cartes qui feront la richesse de votre village.';
   readonly minPlayers = MON_VILLAGE_GAME.minPlayers;
   readonly maxPlayers = MON_VILLAGE_GAME.maxPlayers;
 

@@ -16,7 +16,7 @@ export type BotProfile = 'random' | 'greedy' | 'cautious' | 'aggressive';
 
 @Injectable()
 export class BotStrategyService {
-  constructor(private readonly random: RandomService) {}
+  constructor(private readonly random: RandomService = new RandomService()) {}
 
   choose(
     actions: GameSingleActionDto[],
@@ -124,7 +124,8 @@ export class BotStrategyService {
     actions: readonly GameSingleActionDto[],
     state: GameStateEntity,
   ): GameSingleActionDto | null {
-    return this.random.pickOne(this.asMetaRecord(state.metadata), actions).value;
+    return this.random.pickOne(this.asMetaRecord(state.metadata), actions)
+      .value;
   }
 
   private randomScore(state: GameStateEntity): number {
@@ -137,4 +138,3 @@ export class BotStrategyService {
       : {};
   }
 }
-

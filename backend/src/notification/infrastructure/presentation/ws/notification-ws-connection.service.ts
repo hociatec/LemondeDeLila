@@ -48,7 +48,7 @@ export class NotificationWsConnectionService {
             payload: {
               minRequiredVersion,
               currentVersion: clientVersion || null,
-              message: 'Une mise Ã  jour du client est requise pour continuer.',
+              message: 'Une mise à jour du client est requise pour continuer.',
               publishedAt: null,
               url: this.clientUpdates.resolveClientPublicUrlForOrigin(
                 latest,

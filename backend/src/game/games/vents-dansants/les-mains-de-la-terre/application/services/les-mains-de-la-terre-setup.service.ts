@@ -1,10 +1,10 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 
 import {
   getRngMeta,
   getSafePlayers,
-} from '../../../../application/helpers/setup-service.helper';
-import { RandomService } from '../../../../application/services/random.service';
+} from '../../../../../application/helpers/setup-service.helper';
+import { RandomService } from '../../../../../application/services/random.service';
 import {
   LES_MAINS_DECK,
   isLesMainsSpecialCard,

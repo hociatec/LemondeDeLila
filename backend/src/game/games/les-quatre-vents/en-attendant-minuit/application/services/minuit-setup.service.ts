@@ -17,10 +17,10 @@ import type {
 const DEFAULT_PAWNS = [
   'Le Lutin',
   'Le Bonhomme de Neige',
-  'La FÃ©e des Flocons',
-  'Le PÃ¨re NoÃ«l',
+  'La Fée des Flocons',
+  'Le Père Noël',
   'Le Renne',
-  "Le Petit Bonhomme en Pain d'Ã‰pices",
+  "Le Petit Bonhomme en Pain d'Épices",
 ];
 
 export class MinuitSetupService {

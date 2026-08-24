@@ -1,11 +1,11 @@
-﻿import type { GameStateEntity } from '../../../../../../../../application/models/game-state.model';
-import { GameCoreService } from '../../../../../../../../application/services/game-core.service';
-import { SetupFlowService } from '../../../../../../application/services/setup-flow.service';
-import { BoardEffectsPoliciesService } from '../../../../../../application/features/board-effects-policies/services/board-effects-policies.service';
-import { DeckPoliciesService } from '../../../../../../application/features/deck-policies/services/deck-policies.service';
-import { TurnPoliciesService } from '../../../../../../application/services/turn-policies.service';
-import { TurnFlowService } from '../../../../../../application/services/turn-flow.service';
-import { TurnService } from '../../../../../../application/services/turn.service';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import { GameCoreService } from '../../../../../application/services/game-core.service';
+import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
+import { BoardEffectsPoliciesService } from '../../../../../application/features/board-effects-policies/services/board-effects-policies.service';
+import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import { TurnPoliciesService } from '../../../../../application/services/turn-policies.service';
+import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
+import { TurnService } from '../../../../../application/services/turn.service';
 import { FrousseActionService } from '../../application/services/frousse-action.service';
 import * as Rulebook from '../../rulebook/rulebook';
 
@@ -189,9 +189,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'FantÃƒÂ´me',
+              category: 'Fantôme',
               localNumber: 999,
-              text: 'Le fantÃƒÂ´me surgit en hurlant.\nAvancez de 5 cases puis reculez de 3.',
+              text: 'Le fantôme surgit en hurlant.\nAvancez de 5 cases puis reculez de 3.',
             },
           ],
           discard: [],
@@ -271,7 +271,7 @@ describe('FrousseActionService movement effects', () => {
     const messages = (next.log ?? []).map((l: any) => l.message);
 
     expect(messages).toContain('Reculez de 2 cases.');
-    expect(messages).not.toContain('3 au dÃƒÂ©, recul de 2 cases.');
+    expect(messages).not.toContain('3 au dé, recul de 2 cases.');
   });
 
   it('formats doubled roll log with "=" (not "->")', () => {
@@ -335,7 +335,7 @@ describe('FrousseActionService movement effects', () => {
     const messages = (next.log ?? []).map((l: any) => String(l.message ?? ''));
     const rollMessage = messages.find((m) => m.includes('lance le')) ?? '';
 
-    expect(rollMessage).toContain('"5 (doublÃƒÂ© = 10)"');
+    expect(rollMessage).toContain('"5 (doublé = 10)"');
     expect(rollMessage).not.toMatch(/doubl.+ ->/i);
   });
 
@@ -453,7 +453,7 @@ describe('FrousseActionService movement effects', () => {
     ]);
     expect(next.pending?.type).toBe('choose_pawn');
     expect(String(next.pending?.label ?? '')).toContain(
-      "C'est ÃƒÂ  Lilas de choisir",
+      "C'est à Lilas de choisir",
     );
   });
 
@@ -521,8 +521,8 @@ describe('FrousseActionService movement effects', () => {
           {
             n: 1,
             type: 'normal',
-            title: 'DÃƒÂ©part',
-            label: 'case 1. DÃƒÂ©part (case neutre)',
+            title: 'Départ',
+            label: 'case 1. Départ (case neutre)',
             description: '',
           },
           {
@@ -607,9 +607,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'PiÃƒÂ¨ge',
+              category: 'Piège',
               localNumber: 1,
-              text: 'Une bougie clignote et vous joue un tour. Lancez le dÃƒÂ© deux fois et gardez le plus petit rÃƒÂ©sultat.',
+              text: 'Une bougie clignote et vous joue un tour. Lancez le dé deux fois et gardez le plus petit résultat.',
             },
           ],
           discard: [],
@@ -627,7 +627,7 @@ describe('FrousseActionService movement effects', () => {
     expect(
       messages.some((m) => /^Lilas rejoue/i.test(m) || /rejoue\s*\(/i.test(m)),
     ).toBe(false);
-    expect(messages.some((m) => /gardez le plus petit rÃƒÂ©sultat/i.test(m))).toBe(
+    expect(messages.some((m) => /gardez le plus petit résultat/i.test(m))).toBe(
       true,
     );
   });
@@ -685,7 +685,7 @@ describe('FrousseActionService movement effects', () => {
             {
               category: 'Bonus',
               localNumber: 99,
-              text: "Des bottes turbo s'activent sous vos pieds. Doublez votre prochain lancer de dÃƒÂ©.",
+              text: "Des bottes turbo s'activent sous vos pieds. Doublez votre prochain lancer de dé.",
             },
           ],
           discard: [],
@@ -702,8 +702,8 @@ describe('FrousseActionService movement effects', () => {
     const drawMessage =
       messages.find((m) => m.includes('pioche une carte')) ?? '';
 
-    expect(drawMessage).toContain('Doublez votre prochain lancer de dÃƒÂ©.');
-    expect(drawMessage).not.toContain('): Doublez le prochain lancer de dÃƒÂ©.');
+    expect(drawMessage).toContain('Doublez votre prochain lancer de dé.');
+    expect(drawMessage).not.toContain('): Doublez le prochain lancer de dé.');
   });
 
   it('bounces back from the exit when the final tile is overshot', () => {
@@ -727,7 +727,7 @@ describe('FrousseActionService movement effects', () => {
     expect(meta.positions?.[1]).toBe(44);
     expect(meta.winnerId ?? null).toBeNull();
     expect(
-      messages.some((message) => message.includes("s'ÃƒÂ©chappe du manoir")),
+      messages.some((message) => message.includes("s'échappe du manoir")),
     ).toBe(false);
   });
 
@@ -753,7 +753,7 @@ describe('FrousseActionService movement effects', () => {
             {
               category: 'Bonus',
               localNumber: 15,
-              text: "Un ascenseur secret se met en marche. Avancez ou reculez directement jusqu'ÃƒÂ  la case 40.",
+              text: "Un ascenseur secret se met en marche. Avancez ou reculez directement jusqu'à la case 40.",
             },
             {
               category: 'Bonus',
@@ -782,7 +782,7 @@ describe('FrousseActionService movement effects', () => {
     expect(afterTeleport.pending?.playerId).toBe(1);
     expect(afterTeleport.turn?.currentPlayerId).toBe(1);
     expect(teleportDrawMessage).toContain('Allez directement a la case 40.');
-    expect(teleportDrawMessage).not.toContain('Effet immÃƒÂ©diat.');
+    expect(teleportDrawMessage).not.toContain('Effet immédiat.');
     expect(
       afterTeleportMessages.some((message) => message.includes('en case 40')),
     ).toBe(true);
@@ -857,9 +857,9 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'FantÃƒÂ´me',
+              category: 'Fantôme',
               localNumber: 999,
-              text: 'Une ombre ÃƒÂ©trange vous barre la route. Lancez le dÃƒÂ© : si le rÃƒÂ©sultat est impair, passez 1 tour.',
+              text: 'Une ombre étrange vous barre la route. Lancez le dé : si le résultat est impair, passez 1 tour.',
             },
           ],
           discard: [],
@@ -878,7 +878,7 @@ describe('FrousseActionService movement effects', () => {
     expect(random.rollDice).not.toHaveBeenCalled();
     expect(meta.statuses?.blocked?.[1]).toEqual({ kind: 'need_roll_even' });
     expect(next.turn?.currentPlayerId).toBe(1);
-    expect(messages.some((m) => m.includes('Test : dÃƒÂ© ='))).toBe(false);
+    expect(messages.some((m) => m.includes('Test : dé ='))).toBe(false);
   });
 
   it('lets the player refuse a swap card and advances the turn', () => {
@@ -891,7 +891,7 @@ describe('FrousseActionService movement effects', () => {
             {
               category: 'Farce',
               localNumber: 3,
-              text: 'Un autre joueur vous joue une farce. Echangez immÃƒÂ©diatement vos places.',
+              text: 'Un autre joueur vous joue une farce. Echangez immédiatement vos places.',
             },
           ],
           discard: [],
@@ -904,11 +904,11 @@ describe('FrousseActionService movement effects', () => {
     ]);
     expect(afterDraw.pending?.type).toBe('choose_target');
     expect(String(afterDraw.pending?.label ?? '')).toContain(
-      'ÃƒÂ©changer votre position',
+      'échanger votre position',
     );
     expect(afterDraw.pending?.choices).toEqual([
       'Hacene',
-      "Refuser l'ÃƒÂ©change.",
+      "Refuser l'échange.",
     ]);
     expect(Rulebook.getAvailableActions(afterDraw, 1)).toContainEqual({
       type: 'swap_decline',
@@ -924,7 +924,7 @@ describe('FrousseActionService movement effects', () => {
 
     expect(afterDecline.pending).toBeNull();
     expect(afterDecline.turn?.currentPlayerId).toBe(2);
-    expect(messages).toContain("Lilas refuse l'ÃƒÂ©change de position.");
+    expect(messages).toContain("Lilas refuse l'échange de position.");
     expect(messages).toContain("C'est au tour de Hacene.");
   });
 
@@ -942,7 +942,7 @@ describe('FrousseActionService movement effects', () => {
             {
               category: 'Farce',
               localNumber: 11,
-              text: 'Une bougie clignote et vous joue un tour. Lancez le dÃƒÂ© deux fois et gardez le plus petit rÃƒÂ©sultat.',
+              text: 'Une bougie clignote et vous joue un tour. Lancez le dé deux fois et gardez le plus petit résultat.',
             },
           ],
           discard: [],
@@ -978,7 +978,7 @@ describe('FrousseActionService movement effects', () => {
         decks: {
           cards: [
             {
-              category: 'PiÃƒÂ¨ge',
+              category: 'Piège',
               localNumber: 2,
               text: 'Vous glissez sur une flaque gluante et malodorante. Impossible de vous relever tout de suite. Passez 1 tour.',
             },

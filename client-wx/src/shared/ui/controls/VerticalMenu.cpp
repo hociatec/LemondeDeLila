@@ -17,6 +17,7 @@
 #include "shared/accessibility/NavigationController.h"
 #include "shared/accessibility/AccessibleMenu.h"
 #include "shared/logging/Logger.h"
+#include "shared/audio/AudioService.h"
 
 namespace lila::shared::ui::controls
 {
@@ -377,9 +378,15 @@ void VerticalMenu::OnListSelectionChanged(wxCommandEvent& event)
         return;
     }
 
-    selectedIndex_ = static_cast<std::size_t>(selected);
+    const auto nextIndex = static_cast<std::size_t>(selected);
+    const bool changed = selectedIndex_ != nextIndex;
+    selectedIndex_ = nextIndex;
     UpdateVisualSelection();
     NotifySelectionChanged();
+    if (changed)
+    {
+        lila::shared::audio::AudioService::PlayGlobal(lila::shared::audio::SoundCue::Navigation);
+    }
 }
 
 void VerticalMenu::OnListActivated(std::size_t index)
@@ -387,6 +394,7 @@ void VerticalMenu::OnListActivated(std::size_t index)
     selectedIndex_ = index;
     UpdateVisualSelection();
     NotifySelectionChanged();
+    lila::shared::audio::AudioService::PlayGlobal(lila::shared::audio::SoundCue::Selection);
     if (onActivated_)
     {
         onActivated_(index);
@@ -464,6 +472,7 @@ void VerticalMenu::FocusIndex(std::size_t index, bool notify)
         return;
     }
 
+    const bool changed = selectedIndex_ != index;
     selectedIndex_ = index;
     if (role_ == VerticalMenuRole::Entries)
     {
@@ -486,6 +495,10 @@ void VerticalMenu::FocusIndex(std::size_t index, bool notify)
     if (notify)
     {
         NotifySelectionChanged();
+        if (changed)
+        {
+            lila::shared::audio::AudioService::PlayGlobal(lila::shared::audio::SoundCue::Navigation);
+        }
     }
 }
 

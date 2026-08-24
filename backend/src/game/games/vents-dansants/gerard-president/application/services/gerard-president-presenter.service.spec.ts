@@ -15,7 +15,7 @@ describe('GerardPresidentPresenterService', () => {
       turn: { currentPlayerId: 1, direction: 1 },
       players: [
         { id: 1, username: 'Ana' },
-        { id: 2, username: 'BÃ©rÃ©nice' },
+        { id: 2, username: 'Bérénice' },
       ],
       metadata: {
         rng: {},
@@ -59,10 +59,6 @@ describe('GerardPresidentPresenterService', () => {
     expect(result.extras?.handCards?.length).toBeGreaterThan(0);
     expect(result.extras?.playerViews?.length).toBe(2);
     expect(result.actions?.some((a) => a.type === 'play_name')).toBe(true);
-    expect(result.extras?.submissions?.[2]?.[0]).toContain('PrÃ©nom secret');
+    expect(result.extras?.submissions?.[2]?.[0]).toContain('Prénom secret');
   });
 });
-
-
-
-

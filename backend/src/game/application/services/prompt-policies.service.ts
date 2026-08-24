@@ -4,7 +4,7 @@ import { GameCoreService } from './game-core.service';
 
 @Injectable()
 export class PromptPoliciesService {
-  constructor(private readonly core: GameCoreService) {}
+  constructor(private readonly core: GameCoreService = new GameCoreService()) {}
 
   appendLogOnce(state: GameStateEntity, message: string): GameStateEntity {
     const log = Array.isArray(state.log) ? state.log : [];

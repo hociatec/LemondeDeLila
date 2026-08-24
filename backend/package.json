@@ -30,9 +30,10 @@
     "test:e2e:game:campaign:real": "node tools/game-campaign-real-e2e.cjs",
     "test:load:room:real": "node tools/room-load-real.cjs",
     "quality:report": "node tools/quality-report.cjs",
+    "architecture:test": "node --test tools/architecture-check.spec.cjs",
     "architecture:check": "node tools/architecture-check.cjs",
     "architecture:baseline:update": "node tools/architecture-check.cjs --update-baseline",
-    "quality:check": "npm run quality:report && node tools/quality-check.cjs && npm run architecture:check",
+    "quality:check": "npm run quality:report && node tools/quality-check.cjs && npm run architecture:test && npm run architecture:check",
     "test:transverse": "jest game/actions/action-service.helper.spec.ts game/modules/pending-action/services/pending-action.service.spec.ts game/core/helpers/payload-validators.helper.spec.ts game/engine/tests/critical-cases.matrix.spec.ts game/games/les-quatre-vents/galopons-ensemble/actions/galopons-action.service.spec.ts"
   },
   "dependencies": {

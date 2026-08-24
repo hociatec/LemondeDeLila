@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { VOYAGE_GAME } from '../../definitions/voyage.definition';
 import { VoyageSetupService } from './voyage-setup.service';
 import { VoyageActionService } from './voyage-action.service';
@@ -22,7 +22,7 @@ export class VoyageService extends AbstractGameService {
   readonly subcategory = 'LesQuatreVents';
   readonly displayName = VOYAGE_GAME.displayName;
   readonly description =
-    'Voyage en Irlande : quiz de lÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©gendes, farces et trÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©sors.';
+    'Voyage en Irlande : quiz de légendes, farces et trésors.';
   readonly minPlayers = VOYAGE_GAME.minPlayers;
   readonly maxPlayers = VOYAGE_GAME.maxPlayers;
 

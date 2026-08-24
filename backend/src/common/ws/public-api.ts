@@ -1,8 +1,11 @@
 export {
   requireAdmin,
   requireUser,
-  type WsSession,
 } from './infrastructure/presentation/ws/ws-auth';
+export type {
+  WsRouteHandler,
+  WsSession,
+} from './application/models/ws-route.model';
 export { WsApiHubService } from './application/services/ws-api-hub.service';
 export { WsJwtAuthService } from './application/services/ws-jwt-auth.service';
 export { WsRouteRegistry } from './application/services/ws-route-registry.service';

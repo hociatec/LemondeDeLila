@@ -1,7 +1,7 @@
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import type { PendingState } from '../../../../../application/models/game-state.model';
 import { BasePresenterService } from '../../../../../application/services/base-presenter.service';
@@ -12,7 +12,7 @@ import {
   nextLamaValue,
   LAMA_VALUE,
 } from '../../model/lama.model';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 type LamaPresenterAction = {
   type: string;
@@ -29,20 +29,20 @@ function asRecord(value: unknown): Record<string, unknown> {
 export class LamaPresenter extends BasePresenterService {
   private normalizeUiText(value: unknown): string {
     return String(value ?? '')
-      .replaceAll('DÃƒÆ’Ã‚Â©', 'Dé')
-      .replaceAll('DÃƒÂ©', 'Dé')
-      .replaceAll('dÃƒÆ’Ã‚Â©', 'dé')
-      .replaceAll('dÃƒÂ©', 'dé')
-      .replaceAll('ÃƒÆ’Ã‚Â©', 'é')
-      .replaceAll('ÃƒÂ©', 'é')
-      .replaceAll('ÃƒÆ’Ã‚Â¨', 'è')
-      .replaceAll('ÃƒÂ¨', 'è')
-      .replaceAll('ÃƒÆ’Ã‚Âª', 'ê')
-      .replaceAll('ÃƒÂª', 'ê')
-      .replaceAll('ÃƒÆ’Ã‚Â ', 'à')
-      .replaceAll('ÃƒÂ ', 'à')
-      .replaceAll('ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Ëœ', '↑')
-      .replaceAll('ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“', '↓');
+      .replaceAll('Dé', 'Dé')
+      .replaceAll('Dé', 'Dé')
+      .replaceAll('dé', 'dé')
+      .replaceAll('dé', 'dé')
+      .replaceAll('é', 'é')
+      .replaceAll('é', 'é')
+      .replaceAll('è', 'è')
+      .replaceAll('è', 'è')
+      .replaceAll('ê', 'ê')
+      .replaceAll('ê', 'ê')
+      .replaceAll('à', 'à')
+      .replaceAll('à', 'à')
+      .replaceAll('↑', '↑')
+      .replaceAll('↓', '↓');
   }
 
   private sanitizePlayerName(raw: unknown): string {
@@ -248,7 +248,7 @@ export class LamaPresenter extends BasePresenterService {
     _state: GameStateEntity,
     _metadata: LamaMetadata,
     _currentPlayerId: number | null,
-  ): unknown {
+  ): PendingState | null {
     return null;
   }
 
@@ -257,7 +257,7 @@ export class LamaPresenter extends BasePresenterService {
     metadata: LamaMetadata,
     userId: number,
     currentPlayerId: number | null,
-  ): Record<string, unknown> | null {
+  ): PendingState | null {
     if (this.isSetup(state) || (metadata.step ?? '') === 'setup_config') {
       const ownerId = this.resolveSetupOwnerId(state, metadata);
       if (ownerId == null || userId !== ownerId) return null;
@@ -272,7 +272,7 @@ export class LamaPresenter extends BasePresenterService {
           fields: [
             {
               key: 'loseAtScore',
-              label: 'Score de dÃƒÂ©faite (jetons)',
+              label: 'Score de défaite (jetons)',
               kind: 'number',
               min: 5,
               max: 200,
@@ -288,20 +288,21 @@ export class LamaPresenter extends BasePresenterService {
             },
             {
               key: 'allowPlayAfterDraw',
-              label: 'Autoriser de rejouer aprÃƒÂ¨s une pioche (oui/non)',
+              label: 'Autoriser de rejouer après une pioche (oui/non)',
               kind: 'boolean',
               initialText: metadata.allowPlayAfterDraw ? 'oui' : 'non',
             },
             {
               key: 'allowDrawAfterFirstQuit',
               label:
-                'Autoriser la pioche aprÃƒÂ¨s quÃ¢â‚¬â„¢un joueur sÃ¢â‚¬â„¢est retirÃƒÂ© (dans la manche) (oui/non)',
+                'Autoriser la pioche après qu’un joueur s’est retiré (dans la manche) (oui/non)',
               kind: 'boolean',
               initialText: metadata.allowDrawAfterFirstQuit ? 'oui' : 'non',
             },
             {
               key: 'returnTokenFromRound',
-              label: 'Manche ÃƒÂ  partir de laquelle un jeton peut ÃƒÂªtre rendu',
+              label:
+                'Manche à partir de laquelle un jeton peut être rendu',
               kind: 'number',
               min: 1,
               max: 50,
@@ -343,7 +344,7 @@ export class LamaPresenter extends BasePresenterService {
       return {
         type: 'lama_return',
         label:
-          'Vous avez gagnÃƒÂ© la manche : rendez 1 jeton ou 1 diamant (10 jetons) si possible.',
+          'Vous avez gagné la manche : rendez 1 jeton ou 1 diamant (10 jetons) si possible.',
         playerId: userId,
         choices,
       };
@@ -375,10 +376,10 @@ export class LamaPresenter extends BasePresenterService {
     return {
       type: currentPlayerId === userId ? 'lama_turn' : 'lama_hand',
       label: droppedOut
-        ? `DÃƒÂ©fausse : ${discardTop}. Vous vous ÃƒÂªtes retirÃƒÂ© de la manche. Main : ${hand.length} cartes (${handScore} jetons). Total : ${meScore} jetons.`
+        ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} jetons). Total : ${meScore} jetons.`
         : currentPlayerId === userId
-          ? `DÃƒÂ©fausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (${drawLocked ? 'Ã¢â€ â€˜/Ã¢â€ â€œ choisir, EntrÃƒÂ©e jouer, P/Q passer, C dÃƒÂ©fausse, E mains, S jetons' : 'Ã¢â€ â€˜/Ã¢â€ â€œ choisir, EntrÃƒÂ©e jouer, Espace piocher, P/Q passer, C dÃƒÂ©fausse, E mains, S jetons'})`
-          : `DÃƒÂ©fausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (En attente)`,
+          ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S jetons' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S jetons'})`
+          : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (En attente)`,
       playerId: userId,
       choices,
     };
@@ -391,7 +392,7 @@ export class LamaPresenter extends BasePresenterService {
     if (actionType === 'lama_quit') return 'Se retirer de la manche';
     if (actionType === 'lama_pass') return 'Passer (fin du tour)';
     if (actionType === 'lama_return') return 'Rendre jetons';
-    if (actionType === 'lama_peek_discard') return 'Voir dÃƒÂ©fausse';
+    if (actionType === 'lama_peek_discard') return 'Voir défausse';
     if (actionType === 'lama_preview') return 'Voir carte';
     return actionType;
   }
@@ -460,15 +461,15 @@ export class LamaPresenter extends BasePresenterService {
       if (this.isSetup(state)) {
         const loseAt = metadata.loseAtScore ?? null;
         return loseAt != null
-          ? `RÃƒÂ©glages: dÃƒÂ©faite ÃƒÂ  ${loseAt} jetons.`
-          : 'RÃƒÂ©glages: choisissez le score de dÃƒÂ©faite, puis EntrÃƒÂ©e.';
+          ? `Réglages: défaite à ${loseAt} jetons.`
+          : 'Réglages: choisissez le score de défaite, puis Entrée.';
       }
-      if (!this.isStarted(state)) return 'Partie non dÃƒÂ©marrÃƒÂ©e.';
+      if (!this.isStarted(state)) return 'Partie non démarrée.';
       if (currentPlayerId !== userId) return "Ce n'est pas votre tour.";
       const step = metadata.step ?? 'turn_choice';
       if (step === 'return_token')
         return 'Rendez 1 jeton ou 1 diamant (10 jetons) si possible.';
-      if (!top) return 'DÃƒÂ©fausse vide.';
+      if (!top) return 'Défausse vide.';
       const allowed = new Set<LamaCardValue>([top, nextLamaValue(top)]);
       const counts = new Map<LamaCardValue, number>();
       for (const v of handValues) {
@@ -479,9 +480,9 @@ export class LamaPresenter extends BasePresenterService {
         (a, b) => a[0] - b[0],
       )) {
         if (!allowed.has(value)) continue;
-        parts.push(`${lamaCardLabel(value)}Ãƒâ€”${count}`);
+        parts.push(`${lamaCardLabel(value)}×${count}`);
       }
-      return `DÃƒÂ©fausse : ${discardTop}. (${drawLocked ? 'Ã¢â€ â€˜/Ã¢â€ â€œ choisir, EntrÃƒÂ©e jouer, P/Q passer, C dÃƒÂ©fausse, E mains, S score' : 'Ã¢â€ â€˜/Ã¢â€ â€œ choisir, EntrÃƒÂ©e jouer, Espace piocher, P/Q passer, C dÃƒÂ©fausse, E mains, S score'})`;
+      return `Défausse : ${discardTop}. (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S score' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S score'})`;
     })();
 
     return {
@@ -509,16 +510,16 @@ export class LamaPresenter extends BasePresenterService {
                   return `${name}: ${count}`;
                 });
               return parts.length
-                ? `Cartes en main Ã¢â‚¬â€ ${parts.join(', ')}.`
+                ? `Cartes en main — ${parts.join(', ')}.`
                 : 'Cartes en main : inconnues.';
             })(),
           },
           discard: {
-            title: 'DÃƒÂ©fausse',
-            message: `DÃƒÂ©fausse : ${discardTop}.`,
+            title: 'Défausse',
+            message: `Défausse : ${discardTop}.`,
           },
           play: {
-            title: 'Ãƒâ‚¬ jouer',
+            title: 'À jouer',
             message: playableText,
           },
           score: {
@@ -531,7 +532,7 @@ export class LamaPresenter extends BasePresenterService {
                   : null;
               const loseText =
                 loseAt != null && Number.isFinite(loseAt)
-                  ? ` DÃƒÂ©faite ÃƒÂ  ${loseAt} jetons.`
+                  ? ` Défaite à ${loseAt} jetons.`
                   : '';
               return `Jetons: ${scoreLines.join(', ')}.${loseText}`;
             })(),
@@ -540,8 +541,8 @@ export class LamaPresenter extends BasePresenterService {
             title: 'Table',
             message:
               metadata.loseAtScore != null
-                ? `DÃƒÂ©faite ÃƒÂ  ${metadata.loseAtScore} jetons.`
-                : 'DÃƒÂ©faite: non configurÃƒÂ©e.',
+                ? `Défaite à ${metadata.loseAtScore} jetons.`
+                : 'Défaite: non configurée.',
           },
         },
       },
@@ -649,5 +650,3 @@ export class LamaPresenter extends BasePresenterService {
     return typeof players[0]?.id === 'number' ? players[0].id : null;
   }
 }
-
-

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { playingLog } from '../../../common/utils/public-api';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 import { GameRoomNotFoundError } from '../../domain/errors/game-domain.errors';
 
 @Injectable()

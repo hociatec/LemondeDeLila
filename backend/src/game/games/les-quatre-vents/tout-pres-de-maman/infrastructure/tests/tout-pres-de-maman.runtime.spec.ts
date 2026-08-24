@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { createToutPresDeMamanRuntime } from '../../tout-pres-de-maman.runtime';
 
 describe('ToutPresDeMaman runtime', () => {
@@ -11,7 +11,7 @@ describe('ToutPresDeMaman runtime', () => {
         },
         loadContent: ({ filename }: { filename: string }) => {
           if (filename === 'board.json') {
-            return { version: 1, tiles: [{ id: 'start', title: 'DÃ©part' }] };
+            return { version: 1, tiles: [{ id: 'start', title: 'Départ' }] };
           }
           if (filename === 'cards.json') {
             return { version: 1, cards: [{ id: 'c1', kind: 'gain_token' }] };

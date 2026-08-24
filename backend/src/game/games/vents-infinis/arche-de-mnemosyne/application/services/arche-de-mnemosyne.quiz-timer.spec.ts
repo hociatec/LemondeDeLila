@@ -1,9 +1,9 @@
 import { ArcheDeMnemosyneService } from './arche-de-mnemosyne.service';
+import { ArcheMnemoStateService } from './arche-mnemo-state.service';
 
 describe('ArcheDeMnemosyneService quiz timer', () => {
   const makeService = (questions: any[] = []) =>
     new ArcheDeMnemosyneService(
-      { register: jest.fn() } as any,
       {
         appendLog: (s: any, m: string) => ({
           ...s,
@@ -22,6 +22,7 @@ describe('ArcheDeMnemosyneService quiz timer', () => {
         }),
         shuffle: (_meta: any, arr: any) => ({ meta: {}, values: arr }),
       } as any,
+      new ArcheMnemoStateService(),
     );
 
   it('stops the quiz timer as soon as everyone answered (clears deadline)', () => {
@@ -100,15 +101,19 @@ describe('ArcheDeMnemosyneService quiz timer', () => {
       String(l?.message ?? ''),
     );
     expect(
-      messages.some((m: string) => m === 'A rÃ©pond : Bonne rÃ©ponse.'),
+      messages.some((m: string) => m === 'A répond : Bonne réponse.'),
     ).toBe(true);
     expect(
-      messages.some((m: string) => m === 'B rÃ©pond : Mauvaise rÃ©ponse.'),
+      messages.some((m: string) => m === 'B répond : Mauvaise réponse.'),
     ).toBe(true);
-    expect(messages.some((m: string) => m.includes('rÃ©pond : A.'))).toBe(false);
-    expect(messages.some((m: string) => m.includes('rÃ©pond : B.'))).toBe(false);
+    expect(messages.some((m: string) => m.includes('répond : A.'))).toBe(
+      false,
+    );
+    expect(messages.some((m: string) => m.includes('répond : B.'))).toBe(
+      false,
+    );
     expect(
-      messages.some((m: string) => m.includes('La bonne rÃ©ponse Ã©tait')),
+      messages.some((m: string) => m.includes('La bonne réponse était')),
     ).toBe(true);
     expect(
       messages.some((m: string) => m.includes('Prochaine question dans')),
@@ -187,16 +192,16 @@ describe('ArcheDeMnemosyneService quiz timer', () => {
     );
     expect(
       messages.some(
-        (m: string) => m === `Personne n'a trouvÃ© la bonne rÃ©ponse.`,
+        (m: string) => m === `Personne n'a trouvé la bonne réponse.`,
       ),
     ).toBe(true);
     expect(
       messages.some((m: string) =>
-        m.includes(`Personne n'a trouvÃ© la bonne rÃ©ponse (`),
+        m.includes(`Personne n'a trouvé la bonne réponse (`),
       ),
     ).toBe(false);
     expect(
-      messages.some((m: string) => m.includes('La bonne rÃ©ponse Ã©tait')),
+      messages.some((m: string) => m.includes('La bonne réponse était')),
     ).toBe(false);
   });
 
@@ -323,13 +328,13 @@ describe('ArcheDeMnemosyneService quiz timer', () => {
       String(l?.message ?? ''),
     );
     expect(
-      messages.some((m: string) => m === 'Lilas rÃ©pond : Mauvaise rÃ©ponse.'),
+      messages.some((m: string) => m === 'Lilas répond : Mauvaise réponse.'),
     ).toBe(true);
     expect(
-      messages.some((m: string) => m === 'Bot rÃ©pond : Temps Ã©coulÃ©.'),
+      messages.some((m: string) => m === 'Bot répond : Temps écoulé.'),
     ).toBe(true);
     expect(
-      messages.some((m: string) => m.includes('La bonne rÃ©ponse Ã©tait')),
+      messages.some((m: string) => m.includes('La bonne réponse était')),
     ).toBe(false);
     expect(
       messages.some((m: string) => m.includes('Prochaine question dans')),

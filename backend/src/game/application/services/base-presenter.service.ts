@@ -9,7 +9,7 @@ import type {
 import { formatPresenterActions } from '../helpers/actions-presenter.helper';
 
 /**
- * Classe de base abstraite pour les services de prÃƒÆ’Ã‚Â©sentation de jeux.
+ * Classe de base abstraite pour les services de présentation de jeux.
  *
  * Utilise le pattern Template Method pour fournir une structure commune
  * tout en permettant la personnalisation par jeu.
@@ -18,14 +18,14 @@ import { formatPresenterActions } from '../helpers/actions-presenter.helper';
  */
 export abstract class BasePresenterService {
   /**
-   * Expose l'ÃƒÆ’Ã‚Â©tat du jeu avec les actions et le pending state.
+   * Expose l'état du jeu avec les actions et le pending state.
    *
-   * Cette mÃƒÆ’Ã‚Â©thode template orchestre la construction de l'ÃƒÆ’Ã‚Â©tat exposÃƒÆ’Ã‚Â©
-   * en appelant les mÃƒÆ’Ã‚Â©thodes abstraites et concrÃƒÆ’Ã‚Â¨tes appropriÃƒÆ’Ã‚Â©es.
+   * Cette méthode template orchestre la construction de l'état exposé
+   * en appelant les méthodes abstraites et concrètes appropriées.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @param actions - Actions disponibles prÃƒÆ’Ã‚Â©-calculÃƒÆ’Ã‚Â©es (optionnel)
-   * @returns ÃƒÆ’Ã¢â‚¬Â°tat enrichi pour le client
+   * @param state - État actuel du jeu
+   * @param actions - Actions disponibles pré-calculées (optionnel)
+   * @returns État enrichi pour le client
    */
   protected buildExposedState(
     state: GameStateEntity,
@@ -50,15 +50,15 @@ export abstract class BasePresenterService {
   }
 
   /**
-   * Expose l'ÃƒÆ’Ã‚Â©tat du jeu personnalisÃƒÆ’Ã‚Â© pour un utilisateur spÃƒÆ’Ã‚Â©cifique.
+   * Expose l'état du jeu personnalisé pour un utilisateur spécifique.
    *
    * Permet de masquer certaines informations selon le joueur
-   * (main des adversaires, cartes cachÃƒÆ’Ã‚Â©es, etc.).
+   * (main des adversaires, cartes cachées, etc.).
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
+   * @param state - État actuel du jeu
    * @param userId - ID de l'utilisateur
-   * @param actions - Actions disponibles prÃƒÆ’Ã‚Â©-calculÃƒÆ’Ã‚Â©es (optionnel)
-   * @returns ÃƒÆ’Ã¢â‚¬Â°tat enrichi personnalisÃƒÆ’Ã‚Â© pour cet utilisateur
+   * @param actions - Actions disponibles pré-calculées (optionnel)
+   * @returns État enrichi personnalisé pour cet utilisateur
    */
   protected buildExposedStateForUser(
     state: GameStateEntity,
@@ -91,8 +91,8 @@ export abstract class BasePresenterService {
   /**
    * Formate les actions en objets { type, label, payload }.
    *
-   * @param actions - Actions ÃƒÆ’Ã‚Â  formater
-   * @returns Actions formatÃƒÆ’Ã‚Â©es
+   * @param actions - Actions à formater
+   * @returns Actions formatées
    */
   protected formatActions(actions: GameSingleActionDto[]): Array<{
     type: string;
@@ -103,9 +103,9 @@ export abstract class BasePresenterService {
   }
 
   /**
-   * RÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â¨re le label d'une action (par dÃƒÆ’Ã‚Â©faut = type).
+   * Récupère le label d'une action (par défaut = type).
    *
-   * Peut ÃƒÆ’Ã‚Âªtre surchargÃƒÆ’Ã‚Â©e pour fournir des labels personnalisÃƒÆ’Ã‚Â©s.
+   * Peut être surchargée pour fournir des labels personnalisés.
    *
    * @param actionType - Type de l'action
    * @returns Label de l'action
@@ -115,19 +115,19 @@ export abstract class BasePresenterService {
   }
 
   /**
-   * VÃƒÆ’Ã‚Â©rifie si le jeu a dÃƒÆ’Ã‚Â©marrÃƒÆ’Ã‚Â©.
+   * Vérifie si le jeu a démarré.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @returns true si le jeu a dÃƒÆ’Ã‚Â©marrÃƒÆ’Ã‚Â©
+   * @param state - État actuel du jeu
+   * @returns true si le jeu a démarré
    */
   protected isStarted(state: GameStateEntity): boolean {
     return String(state.status ?? '').toLowerCase() === 'started';
   }
 
   /**
-   * RÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â¨re l'ID du joueur courant.
+   * Récupère l'ID du joueur courant.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
+   * @param state - État actuel du jeu
    * @returns ID du joueur courant ou null
    */
   protected getCurrentPlayerId(state: GameStateEntity): number | null {
@@ -135,10 +135,10 @@ export abstract class BasePresenterService {
   }
 
   /**
-   * RÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â¨re les mÃƒÆ’Ã‚Â©tadonnÃƒÆ’Ã‚Â©es du jeu.
+   * Récupère les métadonnées du jeu.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @returns MÃƒÆ’Ã‚Â©tadonnÃƒÆ’Ã‚Â©es du jeu
+   * @param state - État actuel du jeu
+   * @returns Métadonnées du jeu
    */
   protected getMetadata(state: GameStateEntity): Record<string, unknown> {
     const metadata = state.metadata;
@@ -149,9 +149,9 @@ export abstract class BasePresenterService {
   }
 
   /**
-   * RÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â¨re les extras existants dans l'ÃƒÆ’Ã‚Â©tat.
+   * Récupère les extras existants dans l'état.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
+   * @param state - État actuel du jeu
    * @returns Extras existants
    */
   protected getBaseExtras(state: GameStateEntity): Record<string, unknown> {
@@ -174,13 +174,13 @@ export abstract class BasePresenterService {
   };
 
   /**
-   * RÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â¨re les actions disponibles pour le joueur courant.
+   * Récupère les actions disponibles pour le joueur courant.
    *
-   * Par dÃƒÆ’Ã‚Â©faut, retourne un tableau vide. Les sous-classes doivent
-   * surcharger cette mÃƒÆ’Ã‚Â©thode si elles ne passent pas les actions
-   * en paramÃƒÆ’Ã‚Â¨tre ÃƒÆ’Ã‚Â  buildExposedState.
+   * Par défaut, retourne un tableau vide. Les sous-classes doivent
+   * surcharger cette méthode si elles ne passent pas les actions
+   * en paramètre à buildExposedState.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
+   * @param state - État actuel du jeu
    * @param currentPlayerId - ID du joueur courant
    * @returns Actions disponibles
    */
@@ -194,13 +194,13 @@ export abstract class BasePresenterService {
   }
 
   /**
-   * RÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â¨re les actions disponibles pour un utilisateur spÃƒÆ’Ã‚Â©cifique.
+   * Récupère les actions disponibles pour un utilisateur spécifique.
    *
-   * Par dÃƒÆ’Ã‚Â©faut, retourne un tableau vide. Les sous-classes doivent
-   * surcharger cette mÃƒÆ’Ã‚Â©thode si elles ne passent pas les actions
-   * en paramÃƒÆ’Ã‚Â¨tre ÃƒÆ’Ã‚Â  buildExposedStateForUser.
+   * Par défaut, retourne un tableau vide. Les sous-classes doivent
+   * surcharger cette méthode si elles ne passent pas les actions
+   * en paramètre à buildExposedStateForUser.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
+   * @param state - État actuel du jeu
    * @param userId - ID de l'utilisateur
    * @returns Actions disponibles
    */
@@ -215,8 +215,8 @@ export abstract class BasePresenterService {
    * Construit le pending state global.
    *
    * @abstract
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @param metadata - MÃƒÆ’Ã‚Â©tadonnÃƒÆ’Ã‚Â©es du jeu
+   * @param state - État actuel du jeu
+   * @param metadata - Métadonnées du jeu
    * @param currentPlayerId - ID du joueur courant
    * @returns Pending state ou null
    */
@@ -227,13 +227,13 @@ export abstract class BasePresenterService {
   ): PendingState | null;
 
   /**
-   * Construit le pending state pour un utilisateur spÃƒÆ’Ã‚Â©cifique.
+   * Construit le pending state pour un utilisateur spécifique.
    *
-   * Par dÃƒÆ’Ã‚Â©faut, retourne le mÃƒÆ’Ã‚Âªme pending state que buildPendingState.
+   * Par défaut, retourne le même pending state que buildPendingState.
    * Les sous-classes peuvent surcharger pour personnaliser.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @param metadata - MÃƒÆ’Ã‚Â©tadonnÃƒÆ’Ã‚Â©es du jeu
+   * @param state - État actuel du jeu
+   * @param metadata - Métadonnées du jeu
    * @param userId - ID de l'utilisateur
    * @param currentPlayerId - ID du joueur courant
    * @returns Pending state ou null
@@ -273,8 +273,8 @@ export abstract class BasePresenterService {
    * Construit les extras globaux.
    *
    * @abstract
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @param metadata - MÃƒÆ’Ã‚Â©tadonnÃƒÆ’Ã‚Â©es du jeu
+   * @param state - État actuel du jeu
+   * @param metadata - Métadonnées du jeu
    * @param currentPlayerId - ID du joueur courant
    * @returns Extras
    */
@@ -286,9 +286,9 @@ export abstract class BasePresenterService {
 
   /**
    * Construit la vue du joueur actuel pour les extras.
-   * Cette mÃƒÆ’Ã‚Â©thode gÃƒÆ’Ã‚Â©nÃƒÆ’Ã‚Â©rique trouve le joueur dont c'est le tour.
+   * Cette méthode générique trouve le joueur dont c'est le tour.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
+   * @param state - État actuel du jeu
    * @param currentPlayerId - ID du joueur courant
    * @returns Vue du joueur courant ou null
    */
@@ -307,16 +307,16 @@ export abstract class BasePresenterService {
   }
 
   /**
-   * Construit les extras pour un utilisateur spÃƒÆ’Ã‚Â©cifique.
+   * Construit les extras pour un utilisateur spécifique.
    *
-   * Par dÃƒÆ’Ã‚Â©faut, retourne les mÃƒÆ’Ã‚Âªmes extras que buildExtras.
+   * Par défaut, retourne les mêmes extras que buildExtras.
    * Les sous-classes peuvent surcharger pour personnaliser.
    *
-   * @param state - ÃƒÆ’Ã¢â‚¬Â°tat actuel du jeu
-   * @param metadata - MÃƒÆ’Ã‚Â©tadonnÃƒÆ’Ã‚Â©es du jeu
+   * @param state - État actuel du jeu
+   * @param metadata - Métadonnées du jeu
    * @param userId - ID de l'utilisateur
    * @param currentPlayerId - ID du joueur courant
-   * @returns Extras personnalisÃƒÆ’Ã‚Â©s
+   * @returns Extras personnalisés
    */
   protected buildExtrasForUser(
     state: GameStateEntity,

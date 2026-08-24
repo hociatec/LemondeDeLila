@@ -1,20 +1,20 @@
-import type { GameStateEntity } from '../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../models/game-action.model';
-import { AbstractGameService } from '../../../application/services/abstract-game.service';
+} from '../../../../../application/models/game-action.model';
+import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import { LeMarcheDesMerveillesActionService } from './le-marche-des-merveilles-action.service';
 import { LeMarcheDesMerveillesBotService } from './le-marche-des-merveilles-bot.service';
 import { LE_MARCHE_DES_MERVEILLES_GAME } from '../../definitions/game.definition';
 import { LeMarcheDesMerveillesPresenterService } from './le-marche-des-merveilles-presenter.service';
 import * as Rulebook from '../../rulebook/rulebook';
 import { LeMarcheDesMerveillesSetupService } from './le-marche-des-merveilles-setup.service';
-import { buildLeMarcheDesMerveillesShortcuts } from './le-marche-des-merveilles.shortcuts';
+import { buildLeMarcheDesMerveillesShortcuts } from '../../le-marche-des-merveilles.shortcuts';
 
 export class LeMarcheDesMerveillesService extends AbstractGameService {
   readonly gameType = 'le-marche-des-merveilles';

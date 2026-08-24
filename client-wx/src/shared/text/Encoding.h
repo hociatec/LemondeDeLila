@@ -17,6 +17,10 @@ namespace lila::shared::text {
 [[nodiscard]] wxString FromUtf8(const lila::shared::text::ui::UiTextRef& value);
 [[nodiscard]] std::string ToUtf8(const wxString& value);
 
+void SetBrokenAccentRepairEnabled(bool enabled) noexcept;
+[[nodiscard]] bool IsBrokenAccentRepairEnabled() noexcept;
+[[nodiscard]] wxString RepairBrokenAccents(const wxString& value);
+
 [[nodiscard]] std::wstring Utf8ToWide(const std::string& value);
 
 }

@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
@@ -36,7 +36,7 @@ export class PiratesEnVadrouillePresenterService {
       const treasures = Array.isArray(collection?.treasures)
         ? collection.treasures.length
         : 0;
-      return `${name} : ${treasures} trÃƒÆ’Ã‚Â©sor${treasures > 1 ? 's' : ''}`;
+      return `${name} : ${treasures} trésor${treasures > 1 ? 's' : ''}`;
     });
 
     return {
@@ -46,7 +46,7 @@ export class PiratesEnVadrouillePresenterService {
         victory: null,
       },
       actions: formatPresenterActions(actions, (action) =>
-        action.type === 'roll' ? 'Lancer le dÃƒÆ’Ã‚Â©' : action.type,
+        action.type === 'roll' ? 'Lancer le dé' : action.type,
       ),
       pending: state.pending ?? null,
       extras: {
@@ -58,16 +58,16 @@ export class PiratesEnVadrouillePresenterService {
         ui: {
           panels: {
             collection: {
-              title: 'Cartes & piÃƒÆ’Ã‚Â¨ces',
+              title: 'Cartes & pièces',
               message: this.buildCollectionMessage(
                 meta.collections?.[userId] ?? null,
               ),
             },
             score: {
-              title: 'TrÃƒÆ’Ã‚Â©sors',
+              title: 'Trésors',
               message: scoreLines.length
                 ? scoreLines.join('\n')
-                : 'TrÃƒÆ’Ã‚Â©sors: indisponible.',
+                : 'Trésors: indisponible.',
             },
           },
         },
@@ -82,13 +82,13 @@ export class PiratesEnVadrouillePresenterService {
   private buildCollectionMessage(
     collection: PiratesEnVadrouilleCollection | null,
   ): string {
-    if (!collection) return 'Cartes : (aucune) | PiÃƒÆ’Ã‚Â¨ces : 0';
+    if (!collection) return 'Cartes : (aucune) | Pièces : 0';
     const cards = [
-      `TrÃƒÆ’Ã‚Â©sors : ${collection.treasures.length}`,
+      `Trésors : ${collection.treasures.length}`,
       `Bonus : ${collection.bonus.length}`,
       `Obstacles : ${collection.obstacles.length}`,
     ];
-    return `${cards.join(' | ')} | PiÃƒÆ’Ã‚Â¨ces : ${collection.goldPieces}`;
+    return `${cards.join(' | ')} | Pièces : ${collection.goldPieces}`;
   }
 
   private getMeta(state: GameStateEntity): PiratesEnVadrouilleMetadata {

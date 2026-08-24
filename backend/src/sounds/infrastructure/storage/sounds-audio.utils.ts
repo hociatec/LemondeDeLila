@@ -47,7 +47,10 @@ export async function probeSoundDurationSeconds(
       10000,
     );
   } catch (err) {
-    if (isSoundSpawnExecutionError(err) && (ext === '.wav' || ext === '.wave')) {
+    if (
+      isSoundSpawnExecutionError(err) &&
+      (ext === '.wav' || ext === '.wave')
+    ) {
       return (await readWavMeta(filePath)).durationSeconds;
     }
     throw createAudioToolExecutionError(
@@ -98,7 +101,10 @@ export async function detectSoundSilence(filePath: string): Promise<boolean> {
       20000,
     );
   } catch (err) {
-    if (isSoundSpawnExecutionError(err) && (ext === '.wav' || ext === '.wave')) {
+    if (
+      isSoundSpawnExecutionError(err) &&
+      (ext === '.wav' || ext === '.wave')
+    ) {
       return isWavSilent(filePath);
     }
     throw createAudioToolExecutionError(
@@ -164,7 +170,7 @@ function getFfmpegPath(): string {
 
 function getFfprobePath(): string {
   const raw = ffprobeStatic as { path?: string } | string;
-  const candidate = raw?.path || raw;
+  const candidate = typeof raw === 'string' ? raw : (raw?.path ?? '');
   if (!candidate) {
     throw new InternalServerErrorException(
       'ffprobe indisponible (validation audio requise).',

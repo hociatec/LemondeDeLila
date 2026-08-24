@@ -52,6 +52,7 @@ void HomeFrame::OnShowLogin(wxCommandEvent& event)
     (void)event;
     SetStatus(wxEmptyString);
     ShowPage(Page::Login);
+    StartAuthenticationWarmUp();
 }
 
 void HomeFrame::OnShowRegister(wxCommandEvent& event)

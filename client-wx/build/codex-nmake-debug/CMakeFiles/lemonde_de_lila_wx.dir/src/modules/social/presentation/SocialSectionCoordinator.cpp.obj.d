@@ -516,6 +516,23 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialFriendRequ
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialLoadController.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/SocialService.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/ISocialGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/cache/SingleFlightCache.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/mutex
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/thread
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialNavigationState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/navigation/NavigationStack.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/presentation/SocialPresentationModel.h
@@ -618,12 +635,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocnum
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/streambuf
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xiosbase
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/share.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/system_error
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_system_error_abi.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cerrno
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdexcept
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xcall_once.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xerrc.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocale
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfacet
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xlocinfo
@@ -642,8 +653,6 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Messaging.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/UiTexts.Social.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/controls/VerticalMenu.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/chrono
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ratio
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xfilesystem_abi.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_tzdb.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/format

@@ -75,13 +75,19 @@ export class RoomGatewaySessionService {
 
     const enabled = await this.isRoomChatEnabled(meta.roomId);
     if (!enabled) {
-      await ctx.sendError(client, this.presenter.presentRoomChatDisabledError());
+      await ctx.sendError(
+        client,
+        this.presenter.presentRoomChatDisabledError(),
+      );
       return;
     }
 
     const now = Date.now();
     if (!ctx.roomChat.tryConsumeCooldown(client, now)) {
-      await ctx.sendError(client, this.presenter.presentRoomChatCooldownError());
+      await ctx.sendError(
+        client,
+        this.presenter.presentRoomChatCooldownError(),
+      );
       return;
     }
 
@@ -127,9 +133,7 @@ export class RoomGatewaySessionService {
         return false;
       }
       const state = await this.roomState.getRoomPayload(roomId);
-      return this.clientPolicy.canSpectate(
-        state,
-        userId,
+      return this.clientPolicy.canSpectate(state, userId, () =>
         invitesCanSpectate(roomId, userId),
       );
     } catch {

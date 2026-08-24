@@ -576,6 +576,8 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/security/SecurityUtils.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/SocialService.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/domain/SocialFriendRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/social/application/ISocialGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/cache/SingleFlightCache.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/concurrency/BackgroundExecutor.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/AppError.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/CoreErrorMessages.h

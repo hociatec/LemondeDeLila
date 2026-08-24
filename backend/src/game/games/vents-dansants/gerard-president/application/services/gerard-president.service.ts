@@ -2,12 +2,12 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../models/game-action.model';
+} from '../../../../../application/models/game-action.model';
 import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../models/game-shortcuts.model';
+} from '../../../../../application/models/game-shortcuts.model';
 import * as Rulebook from '../../rulebook/rulebook';
 import { GerardPresidentActionService } from './gerard-president-action.service';
 import { GerardPresidentBotService } from './gerard-president-bot.service';
@@ -22,7 +22,7 @@ export class GerardPresidentService extends AbstractGameService {
   readonly subcategory = 'VentsDansants';
   readonly displayName = GERARD_PRESIDENT_GAME.displayName;
   readonly description =
-    'Un jeu dÃ¢â‚¬â„¢humour oÃƒÂ¹ le prÃƒÂ©nom le plus absurde remporte les manches.';
+    'Un jeu d’humour où le prénom le plus absurde remporte les manches.';
   readonly minPlayers = GERARD_PRESIDENT_GAME.minPlayers;
   readonly maxPlayers = GERARD_PRESIDENT_GAME.maxPlayers;
 

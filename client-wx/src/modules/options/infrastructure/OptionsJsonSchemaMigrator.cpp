@@ -37,6 +37,7 @@ nlohmann::json BuildCurrentSchemaDocument(const nlohmann::json& legacyDocument)
                 legacyDocument,
                 keys::ConfirmExit.data(),
                 lila::shared::data::json::ReadOptionalBool(legacyDocument, keys::LegacyConfirmLogout.data(), false))},
+            {std::string(keys::RepairBrokenAccents), readBool(keys::RepairBrokenAccents, true)},
             {std::string(keys::EnableBetaGames), readBool(keys::EnableBetaGames, false)},
         }},
         {std::string(keys::Audio), {
@@ -56,6 +57,7 @@ nlohmann::json BuildCurrentSchemaDocument(const nlohmann::json& legacyDocument)
             {std::string(keys::SoundSelectVolume), readInt(keys::SoundSelectVolume, 50)},
             {std::string(keys::SoundChatMessagesVolume), readInt(keys::SoundChatMessagesVolume, 50)},
             {std::string(keys::SoundTableAmbienceVolume), readInt(keys::SoundTableAmbienceVolume, 15)},
+            {std::string(keys::SoundCues), nlohmann::json::object()},
         }},
         {std::string(keys::Chat), {
             {std::string(keys::ChatEnabled), readBool(keys::ChatEnabled, true)},
@@ -91,6 +93,11 @@ nlohmann::json MigrateToCurrentSchema(const nlohmann::json& document)
         if (!HasObjectField(migrated, keys::Runtime))
         {
             migrated[std::string(keys::Runtime)] = nlohmann::json::object();
+        }
+        auto& audio = migrated[std::string(keys::Audio)];
+        if (!HasObjectField(audio, keys::SoundCues))
+        {
+            audio[std::string(keys::SoundCues)] = nlohmann::json::object();
         }
         if (!HasObjectField(migrated, keys::Admin))
         {

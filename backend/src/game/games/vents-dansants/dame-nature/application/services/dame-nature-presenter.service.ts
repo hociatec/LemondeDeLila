@@ -1,5 +1,5 @@
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../models/game-action.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
 import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
@@ -30,7 +30,7 @@ export class DameNaturePresenterService {
     const panels = buildLamaLikePanels({
       hand,
       handCounts,
-      discardLabel: 'Famille ciblÃ©e',
+      discardLabel: 'Famille ciblée',
       tableMessage: `Pollution : ${pollution}`,
     });
 

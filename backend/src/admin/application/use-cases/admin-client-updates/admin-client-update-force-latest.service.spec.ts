@@ -8,7 +8,7 @@ describe('AdminClientUpdateForceLatestService', () => {
       resolveClientPublicUrl: jest.fn(() => 'https://example.test/client'),
     };
     const notifications = {
-      notifyUser: jest.fn(async () => undefined),
+      notifyClientUpdateRequired: jest.fn(async () => undefined),
     };
     return {
       requirePublishedLatestVersion: jest.fn(),
@@ -45,7 +45,9 @@ describe('AdminClientUpdateForceLatestService', () => {
         minRequiredVersion: '2.1.0',
       }),
     );
-    expect(shared.notifications.notifyUser).toHaveBeenCalledTimes(2);
+    expect(
+      shared.notifications.notifyClientUpdateRequired,
+    ).toHaveBeenCalledTimes(2);
     expect(result).toEqual({ delivered: 2, minRequiredVersion: '2.1.0' });
   });
 

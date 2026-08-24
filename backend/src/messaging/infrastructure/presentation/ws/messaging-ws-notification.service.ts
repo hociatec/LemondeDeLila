@@ -1,10 +1,10 @@
 ﻿import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
-  NOTIFICATION_DISPATCHER,
-  USER_BADGE_COUNTS_NOTIFIER,
-  type NotificationDispatcher,
-  type UserBadgeCountsNotifier,
-} from '../../../../notification/public-api';
+  MESSAGING_BADGE_COUNTS_NOTIFIER,
+  MESSAGING_NOTIFICATION_DISPATCHER,
+  type MessagingBadgeCountsNotifier,
+  type MessagingNotificationDispatcher,
+} from '../../../application/ports/messaging-notification.port';
 import type { PrivateMessageRecord } from '../../../application/models/private-message.model';
 import { WS_EVENTS } from '../../../../realtime/public-api';
 import { MessagePresenterService } from '../../../application/services/message-presenter.service';
@@ -14,10 +14,10 @@ export class MessagingWsNotificationService {
   private readonly logger = new Logger(MessagingWsNotificationService.name);
 
   constructor(
-    @Inject(NOTIFICATION_DISPATCHER)
-    private readonly notifications: NotificationDispatcher,
-    @Inject(USER_BADGE_COUNTS_NOTIFIER)
-    private readonly counts: UserBadgeCountsNotifier,
+    @Inject(MESSAGING_NOTIFICATION_DISPATCHER)
+    private readonly notifications: MessagingNotificationDispatcher,
+    @Inject(MESSAGING_BADGE_COUNTS_NOTIFIER)
+    private readonly counts: MessagingBadgeCountsNotifier,
     private readonly presenter: MessagePresenterService,
   ) {}
 

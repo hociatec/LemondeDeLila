@@ -9,7 +9,7 @@ import {
   GameTurnViolationError,
   GameUnknownActionError,
 } from '../../../../domain/errors/game-domain.errors';
-import type { GameSingleActionDto } from '../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
 import { ENTRE_RITES_CARD_BY_ID } from '../model/entre-rites-cards';
 import type { EntreRitesMetadata } from '../model/entre-rites-state.model';
 

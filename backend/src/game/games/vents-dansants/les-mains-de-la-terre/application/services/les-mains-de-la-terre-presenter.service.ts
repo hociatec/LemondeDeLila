@@ -1,7 +1,7 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../models/game-action.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
 
-import { formatPresenterActions } from '../../../../application/helpers/actions-presenter.helper';
+import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
 import {
   LES_MAINS_CARD_BY_ID,
@@ -13,8 +13,8 @@ import type { LesMainsMetadata } from '../../model/les-mains-de-la-terre-state.m
 import {
   buildLamaLikePanels,
   summarizeHandCounts,
-} from '../../../../application/helpers/lamalike-presenter.helper';
-import { stringOrEmpty } from '@common/utils/string-value.utils';
+} from '../../../../../application/helpers/lamalike-presenter.helper';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 const FAMILY_LABELS: Record<LesMainsFamily, string> = {
   tradition: 'Tradition',
@@ -23,7 +23,7 @@ const FAMILY_LABELS: Record<LesMainsFamily, string> = {
   art: 'Art',
   insolites: 'Insolites',
   innovation: 'Innovation',
-  sante: 'SantÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©',
+  sante: 'Santé',
 };
 
 export class LesMainsPresenterService {
@@ -38,7 +38,7 @@ export class LesMainsPresenterService {
     const panels = buildLamaLikePanels({
       hand,
       handCounts,
-      discardLabel: 'Table de mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tiers',
+      discardLabel: 'Table de métiers',
       tableMessage: `Statut: ${state.status ?? 'en attente'}`,
     });
     const familyCatalog = this.buildFamilyCatalog();

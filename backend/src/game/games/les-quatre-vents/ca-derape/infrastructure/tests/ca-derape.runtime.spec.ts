@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { createCaDerapeRuntime } from '../../ca-derape.runtime';
 
 describe('CaDerape runtime', () => {

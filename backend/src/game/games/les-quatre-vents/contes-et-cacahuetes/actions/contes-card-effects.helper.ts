@@ -3,6 +3,7 @@ import { resolvePlayerNameFromState } from '../../../../application/helpers/play
 import type {
   ContesCardType,
   ContesCacahuetesMetadata,
+  ContesPending,
 } from '../model/contes-et-cacahuetes-state.model';
 
 type StartChooseTargetFn = (
@@ -146,7 +147,12 @@ export function applyContesBonusEffectById(input: {
       next = input.moveBy(next, input.playerId, 5, input.depth);
       return input.addStatusCount(next, 'skipTurn', input.playerId, 1);
     case 14:
-      next = input.setStatusBool(next, 'replaceOneOn1By4', input.playerId, true);
+      next = input.setStatusBool(
+        next,
+        'replaceOneOn1By4',
+        input.playerId,
+        true,
+      );
       return input.appendLog(
         next,
         `${resolvePlayerNameFromState(next, input.playerId)} pose Feuille magique (1 devient 4 une fois).`,
@@ -240,7 +246,10 @@ export function applyContesMalusEffectById(input: {
       const out = input.rollDice(input.getMeta(next), 6);
       next = { ...next, metadata: { ...(next.metadata ?? {}), ...out.meta } };
       if (out.roll >= 4) {
-        return input.appendLog(next, `Énigme infernale : "${out.roll}" (réussi).`);
+        return input.appendLog(
+          next,
+          `Énigme infernale : "${out.roll}" (réussi).`,
+        );
       }
       next = input.appendLog(
         next,
@@ -293,7 +302,7 @@ export function applyContesSurpriseEffectById(input: {
   ) => GameStateEntity;
   setPending: (
     state: GameStateEntity,
-    pending: Record<string, unknown>,
+    pending: Exclude<ContesPending, null>,
   ) => GameStateEntity;
   startChooseTarget: StartChooseTargetFn;
   getMeta: (state: GameStateEntity) => ContesCacahuetesMetadata;
@@ -357,7 +366,12 @@ export function applyContesSurpriseEffectById(input: {
         data: { context: 'song_choice' },
       });
     case 10:
-      next = input.setStatusBool(next, 'protectNextMalus', input.playerId, true);
+      next = input.setStatusBool(
+        next,
+        'protectNextMalus',
+        input.playerId,
+        true,
+      );
       return input.appendLog(
         next,
         `${resolvePlayerNameFromState(next, input.playerId)} est protégé(e) de la prochaine carte Malus.`,
@@ -400,7 +414,3 @@ export function applyContesSurpriseEffectById(input: {
       return next;
   }
 }
-
-
-
-

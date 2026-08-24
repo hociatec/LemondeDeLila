@@ -9,7 +9,7 @@ import {
 } from '../../../../../application/helpers/action-service.helper';
 import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
 
-import type { GameSingleActionDto } from '../../../../../models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 
 import { RandomService } from '../../../../../application/services/random.service';
 import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
@@ -82,7 +82,7 @@ export class CaActionService {
 
     let meta = this.getMeta(state);
 
-    // "Ton prochain lancer devient ÃƒÆ’Ã‚Â©gal au sien."
+    // "Ton prochain lancer devient égal au sien."
     const mirrorFrom = meta.statuses?.mirrorNextRollFrom?.[currentId] ?? null;
     let mirrorApplied = false;
     let roll = 0;
@@ -153,7 +153,7 @@ export class CaActionService {
     next = this.core.appendLog(
       next,
       resolvePlayerNameFromState(next, currentId) +
-        ' lance le dÃƒÆ’Ã‚Â© : "' +
+        ' lance le dé : "' +
         String(roll) +
         '".',
     );
@@ -165,13 +165,13 @@ export class CaActionService {
     if (deltaFromPrevious !== 0) {
       next = this.core.appendLog(
         next,
-        'DÃƒÆ’Ã‚Â©placement ' +
+        'Déplacement ' +
           (deltaFromPrevious > 0 ? '+1' : '-1') +
-          ' appliquÃƒÆ’Ã‚Â© au lancer.',
+          ' appliqué au lancer.',
       );
     }
 
-    // "Votre prochain dÃƒÆ’Ã‚Â©placement est doublÃƒÆ’Ã‚Â©." (applies to the next roll movement).
+    // "Votre prochain déplacement est doublé." (applies to the next roll movement).
     if (meta.statuses?.doubleNextMove?.[currentId]) {
       move *= 2;
       meta = {
@@ -228,7 +228,8 @@ export class CaActionService {
     } else {
       next = this.core.appendLog(
         next,
-        resolvePlayerNameFromState(next, currentId) + ' ne se dÃƒÆ’Ã‚Â©place pas.',
+        resolvePlayerNameFromState(next, currentId) +
+          ' ne se déplace pas.',
       );
     }
 
@@ -340,7 +341,7 @@ export class CaActionService {
       return finalize(next);
     }
 
-    // RÃƒÆ’Ã‚Â¨gle: aprÃƒÆ’Ã‚Â¨s une carte rÃƒÆ’Ã‚Â©solue, le tour passe au joueur suivant.
+    // Règle: après une carte résolue, le tour passe au joueur suivant.
     return this.advanceTurnWithNextDelta(next);
   }
 
@@ -387,7 +388,7 @@ export class CaActionService {
       };
       next = this.core.appendLog(
         next,
-        `${resolvePlayerNameFromState(next, currentId)} ÃƒÆ’Ã‚Â©change sa position avec ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
+        `${resolvePlayerNameFromState(next, currentId)} échange sa position avec ${resolvePlayerNameFromState(next, targetPlayerId)}.`,
       );
       return this.advanceTurnWithNextDelta(next);
     }
@@ -492,7 +493,7 @@ export class CaActionService {
     };
     next = this.core.appendLog(
       next,
-      `Le prochain joueur aura un dÃƒÆ’Ã‚Â©placement ${delta > 0 ? '+1' : '-1'}.`,
+      `Le prochain joueur aura un déplacement ${delta > 0 ? '+1' : '-1'}.`,
     );
     return this.advanceTurnWithNextDelta(next);
   }
@@ -575,7 +576,10 @@ export class CaActionService {
           },
         };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, 'PÃƒÆ’Ã‚Â©nalitÃƒÆ’Ã‚Â© ignorÃƒÆ’Ã‚Â©e.');
+        next = this.core.appendLog(
+          next,
+          'Pénalité ignorée.',
+        );
         return;
       }
 
@@ -632,7 +636,10 @@ export class CaActionService {
           },
         };
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
-        next = this.core.appendLog(next, 'PÃƒÆ’Ã‚Â©nalitÃƒÆ’Ã‚Â© ignorÃƒÆ’Ã‚Â©e.');
+        next = this.core.appendLog(
+          next,
+          'Pénalité ignorée.',
+        );
         return;
       }
 
@@ -702,13 +709,13 @@ export class CaActionService {
         next = this.core.appendLog(
           next,
           resolvePlayerNameFromState(next, actorId) +
-            ' lance deux dÃƒÆ’Ã‚Â©s: ' +
+            ' lance deux dés: ' +
             String(r1.roll) +
             ' et ' +
             String(r2.roll) +
             '.',
         );
-        applyMove(r1.roll + r2.roll, 'rÃƒÆ’Ã‚Â¨gle');
+        applyMove(r1.roll + r2.roll, 'règle');
         return finalize(next);
       }
 
@@ -720,7 +727,7 @@ export class CaActionService {
             type: 'draw',
             playerId: actorId,
             blocking: true,
-            label: 'Piocher une carte supplÃƒÆ’Ã‚Â©mentaire (Espace).',
+            label: 'Piocher une carte supplémentaire (Espace).',
             data: { reason: 'extra_draw' },
           },
         });
@@ -746,7 +753,7 @@ export class CaActionService {
 
       // 64) back 3 then forward 2 => net -1
       if (card.id === 64) {
-        applyMove(-1, 'rÃƒÆ’Ã‚Â¨gle');
+        applyMove(-1, 'règle');
         return finalize(next);
       }
 
@@ -770,7 +777,7 @@ export class CaActionService {
 
       // 66) forward 3 then back 1 => net +2
       if (card.id === 66) {
-        applyMove(2, 'rÃƒÆ’Ã‚Â¨gle');
+        applyMove(2, 'règle');
         return finalize(next);
       }
 
@@ -780,7 +787,8 @@ export class CaActionService {
         const ids = players.map((p) => p.id);
         const pending: PendingState = {
           type: 'choose_next_player',
-          label: 'Choisissez le prochain joueur dans la liste, puis EntrÃƒÆ’Ã‚Â©e.',
+          label:
+            'Choisissez le prochain joueur dans la liste, puis Entrée.',
           playerId: actorId,
           blocking: true,
           choices: players.map((p) => p.username),
@@ -805,7 +813,7 @@ export class CaActionService {
         const pending: PendingState = {
           type: 'choose_next_delta',
           label:
-            "Choisissez l'effet pour le prochain joueur dans la liste, puis EntrÃƒÆ’Ã‚Â©e.",
+            "Choisissez l'effet pour le prochain joueur dans la liste, puis Entrée.",
           playerId: actorId,
           blocking: true,
           choices: ['Avancer de 1', 'Reculer de 1'],
@@ -849,7 +857,7 @@ export class CaActionService {
         if (targets.length) {
           const pending: PendingState = {
             type: 'choose_target',
-            label: 'Choisissez un joueur dans la liste, puis EntrÃƒÆ’Ã‚Â©e.',
+            label: 'Choisissez un joueur dans la liste, puis Entrée.',
             playerId: actorId,
             blocking: true,
             choices: targets.map((t) => t.username),
@@ -902,7 +910,7 @@ export class CaActionService {
       if (targets.length) {
         const pending: PendingState = {
           type: 'choose_target',
-          label: 'Choisissez un joueur dans la liste, puis EntrÃƒÆ’Ã‚Â©e.',
+          label: 'Choisissez un joueur dans la liste, puis Entrée.',
           playerId: actorId,
           blocking: true,
           choices: targets.map((t) => t.username),
@@ -1100,7 +1108,7 @@ export class CaActionService {
         next = { ...next, metadata: { ...(next.metadata ?? {}), ...meta } };
         next = this.core.appendLog(
           next,
-          "Condition : un tour d'attente est annulÃƒÆ’Ã‚Â©.",
+          "Condition : un tour d'attente est annulé.",
         );
       }
     } else if (card.id === 55) {
@@ -1131,8 +1139,11 @@ export class CaActionService {
         );
       }
     } else if (card.id === 58) {
-      // "Rejouez immÃƒÆ’Ã‚Â©diatement" est ignorÃƒÆ’Ã‚Â© (rÃƒÆ’Ã‚Â¨gle du jeu: la carte termine toujours le tour).
-      next = this.core.appendLog(next, "Condition : effet 'rejouer' ignorÃƒÆ’Ã‚Â©.");
+      // "Rejouez immédiatement" est ignoré (règle du jeu: la carte termine toujours le tour).
+      next = this.core.appendLog(
+        next,
+        "Condition : effet 'rejouer' ignoré.",
+      );
     } else if (card.id === 59) {
       // If you are just behind someone by 1, join them.
       const aheadId = ordered[ordered.indexOf(actorId) + 1];
@@ -1201,7 +1212,12 @@ export class CaActionService {
   } {
     return drawCaCard({
       meta,
-      drawOne: (input) => this.deckPolicies.drawOne(input),
+      drawOne: <TCard, TDeckState extends object>(input: {
+        meta: TDeckState;
+        deckKey: keyof TDeckState & string;
+        discardKey: keyof TDeckState & string;
+        rngKey: keyof TDeckState & string;
+      }) => this.deckPolicies.drawOne<TCard, TDeckState>(input),
     });
   }
 
@@ -1220,9 +1236,3 @@ export class CaActionService {
     return resolveCaPawnLabel(state, id);
   }
 }
-
-
-
-
-
-

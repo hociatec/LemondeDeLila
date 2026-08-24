@@ -14,9 +14,7 @@ export type PhaseEnterHook<TMeta, TPhaseId extends string> = (params: {
 
 @Injectable()
 export class GamePhaseOrchestratorService {
-  constructor(
-    private readonly phases: PhaseEngineService<string, GameStateEntity, unknown>,
-  ) {}
+  constructor(private readonly phases: PhaseEngineService<unknown>) {}
 
   advance<TMeta, TPhaseId extends string>(params: {
     state: GameStateEntity;

@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../../application/models/game-state.model';
+﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import { createFroussePartyRuntime } from '../../frousse-party.runtime';
 
 describe('FrousseParty runtime', () => {
@@ -11,7 +11,7 @@ describe('FrousseParty runtime', () => {
         },
         loadContent: ({ filename }: { filename: string }) => {
           if (filename === 'board.json') {
-            return { version: 1, tiles: [{ id: 'start', title: 'DÃ©part' }] };
+            return { version: 1, tiles: [{ id: 'start', title: 'Départ' }] };
           }
           if (filename === 'pawns.json') {
             return { version: 1, pawns: [{ id: 'p1', name: 'Pion 1' }] };
