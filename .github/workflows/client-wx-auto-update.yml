@@ -10,10 +10,15 @@ concurrency:
 
 jobs:
   publish:
-    runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 45
+    runs-on: windows-latest
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup MSVC developer shell
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
       - name: Compute version
         id: version
@@ -36,14 +41,44 @@ jobs:
           $cert = Import-PfxCertificate -FilePath $path -Password $password -CertStoreLocation Cert:\CurrentUser\My
           "thumbprint=$($cert.Thumbprint)" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
+      - name: Restore BASS runtime DLL
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $target = 'client-wx\third_party\bass\bin\x64\bass.dll'
+          if (Test-Path -LiteralPath $target) { return }
+          $zip = Join-Path $env:RUNNER_TEMP 'bass24.zip'
+          $extract = Join-Path $env:RUNNER_TEMP 'bass24'
+          Invoke-WebRequest -Uri 'https://www.un4seen.com/files/bass24.zip' -OutFile $zip
+          Expand-Archive -LiteralPath $zip -DestinationPath $extract -Force
+          $source = Join-Path $extract 'x64\bass.dll'
+          if (!(Test-Path -LiteralPath $source)) { throw 'bass.dll x64 absent du paquet Un4seen.' }
+          New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
+          Copy-Item -LiteralPath $source -Destination $target -Force
+
+      - name: Install vcpkg dependencies
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = $env:VCPKG_INSTALLATION_ROOT
+          if ([string]::IsNullOrWhiteSpace($root) -or !(Test-Path -LiteralPath (Join-Path $root 'vcpkg.exe'))) {
+            $root = 'C:\vcpkg'
+          }
+          if (!(Test-Path -LiteralPath (Join-Path $root 'vcpkg.exe'))) {
+            $root = Join-Path $env:RUNNER_TEMP 'vcpkg'
+            git clone https://github.com/microsoft/vcpkg.git $root
+            & (Join-Path $root 'bootstrap-vcpkg.bat')
+          }
+          & (Join-Path $root 'vcpkg.exe') install wxwidgets nlohmann-json --triplet x64-windows --clean-after-build
+          "VCPKG_ROOT=$root" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Configure and build WX Release
         shell: cmd
         env:
           UPDATE_PUBLIC_KEY: ${{ secrets.LILA_UPDATE_PUBLIC_KEY_DER_BASE64 }}
         run: |
           if "%UPDATE_PUBLIC_KEY%"=="" exit /b 2
-          call C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat
-          cmake -S client-wx -B client-wx\build\ci-release -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DLILA_PROJECT_VERSION=${{ steps.version.outputs.value }} -DLILA_UPDATE_PUBLIC_KEY_DER_BASE64=%UPDATE_PUBLIC_KEY%
+          cmake -S client-wx -B client-wx\build\ci-release -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows -DLILA_PROJECT_VERSION=${{ steps.version.outputs.value }} -DLILA_UPDATE_PUBLIC_KEY_DER_BASE64=%UPDATE_PUBLIC_KEY%
           cmake --build client-wx\build\ci-release --target lemonde_de_lila_wx lila_launcher
 
       - name: Sign executables

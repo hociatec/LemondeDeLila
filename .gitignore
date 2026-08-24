@@ -12,6 +12,8 @@ backend/coverage/
 backend/data/
 backend/dist.locked-*/
 backend/keys/*.pem
+backend/keys/wx-update-*
+backend/keys/github-secrets-a-copier.txt
 
 # Runtime logs (written by systemd unit on the server)
 log/

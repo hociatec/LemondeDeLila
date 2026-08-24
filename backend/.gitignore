@@ -5,6 +5,8 @@ coverage/
 logs/
 data/client-updates/
 keys/*.pem
+keys/wx-update-*
+keys/github-secrets-a-copier.txt
 *.log
 .tmp-eslint-*.json
 
