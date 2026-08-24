@@ -30,6 +30,8 @@ void RoomSessionGateway::Connect()
             std::string(lila::shared::network::ws::WsTicketScopeRoom),
             token);
         lila::shared::network::websocket::WebSocketHeaders headers{
+            {std::string(lila::shared::network::ws::ClientProductHeader),
+             std::string(lila::shared::network::ws::ClientProduct)},
             {std::string(lila::shared::network::ws::AuthorizationHeader),
              std::string(lila::shared::network::ws::AuthorizationScheme) + token},
             {std::string(lila::shared::network::ws::WsTicketHeader), ticket},

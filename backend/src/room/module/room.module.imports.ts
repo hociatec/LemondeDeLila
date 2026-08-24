@@ -2,7 +2,7 @@ import { forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BotModule } from '../../bot/public-api';
 import { CatalogModule } from '../../catalog/public-api';
-import { ClientUpdatesModule } from '../../client-updates/public-api';
+import { UpdateModule } from '../../update/public-api';
 import { NotificationModule } from '../../notification/public-api';
 import { PresenceModule } from '../../presence/public-api';
 import { SoundsModule } from '../../sounds/public-api';
@@ -26,7 +26,7 @@ export const ROOM_MODULE_IMPORTS = [
   forwardRef(() => BotModule),
   forwardRef(() => PresenceModule),
   NotificationModule,
-  ClientUpdatesModule,
+  UpdateModule,
   SoundsModule,
   CatalogModule,
   StatsModule,

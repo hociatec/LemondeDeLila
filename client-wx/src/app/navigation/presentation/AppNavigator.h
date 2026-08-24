@@ -61,7 +61,7 @@ private:
     void ShowPresence();
     void ShowAbout(std::size_t selectedIndex);
     void ShowOptions(std::size_t selectedIndex);
-    void CloseApplication();
+    void CloseApplication(bool forUpdate = false);
     void FinishCloseApplication();
     void OnSessionRevocationFinished();
     void ArmCloseRevocationTimeout();

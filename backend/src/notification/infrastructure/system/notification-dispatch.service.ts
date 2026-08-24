@@ -94,6 +94,21 @@ export class NotificationDispatchService
         ? JSON.stringify({ type: eventType, payload })
         : null;
 
+    void this.transport
+      .publish({
+        userId: 0,
+        type: eventType || 'system.server.disconnect',
+        payload,
+        origin: this.instanceId,
+        disconnect: true,
+      })
+      .catch((err) =>
+        this.logger.warn(
+          'Echec publication de la déconnexion globale',
+          err instanceof Error ? err.stack : String(err),
+        ),
+      );
+
     for (const [userId, sockets] of Array.from(
       this.socketsByUserId.entries(),
     )) {
@@ -121,11 +136,43 @@ export class NotificationDispatchService
     if (event.origin === this.instanceId) {
       return;
     }
+    if (event.disconnect) {
+      const reason =
+        event.payload &&
+        typeof event.payload === 'object' &&
+        'reason' in event.payload &&
+        typeof (event.payload as { reason?: unknown }).reason === 'string'
+          ? (event.payload as { reason: string }).reason
+          : 'maintenance';
+      this.disconnectAllLocal(reason, event.type);
+      return;
+    }
     if (event.userId === 0) {
       this.dispatchToAllLocal(event.type, repairedPayload);
       return;
     }
     this.dispatchToLocal(event.userId, event.type, repairedPayload);
+  }
+
+  private disconnectAllLocal(reason: string, eventType: string): void {
+    const message = JSON.stringify({ type: eventType, payload: { reason } });
+    for (const sockets of this.socketsByUserId.values()) {
+      for (const socket of sockets) {
+        if (socket.readyState === WebSocket.OPEN) {
+          try {
+            socket.send(message);
+          } catch {
+            // ignore
+          }
+        }
+        try {
+          socket.close(1000, reason);
+        } catch {
+          // ignore
+        }
+      }
+    }
+    this.socketsByUserId.clear();
   }
 
   private dispatchToLocal(userId: number, type: string, payload: unknown) {

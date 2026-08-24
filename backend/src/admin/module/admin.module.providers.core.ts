@@ -2,7 +2,6 @@ import { ConfigService } from '@nestjs/config';
 import { CatalogService } from '../../catalog/public-api';
 import { ChatSettingsService } from '../../chat/public-api';
 import { ChatService } from '../../chat/public-api';
-import { ClientUpdatesService } from '../../client-updates/public-api';
 import {
   AdminRoleGuard,
   HttpJwtGuard,
@@ -17,6 +16,7 @@ import {
 import { RoomMaintenanceSettingsService } from '../../room/public-api';
 import { SocialProfileSettingsService } from '../../social/public-api';
 import { GameStatsService } from '../../stats/public-api';
+import { ClientUpdatesService } from '../../update/public-api';
 import { AdminCatalogInvalidationService } from '../application/services/admin-catalog-invalidation.service';
 import { ADMIN_CATALOG_CACHE_PORT } from '../application/ports/admin-catalog-cache.port';
 import {

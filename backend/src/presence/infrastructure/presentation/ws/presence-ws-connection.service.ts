@@ -1,14 +1,14 @@
 ﻿import { Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
+import { isVersionLower } from '../../../../common/utils/public-api';
 import type { WsAuthPayload } from '../../../../common/interfaces/public-api';
 import {
   WsJwtAuthService,
   WsTicketAuthService,
 } from '../../../../realtime/public-api';
+import { UpdatePolicyService } from '../../../../update/public-api';
 import { PresenceChatService } from '../../../application/services/presence-chat.service';
-import {
-  PresenceService,
-} from '../../../application/services/presence.service';
+import { PresenceService } from '../../../application/services/presence.service';
 import type { PresenceConnectionContext } from '../../../application/services/presence-state.utils';
 import { PresenceWsHandler } from './presence-ws.handler';
 
@@ -16,7 +16,7 @@ type WsRequestLike = {
   url?: string;
 };
 
-type WsClientLike = WebSocket & {
+type WsClientLike = {
   upgradeReq?: WsRequestLike;
   req?: WsRequestLike;
   url?: string;
@@ -32,6 +32,7 @@ export class PresenceWsConnectionService {
     private readonly auth: WsJwtAuthService,
     private readonly wsTickets: WsTicketAuthService,
     private readonly handler: PresenceWsHandler,
+    private readonly updates: UpdatePolicyService,
   ) {}
 
   async handleConnection(client: WebSocket, args: unknown[]): Promise<void> {
@@ -56,6 +57,18 @@ export class PresenceWsConnectionService {
         'Le ticket WebSocket est requis pour se connecter.',
       );
       client.close(4403, 'ws ticket requis');
+      return;
+    }
+
+    const version = this.auth.extractClientVersion(client, args);
+    const product = this.auth.extractClientProduct(client, args);
+    const minimum = await this.updates.getMinimumVersion(product);
+    if (minimum && (!version || isVersionLower(version, minimum) === true)) {
+      this.sendError(
+        client,
+        `Mise à jour requise (version minimale: ${minimum}).`,
+      );
+      client.close(4406, 'update required');
       return;
     }
 
@@ -144,4 +157,3 @@ export class PresenceWsConnectionService {
     }
   }
 }
-

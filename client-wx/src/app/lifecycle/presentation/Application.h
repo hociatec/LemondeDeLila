@@ -28,5 +28,6 @@ public:
 private:
     std::unique_ptr<lila::shared::concurrency::BackgroundExecutor> backgroundExecutor_;
     std::unique_ptr<lila::bootstrap::AppBootstrap> bootstrap_;
+    void* healthySignal_ = nullptr;
 };
 }

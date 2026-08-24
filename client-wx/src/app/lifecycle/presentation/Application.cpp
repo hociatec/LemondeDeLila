@@ -10,6 +10,7 @@
 #include "shared/config/domain/AppConfig.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/encoding/Encoding.h"
+#include "modules/update/application/UpdateSignals.h"
 
 namespace lila::app
 {
@@ -26,6 +27,15 @@ bool Application::OnInit()
 
     SetAppName("LeMondeDeLilaWX");
     SetVendorName("LeMondeDeLila");
+
+    if (!lila::modules::update::IsLauncherActive())
+    {
+        wxMessageBox(
+            wxString(L"Cette version doit être démarrée avec Le Monde de Lila (lila_launcher.exe)."),
+            wxString(L"Lanceur requis"),
+            wxOK | wxICON_ERROR);
+        return false;
+    }
 
     lila::shared::concurrency::BackgroundExecutorOptions executorOptions;
     executorOptions.workerCount = shared::config::AppConfig::ResolveBackgroundWorkerCount().value_or(0);
@@ -46,11 +56,14 @@ bool Application::OnInit()
             wxOK | wxICON_ERROR);
         return false;
     }
+    healthySignal_ = lila::modules::update::CreateHealthySignal();
     return true;
 }
 
 int Application::OnExit()
 {
+    lila::modules::update::CloseSignal(healthySignal_);
+    healthySignal_ = nullptr;
     if (backgroundExecutor_ != nullptr)
     {
         backgroundExecutor_->Shutdown();

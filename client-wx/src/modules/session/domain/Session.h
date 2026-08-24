@@ -16,6 +16,8 @@ struct Session
     std::string token;
     std::string refreshToken;
     std::int64_t expiresAt = 0;
+    bool resumeOnce = false;
+    std::int64_t resumeUntil = 0;
 
     ~Session()
     {
@@ -28,7 +30,9 @@ struct Session
           username(other.username),
           token(other.token),
           refreshToken(other.refreshToken),
-          expiresAt(other.expiresAt)
+          expiresAt(other.expiresAt),
+          resumeOnce(other.resumeOnce),
+          resumeUntil(other.resumeUntil)
     {
     }
 
@@ -45,6 +49,8 @@ struct Session
         token = other.token;
         refreshToken = other.refreshToken;
         expiresAt = other.expiresAt;
+        resumeOnce = other.resumeOnce;
+        resumeUntil = other.resumeUntil;
         return *this;
     }
 
@@ -53,7 +59,9 @@ struct Session
           username(std::move(other.username)),
           token(std::move(other.token)),
           refreshToken(std::move(other.refreshToken)),
-          expiresAt(other.expiresAt)
+          expiresAt(other.expiresAt),
+          resumeOnce(other.resumeOnce),
+          resumeUntil(other.resumeUntil)
     {
         other.ClearSecret();
         other.expiresAt = 0;
@@ -72,6 +80,8 @@ struct Session
         token = std::move(other.token);
         refreshToken = std::move(other.refreshToken);
         expiresAt = other.expiresAt;
+        resumeOnce = other.resumeOnce;
+        resumeUntil = other.resumeUntil;
         other.ClearSecret();
         other.expiresAt = 0;
         return *this;

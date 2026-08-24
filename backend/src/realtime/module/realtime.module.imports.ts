@@ -1,3 +1,3 @@
-import { ClientUpdatesModule } from '../../client-updates/module/client-updates.module';
+import { UpdateModule } from '../../update/public-api';
 
-export const REALTIME_MODULE_IMPORTS = [ClientUpdatesModule];
+export const REALTIME_MODULE_IMPORTS = [UpdateModule];

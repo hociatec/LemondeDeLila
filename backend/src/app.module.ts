@@ -22,7 +22,7 @@ import { RealtimeModule } from './realtime/public-api';
 import { NotificationModule } from './notification/public-api';
 import { GameLoggerModule } from './game/public-api';
 import { HealthModule } from './health/public-api';
-import { ClientUpdatesModule } from './client-updates/public-api';
+import { UpdateModule } from './update/public-api';
 import { SoundsModule } from './sounds/public-api';
 import { WsTicketModule } from './common/ws/public-api';
 import { JwksModule } from './common/auth/public-api';
@@ -89,6 +89,18 @@ type EnvValidationInput = Record<string, unknown>;
         CLIENT_UPDATES_META_PATH: Joi.string().optional(),
         CLIENT_UPDATES_UPLOADS_DIR: Joi.string().optional(),
         CLIENT_UPDATES_PUBLIC_URL: Joi.string().uri().optional(),
+        CLIENT_WX_UPDATES_DIR: Joi.string().optional(),
+        CLIENT_WX_UPDATES_META_PATH: Joi.string().optional(),
+        CLIENT_WX_UPDATES_PUBLIC_URL: Joi.string().optional(),
+        CLIENT_WX_MIN_VERSION: Joi.string().optional(),
+        CLIENT_WX_MAX_ARTIFACT_BYTES: Joi.number()
+          .integer()
+          .positive()
+          .optional(),
+        CLIENT_WX_SIGNATURE_PUBLIC_KEY_DER_BASE64: Joi.string().optional(),
+        CLIENT_WX_SIGNATURE_PUBLIC_KEY_PEM: Joi.string().optional(),
+        CLIENT_WX_SIGNATURE_PUBLIC_KEY_PATH: Joi.string().optional(),
+        CLIENT_WX_ALLOW_UNSIGNED: Joi.string().valid('0', '1').default('0'),
         TAVERNE_CATEGORIES_ROOT: Joi.string().optional(),
         // WS tickets must have their own secret (do not reuse JWT_SECRET).
         WS_TICKET_SECRET: Joi.string().min(32).required(),
@@ -109,6 +121,30 @@ type EnvValidationInput = Record<string, unknown>;
           if (!env['GAME_ENGINE_STATE_REDIS_URL']) {
             return helpers.error('any.custom', {
               message: 'GAME_ENGINE_STATE_REDIS_URL est requis en production',
+            });
+          }
+          if (env['CLIENT_WX_ALLOW_UNSIGNED'] === '1') {
+            return helpers.error('any.custom', {
+              message: 'CLIENT_WX_ALLOW_UNSIGNED est interdit en production',
+            });
+          }
+          if (
+            !env['CLIENT_WX_SIGNATURE_PUBLIC_KEY_DER_BASE64'] &&
+            !env['CLIENT_WX_SIGNATURE_PUBLIC_KEY_PEM'] &&
+            !env['CLIENT_WX_SIGNATURE_PUBLIC_KEY_PATH']
+          ) {
+            return helpers.error('any.custom', {
+              message:
+                'Une clé publique CLIENT_WX_SIGNATURE_PUBLIC_KEY_* est requise en production',
+            });
+          }
+          if (
+            typeof env['CLIENT_WX_UPDATES_PUBLIC_URL'] !== 'string' ||
+            !/^https:\/\//i.test(env['CLIENT_WX_UPDATES_PUBLIC_URL'])
+          ) {
+            return helpers.error('any.custom', {
+              message:
+                'CLIENT_WX_UPDATES_PUBLIC_URL doit être une URL HTTPS absolue en production',
             });
           }
         }
@@ -196,7 +232,7 @@ type EnvValidationInput = Record<string, unknown>;
     NotificationModule,
     AdminModule,
     HealthModule,
-    ClientUpdatesModule,
+    UpdateModule,
     SoundsModule,
     WsTicketModule,
     JwksModule,

@@ -86,6 +86,26 @@ export class WsJwtAuthService {
     return null;
   }
 
+  extractClientProduct(client: WsClientLike, args: unknown[]): string | null {
+    const firstArg = args[0];
+    const request = this.resolveRequest(client, firstArg);
+    const headers = client.handshakeHeaders ?? request?.headers;
+    const value = this.readHeader(headers, 'x-lila-client-product');
+    if (value) return value.toLowerCase();
+
+    const urlCandidate = this.pickUrl(client, request);
+    if (!urlCandidate) return null;
+    try {
+      const url = new URL(urlCandidate, 'ws://localhost');
+      return (
+        (url.searchParams.get('clientProduct') || '').trim().toLowerCase() ||
+        null
+      );
+    } catch {
+      return null;
+    }
+  }
+
   verify(token: string): WsAuthPayload {
     const key = requireJwtVerifyKey(this.config);
     const issuer = this.config.jwtIssuer;

@@ -13,6 +13,7 @@ lila::shared::network::websocket::WebSocketHeaders BuildPresenceHeaders(
     using namespace lila::shared::network::ws;
 
     lila::shared::network::websocket::WebSocketHeaders headers;
+    headers.emplace(std::string(ClientProductHeader), std::string(ClientProduct));
     headers.emplace(std::string(AuthorizationHeader), std::string(AuthorizationScheme) + bearerToken);
     headers.emplace(std::string(ClientVersionHeader), lila::shared::config::AppConfig::ResolveClientVersion());
     headers.emplace(std::string(WsTicketHeader), ticketProvider.GetTicket(std::string(WsTicketScopePresence), bearerToken));

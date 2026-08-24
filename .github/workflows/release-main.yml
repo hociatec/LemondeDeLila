@@ -11,6 +11,11 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  client_wx_publish:
+    needs: [backend_deploy]
+    uses: ./.github/workflows/client-wx-auto-update.yml
+    secrets: inherit
+
   client_win_publish:
     name: Client Win - Build/Sign/Publish
     runs-on: [self-hosted, Windows, X64]

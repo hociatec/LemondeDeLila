@@ -6,4 +6,5 @@ export type NotificationClientMeta = {
   roles: string[];
   socket: WebSocket;
   origin: string | null;
+  product: string | null;
 };

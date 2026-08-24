@@ -109,13 +109,10 @@ export class RoomMembershipService {
         minPlayers: 2,
         maxPlayers: maxPlayers ?? 4,
         status: 'finished',
-      } as Awaited<ReturnType<CatalogService['getGame']>>);
+      } as NonNullable<Awaited<ReturnType<CatalogService['getGame']>>>);
     const afterCatalogAt = Date.now();
     const status = getRoomManifestStatus(known);
-    if (
-      status === 'construction' &&
-      !hasAdminRoomRole(owner.roles)
-    ) {
+    if (status === 'construction' && !hasAdminRoomRole(owner.roles)) {
       throw new ForbiddenException('Jeu en construction: réservé aux admins');
     }
 
@@ -174,10 +171,7 @@ export class RoomMembershipService {
 
     const manifest = await this.catalog.getGame(room.gameType);
     const status = getRoomManifestStatus(manifest);
-    if (
-      status === 'construction' &&
-      !hasAdminRoomRole(user.roles)
-    ) {
+    if (status === 'construction' && !hasAdminRoomRole(user.roles)) {
       throw new ForbiddenException('Jeu en construction: réservé aux admins');
     }
 

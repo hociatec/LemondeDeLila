@@ -6,6 +6,7 @@ export type NotificationEvent = {
   type: string;
   payload: unknown;
   origin: string | null;
+  disconnect?: boolean;
 };
 
 export abstract class NotificationTransport {

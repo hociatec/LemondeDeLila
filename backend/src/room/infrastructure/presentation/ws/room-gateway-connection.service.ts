@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import { ClientUpdatesService } from '../../../../client-updates/public-api';
+import { UpdatePolicyService } from '../../../../update/public-api';
 import { WsJwtAuthService } from '../../../../realtime/public-api';
 import { isVersionLower } from '../../../../common/utils/public-api';
 import { WsTicketAuthService } from '../../../../realtime/public-api';
@@ -31,14 +31,8 @@ type ConnectionContext = {
       includeHiddenSelf?: { userId: number; username: string };
     },
   ) => Promise<void>;
-  sendChatHistoryToClient: (
-    client: WebSocket,
-    roomId: number,
-  ) => Promise<void>;
-  setSocketParticipantRoom: (
-    client: WebSocket,
-    roomId: number | null,
-  ) => void;
+  sendChatHistoryToClient: (client: WebSocket, roomId: number) => Promise<void>;
+  setSocketParticipantRoom: (client: WebSocket, roomId: number | null) => void;
   warn: (message: string) => void;
 };
 
@@ -48,7 +42,7 @@ export class RoomGatewayConnectionService {
     private readonly membership: RoomMembershipFacadeService,
     private readonly roomState: RoomStateService,
     private readonly auth: WsJwtAuthService,
-    private readonly clientUpdates: ClientUpdatesService,
+    private readonly updates: UpdatePolicyService,
     private readonly wsTickets: WsTicketAuthService,
     private readonly clientPolicy: RoomClientPolicyService,
     private readonly joinPolicy: RoomJoinPolicyService,
@@ -68,7 +62,8 @@ export class RoomGatewayConnectionService {
     }
 
     const clientVersion = this.auth.extractClientVersion(client, args);
-    const minRequired = await this.clientUpdates.getMinRequiredVersion();
+    const clientProduct = this.auth.extractClientProduct(client, args);
+    const minRequired = await this.updates.getMinimumVersion(clientProduct);
     if (minRequired) {
       const outdated =
         !clientVersion || isVersionLower(clientVersion, minRequired) === true;
@@ -252,7 +247,9 @@ export class RoomGatewayConnectionService {
       const reason = (err as Error).message;
       try {
         const state = await this.roomState.getRoomPayload(targetRoomId);
-        if (!this.clientPolicy.canFallbackParticipantToSpectator(state, userId)) {
+        if (
+          !this.clientPolicy.canFallbackParticipantToSpectator(state, userId)
+        ) {
           return role;
         }
 
@@ -288,4 +285,3 @@ export class RoomGatewayConnectionService {
     }
   }
 }
-

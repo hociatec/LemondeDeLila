@@ -34,6 +34,7 @@ public:
         RevokeTransientSessionAsync(std::function<void()> completion = {});
     [[nodiscard]] bool Restore();
     void SyncPersistence(bool persist);
+    [[nodiscard]] bool PrepareUpdateRestart();
 
     [[nodiscard]] bool HasActiveSession() const;
     [[nodiscard]] std::string AccessToken(std::stop_token stopToken = {});

@@ -43,6 +43,9 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
             }
         }
         websocket::WebSocketHeaders headers;
+        headers.emplace(
+            std::string(lila::shared::network::ws::ClientProductHeader),
+            std::string(lila::shared::network::ws::ClientProduct));
         if (!clientVersion_.empty())
         {
             headers.emplace(

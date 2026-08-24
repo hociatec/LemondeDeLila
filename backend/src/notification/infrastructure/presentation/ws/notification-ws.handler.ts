@@ -1,15 +1,11 @@
 ﻿import { Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { WS_EVENTS } from '../../../../realtime/public-api';
-import { ClientUpdatesService } from '../../../../client-updates/public-api';
-import {
-  isVersionGreater,
-  isVersionLower,
-} from '../../../../common/utils/public-api';
 import { AdminContactService } from '../../../application/services/admin-contact.service';
 import { UserBadgeCountsService } from '../../../application/services/user-badge-counts.service';
 import { NotificationIdentifierRequiredError } from '../../../domain/errors/notification-domain.errors';
 import type { NotificationClientMeta } from './notification-ws.types';
+import { UpdatePolicyService } from '../../../../update/public-api';
 
 type NotificationInboxActor = {
   id: number;
@@ -24,7 +20,7 @@ export class NotificationWsHandler {
   constructor(
     private readonly adminContacts: AdminContactService,
     private readonly counts: UserBadgeCountsService,
-    private readonly clientUpdates: ClientUpdatesService,
+    private readonly updates: UpdatePolicyService,
   ) {}
 
   async handle(
@@ -393,53 +389,44 @@ export class NotificationWsHandler {
     }
 
     try {
-      const latest = await this.clientUpdates.getLatest();
-      const latestVersion = latest?.version?.trim();
-      const minRequiredVersion =
-        (await this.clientUpdates.getMinRequiredVersion())?.trim() || null;
-      const url = this.clientUpdates.resolveClientPublicUrlForOrigin(
-        latest,
+      const notice = await this.updates.getNotice(
+        meta.product,
+        version,
         meta.origin,
       );
 
-      if (minRequiredVersion) {
-        const required = isVersionLower(version, minRequiredVersion);
-        if (required === true) {
-          this.safeSend(client, {
-            type: WS_EVENTS.clientUpdate.required,
-            payload: {
-              minRequiredVersion,
-              currentVersion: version,
-              message:
-                latest?.message ??
-                'Une mise à jour du client est requise pour continuer.',
-              publishedAt: latest?.publishedAt ?? null,
-              url,
-            },
-          });
-          await new Promise((resolve) => setTimeout(resolve, 300));
-          try {
-            client.close(4406, 'update required');
-          } catch {
-            /* ignore */
-          }
-          return;
+      if (notice.updateRequired && notice.minimumVersion) {
+        this.safeSend(client, {
+          type: WS_EVENTS.clientUpdate.required,
+          payload: {
+            minRequiredVersion: notice.minimumVersion,
+            currentVersion: version,
+            message:
+              notice.message ??
+              'Une mise à jour du client est requise pour continuer.',
+            publishedAt: notice.publishedAt,
+            url: notice.url,
+          },
+        });
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        try {
+          client.close(4406, 'update required');
+        } catch {
+          /* ignore */
         }
+        return;
       }
 
-      if (latestVersion) {
-        const available = isVersionGreater(latestVersion, version);
-        if (available === true) {
-          this.safeSend(client, {
-            type: WS_EVENTS.clientUpdate.available,
-            payload: {
-              version: latestVersion,
-              message: latest?.message ?? null,
-              publishedAt: latest?.publishedAt ?? null,
-              url,
-            },
-          });
-        }
+      if (notice.latestVersion && notice.updateAvailable === true) {
+        this.safeSend(client, {
+          type: WS_EVENTS.clientUpdate.available,
+          payload: {
+            version: notice.latestVersion,
+            message: notice.message,
+            publishedAt: notice.publishedAt,
+            url: notice.url,
+          },
+        });
       }
     } catch (err) {
       this.logger.debug('Echec vérification version client', err as Error);

@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(lemonde_de_lila_wx VERSION 1.2.651.0 LANGUAGES CXX)
+set(LILA_PROJECT_VERSION "1.2.651.0" CACHE STRING "Version à quatre composants du client WX")
+project(lemonde_de_lila_wx VERSION ${LILA_PROJECT_VERSION} LANGUAGES CXX)
+
+set(LILA_UPDATE_PUBLIC_KEY_DER_BASE64 "" CACHE STRING "Clé publique RSA DER/base64 des manifestes de mise à jour")
+set(LILA_UPDATE_MANIFEST_URL "https://api.lilas.hociatec.fr/api/client/releases/latest?platform=windows&arch=x64" CACHE STRING "URL du manifeste de mise à jour WX")
 
 include(CTest)
 
@@ -38,6 +42,11 @@ find_package(nlohmann_json CONFIG REQUIRED)
 configure_file(
     src/shared/config/generated/AppBuildInfo.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/generated/AppBuildInfo.h
+    @ONLY
+)
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/update/infrastructure/config/UpdateBuildConfig.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/UpdateBuildConfig.h
     @ONLY
 )
 
@@ -386,10 +395,35 @@ add_executable(lemonde_de_lila_wx WIN32
     src/shared/ui/presentation/controls/VerticalMenu.Entries.cpp
     src/shared/ui/presentation/controls/VerticalMenuEntry.cpp
     src/shared/security/infrastructure/SecurityUtils.cpp
+    src/modules/update/application/UpdateSignals.cpp
     src/shared/security/domain/JwtPayload.cpp
     src/shared/logging/infrastructure/Logger.cpp
     src/shared/ui/presentation/theme/Theme.cpp
 )
+
+if(WIN32)
+    add_executable(lila_launcher WIN32
+        src/modules/update/infrastructure/launcher/LauncherMain.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.cpp
+        src/modules/update/domain/UpdateProtocol.cpp
+    )
+    target_include_directories(lila_launcher PRIVATE
+        src
+        ${CMAKE_CURRENT_BINARY_DIR}/generated
+    )
+    target_link_libraries(lila_launcher PRIVATE
+        nlohmann_json::nlohmann_json
+        winhttp
+        bcrypt
+        crypt32
+        wintrust
+        shell32
+        user32
+    )
+    if(MSVC)
+        target_compile_options(lila_launcher PRIVATE /W4 /permissive- /utf-8)
+    endif()
+endif()
 
 add_dependencies(lemonde_de_lila_wx generate_protocol_contracts)
 
@@ -454,6 +488,7 @@ if(BUILD_TESTING)
     if(EXISTS "${NETWORK_PROTOCOL_TEST}")
         add_executable(lemonde_de_lila_wx_tests
             tests/NetworkProtocolTests.cpp
+            src/modules/update/domain/UpdateProtocol.cpp
             src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp
             src/modules/catalog/presentation/CatalogShelfNavigator.cpp
             src/modules/rooms/infrastructure/RoomPayloadCodec.cpp

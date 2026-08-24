@@ -70,9 +70,37 @@ bool SessionStore::Restore()
     }
 
     current_ = *stored;
-    persisted_ = true;
+    persisted_ = !current_.resumeOnce;
+    current_.resumeOnce = false;
+    current_.resumeUntil = 0;
     ++generation_;
     return true;
+}
+
+bool SessionStore::PrepareUpdateRestart()
+{
+    std::scoped_lock lock(mutex_);
+    if (!HasSessionLocked())
+    {
+        return true;
+    }
+    if (persisted_)
+    {
+        return true;
+    }
+    try
+    {
+        repository_->SaveForRestart(current_);
+        persisted_ = false;
+        return true;
+    }
+    catch (const std::exception& exception)
+    {
+        lila::shared::logging::LogWarning(
+            "SessionStore",
+            std::string("Update session handoff failed: ") + exception.what());
+        return false;
+    }
 }
 
 void SessionStore::SyncPersistence(bool persist)

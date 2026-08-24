@@ -33,6 +33,9 @@ void NetworkComposition::Assemble(const StepLogger& setStep)
     setStep("Creation du client temps-reel");
     shared::network::websocket::WebSocketHeaders realtimeHeaders;
     realtimeHeaders.emplace(
+        std::string(shared::network::ws::ClientProductHeader),
+        std::string(shared::network::ws::ClientProduct));
+    realtimeHeaders.emplace(
         std::string(shared::network::ws::ClientVersionHeader),
         shared::config::AppConfig::ResolveClientVersion());
     realtimeApiClient = std::make_unique<shared::network::realtime::RealtimeApiClient>(

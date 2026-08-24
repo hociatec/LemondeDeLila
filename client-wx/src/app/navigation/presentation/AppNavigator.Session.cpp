@@ -50,7 +50,7 @@ void AppNavigator::ShowSession(std::size_t selectedIndex, bool resetInitialFocus
     PrewarmSessionData();
 }
 
-void AppNavigator::CloseApplication()
+void AppNavigator::CloseApplication(bool forUpdate)
 {
     if (closing_ || closeFinalized_)
     {
@@ -64,6 +64,13 @@ void AppNavigator::CloseApplication()
     ResetView(ViewId::Home);
     currentViewId_ = ViewId::None;
     currentView_ = nullptr;
+
+    if (forUpdate)
+    {
+        static_cast<void>(sessionStore_.PrepareUpdateRestart());
+        FinishCloseApplication();
+        return;
+    }
 
     if (sessionRevocationTask_ != nullptr
         && !sessionRevocationTask_->IsCancellationRequested())

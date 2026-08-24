@@ -1,12 +1,12 @@
 ﻿import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import { ClientUpdatesService } from '../../../../client-updates/public-api';
 import { isVersionLower } from '../../../../common/utils/public-api';
 import {
   WsJwtAuthService,
   WsTicketAuthService,
   WS_EVENTS,
 } from '../../../../realtime/public-api';
+import { UpdatePolicyService } from '../../../../update/public-api';
 import { NotificationWsHandler } from './notification-ws.handler';
 import { NotificationWsSessionService } from './notification-ws-session.service';
 
@@ -14,7 +14,7 @@ import { NotificationWsSessionService } from './notification-ws-session.service'
 export class NotificationWsConnectionService {
   constructor(
     private readonly auth: WsJwtAuthService,
-    private readonly clientUpdates: ClientUpdatesService,
+    private readonly updates: UpdatePolicyService,
     private readonly wsTickets: WsTicketAuthService,
     private readonly sessions: NotificationWsSessionService,
     private readonly handler: NotificationWsHandler,
@@ -34,26 +34,28 @@ export class NotificationWsConnectionService {
 
     try {
       const clientVersion = this.auth.extractClientVersion(client, args);
+      const clientProduct = this.auth.extractClientProduct(client, args);
       const minRequiredVersion =
-        (await this.clientUpdates.getMinRequiredVersion())?.trim() || null;
+        (await this.updates.getMinimumVersion(clientProduct))?.trim() || null;
       if (minRequiredVersion) {
         const outdated =
           !clientVersion ||
           isVersionLower(clientVersion, minRequiredVersion) === true;
         if (outdated) {
           const origin = this.extractOriginFromWsArgs(args);
-          const latest = await this.clientUpdates.getLatest();
+          const notice = await this.updates.getNotice(
+            clientProduct,
+            clientVersion,
+            origin,
+          );
           this.sessions.safeSend(client, {
             type: WS_EVENTS.clientUpdate.required,
             payload: {
               minRequiredVersion,
               currentVersion: clientVersion || null,
               message: 'Une mise à jour du client est requise pour continuer.',
-              publishedAt: null,
-              url: this.clientUpdates.resolveClientPublicUrlForOrigin(
-                latest,
-                origin,
-              ),
+              publishedAt: notice.publishedAt,
+              url: notice.url,
             },
           });
           await new Promise((resolve) => setTimeout(resolve, 300));
@@ -71,6 +73,7 @@ export class NotificationWsConnectionService {
       roles: Array.isArray(user.roles) ? user.roles : [],
       socket: client,
       origin: this.extractOriginFromWsArgs(args),
+      product: this.auth.extractClientProduct(client, args),
     });
 
     client.on('error', () => client.close());
@@ -151,4 +154,3 @@ export class NotificationWsConnectionService {
     }
   }
 }
-

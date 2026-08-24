@@ -25,6 +25,9 @@ void PresenceChatGateway::Open(const std::string& bearerToken, const std::string
         bearerToken);
     lila::shared::network::websocket::WebSocketHeaders headers;
     headers.emplace(
+        std::string(lila::shared::network::ws::ClientProductHeader),
+        std::string(lila::shared::network::ws::ClientProduct));
+    headers.emplace(
         std::string(lila::shared::network::ws::AuthorizationHeader),
         std::string(lila::shared::network::ws::AuthorizationScheme) + bearerToken);
     headers.emplace(

@@ -15,9 +15,17 @@ export function parseVersion(value: string): number | null {
   }
   while (nums.length < 4) nums.push(0);
 
-  // Pack into a monotonic integer: major.minor.build.rev (up to 4 digits each).
+  if (nums[0] > 999 || nums.slice(1).some((part) => part > 9999)) {
+    return null;
+  }
+
+  // Base 10,000 prevents component collisions and remains a safe integer for
+  // the validated ranges above.
   return (
-    nums[0] * 1_000_000_000 + nums[1] * 1_000_000 + nums[2] * 1_000 + nums[3]
+    nums[0] * 1_000_000_000_000 +
+    nums[1] * 100_000_000 +
+    nums[2] * 10_000 +
+    nums[3]
   );
 }
 

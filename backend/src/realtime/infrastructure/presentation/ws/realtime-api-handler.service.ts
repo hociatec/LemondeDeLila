@@ -1,6 +1,6 @@
 ﻿import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import { ClientUpdatesService } from '../../../../client-updates/public-api';
+import { UpdatePolicyService } from '../../../../update/public-api';
 import {
   SESSION_STORE,
   type SessionStateStore,
@@ -19,7 +19,7 @@ export class RealtimeApiHandlerService {
   constructor(
     private readonly registry: WsRouteRegistry,
     @Inject(SESSION_STORE) private readonly sessionStore: SessionStateStore,
-    private readonly clientUpdates: ClientUpdatesService,
+    private readonly updates: UpdatePolicyService,
   ) {}
 
   async persistSession(session: RealtimeClientSession): Promise<void> {
@@ -54,7 +54,9 @@ export class RealtimeApiHandlerService {
     }
 
     const { type, payload, requestId } = decoded;
-    const minRequired = await this.clientUpdates.getMinRequiredVersion();
+    const minRequired = await this.updates.getMinimumVersion(
+      session.clientProduct,
+    );
     if (
       minRequired &&
       (!session.clientVersion ||

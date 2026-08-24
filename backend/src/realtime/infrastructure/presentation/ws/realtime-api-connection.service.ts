@@ -30,6 +30,7 @@ export class RealtimeApiConnectionService {
   ): Promise<void> {
     const connectionId = randomUUID();
     const clientVersion = this.auth.extractClientVersion(client, args);
+    const clientProduct = this.auth.extractClientProduct(client, args);
     const token = this.auth.extractToken(client, args);
     const ticketValidation = this.wsTickets.validateIfTokenPresentDetailed(
       client,
@@ -60,6 +61,7 @@ export class RealtimeApiConnectionService {
       user: this.resolveUser(token),
       connectionId,
       clientVersion,
+      clientProduct,
       scope,
       ...gameContext,
     };
@@ -80,7 +82,7 @@ export class RealtimeApiConnectionService {
 
     await this.handler.persistSession(session);
     if (scope === 'game') {
-      await this.sendInitialGameStateIfRequested(client, session, args);
+      await this.sendInitialGameStateIfRequested(client, session);
     }
   }
 
@@ -113,7 +115,6 @@ export class RealtimeApiConnectionService {
   private async sendInitialGameStateIfRequested(
     client: WebSocket,
     session: RealtimeClientSession,
-    args: unknown[],
   ): Promise<void> {
     try {
       const roomId = Number(session.roomId ?? 0);

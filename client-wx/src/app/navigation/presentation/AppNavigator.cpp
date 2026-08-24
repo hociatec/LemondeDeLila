@@ -12,6 +12,7 @@
 #include "modules/session/application/SessionStore.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "modules/update/application/UpdateSignals.h"
 
 namespace lila::app::navigation
 {
@@ -64,7 +65,8 @@ bool AppNavigator::Start()
                 {
                     return false;
                 }
-                if (optionsStore_.Current().confirmExit &&
+                const bool forcedUpdate = lila::modules::update::IsForcedUpdateRequested();
+                if (!forcedUpdate && optionsStore_.Current().confirmExit &&
                     wxMessageBox(
                         wxString(L"Voulez-vous vraiment fermer l'application ?"),
                         wxString(L"Confirmer la fermeture"),
@@ -73,7 +75,7 @@ bool AppNavigator::Start()
                 {
                     return false;
                 }
-                CloseApplication();
+                CloseApplication(forcedUpdate);
                 return false;
             });
         if (wxTheApp != nullptr)
