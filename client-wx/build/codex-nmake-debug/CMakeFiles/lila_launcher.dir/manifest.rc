@@ -1,0 +1,2 @@
+#pragma code_page(65001)
+1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/CMakeFiles/lila_launcher.dir/embed.manifest"

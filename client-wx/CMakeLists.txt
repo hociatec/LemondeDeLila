@@ -172,7 +172,6 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/gameplay/infrastructure/GameSessionGateway.cpp
     src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp
     src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp
-    src/modules/gameplay/presentation/GameActionPromptDialog.cpp
     src/modules/gameplay/presentation/GamePlayFormatters.cpp
     src/modules/gameplay/presentation/GamePlayPanel.cpp
     src/modules/gameplay/presentation/GamePlayPanel.Actions.cpp
@@ -180,6 +179,11 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/gameplay/presentation/GamePlayPanel.Layout.cpp
     src/modules/gameplay/presentation/GamePlayPanel.Session.cpp
     src/modules/gameplay/presentation/GamePlayPanel.State.cpp
+    src/modules/gameplay/presentation/confirmation/GameActionConfirmationPanel.cpp
+    src/modules/gameplay/presentation/hand/GameHandPanel.cpp
+    src/modules/gameplay/presentation/info/GameInfoTextBuilder.cpp
+    src/modules/gameplay/presentation/prompt/GamePromptPanel.cpp
+    src/modules/gameplay/presentation/shortcuts/GameShortcutResolver.cpp
 
     src/modules/rooms/application/RoomLobbyService.cpp
     src/modules/rooms/application/RoomSessionService.cpp

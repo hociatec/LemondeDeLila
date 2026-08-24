@@ -234,6 +234,15 @@ LILA_ENABLE_TSAN:BOOL=OFF
 //Enable UndefinedBehaviorSanitizer where supported
 LILA_ENABLE_UBSAN:BOOL=OFF
 
+//Version à quatre composants du client WX
+LILA_PROJECT_VERSION:STRING=1.2.651.0
+
+//URL du manifeste de mise à jour WX
+LILA_UPDATE_MANIFEST_URL:STRING=https://api.lilas.hociatec.fr/api/client/releases/latest?platform=windows&arch=x64
+
+//Clé publique RSA DER/base64 des manifestes de mise à jour
+LILA_UPDATE_PUBLIC_KEY_DER_BASE64:STRING=
+
 //Command to build the project
 MAKECOMMAND:STRING="C:\Program Files\CMake\bin\cmake.exe" --build . --config "${CTEST_CONFIGURATION_TYPE}"
 

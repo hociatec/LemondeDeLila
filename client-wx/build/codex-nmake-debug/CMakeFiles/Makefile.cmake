@@ -61,6 +61,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.31.6/CMakeRCCompiler.cmake"
   "CMakeFiles/3.31.6/CMakeSystem.cmake"
   "C:/wamp64/www/lemondeDeLila/client-wx/resources/texts.fr.json"
+  "C:/wamp64/www/lemondeDeLila/client-wx/src/modules/update/infrastructure/config/UpdateBuildConfig.h.in"
   "C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/generated/AppBuildInfo.h.in"
   "C:/wamp64/www/lemondeDeLila/client-wx/third_party/bass/bin/x64/bass.dll"
   )
@@ -75,6 +76,7 @@ set(CMAKE_MAKEFILE_OUTPUTS
 set(CMAKE_MAKEFILE_PRODUCTS
   "DartConfiguration.tcl"
   "generated/AppBuildInfo.h"
+  "generated/UpdateBuildConfig.h"
   "resources/texts.fr.json"
   "bass.dll"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
@@ -112,6 +114,9 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/ContinuousSubmit.dir/DependInfo.cmake"
   "CMakeFiles/generate_protocol_contracts.dir/DependInfo.cmake"
   "CMakeFiles/lemonde_de_lila_wx.dir/DependInfo.cmake"
+  "CMakeFiles/lila_launcher.dir/DependInfo.cmake"
   "CMakeFiles/lemonde_de_lila_wx_tests.dir/DependInfo.cmake"
+  "CMakeFiles/lemonde_de_lila_wx_update_tests.dir/DependInfo.cmake"
+  "CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/DependInfo.cmake"
   "CMakeFiles/lemonde_de_lila_wx_parser_fuzz.dir/DependInfo.cmake"
   )

@@ -29,6 +29,7 @@ void TestServerDrivenPrompt()
                 {"data", {
                     {"title", "Configuration"},
                     {"actionType", "configure"},
+                    {"cancelActionType", "cancel_config"},
                     {"fields", nlohmann::json::array({
                         {{"key", "target"}, {"label", "Score cible"}, {"kind", "number"}, {"initialText", "40"}, {"min", 1}, {"max", 100}},
                         {{"key", "enabled"}, {"label", "Option active"}, {"kind", "boolean"}, {"initialText", "oui"}},
@@ -44,6 +45,7 @@ void TestServerDrivenPrompt()
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
     Expect(state.prompt.has_value(), "Le formulaire serveur doit être décodé.");
     Expect(state.prompt->actionType == "configure", "Le formulaire doit cibler son action.");
+    Expect(state.prompt->cancelActionType == "cancel_config", "L'action d'annulation doit être conservée.");
     Expect(state.prompt->fields.size() == 2, "Tous les champs génériques doivent être conservés.");
     Expect(state.prompt->fields[0].minimum == 1 && state.prompt->fields[0].maximum == 100,
         "Les bornes numériques doivent être conservées.");

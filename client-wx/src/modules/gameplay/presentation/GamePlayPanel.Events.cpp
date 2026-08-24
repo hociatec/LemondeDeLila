@@ -1,13 +1,18 @@
 #include "modules/gameplay/presentation/GamePlayPanel.h"
 
-#include <algorithm>
 #include <optional>
 #include <utility>
 
 #include <wx/event.h>
 #include <wx/listbox.h>
+#include <wx/scrolwin.h>
+#include <wx/textctrl.h>
 
 #include "modules/gameplay/presentation/GamePlayFormatters.h"
+#include "modules/gameplay/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/presentation/prompt/GamePromptPanel.h"
+#include "modules/gameplay/presentation/shortcuts/GameShortcutResolver.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -15,6 +20,45 @@ void GamePlayPanel::BindEvents()
 {
     Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event) { HandleKey(event); });
     linesList_->Bind(wxEVT_LISTBOX, [this](wxCommandEvent&) { UpdateInfoPanel(); });
+    promptPanel_->SetVisibilityChangedHandler(
+        [this](bool visible)
+        {
+            contentPanel_->Show(!visible);
+            Layout();
+        });
+    confirmationPanel_->SetVisibilityChangedHandler(
+        [this](bool visible)
+        {
+            contentPanel_->Show(!visible);
+            Layout();
+        });
+    confirmationPanel_->SetConfirmedHandler(
+        [this](domain::GameAction action)
+        {
+            PrepareAndExecuteAction(std::move(action));
+        });
+    promptPanel_->SetValidationErrorHandler(
+        [this](const wxString& message, wxWindow*)
+        {
+            UpdateStatus(message, true, true);
+        });
+    promptPanel_->SetSubmitHandler(
+        [this](domain::GameAction action)
+        {
+            ExecuteAction(std::move(action));
+        });
+    promptPanel_->SetCancelHandler(
+        [this](std::string cancelType)
+        {
+            if (cancelType.empty()) return;
+            auto cancel = ResolveShortcutAction(cancelType);
+            if (!cancel)
+            {
+                cancel = domain::GameAction{};
+                cancel->type = std::move(cancelType);
+            }
+            ExecuteAction(std::move(*cancel));
+        });
 }
 
 void GamePlayPanel::HandleEvent(domain::GameEvent event)
@@ -40,6 +84,19 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
 
 void GamePlayPanel::HandleKey(wxKeyEvent& event)
 {
+    if (IsConfirmationVisible())
+    {
+        if (confirmationPanel_->HandleKey(event)) return;
+        event.Skip();
+        return;
+    }
+    if (IsInlinePromptVisible())
+    {
+        if (promptPanel_->HandleKey(event)) return;
+        event.Skip();
+        return;
+    }
+
     const auto key = NormalizeKey(event);
     if (key.empty())
     {
@@ -83,14 +140,8 @@ void GamePlayPanel::ActivateSelectedLine()
 
 bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
 {
-    const auto found = std::find_if(
-        state_.shortcuts.begin(),
-        state_.shortcuts.end(),
-        [&normalizedKey](const domain::GameShortcut& shortcut)
-        {
-            return shortcut.normalizedKey == normalizedKey;
-        });
-    if (found == state_.shortcuts.end()) return false;
+    const auto* found = shortcuts::GameShortcutResolver::Find(state_, normalizedKey);
+    if (found == nullptr) return false;
     if (found->kind == domain::GameShortcutKind::Interface)
     {
         return HandleInterfaceShortcut(found->id);
@@ -118,43 +169,20 @@ bool GamePlayPanel::HandleInterfaceShortcut(const std::string& id)
     if (id.empty()) return false;
     activeInfoPanel_ = id;
     UpdateInfoPanel();
-    UpdateStatus(FromUtf8("Panneau " + id + "."), false, true);
+    const auto text = BuildInfoText(id);
+    lila::shared::accessibility::AccessibilityUtils::AnnounceStatus(*infoText_, text);
+    UpdateStatus(wxString(L"Informations affichées."));
     return true;
 }
 
 std::optional<domain::GameAction> GamePlayPanel::ResolveShortcutAction(const std::string& actionType) const
 {
-    if (actionType.empty()) return std::nullopt;
-    const int selection = linesList_->GetSelection();
-    if (selection != wxNOT_FOUND && selection >= 0 && static_cast<std::size_t>(selection) < state_.lines.size())
-    {
-        const auto& line = state_.lines[static_cast<std::size_t>(selection)];
-        if (line.actionIndex < state_.actions.size() &&
-            state_.actions[line.actionIndex].type == actionType &&
-            !state_.actions[line.actionIndex].disabled)
-            return state_.actions[line.actionIndex];
-    }
-    const auto found = std::find_if(
-        state_.actions.begin(),
-        state_.actions.end(),
-        [&actionType](const domain::GameAction& action)
-        {
-            return action.type == actionType && !action.disabled;
-        });
-    if (found == state_.actions.end()) return std::nullopt;
-    return *found;
+    return shortcuts::GameShortcutResolver::ResolveAction(
+        state_, actionType, linesList_->GetSelection());
 }
 
 std::string GamePlayPanel::NormalizeKey(const wxKeyEvent& event) const
 {
-    const int key = event.GetKeyCode();
-    if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER) return "ENTER";
-    if (key == WXK_SPACE) return "SPACE";
-    if (key == WXK_BACK) return "BACK";
-    if (key == WXK_F5) return "F5";
-    if (key >= 'A' && key <= 'Z') return std::string(1, static_cast<char>(key));
-    if (key >= 'a' && key <= 'z') return std::string(1, static_cast<char>(key - 'a' + 'A'));
-    if (key >= '0' && key <= '9') return std::string(1, static_cast<char>(key));
-    return {};
+    return shortcuts::GameShortcutResolver::NormalizeKey(event);
 }
 }

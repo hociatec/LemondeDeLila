@@ -118,6 +118,7 @@ std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode)
     prompt.title = ReadString(*data, "title");
     prompt.label = ReadString(*pending, "label");
     prompt.actionType = ReadString(*data, "actionType");
+    prompt.cancelActionType = ReadString(*data, "cancelActionType");
     if (prompt.actionType.empty() || fields == data->end() || !fields->is_array()) return std::nullopt;
     for (const auto& raw : *fields)
     {

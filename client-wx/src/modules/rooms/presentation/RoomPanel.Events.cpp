@@ -33,7 +33,7 @@ void RoomPanel::BindEvents()
         {
             lila::shared::accessibility::NavigationController::Scope scope;
             scope.Add(gameZoneAnchor_);
-            scope.Add(gamePlayPanel_);
+            gamePlayPanel_->AppendTabTargets(scope);
             if (chatInput_->IsShown()) scope.Add(chatInput_);
             scope.Add(history_);
             return scope;

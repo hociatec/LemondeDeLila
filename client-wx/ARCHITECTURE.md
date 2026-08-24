@@ -41,6 +41,15 @@ The codebase is structured around Clean Architecture principles:
 - Application services and stores are owned as `std::unique_ptr` by `AppBootstrap`.
 - Callbacks and asynchronous operations must not capture raw UI widget pointers without lifetime validation.
 
+### 2.5 Gameplay Presentation Boundaries
+- `GamePlayPanel` is an orchestration shell: it connects session events, actions and the room focus flow.
+- `presentation/confirmation` owns non-modal action confirmations; gameplay must not open action dialogs.
+- `presentation/prompt` owns the inline configuration form, validation and its contained keyboard cycle.
+- `presentation/hand` owns the vertical hand view and selection preservation.
+- `presentation/info` converts game panels such as hands, scores and discard into display text.
+- `presentation/shortcuts` resolves server shortcuts, action priority, key normalization and help text.
+- New game-specific presentation behavior belongs in one of these focused components instead of growing `GamePlayPanel`.
+
 ---
 
 ## 3. Protocol & Network Architecture

@@ -12314,3 +12314,80 @@
 2026-08-24 22:59:37.040 [INFO ] [Navigator] CreateView(Catalog): constructing CatalogPanel view.
 2026-08-24 22:59:37.060 [INFO ] [Navigator] ReplaceView(): begin.
 2026-08-24 22:59:42.951 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 00:17:02.812 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-25 00:17:02.813 [INFO ] [Startup] Étape: Creation des transports reseau
+2026-08-25 00:17:02.813 [INFO ] [Startup] Étape: Creation du fournisseur de tickets
+2026-08-25 00:17:02.813 [INFO ] [Startup] Étape: Creation du client temps-reel
+2026-08-25 00:17:02.813 [INFO ] [Startup] Étape: Creation du client temps-reel authentifie
+2026-08-25 00:17:02.813 [INFO ] [Startup] Étape: Creation des services d'authentification
+2026-08-25 00:17:02.813 [INFO ] [Startup] Étape: Chargement des options
+2026-08-25 00:17:02.814 [INFO ] [Startup] Étape: Creation du store de session
+2026-08-25 00:17:02.814 [INFO ] [Startup] Étape: Creation du moteur audio BASS asynchrone
+2026-08-25 00:17:02.814 [INFO ] [Startup] Étape: Creation du service catalogue
+2026-08-25 00:17:02.814 [INFO ] [Startup] Étape: Creation des services de tables
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Creation du service coffre fort
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Creation du service livre des contes
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Creation du service classement
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Creation du gateway chat
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Creation du protocole chat
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Creation du service chat
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Creation du service messagerie
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Creation du service social
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Creation du service presence
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Creation du navigateur
+2026-08-25 00:17:02.815 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-25 00:17:02.815 [INFO ] [Navigator] Start() begin.
+2026-08-25 00:17:02.843 [INFO ] [Navigator] restoreSessionOnStartup=true
+2026-08-25 00:17:02.845 [INFO ] [Navigator] No stored session restored. Opening home.
+2026-08-25 00:17:02.845 [INFO ] [Navigator] CreateView(Home): constructing HomeFrame view.
+2026-08-25 00:17:02.894 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 00:17:02.937 [INFO ] [Startup] Bootstrap terminé avec succès.
+2026-08-25 00:17:11.682 [INFO ] [Authentication] Login request completed in 88 ms.
+2026-08-25 00:17:11.687 [INFO ] [Navigator] ShowSession(): begin.
+2026-08-25 00:17:11.687 [INFO ] [Navigator] CreateView(MainMenu): constructing MainMenuFrame view.
+2026-08-25 00:17:11.689 [INFO ] [MainMenu] Constructor: begin.
+2026-08-25 00:17:11.727 [INFO ] [MainMenu] Constructor: BuildLayout done.
+2026-08-25 00:17:11.731 [INFO ] [MainMenu] Constructor: ApplyTheme done.
+2026-08-25 00:17:11.731 [INFO ] [MainMenu] Constructor: BindEvents done.
+2026-08-25 00:17:11.734 [INFO ] [MainMenu] Constructor: end.
+2026-08-25 00:17:11.735 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 00:17:12.324 [INFO ] [Navigator] CreateView(Catalog): constructing CatalogPanel view.
+2026-08-25 00:17:12.344 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 00:17:14.958 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 00:17:18.008 [WARN ] [Rooms] Réception temps réel échouée.
+2026-08-25 00:17:19.077 [WARN ] [WsTicketProvider] La réponse du ticket WS est invalide. : [json.exception.parse_error.101] parse error at line 1, column 1: syntax error while parsing value - invalid literal; last read: '<'
+2026-08-25 00:17:19.095 [WARN ] [WsTicketProvider] La réponse du ticket WS est invalide. : [json.exception.parse_error.101] parse error at line 1, column 1: syntax error while parsing value - invalid literal; last read: '<'
+2026-08-25 00:17:19.095 [WARN ] [Rooms] Ticket WS refusé par l'API (HTTP 502).
+2026-08-25 00:27:22.025 [WARN ] [ChatProtocol] Le tableau 'messages' doit être un tableau JSON.
+2026-08-25 00:27:22.040 [WARN ] [Rooms] socket lost
+2026-08-25 00:27:23.247 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-25 00:27:23.567 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-25 00:27:24.237 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 00:27:24.238 [ERROR] [Chat] Envoi tchat échoué : send failed
+2026-08-25 00:28:21.198 [WARN ] [ChatProtocol] Le tableau 'messages' doit être un tableau JSON.
+2026-08-25 00:28:21.212 [WARN ] [Rooms] socket lost
+2026-08-25 00:28:22.415 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-25 00:28:22.736 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-25 00:28:23.412 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 00:28:23.413 [ERROR] [Chat] Envoi tchat échoué : send failed
+2026-08-25 00:37:14.766 [WARN ] [ChatProtocol] Le tableau 'messages' doit être un tableau JSON.
+2026-08-25 00:37:14.778 [WARN ] [Rooms] socket lost
+2026-08-25 00:37:15.976 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-25 00:37:16.295 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-25 00:37:16.963 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 00:37:16.964 [ERROR] [Chat] Envoi tchat échoué : send failed
+2026-08-25 00:37:16.964 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 00:42:37.264 [WARN ] [ChatProtocol] Le tableau 'messages' doit être un tableau JSON.
+2026-08-25 00:42:37.278 [WARN ] [Rooms] socket lost
+2026-08-25 00:42:38.482 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-25 00:42:38.806 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-25 00:42:39.474 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 00:42:39.475 [ERROR] [Chat] Envoi tchat échoué : send failed
+2026-08-25 00:42:39.475 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 00:43:54.719 [WARN ] [ChatProtocol] Le tableau 'messages' doit être un tableau JSON.
+2026-08-25 00:43:54.732 [WARN ] [Rooms] socket lost
+2026-08-25 00:43:55.941 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-25 00:43:56.262 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-25 00:43:56.930 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 00:43:56.931 [ERROR] [Chat] Envoi tchat échoué : send failed
+2026-08-25 00:43:56.931 [WARN ] [Chat] Reconnexion au serveur... : interrupted
