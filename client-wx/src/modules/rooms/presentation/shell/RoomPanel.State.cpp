@@ -4,7 +4,7 @@
 #include <wx/textctrl.h>
 #include <wx/window.h>
 
-#include "modules/gameplay/presentation/panel/GamePlayPanel.h"
+#include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/rooms/presentation/model/RoomPresentationModel.h"
 #include "modules/rooms/presentation/history/HistoryAnnouncementQueue.h"
 #include "modules/audio/application/IAudioService.h"

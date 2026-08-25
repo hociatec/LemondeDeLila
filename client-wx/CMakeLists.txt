@@ -198,26 +198,29 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/catalog/presentation/CatalogPanel.Loading.cpp
     src/modules/catalog/presentation/CatalogShelfNavigator.cpp
 
-    src/modules/gameplay/application/GamePromptInputCodec.cpp
-    src/modules/gameplay/application/GameSessionService.cpp
-    src/modules/gameplay/infrastructure/GamePayloadJsonReader.cpp
-    src/modules/gameplay/infrastructure/GameSessionGateway.cpp
-    src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp
-    src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp
-    src/modules/gameplay/presentation/formatting/GamePlayFormatters.cpp
-    src/modules/gameplay/presentation/panel/GamePlayPanel.cpp
-    src/modules/gameplay/presentation/panel/GamePlayPanel.Actions.cpp
-    src/modules/gameplay/presentation/panel/GamePlayPanel.Events.cpp
-    src/modules/gameplay/presentation/panel/GamePlayPanel.Input.cpp
-    src/modules/gameplay/presentation/panel/GamePlayPanel.Layout.cpp
-    src/modules/gameplay/presentation/panel/GamePlayPanel.Session.cpp
-    src/modules/gameplay/presentation/panel/GamePlayPanel.State.cpp
-    src/modules/gameplay/presentation/confirmation/GameActionConfirmationPanel.cpp
-    src/modules/gameplay/presentation/hand/GameHandPanel.cpp
-    src/modules/gameplay/presentation/history/GameLogCursor.cpp
-    src/modules/gameplay/presentation/info/GameInfoTextBuilder.cpp
-    src/modules/gameplay/presentation/prompt/GamePromptPanel.cpp
-    src/modules/gameplay/presentation/shortcuts/GameShortcutResolver.cpp
+    src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp
+    src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
+    src/modules/gameplay/session/application/GameSessionService.cpp
+    src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp
+    src/modules/gameplay/session/infrastructure/GameSessionGateway.cpp
+    src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp
+    src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp
+    src/modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.cpp
+    src/modules/gameplay/shell/presentation/formatting/GamePlayFormatters.cpp
+    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.cpp
+    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Actions.cpp
+    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Events.cpp
+    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Input.cpp
+    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Layout.cpp
+    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Session.cpp
+    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.State.cpp
+    src/modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.cpp
+    src/modules/gameplay/hand/presentation/GameHandPanel.cpp
+    src/modules/gameplay/history/presentation/GameLogCursor.cpp
+    src/modules/gameplay/information/presentation/GameInfoTextBuilder.cpp
+    src/modules/gameplay/prompts/presentation/GamePromptPanel.cpp
+    src/modules/gameplay/shortcuts/presentation/GameShortcutResolver.cpp
 
     src/modules/rooms/application/RoomLobbyService.cpp
     src/modules/rooms/application/RoomSessionService.cpp
@@ -692,11 +695,13 @@ if(BUILD_TESTING)
 
         add_executable(lemonde_de_lila_wx_gameplay_tests
             tests/GameplayContractTests.cpp
-            src/modules/gameplay/application/GamePromptInputCodec.cpp
-            src/modules/gameplay/presentation/history/GameLogCursor.cpp
-            src/modules/gameplay/infrastructure/GamePayloadJsonReader.cpp
-            src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp
-            src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp
+            src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
+            src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp
+            src/modules/gameplay/history/presentation/GameLogCursor.cpp
+            src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp
+            src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp
+            src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp
+            src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp
         )
         target_include_directories(lemonde_de_lila_wx_gameplay_tests PRIVATE src)
         target_link_libraries(lemonde_de_lila_wx_gameplay_tests PRIVATE nlohmann_json::nlohmann_json)

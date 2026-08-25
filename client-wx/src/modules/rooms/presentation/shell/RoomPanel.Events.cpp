@@ -3,7 +3,7 @@
 #include <wx/event.h>
 #include <wx/textctrl.h>
 
-#include "modules/gameplay/presentation/panel/GamePlayPanel.h"
+#include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
 #include "modules/rooms/presentation/model/RoomPresentationModel.h"
 #include "shared/accessibility/presentation/ActionButton.h"
@@ -63,7 +63,10 @@ void RoomPanel::BindEvents()
         [this]()
         {
             lila::shared::accessibility::NavigationController::Scope scope;
-            scope.Add(gameZoneAnchor_);
+            if (auto* gameTarget = gamePlayPanel_->ActiveNavigationTarget())
+                scope.Add(gameTarget);
+            else
+                scope.Add(gameZoneAnchor_);
             if (chatInput_->IsShown()) scope.Add(chatInput_);
             scope.Add(history_);
             return scope;

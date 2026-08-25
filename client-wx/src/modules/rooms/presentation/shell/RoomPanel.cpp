@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "modules/rooms/application/RoomSessionService.h"
-#include "modules/gameplay/presentation/panel/GamePlayPanel.h"
+#include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
 #include "modules/rooms/presentation/history/HistoryAnnouncementQueue.h"
 #include "shared/accessibility/presentation/ActionButton.h"

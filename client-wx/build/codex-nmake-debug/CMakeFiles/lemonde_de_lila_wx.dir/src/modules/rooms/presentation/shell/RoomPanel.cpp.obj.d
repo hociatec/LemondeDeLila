@@ -535,10 +535,10 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/process.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/presentation/panel/GamePlayPanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/shell/presentation/panel/GamePlayPanel.h
 C:/vcpkg/installed/x64-windows/include/wx/weakref.h
 C:/vcpkg/installed/x64-windows/include/wx/meta/int2type.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameAction.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/actions/domain/GameAction.h
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/adl_serializer.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/abi_macros.hpp
@@ -635,12 +635,14 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/ordered_map.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/any
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameEvent.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameState.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameLine.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GamePrompt.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameShortcut.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/presentation/history/GameLogCursor.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/session/domain/GameEvent.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameState.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/domain/GameCard.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameLine.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/prompts/domain/GamePrompt.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/pawn_selection/domain/PawnSelection.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/shortcuts/domain/GameShortcut.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/history/presentation/GameLogCursor.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/zone/RoomGameZoneAnchor.h
 C:/vcpkg/installed/x64-windows/include/wx/control.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h

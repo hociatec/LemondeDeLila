@@ -5,9 +5,9 @@
 
 #include <nlohmann/json.hpp>
 
-#include "modules/gameplay/application/GamePromptInputCodec.h"
-#include "modules/gameplay/infrastructure/GameStatePayloadCodec.h"
-#include "modules/gameplay/presentation/history/GameLogCursor.h"
+#include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
+#include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
+#include "modules/gameplay/history/presentation/GameLogCursor.h"
 
 namespace
 {
@@ -83,6 +83,90 @@ void TestActionLabelsRemainDistinct()
     Expect(state.lines[0].label != state.lines[1].label, "Le payload doit distinguer des libellés identiques.");
 }
 
+void TestGenericCardsContract()
+{
+    const auto payload = nlohmann::json{
+        {"roomId", 11},
+        {"gameType", "card-game"},
+        {"state", {{"extras", {
+            {"hand", nlohmann::json::array({"wolf", "moon", "unknown"})},
+            {"handCards", nlohmann::json::array({
+                {{"memberId", "moon"}, {"label", "La lune"}, {"description", "Carte nocturne"}},
+                {{"memberId", "wolf"}, {"label", "Le loup"}},
+            })},
+        }}}},
+    };
+
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    Expect(state.hand.size() == 3, "Toutes les cartes de la main doivent etre conservees.");
+    Expect(state.hand[0].id == "wolf" && state.hand[0].label == "Le loup",
+        "Une carte doit recevoir le libelle riche correspondant a son identifiant.");
+    Expect(state.hand[1].description == "Carte nocturne",
+        "La description generique d'une carte doit etre conservee.");
+    Expect(state.hand[2].label == "unknown",
+        "Une carte inconnue doit rester utilisable avec son identifiant comme libelle.");
+}
+
+void TestServerDrivenPawnSelection()
+{
+    const auto payload = nlohmann::json{
+        {"roomId", 9},
+        {"gameType", "morpion"},
+        {"state", {
+            {"actions", nlohmann::json::array({
+                {{"type", "choose_pawn"}, {"payload", {{"pawnId", "flower"}}}},
+                {{"type", "choose_pawn"}, {"payload", {{"pawnId", "stone"}}}},
+            })},
+            {"pending", {
+                {"type", "choose_pawn"},
+                {"playerId", 7},
+                {"choices", nlohmann::json::array({"Une fleur", "Un caillou"})},
+                {"data", {
+                    {"pawns", nlohmann::json::array({
+                        {{"id", "flower"}, {"label", "Une fleur"}},
+                        {{"id", "stone"}, {"label", "Un caillou"}},
+                    })},
+                    {"choiceActionsByIndex", nlohmann::json::array({
+                        {{"type", "choose_pawn"}, {"payload", {{"pawnId", "flower"}}}},
+                        {{"type", "choose_pawn"}, {"payload", {{"pawnId", "stone"}}}},
+                    })},
+                }},
+            }},
+        }},
+    };
+
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    Expect(state.pawnSelection.has_value(), "Le choix de pion actif doit etre decode.");
+    Expect(state.pawnSelection->label == "Votre pion.", "Le libelle WPF du choix de pion est attendu.");
+    Expect(state.pawnSelection->choices.size() == 2, "Tous les pions serveur doivent etre proposes.");
+    Expect(state.pawnSelection->choices[1].label == "Un caillou", "Le libelle serveur doit rester intact.");
+    Expect(state.pawnSelection->choices[1].action.payload.at("pawnId") == "stone",
+        "Le choix doit renvoyer l'action explicitement associee par le serveur.");
+}
+
+void TestPawnSelectionHiddenForPassiveViewer()
+{
+    const auto payload = nlohmann::json{
+        {"roomId", 10},
+        {"gameType", "morpion"},
+        {"state", {
+            {"actions", nlohmann::json::array()},
+            {"pending", {
+                {"type", "choose_pawn"},
+                {"playerId", 8},
+                {"choices", nlohmann::json::array({"Une fleur"})},
+                {"data", {{"pawns", nlohmann::json::array({
+                    {{"id", "flower"}, {"label", "Une fleur"}},
+                })}}},
+            }},
+        }},
+    };
+
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    Expect(!state.pawnSelection.has_value(),
+        "Un spectateur ou joueur passif ne doit pas recevoir une liste interactive.");
+}
+
 void TestGameLogCursor()
 {
     using lila::modules::gameplay::presentation::history::GameLogCursor;
@@ -110,6 +194,9 @@ int main()
         TestServerDrivenPrompt();
         TestTypedInputs();
         TestActionLabelsRemainDistinct();
+        TestGenericCardsContract();
+        TestServerDrivenPawnSelection();
+        TestPawnSelectionHiddenForPassiveViewer();
         TestGameLogCursor();
         std::cout << "Gameplay contract tests passed.\n";
         return 0;

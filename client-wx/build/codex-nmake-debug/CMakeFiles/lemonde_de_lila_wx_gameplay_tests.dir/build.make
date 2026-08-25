@@ -81,127 +81,171 @@ CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\tests\GameplayContractTests.cpp
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\tests\GameplayContractTests.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\tests\GameplayContractTests.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\application\GamePromptInputCodec.cpp
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/application/GamePromptInputCodec.cpp.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\application\GamePromptInputCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/application/GamePromptInputCodec.cpp.i"
-	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.i @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\application\GamePromptInputCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/application/GamePromptInputCodec.cpp.s"
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp.s"
 	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\application\GamePromptInputCodec.cpp
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\presentation\history\GameLogCursor.cpp
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/presentation/history/GameLogCursor.cpp.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\presentation\history\GameLogCursor.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/presentation/history/GameLogCursor.cpp.i"
-	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.i @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\presentation\history\GameLogCursor.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/presentation/history/GameLogCursor.cpp.s"
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp.s"
 	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\presentation\history\GameLogCursor.cpp
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GamePayloadJsonReader.cpp.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\history\presentation\GameLogCursor.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/history/presentation/GameLogCursor.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\history\presentation\GameLogCursor.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GamePayloadJsonReader.cpp.i"
-	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.i @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/history/presentation/GameLogCursor.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\history\presentation\GameLogCursor.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GamePayloadJsonReader.cpp.s"
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/history/presentation/GameLogCursor.cpp.s"
 	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\history\presentation\GameLogCursor.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp.i"
-	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.i @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp.s"
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp.s"
 	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp.obj"
-	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp.i"
-	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.i @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp
 <<
 
-CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp.s"
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp.s"
 	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
- /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\flags.make
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj /FdCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp
+<<
+
+CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp
 <<
 
 # Object files for target lemonde_de_lila_wx_gameplay_tests
 lemonde_de_lila_wx_gameplay_tests_OBJECTS = \
 "CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\tests\GameplayContractTests.cpp.obj" \
-"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.obj" \
-"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj" \
-"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj" \
-"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj" \
-"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj"
+"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj" \
+"CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj"
 
 # External object files for target lemonde_de_lila_wx_gameplay_tests
 lemonde_de_lila_wx_gameplay_tests_EXTERNAL_OBJECTS =
 
 lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\tests\GameplayContractTests.cpp.obj
-lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.obj
-lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj
-lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj
-lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj
-lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj
+lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj
+lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj
+lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj
+lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj
+lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj
+lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj
+lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj
 lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make
 lemonde_de_lila_wx_gameplay_tests.exe: CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\objects1.rsp
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable lemonde_de_lila_wx_gameplay_tests.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable lemonde_de_lila_wx_gameplay_tests.exe"
 	"C:\Program Files\CMake\bin\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100261~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100261~1.0\x64\mt.exe --manifests -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\link.exe /nologo @CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\objects1.rsp @<<
  /out:lemonde_de_lila_wx_gameplay_tests.exe /implib:lemonde_de_lila_wx_gameplay_tests.lib /pdb:C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\lemonde_de_lila_wx_gameplay_tests.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib 
 <<

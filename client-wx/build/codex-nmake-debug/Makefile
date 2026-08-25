@@ -2167,500 +2167,578 @@ src\modules\chat\presentation\ChatFrame.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.cpp.s
 .PHONY : src\modules\chat\presentation\ChatFrame.cpp.s
 
-src\modules\gameplay\application\GamePromptInputCodec.obj: src\modules\gameplay\application\GamePromptInputCodec.cpp.obj
-.PHONY : src\modules\gameplay\application\GamePromptInputCodec.obj
+src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.obj: src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.obj
+.PHONY : src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.obj
 
 # target to build an object file
-src\modules\gameplay\application\GamePromptInputCodec.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.obj
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.obj
-.PHONY : src\modules\gameplay\application\GamePromptInputCodec.cpp.obj
+src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.obj
+.PHONY : src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.obj
 
-src\modules\gameplay\application\GamePromptInputCodec.i: src\modules\gameplay\application\GamePromptInputCodec.cpp.i
-.PHONY : src\modules\gameplay\application\GamePromptInputCodec.i
+src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.i: src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.i
+.PHONY : src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.i
 
 # target to preprocess a source file
-src\modules\gameplay\application\GamePromptInputCodec.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.i
-.PHONY : src\modules\gameplay\application\GamePromptInputCodec.cpp.i
+src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.i
+.PHONY : src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.i
 
-src\modules\gameplay\application\GamePromptInputCodec.s: src\modules\gameplay\application\GamePromptInputCodec.cpp.s
-.PHONY : src\modules\gameplay\application\GamePromptInputCodec.s
+src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.s: src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.s
+.PHONY : src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.s
 
 # target to generate assembly for a file
-src\modules\gameplay\application\GamePromptInputCodec.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\application\GamePromptInputCodec.cpp.s
-.PHONY : src\modules\gameplay\application\GamePromptInputCodec.cpp.s
+src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.s
+.PHONY : src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.s
 
-src\modules\gameplay\application\GameSessionService.obj: src\modules\gameplay\application\GameSessionService.cpp.obj
-.PHONY : src\modules\gameplay\application\GameSessionService.obj
+src\modules\gameplay\cards\infrastructure\GameCardDecoder.obj: src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj
+.PHONY : src\modules\gameplay\cards\infrastructure\GameCardDecoder.obj
 
 # target to build an object file
-src\modules\gameplay\application\GameSessionService.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\application\GameSessionService.cpp.obj
-.PHONY : src\modules\gameplay\application\GameSessionService.cpp.obj
+src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj
+.PHONY : src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj
 
-src\modules\gameplay\application\GameSessionService.i: src\modules\gameplay\application\GameSessionService.cpp.i
-.PHONY : src\modules\gameplay\application\GameSessionService.i
+src\modules\gameplay\cards\infrastructure\GameCardDecoder.i: src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.i
+.PHONY : src\modules\gameplay\cards\infrastructure\GameCardDecoder.i
 
 # target to preprocess a source file
-src\modules\gameplay\application\GameSessionService.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\application\GameSessionService.cpp.i
-.PHONY : src\modules\gameplay\application\GameSessionService.cpp.i
+src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.i
+.PHONY : src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.i
 
-src\modules\gameplay\application\GameSessionService.s: src\modules\gameplay\application\GameSessionService.cpp.s
-.PHONY : src\modules\gameplay\application\GameSessionService.s
+src\modules\gameplay\cards\infrastructure\GameCardDecoder.s: src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.s
+.PHONY : src\modules\gameplay\cards\infrastructure\GameCardDecoder.s
 
 # target to generate assembly for a file
-src\modules\gameplay\application\GameSessionService.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\application\GameSessionService.cpp.s
-.PHONY : src\modules\gameplay\application\GameSessionService.cpp.s
+src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.s
+.PHONY : src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.s
 
-src\modules\gameplay\infrastructure\GamePayloadJsonReader.obj: src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj
-.PHONY : src\modules\gameplay\infrastructure\GamePayloadJsonReader.obj
+src\modules\gameplay\hand\presentation\GameHandPanel.obj: src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj
+.PHONY : src\modules\gameplay\hand\presentation\GameHandPanel.obj
 
 # target to build an object file
-src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj
-.PHONY : src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.obj
+src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj
+.PHONY : src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj
 
-src\modules\gameplay\infrastructure\GamePayloadJsonReader.i: src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.i
-.PHONY : src\modules\gameplay\infrastructure\GamePayloadJsonReader.i
+src\modules\gameplay\hand\presentation\GameHandPanel.i: src\modules\gameplay\hand\presentation\GameHandPanel.cpp.i
+.PHONY : src\modules\gameplay\hand\presentation\GameHandPanel.i
 
 # target to preprocess a source file
-src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.i
-.PHONY : src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.i
+src\modules\gameplay\hand\presentation\GameHandPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.i
+.PHONY : src\modules\gameplay\hand\presentation\GameHandPanel.cpp.i
 
-src\modules\gameplay\infrastructure\GamePayloadJsonReader.s: src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.s
-.PHONY : src\modules\gameplay\infrastructure\GamePayloadJsonReader.s
+src\modules\gameplay\hand\presentation\GameHandPanel.s: src\modules\gameplay\hand\presentation\GameHandPanel.cpp.s
+.PHONY : src\modules\gameplay\hand\presentation\GameHandPanel.s
 
 # target to generate assembly for a file
-src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.s
-.PHONY : src\modules\gameplay\infrastructure\GamePayloadJsonReader.cpp.s
+src\modules\gameplay\hand\presentation\GameHandPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.s
+.PHONY : src\modules\gameplay\hand\presentation\GameHandPanel.cpp.s
 
-src\modules\gameplay\infrastructure\GameSessionGateway.obj: src\modules\gameplay\infrastructure\GameSessionGateway.cpp.obj
-.PHONY : src\modules\gameplay\infrastructure\GameSessionGateway.obj
+src\modules\gameplay\history\presentation\GameLogCursor.obj: src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj
+.PHONY : src\modules\gameplay\history\presentation\GameLogCursor.obj
 
 # target to build an object file
-src\modules\gameplay\infrastructure\GameSessionGateway.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GameSessionGateway.cpp.obj
-.PHONY : src\modules\gameplay\infrastructure\GameSessionGateway.cpp.obj
+src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj
+.PHONY : src\modules\gameplay\history\presentation\GameLogCursor.cpp.obj
 
-src\modules\gameplay\infrastructure\GameSessionGateway.i: src\modules\gameplay\infrastructure\GameSessionGateway.cpp.i
-.PHONY : src\modules\gameplay\infrastructure\GameSessionGateway.i
+src\modules\gameplay\history\presentation\GameLogCursor.i: src\modules\gameplay\history\presentation\GameLogCursor.cpp.i
+.PHONY : src\modules\gameplay\history\presentation\GameLogCursor.i
 
 # target to preprocess a source file
-src\modules\gameplay\infrastructure\GameSessionGateway.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GameSessionGateway.cpp.i
-.PHONY : src\modules\gameplay\infrastructure\GameSessionGateway.cpp.i
+src\modules\gameplay\history\presentation\GameLogCursor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.i
+.PHONY : src\modules\gameplay\history\presentation\GameLogCursor.cpp.i
 
-src\modules\gameplay\infrastructure\GameSessionGateway.s: src\modules\gameplay\infrastructure\GameSessionGateway.cpp.s
-.PHONY : src\modules\gameplay\infrastructure\GameSessionGateway.s
+src\modules\gameplay\history\presentation\GameLogCursor.s: src\modules\gameplay\history\presentation\GameLogCursor.cpp.s
+.PHONY : src\modules\gameplay\history\presentation\GameLogCursor.s
 
 # target to generate assembly for a file
-src\modules\gameplay\infrastructure\GameSessionGateway.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GameSessionGateway.cpp.s
-.PHONY : src\modules\gameplay\infrastructure\GameSessionGateway.cpp.s
+src\modules\gameplay\history\presentation\GameLogCursor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\history\presentation\GameLogCursor.cpp.s
+.PHONY : src\modules\gameplay\history\presentation\GameLogCursor.cpp.s
 
-src\modules\gameplay\infrastructure\GameStatePayloadCodec.obj: src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj
-.PHONY : src\modules\gameplay\infrastructure\GameStatePayloadCodec.obj
+src\modules\gameplay\information\presentation\GameInfoTextBuilder.obj: src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj
+.PHONY : src\modules\gameplay\information\presentation\GameInfoTextBuilder.obj
 
 # target to build an object file
-src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj
-.PHONY : src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.obj
+src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj
+.PHONY : src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj
 
-src\modules\gameplay\infrastructure\GameStatePayloadCodec.i: src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.i
-.PHONY : src\modules\gameplay\infrastructure\GameStatePayloadCodec.i
+src\modules\gameplay\information\presentation\GameInfoTextBuilder.i: src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.i
+.PHONY : src\modules\gameplay\information\presentation\GameInfoTextBuilder.i
 
 # target to preprocess a source file
-src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.i
-.PHONY : src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.i
+src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.i
+.PHONY : src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.i
 
-src\modules\gameplay\infrastructure\GameStatePayloadCodec.s: src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.s
-.PHONY : src\modules\gameplay\infrastructure\GameStatePayloadCodec.s
+src\modules\gameplay\information\presentation\GameInfoTextBuilder.s: src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.s
+.PHONY : src\modules\gameplay\information\presentation\GameInfoTextBuilder.s
 
 # target to generate assembly for a file
-src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.s
-.PHONY : src\modules\gameplay\infrastructure\GameStatePayloadCodec.cpp.s
+src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.s
+.PHONY : src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.s
 
-src\modules\gameplay\infrastructure\GameStateSectionsDecoder.obj: src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj
-.PHONY : src\modules\gameplay\infrastructure\GameStateSectionsDecoder.obj
+src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.obj: src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj
+.PHONY : src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.obj
 
 # target to build an object file
-src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj
-.PHONY : src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.obj
+src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj
+.PHONY : src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.obj
 
-src\modules\gameplay\infrastructure\GameStateSectionsDecoder.i: src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.i
-.PHONY : src\modules\gameplay\infrastructure\GameStateSectionsDecoder.i
+src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.i: src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.i
+.PHONY : src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.i
 
 # target to preprocess a source file
-src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.i
-.PHONY : src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.i
+src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.i
+.PHONY : src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.i
 
-src\modules\gameplay\infrastructure\GameStateSectionsDecoder.s: src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.s
-.PHONY : src\modules\gameplay\infrastructure\GameStateSectionsDecoder.s
+src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.s: src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.s
+.PHONY : src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.s
 
 # target to generate assembly for a file
-src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.s
-.PHONY : src\modules\gameplay\infrastructure\GameStateSectionsDecoder.cpp.s
+src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.s
+.PHONY : src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.cpp.s
 
-src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.obj: src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.obj
-.PHONY : src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.obj
+src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.obj: src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.obj
+.PHONY : src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.obj
-.PHONY : src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.obj
+src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.obj
+.PHONY : src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.obj
 
-src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.i: src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.i
-.PHONY : src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.i
+src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.i: src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.i
+.PHONY : src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.i
-.PHONY : src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.i
+src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.i
+.PHONY : src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.i
 
-src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.s: src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.s
-.PHONY : src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.s
+src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.s: src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.s
+.PHONY : src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.s
-.PHONY : src\modules\gameplay\presentation\confirmation\GameActionConfirmationPanel.cpp.s
+src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.s
+.PHONY : src\modules\gameplay\pawn_selection\presentation\PawnSelectionPanel.cpp.s
 
-src\modules\gameplay\presentation\formatting\GamePlayFormatters.obj: src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.obj
-.PHONY : src\modules\gameplay\presentation\formatting\GamePlayFormatters.obj
+src\modules\gameplay\prompts\application\GamePromptInputCodec.obj: src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj
+.PHONY : src\modules\gameplay\prompts\application\GamePromptInputCodec.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.obj
-.PHONY : src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.obj
+src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj
+.PHONY : src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.obj
 
-src\modules\gameplay\presentation\formatting\GamePlayFormatters.i: src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.i
-.PHONY : src\modules\gameplay\presentation\formatting\GamePlayFormatters.i
+src\modules\gameplay\prompts\application\GamePromptInputCodec.i: src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.i
+.PHONY : src\modules\gameplay\prompts\application\GamePromptInputCodec.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.i
-.PHONY : src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.i
+src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.i
+.PHONY : src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.i
 
-src\modules\gameplay\presentation\formatting\GamePlayFormatters.s: src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.s
-.PHONY : src\modules\gameplay\presentation\formatting\GamePlayFormatters.s
+src\modules\gameplay\prompts\application\GamePromptInputCodec.s: src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.s
+.PHONY : src\modules\gameplay\prompts\application\GamePromptInputCodec.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.s
-.PHONY : src\modules\gameplay\presentation\formatting\GamePlayFormatters.cpp.s
+src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.s
+.PHONY : src\modules\gameplay\prompts\application\GamePromptInputCodec.cpp.s
 
-src\modules\gameplay\presentation\hand\GameHandPanel.obj: src\modules\gameplay\presentation\hand\GameHandPanel.cpp.obj
-.PHONY : src\modules\gameplay\presentation\hand\GameHandPanel.obj
+src\modules\gameplay\prompts\presentation\GamePromptPanel.obj: src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.obj
+.PHONY : src\modules\gameplay\prompts\presentation\GamePromptPanel.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\hand\GameHandPanel.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\hand\GameHandPanel.cpp.obj
-.PHONY : src\modules\gameplay\presentation\hand\GameHandPanel.cpp.obj
+src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.obj
+.PHONY : src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.obj
 
-src\modules\gameplay\presentation\hand\GameHandPanel.i: src\modules\gameplay\presentation\hand\GameHandPanel.cpp.i
-.PHONY : src\modules\gameplay\presentation\hand\GameHandPanel.i
+src\modules\gameplay\prompts\presentation\GamePromptPanel.i: src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.i
+.PHONY : src\modules\gameplay\prompts\presentation\GamePromptPanel.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\hand\GameHandPanel.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\hand\GameHandPanel.cpp.i
-.PHONY : src\modules\gameplay\presentation\hand\GameHandPanel.cpp.i
+src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.i
+.PHONY : src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.i
 
-src\modules\gameplay\presentation\hand\GameHandPanel.s: src\modules\gameplay\presentation\hand\GameHandPanel.cpp.s
-.PHONY : src\modules\gameplay\presentation\hand\GameHandPanel.s
+src\modules\gameplay\prompts\presentation\GamePromptPanel.s: src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.s
+.PHONY : src\modules\gameplay\prompts\presentation\GamePromptPanel.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\hand\GameHandPanel.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\hand\GameHandPanel.cpp.s
-.PHONY : src\modules\gameplay\presentation\hand\GameHandPanel.cpp.s
+src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.s
+.PHONY : src\modules\gameplay\prompts\presentation\GamePromptPanel.cpp.s
 
-src\modules\gameplay\presentation\history\GameLogCursor.obj: src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj
-.PHONY : src\modules\gameplay\presentation\history\GameLogCursor.obj
+src\modules\gameplay\session\application\GameSessionService.obj: src\modules\gameplay\session\application\GameSessionService.cpp.obj
+.PHONY : src\modules\gameplay\session\application\GameSessionService.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj
-.PHONY : src\modules\gameplay\presentation\history\GameLogCursor.cpp.obj
+src\modules\gameplay\session\application\GameSessionService.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameSessionService.cpp.obj
+.PHONY : src\modules\gameplay\session\application\GameSessionService.cpp.obj
 
-src\modules\gameplay\presentation\history\GameLogCursor.i: src\modules\gameplay\presentation\history\GameLogCursor.cpp.i
-.PHONY : src\modules\gameplay\presentation\history\GameLogCursor.i
+src\modules\gameplay\session\application\GameSessionService.i: src\modules\gameplay\session\application\GameSessionService.cpp.i
+.PHONY : src\modules\gameplay\session\application\GameSessionService.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\history\GameLogCursor.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.i
-.PHONY : src\modules\gameplay\presentation\history\GameLogCursor.cpp.i
+src\modules\gameplay\session\application\GameSessionService.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameSessionService.cpp.i
+.PHONY : src\modules\gameplay\session\application\GameSessionService.cpp.i
 
-src\modules\gameplay\presentation\history\GameLogCursor.s: src\modules\gameplay\presentation\history\GameLogCursor.cpp.s
-.PHONY : src\modules\gameplay\presentation\history\GameLogCursor.s
+src\modules\gameplay\session\application\GameSessionService.s: src\modules\gameplay\session\application\GameSessionService.cpp.s
+.PHONY : src\modules\gameplay\session\application\GameSessionService.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\history\GameLogCursor.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\presentation\history\GameLogCursor.cpp.s
-.PHONY : src\modules\gameplay\presentation\history\GameLogCursor.cpp.s
+src\modules\gameplay\session\application\GameSessionService.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameSessionService.cpp.s
+.PHONY : src\modules\gameplay\session\application\GameSessionService.cpp.s
 
-src\modules\gameplay\presentation\info\GameInfoTextBuilder.obj: src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.obj
-.PHONY : src\modules\gameplay\presentation\info\GameInfoTextBuilder.obj
+src\modules\gameplay\session\infrastructure\GameSessionGateway.obj: src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj
+.PHONY : src\modules\gameplay\session\infrastructure\GameSessionGateway.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.obj
-.PHONY : src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.obj
+src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj
+.PHONY : src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj
 
-src\modules\gameplay\presentation\info\GameInfoTextBuilder.i: src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.i
-.PHONY : src\modules\gameplay\presentation\info\GameInfoTextBuilder.i
+src\modules\gameplay\session\infrastructure\GameSessionGateway.i: src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.i
+.PHONY : src\modules\gameplay\session\infrastructure\GameSessionGateway.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.i
-.PHONY : src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.i
+src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.i
+.PHONY : src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.i
 
-src\modules\gameplay\presentation\info\GameInfoTextBuilder.s: src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.s
-.PHONY : src\modules\gameplay\presentation\info\GameInfoTextBuilder.s
+src\modules\gameplay\session\infrastructure\GameSessionGateway.s: src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.s
+.PHONY : src\modules\gameplay\session\infrastructure\GameSessionGateway.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.s
-.PHONY : src\modules\gameplay\presentation\info\GameInfoTextBuilder.cpp.s
+src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.s
+.PHONY : src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.s
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.obj: src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.obj
+src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.obj: src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.obj
+src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.obj
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.i: src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.i
+src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.i: src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.i
+src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.i
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.s: src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.s
+src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.s: src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Actions.cpp.s
+src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.cpp.s
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Events.obj: src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Events.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.obj: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Events.i: src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Events.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.i: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.i
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Events.s: src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Events.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.s: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.s
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Input.obj: src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.obj: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Input.i: src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.i: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.i
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Input.s: src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.s: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.s
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.obj: src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.obj: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.i: src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.i: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.i
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.s: src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.s: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.s
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Session.obj: src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Session.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.obj: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Session.i: src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Session.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.i: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.i
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.Session.s: src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Session.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.s: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Session.cpp.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.s
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.State.obj: src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.State.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.obj: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.State.i: src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.State.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.i: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.i
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.State.s: src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.State.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.s: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.State.cpp.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.s
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.obj: src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.obj: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.obj
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.i: src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.i: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.i
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.i
 
-src\modules\gameplay\presentation\panel\GamePlayPanel.s: src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.s: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.s
-.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.cpp.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.s
 
-src\modules\gameplay\presentation\prompt\GamePromptPanel.obj: src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.obj
-.PHONY : src\modules\gameplay\presentation\prompt\GamePromptPanel.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.obj: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.obj
-.PHONY : src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.obj
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj
 
-src\modules\gameplay\presentation\prompt\GamePromptPanel.i: src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.i
-.PHONY : src\modules\gameplay\presentation\prompt\GamePromptPanel.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.i: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.i
-.PHONY : src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.i
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.i
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.i
 
-src\modules\gameplay\presentation\prompt\GamePromptPanel.s: src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.s
-.PHONY : src\modules\gameplay\presentation\prompt\GamePromptPanel.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.s: src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.s
-.PHONY : src\modules\gameplay\presentation\prompt\GamePromptPanel.cpp.s
+src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.s
+.PHONY : src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.s
 
-src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.obj: src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.obj
-.PHONY : src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.obj
+src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.obj: src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj
+.PHONY : src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.obj
 
 # target to build an object file
-src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.obj
-.PHONY : src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.obj
+src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj
+.PHONY : src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj
 
-src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.i: src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.i
-.PHONY : src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.i
+src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.i: src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.i
+.PHONY : src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.i
 
 # target to preprocess a source file
-src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.i
-.PHONY : src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.i
+src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.i
+.PHONY : src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.i
 
-src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.s: src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.s
-.PHONY : src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.s
+src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.s: src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.s
+.PHONY : src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.s
 
 # target to generate assembly for a file
-src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.s
-.PHONY : src\modules\gameplay\presentation\shortcuts\GameShortcutResolver.cpp.s
+src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.s
+.PHONY : src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.s
+
+src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.obj: src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj
+.PHONY : src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.obj
+
+# target to build an object file
+src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj
+.PHONY : src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.obj
+
+src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.i: src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.i
+.PHONY : src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.i
+
+# target to preprocess a source file
+src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.i
+.PHONY : src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.i
+
+src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.s: src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.s
+.PHONY : src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.s
+
+# target to generate assembly for a file
+src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.s
+.PHONY : src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.cpp.s
+
+src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.obj: src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj
+.PHONY : src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.obj
+
+# target to build an object file
+src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj
+.PHONY : src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj
+
+src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.i: src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.i
+.PHONY : src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.i
+
+# target to preprocess a source file
+src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.i
+.PHONY : src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.i
+
+src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.s: src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.s
+.PHONY : src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.s
+
+# target to generate assembly for a file
+src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.s
+.PHONY : src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.s
+
+src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.obj: src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj
+.PHONY : src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.obj
+
+# target to build an object file
+src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj
+.PHONY : src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.obj
+
+src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.i: src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.i
+.PHONY : src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.i
+
+# target to preprocess a source file
+src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.i
+.PHONY : src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.i
+
+src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.s: src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.s
+.PHONY : src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.s
+
+# target to generate assembly for a file
+src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.s
+.PHONY : src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.cpp.s
 
 src\modules\home\application\HomeAuthValidator.obj: src\modules\home\application\HomeAuthValidator.cpp.obj
 .PHONY : src\modules\home\application\HomeAuthValidator.obj
@@ -8154,66 +8232,75 @@ help:
 	@echo ... src/modules/chat/presentation/ChatFrame.obj
 	@echo ... src/modules/chat/presentation/ChatFrame.i
 	@echo ... src/modules/chat/presentation/ChatFrame.s
-	@echo ... src/modules/gameplay/application/GamePromptInputCodec.obj
-	@echo ... src/modules/gameplay/application/GamePromptInputCodec.i
-	@echo ... src/modules/gameplay/application/GamePromptInputCodec.s
-	@echo ... src/modules/gameplay/application/GameSessionService.obj
-	@echo ... src/modules/gameplay/application/GameSessionService.i
-	@echo ... src/modules/gameplay/application/GameSessionService.s
-	@echo ... src/modules/gameplay/infrastructure/GamePayloadJsonReader.obj
-	@echo ... src/modules/gameplay/infrastructure/GamePayloadJsonReader.i
-	@echo ... src/modules/gameplay/infrastructure/GamePayloadJsonReader.s
-	@echo ... src/modules/gameplay/infrastructure/GameSessionGateway.obj
-	@echo ... src/modules/gameplay/infrastructure/GameSessionGateway.i
-	@echo ... src/modules/gameplay/infrastructure/GameSessionGateway.s
-	@echo ... src/modules/gameplay/infrastructure/GameStatePayloadCodec.obj
-	@echo ... src/modules/gameplay/infrastructure/GameStatePayloadCodec.i
-	@echo ... src/modules/gameplay/infrastructure/GameStatePayloadCodec.s
-	@echo ... src/modules/gameplay/infrastructure/GameStateSectionsDecoder.obj
-	@echo ... src/modules/gameplay/infrastructure/GameStateSectionsDecoder.i
-	@echo ... src/modules/gameplay/infrastructure/GameStateSectionsDecoder.s
-	@echo ... src/modules/gameplay/presentation/confirmation/GameActionConfirmationPanel.obj
-	@echo ... src/modules/gameplay/presentation/confirmation/GameActionConfirmationPanel.i
-	@echo ... src/modules/gameplay/presentation/confirmation/GameActionConfirmationPanel.s
-	@echo ... src/modules/gameplay/presentation/formatting/GamePlayFormatters.obj
-	@echo ... src/modules/gameplay/presentation/formatting/GamePlayFormatters.i
-	@echo ... src/modules/gameplay/presentation/formatting/GamePlayFormatters.s
-	@echo ... src/modules/gameplay/presentation/hand/GameHandPanel.obj
-	@echo ... src/modules/gameplay/presentation/hand/GameHandPanel.i
-	@echo ... src/modules/gameplay/presentation/hand/GameHandPanel.s
-	@echo ... src/modules/gameplay/presentation/history/GameLogCursor.obj
-	@echo ... src/modules/gameplay/presentation/history/GameLogCursor.i
-	@echo ... src/modules/gameplay/presentation/history/GameLogCursor.s
-	@echo ... src/modules/gameplay/presentation/info/GameInfoTextBuilder.obj
-	@echo ... src/modules/gameplay/presentation/info/GameInfoTextBuilder.i
-	@echo ... src/modules/gameplay/presentation/info/GameInfoTextBuilder.s
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Actions.obj
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Actions.i
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Actions.s
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Events.obj
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Events.i
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Events.s
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Input.obj
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Input.i
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Input.s
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Layout.obj
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Layout.i
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Layout.s
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Session.obj
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Session.i
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Session.s
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.State.obj
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.State.i
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.State.s
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.obj
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.i
-	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.s
-	@echo ... src/modules/gameplay/presentation/prompt/GamePromptPanel.obj
-	@echo ... src/modules/gameplay/presentation/prompt/GamePromptPanel.i
-	@echo ... src/modules/gameplay/presentation/prompt/GamePromptPanel.s
-	@echo ... src/modules/gameplay/presentation/shortcuts/GameShortcutResolver.obj
-	@echo ... src/modules/gameplay/presentation/shortcuts/GameShortcutResolver.i
-	@echo ... src/modules/gameplay/presentation/shortcuts/GameShortcutResolver.s
+	@echo ... src/modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.obj
+	@echo ... src/modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.i
+	@echo ... src/modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.s
+	@echo ... src/modules/gameplay/cards/infrastructure/GameCardDecoder.obj
+	@echo ... src/modules/gameplay/cards/infrastructure/GameCardDecoder.i
+	@echo ... src/modules/gameplay/cards/infrastructure/GameCardDecoder.s
+	@echo ... src/modules/gameplay/hand/presentation/GameHandPanel.obj
+	@echo ... src/modules/gameplay/hand/presentation/GameHandPanel.i
+	@echo ... src/modules/gameplay/hand/presentation/GameHandPanel.s
+	@echo ... src/modules/gameplay/history/presentation/GameLogCursor.obj
+	@echo ... src/modules/gameplay/history/presentation/GameLogCursor.i
+	@echo ... src/modules/gameplay/history/presentation/GameLogCursor.s
+	@echo ... src/modules/gameplay/information/presentation/GameInfoTextBuilder.obj
+	@echo ... src/modules/gameplay/information/presentation/GameInfoTextBuilder.i
+	@echo ... src/modules/gameplay/information/presentation/GameInfoTextBuilder.s
+	@echo ... src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.obj
+	@echo ... src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.i
+	@echo ... src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.s
+	@echo ... src/modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.obj
+	@echo ... src/modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.i
+	@echo ... src/modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.s
+	@echo ... src/modules/gameplay/prompts/application/GamePromptInputCodec.obj
+	@echo ... src/modules/gameplay/prompts/application/GamePromptInputCodec.i
+	@echo ... src/modules/gameplay/prompts/application/GamePromptInputCodec.s
+	@echo ... src/modules/gameplay/prompts/presentation/GamePromptPanel.obj
+	@echo ... src/modules/gameplay/prompts/presentation/GamePromptPanel.i
+	@echo ... src/modules/gameplay/prompts/presentation/GamePromptPanel.s
+	@echo ... src/modules/gameplay/session/application/GameSessionService.obj
+	@echo ... src/modules/gameplay/session/application/GameSessionService.i
+	@echo ... src/modules/gameplay/session/application/GameSessionService.s
+	@echo ... src/modules/gameplay/session/infrastructure/GameSessionGateway.obj
+	@echo ... src/modules/gameplay/session/infrastructure/GameSessionGateway.i
+	@echo ... src/modules/gameplay/session/infrastructure/GameSessionGateway.s
+	@echo ... src/modules/gameplay/shell/presentation/formatting/GamePlayFormatters.obj
+	@echo ... src/modules/gameplay/shell/presentation/formatting/GamePlayFormatters.i
+	@echo ... src/modules/gameplay/shell/presentation/formatting/GamePlayFormatters.s
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Actions.obj
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Actions.i
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Actions.s
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Events.obj
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Events.i
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Events.s
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Input.obj
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Input.i
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Input.s
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Layout.obj
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Layout.i
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Layout.s
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Session.obj
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Session.i
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Session.s
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.State.obj
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.State.i
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.State.s
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.obj
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.i
+	@echo ... src/modules/gameplay/shell/presentation/panel/GamePlayPanel.s
+	@echo ... src/modules/gameplay/shortcuts/presentation/GameShortcutResolver.obj
+	@echo ... src/modules/gameplay/shortcuts/presentation/GameShortcutResolver.i
+	@echo ... src/modules/gameplay/shortcuts/presentation/GameShortcutResolver.s
+	@echo ... src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.obj
+	@echo ... src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.i
+	@echo ... src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.s
+	@echo ... src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.obj
+	@echo ... src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.i
+	@echo ... src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.s
+	@echo ... src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.obj
+	@echo ... src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.i
+	@echo ... src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.s
 	@echo ... src/modules/home/application/HomeAuthValidator.obj
 	@echo ... src/modules/home/application/HomeAuthValidator.i
 	@echo ... src/modules/home/application/HomeAuthValidator.s
