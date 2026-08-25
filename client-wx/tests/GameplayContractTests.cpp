@@ -11,6 +11,7 @@
 #include "modules/gameplay/dice/application/GameDiceRollTracker.h"
 #include "modules/gameplay/dice/application/GameDiceTextBuilder.h"
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
+#include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
 
@@ -161,6 +162,7 @@ void TestCardsCarryTheirActionsAcrossGames()
                 {{"id", "wolf"}, {"label", "Le loup"}, {"actionIndex", 1}},
                 {{"id", "wolf"}, {"label", "Le second loup"}, {"actionIndex", 2}},
                 {{"id", "moon"}, {"label", "La lune"}, {"disabled", true}},
+                {{"id", "wolf"}, {"label", "Le loup jouable"}, {"disabled", true}, {"actionIndex", 1}},
             })}}},
         }},
     };
@@ -173,6 +175,8 @@ void TestCardsCarryTheirActionsAcrossGames()
         "Deux exemplaires d'une carte doivent conserver deux actions distinctes.");
     Expect(!GameCardActionResolver::Resolve(state.hand, state.actions, 2).has_value(),
         "Une carte desactivee doit rester consultable sans etre jouable.");
+    Expect(GameCardActionResolver::Resolve(state.hand, state.actions, 3).has_value(),
+        "Une action serveur disponible doit primer sur un indicateur visuel de carte obsolete.");
 }
 
 void TestGenericDiceContract()
@@ -305,6 +309,27 @@ void TestGameLogCursor()
     Expect(cursor.ExtractNew({"D"}) == std::vector<std::string>({"D"}),
         "La reinitialisation doit ouvrir une nouvelle session.");
 }
+
+void TestOlderGameStateCannotRestoreSetupPrompt()
+{
+    using lila::modules::gameplay::application::GameStateUpdatePolicy;
+    lila::modules::gameplay::domain::GameState roundState;
+    roundState.roomId = 42;
+    roundState.gameType = "lama";
+    roundState.version = 8;
+    roundState.phase = "round";
+
+    auto staleSetupState = roundState;
+    staleSetupState.version = 7;
+    staleSetupState.phase = "setup";
+    Expect(!GameStateUpdatePolicy::ShouldApply(roundState, staleSetupState),
+        "Un ancien etat de configuration ne doit pas remplacer la manche courante.");
+
+    auto nextRoundState = roundState;
+    nextRoundState.version = 9;
+    Expect(GameStateUpdatePolicy::ShouldApply(roundState, nextRoundState),
+        "Un nouvel etat de manche doit rester applicable.");
+}
 }
 
 int main()
@@ -322,6 +347,7 @@ int main()
         TestServerDrivenPawnSelection();
         TestPawnSelectionHiddenForPassiveViewer();
         TestGameLogCursor();
+        TestOlderGameStateCannotRestoreSetupPrompt();
         std::cout << "Gameplay contract tests passed.\n";
         return 0;
     }

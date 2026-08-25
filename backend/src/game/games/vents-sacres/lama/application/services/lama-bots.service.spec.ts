@@ -68,6 +68,14 @@ describe('LamaService bots and shortcuts', () => {
       ),
     ).toBe(true);
     expect(shortcuts.some((s: any) => s?.key === 'pressed Q')).toBe(false);
+    expect(
+      shortcuts.some(
+        (s: any) =>
+          s?.key === 'pressed SPACE' &&
+          s?.type === 'action' &&
+          s?.actionType === 'draw',
+      ),
+    ).toBe(true);
   });
 
   it('prevents infinite bot draw loop when turnTracker is serialized as strings', async () => {

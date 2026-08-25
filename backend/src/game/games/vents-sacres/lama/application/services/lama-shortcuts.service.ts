@@ -8,7 +8,6 @@ import {
 } from '../../../../../shortcuts/public-api';
 import { LamaSharedService } from './lama-shared.service';
 import type { LamaMetadata } from '../../model/lama.model';
-import { isLamaDrawLocked } from '../policies/lama-draw.policy';
 
 function asLamaMetadata(value: unknown): Partial<LamaMetadata> {
   return value != null && typeof value === 'object'
@@ -24,15 +23,6 @@ export class LamaShortcutsService {
 
     const meta = asLamaMetadata(ctx?.metadata);
     const currentPlayerId = ctx?.currentPlayerId ?? null;
-    const droppedOutByPlayerId: Record<string, boolean> =
-      meta.droppedOutByPlayerId && typeof meta.droppedOutByPlayerId === 'object'
-        ? meta.droppedOutByPlayerId
-        : {};
-    const drawLocked = isLamaDrawLocked(meta as LamaMetadata);
-    const currentPlayerDropped =
-      currentPlayerId != null &&
-      Boolean(droppedOutByPlayerId[String(currentPlayerId)]);
-    const deckCount = Array.isArray(meta.deck) ? meta.deck.length : 0;
     const tracker = meta.turnTracker ?? null;
     const trackerPlayerIdRaw: unknown = tracker?.playerId;
     const trackerDrawnRaw: unknown = tracker?.drawn;
@@ -52,13 +42,6 @@ export class LamaShortcutsService {
       trackerPlayedRaw === 1 ||
       String(trackerPlayedRaw ?? '').toLowerCase() === 'true';
     const isSameTurn = trackerPlayerId === currentPlayerId;
-    const canDraw =
-      isSameTurn &&
-      !currentPlayerDropped &&
-      !drawLocked &&
-      deckCount > 0 &&
-      !trackerDrawn;
-
     const allowPlayAfterDrawRaw: unknown = meta.allowPlayAfterDraw;
     const allowPlayAfterDraw =
       allowPlayAfterDrawRaw === true ||
@@ -68,7 +51,9 @@ export class LamaShortcutsService {
       allowPlayAfterDraw && isSameTurn && trackerDrawn && !trackerPlayed;
 
     return [
-      ...(canDraw ? [actionShortcut('SPACE', 'draw')] : []),
+      // The state presenter removes shortcuts whose action is not exposed to
+      // the viewer, so the action list remains the source of truth here.
+      actionShortcut('SPACE', 'draw'),
       interfaceShortcut('C', 'discard'),
       interfaceShortcut('E', 'hands'),
       interfaceShortcut('S', 'score'),

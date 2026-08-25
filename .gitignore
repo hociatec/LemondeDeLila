@@ -4,6 +4,7 @@
 **/dist/
 **/publish/
 **/node_modules/
+client-wx/build/
 
 # Local env
 backend/.env

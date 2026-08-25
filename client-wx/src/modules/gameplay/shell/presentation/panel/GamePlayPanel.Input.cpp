@@ -8,6 +8,7 @@
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
@@ -81,6 +82,18 @@ void GamePlayPanel::HandleKey(wxKeyEvent& event)
             SendKey(key);
             return;
         }
+        if (handPanel_->Count() > 0)
+        {
+            static_cast<void>(ActivateSelectedHandCard());
+            return;
+        }
+        if (HasDiceAction())
+        {
+            static_cast<void>(ActivateSelectedDie());
+            return;
+        }
+        if (state_.prompt && submittedPromptActionType_ == state_.prompt->actionType)
+            return;
         ActivateSelectedLine();
         return;
     }

@@ -39,7 +39,16 @@ void GamePlayPanel::SyncInlinePrompt()
     if (!state_.prompt)
     {
         dismissedPromptActionType_.clear();
+        submittedPromptActionType_.clear();
         promptPanel_->HidePrompt(true);
+        return;
+    }
+    if (!submittedPromptActionType_.empty() &&
+        submittedPromptActionType_ != state_.prompt->actionType)
+        submittedPromptActionType_.clear();
+    if (submittedPromptActionType_ == state_.prompt->actionType)
+    {
+        promptPanel_->HidePrompt(false);
         return;
     }
     if (dismissedPromptActionType_ == state_.prompt->actionType)

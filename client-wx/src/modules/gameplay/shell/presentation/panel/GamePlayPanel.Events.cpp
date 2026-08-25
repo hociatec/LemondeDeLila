@@ -60,6 +60,7 @@ void GamePlayPanel::BindEvents()
     promptPanel_->SetSubmitHandler(
         [this](domain::GameAction action)
         {
+            submittedPromptActionType_ = action.type;
             dismissedPromptActionType_.clear();
             ExecuteAction(std::move(action));
             if (onZoneFocusRequested_) onZoneFocusRequested_();
@@ -81,14 +82,20 @@ bool GamePlayPanel::ActivateFromZone()
     }
     if (IsConfirmationVisible() || IsInlinePromptVisible()) return true;
     if (pawnSelectionPanel_->IsActive()) return pawnSelectionPanel_->FocusSelection();
+    const bool promptSubmissionPending = state_.prompt &&
+        submittedPromptActionType_ == state_.prompt->actionType;
     if (state_.prompt)
     {
-        dismissedPromptActionType_.clear();
-        SyncInlinePrompt();
-        return true;
+        if (submittedPromptActionType_ != state_.prompt->actionType)
+        {
+            dismissedPromptActionType_.clear();
+            SyncInlinePrompt();
+            return true;
+        }
     }
     if (handPanel_->Count() > 0) return ActivateSelectedHandCard();
     if (HasDiceAction()) return ActivateSelectedDie();
+    if (promptSubmissionPending) return true;
     if (!state_.lines.empty())
     {
         ActivateSelectedLine();
@@ -151,7 +158,7 @@ bool GamePlayPanel::ActivateSelectedHandCard()
         state_.hand, state_.actions, static_cast<std::size_t>(selected));
     if (!action)
     {
-        UpdateStatus(wxString(L"Cette carte ne peut pas Ãªtre jouÃ©e."), true, true);
+        UpdateStatus(wxString(L"Cette carte ne peut pas \u00EAtre jou\u00E9e."), true, true);
         return true;
     }
     PrepareAndExecuteAction(std::move(*action));

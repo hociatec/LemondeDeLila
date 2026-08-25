@@ -38,13 +38,11 @@ std::optional<domain::GameAction> GameCardActionResolver::Resolve(
 {
     if (selectedCard >= cards.size()) return std::nullopt;
     const auto& card = cards[selectedCard];
-    if (card.disabled) return std::nullopt;
 
     if (card.actionIndex.has_value())
     {
         const auto index = *card.actionIndex;
-        if (index >= actions.size() || actions[index].disabled) return std::nullopt;
-        return actions[index];
+        if (index < actions.size() && !actions[index].disabled) return actions[index];
     }
 
     std::size_t occurrence = 0;

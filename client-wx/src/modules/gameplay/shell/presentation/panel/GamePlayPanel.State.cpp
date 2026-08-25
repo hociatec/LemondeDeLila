@@ -15,6 +15,7 @@
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
+#include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
@@ -22,6 +23,7 @@ namespace lila::modules::gameplay::presentation
 {
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
+    if (!application::GameStateUpdatePolicy::ShouldApply(state_, state)) return;
     if (!gameName_.empty()) state.gameName = gameName_;
     const bool diceRolled = diceRollTracker_.Observe(state.dice, state.turnIndex);
     state_ = std::move(state);
@@ -90,6 +92,7 @@ void GamePlayPanel::PublishLogMessages(const std::vector<std::string>& messages)
 void GamePlayPanel::ClearView()
 {
     dismissedPromptActionType_.clear();
+    submittedPromptActionType_.clear();
     confirmationPanel_->HideConfirmation();
     promptPanel_->HidePrompt(true);
     pawnSelectionPanel_->Clear();

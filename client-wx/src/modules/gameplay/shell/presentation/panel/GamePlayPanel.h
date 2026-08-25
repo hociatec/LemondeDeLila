@@ -116,6 +116,7 @@ private:
     std::string gameName_;
     std::string activeInfoPanel_ = "details";
     std::string dismissedPromptActionType_;
+    std::string submittedPromptActionType_;
     history::GameLogCursor logCursor_;
     application::dice::GameDiceRollTracker diceRollTracker_;
     ZoneFocusRequestedHandler onZoneFocusRequested_;

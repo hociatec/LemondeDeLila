@@ -85,6 +85,11 @@ void GamePlayPanel::ExecuteAction(domain::GameAction action)
                     if (error)
                     {
                         weakThis->pawnSelectionPanel_->AllowRetry();
+                        if (!weakThis->submittedPromptActionType_.empty())
+                        {
+                            weakThis->submittedPromptActionType_.clear();
+                            weakThis->SyncInlinePrompt();
+                        }
                         weakThis->UpdateStatus(FromUtf8(error->UserMessage()), true, true);
                         return;
                     }
