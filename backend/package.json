@@ -6,10 +6,11 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "node scripts/prepare-dist.cjs && nest build",
+    "build": "node scripts/prepare-dist.cjs && nest build && npm run verify:app-load",
     "create:game": "node commands/create-game.cjs",
     "service:restart": "node commands/restart-service.cjs",
     "verify:dist": "node commands/verify-dist-games.cjs",
+    "verify:app-load": "node commands/verify-app-load.cjs",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migration:generate": "npm run typeorm -- migration:generate -d src/data-source.ts src/migrations/auto",
     "migration:run": "npm run typeorm -- migration:run -d dist/data-source.js",
