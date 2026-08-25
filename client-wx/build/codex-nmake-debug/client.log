@@ -12871,3 +12871,52 @@
 2026-08-25 02:32:46.162 [WARN ] [Chat] Reconnexion au serveur... : interrupted
 2026-08-25 02:32:46.163 [ERROR] [Chat] Envoi tchat échoué : send failed
 2026-08-25 02:32:46.163 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 02:54:55.214 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-25 02:54:55.215 [INFO ] [Startup] Étape: Creation des transports reseau
+2026-08-25 02:54:55.215 [INFO ] [Startup] Étape: Creation du fournisseur de tickets
+2026-08-25 02:54:55.215 [INFO ] [Startup] Étape: Creation du client temps-reel
+2026-08-25 02:54:55.215 [INFO ] [Startup] Étape: Creation du client temps-reel authentifie
+2026-08-25 02:54:55.215 [INFO ] [Startup] Étape: Creation des services d'authentification
+2026-08-25 02:54:55.215 [INFO ] [Startup] Étape: Chargement des options
+2026-08-25 02:54:55.215 [INFO ] [Startup] Étape: Creation du store de session
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du moteur audio BASS asynchrone
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du service catalogue
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation des services de tables
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du service coffre fort
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du service livre des contes
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du service classement
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du gateway chat
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du protocole chat
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du service chat
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du service messagerie
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du service social
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du service presence
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Creation du navigateur
+2026-08-25 02:54:55.216 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-25 02:54:55.217 [INFO ] [Navigator] Start() begin.
+2026-08-25 02:54:55.243 [INFO ] [Navigator] restoreSessionOnStartup=true
+2026-08-25 02:54:55.246 [INFO ] [Navigator] Stored session restored. Opening main menu.
+2026-08-25 02:54:55.246 [INFO ] [Navigator] ShowSession(): begin.
+2026-08-25 02:54:55.246 [INFO ] [Navigator] CreateView(MainMenu): constructing MainMenuFrame view.
+2026-08-25 02:54:55.247 [INFO ] [MainMenu] Constructor: begin.
+2026-08-25 02:54:55.263 [INFO ] [MainMenu] Constructor: BuildLayout done.
+2026-08-25 02:54:55.265 [INFO ] [MainMenu] Constructor: ApplyTheme done.
+2026-08-25 02:54:55.265 [INFO ] [MainMenu] Constructor: BindEvents done.
+2026-08-25 02:54:55.266 [INFO ] [MainMenu] Constructor: end.
+2026-08-25 02:54:55.266 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 02:54:55.303 [INFO ] [Startup] Bootstrap terminé avec succès.
+2026-08-25 02:54:56.103 [INFO ] [Navigator] CreateView(Catalog): constructing CatalogPanel view.
+2026-08-25 02:54:56.122 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 02:54:59.360 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 02:55:25.914 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 02:55:27.334 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 02:55:27.634 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 02:55:31.248 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 02:55:45.147 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 03:00:04.439 [WARN ] [ChatProtocol] Le tableau 'messages' doit être un tableau JSON.
+2026-08-25 03:00:04.468 [WARN ] [Rooms] socket lost
+2026-08-25 03:00:05.692 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-25 03:00:05.999 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-25 03:00:06.688 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 03:00:06.689 [ERROR] [Chat] Envoi tchat échoué : send failed
+2026-08-25 03:00:06.689 [WARN ] [Chat] Reconnexion au serveur... : interrupted

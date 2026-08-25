@@ -86,7 +86,7 @@ export class LamaExtrasPresenter {
         if (!allowed.has(value)) continue;
         parts.push(`${lamaCardLabel(value)}×${count}`);
       }
-      return `Défausse : ${discardTop}. (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S score' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S score'})`;
+      return `Défausse : ${discardTop}. (${drawLocked ? '↑/↓ choisir, Entrée jouer, P passer, C défausse, E mains, S score' : '↑/↓ choisir, Entrée jouer, Espace piocher, P passer, C défausse, E mains, S score'})`;
     })();
 
     return {

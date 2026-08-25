@@ -135,7 +135,7 @@ export class LamaPendingPresenter {
       label: droppedOut
         ? `Défausse : ${discardTop}. Vous vous êtes retiré de la manche. Main : ${hand.length} cartes (${handScore} jetons). Total : ${meScore} jetons.`
         : currentPlayerId === userId
-          ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (${drawLocked ? '↑/↓ choisir, Entrée jouer, P/Q passer, C défausse, E mains, S jetons' : '↑/↓ choisir, Entrée jouer, Espace piocher, P/Q passer, C défausse, E mains, S jetons'})`
+          ? `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (${drawLocked ? '↑/↓ choisir, Entrée jouer, P passer, C défausse, E mains, S jetons' : '↑/↓ choisir, Entrée jouer, Espace piocher, P passer, C défausse, E mains, S jetons'})`
           : `Défausse : ${discardTop}. Main : ${hand.length} cartes (${handScore} jetons). (En attente)`,
       playerId: userId,
       choices,

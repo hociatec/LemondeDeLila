@@ -73,7 +73,6 @@ export class LamaShortcutsService {
       interfaceShortcut('E', 'hands'),
       interfaceShortcut('S', 'score'),
       actionShortcut('P', canPassTurn ? 'lama_pass' : 'lama_quit'),
-      actionShortcut('Q', 'lama_quit'),
     ];
   }
 }

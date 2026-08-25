@@ -1589,6 +1589,9 @@ void TestRoomPresentationMatchesWpfWaitingTable()
         ShortcutPolicy::Resolve('S', true, false, false, false, room) == "room:save",
         "Controle S doit transmettre la tentative au serveur");
     Expect(
+        ShortcutPolicy::Resolve('Q', false, false, false, false, room) == "room:leave",
+        "Q doit quitter une table avant le demarrage");
+    Expect(
         Model::BuildPlayers(room) == wxString::FromUTF8(
             "Joueurs : alice. Spectateurs : aucun. Bots : aucun."),
         "Annonce complete des joueurs attendue");
@@ -1620,6 +1623,9 @@ void TestRoomPresentationMatchesWpfWaitingTable()
     Expect(
         ShortcutPolicy::Resolve('S', true, false, false, false, room) == "room:save",
         "Controle S doit sauvegarder une partie demarree");
+    Expect(
+        ShortcutPolicy::Resolve('Q', false, false, false, false, room).empty(),
+        "Q ne doit rien faire pendant une partie lancee");
 
     room.allowedActions.erase(
         std::remove(room.allowedActions.begin(), room.allowedActions.end(), "room.toggle-privacy"),
