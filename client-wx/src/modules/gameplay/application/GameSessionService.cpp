@@ -60,6 +60,11 @@ void GameSessionService::RequestTurn(std::stop_token stopToken)
     gateway_.RequestTurn(stopToken);
 }
 
+void GameSessionService::SendKey(std::string_view key, std::stop_token stopToken)
+{
+    gateway_.SendKey(key, stopToken);
+}
+
 void GameSessionService::ExecuteAction(const domain::GameAction& action, std::stop_token stopToken)
 {
     gateway_.ExecuteAction(action, stopToken);

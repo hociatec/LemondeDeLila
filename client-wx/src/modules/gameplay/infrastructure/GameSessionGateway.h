@@ -30,6 +30,7 @@ public:
         std::stop_token stopToken) override;
     void RequestState(std::stop_token stopToken) override;
     void RequestTurn(std::stop_token stopToken) override;
+    void SendKey(std::string_view key, std::stop_token stopToken) override;
     void ExecuteAction(const domain::GameAction& action, std::stop_token stopToken) override;
     [[nodiscard]] domain::GameEvent ReceiveEvent(std::stop_token stopToken) override;
     void Interrupt() override;

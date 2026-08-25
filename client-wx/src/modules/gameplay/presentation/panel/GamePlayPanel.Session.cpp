@@ -147,4 +147,32 @@ void GamePlayPanel::RequestTurn()
         lila::shared::concurrency::BackgroundTaskPriority::Normal,
         "Tour de jeu indisponible."));
 }
+
+void GamePlayPanel::SendKey(std::string key)
+{
+    requestSlot_.Cancel();
+    const auto generation = requestSlot_.CurrentToken();
+    auto* service = &service_;
+    wxWeakRef<GamePlayPanel> weakThis(this);
+    requestSlot_.Track(lila::shared::concurrency::RunAsync<bool>(
+        [service, key = std::move(key)](std::stop_token stopToken)
+        {
+            service->SendKey(key, stopToken);
+            return true;
+        },
+        [weakThis, generation](
+            std::optional<lila::shared::errors::AppError> error,
+            std::optional<bool>) mutable
+        {
+            if (!weakThis) return;
+            weakThis->CallAfter(
+                [weakThis, generation, error = std::move(error)]() mutable
+                {
+                    if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
+                    if (error) weakThis->UpdateStatus(FromUtf8(error->UserMessage()), true, true);
+                });
+        },
+        lila::shared::concurrency::BackgroundTaskPriority::Normal,
+        "Raccourci de jeu indisponible."));
+}
 }

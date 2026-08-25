@@ -1,4 +1,4 @@
-lemonde_de_lila_wx_tests 151 0.015607
-lemonde_de_lila_wx_gameplay_tests 19 0.000832258
-lemonde_de_lila_wx_update_tests 19 0.00102355
+lemonde_de_lila_wx_tests 152 0.0153399
+lemonde_de_lila_wx_gameplay_tests 20 0.00114241
+lemonde_de_lila_wx_update_tests 20 0.0011475
 ---

@@ -30,7 +30,7 @@ void RoomPanel::SyncGamePlayPanel()
 {
     const bool isStarted = room_.started || room_.status == "started";
     gameZoneAnchor_->Show(true);
-    gamePlayPanel_->Show(isStarted);
+    gamePlayPanel_->Show(isStarted && !gamePlayPanel_->IsFinished());
     if (!isStarted)
     {
         gamePlayPanel_->CloseSession();

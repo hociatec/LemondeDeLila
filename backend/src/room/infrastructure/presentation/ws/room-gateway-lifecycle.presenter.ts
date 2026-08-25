@@ -20,7 +20,7 @@ export class RoomGatewayLifecyclePresenter {
     return {
       type: 'announcement',
       payload: {
-        message: state.room.isPrivate ? 'Table privee.' : 'Table publique.',
+        message: state.room.isPrivate ? 'Table privée.' : 'Table publique.',
       },
     };
   }

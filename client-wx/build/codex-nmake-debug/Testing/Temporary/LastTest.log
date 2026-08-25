@@ -1,10 +1,10 @@
-Start testing: Aug 25 03:00 Paris, Madrid (heure d’été)
+Start testing: Aug 25 03:13 Paris, Madrid (heure d’été)
 ----------------------------------------------------------
 1/3 Testing: lemonde_de_lila_wx_tests
 1/3 Test: lemonde_de_lila_wx_tests
 Command: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/lemonde_de_lila_wx_tests.exe"
 Directory: C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug
-"lemonde_de_lila_wx_tests" start time: Aug 25 03:00 Paris, Madrid (heure d’été)
+"lemonde_de_lila_wx_tests" start time: Aug 25 03:13 Paris, Madrid (heure d’été)
 Output:
 ----------------------------------------------------------
 Running automated unit tests for client-wx...
@@ -47,7 +47,7 @@ Running automated unit tests for client-wx...
 [RUNNING] RealtimeProtocolFallbackTypeAndPayloadValidation
 [TEST PASSED] RealtimeProtocolFallbackTypeAndPayloadValidation
 [RUNNING] ChatProtocolHandlesMalformedAndUnknownEvents
-2026-08-25 03:00:04.439 [WARN ] [ChatProtocol] Le tableau 'messages' doit Ãªtre un tableau JSON.
+2026-08-25 03:13:22.350 [WARN ] [ChatProtocol] Le tableau 'messages' doit Ãªtre un tableau JSON.
 [TEST PASSED] ChatProtocolHandlesMalformedAndUnknownEvents
 [RUNNING] ChatMessageStoreEnforcesLimits
 [TEST PASSED] ChatMessageStoreEnforcesLimits
@@ -66,7 +66,7 @@ Running automated unit tests for client-wx...
 [RUNNING] RoomSessionGatewayUsesWpfHandshakeContract
 [TEST PASSED] RoomSessionGatewayUsesWpfHandshakeContract
 [RUNNING] RoomSessionServiceReconnectsAndRepublishesState
-2026-08-25 03:00:04.468 [WARN ] [Rooms] socket lost
+2026-08-25 03:13:22.364 [WARN ] [Rooms] socket lost
 [TEST PASSED] RoomSessionServiceReconnectsAndRepublishesState
 [RUNNING] AsyncRequestSlotRejectsStaleCompletion
 [TEST PASSED] AsyncRequestSlotRejectsStaleCompletion
@@ -87,20 +87,19 @@ Running automated unit tests for client-wx...
 [RUNNING] ChatServiceCloseInterruptsReceiveLoop
 [TEST PASSED] ChatServiceCloseInterruptsReceiveLoop
 [RUNNING] ChatServiceReconnectsAfterTransientFailure
-2026-08-25 03:00:05.692 [WARN ] [Chat] Reconnexion au serveur... : socket lost
-2026-08-25 03:00:05.999 [WARN ] [Chat] Connexion au serveur interrompue : open failed
-2026-08-25 03:00:06.688 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 03:13:23.601 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-25 03:13:23.932 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-25 03:13:24.613 [WARN ] [Chat] Reconnexion au serveur... : interrupted
 [TEST PASSED] ChatServiceReconnectsAfterTransientFailure
 [RUNNING] ChatServiceSendReportsTransportFailure
-2026-08-25 03:00:06.689 [ERROR] [Chat] Envoi tchat Ã©chouÃ© : send failed
-2026-08-25 03:00:06.689 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 03:13:24.614 [ERROR] [Chat] Envoi tchat Ã©chouÃ© : send failed
 [TEST PASSED] ChatServiceSendReportsTransportFailure
 All tests completed successfully!
 <end of output>
-Test time =   2.36 sec
+Test time =   2.33 sec
 ----------------------------------------------------------
 Test Passed.
-"lemonde_de_lila_wx_tests" end time: Aug 25 03:00 Paris, Madrid (heure d’été)
+"lemonde_de_lila_wx_tests" end time: Aug 25 03:13 Paris, Madrid (heure d’été)
 "lemonde_de_lila_wx_tests" time elapsed: 00:00:02
 ----------------------------------------------------------
 
@@ -108,7 +107,7 @@ Test Passed.
 2/3 Test: lemonde_de_lila_wx_update_tests
 Command: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/lemonde_de_lila_wx_update_tests.exe"
 Directory: C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug
-"lemonde_de_lila_wx_update_tests" start time: Aug 25 03:00 Paris, Madrid (heure d’été)
+"lemonde_de_lila_wx_update_tests" start time: Aug 25 03:13 Paris, Madrid (heure d’été)
 Output:
 ----------------------------------------------------------
 Update protocol tests passed.
@@ -116,7 +115,7 @@ Update protocol tests passed.
 Test time =   0.02 sec
 ----------------------------------------------------------
 Test Passed.
-"lemonde_de_lila_wx_update_tests" end time: Aug 25 03:00 Paris, Madrid (heure d’été)
+"lemonde_de_lila_wx_update_tests" end time: Aug 25 03:13 Paris, Madrid (heure d’été)
 "lemonde_de_lila_wx_update_tests" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -124,7 +123,7 @@ Test Passed.
 3/3 Test: lemonde_de_lila_wx_gameplay_tests
 Command: "C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug/lemonde_de_lila_wx_gameplay_tests.exe"
 Directory: C:/wamp64/www/lemondeDeLila/client-wx/build/codex-nmake-debug
-"lemonde_de_lila_wx_gameplay_tests" start time: Aug 25 03:00 Paris, Madrid (heure d’été)
+"lemonde_de_lila_wx_gameplay_tests" start time: Aug 25 03:13 Paris, Madrid (heure d’été)
 Output:
 ----------------------------------------------------------
 Gameplay contract tests passed.
@@ -132,8 +131,8 @@ Gameplay contract tests passed.
 Test time =   0.02 sec
 ----------------------------------------------------------
 Test Passed.
-"lemonde_de_lila_wx_gameplay_tests" end time: Aug 25 03:00 Paris, Madrid (heure d’été)
+"lemonde_de_lila_wx_gameplay_tests" end time: Aug 25 03:13 Paris, Madrid (heure d’été)
 "lemonde_de_lila_wx_gameplay_tests" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Aug 25 03:00 Paris, Madrid (heure d’été)
+End testing: Aug 25 03:13 Paris, Madrid (heure d’été)

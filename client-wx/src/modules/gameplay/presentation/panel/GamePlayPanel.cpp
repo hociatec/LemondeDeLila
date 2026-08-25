@@ -56,6 +56,11 @@ bool GamePlayPanel::IsOpen() const noexcept
     return roomId_ > 0 && !gameType_.empty();
 }
 
+bool GamePlayPanel::IsFinished() const noexcept
+{
+    return state_.status == "finished";
+}
+
 void GamePlayPanel::SetZoneFocusRequestedHandler(ZoneFocusRequestedHandler handler)
 {
     onZoneFocusRequested_ = std::move(handler);

@@ -683,6 +683,7 @@ describe('RoomGateway lifecycle scenarios', () => {
       10,
       expect.objectContaining({
         type: 'announcement',
+        payload: { message: 'Table privée.' },
       }),
     );
   });

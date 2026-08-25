@@ -111,6 +111,16 @@ void GameSessionGateway::RequestTurn(std::stop_token)
         {"payload", {{"roomId", roomId}, {"gameType", gameType_}}}});
 }
 
+void GameSessionGateway::SendKey(std::string_view key, std::stop_token)
+{
+    const auto roomId = roomId_.load();
+    if (roomId <= 0 || gameType_.empty()) throw std::runtime_error("Aucune partie active.");
+    if (key.empty()) throw std::invalid_argument("Touche de jeu requise.");
+    SendJson(nlohmann::json{
+        {"type", "game.key"},
+        {"payload", {{"roomId", roomId}, {"gameType", gameType_}, {"key", key}}}});
+}
+
 void GameSessionGateway::ExecuteAction(const domain::GameAction& action, std::stop_token)
 {
     const auto roomId = roomId_.load();
@@ -156,7 +166,9 @@ domain::GameEvent GameSessionGateway::DecodeEvent(const nlohmann::json& message)
     }
     if (type == "game.ack")
     {
-        return {domain::GameEventType::Acknowledged, std::nullopt, ReadString(payload, "action"), false};
+        const auto action = ReadString(payload, "action");
+        const auto acknowledgement = action == "game.key" ? ReadString(payload, "roomOp") : action;
+        return {domain::GameEventType::Acknowledged, std::nullopt, acknowledgement, false};
     }
     if (type == "game.turn")
     {

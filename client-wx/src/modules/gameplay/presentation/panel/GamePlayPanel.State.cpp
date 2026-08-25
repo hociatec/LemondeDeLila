@@ -22,6 +22,18 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     if (!gameName_.empty()) state.gameName = gameName_;
     state_ = std::move(state);
     UpdateStatus(wxString{});
+    PublishLogMessages(state_.logMessages);
+    if (IsFinished())
+    {
+        confirmationPanel_->HideConfirmation();
+        promptPanel_->HidePrompt(true);
+        handPanel_->ClearHand();
+        Hide();
+        if (GetParent()) GetParent()->Layout();
+        if (onZoneFocusRequested_) onZoneFocusRequested_();
+        return;
+    }
+    Show();
     headerLabel_->SetLabel(BuildHeaderText());
     RebuildLines();
     handPanel_->ApplyExtras(state_.extras);
@@ -30,11 +42,11 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     actionsLabel_->Show(!hasHand);
     linesList_->Show(!hasHand);
     shortcutsLabel_->Show(!hasHand);
-    PublishLogMessages(state_.logMessages);
     shortcutsLabel_->SetLabel(BuildShortcutText());
     UpdateInfoPanel();
     SyncInlinePrompt();
     Layout();
+    if (GetParent()) GetParent()->Layout();
 }
 
 void GamePlayPanel::UpdateInfoPanel()

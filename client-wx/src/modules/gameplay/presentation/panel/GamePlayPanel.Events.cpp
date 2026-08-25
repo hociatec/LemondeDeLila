@@ -60,6 +60,11 @@ void GamePlayPanel::BindEvents()
 bool GamePlayPanel::ActivateFromZone()
 {
     if (!IsOpen()) return false;
+    if (IsFinished())
+    {
+        SendKey("ENTER");
+        return true;
+    }
     if (IsConfirmationVisible() || IsInlinePromptVisible()) return true;
     if (state_.prompt)
     {
@@ -80,6 +85,13 @@ bool GamePlayPanel::HandleZoneKey(wxKeyEvent& event)
 {
     if (!IsOpen() || IsConfirmationVisible() || IsInlinePromptVisible()) return false;
 
+    const auto key = NormalizeKey(event);
+    if (IsFinished() && key == "ENTER")
+    {
+        SendKey(key);
+        return true;
+    }
+
     const int keyCode = event.GetKeyCode();
     if ((keyCode == WXK_UP || keyCode == WXK_DOWN) && handPanel_->Count() > 0)
     {
@@ -91,7 +103,6 @@ bool GamePlayPanel::HandleZoneKey(wxKeyEvent& event)
         return true;
     }
 
-    const auto key = NormalizeKey(event);
     if (key == "F5")
     {
         RequestRefresh();
@@ -129,6 +140,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         if (event.state) ApplyState(std::move(*event.state));
         return;
     case domain::GameEventType::Acknowledged:
+        if (event.message == "start") RequestRefresh();
         return;
     case domain::GameEventType::TurnUpdated:
     {
@@ -170,6 +182,11 @@ void GamePlayPanel::HandleKey(wxKeyEvent& event)
 
     if (key == "ENTER")
     {
+        if (IsFinished())
+        {
+            SendKey(key);
+            return;
+        }
         ActivateSelectedLine();
         return;
     }

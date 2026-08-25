@@ -47,6 +47,7 @@ public:
     void CloseSession();
     [[nodiscard]] bool IsOpenFor(int roomId, const std::string& gameType) const;
     [[nodiscard]] bool IsOpen() const noexcept;
+    [[nodiscard]] bool IsFinished() const noexcept;
     void SetZoneFocusRequestedHandler(ZoneFocusRequestedHandler handler);
     void SetHistoryMessageHandler(HistoryMessageHandler handler);
     bool ActivateFromZone();
@@ -61,6 +62,7 @@ private:
     void ExecuteAction(domain::GameAction action);
     void RequestRefresh();
     void RequestTurn();
+    void SendKey(std::string key);
     void ApplyState(domain::GameState state);
     void HandleEvent(domain::GameEvent event);
     void HandleKey(wxKeyEvent& event);
