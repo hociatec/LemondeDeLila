@@ -466,9 +466,9 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/domain/Room.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/infrastructure/RoomSessionGateway.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/application/IRoomSessionGateway.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/application/RoomSessionService.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/RoomLobbyNavigator.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/RoomOpenRequest.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/RoomPresentationModel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/navigation/RoomLobbyNavigator.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/navigation/RoomOpenRequest.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/model/RoomPresentationModel.h
 C:/vcpkg/installed/x64-windows/include/wx/string.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
@@ -656,7 +656,7 @@ C:/vcpkg/installed/x64-windows/include/wx/settings.h
 C:/vcpkg/installed/x64-windows/include/wx/containr.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/RoomShortcutPolicy.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/shortcuts/RoomShortcutPolicy.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/vault/infrastructure/VaultPayloadCodec.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/vault/domain/VaultSnapshot.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/vault/presentation/VaultNavigator.h

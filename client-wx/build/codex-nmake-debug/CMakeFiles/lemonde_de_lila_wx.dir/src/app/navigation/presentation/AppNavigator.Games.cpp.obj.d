@@ -551,10 +551,10 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_startup
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/math.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime_startup.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/domain/Room.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/JoinRoomsPanel.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/RoomLobbyNavigator.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/RoomPanel.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/RoomOpenRequest.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/join/JoinRoomsPanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/navigation/RoomLobbyNavigator.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/shell/RoomPanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/navigation/RoomOpenRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/storybook/presentation/StoryBookPanel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/storybook/domain/StoryBookStats.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/storybook/presentation/StoryBookNavigator.h

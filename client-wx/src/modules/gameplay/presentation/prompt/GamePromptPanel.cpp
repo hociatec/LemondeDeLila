@@ -13,7 +13,7 @@
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/application/GamePromptInputCodec.h"
-#include "modules/gameplay/presentation/GamePlayFormatters.h"
+#include "modules/gameplay/presentation/formatting/GamePlayFormatters.h"
 #include "shared/accessibility/application/NavigationController.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
@@ -51,8 +51,8 @@ void GamePromptPanel::BuildLayout()
 
     auto* buttons = new wxBoxSizer(wxHORIZONTAL);
     buttons->AddStretchSpacer();
-    cancelButton_ = new wxButton(this, wxID_CANCEL, wxString(L"Annuler (Échap)"));
-    submitButton_ = new wxButton(this, wxID_OK, wxString(L"Valider (Entrée)"));
+    cancelButton_ = new wxButton(this, wxID_CANCEL, wxString(L"Annuler"));
+    submitButton_ = new wxButton(this, wxID_OK, wxString(L"Valider"));
     buttons->Add(cancelButton_, 0, wxRIGHT, 8);
     buttons->Add(submitButton_);
     root->Add(buttons, 0, wxEXPAND | wxTOP, 12);

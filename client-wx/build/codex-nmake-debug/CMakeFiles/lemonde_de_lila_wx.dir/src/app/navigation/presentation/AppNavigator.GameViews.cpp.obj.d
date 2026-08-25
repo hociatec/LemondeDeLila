@@ -561,11 +561,11 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/presentation/ErrorFormat
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ModuleErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/NetworkErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/logging/application/Logger.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/JoinRoomsPanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/join/JoinRoomsPanel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/domain/Room.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/RoomLobbyNavigator.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/RoomPanel.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/RoomOpenRequest.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/navigation/RoomLobbyNavigator.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/shell/RoomPanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/navigation/RoomOpenRequest.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/session/application/SessionStore.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/condition_variable
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_chrono.hpp

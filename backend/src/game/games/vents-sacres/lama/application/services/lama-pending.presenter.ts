@@ -8,6 +8,7 @@ import {
   lamaCardScore,
   LAMA_VALUE,
 } from '../../model/lama.model';
+import { isLamaDrawLocked } from '../policies/lama-draw.policy';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'
@@ -55,13 +56,6 @@ export class LamaPendingPresenter {
               label: 'Autoriser de rejouer après une pioche (oui/non)',
               kind: 'boolean',
               initialText: metadata.allowPlayAfterDraw ? 'oui' : 'non',
-            },
-            {
-              key: 'allowDrawAfterFirstQuit',
-              label:
-                'Autoriser la pioche après qu’un joueur s’est retiré (dans la manche) (oui/non)',
-              kind: 'boolean',
-              initialText: metadata.allowDrawAfterFirstQuit ? 'oui' : 'non',
             },
             {
               key: 'returnTokenFromRound',
@@ -117,7 +111,7 @@ export class LamaPendingPresenter {
     const droppedOut = Boolean(
       (metadata.droppedOutByPlayerId ?? {})[String(userId)],
     );
-    const drawLocked = this.isDrawLocked(metadata);
+    const drawLocked = isLamaDrawLocked(metadata);
 
     const top = this.topDiscard(metadata);
     if (!top) return null;
@@ -172,17 +166,6 @@ export class LamaPendingPresenter {
     if (!top) return null;
     if (top < 1 || top > LAMA_VALUE) return null;
     return top;
-  }
-
-  private isDrawLocked(meta: LamaMetadata): boolean {
-    if (meta.allowDrawAfterFirstQuit) return false;
-
-    const dropped = meta.droppedOutByPlayerId ?? {};
-    const hands = meta.handsByPlayerId ?? {};
-
-    // Only consider players actually in the round (handsByPlayerId keys).
-    // Eliminated players may remain flagged as dropped and must not lock draws.
-    return Object.keys(hands).some((pid) => Boolean(dropped[pid]));
   }
 
   private resolveSetupOwnerId(

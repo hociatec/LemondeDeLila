@@ -11,7 +11,7 @@ enum class GameEventType
 {
     StateUpdated,
     Acknowledged,
-    ConnectionStatus,
+    TurnUpdated,
     Error,
     Ignored,
 };

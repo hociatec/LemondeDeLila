@@ -38,10 +38,10 @@
 #include "modules/rooms/infrastructure/RoomSessionGateway.h"
 #include "modules/rooms/application/IRoomSessionGateway.h"
 #include "modules/rooms/application/RoomSessionService.h"
-#include "modules/rooms/presentation/RoomLobbyNavigator.h"
-#include "modules/rooms/presentation/RoomOpenRequest.h"
-#include "modules/rooms/presentation/RoomPresentationModel.h"
-#include "modules/rooms/presentation/RoomShortcutPolicy.h"
+#include "modules/rooms/presentation/navigation/RoomLobbyNavigator.h"
+#include "modules/rooms/presentation/navigation/RoomOpenRequest.h"
+#include "modules/rooms/presentation/model/RoomPresentationModel.h"
+#include "modules/rooms/presentation/shortcuts/RoomShortcutPolicy.h"
 #include "modules/vault/infrastructure/VaultPayloadCodec.h"
 #include "modules/vault/presentation/VaultNavigator.h"
 #include "modules/vault/presentation/VaultPresentationModel.h"
@@ -1344,7 +1344,7 @@ void TestRoomPayloadCodecs()
             {"players", nlohmann::json::array({{{"id", 1}, {"username", "alice"}}})},
             {"spectators", nlohmann::json::array()},
             {"bots", nlohmann::json::array({{{"id", 3}, {"name", "LilaBot"}}})},
-            {"allowedActions", nlohmann::json::array({"room.snapshot.save"})},
+            {"allowedActions", nlohmann::json::array({"room.snapshot.save", "room.reset"})},
         }},
     });
     Expect(room.id == 12, "Identifiant d'etat de table attendu");
@@ -1357,6 +1357,10 @@ void TestRoomPayloadCodecs()
         lila::modules::rooms::presentation::RoomShortcutPolicy::Resolve(
             'S', true, false, false, false, room) == "room:save",
         "Controle S doit accepter une table demarree via startedAt");
+    Expect(
+        lila::modules::rooms::presentation::RoomShortcutPolicy::Resolve(
+            'X', false, false, false, false, room) == "room:reset",
+        "X doit reinitialiser une table demarree quand le serveur l'autorise");
 
     std::cout << "[TEST PASSED] RoomPayloadCodecs\n";
 }

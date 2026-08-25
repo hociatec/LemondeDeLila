@@ -3,6 +3,7 @@ import type { GameSingleActionDto } from '../../../../../application/models/game
 import type { LamaCardValue, LamaMetadata } from '../../model/lama.model';
 import { nextLamaValue } from '../../model/lama.model';
 import { LamaSharedService } from './lama-shared.service';
+import { isLamaDrawLocked } from '../policies/lama-draw.policy';
 
 export class LamaBotService {
   constructor(private readonly shared: LamaSharedService) {}
@@ -55,7 +56,7 @@ export class LamaBotService {
     const discard = Array.isArray(meta.discard) ? meta.discard : [];
     const top = discard.length ? discard[discard.length - 1] : null;
     if (!top) return [];
-    const drawLocked = this.shared.isDrawLocked(meta);
+    const drawLocked = isLamaDrawLocked(meta);
 
     const canPlayValues = new Set<LamaCardValue>([top, nextLamaValue(top)]);
 

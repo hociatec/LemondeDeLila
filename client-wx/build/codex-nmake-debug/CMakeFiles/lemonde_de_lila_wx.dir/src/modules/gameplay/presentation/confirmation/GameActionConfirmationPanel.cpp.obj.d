@@ -668,7 +668,7 @@ C:/vcpkg/installed/x64-windows/include/wx/stattext.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/stattext.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/presentation/GamePlayFormatters.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/presentation/formatting/GamePlayFormatters.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/accessibility/application/NavigationController.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h

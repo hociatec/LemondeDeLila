@@ -7,6 +7,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp.obj.d"
   "CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp.obj"
   "CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp.obj.d"
+  "CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/presentation/history/GameLogCursor.cpp.obj"
+  "CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/src/modules/gameplay/presentation/history/GameLogCursor.cpp.obj.d"
   "CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/tests/GameplayContractTests.cpp.obj"
   "CMakeFiles/lemonde_de_lila_wx_gameplay_tests.dir/tests/GameplayContractTests.cpp.obj.d"
   "lemonde_de_lila_wx_gameplay_tests.exe"

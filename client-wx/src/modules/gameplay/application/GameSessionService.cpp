@@ -55,6 +55,11 @@ void GameSessionService::RequestState(std::stop_token stopToken)
     gateway_.RequestState(stopToken);
 }
 
+void GameSessionService::RequestTurn(std::stop_token stopToken)
+{
+    gateway_.RequestTurn(stopToken);
+}
+
 void GameSessionService::ExecuteAction(const domain::GameAction& action, std::stop_token stopToken)
 {
     gateway_.ExecuteAction(action, stopToken);

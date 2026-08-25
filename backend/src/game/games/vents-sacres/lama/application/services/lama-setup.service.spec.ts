@@ -85,6 +85,11 @@ describe('LamaService setup', () => {
     const exposed: any = service.exposeStateForUser(state, 1);
     expect(String(exposed?.pending?.type ?? '')).toBe('config_prompt');
     expect(
+      (exposed?.pending?.data?.fields ?? []).some(
+        (field: any) => field?.key === 'allowDrawAfterFirstQuit',
+      ),
+    ).toBe(false);
+    expect(
       (exposed?.actions ?? []).some((a: any) => a?.type === 'lama_set_config'),
     ).toBe(true);
 
@@ -97,7 +102,6 @@ describe('LamaService setup', () => {
           allowPlayAfterDraw: 'true',
           startingHandSize: 5,
           copiesPerCardValue: 9,
-          allowDrawAfterFirstQuit: 'true',
           returnTokenFromRound: 3,
         },
         meta: { actorId: 1 },
@@ -109,7 +113,7 @@ describe('LamaService setup', () => {
     expect(Boolean(started.metadata?.allowPlayAfterDraw)).toBe(true);
     expect(Number(started.metadata?.startingHandSize ?? 0)).toBe(5);
     expect(Number(started.metadata?.copiesPerCardValue ?? 0)).toBe(9);
-    expect(Boolean(started.metadata?.allowDrawAfterFirstQuit)).toBe(true);
+    expect(started.metadata?.allowDrawAfterFirstQuit).toBeUndefined();
     expect(Number(started.metadata?.returnTokenFromRound ?? 0)).toBe(3);
     expect((started.metadata?.handsByPlayerId?.['1'] ?? []).length).toBe(5);
     expect((started.metadata?.handsByPlayerId?.['2'] ?? []).length).toBe(5);
@@ -142,7 +146,6 @@ describe('LamaService setup', () => {
           allowPlayAfterDraw: 'true',
           startingHandSize: 6,
           copiesPerCardValue: 3,
-          allowDrawAfterFirstQuit: 'false',
           returnTokenFromRound: 2,
         },
         meta: { actorId: 1 },

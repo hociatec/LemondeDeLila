@@ -234,6 +234,9 @@ LILA_ENABLE_TSAN:BOOL=OFF
 //Enable UndefinedBehaviorSanitizer where supported
 LILA_ENABLE_UBSAN:BOOL=OFF
 
+//DLL NVDA 64 bits facultative utilisee pour les annonces accessibles
+LILA_NVDA_CONTROLLER_DLL:FILEPATH=C:/wamp64/www/lemondeDeLila/client-wx/../client-win/client-win/libs/x64/nvdaControllerClient64.dll
+
 //Version à quatre composants du client WX
 LILA_PROJECT_VERSION:STRING=1.2.651.0
 

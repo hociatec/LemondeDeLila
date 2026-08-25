@@ -5,7 +5,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "modules/gameplay/presentation/GamePlayFormatters.h"
+#include "modules/gameplay/presentation/formatting/GamePlayFormatters.h"
 
 namespace lila::modules::gameplay::presentation::info
 {
@@ -25,6 +25,18 @@ wxString GameInfoTextBuilder::Build(
         return text + selectedLineDetail;
     }
 
+    if (panelId == "hands")
+    {
+        const auto hand = state.extras.find("hand");
+        if (hand != state.extras.end() && hand->is_array())
+        {
+            const auto count = hand->size();
+            return FromUtf8(
+                "Vous avez " + std::to_string(count) +
+                (count == 1 ? " carte." : " cartes."));
+        }
+    }
+
     std::ostringstream out;
     const auto ui = state.extras.find("ui");
     if (ui != state.extras.end() && ui->is_object())
@@ -35,7 +47,14 @@ wxString GameInfoTextBuilder::Build(
             const auto panel = panels->find(panelId);
             if (panel != panels->end())
             {
-                auto display = PanelJsonToDisplay(*panel);
+                std::string display;
+                if (panel->is_object())
+                {
+                    const auto message = panel->find("message");
+                    if (message != panel->end() && message->is_string())
+                        display = message->get<std::string>();
+                }
+                if (display.empty()) display = PanelJsonToDisplay(*panel);
                 if (panelId == "hands" || panelId == "score" || panelId == "scores")
                     std::replace(display.begin(), display.end(), ',', '\n');
                 return FromUtf8(display);

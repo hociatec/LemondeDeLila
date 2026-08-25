@@ -1,7 +1,10 @@
 #pragma once
 
+#include <cstddef>
+
 #include <nlohmann/json_fwd.hpp>
 #include <wx/panel.h>
+#include <wx/string.h>
 
 class wxListBox;
 class wxWindow;
@@ -15,7 +18,10 @@ public:
 
     void ApplyExtras(const nlohmann::json& extras);
     void ClearHand();
-    [[nodiscard]] wxListBox* List() const noexcept;
+    bool MoveSelection(bool backwards);
+    [[nodiscard]] int SelectedIndex() const noexcept;
+    [[nodiscard]] std::size_t Count() const noexcept;
+    [[nodiscard]] wxString SelectedLabel() const;
 
 private:
     wxListBox* list_ = nullptr;

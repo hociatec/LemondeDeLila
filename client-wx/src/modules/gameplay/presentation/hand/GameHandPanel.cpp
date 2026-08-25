@@ -5,7 +5,7 @@
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 
-#include "modules/gameplay/presentation/GamePlayFormatters.h"
+#include "modules/gameplay/presentation/formatting/GamePlayFormatters.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::gameplay::presentation::hand
@@ -62,5 +62,29 @@ void GameHandPanel::ClearHand()
     Hide();
 }
 
-wxListBox* GameHandPanel::List() const noexcept { return list_; }
+bool GameHandPanel::MoveSelection(bool backwards)
+{
+    const auto count = list_->GetCount();
+    if (count == 0) return false;
+    int selected = list_->GetSelection();
+    if (selected == wxNOT_FOUND) selected = backwards ? static_cast<int>(count) - 1 : 0;
+    else if (backwards && selected > 0) --selected;
+    else if (!backwards && static_cast<unsigned int>(selected + 1) < count) ++selected;
+    list_->SetSelection(selected);
+    return true;
+}
+
+int GameHandPanel::SelectedIndex() const noexcept { return list_->GetSelection(); }
+
+std::size_t GameHandPanel::Count() const noexcept
+{
+    return static_cast<std::size_t>(list_->GetCount());
+}
+
+wxString GameHandPanel::SelectedLabel() const
+{
+    const int selected = list_->GetSelection();
+    return selected == wxNOT_FOUND ? wxString{} : list_->GetString(selected);
+}
+
 }

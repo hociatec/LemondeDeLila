@@ -561,3 +561,4 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/domain/AppConfig.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/encoding/Encoding.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextCatalog.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/text/presentation/catalog/UiTextKeys.def
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/update/application/UpdateSignals.h

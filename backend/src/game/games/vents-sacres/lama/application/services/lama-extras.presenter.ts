@@ -6,6 +6,7 @@ import {
   LAMA_VALUE,
 } from '../../model/lama.model';
 import { stringOrEmpty } from '@common/utils/public-api';
+import { isLamaDrawLocked } from '../policies/lama-draw.policy';
 
 export class LamaExtrasPresenter {
   build(
@@ -58,7 +59,7 @@ export class LamaExtrasPresenter {
     const discard = Array.isArray(metadata.discard) ? metadata.discard : [];
     const top = discard.length ? discard[discard.length - 1] : null;
     const discardTop = top ? lamaCardLabel(top) : '(vide)';
-    const drawLocked = this.isDrawLocked(metadata);
+    const drawLocked = isLamaDrawLocked(metadata);
 
     const playableText = (() => {
       if (this.isSetup(state)) {
@@ -118,8 +119,8 @@ export class LamaExtrasPresenter {
             })(),
           },
           discard: {
-            title: 'Défausse',
-            message: `Défausse : ${discardTop}.`,
+            title: 'Carte au-dessus',
+            message: `Carte au-dessus : ${discardTop}.`,
           },
           play: {
             title: 'À jouer',
@@ -201,14 +202,4 @@ export class LamaExtrasPresenter {
     return top;
   }
 
-  private isDrawLocked(meta: LamaMetadata): boolean {
-    if (meta.allowDrawAfterFirstQuit) return false;
-
-    const dropped = meta.droppedOutByPlayerId ?? {};
-    const hands = meta.handsByPlayerId ?? {};
-
-    // Only consider players actually in the round (handsByPlayerId keys).
-    // Eliminated players may remain flagged as dropped and must not lock draws.
-    return Object.keys(hands).some((pid) => Boolean(dropped[pid]));
-  }
 }

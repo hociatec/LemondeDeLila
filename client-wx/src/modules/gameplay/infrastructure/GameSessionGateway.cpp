@@ -102,6 +102,15 @@ void GameSessionGateway::RequestState(std::stop_token)
         {"payload", {{"roomId", roomId}, {"gameType", gameType_}}}});
 }
 
+void GameSessionGateway::RequestTurn(std::stop_token)
+{
+    const auto roomId = roomId_.load();
+    if (roomId <= 0 || gameType_.empty()) throw std::runtime_error("Aucune partie active.");
+    SendJson(nlohmann::json{
+        {"type", "game.turn"},
+        {"payload", {{"roomId", roomId}, {"gameType", gameType_}}}});
+}
+
 void GameSessionGateway::ExecuteAction(const domain::GameAction& action, std::stop_token)
 {
     const auto roomId = roomId_.load();
@@ -151,7 +160,7 @@ domain::GameEvent GameSessionGateway::DecodeEvent(const nlohmann::json& message)
     }
     if (type == "game.turn")
     {
-        return {domain::GameEventType::ConnectionStatus, std::nullopt, ReadString(payload, "currentPlayerUsername"), false};
+        return {domain::GameEventType::TurnUpdated, std::nullopt, ReadString(payload, "currentPlayerUsername"), false};
     }
     if (type == "error")
     {

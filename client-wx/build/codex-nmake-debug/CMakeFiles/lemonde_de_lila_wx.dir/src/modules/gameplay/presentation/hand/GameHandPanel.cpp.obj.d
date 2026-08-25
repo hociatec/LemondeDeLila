@@ -1,22 +1,22 @@
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/presentation/hand/GameHandPanel.h
-C:/vcpkg/installed/x64-windows/include/nlohmann/json_fwd.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdint
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstddef
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/yvals_core.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vcruntime.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sal.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/concurrencysal.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vadefs.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xkeycheck.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stddef.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt.h
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtr1common
+C:/vcpkg/installed/x64-windows/include/nlohmann/json_fwd.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstdint
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stdint.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/map
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/tuple
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/compare
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/concepts
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/type_traits
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstddef
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stddef.h
-C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xtr1common
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cstring
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/string.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/corecrt_memory.h
@@ -625,5 +625,5 @@ C:/vcpkg/installed/x64-windows/include/wx/stattext.h
 C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/stattext.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/presentation/GamePlayFormatters.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/presentation/formatting/GamePlayFormatters.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/theme/Theme.h

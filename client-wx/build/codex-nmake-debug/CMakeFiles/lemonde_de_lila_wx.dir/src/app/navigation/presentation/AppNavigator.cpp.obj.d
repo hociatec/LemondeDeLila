@@ -645,3 +645,4 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_ostream.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ios
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/sstream
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/span
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/update/application/UpdateSignals.h

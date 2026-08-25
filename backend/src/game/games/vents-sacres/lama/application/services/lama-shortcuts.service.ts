@@ -8,6 +8,7 @@ import {
 } from '../../../../../application/helpers/shortcut-utils';
 import { LamaSharedService } from './lama-shared.service';
 import type { LamaMetadata } from '../../model/lama.model';
+import { isLamaDrawLocked } from '../policies/lama-draw.policy';
 
 function asLamaMetadata(value: unknown): Partial<LamaMetadata> {
   return value != null && typeof value === 'object'
@@ -27,7 +28,7 @@ export class LamaShortcutsService {
       meta.droppedOutByPlayerId && typeof meta.droppedOutByPlayerId === 'object'
         ? meta.droppedOutByPlayerId
         : {};
-    const drawLocked = this.shared.isDrawLocked(meta as LamaMetadata);
+    const drawLocked = isLamaDrawLocked(meta as LamaMetadata);
     const currentPlayerDropped =
       currentPlayerId != null &&
       Boolean(droppedOutByPlayerId[String(currentPlayerId)]);

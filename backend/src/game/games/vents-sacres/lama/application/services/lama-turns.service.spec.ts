@@ -77,6 +77,7 @@ describe('LamaService turns', () => {
       String(a?.type ?? '').toLowerCase(),
     );
     expect(actionTypes).not.toContain('draw');
+    expect(actionTypes).toContain('lama_play');
 
     const after: any = service.applyActions(state, [
       { type: 'draw', payload: {}, meta: { actorId: 1 } } as any,
@@ -91,7 +92,7 @@ describe('LamaService turns', () => {
     );
   });
 
-  it('allows draw after another player has quit when configured', async () => {
+  it('ignores the legacy override and blocks direct draw after a player quits', async () => {
     const { service } = createLamaServiceForTest();
 
     const state: any = {
@@ -127,14 +128,15 @@ describe('LamaService turns', () => {
     const actionTypes = (exposed?.actions ?? []).map((a: any) =>
       String(a?.type ?? '').toLowerCase(),
     );
-    expect(actionTypes).toContain('draw');
+    expect(actionTypes).not.toContain('draw');
 
     const after: any = service.applyActions(state, [
       { type: 'draw', payload: {}, meta: { actorId: 1 } } as any,
     ]);
 
-    expect((after.metadata?.deck ?? []).length).toBe(1);
-    expect((after.metadata?.handsByPlayerId?.['1'] ?? []).length).toBe(2);
+    expect((after.metadata?.deck ?? []).length).toBe(2);
+    expect((after.metadata?.handsByPlayerId?.['1'] ?? []).length).toBe(1);
+    expect(after.turnIndex).toBe(state.turnIndex);
   });
 
   it('keeps the turn after a draw when allowPlayAfterDraw is configured', async () => {
@@ -210,7 +212,6 @@ describe('LamaService turns', () => {
       metadata: {
         roundNumber: 1,
         roundStarterIndex: 0,
-        allowDrawAfterFirstQuit: false,
         allowPlayAfterDraw: false,
         deck: [6, 5],
         discard: [1],

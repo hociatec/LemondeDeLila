@@ -68,6 +68,25 @@ void AccessibilityUtils::AnnounceStatus(wxWindow& control, const wxString& messa
 #endif
 }
 
+void AccessibilityUtils::AnnounceLiveRegion(wxWindow& control, const wxString& message)
+{
+    control.SetLabel(message);
+    // The native text is already the accessible name. Do not duplicate it in
+    // wxWindow::Name or HelpText, otherwise NVDA can read the line twice.
+    control.SetName(wxString{});
+    control.SetHelpText(wxString{});
+#ifdef __WXMSW__
+    if (control.GetHandle() != nullptr)
+    {
+        NotifyWinEvent(
+            EVENT_OBJECT_LIVEREGIONCHANGED,
+            reinterpret_cast<HWND>(control.GetHandle()),
+            OBJID_CLIENT,
+            CHILDID_SELF);
+    }
+#endif
+}
+
 void AccessibilityUtils::SetAccessibleName(wxWindow& control, const wxString& name, const wxString& description)
 {
     control.SetName(name);

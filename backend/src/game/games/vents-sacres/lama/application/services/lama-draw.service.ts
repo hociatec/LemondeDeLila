@@ -8,6 +8,7 @@ import { LamaRoundService } from './lama-round.service';
 import { LamaSharedService } from './lama-shared.service';
 import { LamaLogService } from './lama-log.service';
 import { createPendingState } from '../../../../../application/services/pending-action.service';
+import { isLamaDrawLocked } from '../policies/lama-draw.policy';
 
 export class LamaDrawService {
   constructor(
@@ -21,7 +22,7 @@ export class LamaDrawService {
     meta: LamaMetadata,
     actorId: number,
   ): GameStateEntity {
-    if (this.shared.isDrawLocked(meta)) {
+    if (isLamaDrawLocked(meta)) {
       return state;
     }
 

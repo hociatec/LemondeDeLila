@@ -122,6 +122,8 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/clocale
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/locale.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/ostream
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
@@ -130,8 +132,6 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/unordered_map
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xhash
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/list
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/vector
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_bit_utils.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xbit_ops.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xnode_handle.h
 C:/vcpkg/installed/x64-windows/include/nlohmann/adl_serializer.hpp
@@ -227,3 +227,4 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameAction.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameLine.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameShortcut.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/presentation/history/GameLogCursor.h

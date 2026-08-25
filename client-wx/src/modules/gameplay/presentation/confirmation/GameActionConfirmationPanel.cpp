@@ -8,7 +8,7 @@
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 
-#include "modules/gameplay/presentation/GamePlayFormatters.h"
+#include "modules/gameplay/presentation/formatting/GamePlayFormatters.h"
 #include "shared/accessibility/application/NavigationController.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
@@ -31,8 +31,8 @@ GameActionConfirmationPanel::GameActionConfirmationPanel(wxWindow* parent)
 
     auto* buttons = new wxBoxSizer(wxHORIZONTAL);
     buttons->AddStretchSpacer();
-    cancelButton_ = new wxButton(this, wxID_CANCEL, wxString(L"Non (Échap)"));
-    confirmButton_ = new wxButton(this, wxID_OK, wxString(L"Oui (Entrée)"));
+    cancelButton_ = new wxButton(this, wxID_CANCEL, wxString(L"Non"));
+    confirmButton_ = new wxButton(this, wxID_OK, wxString(L"Oui"));
     buttons->Add(cancelButton_, 0, wxRIGHT, 8);
     buttons->Add(confirmButton_);
     root->Add(buttons, 0, wxEXPAND);

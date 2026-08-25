@@ -31,6 +31,7 @@ public:
     void SetEventHandler(EventHandler handler);
     void ClearEventHandler();
     void RequestState(std::stop_token stopToken);
+    void RequestTurn(std::stop_token stopToken);
     void ExecuteAction(const domain::GameAction& action, std::stop_token stopToken);
     void Close();
 

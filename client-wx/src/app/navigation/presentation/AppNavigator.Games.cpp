@@ -6,8 +6,8 @@
 #include "modules/catalog/presentation/CatalogPanel.h"
 #include "modules/leaderboard/presentation/LeaderboardPanel.h"
 #include "modules/rooms/application/RoomSessionService.h"
-#include "modules/rooms/presentation/JoinRoomsPanel.h"
-#include "modules/rooms/presentation/RoomPanel.h"
+#include "modules/rooms/presentation/join/JoinRoomsPanel.h"
+#include "modules/rooms/presentation/shell/RoomPanel.h"
 #include "modules/storybook/presentation/StoryBookPanel.h"
 #include "modules/vault/presentation/VaultPanel.h"
 

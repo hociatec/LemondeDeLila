@@ -1,11 +1,13 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/application/GamePromptInputCodec.h"
 #include "modules/gameplay/infrastructure/GameStatePayloadCodec.h"
+#include "modules/gameplay/presentation/history/GameLogCursor.h"
 
 namespace
 {
@@ -80,6 +82,25 @@ void TestActionLabelsRemainDistinct()
     Expect(state.lines.size() == 2, "Les deux actions doivent être affichées.");
     Expect(state.lines[0].label != state.lines[1].label, "Le payload doit distinguer des libellés identiques.");
 }
+
+void TestGameLogCursor()
+{
+    using lila::modules::gameplay::presentation::history::GameLogCursor;
+    GameLogCursor cursor;
+    Expect(cursor.ExtractNew({"A", "B"}) == std::vector<std::string>({"A", "B"}),
+        "Le premier journal doit etre publie une seule fois.");
+    Expect(cursor.ExtractNew({"A", "B"}).empty(),
+        "Un etat identique ne doit rien republier.");
+    Expect(cursor.ExtractNew({}).empty(),
+        "Un journal transitoirement absent ne doit pas reinitialiser le curseur.");
+    Expect(cursor.ExtractNew({"A", "B", "C"}) == std::vector<std::string>({"C"}),
+        "Seule la nouvelle entree doit etre publiee.");
+    Expect(cursor.ExtractNew({"B", "C", "D"}) == std::vector<std::string>({"D"}),
+        "Le curseur doit supporter un journal tronque cote serveur.");
+    cursor.Reset();
+    Expect(cursor.ExtractNew({"D"}) == std::vector<std::string>({"D"}),
+        "La reinitialisation doit ouvrir une nouvelle session.");
+}
 }
 
 int main()
@@ -89,6 +110,7 @@ int main()
         TestServerDrivenPrompt();
         TestTypedInputs();
         TestActionLabelsRemainDistinct();
+        TestGameLogCursor();
         std::cout << "Gameplay contract tests passed.\n";
         return 0;
     }

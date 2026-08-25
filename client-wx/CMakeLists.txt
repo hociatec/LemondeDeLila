@@ -65,6 +65,20 @@ if(WIN32)
         "${CMAKE_CURRENT_BINARY_DIR}/bass.dll"
         COPYONLY
     )
+    set(
+        LILA_NVDA_CONTROLLER_DLL
+        "${CMAKE_CURRENT_SOURCE_DIR}/../client-win/client-win/libs/x64/nvdaControllerClient64.dll"
+        CACHE FILEPATH
+        "DLL NVDA 64 bits facultative utilisee pour les annonces accessibles"
+    )
+    if(EXISTS "${LILA_NVDA_CONTROLLER_DLL}")
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/libs/x64")
+        configure_file(
+            "${LILA_NVDA_CONTROLLER_DLL}"
+            "${CMAKE_CURRENT_BINARY_DIR}/libs/x64/nvdaControllerClient64.dll"
+            COPYONLY
+        )
+    endif()
 endif()
 
 set(
@@ -172,15 +186,16 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/gameplay/infrastructure/GameSessionGateway.cpp
     src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp
     src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp
-    src/modules/gameplay/presentation/GamePlayFormatters.cpp
-    src/modules/gameplay/presentation/GamePlayPanel.cpp
-    src/modules/gameplay/presentation/GamePlayPanel.Actions.cpp
-    src/modules/gameplay/presentation/GamePlayPanel.Events.cpp
-    src/modules/gameplay/presentation/GamePlayPanel.Layout.cpp
-    src/modules/gameplay/presentation/GamePlayPanel.Session.cpp
-    src/modules/gameplay/presentation/GamePlayPanel.State.cpp
+    src/modules/gameplay/presentation/formatting/GamePlayFormatters.cpp
+    src/modules/gameplay/presentation/panel/GamePlayPanel.cpp
+    src/modules/gameplay/presentation/panel/GamePlayPanel.Actions.cpp
+    src/modules/gameplay/presentation/panel/GamePlayPanel.Events.cpp
+    src/modules/gameplay/presentation/panel/GamePlayPanel.Layout.cpp
+    src/modules/gameplay/presentation/panel/GamePlayPanel.Session.cpp
+    src/modules/gameplay/presentation/panel/GamePlayPanel.State.cpp
     src/modules/gameplay/presentation/confirmation/GameActionConfirmationPanel.cpp
     src/modules/gameplay/presentation/hand/GameHandPanel.cpp
+    src/modules/gameplay/presentation/history/GameLogCursor.cpp
     src/modules/gameplay/presentation/info/GameInfoTextBuilder.cpp
     src/modules/gameplay/presentation/prompt/GamePromptPanel.cpp
     src/modules/gameplay/presentation/shortcuts/GameShortcutResolver.cpp
@@ -194,28 +209,29 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp
     src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.cpp
     src/modules/rooms/infrastructure/RoomSessionGateway.State.cpp
-    src/modules/rooms/presentation/JoinRoomsPanel.cpp
-    src/modules/rooms/presentation/JoinRoomsPanel.Events.cpp
-    src/modules/rooms/presentation/JoinRoomsPanel.Layout.cpp
-    src/modules/rooms/presentation/JoinRoomsPanel.Loading.cpp
-    src/modules/rooms/presentation/JoinRoomsPanel.Pages.cpp
-    src/modules/rooms/presentation/RoomLobbyNavigator.cpp
-    src/modules/rooms/presentation/RoomLobbyPresentationModel.cpp
-    src/modules/rooms/presentation/RoomOpenRequest.cpp
-    src/modules/rooms/presentation/RoomGameZoneAnchor.cpp
-    src/modules/rooms/presentation/RoomPanel.cpp
-    src/modules/rooms/presentation/RoomPanel.Actions.cpp
-    src/modules/rooms/presentation/RoomPanel.Commands.cpp
-    src/modules/rooms/presentation/RoomPanel.Confirmation.cpp
-    src/modules/rooms/presentation/RoomPanel.Events.cpp
-    src/modules/rooms/presentation/RoomPanel.Layout.cpp
-    src/modules/rooms/presentation/RoomPanel.Loading.cpp
-    src/modules/rooms/presentation/RoomPanel.Preparation.cpp
-    src/modules/rooms/presentation/RoomPanel.Realtime.cpp
-    src/modules/rooms/presentation/RoomPanel.Shortcuts.cpp
-    src/modules/rooms/presentation/RoomPanel.State.cpp
-    src/modules/rooms/presentation/RoomPresentationModel.cpp
-    src/modules/rooms/presentation/RoomShortcutPolicy.cpp
+    src/modules/rooms/presentation/join/JoinRoomsPanel.cpp
+    src/modules/rooms/presentation/join/JoinRoomsPanel.Events.cpp
+    src/modules/rooms/presentation/join/JoinRoomsPanel.Layout.cpp
+    src/modules/rooms/presentation/join/JoinRoomsPanel.Loading.cpp
+    src/modules/rooms/presentation/join/JoinRoomsPanel.Pages.cpp
+    src/modules/rooms/presentation/history/HistoryAnnouncementQueue.cpp
+    src/modules/rooms/presentation/navigation/RoomLobbyNavigator.cpp
+    src/modules/rooms/presentation/lobby/RoomLobbyPresentationModel.cpp
+    src/modules/rooms/presentation/navigation/RoomOpenRequest.cpp
+    src/modules/rooms/presentation/zone/RoomGameZoneAnchor.cpp
+    src/modules/rooms/presentation/shell/RoomPanel.cpp
+    src/modules/rooms/presentation/actions/RoomPanel.Actions.cpp
+    src/modules/rooms/presentation/actions/RoomPanel.Commands.cpp
+    src/modules/rooms/presentation/actions/RoomPanel.Confirmation.cpp
+    src/modules/rooms/presentation/shell/RoomPanel.Events.cpp
+    src/modules/rooms/presentation/shell/RoomPanel.Layout.cpp
+    src/modules/rooms/presentation/session/RoomPanel.Loading.cpp
+    src/modules/rooms/presentation/actions/RoomPanel.Preparation.cpp
+    src/modules/rooms/presentation/session/RoomPanel.Realtime.cpp
+    src/modules/rooms/presentation/shortcuts/RoomPanel.Shortcuts.cpp
+    src/modules/rooms/presentation/shell/RoomPanel.State.cpp
+    src/modules/rooms/presentation/model/RoomPresentationModel.cpp
+    src/modules/rooms/presentation/shortcuts/RoomShortcutPolicy.cpp
 
     src/modules/vault/application/VaultService.cpp
     src/modules/vault/infrastructure/VaultApi.cpp
@@ -371,6 +387,7 @@ add_executable(lemonde_de_lila_wx WIN32
     src/shared/accessibility/presentation/AccessibilityUtils.cpp
     src/shared/accessibility/presentation/AccessibleListBox.cpp
     src/shared/accessibility/presentation/AccessibleListBox.Actions.cpp
+    src/shared/accessibility/infrastructure/NvdaScreenReaderAnnouncer.cpp
     src/shared/accessibility/application/FocusCoordinator.cpp
     src/shared/accessibility/application/FocusMemory.cpp
     src/shared/accessibility/application/FocusManager.cpp
@@ -516,10 +533,10 @@ if(BUILD_TESTING)
             src/modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp
             src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.cpp
             src/modules/rooms/infrastructure/RoomSessionGateway.State.cpp
-            src/modules/rooms/presentation/RoomLobbyNavigator.cpp
-            src/modules/rooms/presentation/RoomOpenRequest.cpp
-            src/modules/rooms/presentation/RoomPresentationModel.cpp
-            src/modules/rooms/presentation/RoomShortcutPolicy.cpp
+            src/modules/rooms/presentation/navigation/RoomLobbyNavigator.cpp
+            src/modules/rooms/presentation/navigation/RoomOpenRequest.cpp
+            src/modules/rooms/presentation/model/RoomPresentationModel.cpp
+            src/modules/rooms/presentation/shortcuts/RoomShortcutPolicy.cpp
             src/modules/vault/infrastructure/VaultPayloadCodec.cpp
             src/modules/vault/presentation/VaultNavigator.cpp
             src/modules/vault/presentation/VaultPresentationModel.cpp
@@ -635,6 +652,7 @@ if(BUILD_TESTING)
         add_executable(lemonde_de_lila_wx_gameplay_tests
             tests/GameplayContractTests.cpp
             src/modules/gameplay/application/GamePromptInputCodec.cpp
+            src/modules/gameplay/presentation/history/GameLogCursor.cpp
             src/modules/gameplay/infrastructure/GamePayloadJsonReader.cpp
             src/modules/gameplay/infrastructure/GameStateSectionsDecoder.cpp
             src/modules/gameplay/infrastructure/GameStatePayloadCodec.cpp

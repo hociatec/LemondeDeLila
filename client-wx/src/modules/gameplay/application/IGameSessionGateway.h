@@ -18,6 +18,7 @@ public:
         std::string_view gameType,
         std::stop_token stopToken) = 0;
     virtual void RequestState(std::stop_token stopToken) = 0;
+    virtual void RequestTurn(std::stop_token stopToken) = 0;
     virtual void ExecuteAction(const domain::GameAction& action, std::stop_token stopToken) = 0;
     [[nodiscard]] virtual domain::GameEvent ReceiveEvent(std::stop_token stopToken) = 0;
     virtual void Interrupt() = 0;

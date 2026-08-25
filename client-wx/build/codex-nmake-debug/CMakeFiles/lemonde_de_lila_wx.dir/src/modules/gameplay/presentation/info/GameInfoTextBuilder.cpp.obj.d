@@ -266,4 +266,4 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameAction.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameLine.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GamePrompt.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameShortcut.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/presentation/GamePlayFormatters.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/presentation/formatting/GamePlayFormatters.h

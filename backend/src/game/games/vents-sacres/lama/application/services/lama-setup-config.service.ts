@@ -133,10 +133,6 @@ export class LamaSetupConfigService {
       allowPlayAfterDraw: this.readAllowPlayAfterDraw(action.payload ?? {}),
       startingHandSize,
       copiesPerCardValue,
-      allowDrawAfterFirstQuit: this.readAllowDrawAfterFirstQuit(
-        action.payload ?? {},
-        meta.allowDrawAfterFirstQuit ?? false,
-      ),
       returnTokenFromRound,
       roundPauseUntilMs: null,
       step: 'turn_choice',
@@ -170,10 +166,6 @@ export class LamaSetupConfigService {
     log = this.logger.append(
       log,
       `${name} règle le paquet à ${copiesPerCardValue} exemplaires par valeur.`,
-    );
-    log = this.logger.append(
-      log,
-      `${name} ${updatedMeta.allowDrawAfterFirstQuit ? 'autorise' : 'interdit'} la pioche après le premier retrait.`,
     );
     log = this.logger.append(
       log,
@@ -224,34 +216,4 @@ export class LamaSetupConfigService {
     return false;
   }
 
-  private readAllowDrawAfterFirstQuit(
-    payload: Record<string, unknown>,
-    fallback: boolean,
-  ): boolean {
-    const raw = payload?.allowDrawAfterFirstQuit;
-    if (raw == null || raw === '') return fallback;
-    if (typeof raw === 'boolean') return raw;
-    if (typeof raw === 'number') return raw === 1;
-    if (typeof raw !== 'string') return fallback;
-    const value = raw.trim().toLowerCase();
-    if (
-      value === 'true' ||
-      value === '1' ||
-      value === 'yes' ||
-      value === 'oui' ||
-      value === 'on'
-    ) {
-      return true;
-    }
-    if (
-      value === 'false' ||
-      value === '0' ||
-      value === 'no' ||
-      value === 'non' ||
-      value === 'off'
-    ) {
-      return false;
-    }
-    return fallback;
-  }
 }

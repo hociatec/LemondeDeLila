@@ -36,6 +36,9 @@ describe('LamaService presentation', () => {
     const label = String(exposed?.pending?.label ?? '');
     expect(label).toContain('Défausse');
     expect(label).toContain('6');
+    expect(exposed?.extras?.ui?.panels?.discard?.message).toBe(
+      'Carte au-dessus : 6.',
+    );
   });
 
   it('logs every player action (for NVDA announcements)', async () => {

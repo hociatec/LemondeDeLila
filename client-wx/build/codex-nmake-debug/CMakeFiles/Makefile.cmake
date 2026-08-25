@@ -56,6 +56,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "C:/vcpkg/installed/x64-windows/share/wxwidgets/wxWidgetsTargets-release.cmake"
   "C:/vcpkg/installed/x64-windows/share/wxwidgets/wxWidgetsTargets.cmake"
   "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+  "C:/wamp64/www/lemondeDeLila/client-win/client-win/libs/x64/nvdaControllerClient64.dll"
   "C:/wamp64/www/lemondeDeLila/client-wx/CMakeLists.txt"
   "CMakeFiles/3.31.6/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.31.6/CMakeRCCompiler.cmake"
@@ -79,6 +80,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "generated/UpdateBuildConfig.h"
   "resources/texts.fr.json"
   "bass.dll"
+  "libs/x64/nvdaControllerClient64.dll"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 

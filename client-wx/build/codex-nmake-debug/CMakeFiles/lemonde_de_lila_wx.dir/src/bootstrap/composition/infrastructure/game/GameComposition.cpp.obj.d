@@ -247,6 +247,15 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/catalog/domain/CatalogShelf.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/cache/application/SingleFlightCache.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/catalog/infrastructure/CatalogApi.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/catalog/application/ICatalogGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/application/GameSessionService.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameAction.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameEvent.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameState.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameLine.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GamePrompt.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/domain/GameShortcut.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/infrastructure/GameSessionGateway.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/application/IGameSessionGateway.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/leaderboard/application/LeaderboardService.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/leaderboard/domain/Leaderboard.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/leaderboard/infrastructure/LeaderboardApi.h
@@ -267,8 +276,8 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/vault/application/VaultService
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/vault/domain/VaultSnapshot.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/vault/infrastructure/VaultApi.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/vault/application/IVaultGateway.h
-C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/domain/UrlUtils.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/domain/WebSocketConstants.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/shared/network/domain/UrlUtils.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/ErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/catalog/CoreErrorMessages.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/errors/presentation/ErrorFormatting.h

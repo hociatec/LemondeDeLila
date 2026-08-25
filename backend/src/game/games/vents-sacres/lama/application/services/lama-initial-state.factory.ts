@@ -78,7 +78,6 @@ export class LamaInitialStateFactory {
       allowPlayAfterDraw: false,
       startingHandSize: null,
       copiesPerCardValue: null,
-      allowDrawAfterFirstQuit: false,
       returnTokenFromRound: null,
       roundPauseUntilMs: null,
       roundNumber: 1,

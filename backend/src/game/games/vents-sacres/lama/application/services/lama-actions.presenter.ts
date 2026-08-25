@@ -2,6 +2,7 @@ import type { GameSingleActionDto } from '../../../../../application/models/game
 import type { GameStateEntity } from '../../../../../application/models/game-state.model';
 import type { LamaCardValue, LamaMetadata } from '../../model/lama.model';
 import { nextLamaValue, LAMA_VALUE } from '../../model/lama.model';
+import { isLamaDrawLocked } from '../policies/lama-draw.policy';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'
@@ -33,7 +34,7 @@ export class LamaActionsPresenter {
       (meta.handsByPlayerId ?? {})[String(userId)] ?? []
     ).filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE);
     const dropped = Boolean((meta.droppedOutByPlayerId ?? {})[String(userId)]);
-    const drawLocked = this.isDrawLocked(meta);
+    const drawLocked = isLamaDrawLocked(meta);
     const sortedHandValues = [...handValues].sort((a, b) => a - b);
 
     const current = state.turn?.currentPlayerId ?? null;
@@ -162,17 +163,6 @@ export class LamaActionsPresenter {
     if (!top) return null;
     if (top < 1 || top > LAMA_VALUE) return null;
     return top;
-  }
-
-  private isDrawLocked(meta: LamaMetadata): boolean {
-    if (meta.allowDrawAfterFirstQuit) return false;
-
-    const dropped = meta.droppedOutByPlayerId ?? {};
-    const hands = meta.handsByPlayerId ?? {};
-
-    // Only consider players actually in the round (handsByPlayerId keys).
-    // Eliminated players may remain flagged as dropped and must not lock draws.
-    return Object.keys(hands).some((pid) => Boolean(dropped[pid]));
   }
 
   private resolveSetupOwnerId(

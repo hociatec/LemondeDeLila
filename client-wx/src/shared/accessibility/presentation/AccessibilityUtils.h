@@ -15,6 +15,7 @@ public:
     static void SetSecondaryActionAvailability(wxWindow* control, bool available);
     static void SetAccessibleStatus(wxWindow& control, const wxString& message);
     static void AnnounceStatus(wxWindow& control, const wxString& message);
+    static void AnnounceLiveRegion(wxWindow& control, const wxString& message);
     static void SetAccessibleName(wxWindow& control, const wxString& name, const wxString& description = wxString());
 };
 }
