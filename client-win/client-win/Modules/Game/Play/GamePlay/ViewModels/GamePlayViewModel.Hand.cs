@@ -89,6 +89,19 @@ public sealed partial class GamePlayViewModel
         }
 
         var actions = state.Actions ?? new List<GameAvailableActionDto>();
+        if (card.ActionIndex is >= 0 && card.ActionIndex.Value < actions.Count)
+        {
+            var boundAction = actions[card.ActionIndex.Value];
+            if (boundAction != null && !string.IsNullOrWhiteSpace(boundAction.Type))
+            {
+                await session.SendActionsAsync(
+                        new[] { new GameClientAction(type: boundAction.Type, payload: boundAction.Payload) },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                return true;
+            }
+        }
+
         var hasActionForCard = actions.Any(action =>
             string.Equals(action.Type, "select_card", StringComparison.OrdinalIgnoreCase) &&
             TryExtractCardId(action.Payload, out var payloadCardId) &&
@@ -273,7 +286,8 @@ public sealed partial class GamePlayViewModel
                 card.Disabled,
                 card.Color,
                 card.Family,
-                card.Index));
+                card.Index,
+                card.ActionIndex));
         }
 
         if (previousCardId != null)
@@ -331,6 +345,10 @@ public sealed partial class GamePlayViewModel
             {
                 return false;
             }
+            if (current.ActionIndex != next.ActionIndex)
+            {
+                return false;
+            }
         }
 
         return true;
@@ -382,7 +400,14 @@ public sealed partial class GamePlayViewModel
 
     public sealed class HandCardLine
     {
-        public HandCardLine(string cardId, string label, bool disabled, string? color, string? family, int order)
+        public HandCardLine(
+            string cardId,
+            string label,
+            bool disabled,
+            string? color,
+            string? family,
+            int order,
+            int? actionIndex)
         {
             CardId = cardId ?? string.Empty;
             Label = label ?? string.Empty;
@@ -390,6 +415,7 @@ public sealed partial class GamePlayViewModel
             Color = color;
             Family = family;
             Order = order;
+            ActionIndex = actionIndex;
         }
 
         public string CardId { get; }
@@ -398,5 +424,6 @@ public sealed partial class GamePlayViewModel
         public string? Color { get; }
         public string? Family { get; }
         public int Order { get; }
+        public int? ActionIndex { get; }
     }
 }

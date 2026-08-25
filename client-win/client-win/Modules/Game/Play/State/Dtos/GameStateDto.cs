@@ -7,6 +7,9 @@ namespace client_win.Modules.Game.Play.State.Dtos;
 
 public sealed class GameStateDto
 {
+    [JsonPropertyName("version")]
+    public int Version { get; set; }
+
     [JsonPropertyName("status")]
     public string Status { get; set; } = string.Empty;
 

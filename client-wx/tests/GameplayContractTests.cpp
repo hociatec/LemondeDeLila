@@ -78,14 +78,14 @@ void TestStaleSetupPromptIsIgnoredDuringRound()
 {
     const auto payload = nlohmann::json{
         {"roomId", 15},
-        {"gameType", "lama"},
+        {"gameType", "server-driven-game"},
         {"state", {
             {"status", "started"},
             {"phase", "round"},
             {"pending", {
                 {"type", "config_prompt"},
                 {"data", {
-                    {"actionType", "lama_set_config"},
+                    {"actionType", "configure_round"},
                     {"fields", nlohmann::json::array({
                         {{"key", "score"}, {"label", "Score"}, {"kind", "number"}},
                     })},
@@ -163,6 +163,7 @@ void TestCardsCarryTheirActionsAcrossGames()
                 {{"id", "wolf"}, {"label", "Le second loup"}, {"actionIndex", 2}},
                 {{"id", "moon"}, {"label", "La lune"}, {"disabled", true}},
                 {{"id", "wolf"}, {"label", "Le loup jouable"}, {"disabled", true}, {"actionIndex", 1}},
+                {{"id", "wolf"}, {"label", "Le loup consultable"}, {"disabled", true}},
             })}}},
         }},
     };
@@ -177,6 +178,54 @@ void TestCardsCarryTheirActionsAcrossGames()
         "Une carte desactivee doit rester consultable sans etre jouable.");
     Expect(GameCardActionResolver::Resolve(state.hand, state.actions, 3).has_value(),
         "Une action serveur disponible doit primer sur un indicateur visuel de carte obsolete.");
+    Expect(!GameCardActionResolver::Resolve(state.hand, state.actions, 4).has_value(),
+        "Une carte desactivee sans liaison ne doit pas recuperer une autre action par similitude de payload.");
+}
+
+void TestServerDrivenKeyboardActionsSurviveTheClientContract()
+{
+    using lila::modules::gameplay::application::cards::GameCardActionResolver;
+    using lila::modules::gameplay::infrastructure::GameStatePayloadCodec;
+    const auto payload = nlohmann::json{
+        {"roomId", 21},
+        {"gameType", "server-driven-card-game"},
+        {"state", {
+            {"status", "started"},
+            {"phase", "round"},
+            {"actions", nlohmann::json::array({
+                {{"type", "play_card"}, {"payload", {{"value", 2}, {"count", 1}}}},
+                {{"type", "draw_card"}, {"payload", nlohmann::json::object()}},
+                {{"type", "end_turn"}, {"payload", nlohmann::json::object()}},
+            })},
+            {"extras", {
+                {"hand", nlohmann::json::array({
+                    {{"id", "2"}, {"label", "2"}, {"actionIndex", 0}},
+                })},
+                {"shortcuts", nlohmann::json::array({
+                    {{"key", "SPACE"}, {"type", "action"}, {"actionType", "draw_card"}},
+                    {{"key", "P"}, {"type", "action"}, {"actionType", "end_turn"}},
+                })},
+            }},
+        }},
+    };
+
+    const auto state = GameStatePayloadCodec::DecodeState(payload);
+    const auto play = GameCardActionResolver::Resolve(state.hand, state.actions, 0);
+    Expect(play.has_value() && play->type == "play_card",
+        "Entree sur une carte doit retrouver l'action associee par le serveur.");
+    Expect(state.shortcuts.size() == 2 &&
+            state.shortcuts[0].normalizedKey == "SPACE" &&
+            state.shortcuts[0].actionType == "draw_card",
+        "Espace doit rester associe a l'action fournie par le serveur.");
+    Expect(state.shortcuts[1].normalizedKey == "P" &&
+            state.shortcuts[1].actionType == "end_turn",
+        "P doit rester associe a l'action de fin de tour exposee par le serveur.");
+
+    const auto encoded = GameStatePayloadCodec::EncodeActionPayload(
+        21, "server-driven-card-game", *play);
+    Expect(encoded.at("actions").at(0).at("type") == "play_card" &&
+            encoded.at("actions").at(0).at("payload").at("value") == 2,
+        "L'action de carte doit etre envoyee sans perdre son type ni sa valeur.");
 }
 
 void TestGenericDiceContract()
@@ -315,7 +364,7 @@ void TestOlderGameStateCannotRestoreSetupPrompt()
     using lila::modules::gameplay::application::GameStateUpdatePolicy;
     lila::modules::gameplay::domain::GameState roundState;
     roundState.roomId = 42;
-    roundState.gameType = "lama";
+    roundState.gameType = "server-driven-game";
     roundState.version = 8;
     roundState.phase = "round";
 
@@ -325,10 +374,23 @@ void TestOlderGameStateCannotRestoreSetupPrompt()
     Expect(!GameStateUpdatePolicy::ShouldApply(roundState, staleSetupState),
         "Un ancien etat de configuration ne doit pas remplacer la manche courante.");
 
+    staleSetupState.version = roundState.version;
+    Expect(!GameStateUpdatePolicy::ShouldApply(roundState, staleSetupState),
+        "Un etat de configuration de meme version ne doit pas remplacer la manche courante.");
+
+    staleSetupState.version = 0;
+    Expect(!GameStateUpdatePolicy::ShouldApply(roundState, staleSetupState),
+        "Un etat de configuration sans version ne doit pas remplacer la manche courante.");
+
     auto nextRoundState = roundState;
     nextRoundState.version = 9;
     Expect(GameStateUpdatePolicy::ShouldApply(roundState, nextRoundState),
         "Un nouvel etat de manche doit rester applicable.");
+
+    auto realResetState = staleSetupState;
+    realResetState.version = 9;
+    Expect(GameStateUpdatePolicy::ShouldApply(roundState, realResetState),
+        "Une reinitialisation plus recente doit rester applicable.");
 }
 }
 
@@ -342,6 +404,7 @@ int main()
         TestActionLabelsRemainDistinct();
         TestGenericCardsContract();
         TestCardsCarryTheirActionsAcrossGames();
+        TestServerDrivenKeyboardActionsSurviveTheClientContract();
         TestGenericDiceContract();
         TestDiceRollTracker();
         TestServerDrivenPawnSelection();

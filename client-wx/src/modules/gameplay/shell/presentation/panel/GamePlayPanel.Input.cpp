@@ -12,6 +12,7 @@
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
+#include "shared/logging/application/Logger.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -20,9 +21,21 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
     switch (event.type)
     {
     case domain::GameEventType::StateUpdated:
+        if (event.state)
+        {
+            lila::shared::logging::LogInfo(
+                "GameInput",
+                "State received: version=" + std::to_string(event.state->version) +
+                    ", status=" + event.state->status +
+                    ", phase=" + event.state->phase +
+                    ", hand=" + std::to_string(event.state->hand.size()) +
+                    ", actions=" + std::to_string(event.state->actions.size()));
+        }
         if (event.state) ApplyState(std::move(*event.state));
         return;
     case domain::GameEventType::Acknowledged:
+        lila::shared::logging::LogInfo(
+            "GameInput", "Acknowledgement received: " + event.message);
         if (event.message == "start") RequestRefresh();
         return;
     case domain::GameEventType::TurnUpdated:
@@ -34,6 +47,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         return;
     }
     case domain::GameEventType::Error:
+        lila::shared::logging::LogError("GameInput", "Server error: " + event.message);
         UpdateStatus(FromUtf8(event.message), true, true);
         return;
     case domain::GameEventType::Ignored:
@@ -41,38 +55,31 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
     }
 }
 
-void GamePlayPanel::HandleKey(wxKeyEvent& event)
+bool GamePlayPanel::HandleKey(wxKeyEvent& event)
 {
     if (IsConfirmationVisible())
     {
-        if (confirmationPanel_->HandleKey(event)) return;
-        event.Skip();
-        return;
+        return confirmationPanel_->HandleKey(event);
     }
     if (IsInlinePromptVisible())
     {
-        if (promptPanel_->HandleKey(event)) return;
-        event.Skip();
-        return;
+        return promptPanel_->HandleKey(event);
     }
     if (pawnSelectionPanel_->IsActive())
     {
-        if (pawnSelectionPanel_->HandleKey(event)) return;
-        event.Skip();
-        return;
+        return pawnSelectionPanel_->HandleKey(event);
     }
 
     const int keyCode = event.GetKeyCode();
     const bool tableShortcutHasPriority =
         event.ControlDown() || event.AltDown() || event.MetaDown() ||
         keyCode == 'Q' || keyCode == 'q' || keyCode == 'X' || keyCode == 'x';
-    if (tableShortcutHasPriority && onTableShortcut_ && onTableShortcut_(event)) return;
+    if (tableShortcutHasPriority && onTableShortcut_ && onTableShortcut_(event)) return true;
 
     const auto key = NormalizeKey(event);
     if (key.empty())
     {
-        event.Skip();
-        return;
+        return false;
     }
 
     if (key == "ENTER")
@@ -80,30 +87,29 @@ void GamePlayPanel::HandleKey(wxKeyEvent& event)
         if (IsFinished())
         {
             SendKey(key);
-            return;
+            return true;
         }
         if (handPanel_->Count() > 0)
         {
             static_cast<void>(ActivateSelectedHandCard());
-            return;
+            return true;
         }
         if (HasDiceAction())
         {
             static_cast<void>(ActivateSelectedDie());
-            return;
+            return true;
         }
         if (state_.prompt && submittedPromptActionType_ == state_.prompt->actionType)
-            return;
+            return true;
         ActivateSelectedLine();
-        return;
+        return true;
     }
     if (key == "F5")
     {
         RequestRefresh();
-        return;
+        return true;
     }
-    if (HandleShortcut(key)) return;
-    event.Skip();
+    return HandleShortcut(key);
 }
 
 void GamePlayPanel::ActivateSelectedLine()
@@ -129,7 +135,12 @@ void GamePlayPanel::ActivateSelectedLine()
 bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
 {
     const auto* found = shortcuts::GameShortcutResolver::Find(state_, normalizedKey);
-    if (found == nullptr) return false;
+    if (found == nullptr)
+    {
+        lila::shared::logging::LogInfo(
+            "GameInput", "No server shortcut for key=" + normalizedKey);
+        return false;
+    }
     if (found->kind == domain::GameShortcutKind::Interface)
     {
         return HandleInterfaceShortcut(found->id);
@@ -139,9 +150,14 @@ bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
         auto action = ResolveShortcutAction(found->actionType);
         if (!action)
         {
+            lila::shared::logging::LogWarning(
+                "GameInput", "Shortcut action is unavailable for key=" + normalizedKey);
             UpdateStatus(wxString(L"Action indisponible."), true, true);
             return true;
         }
+        lila::shared::logging::LogInfo(
+            "GameInput", "Shortcut action resolved: key=" + normalizedKey +
+                ", type=" + action->type);
         PrepareAndExecuteAction(std::move(*action));
         return true;
     }

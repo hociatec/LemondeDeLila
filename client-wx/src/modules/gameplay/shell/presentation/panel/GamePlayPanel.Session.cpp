@@ -7,6 +7,7 @@
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/logging/application/Logger.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -84,6 +85,8 @@ void GamePlayPanel::ExecuteAction(domain::GameAction action)
                     if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
                     if (error)
                     {
+                        lila::shared::logging::LogError(
+                            "GameInput", "Action task failed: " + error->UserMessage());
                         weakThis->pawnSelectionPanel_->AllowRetry();
                         if (!weakThis->submittedPromptActionType_.empty())
                         {

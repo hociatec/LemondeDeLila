@@ -50,7 +50,7 @@ std::string GameShortcutResolver::NormalizeKey(const wxKeyEvent& event)
 
     const int key = event.GetKeyCode();
     if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER) return "ENTER";
-    if (key == WXK_SPACE) return "SPACE";
+    if (key == WXK_SPACE || key == WXK_NUMPAD_SPACE) return "SPACE";
     if (key == WXK_BACK) return "BACK";
     if (key == WXK_F5) return "F5";
     if (key >= 'A' && key <= 'Z') return std::string(1, static_cast<char>(key));

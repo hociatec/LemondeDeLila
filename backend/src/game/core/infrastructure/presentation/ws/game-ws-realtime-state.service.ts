@@ -43,9 +43,9 @@ export class GameWsRealtimeStateService {
     }
     if (existing) await this.clear(roomId, gameType);
 
-    const state = handler.hydrateInitialState(
-      this.core.buildBaseState(room, gameType),
-    );
+    const baseState = this.core.buildBaseState(room, gameType);
+    const state = handler.hydrateInitialState(baseState);
+    this.preserveRoomRunId(baseState, state);
     this.ensureVersion(state);
     await this.engine.restoreInternalState(roomId, gameType, state);
     return { gameType, state, handler };
@@ -90,6 +90,7 @@ export class GameWsRealtimeStateService {
     previous: GameStateEntity,
     next: GameStateEntity,
   ): Promise<void> {
+    this.preserveRoomRunId(previous, next);
     const version = this.bumpVersion(next, previous);
     await this.engine.restoreInternalState(roomId, resolved.gameType, next);
     this.broadcast(roomId, resolved.gameType, next, resolved.handler, version);
@@ -118,6 +119,24 @@ export class GameWsRealtimeStateService {
       typeof room.runId === 'number' &&
       stateRunId === room.runId
     );
+  }
+
+  private preserveRoomRunId(
+    source: GameStateEntity,
+    target: GameStateEntity,
+  ): void {
+    const sourceMetadata =
+      source.metadata && typeof source.metadata === 'object'
+        ? (source.metadata as Record<string, unknown>)
+        : {};
+    const roomRunId = sourceMetadata.roomRunId;
+    if (typeof roomRunId !== 'number') return;
+
+    const targetMetadata =
+      target.metadata && typeof target.metadata === 'object'
+        ? (target.metadata as Record<string, unknown>)
+        : {};
+    target.metadata = { ...targetMetadata, roomRunId };
   }
 
   private ensureVersion(state: GameStateEntity): number {

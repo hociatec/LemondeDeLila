@@ -9,6 +9,8 @@
 #include "modules/rooms/application/RoomSessionService.h"
 #include "modules/audio/application/IAudioService.h"
 #include "modules/rooms/presentation/model/RoomPresentationModel.h"
+#include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
+#include "shared/accessibility/application/NavigationController.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/text/presentation/encoding/Encoding.h"
@@ -72,6 +74,12 @@ void RoomPanel::ExecuteCommand(domain::RoomCommandRequest request)
                         weakThis->AppendRoomAnnouncement(message);
                     }
                     weakThis->ShowRoom();
+                    if (command == domain::RoomCommand::Reset)
+                    {
+                        static_cast<void>(
+                            lila::shared::accessibility::NavigationController::Focus(
+                                weakThis->gameZoneAnchor_));
+                    }
                 });
         },
         lila::shared::concurrency::BackgroundTaskPriority::Normal,

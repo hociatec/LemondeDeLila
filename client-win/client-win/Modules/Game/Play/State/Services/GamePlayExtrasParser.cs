@@ -10,7 +10,14 @@ internal static class GamePlayExtrasParser
 {
     internal sealed class HandCardInfo
     {
-        public HandCardInfo(string cardId, string label, bool disabled, string? color, string? family, int index)
+        public HandCardInfo(
+            string cardId,
+            string label,
+            bool disabled,
+            string? color,
+            string? family,
+            int index,
+            int? actionIndex)
         {
             CardId = cardId ?? string.Empty;
             Label = label ?? string.Empty;
@@ -18,6 +25,7 @@ internal static class GamePlayExtrasParser
             Color = color;
             Family = family;
             Index = index;
+            ActionIndex = actionIndex;
         }
 
         public string CardId { get; }
@@ -26,6 +34,7 @@ internal static class GamePlayExtrasParser
         public string? Color { get; }
         public string? Family { get; }
         public int Index { get; }
+        public int? ActionIndex { get; }
     }
 
     internal sealed class ShortcutHint
@@ -190,6 +199,7 @@ internal static class GamePlayExtrasParser
                 bool disabled = false;
                 string? color = null;
                 string? family = null;
+                int? actionIndex = null;
 
                 if (item.ValueKind == JsonValueKind.String)
                 {
@@ -230,6 +240,13 @@ internal static class GamePlayExtrasParser
                             disabled = parsed;
                         }
                     }
+                    if (item.TryGetProperty("actionIndex", out var actionIndexNode) &&
+                        actionIndexNode.ValueKind == JsonValueKind.Number &&
+                        actionIndexNode.TryGetInt32(out var parsedActionIndex) &&
+                        parsedActionIndex >= 0)
+                    {
+                        actionIndex = parsedActionIndex;
+                    }
                 }
 
                 if (string.IsNullOrWhiteSpace(label))
@@ -245,7 +262,8 @@ internal static class GamePlayExtrasParser
                     disabled: disabled,
                     color: color,
                     family: family,
-                    index: index));
+                    index: index,
+                    actionIndex: actionIndex));
                 index++;
             }
 

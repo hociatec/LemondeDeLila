@@ -11,6 +11,7 @@
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
 #include "shared/network/domain/WebSocketConstants.h"
+#include "shared/logging/application/Logger.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -126,9 +127,11 @@ void GameSessionGateway::ExecuteAction(const domain::GameAction& action, std::st
     const auto roomId = roomId_.load();
     if (roomId <= 0 || gameType_.empty()) throw std::runtime_error("Aucune partie active.");
     if (action.type.empty()) throw std::invalid_argument("Action de jeu invalide.");
+    lila::shared::logging::LogInfo("GameInput", "Sending action: type=" + action.type);
     SendJson(nlohmann::json{
         {"type", "game.actions"},
         {"payload", GameStatePayloadCodec::EncodeActionPayload(roomId, gameType_, action)}});
+    lila::shared::logging::LogInfo("GameInput", "Action sent: type=" + action.type);
 }
 
 domain::GameState GameSessionGateway::AwaitState(std::stop_token stopToken)

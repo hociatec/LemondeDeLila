@@ -73,7 +73,7 @@ private:
     void SendKey(std::string key);
     void ApplyState(domain::GameState state);
     void HandleEvent(domain::GameEvent event);
-    void HandleKey(wxKeyEvent& event);
+    [[nodiscard]] bool HandleKey(wxKeyEvent& event);
     void ActivateSelectedLine();
     bool ActivateSelectedHandCard();
     bool ActivateSelectedDie();

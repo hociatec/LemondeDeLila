@@ -74,6 +74,7 @@ export class LamaInitialStateFactory {
     }
 
     const meta: LamaMetadata = {
+      ...baseMeta,
       rng:
         baseMeta.rng && typeof baseMeta.rng === 'object'
           ? (baseMeta.rng as Record<string, unknown>)

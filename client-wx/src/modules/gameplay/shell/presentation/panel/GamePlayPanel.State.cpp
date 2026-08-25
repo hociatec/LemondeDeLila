@@ -17,13 +17,23 @@
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/logging/application/Logger.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::gameplay::presentation
 {
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
-    if (!application::GameStateUpdatePolicy::ShouldApply(state_, state)) return;
+    if (!application::GameStateUpdatePolicy::ShouldApply(state_, state))
+    {
+        lila::shared::logging::LogWarning(
+            "GameInput",
+            "State rejected: currentVersion=" + std::to_string(state_.version) +
+                ", incomingVersion=" + std::to_string(state.version) +
+                ", currentStatus=" + state_.status +
+                ", incomingStatus=" + state.status);
+        return;
+    }
     if (!gameName_.empty()) state.gameName = gameName_;
     const bool diceRolled = diceRollTracker_.Observe(state.dice, state.turnIndex);
     state_ = std::move(state);

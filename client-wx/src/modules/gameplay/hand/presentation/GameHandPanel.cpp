@@ -1,5 +1,7 @@
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 
+#include <algorithm>
+
 #include <wx/listbox.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -37,10 +39,17 @@ void GameHandPanel::ApplyCards(const std::vector<domain::GameCard>& cards)
     const bool hasHand = list_->GetCount() > 0;
     Show(hasHand);
     if (!hasHand) return;
+
+    const auto firstEnabled = std::find_if(
+        cards.begin(), cards.end(),
+        [](const domain::GameCard& card) { return !card.disabled; });
+    const int defaultSelection = firstEnabled == cards.end()
+        ? 0
+        : static_cast<int>(std::distance(cards.begin(), firstEnabled));
     const int nextSelection = previousSelection != wxNOT_FOUND && previousSelection >= 0 &&
         static_cast<unsigned int>(previousSelection) < list_->GetCount()
         ? previousSelection
-        : 0;
+        : defaultSelection;
     list_->SetSelection(nextSelection);
 }
 

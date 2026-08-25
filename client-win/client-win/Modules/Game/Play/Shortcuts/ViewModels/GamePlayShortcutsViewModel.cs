@@ -12,12 +12,14 @@ namespace client_win.Modules.Game.Play.Shortcuts.ViewModels;
 internal sealed class GamePlayShortcutsViewModel
 {
     private readonly ICommand _sendKey;
+    private readonly ICommand _sendAction;
     private readonly ICommand _turnInfo;
     private const string TurnShortcutCode = "ui.turn";
 
-    public GamePlayShortcutsViewModel(ICommand sendKey, ICommand turnInfo)
+    public GamePlayShortcutsViewModel(ICommand sendKey, ICommand sendAction, ICommand turnInfo)
     {
         _sendKey = sendKey ?? throw new ArgumentNullException(nameof(sendKey));
+        _sendAction = sendAction ?? throw new ArgumentNullException(nameof(sendAction));
         _turnInfo = turnInfo ?? throw new ArgumentNullException(nameof(turnInfo));
     }
 
@@ -54,18 +56,23 @@ internal sealed class GamePlayShortcutsViewModel
                 continue;
             }
 
+            var isAction = string.Equals(hint.Type, "action", StringComparison.OrdinalIgnoreCase) &&
+                           !string.IsNullOrWhiteSpace(hint.ActionType);
+            var command = isAction ? _sendAction : _sendKey;
+            var commandParameter = isAction ? hint.ActionType : normalizedKey;
+
             desired[code] = gesture != null
                 ? new ShortcutDefinition(
                     gesture,
-                    _sendKey,
-                    commandParameter: normalizedKey,
+                    command,
+                    commandParameter: commandParameter,
                     description: "Raccourci serveur",
                     code: code,
                     availableInGame: true)
                 : new ShortcutDefinition(
                     keyChar,
-                    _sendKey,
-                    commandParameter: normalizedKey,
+                    command,
+                    commandParameter: commandParameter,
                     description: "Raccourci serveur",
                     code: code,
                     availableInGame: true);

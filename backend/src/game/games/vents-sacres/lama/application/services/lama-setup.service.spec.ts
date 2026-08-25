@@ -76,11 +76,16 @@ describe('LamaService setup', () => {
         { id: 2, username: 'B' },
       ],
       log: [],
-      metadata: {},
+      metadata: {
+        roomId: 12,
+        roomRunId: 34,
+        gameType: 'lama',
+      },
     } as any);
 
     expect(String(state.status)).toBe('started');
     expect(String(state.phase)).toBe('setup');
+    expect(Number(state.metadata?.roomRunId ?? 0)).toBe(34);
     expect(Boolean(state?.pending?.blocking)).toBe(true);
     const exposed: any = service.exposeStateForUser(state, 1);
     expect(String(exposed?.pending?.type ?? '')).toBe('config_prompt');
@@ -119,6 +124,27 @@ describe('LamaService setup', () => {
     expect((started.metadata?.handsByPlayerId?.['2'] ?? []).length).toBe(5);
     expect((started.metadata?.deck ?? []).length).toBe(52);
     expect((started.metadata?.discard ?? []).length).toBeGreaterThan(0);
+    expect(Number(started.metadata?.roomRunId ?? 0)).toBe(34);
+
+    const currentPlayerId = Number(started.turn?.currentPlayerId ?? 0);
+    const handBefore = (
+      started.metadata?.handsByPlayerId?.[String(currentPlayerId)] ?? []
+    ).length;
+    const deckBefore = (started.metadata?.deck ?? []).length;
+    const afterFirstAction: any = service.applyActions(started, [
+      {
+        type: 'draw',
+        payload: {},
+        meta: { actorId: currentPlayerId },
+      } as any,
+    ]);
+    expect(String(afterFirstAction.phase)).toBe('round');
+    expect(Number(afterFirstAction.metadata?.roomRunId ?? 0)).toBe(34);
+    expect((afterFirstAction.metadata?.deck ?? []).length).toBe(deckBefore - 1);
+    expect(
+      afterFirstAction.metadata?.handsByPlayerId?.[String(currentPlayerId)] ??
+        [],
+    ).toHaveLength(handBefore + 1);
   });
 
   it('rejects conflicting setup when deck is too small for players and starting hand', async () => {

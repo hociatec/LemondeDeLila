@@ -201,7 +201,10 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
             emitMessage: msg => MessageReceived?.Invoke(new GamePlayHistoryMessage(msg)),
             onDrawActionSent: () => _logSounds.TryPlayDrawSound());
 
-        _shortcuts = new GamePlayShortcutsViewModel(_commands.SendKey, _commands.TurnInfo);
+        _shortcuts = new GamePlayShortcutsViewModel(
+            _commands.SendKey,
+            _commands.SimpleActionFromHint,
+            _commands.TurnInfo);
 
 	        _realtime = new GamePlayRealtimeController(
 	            dispatcher: _dispatcher,
@@ -965,6 +968,15 @@ public sealed partial class GamePlayViewModel : ObservableObject, IAsyncDisposab
         }
 
         if (string.IsNullOrWhiteSpace(actionType))
+        {
+            _pendingConfigPrompt = null;
+            return;
+        }
+
+        // A configuration prompt is actionable only while its server action is
+        // still exposed. This prevents a stale/partially patched setup prompt
+        // from covering a round that has already started.
+        if (!HasAction(state, actionType))
         {
             _pendingConfigPrompt = null;
             return;

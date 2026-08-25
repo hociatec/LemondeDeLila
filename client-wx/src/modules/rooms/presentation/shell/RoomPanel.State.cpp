@@ -104,8 +104,11 @@ void RoomPanel::UpdateStatus(const wxString& message, bool isError, bool announc
 void RoomPanel::ApplyInitialFocusIfNeeded()
 {
     auto* focused = wxWindow::FindFocus();
+    const bool hasUsableFocusInsideRoom = focused != nullptr &&
+        lila::shared::accessibility::NavigationController::IsDescendantOf(focused, this) &&
+        focused->IsShownOnScreen() && focused->IsEnabled() && focused->AcceptsFocus();
     if (IsShownOnScreen() &&
-        (focused == nullptr || !lila::shared::accessibility::NavigationController::IsDescendantOf(focused, this)))
+        !hasUsableFocusInsideRoom)
         static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
 }
 

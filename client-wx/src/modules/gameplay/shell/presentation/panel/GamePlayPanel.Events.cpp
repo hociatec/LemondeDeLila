@@ -17,12 +17,18 @@
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
+#include "shared/logging/application/Logger.h"
 
 namespace lila::modules::gameplay::presentation
 {
 void GamePlayPanel::BindEvents()
 {
-    Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event) { HandleKey(event); });
+    Bind(
+        wxEVT_CHAR_HOOK,
+        [this](wxKeyEvent& event)
+        {
+            if (!HandleKey(event)) event.Skip();
+        });
     linesList_->Bind(wxEVT_LISTBOX, [this](wxCommandEvent&) { UpdateInfoPanel(); });
     promptPanel_->SetVisibilityChangedHandler(
         [this](bool visible)
@@ -106,14 +112,26 @@ bool GamePlayPanel::ActivateFromZone()
 
 bool GamePlayPanel::HandleZoneKey(wxKeyEvent& event)
 {
+    const auto key = NormalizeKey(event);
+    if (!key.empty())
+    {
+        lila::shared::logging::LogInfo(
+            "GameInput",
+            "Zone key=" + key +
+                ", open=" + (IsOpen() ? std::string("yes") : std::string("no")) +
+                ", confirmation=" + (IsConfirmationVisible() ? std::string("yes") : std::string("no")) +
+                ", prompt=" + (IsInlinePromptVisible() ? std::string("yes") : std::string("no")) +
+                ", pawn=" + (pawnSelectionPanel_->IsActive() ? std::string("yes") : std::string("no")) +
+                ", hand=" + std::to_string(state_.hand.size()) +
+                ", actions=" + std::to_string(state_.actions.size()) +
+                ", shortcuts=" + std::to_string(state_.shortcuts.size()));
+    }
     if (!IsOpen() || IsConfirmationVisible() || IsInlinePromptVisible() ||
         pawnSelectionPanel_->IsActive()) return false;
 
-    const auto key = NormalizeKey(event);
-    if (IsFinished() && key == "ENTER")
+    if (key == "ENTER")
     {
-        SendKey(key);
-        return true;
+        return ActivateFromZone();
     }
 
     const int keyCode = event.GetKeyCode();
@@ -153,14 +171,22 @@ bool GamePlayPanel::HandleZoneKey(wxKeyEvent& event)
 bool GamePlayPanel::ActivateSelectedHandCard()
 {
     const int selected = handPanel_->SelectedIndex();
-    if (selected < 0) return false;
+    if (selected < 0)
+    {
+        lila::shared::logging::LogWarning("GameInput", "Card activation has no selection.");
+        return false;
+    }
     auto action = application::cards::GameCardActionResolver::Resolve(
         state_.hand, state_.actions, static_cast<std::size_t>(selected));
     if (!action)
     {
+        lila::shared::logging::LogWarning(
+            "GameInput", "Card activation has no server-provided action.");
         UpdateStatus(wxString(L"Cette carte ne peut pas \u00EAtre jou\u00E9e."), true, true);
         return true;
     }
+    lila::shared::logging::LogInfo(
+        "GameInput", "Card action resolved: " + action->type);
     PrepareAndExecuteAction(std::move(*action));
     return true;
 }

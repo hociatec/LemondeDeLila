@@ -48,6 +48,11 @@ public sealed class GameSession : IAsyncDisposable
             _json,
             emitState: s =>
             {
+                if (!ShouldApplyState(LastState, s))
+                {
+                    return;
+                }
+
                 ClearAllInFlightKeys();
                 LastState = s;
                 StateUpdated?.Invoke(s);
@@ -80,6 +85,11 @@ public sealed class GameSession : IAsyncDisposable
                 ClearAllInFlightKeys();
                 if (TryApplyStatePatch(raw, out var patched) && patched != null)
                 {
+                    if (!ShouldApplyState(LastState, patched))
+                    {
+                        return;
+                    }
+
                     LastState = patched;
                     StateUpdated?.Invoke(patched);
                     return;
@@ -123,6 +133,23 @@ public sealed class GameSession : IAsyncDisposable
     public event Action<string>? UiMessageReceived;
     public event Action<GameKeyAckDto>? KeyAckReceived;
     public event Action<GameEndedDto>? EndedReceived;
+
+    internal static bool ShouldApplyState(GameStateDto? current, GameStateDto incoming)
+    {
+        if (current == null)
+        {
+            return true;
+        }
+
+        // Older servers did not expose a state version. Keep compatibility with
+        // them, but use the monotonic version whenever both states provide it.
+        if (current.Version <= 0 || incoming.Version <= 0)
+        {
+            return true;
+        }
+
+        return incoming.Version >= current.Version;
+    }
 
     public Task CloseAsync() => _socket.CloseAsync();
 

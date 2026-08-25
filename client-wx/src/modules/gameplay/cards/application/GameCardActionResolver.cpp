@@ -45,6 +45,11 @@ std::optional<domain::GameAction> GameCardActionResolver::Resolve(
         if (index < actions.size() && !actions[index].disabled) return actions[index];
     }
 
+    // When the server explicitly marks a card as disabled and doesn't bind an
+    // action index, it is display-only. Do not mistake another action targeting
+    // the same card (for example an inspection action) for its primary action.
+    if (card.disabled) return std::nullopt;
+
     std::size_t occurrence = 0;
     for (std::size_t index = 0; index < selectedCard; ++index)
         if (cards[index].id == card.id) ++occurrence;
