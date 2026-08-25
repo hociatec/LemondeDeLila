@@ -13,6 +13,7 @@
 #include "modules/gameplay/session/domain/GameEvent.h"
 #include "modules/gameplay/state/domain/GameState.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
+#include "modules/gameplay/dice/application/GameDiceRollTracker.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
 
 class wxKeyEvent;
@@ -28,6 +29,7 @@ class GameSessionService;
 
 namespace lila::modules::gameplay::presentation::confirmation { class GameActionConfirmationPanel; }
 namespace lila::modules::gameplay::presentation::hand { class GameHandPanel; }
+namespace lila::modules::gameplay::presentation::dice { class GameDicePanel; }
 namespace lila::modules::gameplay::presentation::prompt { class GamePromptPanel; }
 namespace lila::modules::gameplay::presentation::pawn_selection { class PawnSelectionPanel; }
 
@@ -39,6 +41,7 @@ public:
     using ZoneFocusRequestedHandler = std::function<void()>;
     using HistoryMessageHandler = std::function<void(const wxString&)>;
     using TableShortcutHandler = std::function<bool(wxKeyEvent&)>;
+    using DiceRolledHandler = std::function<void()>;
 
     explicit GamePlayPanel(
         wxWindow* parent,
@@ -53,6 +56,7 @@ public:
     void SetZoneFocusRequestedHandler(ZoneFocusRequestedHandler handler);
     void SetHistoryMessageHandler(HistoryMessageHandler handler);
     void SetTableShortcutHandler(TableShortcutHandler handler);
+    void SetDiceRolledHandler(DiceRolledHandler handler);
     bool ActivateFromZone();
     bool HandleZoneKey(wxKeyEvent& event);
     [[nodiscard]] wxWindow* ActiveNavigationTarget() const noexcept;
@@ -72,6 +76,8 @@ private:
     void HandleKey(wxKeyEvent& event);
     void ActivateSelectedLine();
     bool ActivateSelectedHandCard();
+    bool ActivateSelectedDie();
+    [[nodiscard]] bool HasDiceAction() const;
     void SyncInlinePrompt();
     void ShowInlinePrompt(domain::GameAction action);
     void SyncContentVisibility();
@@ -95,6 +101,7 @@ private:
     wxStaticText* headerLabel_ = nullptr;
     wxScrolledWindow* contentPanel_ = nullptr;
     hand::GameHandPanel* handPanel_ = nullptr;
+    dice::GameDicePanel* dicePanel_ = nullptr;
     wxStaticText* actionsLabel_ = nullptr;
     wxListBox* linesList_ = nullptr;
     wxTextCtrl* infoText_ = nullptr;
@@ -110,9 +117,11 @@ private:
     std::string activeInfoPanel_ = "details";
     std::string dismissedPromptActionType_;
     history::GameLogCursor logCursor_;
+    application::dice::GameDiceRollTracker diceRollTracker_;
     ZoneFocusRequestedHandler onZoneFocusRequested_;
     HistoryMessageHandler onHistoryMessage_;
     TableShortcutHandler onTableShortcut_;
+    DiceRolledHandler onDiceRolled_;
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
 };
 }

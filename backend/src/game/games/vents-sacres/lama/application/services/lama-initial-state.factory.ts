@@ -17,6 +17,12 @@ export class LamaInitialStateFactory {
       .trim();
     const currentStep =
       typeof baseMeta.step === 'string' ? baseMeta.step.trim() : '';
+    const phase = String(baseState.phase ?? '')
+      .toLowerCase()
+      .trim();
+    if (status === 'started' && phase === 'round') {
+      return baseState;
+    }
     if (status === 'started' && currentStep && currentStep !== 'setup_config') {
       return baseState;
     }

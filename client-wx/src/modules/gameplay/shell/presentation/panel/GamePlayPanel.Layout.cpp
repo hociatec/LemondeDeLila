@@ -8,6 +8,7 @@
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
+#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -48,6 +49,9 @@ void GamePlayPanel::BuildLayout()
 
     handPanel_ = new hand::GameHandPanel(contentPanel_);
     content->Add(handPanel_, 1, wxEXPAND | wxBOTTOM, 8);
+
+    dicePanel_ = new dice::GameDicePanel(contentPanel_);
+    content->Add(dicePanel_, 1, wxEXPAND | wxBOTTOM, 8);
 
     actionsLabel_ = new wxStaticText(contentPanel_, wxID_ANY, wxString(L"Actions disponibles"));
     actionsLabel_->SetForegroundColour(lila::shared::ui::Theme::Accent());

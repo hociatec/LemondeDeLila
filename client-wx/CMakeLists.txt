@@ -202,6 +202,11 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/gameplay/cards/application/GameCardActionResolver.cpp
     src/modules/gameplay/cards/application/GameCardTextBuilder.cpp
     src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
+    src/modules/gameplay/dice/application/GameDiceActionResolver.cpp
+    src/modules/gameplay/dice/application/GameDiceRollTracker.cpp
+    src/modules/gameplay/dice/application/GameDiceTextBuilder.cpp
+    src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp
+    src/modules/gameplay/dice/presentation/GameDicePanel.cpp
     src/modules/gameplay/session/application/GameSessionService.cpp
     src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp
     src/modules/gameplay/session/infrastructure/GameSessionGateway.cpp
@@ -700,6 +705,10 @@ if(BUILD_TESTING)
             src/modules/gameplay/cards/application/GameCardActionResolver.cpp
             src/modules/gameplay/cards/application/GameCardTextBuilder.cpp
             src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
+            src/modules/gameplay/dice/application/GameDiceActionResolver.cpp
+            src/modules/gameplay/dice/application/GameDiceRollTracker.cpp
+            src/modules/gameplay/dice/application/GameDiceTextBuilder.cpp
+            src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp
             src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp
             src/modules/gameplay/history/presentation/GameLogCursor.cpp
             src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp

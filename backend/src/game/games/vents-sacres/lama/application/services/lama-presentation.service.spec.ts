@@ -1,6 +1,50 @@
 import { createLamaServiceForTest } from '../../tests/lama-test-harness';
 
 describe('LamaService presentation', () => {
+  it('does not reopen setup when a round snapshot contains a stale setup step', () => {
+    const { service } = createLamaServiceForTest();
+    const state: any = {
+      status: 'started',
+      phase: 'round',
+      round: 1,
+      turnIndex: 1,
+      log: [],
+      players: [
+        { id: 1, username: 'A' },
+        { id: 2, username: 'B' },
+      ],
+      turn: { currentPlayerId: 1, direction: 1 },
+      pending: { step: 'turn_choice', playerId: 1 },
+      metadata: {
+        step: 'setup_config',
+        ownerPlayerId: 1,
+        deck: [2],
+        discard: [1],
+        handsByPlayerId: { '1': [1], '2': [2] },
+        droppedOutByPlayerId: { '1': false, '2': false },
+        scoresByPlayerId: { '1': 0, '2': 0 },
+        turnTracker: { playerId: 1, drawn: false, played: false },
+      },
+    };
+
+    const exposed: any = service.exposeStateForUser(state, 1);
+    expect(exposed.pending?.type).toBe('lama_turn');
+    expect(
+      (exposed.actions ?? []).some((action: any) => action.type === 'lama_set_config'),
+    ).toBe(false);
+    expect(
+      (exposed.actions ?? []).some((action: any) => action.type === 'draw'),
+    ).toBe(true);
+    expect(
+      (exposed.actions ?? []).some((action: any) => action.type === 'lama_play'),
+    ).toBe(true);
+
+    const afterDraw: any = service.applyActions(state, [
+      { type: 'draw', payload: {}, meta: { actorId: 1 } } as any,
+    ]);
+    expect(afterDraw.metadata.handsByPlayerId['1']).toHaveLength(2);
+  });
+
   it('includes discard top in pending label', async () => {
     const { service } = createLamaServiceForTest();
 

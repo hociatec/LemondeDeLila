@@ -264,6 +264,8 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/detail/macro_unscope.hpp
 C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.hpp
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/actions/domain/GameAction.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/domain/GameCard.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDiceState.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDie.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameLine.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/prompts/domain/GamePrompt.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/pawn_selection/domain/PawnSelection.h

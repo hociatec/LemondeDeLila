@@ -223,6 +223,8 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/actions/domain/GameAction.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/domain/GameCard.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDiceState.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDie.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameLine.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/prompts/domain/GamePrompt.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/pawn_selection/domain/PawnSelection.h
@@ -230,4 +232,5 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/shortcuts/domain/Game
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/infrastructure/GameCardDecoder.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/infrastructure/GameDiceDecoder.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h

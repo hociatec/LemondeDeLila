@@ -18,6 +18,10 @@ import {
   normalizeActionType,
 } from '../../../../../application/helpers/action-service.helper';
 import { asLamaRecord } from './lama-action.utils';
+import {
+  effectiveLamaStep,
+  isLamaSetupState,
+} from '../policies/lama-lifecycle.policy';
 
 export class LamaActionService {
   constructor(
@@ -102,12 +106,12 @@ export class LamaActionService {
       return this.infoService.applyInfoAction(state, meta, type, actorId);
     }
 
-    if ((meta.step ?? '') === 'setup_config') {
+    if (isLamaSetupState(state)) {
       if (type !== 'lama_set_config') return state;
       return this.setupService.applySetupConfig(state, meta, action, actorId);
     }
 
-    if ((meta.step ?? '') === 'round_pause') {
+    if (effectiveLamaStep(state, meta) === 'round_pause') {
       if (type !== 'lama_resume_round') return state;
       return this.setupService.resumeRoundPause(state, meta);
     }
@@ -123,7 +127,7 @@ export class LamaActionService {
 
     const metaForTurn = this.shared.ensureTurnTracker(meta, actorId);
 
-    if ((meta.step ?? 'turn_choice') === 'return_token') {
+    if (effectiveLamaStep(state, meta) === 'return_token') {
       return this.returnService.applyReturnToken(
         state,
         metaForTurn,

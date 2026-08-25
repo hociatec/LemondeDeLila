@@ -3,6 +3,10 @@ import type { GameStateEntity } from '../../../../../application/models/game-sta
 import type { LamaCardValue, LamaMetadata } from '../../model/lama.model';
 import { nextLamaValue, LAMA_VALUE } from '../../model/lama.model';
 import { isLamaDrawLocked } from '../policies/lama-draw.policy';
+import {
+  effectiveLamaStep,
+  isLamaSetupState,
+} from '../policies/lama-lifecycle.policy';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'
@@ -14,13 +18,13 @@ export class LamaActionsPresenter {
   build(state: GameStateEntity, userId: number): GameSingleActionDto[] {
     const meta = (state.metadata ?? {}) as LamaMetadata;
 
-    if (this.isSetup(state) || (meta.step ?? '') === 'setup_config') {
+    if (isLamaSetupState(state)) {
       const ownerId = this.resolveSetupOwnerId(state, meta);
       if (ownerId == null || userId !== ownerId) return [];
       return [{ type: 'lama_set_config', payload: {} }];
     }
 
-    if ((meta.step ?? '') === 'round_pause') {
+    if (effectiveLamaStep(state, meta) === 'round_pause') {
       return [];
     }
 
@@ -46,7 +50,7 @@ export class LamaActionsPresenter {
       return out;
     }
 
-    const step = meta.step ?? 'turn_choice';
+    const step = effectiveLamaStep(state, meta);
     if (step === 'return_token') {
       if (meta.pendingReturnPlayerId !== userId) return [];
       const score = Number((meta.scoresByPlayerId ?? {})[String(userId)] ?? 0);
@@ -137,16 +141,6 @@ export class LamaActionsPresenter {
     }
     out.push({ type: 'lama_quit', payload: {} });
     return out;
-  }
-
-  private isSetup(state: GameStateEntity): boolean {
-    const status = String(state?.status ?? '')
-      .toLowerCase()
-      .trim();
-    const phase = String(state?.phase ?? '')
-      .toLowerCase()
-      .trim();
-    return status === 'setup' || phase === 'setup';
   }
 
   private isStarted(state: GameStateEntity): boolean {

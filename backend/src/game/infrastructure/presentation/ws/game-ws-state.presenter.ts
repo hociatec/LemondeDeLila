@@ -3,6 +3,7 @@ import type { GameRulesAdapter } from '../../../application/contracts/game-rules
 import type { GameStateEntity } from '../../../application/models/game-state.model';
 import type { GameShortcutHint } from '../../../application/models/game-shortcuts.model';
 import { GameWsPayloadCompatibilityAdapter } from './game-ws-payload-compatibility.adapter';
+import { withDicePresentation } from '../../../application/helpers/dice-presenter.helper';
 
 type PresentStateInput = {
   state: GameStateEntity;
@@ -20,10 +21,8 @@ export class GameWsStatePresenter {
   ) {}
 
   present(input: PresentStateInput): Record<string, unknown> {
-    const exposed = this.expose(
-      input.handler,
-      input.state,
-      input.viewerPlayerId,
+    const exposed = withDicePresentation(
+      this.expose(input.handler, input.state, input.viewerPlayerId),
     );
     return this.compatibility.build(exposed, {
       roomId: input.roomId,

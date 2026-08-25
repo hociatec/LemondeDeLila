@@ -612,11 +612,14 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/session/domain/GameEvent.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/domain/GameCard.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDiceState.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDie.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameLine.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/prompts/domain/GamePrompt.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/pawn_selection/domain/PawnSelection.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/shortcuts/domain/GameShortcut.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/history/presentation/GameLogCursor.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/application/GameDiceRollTracker.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/concurrency/application/AsyncRequestSlot.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/concurrency/application/BackgroundExecutor.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/stop_token
@@ -664,6 +667,7 @@ C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/textctrl.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/hand/presentation/GameHandPanel.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/presentation/GameDicePanel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/prompts/presentation/GamePromptPanel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/shared/ui/presentation/theme/Theme.h

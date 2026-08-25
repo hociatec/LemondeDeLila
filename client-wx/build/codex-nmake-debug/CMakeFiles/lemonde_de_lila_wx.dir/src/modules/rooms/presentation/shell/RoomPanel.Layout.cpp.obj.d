@@ -656,11 +656,17 @@ C:/vcpkg/installed/x64-windows/include/nlohmann/thirdparty/hedley/hedley_undef.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/session/domain/GameEvent.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/domain/GameCard.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDiceState.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDie.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameLine.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/prompts/domain/GamePrompt.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/pawn_selection/domain/PawnSelection.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/shortcuts/domain/GameShortcut.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/history/presentation/GameLogCursor.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/application/GameDiceRollTracker.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/audio/application/IAudioService.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/audio/domain/AudioBackground.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/audio/domain/SoundCue.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/zone/RoomGameZoneAnchor.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/history/HistoryAnnouncementQueue.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/deque

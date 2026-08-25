@@ -224,6 +224,11 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/application/Gam
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/actions/domain/GameAction.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/domain/GameCard.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/application/GameCardTextBuilder.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/application/GameDiceActionResolver.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDiceState.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDie.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/application/GameDiceRollTracker.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/application/GameDiceTextBuilder.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/prompts/application/GamePromptInputCodec.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/prompts/domain/GamePrompt.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.h

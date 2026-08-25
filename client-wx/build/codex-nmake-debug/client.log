@@ -13325,3 +13325,44 @@
 2026-08-25 05:12:13.838 [INFO ] [Navigator] CreateView(Catalog): constructing CatalogPanel view.
 2026-08-25 05:12:13.872 [INFO ] [Navigator] ReplaceView(): begin.
 2026-08-25 05:12:19.419 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 05:22:51.864 [INFO ] [Startup] Étape: Préparation du démarrage
+2026-08-25 05:22:51.865 [INFO ] [Startup] Étape: Creation des transports reseau
+2026-08-25 05:22:51.865 [INFO ] [Startup] Étape: Creation du fournisseur de tickets
+2026-08-25 05:22:51.865 [INFO ] [Startup] Étape: Creation du client temps-reel
+2026-08-25 05:22:51.865 [INFO ] [Startup] Étape: Creation du client temps-reel authentifie
+2026-08-25 05:22:51.865 [INFO ] [Startup] Étape: Creation des services d'authentification
+2026-08-25 05:22:51.865 [INFO ] [Startup] Étape: Chargement des options
+2026-08-25 05:22:51.868 [INFO ] [Startup] Étape: Creation du store de session
+2026-08-25 05:22:51.868 [INFO ] [Startup] Étape: Creation du moteur audio BASS asynchrone
+2026-08-25 05:22:51.869 [INFO ] [Startup] Étape: Creation du service catalogue
+2026-08-25 05:22:51.869 [INFO ] [Startup] Étape: Creation des services de tables
+2026-08-25 05:22:51.869 [INFO ] [Startup] Étape: Creation du service coffre fort
+2026-08-25 05:22:51.869 [INFO ] [Startup] Étape: Creation du service livre des contes
+2026-08-25 05:22:51.869 [INFO ] [Startup] Étape: Creation du service classement
+2026-08-25 05:22:51.869 [INFO ] [Startup] Étape: Creation du gateway chat
+2026-08-25 05:22:51.869 [INFO ] [Startup] Étape: Creation du protocole chat
+2026-08-25 05:22:51.869 [INFO ] [Startup] Étape: Creation du service chat
+2026-08-25 05:22:51.869 [INFO ] [Startup] Étape: Creation du service messagerie
+2026-08-25 05:22:51.869 [INFO ] [Startup] Étape: Creation du service social
+2026-08-25 05:22:51.870 [INFO ] [Startup] Étape: Creation du service presence
+2026-08-25 05:22:51.870 [INFO ] [Startup] Étape: Creation du navigateur
+2026-08-25 05:22:51.870 [INFO ] [Startup] Étape: Démarrage de l'écran principal
+2026-08-25 05:22:51.870 [INFO ] [Navigator] Start() begin.
+2026-08-25 05:22:51.919 [INFO ] [Navigator] restoreSessionOnStartup=true
+2026-08-25 05:22:51.924 [INFO ] [Navigator] Stored session restored. Opening main menu.
+2026-08-25 05:22:51.924 [INFO ] [Navigator] ShowSession(): begin.
+2026-08-25 05:22:51.924 [INFO ] [Navigator] CreateView(MainMenu): constructing MainMenuFrame view.
+2026-08-25 05:22:51.925 [INFO ] [MainMenu] Constructor: begin.
+2026-08-25 05:22:51.961 [INFO ] [MainMenu] Constructor: BuildLayout done.
+2026-08-25 05:22:51.965 [INFO ] [MainMenu] Constructor: ApplyTheme done.
+2026-08-25 05:22:51.966 [INFO ] [MainMenu] Constructor: BindEvents done.
+2026-08-25 05:22:51.970 [INFO ] [MainMenu] Constructor: end.
+2026-08-25 05:22:51.970 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 05:22:52.047 [INFO ] [Startup] Bootstrap terminé avec succès.
+2026-08-25 05:22:52.476 [INFO ] [Navigator] CreateView(Catalog): constructing CatalogPanel view.
+2026-08-25 05:22:52.516 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 05:22:53.605 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 05:22:56.036 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 05:23:00.821 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 05:23:45.938 [INFO ] [Navigator] ReplaceView(): begin.
+2026-08-25 05:23:51.129 [INFO ] [Navigator] ReplaceView(): begin.

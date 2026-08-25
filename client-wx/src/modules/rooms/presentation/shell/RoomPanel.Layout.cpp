@@ -5,6 +5,7 @@
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
+#include "modules/audio/application/IAudioService.h"
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
 #include "modules/rooms/presentation/history/HistoryAnnouncementQueue.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
@@ -34,6 +35,8 @@ void RoomPanel::BuildLayout()
     gameZoneAnchor_ = new RoomGameZoneAnchor(this);
     gameZoneAnchor_->SetMinSize(wxSize(360, 80));
     gamePlayPanel_ = new lila::modules::gameplay::presentation::GamePlayPanel(this, gameService_);
+    gamePlayPanel_->SetDiceRolledHandler(
+        [this]() { audioService_.Play(lila::modules::audio::domain::SoundCue::DiceRolled); });
     gamePlayPanel_->Hide();
     gamePlayPanel_->SetMinSize(wxSize(360, 320));
     roomColumn->Add(detailsLabel_, 0, wxEXPAND | wxBOTTOM, 18);

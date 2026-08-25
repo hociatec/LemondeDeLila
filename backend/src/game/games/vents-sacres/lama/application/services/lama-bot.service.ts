@@ -4,6 +4,7 @@ import type { LamaCardValue, LamaMetadata } from '../../model/lama.model';
 import { nextLamaValue } from '../../model/lama.model';
 import { LamaSharedService } from './lama-shared.service';
 import { isLamaDrawLocked } from '../policies/lama-draw.policy';
+import { effectiveLamaStep } from '../policies/lama-lifecycle.policy';
 
 export class LamaBotService {
   constructor(private readonly shared: LamaSharedService) {}
@@ -19,8 +20,8 @@ export class LamaBotService {
     const meta = (state.metadata ?? {}) as LamaMetadata;
     if (meta.winnerId) return [];
 
-    const step = meta.step ?? 'turn_choice';
-    if (step === 'round_pause' || step === 'setup_config') {
+    const step = effectiveLamaStep(state, meta);
+    if (step === 'round_pause') {
       return [];
     }
     if (step === 'return_token') {

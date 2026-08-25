@@ -76,4 +76,31 @@ describe('GameWsStatePresenter', () => {
     });
     expect(payload.pending).toEqual(prompt);
   });
+
+  it('publishes the generic dice contract', () => {
+    const state = {
+      status: 'started',
+      phase: 'turn',
+      turnIndex: 3,
+      lastRoll: 5,
+      players: [],
+      actions: [{ type: 'roll', payload: {} }],
+      extras: {},
+    } as unknown as GameStateEntity;
+    const handler = { exposeState: () => state } as unknown as GameRulesAdapter;
+
+    const payload = createPresenter().present({
+      state,
+      handler,
+      roomId: 4,
+      gameType: 'dice-game',
+      version: 8,
+    });
+    expect((payload.extras as any).dice).toEqual(
+      expect.objectContaining({ total: 5, rollActionIndex: 0 }),
+    );
+    expect((payload.state as any).extras.dice).toEqual(
+      (payload.extras as any).dice,
+    );
+  });
 });

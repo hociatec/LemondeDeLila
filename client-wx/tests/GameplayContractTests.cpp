@@ -7,6 +7,9 @@
 
 #include "modules/gameplay/cards/application/GameCardActionResolver.h"
 #include "modules/gameplay/cards/application/GameCardTextBuilder.h"
+#include "modules/gameplay/dice/application/GameDiceActionResolver.h"
+#include "modules/gameplay/dice/application/GameDiceRollTracker.h"
+#include "modules/gameplay/dice/application/GameDiceTextBuilder.h"
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
@@ -68,6 +71,36 @@ void TestTypedInputs()
     Expect(GamePromptInputCodec::Parse(boolean, "oui").value == true, "Oui doit produire true.");
     Expect(GamePromptInputCodec::Parse(boolean, "non").value == false, "Non doit produire false.");
     Expect(!GamePromptInputCodec::Parse(boolean, "peut-être").valid, "Une valeur booléenne ambiguë doit être refusée.");
+}
+
+void TestStaleSetupPromptIsIgnoredDuringRound()
+{
+    const auto payload = nlohmann::json{
+        {"roomId", 15},
+        {"gameType", "lama"},
+        {"state", {
+            {"status", "started"},
+            {"phase", "round"},
+            {"pending", {
+                {"type", "config_prompt"},
+                {"data", {
+                    {"actionType", "lama_set_config"},
+                    {"fields", nlohmann::json::array({
+                        {{"key", "score"}, {"label", "Score"}, {"kind", "number"}},
+                    })},
+                }},
+            }},
+            {"extras", {{"hand", nlohmann::json::array({
+                {{"id", "1"}, {"label", "1"}},
+            })}}},
+        }},
+    };
+
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    Expect(!state.prompt.has_value(),
+        "Un formulaire de configuration perime ne doit pas remplacer les commandes de la manche.");
+    Expect(state.hand.size() == 1,
+        "La main de la manche doit rester disponible apres filtrage du formulaire perime.");
 }
 
 void TestActionLabelsRemainDistinct()
@@ -140,6 +173,58 @@ void TestCardsCarryTheirActionsAcrossGames()
         "Deux exemplaires d'une carte doivent conserver deux actions distinctes.");
     Expect(!GameCardActionResolver::Resolve(state.hand, state.actions, 2).has_value(),
         "Une carte desactivee doit rester consultable sans etre jouable.");
+}
+
+void TestGenericDiceContract()
+{
+    using lila::modules::gameplay::application::dice::GameDiceActionResolver;
+    const auto payload = nlohmann::json{
+        {"roomId", 14},
+        {"gameType", "generic-dice-game"},
+        {"state", {
+            {"turnIndex", 6},
+            {"actions", nlohmann::json::array({
+                {{"type", "inspect"}, {"payload", nlohmann::json::object()}},
+                {{"type", "server-specific-roll"}, {"payload", {{"mode", "fast"}}}},
+            })},
+            {"extras", {{"dice", {
+                {"label", "Dés de course"},
+                {"total", 8},
+                {"rollKey", "round-2-roll-4"},
+                {"rollActionIndex", 1},
+                {"dice", nlohmann::json::array({
+                    {{"id", "red"}, {"label", "Dé rouge"}, {"sides", 8}, {"value", 3}},
+                    {{"id", "blue"}, {"label", "Dé bleu"}, {"sides", 8}, {"value", 5}},
+                })},
+            }}}},
+        }},
+    };
+
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    Expect(state.dice.has_value() && state.dice->dice.size() == 2,
+        "Tous les des fournis par le serveur doivent etre conserves.");
+    Expect(state.dice->total == 8 && state.dice->dice[1].value == 5,
+        "Les valeurs individuelles et le total doivent etre decodes.");
+    const auto action = GameDiceActionResolver::Resolve(*state.dice, state.actions, 0);
+    Expect(action.has_value() && action->type == "server-specific-roll",
+        "Le lancer doit utiliser l'index serveur sans connaitre le nom de l'action.");
+    Expect(lila::modules::gameplay::application::dice::GameDiceTextBuilder::DieText(
+            state.dice->dice[0]) == "Dé rouge : 3 sur 8",
+        "La valeur et le nombre de faces doivent former un texte accessible.");
+}
+
+void TestDiceRollTracker()
+{
+    using lila::modules::gameplay::application::dice::GameDiceRollTracker;
+    lila::modules::gameplay::domain::GameDiceState dice;
+    dice.total = 4;
+    dice.rollKey = "roll-1";
+    GameDiceRollTracker tracker;
+    Expect(!tracker.Observe(dice, 1), "Le premier etat de de ne doit pas jouer de son.");
+    Expect(!tracker.Observe(dice, 1), "Un etat identique ne doit pas rejouer le son.");
+    dice.rollKey = "roll-2";
+    Expect(tracker.Observe(dice, 1),
+        "Deux lancers identiques doivent rester distincts grace a la cle serveur.");
 }
 
 void TestServerDrivenPawnSelection()
@@ -227,10 +312,13 @@ int main()
     try
     {
         TestServerDrivenPrompt();
+        TestStaleSetupPromptIsIgnoredDuringRound();
         TestTypedInputs();
         TestActionLabelsRemainDistinct();
         TestGenericCardsContract();
         TestCardsCarryTheirActionsAcrossGames();
+        TestGenericDiceContract();
+        TestDiceRollTracker();
         TestServerDrivenPawnSelection();
         TestPawnSelectionHiddenForPassiveViewer();
         TestGameLogCursor();

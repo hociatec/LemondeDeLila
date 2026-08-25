@@ -11,6 +11,8 @@
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/cards/application/GameCardActionResolver.h"
+#include "modules/gameplay/dice/application/GameDiceActionResolver.h"
+#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
@@ -86,6 +88,7 @@ bool GamePlayPanel::ActivateFromZone()
         return true;
     }
     if (handPanel_->Count() > 0) return ActivateSelectedHandCard();
+    if (HasDiceAction()) return ActivateSelectedDie();
     if (!state_.lines.empty())
     {
         ActivateSelectedLine();
@@ -116,6 +119,15 @@ bool GamePlayPanel::HandleZoneKey(wxKeyEvent& event)
         }
         return true;
     }
+    if ((keyCode == WXK_UP || keyCode == WXK_DOWN) && state_.dice)
+    {
+        if (dicePanel_->MoveSelection(keyCode == WXK_UP))
+        {
+            const auto label = dicePanel_->SelectedLabel();
+            if (!label.empty()) UpdateStatus(label, false, true);
+        }
+        return true;
+    }
 
     if (key == "F5")
     {
@@ -142,6 +154,18 @@ bool GamePlayPanel::ActivateSelectedHandCard()
         UpdateStatus(wxString(L"Cette carte ne peut pas Ãªtre jouÃ©e."), true, true);
         return true;
     }
+    PrepareAndExecuteAction(std::move(*action));
+    return true;
+}
+
+bool GamePlayPanel::ActivateSelectedDie()
+{
+    if (!state_.dice) return false;
+    const int selected = dicePanel_->SelectedIndex();
+    const auto index = selected >= 0 ? static_cast<std::size_t>(selected) : std::size_t{0};
+    auto action = application::dice::GameDiceActionResolver::Resolve(
+        *state_.dice, state_.actions, index);
+    if (!action) return false;
     PrepareAndExecuteAction(std::move(*action));
     return true;
 }

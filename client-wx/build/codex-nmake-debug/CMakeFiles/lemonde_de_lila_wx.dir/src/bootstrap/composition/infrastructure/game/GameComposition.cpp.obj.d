@@ -252,6 +252,8 @@ C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/actions/domain/GameAc
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/session/domain/GameEvent.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameState.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/domain/GameCard.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDiceState.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/dice/domain/GameDie.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/state/domain/GameLine.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/prompts/domain/GamePrompt.h
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/pawn_selection/domain/PawnSelection.h

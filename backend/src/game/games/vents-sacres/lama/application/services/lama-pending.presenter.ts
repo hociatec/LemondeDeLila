@@ -9,6 +9,10 @@ import {
   LAMA_VALUE,
 } from '../../model/lama.model';
 import { isLamaDrawLocked } from '../policies/lama-draw.policy';
+import {
+  effectiveLamaStep,
+  isLamaSetupState,
+} from '../policies/lama-lifecycle.policy';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'
@@ -23,7 +27,7 @@ export class LamaPendingPresenter {
     userId: number,
     currentPlayerId: number | null,
   ): PendingState | null {
-    if (this.isSetup(state) || (metadata.step ?? '') === 'setup_config') {
+    if (isLamaSetupState(state)) {
       const ownerId = this.resolveSetupOwnerId(state, metadata);
       if (ownerId == null || userId !== ownerId) return null;
       return {
@@ -70,7 +74,7 @@ export class LamaPendingPresenter {
       };
     }
 
-    if ((metadata.step ?? '') === 'round_pause') {
+    if (effectiveLamaStep(state, metadata) === 'round_pause') {
       const until =
         typeof metadata.roundPauseUntilMs === 'number'
           ? metadata.roundPauseUntilMs
@@ -88,7 +92,7 @@ export class LamaPendingPresenter {
     if (!this.isStarted(state)) return null;
     // Always expose hand + discard top for the viewer (the server is the source of truth).
 
-    const step = metadata.step ?? 'turn_choice';
+    const step = effectiveLamaStep(state, metadata);
     if (step === 'return_token') {
       if (metadata.pendingReturnPlayerId !== userId) return null;
       const score = Number(
@@ -140,16 +144,6 @@ export class LamaPendingPresenter {
       playerId: userId,
       choices,
     };
-  }
-
-  private isSetup(state: GameStateEntity): boolean {
-    const status = String(state?.status ?? '')
-      .toLowerCase()
-      .trim();
-    const phase = String(state?.phase ?? '')
-      .toLowerCase()
-      .trim();
-    return status === 'setup' || phase === 'setup';
   }
 
   private isStarted(state: GameStateEntity): boolean {

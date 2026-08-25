@@ -77,6 +77,11 @@ void GamePlayPanel::SetTableShortcutHandler(TableShortcutHandler handler)
     onTableShortcut_ = std::move(handler);
 }
 
+void GamePlayPanel::SetDiceRolledHandler(DiceRolledHandler handler)
+{
+    onDiceRolled_ = std::move(handler);
+}
+
 wxWindow* GamePlayPanel::ActiveNavigationTarget() const noexcept
 {
     return pawnSelectionPanel_ != nullptr

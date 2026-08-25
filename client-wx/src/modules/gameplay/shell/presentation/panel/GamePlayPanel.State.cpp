@@ -9,6 +9,8 @@
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
+#include "modules/gameplay/dice/application/GameDiceActionResolver.h"
+#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/information/presentation/GameInfoTextBuilder.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
@@ -21,7 +23,9 @@ namespace lila::modules::gameplay::presentation
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
     if (!gameName_.empty()) state.gameName = gameName_;
+    const bool diceRolled = diceRollTracker_.Observe(state.dice, state.turnIndex);
     state_ = std::move(state);
+    if (diceRolled && onDiceRolled_) onDiceRolled_();
     UpdateStatus(wxString{});
     PublishLogMessages(state_.logMessages);
     if (IsFinished())
@@ -30,6 +34,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         promptPanel_->HidePrompt(true);
         pawnSelectionPanel_->Clear();
         handPanel_->ClearHand();
+        dicePanel_->Clear();
         Hide();
         if (GetParent()) GetParent()->Layout();
         if (onZoneFocusRequested_) onZoneFocusRequested_();
@@ -39,11 +44,13 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     headerLabel_->SetLabel(BuildHeaderText());
     RebuildLines();
     handPanel_->ApplyCards(state_.hand);
+    dicePanel_->Apply(state_.dice);
     const bool hasHand = handPanel_->Count() > 0;
-    infoText_->Show(!hasHand);
-    actionsLabel_->Show(!hasHand);
-    linesList_->Show(!hasHand);
-    shortcutsLabel_->Show(!hasHand);
+    const bool hasPrimaryAction = hasHand || HasDiceAction();
+    infoText_->Show(!hasPrimaryAction);
+    actionsLabel_->Show(!hasPrimaryAction);
+    linesList_->Show(!hasPrimaryAction);
+    shortcutsLabel_->Show(!hasPrimaryAction);
     shortcutsLabel_->SetLabel(BuildShortcutText());
     UpdateInfoPanel();
     SyncInlinePrompt();
@@ -89,8 +96,10 @@ void GamePlayPanel::ClearView()
     headerLabel_->SetLabel(wxString(L"Zone de jeu"));
     linesList_->Clear();
     handPanel_->ClearHand();
+    dicePanel_->Clear();
     infoText_->Clear();
     logCursor_.Reset();
+    diceRollTracker_.Reset();
     shortcutsLabel_->SetLabel(wxString{});
     statusLabel_->SetLabel(wxString{});
     statusLabel_->Hide();
@@ -114,6 +123,16 @@ void GamePlayPanel::RebuildLines()
             : 0;
         linesList_->SetSelection(nextSelection);
     }
+}
+
+bool GamePlayPanel::HasDiceAction() const
+{
+    if (!state_.dice) return false;
+    const auto count = state_.dice->dice.empty() ? std::size_t{1} : state_.dice->dice.size();
+    for (std::size_t index = 0; index < count; ++index)
+        if (application::dice::GameDiceActionResolver::Resolve(*state_.dice, state_.actions, index))
+            return true;
+    return false;
 }
 
 wxString GamePlayPanel::BuildShortcutText() const

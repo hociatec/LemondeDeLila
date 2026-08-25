@@ -2272,6 +2272,138 @@ src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.s
 .PHONY : src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.s
 
+src\modules\gameplay\dice\application\GameDiceActionResolver.obj: src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.obj
+.PHONY : src\modules\gameplay\dice\application\GameDiceActionResolver.obj
+
+# target to build an object file
+src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.obj
+.PHONY : src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.obj
+
+src\modules\gameplay\dice\application\GameDiceActionResolver.i: src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.i
+.PHONY : src\modules\gameplay\dice\application\GameDiceActionResolver.i
+
+# target to preprocess a source file
+src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.i
+.PHONY : src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.i
+
+src\modules\gameplay\dice\application\GameDiceActionResolver.s: src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.s
+.PHONY : src\modules\gameplay\dice\application\GameDiceActionResolver.s
+
+# target to generate assembly for a file
+src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.s
+.PHONY : src\modules\gameplay\dice\application\GameDiceActionResolver.cpp.s
+
+src\modules\gameplay\dice\application\GameDiceRollTracker.obj: src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.obj
+.PHONY : src\modules\gameplay\dice\application\GameDiceRollTracker.obj
+
+# target to build an object file
+src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.obj
+.PHONY : src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.obj
+
+src\modules\gameplay\dice\application\GameDiceRollTracker.i: src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.i
+.PHONY : src\modules\gameplay\dice\application\GameDiceRollTracker.i
+
+# target to preprocess a source file
+src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.i
+.PHONY : src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.i
+
+src\modules\gameplay\dice\application\GameDiceRollTracker.s: src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.s
+.PHONY : src\modules\gameplay\dice\application\GameDiceRollTracker.s
+
+# target to generate assembly for a file
+src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.s
+.PHONY : src\modules\gameplay\dice\application\GameDiceRollTracker.cpp.s
+
+src\modules\gameplay\dice\application\GameDiceTextBuilder.obj: src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.obj
+.PHONY : src\modules\gameplay\dice\application\GameDiceTextBuilder.obj
+
+# target to build an object file
+src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.obj
+.PHONY : src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.obj
+
+src\modules\gameplay\dice\application\GameDiceTextBuilder.i: src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.i
+.PHONY : src\modules\gameplay\dice\application\GameDiceTextBuilder.i
+
+# target to preprocess a source file
+src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.i
+.PHONY : src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.i
+
+src\modules\gameplay\dice\application\GameDiceTextBuilder.s: src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.s
+.PHONY : src\modules\gameplay\dice\application\GameDiceTextBuilder.s
+
+# target to generate assembly for a file
+src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.s
+.PHONY : src\modules\gameplay\dice\application\GameDiceTextBuilder.cpp.s
+
+src\modules\gameplay\dice\infrastructure\GameDiceDecoder.obj: src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.obj
+.PHONY : src\modules\gameplay\dice\infrastructure\GameDiceDecoder.obj
+
+# target to build an object file
+src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.obj
+.PHONY : src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.obj
+
+src\modules\gameplay\dice\infrastructure\GameDiceDecoder.i: src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.i
+.PHONY : src\modules\gameplay\dice\infrastructure\GameDiceDecoder.i
+
+# target to preprocess a source file
+src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.i
+.PHONY : src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.i
+
+src\modules\gameplay\dice\infrastructure\GameDiceDecoder.s: src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.s
+.PHONY : src\modules\gameplay\dice\infrastructure\GameDiceDecoder.s
+
+# target to generate assembly for a file
+src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.s
+.PHONY : src\modules\gameplay\dice\infrastructure\GameDiceDecoder.cpp.s
+
+src\modules\gameplay\dice\presentation\GameDicePanel.obj: src\modules\gameplay\dice\presentation\GameDicePanel.cpp.obj
+.PHONY : src\modules\gameplay\dice\presentation\GameDicePanel.obj
+
+# target to build an object file
+src\modules\gameplay\dice\presentation\GameDicePanel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\presentation\GameDicePanel.cpp.obj
+.PHONY : src\modules\gameplay\dice\presentation\GameDicePanel.cpp.obj
+
+src\modules\gameplay\dice\presentation\GameDicePanel.i: src\modules\gameplay\dice\presentation\GameDicePanel.cpp.i
+.PHONY : src\modules\gameplay\dice\presentation\GameDicePanel.i
+
+# target to preprocess a source file
+src\modules\gameplay\dice\presentation\GameDicePanel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\presentation\GameDicePanel.cpp.i
+.PHONY : src\modules\gameplay\dice\presentation\GameDicePanel.cpp.i
+
+src\modules\gameplay\dice\presentation\GameDicePanel.s: src\modules\gameplay\dice\presentation\GameDicePanel.cpp.s
+.PHONY : src\modules\gameplay\dice\presentation\GameDicePanel.s
+
+# target to generate assembly for a file
+src\modules\gameplay\dice\presentation\GameDicePanel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\dice\presentation\GameDicePanel.cpp.s
+.PHONY : src\modules\gameplay\dice\presentation\GameDicePanel.cpp.s
+
 src\modules\gameplay\hand\presentation\GameHandPanel.obj: src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj
 .PHONY : src\modules\gameplay\hand\presentation\GameHandPanel.obj
 
@@ -8298,6 +8430,21 @@ help:
 	@echo ... src/modules/gameplay/cards/infrastructure/GameCardDecoder.obj
 	@echo ... src/modules/gameplay/cards/infrastructure/GameCardDecoder.i
 	@echo ... src/modules/gameplay/cards/infrastructure/GameCardDecoder.s
+	@echo ... src/modules/gameplay/dice/application/GameDiceActionResolver.obj
+	@echo ... src/modules/gameplay/dice/application/GameDiceActionResolver.i
+	@echo ... src/modules/gameplay/dice/application/GameDiceActionResolver.s
+	@echo ... src/modules/gameplay/dice/application/GameDiceRollTracker.obj
+	@echo ... src/modules/gameplay/dice/application/GameDiceRollTracker.i
+	@echo ... src/modules/gameplay/dice/application/GameDiceRollTracker.s
+	@echo ... src/modules/gameplay/dice/application/GameDiceTextBuilder.obj
+	@echo ... src/modules/gameplay/dice/application/GameDiceTextBuilder.i
+	@echo ... src/modules/gameplay/dice/application/GameDiceTextBuilder.s
+	@echo ... src/modules/gameplay/dice/infrastructure/GameDiceDecoder.obj
+	@echo ... src/modules/gameplay/dice/infrastructure/GameDiceDecoder.i
+	@echo ... src/modules/gameplay/dice/infrastructure/GameDiceDecoder.s
+	@echo ... src/modules/gameplay/dice/presentation/GameDicePanel.obj
+	@echo ... src/modules/gameplay/dice/presentation/GameDicePanel.i
+	@echo ... src/modules/gameplay/dice/presentation/GameDicePanel.s
 	@echo ... src/modules/gameplay/hand/presentation/GameHandPanel.obj
 	@echo ... src/modules/gameplay/hand/presentation/GameHandPanel.i
 	@echo ... src/modules/gameplay/hand/presentation/GameHandPanel.s

@@ -6,6 +6,7 @@
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
 #include "modules/gameplay/state/infrastructure/GameStateSectionsDecoder.h"
 #include "modules/gameplay/cards/infrastructure/GameCardDecoder.h"
+#include "modules/gameplay/dice/infrastructure/GameDiceDecoder.h"
 #include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
 
 namespace lila::modules::gameplay::infrastructure
@@ -22,6 +23,7 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     if (state.roomId <= 0) state.roomId = ReadInt(stateNode, "roomId");
     state.version = ReadInt(payload, "version");
     if (state.version <= 0) state.version = ReadInt(stateNode, "version");
+    state.turnIndex = ReadInt(stateNode, "turnIndex");
     state.gameType = ReadString(payload, "gameType");
     if (state.gameType.empty()) state.gameType = ReadString(stateNode, "gameType");
     state.gameName = ReadString(payload, "gameName");
@@ -42,6 +44,7 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     state.metadata = ObjectOrEmpty(stateNode.value("metadata", payload.value("metadata", nlohmann::json::object())));
     state.extras = ObjectOrEmpty(stateNode.value("extras", payload.value("extras", nlohmann::json::object())));
     state.hand = GameCardDecoder::DecodeHand(state.extras);
+    state.dice = GameDiceDecoder::Decode(state.extras);
     state.actions = DecodeActions(stateNode);
     if (state.actions.empty()) state.actions = DecodeActions(payload);
     state.shortcuts = DecodeShortcuts(state.extras);
@@ -49,6 +52,16 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     if (state.logMessages.empty()) state.logMessages = DecodeLog(payload);
     state.lines = BuildLines(state.actions);
     state.prompt = DecodePrompt(stateNode);
+    const auto pending = stateNode.find("pending");
+    const auto pendingType = pending != stateNode.end() && pending->is_object()
+        ? ToUpper(Trim(ReadString(*pending, "type")))
+        : std::string{};
+    const auto phase = ToUpper(Trim(state.phase));
+    if (state.prompt && pendingType == "CONFIG_PROMPT" &&
+        (phase == "ROUND" || !state.hand.empty()))
+    {
+        state.prompt.reset();
+    }
     state.pawnSelection = PawnSelectionDecoder::Decode(stateNode, state.actions);
 
     const auto currentPlayerView = state.extras.find("currentPlayerView");
