@@ -101,10 +101,170 @@ CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLa
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp
 <<
 
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: CMakeFiles\lila_launcher.dir\flags.make
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: CMakeFiles\lila_launcher.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Archive.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj /FdCMakeFiles\lila_launcher.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Archive.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Archive.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: CMakeFiles\lila_launcher.dir\flags.make
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: CMakeFiles\lila_launcher.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Download.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj /FdCMakeFiles\lila_launcher.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Download.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Download.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: CMakeFiles\lila_launcher.dir\flags.make
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: CMakeFiles\lila_launcher.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Lifecycle.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj /FdCMakeFiles\lila_launcher.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Lifecycle.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Lifecycle.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: CMakeFiles\lila_launcher.dir\flags.make
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: CMakeFiles\lila_launcher.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Platform.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj /FdCMakeFiles\lila_launcher.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Platform.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Platform.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: CMakeFiles\lila_launcher.dir\flags.make
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: CMakeFiles\lila_launcher.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Process.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj /FdCMakeFiles\lila_launcher.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Process.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Process.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: CMakeFiles\lila_launcher.dir\flags.make
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: CMakeFiles\lila_launcher.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Runtime.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj /FdCMakeFiles\lila_launcher.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Runtime.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Runtime.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: CMakeFiles\lila_launcher.dir\flags.make
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: CMakeFiles\lila_launcher.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Security.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj /FdCMakeFiles\lila_launcher.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Security.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.Security.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: CMakeFiles\lila_launcher.dir\flags.make
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: CMakeFiles\lila_launcher.dir\compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.State.cpp.obj"
+	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj /FdCMakeFiles\lila_launcher.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.State.cpp.i"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe > CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.i @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp
+<<
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lila_launcher.dir/src/modules/update/infrastructure/launcher/UpdateLauncher.State.cpp.s"
+	C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
+ /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /FoNUL /FAs /FaCMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.s /c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp
+<<
+
 CMakeFiles\lila_launcher.dir\src\modules\update\domain\UpdateProtocol.cpp.obj: CMakeFiles\lila_launcher.dir\flags.make
 CMakeFiles\lila_launcher.dir\src\modules\update\domain\UpdateProtocol.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.cpp
 CMakeFiles\lila_launcher.dir\src\modules\update\domain\UpdateProtocol.cpp.obj: CMakeFiles\lila_launcher.dir\compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/lila_launcher.dir/src/modules/update/domain/UpdateProtocol.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/lila_launcher.dir/src/modules/update/domain/UpdateProtocol.cpp.obj"
 	$(CMAKE_COMMAND) -E cmake_cl_compile_depends --dep-file=CMakeFiles\lila_launcher.dir\src\modules\update\domain\UpdateProtocol.cpp.obj.d --working-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug --filter-prefix="Remarque┬á: inclusion du fichier┬á:  " -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe @<<
  /nologo /TP $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) /showIncludes /FoCMakeFiles\lila_launcher.dir\src\modules\update\domain\UpdateProtocol.cpp.obj /FdCMakeFiles\lila_launcher.dir\ /FS -c C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.cpp
 <<
@@ -125,6 +285,14 @@ CMakeFiles\lila_launcher.dir\src\modules\update\domain\UpdateProtocol.cpp.s: cma
 lila_launcher_OBJECTS = \
 "CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\LauncherMain.cpp.obj" \
 "CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj" \
+"CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj" \
+"CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj" \
+"CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj" \
+"CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj" \
+"CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj" \
+"CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj" \
+"CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj" \
+"CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj" \
 "CMakeFiles\lila_launcher.dir\src\modules\update\domain\UpdateProtocol.cpp.obj"
 
 # External object files for target lila_launcher
@@ -132,10 +300,18 @@ lila_launcher_EXTERNAL_OBJECTS =
 
 lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\LauncherMain.cpp.obj
 lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj
+lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj
+lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj
+lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj
+lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj
+lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj
+lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj
+lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj
+lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj
 lila_launcher.exe: CMakeFiles\lila_launcher.dir\src\modules\update\domain\UpdateProtocol.cpp.obj
 lila_launcher.exe: CMakeFiles\lila_launcher.dir\build.make
 lila_launcher.exe: CMakeFiles\lila_launcher.dir\objects1.rsp
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable lila_launcher.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX executable lila_launcher.exe"
 	"C:\Program Files\CMake\bin\cmake.exe" -E vs_link_exe --msvc-ver=1944 --intdir=CMakeFiles\lila_launcher.dir --rc=C:\PROGRA~2\WI3CF2~1\10\bin\100261~1.0\x64\rc.exe --mt=C:\PROGRA~2\WI3CF2~1\10\bin\100261~1.0\x64\mt.exe --manifests -- C:\BuildTools\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\link.exe /nologo @CMakeFiles\lila_launcher.dir\objects1.rsp @<<
  /out:lila_launcher.exe /implib:lila_launcher.lib /pdb:C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\lila_launcher.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:windows  winhttp.lib bcrypt.lib crypt32.lib wintrust.lib shell32.lib user32.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib 
 <<

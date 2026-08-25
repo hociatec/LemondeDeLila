@@ -37,6 +37,7 @@ class GamePlayPanel final : public wxPanel
 public:
     using ZoneFocusRequestedHandler = std::function<void()>;
     using HistoryMessageHandler = std::function<void(const wxString&)>;
+    using TableShortcutHandler = std::function<bool(wxKeyEvent&)>;
 
     explicit GamePlayPanel(
         wxWindow* parent,
@@ -50,6 +51,7 @@ public:
     [[nodiscard]] bool IsFinished() const noexcept;
     void SetZoneFocusRequestedHandler(ZoneFocusRequestedHandler handler);
     void SetHistoryMessageHandler(HistoryMessageHandler handler);
+    void SetTableShortcutHandler(TableShortcutHandler handler);
     bool ActivateFromZone();
     bool HandleZoneKey(wxKeyEvent& event);
 
@@ -106,6 +108,7 @@ private:
     history::GameLogCursor logCursor_;
     ZoneFocusRequestedHandler onZoneFocusRequested_;
     HistoryMessageHandler onHistoryMessage_;
+    TableShortcutHandler onTableShortcut_;
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
 };
 }

@@ -27,7 +27,7 @@ void RoomPanel::HandleAction(std::string_view itemId)
     case Action::ShowInfo: ExecuteCommand({Command::Info}); return;
     case Action::TogglePrivacy: ExecuteCommand({Command::TogglePrivacy}); return;
     case Action::ToggleRole: ExecuteCommand({Command::SetRole, !room_.selfSpectator}); return;
-    case Action::Reset: ExecuteCommand({Command::Reset}); return;
+    case Action::Reset: RequestResetConfirmation(); return;
     case Action::ShowPlayers:
         UpdateStatus(RoomPresentationModel::BuildPlayers(room_), false, true);
         return;
@@ -65,6 +65,11 @@ void RoomPanel::ExecuteCommand(domain::RoomCommandRequest request)
                     {
                         weakThis->audioService_.Play(
                             lila::modules::audio::domain::SoundCue::TableChatMessageSent);
+                    }
+                    if (command == domain::RoomCommand::Reset)
+                    {
+                        const wxString message(L"Table r\u00E9initialis\u00E9e.");
+                        weakThis->AppendRoomAnnouncement(message);
                     }
                     weakThis->ShowRoom();
                 });

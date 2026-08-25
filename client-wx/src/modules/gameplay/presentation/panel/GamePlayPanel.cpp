@@ -70,4 +70,9 @@ void GamePlayPanel::SetHistoryMessageHandler(HistoryMessageHandler handler)
 {
     onHistoryMessage_ = std::move(handler);
 }
+
+void GamePlayPanel::SetTableShortcutHandler(TableShortcutHandler handler)
+{
+    onTableShortcut_ = std::move(handler);
+}
 }

@@ -352,6 +352,2262 @@ CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\Launcher
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\LauncherMain.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.h
 
 
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Internal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winhttp.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Internal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.h
+
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: generated\UpdateBuildConfig.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Internal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Internal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Internal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Internal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\bcrypt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincrypt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ncrypt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dpapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wintrust.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\softpub.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: generated\UpdateBuildConfig.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Internal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.h
+
+
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\adl_serializer.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\abi_macros.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\value_t.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_scope.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\detected.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\void_t.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\version
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cassert
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_escape.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\position_t.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\cpp_future.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\type_traits.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iterator_traits.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\begin.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\end.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json_fwd.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_concat.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\identity_tag.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\std_fs.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_json.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iteration_proxy.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ranges
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_int128.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_to.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\byte_container_with_subtype.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\hash.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\binary_reader.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\input_adapters.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\numeric
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\json_sax.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\lexer.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\is_sax.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\parser.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\internal_iterator.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\primitive_iterator.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iter_impl.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\json_reverse_iterator.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_custom_base_class.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_pointer.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_ref.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\binary_writer.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\output_adapters.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\serializer.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_chars.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\ordered_map.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Internal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winpackagefamily.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdkddkver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\excpt.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\minwindef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_strict.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\specstrings_undef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\sdv_driverspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnt.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\kernelspecs.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\basetsd.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\guiddef.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ktmtypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apisetcconv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\apiquery2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processenv.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapifromapp.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\debugapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\handleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\fibersapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\profileapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\heapapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\synchapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\interlockedapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processthreadsapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\sysinfoapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\memoryapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\enclaveapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\jobapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wow64apiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\libloaderapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namespaceapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\systemtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\processtopologyapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securityappcontainer.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\realtimeapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack1.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\tvout.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\datetimeapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\stringapiset.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnls.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincon.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincontypes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi2.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winver.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\verrsrc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winreg.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\reason.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winnetwk.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\wnnc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\stralign.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsvc.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.h
+
+
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
@@ -474,28 +2730,11 @@ CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLa
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\mcx.h"
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\imm.h"
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\bcrypt.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincrypt.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ncrypt.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dpapi.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winhttp.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wintrust.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\softpub.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack8.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h"
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\shellapi.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
@@ -567,86 +2806,50 @@ CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLa
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\adl_serializer.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\abi_macros.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\value_t.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_scope.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\detected.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\void_t.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\version
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cassert
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_escape.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\position_t.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\cpp_future.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\type_traits.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iterator_traits.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\begin.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\end.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json_fwd.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_concat.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\identity_tag.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\std_fs.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
@@ -660,6 +2863,7 @@ CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLa
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
@@ -667,50 +2871,12 @@ CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLa
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_json.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iteration_proxy.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ranges
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_int128.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_to.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_utils.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\byte_container_with_subtype.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\hash.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\binary_reader.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\input_adapters.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\numeric
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\json_sax.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\lexer.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\is_sax.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\parser.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\internal_iterator.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\primitive_iterator.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iter_impl.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\json_reverse_iterator.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_custom_base_class.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_pointer.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_ref.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\binary_writer.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\output_adapters.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\serializer.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_chars.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\ordered_map.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: generated\UpdateBuildConfig.h
-CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
 CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Internal.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\domain\UpdateProtocol.h
+CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
 
 
 
@@ -872,6 +3038,8 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_int128.hpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h":
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp:
+
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h":
@@ -917,6 +3085,8 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h:
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timezoneapi.h":
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h":
 
@@ -1284,6 +3454,8 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\utilapiset.h":
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp:
+
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\errhandlingapi.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\namedpipeapi.h":
@@ -1322,6 +3494,8 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winerror.h":
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp:
+
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winuser.h":
@@ -1342,18 +3516,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ime_cmodes.h":
 
-C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp:
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\bcrypt.h":
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincrypt.h":
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ncrypt.h":
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winhttp.h":
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\shellapi.h":
-
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread:
@@ -1362,4 +3524,26 @@ C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread:
 
 C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Internal.h:
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winhttp.h":
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp:
+
 generated\UpdateBuildConfig.h:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp:
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\bcrypt.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wincrypt.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ncrypt.h":
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\update\infrastructure\launcher\UpdateLauncher.cpp:
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\shellapi.h":

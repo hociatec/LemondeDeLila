@@ -50,7 +50,7 @@ std::string_view RoomShortcutPolicy::Resolve(
     if (key == 'W' && Allows(room, "room.players")) return "room:players";
     if (key == 'I' && !IsStarted(room) && Allows(room, "room.info")) return "room:info";
     if (key == 'X' && Allows(room, "room.reset")) return "room:reset";
-    if (key == 'Q' && !IsStarted(room) && Allows(room, "room.leave")) return "room:leave";
+    if (key == 'Q' && Allows(room, "room.leave")) return "room:leave";
     return {};
 }
 }

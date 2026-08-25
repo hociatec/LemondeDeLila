@@ -112,6 +112,7 @@ preinstall\fast:
 
 # clear depends
 depend:
+	$(CMAKE_COMMAND) -P C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles\VerifyGlobs.cmake
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles\Makefile.cmake 1
 .PHONY : depend
 
@@ -641,6 +642,30 @@ src\app\lifecycle\presentation\Application.s: src\app\lifecycle\presentation\App
 src\app\lifecycle\presentation\Application.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\app\lifecycle\presentation\Application.cpp.s
 .PHONY : src\app\lifecycle\presentation\Application.cpp.s
+
+src\app\navigation\presentation\AppNavigator.Authentication.obj: src\app\navigation\presentation\AppNavigator.Authentication.cpp.obj
+.PHONY : src\app\navigation\presentation\AppNavigator.Authentication.obj
+
+# target to build an object file
+src\app\navigation\presentation\AppNavigator.Authentication.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\presentation\AppNavigator.Authentication.cpp.obj
+.PHONY : src\app\navigation\presentation\AppNavigator.Authentication.cpp.obj
+
+src\app\navigation\presentation\AppNavigator.Authentication.i: src\app\navigation\presentation\AppNavigator.Authentication.cpp.i
+.PHONY : src\app\navigation\presentation\AppNavigator.Authentication.i
+
+# target to preprocess a source file
+src\app\navigation\presentation\AppNavigator.Authentication.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\presentation\AppNavigator.Authentication.cpp.i
+.PHONY : src\app\navigation\presentation\AppNavigator.Authentication.cpp.i
+
+src\app\navigation\presentation\AppNavigator.Authentication.s: src\app\navigation\presentation\AppNavigator.Authentication.cpp.s
+.PHONY : src\app\navigation\presentation\AppNavigator.Authentication.s
+
+# target to generate assembly for a file
+src\app\navigation\presentation\AppNavigator.Authentication.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\app\navigation\presentation\AppNavigator.Authentication.cpp.s
+.PHONY : src\app\navigation\presentation\AppNavigator.Authentication.cpp.s
 
 src\app\navigation\presentation\AppNavigator.GameViews.obj: src\app\navigation\presentation\AppNavigator.GameViews.cpp.obj
 .PHONY : src\app\navigation\presentation\AppNavigator.GameViews.obj
@@ -1782,6 +1807,36 @@ src\modules\chat\application\ChatService.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\application\ChatService.cpp.s
 .PHONY : src\modules\chat\application\ChatService.cpp.s
 
+src\modules\chat\infrastructure\ChatCommandPayloadCodec.obj: src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.obj
+.PHONY : src\modules\chat\infrastructure\ChatCommandPayloadCodec.obj
+
+# target to build an object file
+src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.obj
+.PHONY : src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.obj
+
+src\modules\chat\infrastructure\ChatCommandPayloadCodec.i: src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.i
+.PHONY : src\modules\chat\infrastructure\ChatCommandPayloadCodec.i
+
+# target to preprocess a source file
+src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.i
+.PHONY : src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.i
+
+src\modules\chat\infrastructure\ChatCommandPayloadCodec.s: src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.s
+.PHONY : src\modules\chat\infrastructure\ChatCommandPayloadCodec.s
+
+# target to generate assembly for a file
+src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.s
+.PHONY : src\modules\chat\infrastructure\ChatCommandPayloadCodec.cpp.s
+
 src\modules\chat\infrastructure\ChatEventPayloadCodec.obj: src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.obj
 .PHONY : src\modules\chat\infrastructure\ChatEventPayloadCodec.obj
 
@@ -1811,6 +1866,36 @@ src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.s
 .PHONY : src\modules\chat\infrastructure\ChatEventPayloadCodec.cpp.s
+
+src\modules\chat\infrastructure\ChatEventPayloadParser.obj: src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.obj
+.PHONY : src\modules\chat\infrastructure\ChatEventPayloadParser.obj
+
+# target to build an object file
+src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.obj
+.PHONY : src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.obj
+
+src\modules\chat\infrastructure\ChatEventPayloadParser.i: src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.i
+.PHONY : src\modules\chat\infrastructure\ChatEventPayloadParser.i
+
+# target to preprocess a source file
+src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.i
+.PHONY : src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.i
+
+src\modules\chat\infrastructure\ChatEventPayloadParser.s: src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.s
+.PHONY : src\modules\chat\infrastructure\ChatEventPayloadParser.s
+
+# target to generate assembly for a file
+src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_parser_fuzz.dir\src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.s
+.PHONY : src\modules\chat\infrastructure\ChatEventPayloadParser.cpp.s
 
 src\modules\chat\infrastructure\ChatProtocol.obj: src\modules\chat\infrastructure\ChatProtocol.cpp.obj
 .PHONY : src\modules\chat\infrastructure\ChatProtocol.obj
@@ -2033,6 +2118,30 @@ src\modules\chat\presentation\ChatFrame.Layout.s: src\modules\chat\presentation\
 src\modules\chat\presentation\ChatFrame.Layout.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.Layout.cpp.s
 .PHONY : src\modules\chat\presentation\ChatFrame.Layout.cpp.s
+
+src\modules\chat\presentation\ChatFrame.NavigationHistory.obj: src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.obj
+.PHONY : src\modules\chat\presentation\ChatFrame.NavigationHistory.obj
+
+# target to build an object file
+src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.obj
+.PHONY : src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.obj
+
+src\modules\chat\presentation\ChatFrame.NavigationHistory.i: src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.i
+.PHONY : src\modules\chat\presentation\ChatFrame.NavigationHistory.i
+
+# target to preprocess a source file
+src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.i
+.PHONY : src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.i
+
+src\modules\chat\presentation\ChatFrame.NavigationHistory.s: src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.s
+.PHONY : src\modules\chat\presentation\ChatFrame.NavigationHistory.s
+
+# target to generate assembly for a file
+src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.s
+.PHONY : src\modules\chat\presentation\ChatFrame.NavigationHistory.cpp.s
 
 src\modules\chat\presentation\ChatFrame.obj: src\modules\chat\presentation\ChatFrame.cpp.obj
 .PHONY : src\modules\chat\presentation\ChatFrame.obj
@@ -2385,6 +2494,30 @@ src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.s
 .PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Events.cpp.s
 
+src\modules\gameplay\presentation\panel\GamePlayPanel.Input.obj: src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.obj
+.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.obj
+
+# target to build an object file
+src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.obj
+.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.obj
+
+src\modules\gameplay\presentation\panel\GamePlayPanel.Input.i: src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.i
+.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.i
+
+# target to preprocess a source file
+src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.i
+.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.i
+
+src\modules\gameplay\presentation\panel\GamePlayPanel.Input.s: src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.s
+.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.s
+
+# target to generate assembly for a file
+src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.s
+.PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Input.cpp.s
+
 src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.obj: src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.cpp.obj
 .PHONY : src\modules\gameplay\presentation\panel\GamePlayPanel.Layout.obj
 
@@ -2624,6 +2757,30 @@ src\modules\home\presentation\HomeFrame.Navigation.s: src\modules\home\presentat
 src\modules\home\presentation\HomeFrame.Navigation.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Navigation.cpp.s
 .PHONY : src\modules\home\presentation\HomeFrame.Navigation.cpp.s
+
+src\modules\home\presentation\HomeFrame.Registration.obj: src\modules\home\presentation\HomeFrame.Registration.cpp.obj
+.PHONY : src\modules\home\presentation\HomeFrame.Registration.obj
+
+# target to build an object file
+src\modules\home\presentation\HomeFrame.Registration.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Registration.cpp.obj
+.PHONY : src\modules\home\presentation\HomeFrame.Registration.cpp.obj
+
+src\modules\home\presentation\HomeFrame.Registration.i: src\modules\home\presentation\HomeFrame.Registration.cpp.i
+.PHONY : src\modules\home\presentation\HomeFrame.Registration.i
+
+# target to preprocess a source file
+src\modules\home\presentation\HomeFrame.Registration.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Registration.cpp.i
+.PHONY : src\modules\home\presentation\HomeFrame.Registration.cpp.i
+
+src\modules\home\presentation\HomeFrame.Registration.s: src\modules\home\presentation\HomeFrame.Registration.cpp.s
+.PHONY : src\modules\home\presentation\HomeFrame.Registration.s
+
+# target to generate assembly for a file
+src\modules\home\presentation\HomeFrame.Registration.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\home\presentation\HomeFrame.Registration.cpp.s
+.PHONY : src\modules\home\presentation\HomeFrame.Registration.cpp.s
 
 src\modules\home\presentation\HomeFrame.Submit.obj: src\modules\home\presentation\HomeFrame.Submit.cpp.obj
 .PHONY : src\modules\home\presentation\HomeFrame.Submit.obj
@@ -4980,6 +5137,60 @@ src\modules\rooms\presentation\zone\RoomGameZoneAnchor.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\zone\RoomGameZoneAnchor.cpp.s
 .PHONY : src\modules\rooms\presentation\zone\RoomGameZoneAnchor.cpp.s
 
+src\modules\session\application\SessionStore.Refresh.obj: src\modules\session\application\SessionStore.Refresh.cpp.obj
+.PHONY : src\modules\session\application\SessionStore.Refresh.obj
+
+# target to build an object file
+src\modules\session\application\SessionStore.Refresh.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\session\application\SessionStore.Refresh.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.Refresh.cpp.obj
+.PHONY : src\modules\session\application\SessionStore.Refresh.cpp.obj
+
+src\modules\session\application\SessionStore.Refresh.i: src\modules\session\application\SessionStore.Refresh.cpp.i
+.PHONY : src\modules\session\application\SessionStore.Refresh.i
+
+# target to preprocess a source file
+src\modules\session\application\SessionStore.Refresh.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\session\application\SessionStore.Refresh.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.Refresh.cpp.i
+.PHONY : src\modules\session\application\SessionStore.Refresh.cpp.i
+
+src\modules\session\application\SessionStore.Refresh.s: src\modules\session\application\SessionStore.Refresh.cpp.s
+.PHONY : src\modules\session\application\SessionStore.Refresh.s
+
+# target to generate assembly for a file
+src\modules\session\application\SessionStore.Refresh.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\session\application\SessionStore.Refresh.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.Refresh.cpp.s
+.PHONY : src\modules\session\application\SessionStore.Refresh.cpp.s
+
+src\modules\session\application\SessionStore.Revocation.obj: src\modules\session\application\SessionStore.Revocation.cpp.obj
+.PHONY : src\modules\session\application\SessionStore.Revocation.obj
+
+# target to build an object file
+src\modules\session\application\SessionStore.Revocation.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\session\application\SessionStore.Revocation.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.Revocation.cpp.obj
+.PHONY : src\modules\session\application\SessionStore.Revocation.cpp.obj
+
+src\modules\session\application\SessionStore.Revocation.i: src\modules\session\application\SessionStore.Revocation.cpp.i
+.PHONY : src\modules\session\application\SessionStore.Revocation.i
+
+# target to preprocess a source file
+src\modules\session\application\SessionStore.Revocation.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\session\application\SessionStore.Revocation.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.Revocation.cpp.i
+.PHONY : src\modules\session\application\SessionStore.Revocation.cpp.i
+
+src\modules\session\application\SessionStore.Revocation.s: src\modules\session\application\SessionStore.Revocation.cpp.s
+.PHONY : src\modules\session\application\SessionStore.Revocation.s
+
+# target to generate assembly for a file
+src\modules\session\application\SessionStore.Revocation.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\session\application\SessionStore.Revocation.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\modules\session\application\SessionStore.Revocation.cpp.s
+.PHONY : src\modules\session\application\SessionStore.Revocation.cpp.s
+
 src\modules\session\application\SessionStore.obj: src\modules\session\application\SessionStore.cpp.obj
 .PHONY : src\modules\session\application\SessionStore.obj
 
@@ -5319,6 +5530,30 @@ src\modules\social\presentation\SocialFrame.Profile.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.Profile.cpp.s
 .PHONY : src\modules\social\presentation\SocialFrame.Profile.cpp.s
 
+src\modules\social\presentation\SocialFrame.State.obj: src\modules\social\presentation\SocialFrame.State.cpp.obj
+.PHONY : src\modules\social\presentation\SocialFrame.State.obj
+
+# target to build an object file
+src\modules\social\presentation\SocialFrame.State.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.State.cpp.obj
+.PHONY : src\modules\social\presentation\SocialFrame.State.cpp.obj
+
+src\modules\social\presentation\SocialFrame.State.i: src\modules\social\presentation\SocialFrame.State.cpp.i
+.PHONY : src\modules\social\presentation\SocialFrame.State.i
+
+# target to preprocess a source file
+src\modules\social\presentation\SocialFrame.State.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.State.cpp.i
+.PHONY : src\modules\social\presentation\SocialFrame.State.cpp.i
+
+src\modules\social\presentation\SocialFrame.State.s: src\modules\social\presentation\SocialFrame.State.cpp.s
+.PHONY : src\modules\social\presentation\SocialFrame.State.s
+
+# target to generate assembly for a file
+src\modules\social\presentation\SocialFrame.State.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialFrame.State.cpp.s
+.PHONY : src\modules\social\presentation\SocialFrame.State.cpp.s
+
 src\modules\social\presentation\SocialFrame.obj: src\modules\social\presentation\SocialFrame.cpp.obj
 .PHONY : src\modules\social\presentation\SocialFrame.obj
 
@@ -5414,6 +5649,30 @@ src\modules\social\presentation\SocialScreenCoordinator.s: src\modules\social\pr
 src\modules\social\presentation\SocialScreenCoordinator.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialScreenCoordinator.cpp.s
 .PHONY : src\modules\social\presentation\SocialScreenCoordinator.cpp.s
+
+src\modules\social\presentation\SocialSectionCoordinator.Loading.obj: src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.obj
+.PHONY : src\modules\social\presentation\SocialSectionCoordinator.Loading.obj
+
+# target to build an object file
+src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.obj
+.PHONY : src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.obj
+
+src\modules\social\presentation\SocialSectionCoordinator.Loading.i: src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.i
+.PHONY : src\modules\social\presentation\SocialSectionCoordinator.Loading.i
+
+# target to preprocess a source file
+src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.i
+.PHONY : src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.i
+
+src\modules\social\presentation\SocialSectionCoordinator.Loading.s: src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.s
+.PHONY : src\modules\social\presentation\SocialSectionCoordinator.Loading.s
+
+# target to generate assembly for a file
+src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.s
+.PHONY : src\modules\social\presentation\SocialSectionCoordinator.Loading.cpp.s
 
 src\modules\social\presentation\SocialSectionCoordinator.obj: src\modules\social\presentation\SocialSectionCoordinator.cpp.obj
 .PHONY : src\modules\social\presentation\SocialSectionCoordinator.obj
@@ -5951,6 +6210,198 @@ src\modules\update\infrastructure\launcher\LauncherMain.s: src\modules\update\in
 src\modules\update\infrastructure\launcher\LauncherMain.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\LauncherMain.cpp.s
 .PHONY : src\modules\update\infrastructure\launcher\LauncherMain.cpp.s
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.obj: src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.obj
+
+# target to build an object file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.obj
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.i: src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.i
+
+# target to preprocess a source file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.i
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.s: src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.s
+
+# target to generate assembly for a file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Archive.cpp.s
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Download.obj: src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Download.obj
+
+# target to build an object file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.obj
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Download.i: src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Download.i
+
+# target to preprocess a source file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.i
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Download.s: src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Download.s
+
+# target to generate assembly for a file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Download.cpp.s
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.obj: src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.obj
+
+# target to build an object file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.obj
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.i: src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.i
+
+# target to preprocess a source file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.i
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.s: src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.s
+
+# target to generate assembly for a file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Lifecycle.cpp.s
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.obj: src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.obj
+
+# target to build an object file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.obj
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.i: src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.i
+
+# target to preprocess a source file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.i
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.s: src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.s
+
+# target to generate assembly for a file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Platform.cpp.s
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Process.obj: src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Process.obj
+
+# target to build an object file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.obj
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Process.i: src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Process.i
+
+# target to preprocess a source file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.i
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Process.s: src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Process.s
+
+# target to generate assembly for a file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Process.cpp.s
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.obj: src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.obj
+
+# target to build an object file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.obj
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.i: src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.i
+
+# target to preprocess a source file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.i
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.s: src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.s
+
+# target to generate assembly for a file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Runtime.cpp.s
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Security.obj: src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Security.obj
+
+# target to build an object file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.obj
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Security.i: src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Security.i
+
+# target to preprocess a source file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.i
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.Security.s: src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Security.s
+
+# target to generate assembly for a file
+src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.Security.cpp.s
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.State.obj: src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.State.obj
+
+# target to build an object file
+src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.obj
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.State.i: src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.State.i
+
+# target to preprocess a source file
+src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.i
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.i
+
+src\modules\update\infrastructure\launcher\UpdateLauncher.State.s: src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.State.s
+
+# target to generate assembly for a file
+src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lila_launcher.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lila_launcher.dir\src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.s
+.PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.State.cpp.s
 
 src\modules\update\infrastructure\launcher\UpdateLauncher.obj: src\modules\update\infrastructure\launcher\UpdateLauncher.cpp.obj
 .PHONY : src\modules\update\infrastructure\launcher\UpdateLauncher.obj
@@ -6966,6 +7417,54 @@ src\shared\network\infrastructure\http\WsTicketTransport.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_tests.dir\src\shared\network\infrastructure\http\WsTicketTransport.cpp.s
 .PHONY : src\shared\network\infrastructure\http\WsTicketTransport.cpp.s
 
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.obj: src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.obj
+
+# target to build an object file
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj
+
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.i: src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.i
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.i
+
+# target to preprocess a source file
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.i
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.i
+
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.s: src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.s
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.s
+
+# target to generate assembly for a file
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.s
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.s
+
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.obj: src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.obj
+
+# target to build an object file
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj
+
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.i: src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.i
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.i
+
+# target to preprocess a source file
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.i
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.i
+
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.s: src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.s
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.s
+
+# target to generate assembly for a file
+src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.s
+.PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.s
+
 src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.obj: src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj
 .PHONY : src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.obj
 
@@ -7472,6 +7971,9 @@ help:
 	@echo ... src/app/lifecycle/presentation/Application.obj
 	@echo ... src/app/lifecycle/presentation/Application.i
 	@echo ... src/app/lifecycle/presentation/Application.s
+	@echo ... src/app/navigation/presentation/AppNavigator.Authentication.obj
+	@echo ... src/app/navigation/presentation/AppNavigator.Authentication.i
+	@echo ... src/app/navigation/presentation/AppNavigator.Authentication.s
 	@echo ... src/app/navigation/presentation/AppNavigator.GameViews.obj
 	@echo ... src/app/navigation/presentation/AppNavigator.GameViews.i
 	@echo ... src/app/navigation/presentation/AppNavigator.GameViews.s
@@ -7610,9 +8112,15 @@ help:
 	@echo ... src/modules/chat/application/ChatService.obj
 	@echo ... src/modules/chat/application/ChatService.i
 	@echo ... src/modules/chat/application/ChatService.s
+	@echo ... src/modules/chat/infrastructure/ChatCommandPayloadCodec.obj
+	@echo ... src/modules/chat/infrastructure/ChatCommandPayloadCodec.i
+	@echo ... src/modules/chat/infrastructure/ChatCommandPayloadCodec.s
 	@echo ... src/modules/chat/infrastructure/ChatEventPayloadCodec.obj
 	@echo ... src/modules/chat/infrastructure/ChatEventPayloadCodec.i
 	@echo ... src/modules/chat/infrastructure/ChatEventPayloadCodec.s
+	@echo ... src/modules/chat/infrastructure/ChatEventPayloadParser.obj
+	@echo ... src/modules/chat/infrastructure/ChatEventPayloadParser.i
+	@echo ... src/modules/chat/infrastructure/ChatEventPayloadParser.s
 	@echo ... src/modules/chat/infrastructure/ChatProtocol.obj
 	@echo ... src/modules/chat/infrastructure/ChatProtocol.i
 	@echo ... src/modules/chat/infrastructure/ChatProtocol.s
@@ -7640,6 +8148,9 @@ help:
 	@echo ... src/modules/chat/presentation/ChatFrame.Layout.obj
 	@echo ... src/modules/chat/presentation/ChatFrame.Layout.i
 	@echo ... src/modules/chat/presentation/ChatFrame.Layout.s
+	@echo ... src/modules/chat/presentation/ChatFrame.NavigationHistory.obj
+	@echo ... src/modules/chat/presentation/ChatFrame.NavigationHistory.i
+	@echo ... src/modules/chat/presentation/ChatFrame.NavigationHistory.s
 	@echo ... src/modules/chat/presentation/ChatFrame.obj
 	@echo ... src/modules/chat/presentation/ChatFrame.i
 	@echo ... src/modules/chat/presentation/ChatFrame.s
@@ -7682,6 +8193,9 @@ help:
 	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Events.obj
 	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Events.i
 	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Events.s
+	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Input.obj
+	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Input.i
+	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Input.s
 	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Layout.obj
 	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Layout.i
 	@echo ... src/modules/gameplay/presentation/panel/GamePlayPanel.Layout.s
@@ -7712,6 +8226,9 @@ help:
 	@echo ... src/modules/home/presentation/HomeFrame.Navigation.obj
 	@echo ... src/modules/home/presentation/HomeFrame.Navigation.i
 	@echo ... src/modules/home/presentation/HomeFrame.Navigation.s
+	@echo ... src/modules/home/presentation/HomeFrame.Registration.obj
+	@echo ... src/modules/home/presentation/HomeFrame.Registration.i
+	@echo ... src/modules/home/presentation/HomeFrame.Registration.s
 	@echo ... src/modules/home/presentation/HomeFrame.Submit.obj
 	@echo ... src/modules/home/presentation/HomeFrame.Submit.i
 	@echo ... src/modules/home/presentation/HomeFrame.Submit.s
@@ -8000,6 +8517,12 @@ help:
 	@echo ... src/modules/rooms/presentation/zone/RoomGameZoneAnchor.obj
 	@echo ... src/modules/rooms/presentation/zone/RoomGameZoneAnchor.i
 	@echo ... src/modules/rooms/presentation/zone/RoomGameZoneAnchor.s
+	@echo ... src/modules/session/application/SessionStore.Refresh.obj
+	@echo ... src/modules/session/application/SessionStore.Refresh.i
+	@echo ... src/modules/session/application/SessionStore.Refresh.s
+	@echo ... src/modules/session/application/SessionStore.Revocation.obj
+	@echo ... src/modules/session/application/SessionStore.Revocation.i
+	@echo ... src/modules/session/application/SessionStore.Revocation.s
 	@echo ... src/modules/session/application/SessionStore.obj
 	@echo ... src/modules/session/application/SessionStore.i
 	@echo ... src/modules/session/application/SessionStore.s
@@ -8042,6 +8565,9 @@ help:
 	@echo ... src/modules/social/presentation/SocialFrame.Profile.obj
 	@echo ... src/modules/social/presentation/SocialFrame.Profile.i
 	@echo ... src/modules/social/presentation/SocialFrame.Profile.s
+	@echo ... src/modules/social/presentation/SocialFrame.State.obj
+	@echo ... src/modules/social/presentation/SocialFrame.State.i
+	@echo ... src/modules/social/presentation/SocialFrame.State.s
 	@echo ... src/modules/social/presentation/SocialFrame.obj
 	@echo ... src/modules/social/presentation/SocialFrame.i
 	@echo ... src/modules/social/presentation/SocialFrame.s
@@ -8054,6 +8580,9 @@ help:
 	@echo ... src/modules/social/presentation/SocialScreenCoordinator.obj
 	@echo ... src/modules/social/presentation/SocialScreenCoordinator.i
 	@echo ... src/modules/social/presentation/SocialScreenCoordinator.s
+	@echo ... src/modules/social/presentation/SocialSectionCoordinator.Loading.obj
+	@echo ... src/modules/social/presentation/SocialSectionCoordinator.Loading.i
+	@echo ... src/modules/social/presentation/SocialSectionCoordinator.Loading.s
 	@echo ... src/modules/social/presentation/SocialSectionCoordinator.obj
 	@echo ... src/modules/social/presentation/SocialSectionCoordinator.i
 	@echo ... src/modules/social/presentation/SocialSectionCoordinator.s
@@ -8120,6 +8649,30 @@ help:
 	@echo ... src/modules/update/infrastructure/launcher/LauncherMain.obj
 	@echo ... src/modules/update/infrastructure/launcher/LauncherMain.i
 	@echo ... src/modules/update/infrastructure/launcher/LauncherMain.s
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Archive.obj
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Archive.i
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Archive.s
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Download.obj
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Download.i
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Download.s
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Lifecycle.obj
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Lifecycle.i
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Lifecycle.s
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Platform.obj
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Platform.i
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Platform.s
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Process.obj
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Process.i
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Process.s
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Runtime.obj
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Runtime.i
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Runtime.s
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Security.obj
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Security.i
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.Security.s
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.State.obj
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.State.i
+	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.State.s
 	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.obj
 	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.i
 	@echo ... src/modules/update/infrastructure/launcher/UpdateLauncher.s
@@ -8240,6 +8793,12 @@ help:
 	@echo ... src/shared/network/infrastructure/http/WsTicketTransport.obj
 	@echo ... src/shared/network/infrastructure/http/WsTicketTransport.i
 	@echo ... src/shared/network/infrastructure/http/WsTicketTransport.s
+	@echo ... src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Connection.obj
+	@echo ... src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Connection.i
+	@echo ... src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Connection.s
+	@echo ... src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Messaging.obj
+	@echo ... src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Messaging.i
+	@echo ... src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Messaging.s
 	@echo ... src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.obj
 	@echo ... src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.i
 	@echo ... src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.s
@@ -8305,6 +8864,7 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
+	$(CMAKE_COMMAND) -P C:\wamp64\www\lemondeDeLila\client-wx\build\codex-nmake-debug\CMakeFiles\VerifyGlobs.cmake
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles\Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

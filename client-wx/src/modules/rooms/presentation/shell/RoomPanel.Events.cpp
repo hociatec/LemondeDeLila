@@ -30,8 +30,15 @@ void RoomPanel::BindEvents()
     gameZoneAnchor_->SetKeyHandler(
         [this](wxKeyEvent& event)
         {
+            const int key = event.GetKeyCode();
+            const bool tableShortcutHasPriority =
+                event.ControlDown() || event.AltDown() || event.MetaDown() ||
+                key == 'Q' || key == 'q' || key == 'X' || key == 'x';
+            if (tableShortcutHasPriority && TryHandleShortcut(event))
+                return true;
             if (gamePlayPanel_->IsOpen() && gamePlayPanel_->HandleZoneKey(event))
                 return true;
+            if (tableShortcutHasPriority) return false;
             return TryHandleShortcut(event);
         });
     gamePlayPanel_->SetZoneFocusRequestedHandler(
@@ -44,6 +51,11 @@ void RoomPanel::BindEvents()
         [this](const wxString& message)
         {
             AppendRoomAnnouncement(message);
+        });
+    gamePlayPanel_->SetTableShortcutHandler(
+        [this](wxKeyEvent& event)
+        {
+            return TryHandleShortcut(event);
         });
     chatInput_->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent&) { SendChat(); });
     lila::shared::accessibility::NavigationController::BindTabNavigation(

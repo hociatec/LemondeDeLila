@@ -14,11 +14,13 @@ import { Room } from '../../../../room/infrastructure/persistence/typeorm/entiti
 import { RoomBot } from '../../../../room/infrastructure/persistence/typeorm/entities/room-bot.entity';
 import { RoomParticipant } from '../../../../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
 import { BotModule } from '../../module/bot.module';
+import { RoomModule } from '../../../../room/public-api';
 
 export const GAME_WS_MODULE_IMPORTS = [
   GameRegistryModule,
   EngineServicesModule,
   BotModule,
+  RoomModule,
   TypeOrmModule.forFeature([Room, RoomParticipant, RoomBot]),
   BoardModule,
   CardsModule,

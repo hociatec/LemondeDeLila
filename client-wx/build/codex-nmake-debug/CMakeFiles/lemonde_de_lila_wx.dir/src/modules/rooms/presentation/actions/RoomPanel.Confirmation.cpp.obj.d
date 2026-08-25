@@ -541,3 +541,8 @@ C:/vcpkg/installed/x64-windows/include/wx/defs.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
 C:/vcpkg/installed/x64-windows/include/wx/generic/msgdlgg.h
 C:/vcpkg/installed/x64-windows/include/wx/msw/msgdlg.h
+C:/wamp64/www/lemondeDeLila/client-wx/src/modules/rooms/presentation/zone/RoomGameZoneAnchor.h
+C:/vcpkg/installed/x64-windows/include/wx/control.h
+C:/vcpkg/installed/x64-windows/include/wx/defs.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/winundef.h
+C:/vcpkg/installed/x64-windows/include/wx/msw/control.h

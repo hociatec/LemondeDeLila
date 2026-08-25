@@ -137,4 +137,43 @@ describe('GameRealtimeAutomationService', () => {
     expect(scheduler.schedule).toHaveBeenCalledTimes(1);
     expect(scheduler.clear).toHaveBeenCalledTimes(1);
   });
+
+  it('cancels a pending bot action when its room is reset', async () => {
+    let run: (() => Promise<void>) | undefined;
+    const current = state({
+      players: [{ id: 9, username: 'Bot', isBot: true }],
+      turn: { currentPlayerId: 9, direction: 1 },
+    });
+    const applyActions = jest.fn().mockReturnValue(current);
+    const scheduler = {
+      clear: jest.fn(),
+      has: jest.fn().mockReturnValue(false),
+      schedule: jest.fn((plan) => {
+        run = plan.run;
+      }),
+    };
+    const service = new GameRealtimeAutomationService(
+      { exportInternalState: jest.fn().mockResolvedValue(current) } as never,
+      {
+        suggestForHandler: jest
+          .fn()
+          .mockReturnValue([{ type: 'draw', payload: {} }]),
+      } as never,
+      scheduler as never,
+      { getBotTurnDelayMs: () => 25 } as never,
+    );
+
+    service.schedule({
+      roomId: 4,
+      gameType: 'lama',
+      handler: { applyActions } as unknown as GameRulesAdapter,
+      state: current,
+      commit: jest.fn(),
+    });
+    service.clearRoom(4);
+    await run!();
+
+    expect(scheduler.clear).toHaveBeenCalledWith('game-realtime:4:lama');
+    expect(applyActions).not.toHaveBeenCalled();
+  });
 });

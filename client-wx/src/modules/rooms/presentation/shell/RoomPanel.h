@@ -82,6 +82,7 @@ private:
     void Save();
     void Leave();
     void RequestLeaveConfirmation();
+    void RequestResetConfirmation();
     void ApplyRoom(domain::RoomState room);
     void SyncGamePlayPanel();
     void ShowConnecting();

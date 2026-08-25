@@ -61,6 +61,8 @@ std::optional<domain::GameAction> GameShortcutResolver::ResolveHandAction(
 
 std::string GameShortcutResolver::NormalizeKey(const wxKeyEvent& event)
 {
+    if (event.ControlDown() || event.AltDown() || event.MetaDown()) return {};
+
     const int key = event.GetKeyCode();
     if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER) return "ENTER";
     if (key == WXK_SPACE) return "SPACE";

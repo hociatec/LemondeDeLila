@@ -1344,7 +1344,7 @@ void TestRoomPayloadCodecs()
             {"players", nlohmann::json::array({{{"id", 1}, {"username", "alice"}}})},
             {"spectators", nlohmann::json::array()},
             {"bots", nlohmann::json::array({{{"id", 3}, {"name", "LilaBot"}}})},
-            {"allowedActions", nlohmann::json::array({"room.snapshot.save", "room.reset"})},
+            {"allowedActions", nlohmann::json::array({"room.snapshot.save", "room.reset", "room.leave"})},
         }},
     });
     Expect(room.id == 12, "Identifiant d'etat de table attendu");
@@ -1361,6 +1361,10 @@ void TestRoomPayloadCodecs()
         lila::modules::rooms::presentation::RoomShortcutPolicy::Resolve(
             'X', false, false, false, false, room) == "room:reset",
         "X doit reinitialiser une table demarree quand le serveur l'autorise");
+    Expect(
+        lila::modules::rooms::presentation::RoomShortcutPolicy::Resolve(
+            'Q', false, false, false, false, room) == "room:leave",
+        "Q doit quitter une table demarree quand le serveur l'autorise");
 
     std::cout << "[TEST PASSED] RoomPayloadCodecs\n";
 }
@@ -1624,8 +1628,11 @@ void TestRoomPresentationMatchesWpfWaitingTable()
         ShortcutPolicy::Resolve('S', true, false, false, false, room) == "room:save",
         "Controle S doit sauvegarder une partie demarree");
     Expect(
-        ShortcutPolicy::Resolve('Q', false, false, false, false, room).empty(),
-        "Q ne doit rien faire pendant une partie lancee");
+        ShortcutPolicy::Resolve('Q', false, false, false, false, room) == "room:leave",
+        "Q doit quitter une table pendant une partie lancee");
+    Expect(
+        ShortcutPolicy::Resolve('X', false, false, false, false, room) == "room:reset",
+        "X doit reinitialiser une table pendant une partie lancee");
 
     room.allowedActions.erase(
         std::remove(room.allowedActions.begin(), room.allowedActions.end(), "room.toggle-privacy"),

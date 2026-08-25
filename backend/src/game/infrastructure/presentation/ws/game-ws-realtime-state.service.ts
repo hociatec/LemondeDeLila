@@ -37,10 +37,11 @@ export class GameWsRealtimeStateService {
     if (!handler) throw new NotFoundException(`Jeu introuvable: ${gameType}`);
 
     const existing = await this.engine.exportInternalState(roomId, gameType);
-    if (existing) {
+    if (existing && this.belongsToCurrentRun(existing, room.room)) {
       this.ensureVersion(existing);
       return { gameType, state: existing, handler };
     }
+    if (existing) await this.clear(roomId, gameType);
 
     const state = handler.hydrateInitialState(
       this.core.buildBaseState(room, gameType),
@@ -96,8 +97,27 @@ export class GameWsRealtimeStateService {
   }
 
   async clear(roomId: number, gameType: string): Promise<void> {
-    await this.engine.clearInternalState(roomId, gameType);
     this.automation.clear(roomId, gameType);
+    await this.engine.clearInternalState(roomId, gameType);
+  }
+
+  async clearRoom(roomId: number): Promise<void> {
+    this.automation.clearRoom(roomId);
+    await this.engine.clearRoom(roomId);
+  }
+
+  private belongsToCurrentRun(
+    state: GameStateEntity,
+    room: { status?: unknown; runId?: unknown },
+  ): boolean {
+    if (String(room.status ?? '').toLowerCase() !== 'started') return false;
+    const stateRunId = (state.metadata as Record<string, unknown> | undefined)
+      ?.roomRunId;
+    return (
+      typeof stateRunId === 'number' &&
+      typeof room.runId === 'number' &&
+      stateRunId === room.runId
+    );
   }
 
   private ensureVersion(state: GameStateEntity): number {

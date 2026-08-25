@@ -61,6 +61,8 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.31.6/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.31.6/CMakeRCCompiler.cmake"
   "CMakeFiles/3.31.6/CMakeSystem.cmake"
+  "CMakeFiles/VerifyGlobs.cmake"
+  "CMakeFiles/cmake.verify_globs"
   "C:/wamp64/www/lemondeDeLila/client-wx/resources/texts.fr.json"
   "C:/wamp64/www/lemondeDeLila/client-wx/src/modules/update/infrastructure/config/UpdateBuildConfig.h.in"
   "C:/wamp64/www/lemondeDeLila/client-wx/src/shared/config/generated/AppBuildInfo.h.in"

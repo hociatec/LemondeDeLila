@@ -21,6 +21,7 @@ type AutomationPlan = {
 @Injectable()
 export class GameRealtimeAutomationService {
   private readonly scheduledSignatures = new Map<string, string>();
+  private readonly generations = new Map<string, number>();
 
   constructor(
     private readonly engine: GameEngineService,
@@ -51,6 +52,8 @@ export class GameRealtimeAutomationService {
 
     this.botScheduler.clear(timerKey);
     this.scheduledSignatures.set(timerKey, plan.signature);
+    const generation = this.generations.get(timerKey) ?? 0;
+    this.generations.set(timerKey, generation);
 
     this.botScheduler.schedule({
       key: timerKey,
@@ -58,12 +61,14 @@ export class GameRealtimeAutomationService {
       roomId: input.roomId,
       gameType: input.gameType,
       run: async () => {
+        if ((this.generations.get(timerKey) ?? 0) !== generation) return;
         if (this.scheduledSignatures.get(timerKey) !== plan.signature) return;
         this.scheduledSignatures.delete(timerKey);
         const current = await this.engine.exportInternalState(
           input.roomId,
           input.gameType,
         );
+        if ((this.generations.get(timerKey) ?? 0) !== generation) return;
         if (!current) return;
         const currentPlan = this.resolvePlan(input.handler, current);
         if (!currentPlan) return;
@@ -72,15 +77,38 @@ export class GameRealtimeAutomationService {
           return;
         }
         const next = input.handler.applyActions(current, currentPlan.actions);
+        if ((this.generations.get(timerKey) ?? 0) !== generation) return;
         await input.commit(current, next);
+        if ((this.generations.get(timerKey) ?? 0) !== generation) {
+          await this.engine.clearInternalStateIf(
+            input.roomId,
+            input.gameType,
+            next,
+          );
+        }
       },
     });
   }
 
   clear(roomId: number, gameType: string): void {
     const timerKey = this.timerKey(roomId, gameType);
+    this.generations.set(timerKey, (this.generations.get(timerKey) ?? 0) + 1);
     this.scheduledSignatures.delete(timerKey);
     this.botScheduler.clear(timerKey);
+  }
+
+  clearRoom(roomId: number): void {
+    const prefix = `game-realtime:${roomId}:`;
+    const keys = new Set([
+      ...this.scheduledSignatures.keys(),
+      ...this.generations.keys(),
+    ]);
+    for (const key of keys) {
+      if (!key.startsWith(prefix)) continue;
+      this.generations.set(key, (this.generations.get(key) ?? 0) + 1);
+      this.scheduledSignatures.delete(key);
+      this.botScheduler.clear(key);
+    }
   }
 
   private resolvePlan(

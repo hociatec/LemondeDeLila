@@ -14,6 +14,23 @@ option(LILA_ENABLE_TSAN "Enable ThreadSanitizer where supported" OFF)
 option(LILA_ENABLE_CLANG_TIDY "Enable clang-tidy during compilation" OFF)
 option(LILA_ENABLE_CPPCHECK "Enable cppcheck during compilation" OFF)
 
+set(LILA_MAX_IMPLEMENTATION_LINES 250)
+file(GLOB_RECURSE LILA_IMPLEMENTATION_FILES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+foreach(implementation_file IN LISTS LILA_IMPLEMENTATION_FILES)
+    file(READ "${implementation_file}" implementation_content)
+    string(REGEX MATCHALL "\n" implementation_line_breaks "${implementation_content}")
+    list(LENGTH implementation_line_breaks implementation_line_count)
+    math(EXPR implementation_line_count "${implementation_line_count} + 1")
+    if(implementation_line_count GREATER LILA_MAX_IMPLEMENTATION_LINES)
+        message(FATAL_ERROR
+            "Unite d'implementation trop volumineuse (${implementation_line_count} lignes): "
+            "${implementation_file}. Decouper le fichier par responsabilite."
+        )
+    endif()
+endforeach()
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -151,6 +168,7 @@ add_executable(lemonde_de_lila_wx WIN32
     src/app/navigation/presentation/AppNavigator.GameViews.cpp
     src/app/navigation/presentation/AppNavigator.Games.cpp
     src/app/navigation/presentation/AppNavigator.Session.cpp
+    src/app/navigation/presentation/AppNavigator.Authentication.cpp
     src/app/navigation/presentation/AppNavigator.Social.cpp
     src/app/navigation/presentation/AppNavigator.SocialViews.cpp
     src/app/navigation/presentation/AppNavigator.Transitions.cpp
@@ -190,6 +208,7 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/gameplay/presentation/panel/GamePlayPanel.cpp
     src/modules/gameplay/presentation/panel/GamePlayPanel.Actions.cpp
     src/modules/gameplay/presentation/panel/GamePlayPanel.Events.cpp
+    src/modules/gameplay/presentation/panel/GamePlayPanel.Input.cpp
     src/modules/gameplay/presentation/panel/GamePlayPanel.Layout.cpp
     src/modules/gameplay/presentation/panel/GamePlayPanel.Session.cpp
     src/modules/gameplay/presentation/panel/GamePlayPanel.State.cpp
@@ -271,11 +290,14 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/chat/application/ChatService.Reconnect.cpp
     src/modules/chat/application/ChatMessageStore.cpp
     src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
+    src/modules/chat/infrastructure/ChatEventPayloadParser.cpp
+    src/modules/chat/infrastructure/ChatCommandPayloadCodec.cpp
     src/modules/chat/infrastructure/ChatProtocol.cpp
     src/modules/chat/infrastructure/PresenceChatGateway.cpp
     src/modules/chat/presentation/ChatEventBinder.cpp
     src/modules/chat/presentation/ChatFrame.cpp
     src/modules/chat/presentation/ChatFrame.Actions.cpp
+    src/modules/chat/presentation/ChatFrame.NavigationHistory.cpp
     src/modules/chat/presentation/ChatFrame.Connection.cpp
     src/modules/chat/presentation/ChatFrame.Layout.cpp
     src/modules/chat/presentation/ChatFrame.Events.cpp
@@ -312,6 +334,7 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/social/presentation/SocialEventRouter.cpp
     src/modules/social/presentation/SocialFrame.Bindings.cpp
     src/modules/social/presentation/SocialFrame.cpp
+    src/modules/social/presentation/SocialFrame.State.cpp
     src/modules/social/presentation/SocialFrame.Layout.cpp
     src/modules/social/presentation/SocialFrame.Events.cpp
     src/modules/social/presentation/SocialFrame.Menu.cpp
@@ -320,6 +343,7 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/social/presentation/SocialScreenCoordinator.cpp
     src/modules/social/presentation/SocialPresentationModel.cpp
     src/modules/social/presentation/SocialSectionCoordinator.cpp
+    src/modules/social/presentation/SocialSectionCoordinator.Loading.cpp
     src/modules/social/presentation/SocialFrame.Profile.cpp
     src/modules/social/presentation/SocialSelectionMemory.cpp
     src/modules/social/presentation/SocialSectionPresenter.Core.cpp
@@ -338,6 +362,7 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/home/presentation/HomeFrame.Navigation.cpp
     src/modules/home/presentation/HomeFrame.Events.cpp
     src/modules/home/presentation/HomeFrame.Submit.cpp
+    src/modules/home/presentation/HomeFrame.Registration.cpp
 
     src/modules/options/application/OptionsStore.cpp
     src/modules/options/infrastructure/FileOptionsRepository.cpp
@@ -381,6 +406,8 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/main_menu/presentation/MainMenuFrame.Events.cpp
 
     src/modules/session/application/SessionStore.cpp
+    src/modules/session/application/SessionStore.Refresh.cpp
+    src/modules/session/application/SessionStore.Revocation.cpp
     src/modules/session/infrastructure/FileSessionRepository.cpp
 
     src/shared/accessibility/presentation/ActionButton.cpp
@@ -417,6 +444,8 @@ add_executable(lemonde_de_lila_wx WIN32
     src/shared/network/infrastructure/http/WsTicketProvider.cpp
     src/shared/network/infrastructure/http/WsTicketTransport.cpp
     src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.cpp
+    src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Connection.cpp
+    src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Messaging.cpp
     src/shared/network/infrastructure/websocket/WinHttpWebSocketRequest.cpp
     src/shared/network/infrastructure/websocket/WinHttpWebSocketInternals.cpp
 
@@ -441,6 +470,14 @@ if(WIN32)
     add_executable(lila_launcher WIN32
         src/modules/update/infrastructure/launcher/LauncherMain.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Archive.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Download.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Lifecycle.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Platform.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Process.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Runtime.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Security.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.State.cpp
         src/modules/update/domain/UpdateProtocol.cpp
     )
     target_include_directories(lila_launcher PRIVATE
@@ -550,12 +587,16 @@ if(BUILD_TESTING)
             src/modules/chat/application/ChatService.Reconnect.cpp
             src/modules/chat/application/ChatMessageStore.cpp
             src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
+            src/modules/chat/infrastructure/ChatEventPayloadParser.cpp
+            src/modules/chat/infrastructure/ChatCommandPayloadCodec.cpp
             src/modules/chat/infrastructure/ChatProtocol.cpp
             src/modules/options/application/OptionsStore.cpp
             src/modules/options/infrastructure/OptionsJsonDocumentCodec.cpp
             src/modules/options/infrastructure/OptionsJsonSchemaMigrator.cpp
             src/modules/options/infrastructure/OptionsStateJsonMapper.cpp
             src/modules/session/application/SessionStore.cpp
+            src/modules/session/application/SessionStore.Refresh.cpp
+            src/modules/session/application/SessionStore.Revocation.cpp
             src/shared/concurrency/application/BackgroundExecutor.cpp
             src/shared/concurrency/application/BackgroundTasks.cpp
             src/shared/accessibility/presentation/ActionButton.cpp
@@ -672,6 +713,8 @@ if(BUILD_TESTING)
         add_executable(lemonde_de_lila_wx_parser_fuzz
             tests/ParserFuzzHarness.cpp
             src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
+            src/modules/chat/infrastructure/ChatEventPayloadParser.cpp
+            src/modules/chat/infrastructure/ChatCommandPayloadCodec.cpp
             src/modules/chat/infrastructure/ChatProtocol.cpp
             src/shared/config/domain/AppConfig.cpp
             src/shared/network/application/realtime/RealtimeProtocol.cpp

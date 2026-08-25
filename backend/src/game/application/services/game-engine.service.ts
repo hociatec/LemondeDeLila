@@ -24,6 +24,22 @@ export class GameEngineService {
     this.snapshots.delete(this.key(roomId, gameType));
   }
 
+  async clearInternalStateIf(
+    roomId: number,
+    gameType: string,
+    expected: GameStateEntity,
+  ): Promise<void> {
+    const key = this.key(roomId, gameType);
+    if (this.snapshots.get(key) === expected) this.snapshots.delete(key);
+  }
+
+  async clearRoom(roomId: number): Promise<void> {
+    const prefix = `${roomId}:`;
+    for (const key of this.snapshots.keys()) {
+      if (key.startsWith(prefix)) this.snapshots.delete(key);
+    }
+  }
+
   private key(roomId: number, gameType: string): string {
     return `${roomId}:${gameType}`;
   }
