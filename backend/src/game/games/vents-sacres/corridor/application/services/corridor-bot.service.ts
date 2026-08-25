@@ -1,7 +1,7 @@
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { BotRunnerService } from '../../../../../application/services/bot-runner.service';
-import { RandomService } from '../../../../../application/services/random.service';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { BotRunnerService } from '../../../../../core/application/services/bot-runner.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import type { CorridorMetadata } from '../../model/corridor.model';
 import * as CorridorRulebook from '../../rulebook/rulebook';
 import type { CorridorWall } from '../../rulebook/rulebook';

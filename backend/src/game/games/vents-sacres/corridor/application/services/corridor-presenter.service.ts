@@ -1,16 +1,16 @@
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
+} from '../../../../../core/application/models/game-action.model';
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
-import { BasePresenterService } from '../../../../../application/services/base-presenter.service';
+} from '../../../../../core/application/models/game-state.model';
+import { BasePresenterService } from '../../../../../core/application/services/base-presenter.service';
 import type { CorridorMetadata } from '../../model/corridor.model';
 import * as CorridorRulebook from '../../rulebook/rulebook';
-import { GridBlockedEdgesService } from '../../../../../application/features/grid/services/grid-blocked-edges.service';
-import { GridCellActionsService } from '../../../../../application/features/grid/services/grid-cell-actions.service';
+import { GridBlockedEdgesService } from '../../../../../grid/application/services/grid-blocked-edges.service';
+import { GridCellActionsService } from '../../../../../grid/application/services/grid-cell-actions.service';
 
 type CorridorActionPayload = {
   x?: number;

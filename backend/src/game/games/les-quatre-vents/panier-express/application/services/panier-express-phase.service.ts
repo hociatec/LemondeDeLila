@@ -1,8 +1,8 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { VictoryService } from '../../../../../application/features/victory/services/victory.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { ActionLogService } from '../../../../../application/features/actionlog/services/action-log.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { VictoryService } from '../../../../../victory/application/services/victory.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { ActionLogService } from '../../../../../actionlog/application/services/action-log.service';
 import { playingLog } from '../../../../../../common/utils/public-api';
 import { PANIER_EXPRESS_PHASES } from '../../definitions/rules.definition';
 import { PANIER_EXPRESS_VICTORY } from '../../definitions/victory.definition';

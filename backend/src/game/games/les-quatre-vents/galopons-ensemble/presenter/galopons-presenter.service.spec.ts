@@ -1,5 +1,5 @@
 import { GaloponsPresenterService } from '../application/services/galopons-presenter.service';
-import { BoardPayloadService } from '../../../../application/services/board-payload.service';
+import { BoardPayloadService } from '../../../../core/application/services/board-payload.service';
 
 describe('GaloponsPresenterService', () => {
   it('hides targeted pending from other players', () => {

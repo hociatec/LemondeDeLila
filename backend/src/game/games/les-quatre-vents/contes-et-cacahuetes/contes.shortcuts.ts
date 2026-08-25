@@ -1,8 +1,8 @@
-import type { GameShortcutsBuilder } from '../../../application/models/game-shortcuts.model';
+import type { GameShortcutsBuilder } from '../../../shortcuts/public-api';
 import {
   actionShortcut,
   interfaceShortcut,
-} from '../../../application/helpers/shortcut-utils';
+} from '../../../shortcuts/public-api';
 
 export const buildContesShortcuts: GameShortcutsBuilder = () => [
   actionShortcut('SPACE', 'draw'),

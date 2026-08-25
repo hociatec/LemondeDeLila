@@ -1,8 +1,8 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { GameContentLoaderService } from '../../../../../application/services/game-content-loader.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { FilesystemGameCatalogReader } from '../../../../../infrastructure/system/filesystem-game-catalog.reader';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { GameContentLoaderService } from '../../../../../core/application/services/game-content-loader.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { FilesystemGameCatalogReader } from '../../../../../core/infrastructure/system/filesystem-game-catalog.reader';
 import { SacAMalicesSetupService } from './sac-a-malices-setup.service';
 import { SAC_VARIANTS } from '../../sac-a-malices-variants';
 

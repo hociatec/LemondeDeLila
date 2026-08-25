@@ -1,9 +1,9 @@
 import { CaActionService } from '../application/services/ca-actions.service';
-import { TurnFlowService } from '../../../../application/services/turn-flow.service';
-import { TurnService } from '../../../../application/services/turn.service';
-import { TurnPoliciesService } from '../../../../application/services/turn-policies.service';
-import { GameCoreService } from '../../../../application/services/game-core.service';
-import { DeckPoliciesService } from '../../../../application/features/deck-policies/services/deck-policies.service';
+import { TurnFlowService } from '../../../../core/application/services/turn-flow.service';
+import { TurnService } from '../../../../core/application/services/turn.service';
+import { TurnPoliciesService } from '../../../../core/application/services/turn-policies.service';
+import { GameCoreService } from '../../../../core/application/services/game-core.service';
+import { DeckPoliciesService } from '../../../../deck-policies/application/services/deck-policies.service';
 import { CaSetupService } from '../setup/ca.setup';
 
 function card(id: number, kind: string, extra: Record<string, unknown> = {}) {

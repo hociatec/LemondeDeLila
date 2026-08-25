@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../application/models/game-definition.model';
+import type { GameDefinition } from '../../../../core/application/models/game-definition.model';
 
 export type LaGrandeMineActionType = 'play_card' | 'pass';
 export type LaGrandeMinePhaseId = 'round';

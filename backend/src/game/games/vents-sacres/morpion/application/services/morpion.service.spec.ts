@@ -1,9 +1,9 @@
-﻿import { MorpionService } from './morpion.service';
+import { MorpionService } from './morpion.service';
 import { MorpionPresenter } from './morpion.presenter';
-import { GridCellActionsService } from '../../../../../application/features/grid/services/grid-cell-actions.service';
+import { GridCellActionsService } from '../../../../../grid/application/services/grid-cell-actions.service';
 import { MORPION_PAWNS } from '../../definitions/morpion.pawns';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
 
 function makeService(): MorpionService {
   return new MorpionService(

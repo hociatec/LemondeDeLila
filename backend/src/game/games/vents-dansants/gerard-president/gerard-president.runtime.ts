@@ -1,7 +1,7 @@
-import { RandomService } from '../../../application/services/random.service';
-import { DeckPoliciesService } from '../../../application/features/deck-policies/services/deck-policies.service';
-import { BotRunnerService } from '../../../application/services/bot-runner.service';
-import { BotStrategyService } from '../../../application/services/bot-strategy.service';
+import { RandomService } from '../../../core/application/services/random.service';
+import { DeckPoliciesService } from '../../../deck-policies/application/services/deck-policies.service';
+import { BotRunnerService } from '../../../core/application/services/bot-runner.service';
+import { BotStrategyService } from '../../../core/application/services/bot-strategy.service';
 import { GerardPresidentActionService } from './application/services/gerard-president-action.service';
 import { GerardPresidentBotService } from './application/services/gerard-president-bot.service';
 import { GerardPresidentPresenterService } from './application/services/gerard-president-presenter.service';

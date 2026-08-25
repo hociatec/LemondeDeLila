@@ -1,18 +1,18 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 
-import { getSafePlayers } from '../../../../../application/helpers/setup-service.helper';
-import { loadV1Content } from '../../../../../application/helpers/content-loader.helper';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { GameContentLoaderService } from '../../../../../application/services/game-content-loader.service';
-import { loadCanonicalPawns } from '../../../../../application/helpers/pawn-catalog.helper';
+import { getSafePlayers } from '../../../../../core/application/helpers/setup-service.helper';
+import { loadV1Content } from '../../../../../core/application/helpers/content-loader.helper';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { GameContentLoaderService } from '../../../../../core/application/services/game-content-loader.service';
+import { loadCanonicalPawns } from '../../../../../pawn-selection/public-api';
 import { ensureSeededRng } from '../../../../../../common/utils/public-api';
 import { seededShuffle } from '../../../../../../common/utils/public-api';
 import {
   assignConfiguredBotPawns,
   queueConfiguredPawnSelection,
-} from '../../../../../application/helpers/configured-pawn-setup.helper';
+} from '../../../../../pawn-selection/public-api';
 import type {
   AventureSauvageCard,
   AventureSauvageMetadata,

@@ -1,14 +1,14 @@
-import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import { AbstractGameService } from '../../../../../core/application/services/abstract-game.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
+} from '../../../../../core/application/models/game-action.model';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../application/models/game-shortcuts.model';
-import type { GameAutomaticActionPlan } from '../../../../../application/models/game-automation.model';
+} from '../../../../../shortcuts/public-api';
+import type { GameAutomaticActionPlan } from '../../../../../core/application/models/game-automation.model';
 import type { LamaMetadata } from '../../model/lama.model';
 import { LamaPresenter } from './lama.presenter';
 import { LamaActionService } from './lama-action.service';

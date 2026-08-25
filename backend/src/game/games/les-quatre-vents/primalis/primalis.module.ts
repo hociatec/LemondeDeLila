@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { BoardGameCoreKitModule } from '../../../module/board-game-kits.module';
-import { EngineServicesModule } from '../../../infrastructure/module/engine-services.module';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { BoardGameCoreKitModule } from '../../../composition/board-game-kits.module';
+import { EngineServicesModule } from '../../../core/infrastructure/module/engine-services.module';
 import { PrimalisService } from './application/services/primalis.service';
 import { PrimalisSetupService } from './application/services/primalis-setup.service';
 import { PrimalisActionService } from './application/services/primalis-action.service';

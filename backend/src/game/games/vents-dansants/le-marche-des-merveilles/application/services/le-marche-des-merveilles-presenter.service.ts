@@ -1,9 +1,9 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
+} from '../../../../../core/application/models/game-action.model';
+import { formatPresenterActions } from '../../../../../core/application/helpers/actions-presenter.helper';
 import {
   GOOD_LABELS,
   WONDER_GOODS,

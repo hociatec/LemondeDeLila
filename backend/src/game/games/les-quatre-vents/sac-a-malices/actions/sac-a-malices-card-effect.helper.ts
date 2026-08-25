@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import type { SacCard, SacMetadata } from '../model/sac-a-malices.types';
 
 function extractMoneyDelta(text: string): number {

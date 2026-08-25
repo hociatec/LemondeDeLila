@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type { JeuOiePawn } from '../../model/jeu-oie-state.model';
 
 export function normalizeJeuOiePawnChoice(

@@ -1,5 +1,5 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'

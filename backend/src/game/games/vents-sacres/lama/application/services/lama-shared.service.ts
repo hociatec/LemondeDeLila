@@ -1,5 +1,5 @@
 import type { LamaMetadata } from '../../model/lama.model';
-import type { PlayerStateEntity } from '../../../../../application/models/game-state.model';
+import type { PlayerStateEntity } from '../../../../../core/application/models/game-state.model';
 import { stringOrEmpty } from '@common/utils/public-api';
 
 export class LamaSharedService {

@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../application/models/game-definition.model';
+import type { GameDefinition } from '../../../../core/application/models/game-definition.model';
 
 export type CerclesSacresGameId = 'cercles-sacres';
 export type CerclesSacresPhaseId = 'turn';

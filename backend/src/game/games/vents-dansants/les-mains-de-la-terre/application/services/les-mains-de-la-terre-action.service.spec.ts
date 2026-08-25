@@ -1,9 +1,9 @@
-﻿import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { TurnService } from '../../../../../application/services/turn.service';
-import { TurnPoliciesService } from '../../../../../application/services/turn-policies.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { TurnService } from '../../../../../core/application/services/turn.service';
+import { TurnPoliciesService } from '../../../../../core/application/services/turn-policies.service';
 import { LesMainsActionService } from '../../application/services/les-mains-de-la-terre-action.service';
 
 describe('LesMainsActionService draw behavior', () => {

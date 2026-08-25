@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { GameCoreService } from '../../../application/services/game-core.service';
-import { SetupFlowService } from '../../../application/services/setup-flow.service';
-import { GridCellActionsService } from '../../../application/features/grid/services/grid-cell-actions.service';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { GridGameCoreKitModule } from '../../../module/board-game-kits.module';
-import { SetupFlowModule } from '../../../application/modules/setup-flow.module';
+import { GameCoreService } from '../../../core/application/services/game-core.service';
+import { SetupFlowService } from '../../../core/application/services/setup-flow.service';
+import { GridCellActionsService } from '../../../grid/application/services/grid-cell-actions.service';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { GridGameCoreKitModule } from '../../../composition/board-game-kits.module';
+import { SetupFlowModule } from '../../../core/infrastructure/module/setup-flow.module';
 import { MorpionPresenter } from './application/services/morpion.presenter';
 import { MorpionService } from './application/services/morpion.service';
 

@@ -1,13 +1,13 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
+} from '../../../../../core/application/models/game-action.model';
+import { AbstractGameService } from '../../../../../core/application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../application/models/game-shortcuts.model';
+} from '../../../../../shortcuts/public-api';
 import { TOUT_PRES_DE_MAMAN_GAME } from '../../definitions/tout-pres-de-maman.definition';
 import { ToutPresDeMamanActionService } from './tout-pres-de-maman-action.service';
 import { ToutPresDeMamanPresenterService } from './tout-pres-de-maman-presenter.service';

@@ -1,7 +1,7 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
-import type { RandomService } from '../../../../../application/services/random.service';
-import type { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
+import type { RandomService } from '../../../../../core/application/services/random.service';
+import type { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
 import type {
   ContesCard,
   ContesCardType,

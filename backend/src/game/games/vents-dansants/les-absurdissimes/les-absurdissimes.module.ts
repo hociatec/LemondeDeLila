@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { BotRunnerService } from '../../../application/services/bot-runner.service';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { BotRunnerService } from '../../../core/application/services/bot-runner.service';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { BoardGameDeckKitModule } from '../../../composition/board-game-kits.module';
 import { ABSURDISSIMES_DECK_PORT } from './application/ports/absurdissimes-deck.port';
 import { AbsurdissimesActionService } from './application/services/les-absurdissimes-action.service';
 import { AbsurdissimesBotService } from './application/services/les-absurdissimes-bot.service';

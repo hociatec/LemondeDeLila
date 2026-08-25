@@ -1,6 +1,6 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { TurnFlowService } from '../../../../application/services/turn-flow.service';
-import { resolvePlayerNameFromState } from '../../../../application/helpers/player-name.helper';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import type { TurnFlowService } from '../../../../core/application/services/turn-flow.service';
+import { resolvePlayerNameFromState } from '../../../../core/application/helpers/player-name.helper';
 import type { ContesCacahuetesMetadata } from '../model/contes-et-cacahuetes-state.model';
 
 export function applyContesTurnSwapIfNeeded(input: {

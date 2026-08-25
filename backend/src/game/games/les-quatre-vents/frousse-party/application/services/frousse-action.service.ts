@@ -1,25 +1,25 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
 
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
 
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { BoardEffectsPoliciesService } from '../../../../../application/features/board-effects-policies/services/board-effects-policies.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { continueSequentialPawnSelection } from '../../../../../application/helpers/sequential-pawn-selection.helper';
-import { applyConfiguredPawnSelection } from '../../../../../application/helpers/configured-pawn-selection.helper';
-import { starterTurnAnnouncement } from '../../../../../application/helpers/game-log-text.helper';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { BoardEffectsPoliciesService } from '../../../../../board-effects-policies/application/services/board-effects-policies.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { continueSequentialPawnSelection } from '../../../../../pawn-selection/public-api';
+import { applyConfiguredPawnSelection } from '../../../../../pawn-selection/public-api';
+import { starterTurnAnnouncement } from '../../../../../history/public-api';
 import type {
   FrousseCard,
   FrousseMetadata,

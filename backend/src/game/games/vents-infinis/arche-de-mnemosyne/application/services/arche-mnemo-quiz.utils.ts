@@ -1,11 +1,11 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
 import { stringOrEmpty } from '@common/utils/public-api';
 import type { MnemoQuizMetadata } from '../../model/mnemo-quiz.model';
 import type { MnemoQuizStore } from '../ports/mnemo-quiz-store.port';
 import type { ArcheMnemoStateService } from './arche-mnemo-state.service';
-import type { RandomService } from '../../../../../application/services/random.service';
-import type { TurnFlowService } from '../../../../../application/services/turn-flow.service';
+import type { RandomService } from '../../../../../core/application/services/random.service';
+import type { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
 
 const ARCHE_PLAYER_NAME_OPTIONS = {
   collapseWhitespace: true,

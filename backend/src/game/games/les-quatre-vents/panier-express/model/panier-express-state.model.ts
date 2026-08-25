@@ -1,8 +1,8 @@
-import { QuizState } from '../../../../application/features/quiz/services/quiz-runner.service';
-import { BotProfile } from '../../../../application/services/bot-strategy.service';
-import { DeckPoolState } from '../../../../application/services/deck-pool.service';
-import { PlayerStateEntity } from '../../../../application/models/game-state.model';
-import type { InteractiveExchangePending } from '../../../../application/features/exchange/models/interactive-exchange.model';
+import { QuizState } from '../../../../quiz/application/services/quiz-runner.service';
+import { BotProfile } from '../../../../core/application/services/bot-strategy.service';
+import { DeckPoolState } from '../../../../cards/public-api';
+import { PlayerStateEntity } from '../../../../core/application/models/game-state.model';
+import type { InteractiveExchangePending } from '../../../../exchange/application/models/interactive-exchange.model';
 
 /**
  * Types des tuiles Panier Express

@@ -16,7 +16,7 @@ import { RoleDefinitionEntity } from '../admin/infrastructure/persistence/typeor
 import { GameCategoryEntity } from '../game/engine/infrastructure/persistence/typeorm/entities/game-category.entity';
 import { GameCategoryAssignmentEntity } from '../game/engine/infrastructure/persistence/typeorm/entities/game-category-assignment.entity';
 import { GameCatalogOverrideEntity } from '../game/engine/infrastructure/persistence/typeorm/entities/game-catalog-override.entity';
-import { BotSettingsEntity } from '../game/infrastructure/persistence/typeorm/entities/bot-settings.entity';
+import { BotSettingsEntity } from '../game/core/infrastructure/persistence/typeorm/entities/bot-settings.entity';
 import { BugReportEntity } from '../bug-reports/infrastructure/persistence/typeorm/entities/bug-report.entity';
 import { BugReportCommentEntity } from '../bug-reports/infrastructure/persistence/typeorm/entities/bug-report-comment.entity';
 import { NotificationInboxItemEntity } from '../notification/infrastructure/persistence/typeorm/entities/notification-inbox-item.entity';

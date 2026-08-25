@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import type { SacCard, SacDeck, SacMetadata } from '../model/sac-a-malices.types';
 import { shouldKeepSacAMalicesCard } from './sac-a-malices-card-effect.helper';
 

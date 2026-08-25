@@ -1,10 +1,10 @@
-﻿import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import {
   isRollActionType,
   isRollAlias,
   normalizeActionType,
-} from '../../../../application/helpers/action-service.helper';
+} from '../../../../core/application/helpers/action-service.helper';
 import type {
   PanierExpressMetadata,
   PanierExpressTile,
@@ -16,16 +16,16 @@ import {
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../domain/errors/public-api';
+} from '../../../../core/domain/errors/public-api';
 import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
-} from '../../../../application/helpers/pawn-pending-rulebook.helper';
+} from '../../../../pawn-selection/public-api';
 import {
   getPendingIndexedChoiceActionsForPlayer,
   validatePendingDrawActionForActor,
   validatePendingIndexedChoiceActionForActor,
-} from '../../../../application/helpers/pending-actions-rulebook.helper';
+} from '../../../../core/application/helpers/pending-actions-rulebook.helper';
 
 type PendingRecord = Record<string, unknown>;
 

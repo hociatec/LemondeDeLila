@@ -1,6 +1,6 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import { GameContentLoaderService } from '../../../../../engine/public-api';
-import { RandomService } from '../../../../../application/services/random.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import type {
   MissionGalaxieBoardJsonV1,
   MissionGalaxieChallengesJsonV1,
@@ -8,7 +8,7 @@ import type {
   MissionGalaxieQuestionsJsonV1,
 } from '../../model/mission-galaxie-content.model';
 import type { MissionGalaxieMetadata } from '../../model/mission-galaxie-state.model';
-import { loadV1Content } from '../../../../../application/helpers/content-loader.helper';
+import { loadV1Content } from '../../../../../core/application/helpers/content-loader.helper';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'

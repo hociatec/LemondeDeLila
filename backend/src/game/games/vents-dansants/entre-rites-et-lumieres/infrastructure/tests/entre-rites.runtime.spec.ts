@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import { createEntreRitesRuntime } from '../../entre-rites.runtime';
 
 describe('EntreRites runtime', () => {

@@ -1,5 +1,5 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
 import {
   FOULEES_FANTASTIQUES_GAME,
   type FouleesFantastiquesActionType,
@@ -7,16 +7,16 @@ import {
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../domain/errors/public-api';
+} from '../../../../core/domain/errors/public-api';
 import type { FouleesFantastiquesMetadata } from '../model/foulees-fantastiques-state.model';
 import {
   isRollAlias,
   normalizeActionType,
-} from '../../../../application/helpers/action-service.helper';
+} from '../../../../core/application/helpers/action-service.helper';
 import {
   getPendingPawnMoveActionsForPlayer,
   validatePendingPawnMoveActionForActor,
-} from '../../../../application/helpers/pending-pawn-move-rulebook.helper';
+} from '../../../../pawn-selection/public-api';
 
 type FouleesChooseFamilyPending = {
   type: 'choose_family';

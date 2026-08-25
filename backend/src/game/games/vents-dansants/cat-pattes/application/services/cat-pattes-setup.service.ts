@@ -1,12 +1,12 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { PlayerStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { PlayerStateEntity } from '../../../../../core/application/models/game-state.model';
 
 import {
   getRngMeta,
   getSafePlayers,
-} from '../../../../../application/helpers/setup-service.helper';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
+} from '../../../../../core/application/helpers/setup-service.helper';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import { CAT_PATTES_DECK } from '../../model/cat-pattes-cards';
 import type {
   CatPattesBotType,

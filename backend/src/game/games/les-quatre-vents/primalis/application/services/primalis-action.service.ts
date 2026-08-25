@@ -1,10 +1,10 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
 
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
 import type {
   PrimalisMetadata,
   PrimalisResources,
@@ -14,7 +14,7 @@ import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
 import {
   asPrimalisPartialMeta,
   computePrimalisScore,

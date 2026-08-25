@@ -1,4 +1,4 @@
-import { GameStateEntity } from '../../../application/models/game-state.model';
+import { GameStateEntity } from '../../../core/application/models/game-state.model';
 import { PanierExpressMetadata } from './model/panier-express-state.model';
 import {
   asRecord,

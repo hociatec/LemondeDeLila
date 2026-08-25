@@ -1,10 +1,10 @@
-import { RandomService } from '../../../../application/services/random.service';
-import { TurnFlowService } from '../../../../application/services/turn-flow.service';
-import { TurnService } from '../../../../application/services/turn.service';
-import { TurnPoliciesService } from '../../../../application/services/turn-policies.service';
-import { GameCoreService } from '../../../../application/services/game-core.service';
-import { DeckPoliciesService } from '../../../../application/features/deck-policies/services/deck-policies.service';
-import { SetupFlowService } from '../../../../application/services/setup-flow.service';
+import { RandomService } from '../../../../core/application/services/random.service';
+import { TurnFlowService } from '../../../../core/application/services/turn-flow.service';
+import { TurnService } from '../../../../core/application/services/turn.service';
+import { TurnPoliciesService } from '../../../../core/application/services/turn-policies.service';
+import { GameCoreService } from '../../../../core/application/services/game-core.service';
+import { DeckPoliciesService } from '../../../../deck-policies/application/services/deck-policies.service';
+import { SetupFlowService } from '../../../../core/application/services/setup-flow.service';
 import { GaloponsActionService } from '../application/services/galopons-action.service';
 import { GaloponsSetupService } from '../application/services/galopons-setup.service';
 import { GaloponsBotService } from '../application/services/galopons-bot.service';

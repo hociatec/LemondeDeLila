@@ -1,13 +1,13 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
 import {
   isRollActionType,
   normalizeActionType,
-} from '../../../../application/helpers/action-service.helper';
+} from '../../../../core/application/helpers/action-service.helper';
 import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
-} from '../../../../application/helpers/pawn-pending-rulebook.helper';
+} from '../../../../pawn-selection/public-api';
 import {
   getPendingCardChoiceActionsForPlayer,
   getPendingChooseTargetActionsForPlayer,
@@ -19,12 +19,12 @@ import {
   validatePendingDrawActionForActor,
   validatePendingNumberChoiceActionForActor,
   validatePendingStringChoiceActionForActor,
-} from '../../../../application/helpers/pending-actions-rulebook.helper';
+} from '../../../../core/application/helpers/pending-actions-rulebook.helper';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../domain/errors/public-api';
-import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+} from '../../../../core/domain/errors/public-api';
+import { isStartedState } from '../../../../core/application/helpers/rulebook-guard.helper';
 
 const GAME_TYPE = 'contes-et-cacahuetes';
 

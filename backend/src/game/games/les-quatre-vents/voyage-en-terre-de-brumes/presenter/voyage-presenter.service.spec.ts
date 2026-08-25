@@ -1,4 +1,4 @@
-import { BoardPayloadService } from '../../../../application/services/board-payload.service';
+import { BoardPayloadService } from '../../../../core/application/services/board-payload.service';
 import { VoyagePresenterService } from '../application/services/voyage-presenter.service';
 
 describe('VoyagePresenterService', () => {

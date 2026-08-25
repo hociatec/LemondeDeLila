@@ -1,10 +1,10 @@
 import * as Rulebook from '../../rulebook/rulebook';
 import { FouleesFantastiquesActionService } from './foulees-fantastiques-action.service';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { TurnService } from '../../../../../application/services/turn.service';
-import { TurnPoliciesService } from '../../../../../application/services/turn-policies.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { TurnService } from '../../../../../core/application/services/turn.service';
+import { TurnPoliciesService } from '../../../../../core/application/services/turn-policies.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
 
 describe('FouleesFantastiques scenario', () => {
   it('offers roll when nothing pending', () => {

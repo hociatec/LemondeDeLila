@@ -1,9 +1,9 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
+} from '../../../../../core/application/models/game-action.model';
+import { AbstractGameService } from '../../../../../core/application/services/abstract-game.service';
 import { CorridorSetupService } from './corridor-setup.service';
 import { CorridorActionService } from './corridor-action.service';
 import { CorridorPresenterService } from './corridor-presenter.service';
@@ -13,8 +13,8 @@ import * as CorridorRulebook from '../../rulebook/rulebook';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../application/models/game-shortcuts.model';
-import { interfaceShortcut } from '../../../../../application/helpers/shortcut-utils';
+} from '../../../../../shortcuts/public-api';
+import { interfaceShortcut } from '../../../../../shortcuts/public-api';
 import type { CorridorMetadata, CorridorPos } from '../../model/corridor.model';
 import type { CorridorWall } from '../../rulebook/rulebook';
 

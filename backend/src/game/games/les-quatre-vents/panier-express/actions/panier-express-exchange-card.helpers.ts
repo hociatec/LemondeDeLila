@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import type { PanierExpressUtils } from '../application/services/panier-express-utils.service';
 import type { PanierExpressPlayer } from '../model/panier-express-state.model';
 import {

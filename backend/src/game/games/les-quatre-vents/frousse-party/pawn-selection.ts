@@ -1,4 +1,4 @@
-import type { PendingState } from '../../../application/models/game-state.model';
+import type { PendingState } from '../../../core/application/models/game-state.model';
 import type { FrousseMetadata } from './model/frousse.types';
 import { formatPawnChoiceLabel, resolvePawnId } from './pawns.utils';
 

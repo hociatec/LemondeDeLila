@@ -1,12 +1,12 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../domain/errors/public-api';
+} from '../../../../core/domain/errors/public-api';
 import type { GerardPresidentMetadata } from '../model/gerard-president-state.model';
-import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
-import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+import { normalizeActionType } from '../../../../core/application/helpers/action-service.helper';
+import { isStartedState } from '../../../../core/application/helpers/rulebook-guard.helper';
 import {
   GERARD_PRESIDENT_GAME,
   type GerardPresidentActionType,

@@ -1,5 +1,5 @@
-import { BoardPayloadService } from '../../../application/services/board-payload.service';
-import type { GameStateEntity } from '../../../application/models/game-state.model';
+import { BoardPayloadService } from '../../../core/application/services/board-payload.service';
+import type { GameStateEntity } from '../../../core/application/models/game-state.model';
 import { AventureSauvagePresenterService } from '../../les-quatre-vents/aventure-sauvage/application/services/aventure-sauvage-presenter.service';
 import { AFondLesBallonsPresenterService } from '../../les-quatre-vents/a-fond-les-ballons/application/services/a-fond-les-ballons-presenter.service';
 import { CaPresenterService } from '../../les-quatre-vents/ca-derape/application/services/ca-presenter.service';
@@ -15,8 +15,8 @@ import { SacAMalicesPresenterService } from '../../les-quatre-vents/sac-a-malice
 import { ToutPresDeMamanPresenterService } from '../../les-quatre-vents/tout-pres-de-maman/application/services/tout-pres-de-maman-presenter.service';
 import { VoyagePresenterService } from '../../les-quatre-vents/voyage-en-terre-de-brumes/application/services/voyage-presenter.service';
 import { JeuOiePresenterService } from '../../vents-sacres/jeu-oie/application/services/jeu-oie-presenter.service';
-import { BoardMissionPresenterService } from '../../../application/services/board-mission/board-mission-presenter.service';
-import { BoardMissionRuntimeSupportService } from '../../../application/services/board-mission/board-mission-runtime-support.service';
+import { BoardMissionPresenterService } from '../../../core/application/services/board-mission/board-mission-presenter.service';
+import { BoardMissionRuntimeSupportService } from '../../../core/application/services/board-mission/board-mission-runtime-support.service';
 
 type PresenterCase = {
   label: string;

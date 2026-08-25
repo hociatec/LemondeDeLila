@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import type { ContesPending } from '../model/contes-et-cacahuetes-state.model';
 
 function asRecord(value: unknown): Record<string, unknown> {

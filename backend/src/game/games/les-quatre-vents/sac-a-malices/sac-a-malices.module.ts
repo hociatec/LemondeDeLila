@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { EngineServicesModule } from '../../../infrastructure/module/engine-services.module';
-import { SetupFlowModule } from '../../../application/modules/setup-flow.module';
-import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { EngineServicesModule } from '../../../core/infrastructure/module/engine-services.module';
+import { SetupFlowModule } from '../../../core/infrastructure/module/setup-flow.module';
+import { BoardGameDeckKitModule } from '../../../composition/board-game-kits.module';
 import { SacAMalicesService } from './application/services/sac-a-malices.service';
 import { SacAMalicesSetupService } from './application/services/sac-a-malices-setup.service';
 import { SacAMalicesActionService } from './application/services/sac-a-malices-action.service';

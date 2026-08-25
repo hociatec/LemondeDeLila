@@ -1,8 +1,8 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
+} from '../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
 import type { SacMetadata, SacTile } from '../model/sac-a-malices.types';
 
 export type SacPropertyChoiceKind =

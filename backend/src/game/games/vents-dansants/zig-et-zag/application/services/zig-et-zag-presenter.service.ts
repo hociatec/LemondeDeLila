@@ -1,10 +1,10 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
+} from '../../../../../core/application/models/game-action.model';
 
-import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
+import { formatPresenterActions } from '../../../../../core/application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
 import { ZIG_ET_ZAG_GAME } from '../../definitions/game.definition';
 import type { ZigEtZagMetadata } from '../../model/zig-et-zag-state.model';
@@ -12,7 +12,7 @@ import { ZIG_ET_ZAG_CARD_BY_ID } from '../../model/zig-et-zag-cards';
 import {
   buildLamaLikePanels,
   summarizeHandCounts,
-} from '../../../../../application/helpers/lamalike-presenter.helper';
+} from '../../../../../core/application/helpers/lamalike-presenter.helper';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'

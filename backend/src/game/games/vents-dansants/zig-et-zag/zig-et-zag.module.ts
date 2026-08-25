@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { BoardGameCoreKitModule } from '../../../module/board-game-kits.module';
-import { BotRunnerService } from '../../../application/services/bot-runner.service';
-import { GameCoreService } from '../../../application/services/game-core.service';
-import { RandomService } from '../../../application/services/random.service';
-import { TurnFlowService } from '../../../application/services/turn-flow.service';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { BoardGameCoreKitModule } from '../../../composition/board-game-kits.module';
+import { BotRunnerService } from '../../../core/application/services/bot-runner.service';
+import { GameCoreService } from '../../../core/application/services/game-core.service';
+import { RandomService } from '../../../core/application/services/random.service';
+import { TurnFlowService } from '../../../core/application/services/turn-flow.service';
 import { ZigEtZagActionService } from './application/services/zig-et-zag-action.service';
 import { ZigEtZagBotService } from './application/services/zig-et-zag-bot.service';
 import { ZigEtZagPresenterService } from './application/services/zig-et-zag-presenter.service';

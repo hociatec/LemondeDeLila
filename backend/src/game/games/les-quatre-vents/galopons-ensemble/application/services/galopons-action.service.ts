@@ -1,28 +1,28 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
 
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
 
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
 import {
   clearPendingState,
   createPendingState,
-} from '../../../../../application/services/pending-action.service';
-import { continueSequentialPawnSelection } from '../../../../../application/helpers/sequential-pawn-selection.helper';
-import { applyConfiguredPawnSelection } from '../../../../../application/helpers/configured-pawn-selection.helper';
-import { assignConfiguredBotPawns } from '../../../../../application/helpers/configured-pawn-setup.helper';
+} from '../../../../../core/application/services/pending-action.service';
+import { continueSequentialPawnSelection } from '../../../../../pawn-selection/public-api';
+import { applyConfiguredPawnSelection } from '../../../../../pawn-selection/public-api';
+import { assignConfiguredBotPawns } from '../../../../../pawn-selection/public-api';
 import type {
   GaloponsCard,
   GaloponsCardEffect,

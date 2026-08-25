@@ -1,6 +1,6 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
 import { MinuitActionService } from '../../application/services/minuit-action.service';
 import * as Rulebook from '../../rulebook/rulebook';
 

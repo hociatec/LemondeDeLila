@@ -1,5 +1,5 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { RandomService } from '../../../../../application/services/random.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { RandomService } from '../../../../../core/application/services/random.service';
 
 import type {
   PanierExpressDeckPool,

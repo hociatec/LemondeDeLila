@@ -1,6 +1,6 @@
 ﻿import { AFondLesBallonsActionService } from '../../application/services/a-fond-les-ballons-action.service';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
 
 describe('AFondLesBallonsActionService', () => {
   function createService(): AFondLesBallonsActionService {

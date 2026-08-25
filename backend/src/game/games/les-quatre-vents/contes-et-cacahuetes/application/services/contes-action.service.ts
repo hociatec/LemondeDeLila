@@ -1,15 +1,15 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
 
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { TurnPoliciesService } from '../../../../../application/services/turn-policies.service';
-import { continueSequentialPawnSelection } from '../../../../../application/helpers/sequential-pawn-selection.helper';
-import { applyConfiguredPawnSelection } from '../../../../../application/helpers/configured-pawn-selection.helper';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { TurnPoliciesService } from '../../../../../core/application/services/turn-policies.service';
+import { continueSequentialPawnSelection } from '../../../../../pawn-selection/public-api';
+import { applyConfiguredPawnSelection } from '../../../../../pawn-selection/public-api';
 import { fixMojibakeDeep } from '../../../../../../common/utils/public-api';
 import { applyContesDrawAction } from '../../actions/contes-draw-action.helper';
 import {
@@ -109,7 +109,7 @@ import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
 import {
   buildContesCardFlowDeps,
   buildContesChoiceDeps,

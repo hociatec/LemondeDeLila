@@ -1,6 +1,6 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import type { PlayerStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import type { PlayerStateEntity } from '../../../../../core/application/models/game-state.model';
 
 import type { LamaMetadata } from '../../model/lama.model';
 import { LamaSharedService } from './lama-shared.service';
@@ -16,7 +16,7 @@ import { LamaLogService } from './lama-log.service';
 import {
   applyActionsSequentially,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
 import { asLamaRecord } from './lama-action.utils';
 import {
   effectiveLamaStep,

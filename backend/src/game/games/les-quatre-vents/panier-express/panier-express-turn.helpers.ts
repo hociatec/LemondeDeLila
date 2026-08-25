@@ -1,8 +1,8 @@
 import {
   GameStateEntity,
   PlayerStateEntity,
-} from '../../../application/models/game-state.model';
-import { GameSingleActionDto } from '../../../application/models/game-action.model';
+} from '../../../core/application/models/game-state.model';
+import { GameSingleActionDto } from '../../../core/application/models/game-action.model';
 import {
   PanierExpressMetadata,
   PanierExpressPlayer,

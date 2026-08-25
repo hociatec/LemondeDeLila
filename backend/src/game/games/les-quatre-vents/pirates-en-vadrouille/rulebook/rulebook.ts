@@ -1,19 +1,19 @@
-﻿import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../domain/errors/public-api';
+} from '../../../../core/domain/errors/public-api';
 import { PIRATES_GAME } from '../definitions/pirates-en-vadrouille.definition';
 import {
   isRollAlias,
   normalizeActionType,
-} from '../../../../application/helpers/action-service.helper';
-import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+} from '../../../../core/application/helpers/action-service.helper';
+import { isStartedState } from '../../../../core/application/helpers/rulebook-guard.helper';
 import {
   getPendingChooseTargetActionsForPlayer,
   validatePendingChooseTargetActionForActor,
-} from '../../../../application/helpers/pending-actions-rulebook.helper';
+} from '../../../../core/application/helpers/pending-actions-rulebook.helper';
 import type { PiratesEnVadrouilleActionType } from '../definitions/pirates-en-vadrouille.definition';
 
 function asRecord(value: unknown): Record<string, unknown> {

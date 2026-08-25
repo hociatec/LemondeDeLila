@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import { ArcheDeMnemosyneService } from './arche-de-mnemosyne.service';
 import { ArcheMnemoStateService } from './arche-mnemo-state.service';
 

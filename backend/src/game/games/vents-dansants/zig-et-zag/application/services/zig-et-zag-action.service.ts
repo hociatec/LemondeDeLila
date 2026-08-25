@@ -1,10 +1,10 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import { resolvePlayerName } from '../../../../../application/helpers/player-name.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import { resolvePlayerName } from '../../../../../core/application/helpers/player-name.helper';
 
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { RandomService } from '../../../../../application/services/random.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import type {
   ZigEtZagMetadata,
   ZigEtZagRoundState,
@@ -14,7 +14,7 @@ import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeLowerActionType,
-} from '../../../../../application/helpers/action-service.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
 
 import {
   ZIG_ET_ZAG_CARD_BY_ID,

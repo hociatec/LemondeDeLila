@@ -1,12 +1,12 @@
-﻿import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import { PlayerActionError } from '../../../../domain/errors/public-api';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import { PlayerActionError } from '../../../../core/domain/errors/public-api';
 import { PRIMALIS_GAME } from '../definitions/primalis.definition';
 import {
   isRollAlias,
   normalizeActionType,
-} from '../../../../application/helpers/action-service.helper';
-import { canPlayerActOnTurn } from '../../../../application/helpers/rulebook-guard.helper';
+} from '../../../../core/application/helpers/action-service.helper';
+import { canPlayerActOnTurn } from '../../../../core/application/helpers/rulebook-guard.helper';
 import type { PrimalisActionType } from '../definitions/primalis.definition';
 
 function isPrimalisActionType(value: string): value is PrimalisActionType {

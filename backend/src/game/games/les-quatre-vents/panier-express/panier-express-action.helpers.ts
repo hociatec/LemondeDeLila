@@ -1,5 +1,5 @@
-import { GameStateEntity } from '../../../application/models/game-state.model';
-import { GameSingleActionDto } from '../../../application/models/game-action.model';
+import { GameStateEntity } from '../../../core/application/models/game-state.model';
+import { GameSingleActionDto } from '../../../core/application/models/game-action.model';
 import { PanierExpressMetadata } from './model/panier-express-state.model';
 import { asRecord, toText } from './panier-express-state.helpers';
 

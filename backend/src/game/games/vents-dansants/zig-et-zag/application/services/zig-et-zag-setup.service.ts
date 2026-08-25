@@ -1,11 +1,11 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { PlayerStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { PlayerStateEntity } from '../../../../../core/application/models/game-state.model';
 
 import {
   getRngMeta,
   getSafePlayers,
-} from '../../../../../application/helpers/setup-service.helper';
-import { RandomService } from '../../../../../application/services/random.service';
+} from '../../../../../core/application/helpers/setup-service.helper';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import { ZIG_ET_ZAG_DECK } from '../../model/zig-et-zag-cards';
 import type { ZigEtZagMetadata } from '../../model/zig-et-zag-state.model';
 import { buildInitialRoundState } from '../../round-state.helper';

@@ -1,7 +1,7 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 
-import { getSafePlayers } from '../../../../../application/helpers/setup-service.helper';
-import { RandomService } from '../../../../../application/services/random.service';
+import { getSafePlayers } from '../../../../../core/application/helpers/setup-service.helper';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import {
   ENTRE_RITES_CARD_BY_ID,
   ENTRE_RITES_DECK,

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { BoardGameDeckKitModule } from '../../../composition/board-game-kits.module';
 import { PimpMyRideActionService } from './application/services/pimp-my-ride-action.service';
 import { PimpMyRideSetupService } from './application/services/pimp-my-ride-setup.service';
 import { PimpMyRidePresenterService } from './application/services/pimp-my-ride-presenter.service';

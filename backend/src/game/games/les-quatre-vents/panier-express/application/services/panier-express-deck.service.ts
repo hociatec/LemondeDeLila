@@ -1,12 +1,12 @@
 import {
   DeckPoolService,
   DeckPoolState,
-} from '../../../../../application/services/deck-pool.service';
+} from '../../../../../cards/public-api';
 import {
   PanierExpressDeckPool,
   PanierExpressMetadata,
 } from '../../model/panier-express-state.model';
-import { RandomService } from '../../../../../application/services/random.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
 
 export class PanierExpressDeckService {
   constructor(

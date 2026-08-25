@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type { LamaMetadata, LamaRoundStep } from '../../model/lama.model';
 
 function normalized(value: unknown): string {

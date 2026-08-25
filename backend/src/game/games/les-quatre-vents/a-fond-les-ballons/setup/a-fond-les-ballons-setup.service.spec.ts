@@ -1,6 +1,6 @@
-import { GameCoreService } from '../../../../application/services/game-core.service';
-import { RandomService } from '../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../application/services/setup-flow.service';
+import { GameCoreService } from '../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../../core/application/services/setup-flow.service';
 import { AFondLesBallonsSetupService } from '../application/services/a-fond-les-ballons-setup.service';
 
 function makeBase(players = 3) {

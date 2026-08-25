@@ -1,28 +1,28 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Injectable } from '@nestjs/common';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../application/models/game-action.model';
-import type { GameRulesAdapter } from '../../../../application/contracts/game-rules-adapter.interface';
+} from '../../../../core/application/models/game-action.model';
+import type { GameRulesAdapter } from '../../../../core/application/contracts/game-rules-adapter.interface';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../application/models/game-shortcuts.model';
+} from '../../../../shortcuts/public-api';
 import { GameRegistryService } from '../../../../engine/public-api';
-import { buildBoardMissionShortcuts } from '../../../../application/helpers/board-mission.shortcuts';
+import { buildBoardMissionShortcuts } from '../../../../core/application/helpers/board-mission.shortcuts';
 import {
   getBoardMissionAvailableActions,
   validateBoardMissionAction,
-} from '../../../../application/services/board-mission/board-mission.rulebook';
-import { BoardMissionEngineService } from '../../../../application/services/board-mission/board-mission-engine.service';
-import { BoardMissionPresenterService } from '../../../../application/services/board-mission/board-mission-presenter.service';
-import { BoardMissionSetupService } from '../../../../application/services/board-mission/board-mission-setup.service';
-import { BoardMissionBotService } from '../../../../application/services/board-mission/board-mission-bot.service';
-import { BoardMissionModelLoaderService } from '../../../../infrastructure/system/board-mission-model-loader.service';
-import type { BoardMissionGameMetadata } from '../../../../application/models/board-mission.model';
+} from '../../../../core/application/services/board-mission/board-mission.rulebook';
+import { BoardMissionEngineService } from '../../../../core/application/services/board-mission/board-mission-engine.service';
+import { BoardMissionPresenterService } from '../../../../core/application/services/board-mission/board-mission-presenter.service';
+import { BoardMissionSetupService } from '../../../../core/application/services/board-mission/board-mission-setup.service';
+import { BoardMissionBotService } from '../../../../core/application/services/board-mission/board-mission-bot.service';
+import { BoardMissionModelLoaderService } from '../../../../core/infrastructure/system/board-mission-model-loader.service';
+import type { BoardMissionGameMetadata } from '../../../../core/application/models/board-mission.model';
 
 type BoardMissionManifest = {
   code?: string;

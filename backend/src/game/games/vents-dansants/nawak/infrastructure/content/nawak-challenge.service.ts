@@ -1,8 +1,8 @@
 import { Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import { RandomService } from '../../../../../application/services/random.service';
-import { GameNotFoundError } from '../../../../../domain/errors/game-domain.errors';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { GameNotFoundError } from '../../../../../core/domain/errors/game-domain.errors';
 import type { NawakChallenge } from '../../model/nawak-challenge.model';
 import type { NawakMetadata } from '../../model/nawak-state.model';
 

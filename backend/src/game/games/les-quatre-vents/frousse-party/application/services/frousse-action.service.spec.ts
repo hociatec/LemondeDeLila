@@ -1,11 +1,11 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { BoardEffectsPoliciesService } from '../../../../../application/features/board-effects-policies/services/board-effects-policies.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
-import { TurnPoliciesService } from '../../../../../application/services/turn-policies.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { TurnService } from '../../../../../application/services/turn.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { BoardEffectsPoliciesService } from '../../../../../board-effects-policies/application/services/board-effects-policies.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
+import { TurnPoliciesService } from '../../../../../core/application/services/turn-policies.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { TurnService } from '../../../../../core/application/services/turn.service';
 import { FrousseActionService } from '../../application/services/frousse-action.service';
 import * as Rulebook from '../../rulebook/rulebook';
 

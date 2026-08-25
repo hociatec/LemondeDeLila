@@ -1,10 +1,10 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 
 import {
   getRngMeta,
   getSafePlayers,
-} from '../../../../../application/helpers/setup-service.helper';
-import { RandomService } from '../../../../../application/services/random.service';
+} from '../../../../../core/application/helpers/setup-service.helper';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import {
   DAME_NATURE_CARD_BY_ID,
   DAME_NATURE_FAMILY_CARD_IDS,

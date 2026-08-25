@@ -1,16 +1,16 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
+} from '../../../../../core/application/helpers/action-service.helper';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
 import type { OdysseeMetadata } from '../../model/odyssee.types';
 import {
   asOdysseePartialMeta,

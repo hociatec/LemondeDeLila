@@ -1,19 +1,19 @@
-﻿import type {
+import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
 
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
 
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
 import { SacAMalicesSetupService } from './sac-a-malices-setup.service';
 import type {
   SacCard,

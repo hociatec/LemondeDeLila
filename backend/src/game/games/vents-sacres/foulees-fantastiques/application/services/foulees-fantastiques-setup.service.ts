@@ -1,10 +1,10 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 
-import { getSafePlayers } from '../../../../../application/helpers/setup-service.helper';
-import { loadV1Content } from '../../../../../application/helpers/content-loader.helper';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { GameContentLoaderService } from '../../../../../application/services/game-content-loader.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
+import { getSafePlayers } from '../../../../../core/application/helpers/setup-service.helper';
+import { loadV1Content } from '../../../../../core/application/helpers/content-loader.helper';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { GameContentLoaderService } from '../../../../../core/application/services/game-content-loader.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
 import {
   FOULEES_FAMILY_PACKS,
   FOULEES_FAMILY_PENDING_LABEL,

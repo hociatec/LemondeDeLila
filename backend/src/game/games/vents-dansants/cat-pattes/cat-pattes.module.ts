@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { TurnPoliciesModule } from '../../../application/modules/turn-policies.module';
-import { PromptPoliciesModule } from '../../../application/modules/prompt-policies.module';
-import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
-import { GameCoreService } from '../../../application/services/game-core.service';
-import { TurnFlowService } from '../../../application/services/turn-flow.service';
-import { DeckPoliciesService } from '../../../application/features/deck-policies/services/deck-policies.service';
-import { RandomService } from '../../../application/services/random.service';
-import { TurnPoliciesService } from '../../../application/services/turn-policies.service';
-import { PromptPoliciesService } from '../../../application/services/prompt-policies.service';
-import { BotRunnerService } from '../../../application/services/bot-runner.service';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { TurnPoliciesModule } from '../../../core/infrastructure/module/turn-policies.module';
+import { PromptsModule } from '../../../prompts/public-api';
+import { BoardGameDeckKitModule } from '../../../composition/board-game-kits.module';
+import { GameCoreService } from '../../../core/application/services/game-core.service';
+import { TurnFlowService } from '../../../core/application/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../deck-policies/application/services/deck-policies.service';
+import { RandomService } from '../../../core/application/services/random.service';
+import { TurnPoliciesService } from '../../../core/application/services/turn-policies.service';
+import { PromptPoliciesService } from '../../../prompts/public-api';
+import { BotRunnerService } from '../../../core/application/services/bot-runner.service';
 import { CatPattesService } from './application/services/cat-pattes.service';
 import { CatPattesSetupService } from './application/services/cat-pattes-setup.service';
 import { CatPattesActionService } from './application/services/cat-pattes-action.service';
@@ -21,7 +21,7 @@ import { CatPattesBotService } from './application/services/cat-pattes-bot.servi
     GameCoreModule,
     BoardGameDeckKitModule,
     TurnPoliciesModule,
-    PromptPoliciesModule,
+    PromptsModule,
   ],
   providers: [
     DeckPoliciesService,

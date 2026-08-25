@@ -1,14 +1,14 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+} from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
 import type { LamaMetadata } from '../../model/lama.model';
 import { LamaSharedService } from './lama-shared.service';
 import { LamaRoundService } from './lama-round.service';
 import { LamaLogService } from './lama-log.service';
-import { createPendingState } from '../../../../../application/services/pending-action.service';
-import { optionalInt } from '../../../../../application/helpers/payload-validators.helper';
+import { createPendingState } from '../../../../../core/application/services/pending-action.service';
+import { optionalInt } from '../../../../../core/application/helpers/payload-validators.helper';
 
 export class LamaReturnService {
   constructor(

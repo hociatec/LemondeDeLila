@@ -1,9 +1,9 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import type { LamaMetadata } from '../../model/lama.model';
-import { createPendingState } from '../../../../../application/services/pending-action.service';
+import { createPendingState } from '../../../../../core/application/services/pending-action.service';
 import { LamaLogService } from './lama-log.service';
 import { LamaRoundRules } from './lama-round.rules';
 import { LamaSharedService } from './lama-shared.service';

@@ -1,7 +1,7 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import { BotRunnerService } from '../../../../../application/services/bot-runner.service';
-import { RandomService } from '../../../../../application/services/random.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import { BotRunnerService } from '../../../../../core/application/services/bot-runner.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import * as Rulebook from '../../rulebook/rulebook';
 import {
   CERCLES_SACRES_CARD_BY_ID,

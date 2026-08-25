@@ -1,7 +1,7 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import { GameCoreService } from '../../../../application/services/game-core.service';
-import { RandomService } from '../../../../application/services/random.service';
-import { DeckPoliciesService } from '../../../../application/features/deck-policies/services/deck-policies.service';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import { GameCoreService } from '../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../core/application/services/random.service';
+import { DeckPoliciesService } from '../../../../deck-policies/application/services/deck-policies.service';
 import { SacAMalicesActionService } from '../application/services/sac-a-malices-action.service';
 import { SacAMalicesPropertyService } from '../application/services/sac-a-malices-property.service';
 import { SacAMalicesEconomyService } from '../application/services/sac-a-malices-economy.service';

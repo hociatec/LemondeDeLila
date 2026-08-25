@@ -1,7 +1,7 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import type { LamaCardValue, LamaMetadata } from '../../model/lama.model';
 import {
   lamaCardLabel,

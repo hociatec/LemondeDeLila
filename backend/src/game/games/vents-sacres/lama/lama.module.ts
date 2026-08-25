@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { RandomService } from '../../../application/services/random.service';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { RandomGameCoreKitModule } from '../../../module/board-game-kits.module';
+import { RandomService } from '../../../core/application/services/random.service';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { RandomGameCoreKitModule } from '../../../composition/board-game-kits.module';
 import { LamaPresenter } from './application/services/lama.presenter';
 import { LamaService } from './application/services/lama.service';
 import { LamaSharedService } from './application/services/lama-shared.service';

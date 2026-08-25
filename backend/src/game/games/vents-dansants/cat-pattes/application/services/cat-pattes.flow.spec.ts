@@ -1,9 +1,9 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
-import { TurnPoliciesService } from '../../../../../application/services/turn-policies.service';
-import type { TurnFlowService } from '../../../../../application/services/turn-flow.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
+import { TurnPoliciesService } from '../../../../../core/application/services/turn-policies.service';
+import type { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
 import { CatPattesActionService } from './cat-pattes-action.service';
 import { CatPattesSetupService } from './cat-pattes-setup.service';
 import { CatPattesPresenterService } from './cat-pattes-presenter.service';

@@ -1,7 +1,7 @@
 import type {
   GameStateEntity,
   PlayerStateEntity,
-} from '../../../../application/models/game-state.model';
+} from '../../../../core/application/models/game-state.model';
 
 type ResolvePendingPawnChoiceResult = {
   playerId: number;

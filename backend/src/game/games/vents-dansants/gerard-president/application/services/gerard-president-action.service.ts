@@ -1,17 +1,17 @@
 import type {
   GameStateEntity,
   PlayerStateEntity,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
 
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
 
-import { RandomService } from '../../../../../application/services/random.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
 import { GERARD_PRESIDENT_SPECIAL_CARDS } from '../../model/gerard-president-cards';
 import type { GerardPresidentMetadata } from '../../model/gerard-president-state.model';
 import { type GerardPresidentActionType } from '../../definitions/game.definition';

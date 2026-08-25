@@ -1,9 +1,9 @@
-﻿import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../domain/errors/public-api';
+} from '../../../../core/domain/errors/public-api';
 import {
   FROUSSE_GAME,
   type FrousseActionType,
@@ -12,19 +12,19 @@ import { resolvePawnId } from '../pawns.utils';
 import {
   normalizeActionType,
   normalizeLegacyRollAliasToUpper,
-} from '../../../../application/helpers/action-service.helper';
+} from '../../../../core/application/helpers/action-service.helper';
 import {
   getPendingPawnActionsForPlayer,
   validatePendingPawnActionForActor,
-} from '../../../../application/helpers/pawn-pending-rulebook.helper';
+} from '../../../../pawn-selection/public-api';
 import {
   getPendingChooseTargetActionsForPlayer,
   getPendingDrawActionsForPlayer,
   validatePendingChooseTargetActionForActor,
   validatePendingDrawActionForActor,
-} from '../../../../application/helpers/pending-actions-rulebook.helper';
-import { toPlayerId } from '../../../../application/helpers/player-id.helper';
-import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+} from '../../../../core/application/helpers/pending-actions-rulebook.helper';
+import { toPlayerId } from '../../../../core/application/helpers/player-id.helper';
+import { isStartedState } from '../../../../core/application/helpers/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,

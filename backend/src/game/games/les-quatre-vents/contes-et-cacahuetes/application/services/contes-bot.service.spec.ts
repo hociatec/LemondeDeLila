@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import { ContesBotService } from '../../application/services/contes-bot.service';
 
 function makeState(overrides: Partial<GameStateEntity> = {}): GameStateEntity {

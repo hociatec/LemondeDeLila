@@ -1,10 +1,10 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
-import type { TurnFlowService } from '../../../../../application/services/turn-flow.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { BoardPayloadService } from '../../../../../core/application/services/board-payload.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
+import type { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
 import { ContesActionService } from './contes-action.service';
 import { ContesPresenterService } from './contes-presenter.service';
 import { ContesTargetingService } from './contes-targeting.service';

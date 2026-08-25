@@ -1,5 +1,5 @@
-import type { GameShortcutsBuilder } from '../../../application/models/game-shortcuts.model';
-import { actionShortcut } from '../../../application/helpers/shortcut-utils';
+import type { GameShortcutsBuilder } from '../../../shortcuts/public-api';
+import { actionShortcut } from '../../../shortcuts/public-api';
 
 export const buildCerclesSacresShortcuts: GameShortcutsBuilder = () => [
   actionShortcut('F', 'form_circle'),

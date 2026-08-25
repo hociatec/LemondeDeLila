@@ -1,4 +1,4 @@
-import type { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import type { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
 import type { PimpMyRideMetadata } from '../../model/pimp-my-ride-state.model';
 
 export function drawOnePimpMyRideCard(

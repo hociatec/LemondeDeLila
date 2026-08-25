@@ -11,7 +11,7 @@ import {
   MnemoQuizInvalidIdentifierError,
   MnemoQuizQuestionNotFoundError,
   MnemoQuizQuestionRequiredError,
-} from '../../../../../domain/errors/game-domain.errors';
+} from '../../../../../core/domain/errors/game-domain.errors';
 import type {
   MnemoQuestionStatus,
   MnemoQuizCategory,

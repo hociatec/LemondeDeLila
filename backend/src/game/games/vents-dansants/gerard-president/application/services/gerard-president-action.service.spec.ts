@@ -1,5 +1,5 @@
-﻿import { RandomService } from '../../../../../application/services/random.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
 import { GerardPresidentSetupService } from '../../application/services/gerard-president-setup.service';
 import { GerardPresidentActionService } from '../../application/services/gerard-president-action.service';
 import { GERARD_PRESIDENT_SPECIAL_CARDS } from '../../model/gerard-president-cards';

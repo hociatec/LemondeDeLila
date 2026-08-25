@@ -1,4 +1,4 @@
-import { GameStateEntity } from '../../../../engine/../application/models/game-state.model';
+import { GameStateEntity } from '../../../../engine/../core/application/models/game-state.model';
 import { FOULEES_FANTASTIQUES_GAME } from './game.definition';
 
 export const FOULEES_FANTASTIQUES_PHASES: Array<{

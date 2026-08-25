@@ -1,8 +1,8 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+} from '../../../../../core/application/models/game-state.model';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
 import { fixMojibakeString } from '../../../../../../common/utils/public-api';
 import type {
   FrousseCard,

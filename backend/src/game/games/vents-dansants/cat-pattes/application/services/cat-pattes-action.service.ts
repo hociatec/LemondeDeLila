@@ -1,14 +1,14 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { PlayerStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { PlayerStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
 
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { TurnPoliciesService } from '../../../../../application/services/turn-policies.service';
-import { PromptPoliciesService } from '../../../../../application/services/prompt-policies.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { TurnPoliciesService } from '../../../../../core/application/services/turn-policies.service';
+import { PromptPoliciesService } from '../../../../../prompts/public-api';
 import {
   CAT_PATTES_CARD_BY_ID,
   CatPattesBotType,
@@ -19,7 +19,7 @@ import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
 import type { CatPattesMetadata } from '../../model/cat-pattes-state.model';
 import {
   CAT_PATTES_DEFAULT_ROUNDS,

@@ -1,5 +1,5 @@
-import { GameLogEntry } from '../../../../../application/models/game-state.model';
-import { normalizeGameLogMessage } from '../../../../../application/helpers/log-style.helper';
+import { GameLogEntry } from '../../../../../core/application/models/game-state.model';
+import { normalizeGameLogMessage } from '../../../../../history/public-api';
 
 export class LamaLogService {
   append(log: GameLogEntry[] | undefined, message: string): GameLogEntry[] {

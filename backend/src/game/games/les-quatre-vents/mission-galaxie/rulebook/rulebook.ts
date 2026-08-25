@@ -1,14 +1,14 @@
-﻿import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import {
   normalizeActionType,
   normalizeLegacyRollAliasToUpper,
-} from '../../../../application/helpers/action-service.helper';
-import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+} from '../../../../core/application/helpers/action-service.helper';
+import { isStartedState } from '../../../../core/application/helpers/rulebook-guard.helper';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../domain/errors/public-api';
+} from '../../../../core/domain/errors/public-api';
 import {
   MISSION_GALAXIE_GAME,
   type MissionGalaxieActionType,
@@ -18,7 +18,7 @@ import {
   getPendingIndexedChoiceActionsForPlayer,
   validatePendingDrawActionForActor,
   validatePendingIndexedChoiceActionForActor,
-} from '../../../../application/helpers/pending-actions-rulebook.helper';
+} from '../../../../core/application/helpers/pending-actions-rulebook.helper';
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object'

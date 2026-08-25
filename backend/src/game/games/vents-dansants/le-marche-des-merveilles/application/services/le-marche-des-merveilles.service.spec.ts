@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import { LeMarcheDesMerveillesActionService } from '../../application/services/le-marche-des-merveilles-action.service';
 import { LeMarcheDesMerveillesSetupService } from '../../application/services/le-marche-des-merveilles-setup.service';
 import type { LeMarcheDesMerveillesMetadata } from '../../model/le-marche-des-merveilles-state.model';

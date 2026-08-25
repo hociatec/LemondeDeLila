@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { BoardGameCoreKitModule } from '../../../module/board-game-kits.module';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { BoardGameCoreKitModule } from '../../../composition/board-game-kits.module';
 import { NAWAK_CHALLENGE_PORT } from './application/ports/nawak-challenge.port';
 import { NawakActionService } from './application/services/nawak-action.service';
 import { NawakBotService } from './application/services/nawak-bot.service';

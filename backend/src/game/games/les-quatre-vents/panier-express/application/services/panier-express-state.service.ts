@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { GameStateEntity } from '../../../../../application/models/game-state.model';
+import { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   PanierExpressMetadata,
   PanierExpressPlayer,

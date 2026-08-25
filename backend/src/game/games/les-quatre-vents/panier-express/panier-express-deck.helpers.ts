@@ -1,4 +1,4 @@
-import { DeckPoolState } from '../../../application/services/deck-pool.service';
+import { DeckPoolState } from '../../../cards/public-api';
 import { PanierExpressDeckPool } from './model/panier-express-state.model';
 import { asRecord, toText } from './panier-express-state.helpers';
 

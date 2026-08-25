@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { BoardGameDeckKitModule } from '../../../composition/board-game-kits.module';
 import { BandeABananeActionService } from './application/services/la-bande-a-banane-action.service';
 import { BandeABananeBotService } from './application/services/la-bande-a-banane-bot.service';
 import { BandeABananePresenterService } from './application/services/la-bande-a-banane-presenter.service';

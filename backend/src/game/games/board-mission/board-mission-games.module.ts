@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../module/game-core.module';
-import { GameRegistryModule } from '../../module/game-registry.module';
-import { EngineServicesModule } from '../../infrastructure/module/engine-services.module';
-import { SetupFlowModule } from '../../application/modules/setup-flow.module';
-import { BoardGameDeckKitModule } from '../../module/board-game-kits.module';
-import { BoardMissionEngineService } from '../../application/services/board-mission/board-mission-engine.service';
-import { BoardMissionRuntimeSupportService } from '../../application/services/board-mission/board-mission-runtime-support.service';
-import { BoardMissionSetupService } from '../../application/services/board-mission/board-mission-setup.service';
-import { BoardMissionPresenterService } from '../../application/services/board-mission/board-mission-presenter.service';
-import { BoardMissionBotService } from '../../application/services/board-mission/board-mission-bot.service';
-import { BoardMissionModelLoaderService } from '../../infrastructure/system/board-mission-model-loader.service';
+import { GameCoreModule } from '../../core/infrastructure/module/game-core.module';
+import { GameRegistryModule } from '../../engine/infrastructure/module/game-registry.module';
+import { EngineServicesModule } from '../../core/infrastructure/module/engine-services.module';
+import { SetupFlowModule } from '../../core/infrastructure/module/setup-flow.module';
+import { BoardGameDeckKitModule } from '../../composition/board-game-kits.module';
+import { BoardMissionEngineService } from '../../core/application/services/board-mission/board-mission-engine.service';
+import { BoardMissionRuntimeSupportService } from '../../core/application/services/board-mission/board-mission-runtime-support.service';
+import { BoardMissionSetupService } from '../../core/application/services/board-mission/board-mission-setup.service';
+import { BoardMissionPresenterService } from '../../core/application/services/board-mission/board-mission-presenter.service';
+import { BoardMissionBotService } from '../../core/application/services/board-mission/board-mission-bot.service';
+import { BoardMissionModelLoaderService } from '../../core/infrastructure/system/board-mission-model-loader.service';
 import { BoardMissionRegistrarService } from './infrastructure/registry/board-mission-registrar.service';
 
 @Module({

@@ -1,4 +1,4 @@
-import { RandomService } from '../../../application/services/random.service';
+import { RandomService } from '../../../core/application/services/random.service';
 import { LamaActionService } from './application/services/lama-action.service';
 import { LamaBotService } from './application/services/lama-bot.service';
 import { LamaDrawService } from './application/services/lama-draw.service';

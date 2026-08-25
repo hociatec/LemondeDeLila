@@ -1,10 +1,10 @@
-import { BotRunnerService } from '../../../application/services/bot-runner.service';
-import { BotStrategyService } from '../../../application/services/bot-strategy.service';
-import { GameCoreService } from '../../../application/services/game-core.service';
-import { GridBlockedEdgesService } from '../../../application/features/grid/services/grid-blocked-edges.service';
-import { GridCellActionsService } from '../../../application/features/grid/services/grid-cell-actions.service';
-import { RandomService } from '../../../application/services/random.service';
-import { SetupFlowService } from '../../../application/services/setup-flow.service';
+import { BotRunnerService } from '../../../core/application/services/bot-runner.service';
+import { BotStrategyService } from '../../../core/application/services/bot-strategy.service';
+import { GameCoreService } from '../../../core/application/services/game-core.service';
+import { GridBlockedEdgesService } from '../../../grid/application/services/grid-blocked-edges.service';
+import { GridCellActionsService } from '../../../grid/application/services/grid-cell-actions.service';
+import { RandomService } from '../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../core/application/services/setup-flow.service';
 import { CorridorActionService } from './application/services/corridor-action.service';
 import { CorridorBotService } from './application/services/corridor-bot.service';
 import { CorridorPresenterService } from './application/services/corridor-presenter.service';

@@ -1,4 +1,4 @@
-import { GameStateEntity } from '../../../../application/models/game-state.model';
+import { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import { PANIER_EXPRESS_GAME } from './game.definition';
 
 export const PANIER_EXPRESS_PHASES: Array<{

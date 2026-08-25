@@ -1,13 +1,13 @@
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
+} from '../../../../../core/application/models/game-action.model';
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
-import { BasePresenterService } from '../../../../../application/services/base-presenter.service';
-import { GridCellActionsService } from '../../../../../application/features/grid/services/grid-cell-actions.service';
+} from '../../../../../core/application/models/game-state.model';
+import { BasePresenterService } from '../../../../../core/application/services/base-presenter.service';
+import { GridCellActionsService } from '../../../../../grid/application/services/grid-cell-actions.service';
 import type { MorpionMetadata } from '../../model/morpion.model';
 import { MORPION_PAWNS } from '../../definitions/morpion.pawns';
 

@@ -3,7 +3,7 @@ import { CorridorSetupService } from '../../application/services/corridor-setup.
 import { CorridorActionService } from '../../application/services/corridor-action.service';
 import { CorridorPresenterService } from '../../application/services/corridor-presenter.service';
 import * as CorridorRulebook from '../../rulebook/rulebook';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
 
 function createSvc(): CorridorService {
   const core = {

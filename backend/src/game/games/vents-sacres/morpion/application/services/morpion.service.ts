@@ -1,33 +1,33 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
+} from '../../../../../core/application/models/game-action.model';
+import { AbstractGameService } from '../../../../../core/application/services/abstract-game.service';
 import type { MorpionMetadata } from '../../model/morpion.model';
 import { MorpionPresenter } from './morpion.presenter';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../application/models/game-shortcuts.model';
-import { interfaceShortcut } from '../../../../../application/helpers/shortcut-utils';
+} from '../../../../../shortcuts/public-api';
+import { interfaceShortcut } from '../../../../../shortcuts/public-api';
 import {
   applyActionsSequentially,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
 import {
   starterTurnAnnouncement,
   victoryAnnouncement,
-} from '../../../../../application/helpers/game-log-text.helper';
-import { normalizeGameLogMessage } from '../../../../../application/helpers/log-style.helper';
+} from '../../../../../history/public-api';
+import { normalizeGameLogMessage } from '../../../../../history/public-api';
 import { MORPION_PAWNS } from '../../definitions/morpion.pawns';
 import { nextRngInt } from '../../../../../../common/utils/public-api';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
 import {
   assignConfiguredBotPawns,
   queueConfiguredPawnSelection,
-} from '../../../../../application/helpers/configured-pawn-setup.helper';
+} from '../../../../../pawn-selection/public-api';
 
 type MorpionPlayer = {
   id: number;

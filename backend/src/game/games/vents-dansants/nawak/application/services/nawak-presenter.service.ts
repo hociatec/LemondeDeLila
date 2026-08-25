@@ -1,12 +1,12 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
-import { resolvePlayerName } from '../../../../../application/helpers/player-name.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameStateWithActions } from '../../../../../core/application/models/game-action.model';
+import { resolvePlayerName } from '../../../../../core/application/helpers/player-name.helper';
 
-import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
+import { formatPresenterActions } from '../../../../../core/application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
 import { NAWAK_GAME } from '../../definitions/game.definition';
 import type { NawakMetadata } from '../../model/nawak-state.model';
-import { buildLamaLikePanels } from '../../../../../application/helpers/lamalike-presenter.helper';
+import { buildLamaLikePanels } from '../../../../../core/application/helpers/lamalike-presenter.helper';
 
 export class NawakPresenterService {
   exposeStateForUser(

@@ -1,8 +1,8 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../application/models/game-state.model';
-import type { DeckPoolState } from '../../../../application/services/deck-pool.service';
+} from '../../../../core/application/models/game-state.model';
+import type { DeckPoolState } from '../../../../cards/public-api';
 import type {
   PanierExpressDeckPool,
   PanierExpressMetadata,

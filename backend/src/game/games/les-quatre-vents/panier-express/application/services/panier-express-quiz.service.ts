@@ -1,15 +1,15 @@
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { GameStateEntity } from '../../../../../application/models/game-state.model';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import {
   QuizRunnerService,
   QuizQuestion,
   QuizState,
-} from '../../../../../application/features/quiz/services/quiz-runner.service';
+} from '../../../../../quiz/application/services/quiz-runner.service';
 import {
   DeckPoolService,
   DeckPoolState,
-} from '../../../../../application/services/deck-pool.service';
-import { RandomService } from '../../../../../application/services/random.service';
+} from '../../../../../cards/public-api';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import { sanitizeText } from '../../../../../../common/utils/public-api';
 import {
   PanierExpressMetadata,

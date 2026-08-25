@@ -1,11 +1,11 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import { GameContentLoaderService } from '../../../../../engine/public-api';
-import { RandomService } from '../../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { loadV1Content } from '../../../../../application/helpers/content-loader.helper';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { loadV1Content } from '../../../../../core/application/helpers/content-loader.helper';
 import { ensureSeededRng } from '../../../../../../common/utils/public-api';
 import { seededShuffle } from '../../../../../../common/utils/public-api';
 import type {

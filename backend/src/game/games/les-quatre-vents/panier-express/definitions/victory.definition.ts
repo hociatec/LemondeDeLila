@@ -1,5 +1,5 @@
-import { GameStateEntity } from '../../../../application/models/game-state.model';
-import { VictoryCondition } from '../../../../application/features/victory/services/victory.service';
+import { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import { VictoryCondition } from '../../../../victory/application/services/victory.service';
 import type {
   PanierExpressMetadata,
   PanierExpressPlayer,

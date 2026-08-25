@@ -1,12 +1,12 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
+} from '../../../../../core/application/models/game-action.model';
+import { formatPresenterActions } from '../../../../../core/application/helpers/actions-presenter.helper';
 import type { MnemoQuizMetadata } from '../../model/mnemo-quiz.model';
 import type { ArcheMnemoStateService } from './arche-mnemo-state.service';
-import type { RandomService } from '../../../../../application/services/random.service';
+import type { RandomService } from '../../../../../core/application/services/random.service';
 import type { MnemoQuizStore } from '../ports/mnemo-quiz-store.port';
 
 type ArcheViewDeps = {

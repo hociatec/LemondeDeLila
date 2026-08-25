@@ -1,10 +1,10 @@
-import { BotRunnerService } from '../../../application/services/bot-runner.service';
-import { BotStrategyService } from '../../../application/services/bot-strategy.service';
-import { GameCoreService } from '../../../application/services/game-core.service';
-import { RandomService } from '../../../application/services/random.service';
-import { TurnFlowService } from '../../../application/services/turn-flow.service';
-import { TurnPoliciesService } from '../../../application/services/turn-policies.service';
-import { TurnService } from '../../../application/services/turn.service';
+import { BotRunnerService } from '../../../core/application/services/bot-runner.service';
+import { BotStrategyService } from '../../../core/application/services/bot-strategy.service';
+import { GameCoreService } from '../../../core/application/services/game-core.service';
+import { RandomService } from '../../../core/application/services/random.service';
+import { TurnFlowService } from '../../../core/application/services/turn-flow.service';
+import { TurnPoliciesService } from '../../../core/application/services/turn-policies.service';
+import { TurnService } from '../../../core/application/services/turn.service';
 import { LaParadeSucreeActionService } from './application/services/la-parade-sucree-action.service';
 import { LaParadeSucreeBotService } from './application/services/la-parade-sucree-bot.service';
 import { LaParadeSucreePresenterService } from './application/services/la-parade-sucree-presenter.service';

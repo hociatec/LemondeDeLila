@@ -3,16 +3,16 @@ import type {
   GameStateEntity,
   PendingState,
   PlayerStateEntity,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import type { LamaMetadata } from '../../model/lama.model';
 import { lamaCardScore } from '../../model/lama.model';
-import { RandomService } from '../../../../../application/services/random.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import { LamaLogService } from './lama-log.service';
 import { LamaSharedService } from './lama-shared.service';
 import { LamaRoundDealer } from './lama-round.dealer';
 import { LamaRoundRules } from './lama-round.rules';
 import { LamaRoundTransitionService } from './lama-round-transition.service';
-import { createPendingState } from '../../../../../application/services/pending-action.service';
+import { createPendingState } from '../../../../../core/application/services/pending-action.service';
 
 export class LamaRoundService {
   constructor(

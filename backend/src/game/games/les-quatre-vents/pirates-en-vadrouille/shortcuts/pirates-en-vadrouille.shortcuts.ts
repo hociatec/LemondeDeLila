@@ -1,9 +1,9 @@
-import type { GameShortcutsBuilder } from '../../../../application/models/game-shortcuts.model';
-import { positionOnlyShortcuts } from '../../../../application/helpers/shortcut-presets';
+import type { GameShortcutsBuilder } from '../../../../shortcuts/public-api';
+import { positionOnlyShortcuts } from '../../../../shortcuts/public-api';
 import {
   actionShortcut,
   interfaceShortcut,
-} from '../../../../application/helpers/shortcut-utils';
+} from '../../../../shortcuts/public-api';
 
 export const buildPiratesEnVadrouilleShortcuts: GameShortcutsBuilder = () => [
   ...positionOnlyShortcuts(),

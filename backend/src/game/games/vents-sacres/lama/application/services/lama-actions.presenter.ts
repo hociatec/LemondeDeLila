@@ -1,5 +1,5 @@
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type { LamaCardValue, LamaMetadata } from '../../model/lama.model';
 import { nextLamaValue, LAMA_VALUE } from '../../model/lama.model';
 import { isLamaDrawLocked } from '../policies/lama-draw.policy';

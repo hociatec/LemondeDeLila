@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { EngineServicesModule } from '../../../infrastructure/module/engine-services.module';
-import { SetupFlowModule } from '../../../application/modules/setup-flow.module';
-import { TurnPoliciesModule } from '../../../application/modules/turn-policies.module';
-import { PromptPoliciesModule } from '../../../application/modules/prompt-policies.module';
-import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
-import { GameCoreService } from '../../../application/services/game-core.service';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { EngineServicesModule } from '../../../core/infrastructure/module/engine-services.module';
+import { SetupFlowModule } from '../../../core/infrastructure/module/setup-flow.module';
+import { TurnPoliciesModule } from '../../../core/infrastructure/module/turn-policies.module';
+import { PromptsModule } from '../../../prompts/public-api';
+import { BoardGameDeckKitModule } from '../../../composition/board-game-kits.module';
+import { GameCoreService } from '../../../core/application/services/game-core.service';
 import { GameContentLoaderService } from '../../../engine/public-api';
-import { RandomService } from '../../../application/services/random.service';
-import { SetupFlowService } from '../../../application/services/setup-flow.service';
-import { DeckPoliciesService } from '../../../application/features/deck-policies/services/deck-policies.service';
-import { TurnFlowService } from '../../../application/services/turn-flow.service';
-import { TurnPoliciesService } from '../../../application/services/turn-policies.service';
-import { PromptPoliciesService } from '../../../application/services/prompt-policies.service';
-import { BoardPayloadService } from '../../../application/services/board-payload.service';
-import { BotRunnerService } from '../../../application/services/bot-runner.service';
+import { RandomService } from '../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../core/application/services/setup-flow.service';
+import { DeckPoliciesService } from '../../../deck-policies/application/services/deck-policies.service';
+import { TurnFlowService } from '../../../core/application/services/turn-flow.service';
+import { TurnPoliciesService } from '../../../core/application/services/turn-policies.service';
+import { PromptPoliciesService } from '../../../prompts/public-api';
+import { BoardPayloadService } from '../../../core/application/services/board-payload.service';
+import { BotRunnerService } from '../../../core/application/services/bot-runner.service';
 import { EnAttendantMinuitService } from './application/services/en-attendant-minuit.service';
 import { MinuitSetupService } from './application/services/minuit-setup.service';
 import { MinuitActionService } from './application/services/minuit-action.service';
@@ -28,7 +28,7 @@ import { MinuitBotService } from './application/services/minuit-bot.service';
     BoardGameDeckKitModule,
     SetupFlowModule,
     TurnPoliciesModule,
-    PromptPoliciesModule,
+    PromptsModule,
   ],
   providers: [
     DeckPoliciesService,

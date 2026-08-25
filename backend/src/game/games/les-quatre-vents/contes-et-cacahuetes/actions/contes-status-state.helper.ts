@@ -1,5 +1,5 @@
 import { fixMojibakeDeep } from '../../../../../common/utils/public-api';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import type {
   ContesCacahuetesMetadata,
   ContesPending,

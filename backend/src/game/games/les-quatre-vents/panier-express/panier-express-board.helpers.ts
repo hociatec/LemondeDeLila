@@ -1,9 +1,9 @@
 import {
   GameStateEntity,
   PendingState,
-} from '../../../application/models/game-state.model';
-import { TileEffectRegistryService } from '../../../application/features/effects/services/tile-effect-registry.service';
-import { StandEffectRegistryService } from '../../../application/features/effects/services/stand-effect-registry.service';
+} from '../../../core/application/models/game-state.model';
+import { TileEffectRegistryService } from '../../../effects/application/services/tile-effect-registry.service';
+import { StandEffectRegistryService } from '../../../effects/application/services/stand-effect-registry.service';
 import {
   PanierExpressMetadata,
   PanierExpressTile,

@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import type { SacMetadata, SacTile } from '../model/sac-a-malices.types';
 
 function clamp(value: number, min: number, max: number): number {

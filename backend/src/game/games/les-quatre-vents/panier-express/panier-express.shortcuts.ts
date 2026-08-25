@@ -1,6 +1,6 @@
-import type { GameShortcutsBuilder } from '../../../application/models/game-shortcuts.model';
+import type { GameShortcutsBuilder } from '../../../shortcuts/public-api';
 import type { PanierExpressMetadata } from './model/panier-express-state.model';
-import { interfaceShortcut } from '../../../application/helpers/shortcut-utils';
+import { interfaceShortcut } from '../../../shortcuts/public-api';
 
 export const buildPanierExpressShortcuts: GameShortcutsBuilder<
   PanierExpressMetadata

@@ -1,12 +1,12 @@
 import {
   GameStateEntity,
   PendingState,
-} from '../../../application/models/game-state.model';
+} from '../../../core/application/models/game-state.model';
 import {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../application/models/game-action.model';
-import { QuizQuestion } from '../../../application/features/quiz/services/quiz-runner.service';
+} from '../../../core/application/models/game-action.model';
+import { QuizQuestion } from '../../../quiz/application/services/quiz-runner.service';
 import { PanierExpressMetadata } from './model/panier-express-state.model';
 import { toPlayerIdValue } from './panier-express-state.helpers';
 

@@ -1,10 +1,10 @@
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { PendingState } from '../../../../../application/models/game-state.model';
-import { BasePresenterService } from '../../../../../application/services/base-presenter.service';
+} from '../../../../../core/application/models/game-action.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { PendingState } from '../../../../../core/application/models/game-state.model';
+import { BasePresenterService } from '../../../../../core/application/services/base-presenter.service';
 import type { LamaMetadata } from '../../model/lama.model';
 import { stringOrEmpty } from '@common/utils/public-api';
 import { LamaActionsPresenter } from './lama-actions.presenter';

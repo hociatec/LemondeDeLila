@@ -1,4 +1,4 @@
-import type { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import type { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
 
 import {
   DAME_NATURE_CARD_BY_ID,

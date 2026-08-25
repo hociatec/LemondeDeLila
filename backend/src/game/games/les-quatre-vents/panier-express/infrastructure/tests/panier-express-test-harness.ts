@@ -1,27 +1,26 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { DeckPoolService } from '../../../../../application/services/deck-pool.service';
-import { DeckManagerService } from '../../../../../application/services/deck-manager.service';
-import { BoardMovementService } from '../../../../../application/services/board-movement.service';
-import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
-import { TileEffectRegistryService } from '../../../../../application/features/effects/services/tile-effect-registry.service';
-import { StandEffectRegistryService } from '../../../../../application/features/effects/services/stand-effect-registry.service';
-import { TurnActionsService } from '../../../../../application/services/turn-actions.service';
-import { TurnService } from '../../../../../application/services/turn.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { TurnStatusService } from '../../../../../application/services/turn-status.service';
-import { TurnPoliciesService } from '../../../../../application/services/turn-policies.service';
-import { ActionResolverService } from '../../../../../application/features/action-resolver/services/action-resolver.service';
-import { QuizRunnerService } from '../../../../../application/features/quiz/services/quiz-runner.service';
-import { VictoryService } from '../../../../../application/features/victory/services/victory.service';
-import { ActionLogService } from '../../../../../application/features/actionlog/services/action-log.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { BotRunnerService } from '../../../../../application/services/bot-runner.service';
-import { InteractiveExchangeService } from '../../../../../application/features/exchange/services/interactive-exchange.service';
-import { GameContentLoaderService } from '../../../../../application/services/game-content-loader.service';
-import { FilesystemGameCatalogReader } from '../../../../../infrastructure/system/filesystem-game-catalog.reader';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { DeckPoolService, DeckManagerService } from '../../../../../cards/public-api';
+import { BoardMovementService } from '../../../../../core/application/services/board-movement.service';
+import { BoardPayloadService } from '../../../../../core/application/services/board-payload.service';
+import { TileEffectRegistryService } from '../../../../../effects/application/services/tile-effect-registry.service';
+import { StandEffectRegistryService } from '../../../../../effects/application/services/stand-effect-registry.service';
+import { TurnActionsService } from '../../../../../core/application/services/turn-actions.service';
+import { TurnService } from '../../../../../core/application/services/turn.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { TurnStatusService } from '../../../../../core/application/services/turn-status.service';
+import { TurnPoliciesService } from '../../../../../core/application/services/turn-policies.service';
+import { ActionResolverService } from '../../../../../action-resolver/application/services/action-resolver.service';
+import { QuizRunnerService } from '../../../../../quiz/application/services/quiz-runner.service';
+import { VictoryService } from '../../../../../victory/application/services/victory.service';
+import { ActionLogService } from '../../../../../actionlog/application/services/action-log.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { BotRunnerService } from '../../../../../core/application/services/bot-runner.service';
+import { InteractiveExchangeService } from '../../../../../exchange/application/services/interactive-exchange.service';
+import { GameContentLoaderService } from '../../../../../core/application/services/game-content-loader.service';
+import { FilesystemGameCatalogReader } from '../../../../../core/infrastructure/system/filesystem-game-catalog.reader';
 import { PanierExpressService } from '../../application/services/panier-express.service';
 import { PanierExpressSetupService } from '../../application/services/panier-express-setup.service';
 import { PanierExpressDrawService } from '../../application/services/panier-express-draw.service';
@@ -42,14 +41,14 @@ export async function createPanierExpressTestingModule() {
   const movement = new BoardMovementService();
   const boardPayload = new BoardPayloadService();
   const tileRegistry = new TileEffectRegistryService<
-    import('../../../../../application/models/game-state.model').GameStateEntity,
+    import('../../../../../core/application/models/game-state.model').GameStateEntity,
     {
       playerId: number;
       tile: import('../../model/panier-express-state.model').PanierExpressTile;
     }
   >();
   const standEffects = new StandEffectRegistryService<
-    import('../../../../../application/models/game-state.model').GameStateEntity
+    import('../../../../../core/application/models/game-state.model').GameStateEntity
   >(new TileEffectRegistryService());
   const turnActions = new TurnActionsService();
   const turnService = new TurnService();

@@ -1,7 +1,7 @@
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { BotRunnerService } from '../../../../../application/services/bot-runner.service';
-import { TurnStatusService } from '../../../../../application/services/turn-status.service';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { BotRunnerService } from '../../../../../core/application/services/bot-runner.service';
+import { TurnStatusService } from '../../../../../core/application/services/turn-status.service';
 import { playingLog } from '../../../../../../common/utils/public-api';
 import type {
   PanierExpressMetadata,

@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import { GerardPresidentPresenterService } from '../../application/services/gerard-president-presenter.service';
 import { GERARD_PRESIDENT_TARGET_SCORE } from '../../model/gerard-president-state.model';
 

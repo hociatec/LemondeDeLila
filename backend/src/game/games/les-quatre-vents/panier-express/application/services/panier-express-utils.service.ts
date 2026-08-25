@@ -1,7 +1,7 @@
 import {
   GameStateEntity,
   PlayerStateEntity,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import { PanierExpressPlayer } from '../../model/panier-express-state.model';
 
 /**

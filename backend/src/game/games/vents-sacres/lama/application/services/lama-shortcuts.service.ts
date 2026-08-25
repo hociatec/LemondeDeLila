@@ -1,11 +1,11 @@
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../application/models/game-shortcuts.model';
+} from '../../../../../shortcuts/public-api';
 import {
   actionShortcut,
   interfaceShortcut,
-} from '../../../../../application/helpers/shortcut-utils';
+} from '../../../../../shortcuts/public-api';
 import { LamaSharedService } from './lama-shared.service';
 import type { LamaMetadata } from '../../model/lama.model';
 import { isLamaDrawLocked } from '../policies/lama-draw.policy';

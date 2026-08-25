@@ -1,6 +1,6 @@
-import { normalizeActionType } from '../../../../application/helpers/action-service.helper';
-import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import { normalizeActionType } from '../../../../core/application/helpers/action-service.helper';
+import { isStartedState } from '../../../../core/application/helpers/rulebook-guard.helper';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import {
   GameActorRequiredError,
   GameActionRejectedError,
@@ -8,8 +8,8 @@ import {
   GameStateViolationError,
   GameTurnViolationError,
   GameUnknownActionError,
-} from '../../../../domain/errors/game-domain.errors';
-import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
+} from '../../../../core/domain/errors/game-domain.errors';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
 import {
   BANDE_A_BANANE_CARD_BY_ID,
   type BandeABananeCardDefinition,

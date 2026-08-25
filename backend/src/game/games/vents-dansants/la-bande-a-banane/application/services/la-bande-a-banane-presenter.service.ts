@@ -1,14 +1,14 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameStateWithActions } from '../../../../../core/application/models/game-action.model';
 
-import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
+import { formatPresenterActions } from '../../../../../core/application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
 import { BANDE_A_BANANE_GAME } from '../../definitions/game.definition';
 import type { BandeABananeMetadata } from '../../model/la-bande-a-banane-state.model';
 import {
   buildLamaLikePanels,
   summarizeHandCounts,
-} from '../../../../../application/helpers/lamalike-presenter.helper';
+} from '../../../../../core/application/helpers/lamalike-presenter.helper';
 
 export class BandeABananePresenterService {
   exposeStateForUser(

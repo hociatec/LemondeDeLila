@@ -1,14 +1,14 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameStateWithActions } from '../../../../../core/application/models/game-action.model';
 
-import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
+import { formatPresenterActions } from '../../../../../core/application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
 import { CAT_PATTES_GAME } from '../../definitions/game.definition';
 import type { CatPattesMetadata } from '../../model/cat-pattes-state.model';
 import { CAT_PATTES_CARD_BY_ID } from '../../model/cat-pattes-cards';
 import { CAT_PATTES_DEFAULT_ROUNDS } from '../../model/cat-pattes-state.model';
 import { stringOrEmpty } from '@common/utils/public-api';
-import { bindHandCardActions } from '../../../../../application/helpers/hand-cards-presenter.helper';
+import { bindHandCardActions } from '../../../../../cards/public-api';
 export class CatPattesPresenterService {
   private sanitizePlayerName(raw: unknown): string {
     return stringOrEmpty(raw).trim();

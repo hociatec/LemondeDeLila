@@ -1,18 +1,18 @@
 ﻿import { Inject } from '@nestjs/common';
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { RandomService } from '../../../../../application/services/random.service';
+} from '../../../../../core/application/models/game-action.model';
+import { AbstractGameService } from '../../../../../core/application/services/abstract-game.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import {
   actionShortcut,
   interfaceShortcut,
-} from '../../../../../application/helpers/shortcut-utils';
-import type { GameShortcutsContext } from '../../../../../application/models/game-shortcuts.model';
+} from '../../../../../shortcuts/public-api';
+import type { GameShortcutsContext } from '../../../../../shortcuts/public-api';
 import {
   MNEMO_QUIZ_STORE,
   type MnemoQuizStore,
@@ -21,7 +21,7 @@ import { ArcheMnemoStateService } from './arche-mnemo-state.service';
 import {
   applyActionsSequentially,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
 import type {
   MnemoAdminPage,
   MnemoPrompt,
@@ -29,7 +29,7 @@ import type {
   MnemoQuizConfig,
   MnemoQuizMetadata,
 } from '../../model/mnemo-quiz.model';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
 import { stringOrEmpty } from '@common/utils/public-api';
 import { applyArcheMnemoAdminAction } from '../../arche-mnemo-admin-action.helper';
 import {
@@ -52,7 +52,7 @@ import {
   GameConfigurationError,
   GamePayloadValidationError,
   GameTurnViolationError,
-} from '../../../../../domain/errors/game-domain.errors';
+} from '../../../../../core/domain/errors/game-domain.errors';
 
 type ActionType =
   | 'draw'

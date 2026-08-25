@@ -1,8 +1,8 @@
-import type { GameShortcutsBuilder } from '../../../application/models/game-shortcuts.model';
+import type { GameShortcutsBuilder } from '../../../shortcuts/public-api';
 import {
   interfaceShortcut,
   actionShortcut,
-} from '../../../application/helpers/shortcut-utils';
+} from '../../../shortcuts/public-api';
 
 export const buildSacAMalicesShortcuts: GameShortcutsBuilder = (ctx) => {
   const metaRecord =

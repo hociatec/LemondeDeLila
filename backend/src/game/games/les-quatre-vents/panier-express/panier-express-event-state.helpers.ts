@@ -1,5 +1,5 @@
-import { GameStateEntity } from '../../../application/models/game-state.model';
-import { PendingState } from '../../../application/models/game-state.model';
+import { GameStateEntity } from '../../../core/application/models/game-state.model';
+import { PendingState } from '../../../core/application/models/game-state.model';
 import { PanierExpressMetadata } from './model/panier-express-state.model';
 
 export function setPanierExpressPickPending(args: {

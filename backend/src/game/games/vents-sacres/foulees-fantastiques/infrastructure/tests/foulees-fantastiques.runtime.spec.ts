@@ -1,4 +1,4 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import { createFouleesFantastiquesRuntime } from '../../foulees-fantastiques.runtime';
 
 describe('FouleesFantastiques runtime', () => {

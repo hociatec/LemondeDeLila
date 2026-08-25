@@ -1,4 +1,4 @@
-import type { PlayerStateEntity } from '../../../../../application/models/game-state.model';
+import type { PlayerStateEntity } from '../../../../../core/application/models/game-state.model';
 import type { LamaCardValue, LamaMetadata } from '../../model/lama.model';
 import { LAMA_VALUE } from '../../model/lama.model';
 

@@ -1,5 +1,5 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
 import type {
   SacGroupsJsonV1,
   SacMetadata,

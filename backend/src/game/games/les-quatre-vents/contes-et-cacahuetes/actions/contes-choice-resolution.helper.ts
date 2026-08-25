@@ -1,6 +1,6 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import { resolvePlayerNameFromState } from '../../../../application/helpers/player-name.helper';
-import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import { resolvePlayerNameFromState } from '../../../../core/application/helpers/player-name.helper';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
 import type {
   ContesCardType,
   ContesPending,

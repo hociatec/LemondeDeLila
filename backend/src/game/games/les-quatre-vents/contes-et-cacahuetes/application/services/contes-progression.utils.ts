@@ -1,5 +1,5 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
 import type {
   ContesCard,
   ContesCardType,
@@ -7,7 +7,7 @@ import type {
   ContesCacahuetesTile,
   ContesPending,
 } from '../../model/contes-et-cacahuetes-state.model';
-import type { RandomService } from '../../../../../application/services/random.service';
+import type { RandomService } from '../../../../../core/application/services/random.service';
 
 export type ContesProgressionDeps = {
   random: RandomService;

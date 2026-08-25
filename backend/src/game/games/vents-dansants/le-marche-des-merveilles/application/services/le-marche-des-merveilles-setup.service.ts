@@ -1,5 +1,5 @@
-﻿import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { getSafePlayers } from '../../../../../application/helpers/setup-service.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { getSafePlayers } from '../../../../../core/application/helpers/setup-service.helper';
 import {
   EMPTY_INVENTORY,
   INITIAL_PRICES,

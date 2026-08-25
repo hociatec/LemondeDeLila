@@ -1,4 +1,4 @@
-import type { GameStateEntity, PlayerStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity, PlayerStateEntity } from '../../../../../core/application/models/game-state.model';
 
 import type { GerardPresidentMetadata } from '../../model/gerard-president-state.model';
 

@@ -1,9 +1,9 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { TurnFlowService } from '../../../../../application/services/turn-flow.service';
-import { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { TurnFlowService } from '../../../../../core/application/services/turn-flow.service';
+import { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
 import type { CerclesSacresTheme } from '../../model/cercles-sacres-cards';
 import { CERCLES_SACRES_CARD_BY_ID } from '../../model/cercles-sacres-cards';
 import type {
@@ -14,7 +14,7 @@ import {
   applyActionsSequentially,
   dispatchByActionType,
   normalizeActionType,
-} from '../../../../../application/helpers/action-service.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
 import {
   addCerclesSacresCardToDiscard,
   addCerclesSacresCardToHand,

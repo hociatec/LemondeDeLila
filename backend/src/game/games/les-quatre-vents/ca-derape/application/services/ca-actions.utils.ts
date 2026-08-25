@@ -1,5 +1,5 @@
-import { resolvePlayerNameFromState } from '../../../../../application/helpers/player-name.helper';
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import { resolvePlayerNameFromState } from '../../../../../core/application/helpers/player-name.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 
 export type PendingContext =
   | { kind: 'swap_after_move'; actorId: number }

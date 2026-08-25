@@ -1,4 +1,4 @@
-import type { DeckPoliciesService } from '../../../../../application/features/deck-policies/services/deck-policies.service';
+import type { DeckPoliciesService } from '../../../../../deck-policies/application/services/deck-policies.service';
 
 import { BANDE_A_BANANE_CARD_BY_ID } from '../../model/la-bande-a-banane-cards';
 import type { BandeABananeMetadata } from '../../model/la-bande-a-banane-state.model';

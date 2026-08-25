@@ -1,6 +1,6 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import { optionalInt } from '../../../../../application/helpers/payload-validators.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import { optionalInt } from '../../../../../core/application/helpers/payload-validators.helper';
 import type { LamaMetadata } from '../../model/lama.model';
 import { LamaLogService } from './lama-log.service';
 import { LamaRoundService } from './lama-round.service';

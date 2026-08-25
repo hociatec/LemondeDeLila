@@ -1,19 +1,19 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import type { QuizQuestion } from '../../../../../application/features/quiz/services/quiz-runner.service';
+} from '../../../../../core/application/models/game-action.model';
+import type { QuizQuestion } from '../../../../../quiz/application/services/quiz-runner.service';
 import { sanitizeText } from '../../../../../../common/utils/public-api';
 import type { PanierExpressMetadata } from '../../model/panier-express-state.model';
 import { PanierExpressUtils } from './panier-express-utils.service';
 import { PANIER_EXPRESS_PHASES } from '../../definitions/rules.definition';
 import { PANIER_EXPRESS_VICTORY } from '../../definitions/victory.definition';
-import { BasePresenterService } from '../../../../../application/services/base-presenter.service';
-import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
+import { BasePresenterService } from '../../../../../core/application/services/base-presenter.service';
+import { BoardPayloadService } from '../../../../../core/application/services/board-payload.service';
 
 type PanierExpressPlayerView = {
   id: number;

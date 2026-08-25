@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type { LamaCardValue, LamaMetadata } from '../../model/lama.model';
 import {
   lamaCardLabel,
@@ -7,8 +7,8 @@ import {
 } from '../../model/lama.model';
 import { stringOrEmpty } from '@common/utils/public-api';
 import { isLamaDrawLocked } from '../policies/lama-draw.policy';
-import { bindHandCardActions } from '../../../../../application/helpers/hand-cards-presenter.helper';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import { bindHandCardActions } from '../../../../../cards/public-api';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
 
 export class LamaExtrasPresenter {
   build(

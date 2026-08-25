@@ -1,16 +1,16 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../domain/errors/public-api';
+} from '../../../../core/domain/errors/public-api';
 import type { MonVillageActionType } from '../definitions/mon-village.definition';
 import { MON_VILLAGE_GAME } from '../definitions/mon-village.definition';
 import {
   normalizeActionType as normalizeRawActionType,
   normalizeRollActionType,
-} from '../../../../application/helpers/action-service.helper';
-import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+} from '../../../../core/application/helpers/action-service.helper';
+import { isStartedState } from '../../../../core/application/helpers/rulebook-guard.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,

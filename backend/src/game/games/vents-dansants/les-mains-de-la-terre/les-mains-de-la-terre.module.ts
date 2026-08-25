@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { BoardGameDeckKitModule } from '../../../composition/board-game-kits.module';
 import { LesMainsActionService } from './application/services/les-mains-de-la-terre-action.service';
 import { LesMainsDeLaTerreBotService } from './application/services/les-mains-de-la-terre-bot.service';
 import { LesMainsDeLaTerreService } from './application/services/les-mains-de-la-terre.service';

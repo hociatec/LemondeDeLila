@@ -1,8 +1,8 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
-import { resolvePlayerName } from '../../../../../application/helpers/player-name.helper';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameStateWithActions } from '../../../../../core/application/models/game-action.model';
+import { resolvePlayerName } from '../../../../../core/application/helpers/player-name.helper';
 
-import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
+import { formatPresenterActions } from '../../../../../core/application/helpers/actions-presenter.helper';
 import * as Rulebook from '../../rulebook/rulebook';
 import type { GerardPresidentMetadata } from '../../model/gerard-president-state.model';
 import {
@@ -10,7 +10,7 @@ import {
   GERARD_PRESIDENT_SPECIAL_CARDS,
   GERARD_PRESIDENT_THEMES,
 } from '../../model/gerard-president-cards';
-import { buildLamaLikePanels } from '../../../../../application/helpers/lamalike-presenter.helper';
+import { buildLamaLikePanels } from '../../../../../core/application/helpers/lamalike-presenter.helper';
 
 const ACTION_LABELS: Record<string, string> = {
   set_theme: 'Définir un thème',

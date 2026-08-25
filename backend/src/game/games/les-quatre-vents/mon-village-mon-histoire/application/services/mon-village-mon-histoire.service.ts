@@ -1,13 +1,13 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
+} from '../../../../../core/application/models/game-action.model';
+import { AbstractGameService } from '../../../../../core/application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../application/models/game-shortcuts.model';
+} from '../../../../../shortcuts/public-api';
 import { MON_VILLAGE_GAME } from '../../definitions/mon-village.definition';
 import { MonVillageActionService } from './mon-village-action.service';
 import { MonVillagePresenterService } from './mon-village-presenter.service';

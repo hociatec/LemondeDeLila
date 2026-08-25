@@ -1,5 +1,5 @@
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { GameStateEntity } from '../../../../../application/models/game-state.model';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import { PanierExpressMetadata } from '../../model/panier-express-state.model';
 import { PanierExpressSetupService } from './panier-express-setup.service';
 import { playingLog } from '../../../../../../common/utils/public-api';

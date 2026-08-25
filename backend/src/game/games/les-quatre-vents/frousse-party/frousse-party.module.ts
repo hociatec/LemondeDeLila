@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common';
-import { BoardEffectsPoliciesService } from '../../../application/features/board-effects-policies/services/board-effects-policies.service';
-import { DeckPoliciesService } from '../../../application/features/deck-policies/services/deck-policies.service';
-import { BoardPayloadService } from '../../../application/services/board-payload.service';
-import { BotRunnerService } from '../../../application/services/bot-runner.service';
-import { GameContentLoaderService } from '../../../application/services/game-content-loader.service';
-import { GameCoreService } from '../../../application/services/game-core.service';
-import { RandomService } from '../../../application/services/random.service';
-import { SetupFlowService } from '../../../application/services/setup-flow.service';
-import { TurnFlowService } from '../../../application/services/turn-flow.service';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { EngineServicesModule } from '../../../infrastructure/module/engine-services.module';
-import { SetupFlowModule } from '../../../application/modules/setup-flow.module';
-import { BoardEffectsPoliciesModule } from '../../../application/modules/board-effects-policies.module';
-import { TurnPoliciesModule } from '../../../application/modules/turn-policies.module';
-import { PromptPoliciesModule } from '../../../application/modules/prompt-policies.module';
-import { BoardGameDeckKitModule } from '../../../module/board-game-kits.module';
+import { BoardEffectsPoliciesService } from '../../../board-effects-policies/application/services/board-effects-policies.service';
+import { DeckPoliciesService } from '../../../deck-policies/application/services/deck-policies.service';
+import { BoardPayloadService } from '../../../core/application/services/board-payload.service';
+import { BotRunnerService } from '../../../core/application/services/bot-runner.service';
+import { GameContentLoaderService } from '../../../core/application/services/game-content-loader.service';
+import { GameCoreService } from '../../../core/application/services/game-core.service';
+import { RandomService } from '../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../core/application/services/setup-flow.service';
+import { TurnFlowService } from '../../../core/application/services/turn-flow.service';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { EngineServicesModule } from '../../../core/infrastructure/module/engine-services.module';
+import { SetupFlowModule } from '../../../core/infrastructure/module/setup-flow.module';
+import { BoardEffectsPoliciesModule } from '../../../board-effects-policies/infrastructure/board-effects-policies.module';
+import { TurnPoliciesModule } from '../../../core/infrastructure/module/turn-policies.module';
+import { PromptsModule } from '../../../prompts/public-api';
+import { BoardGameDeckKitModule } from '../../../composition/board-game-kits.module';
 import { FroussePartyService } from './application/services/frousse-party.service';
 import { FrousseSetupService } from './application/services/frousse-setup.service';
 import { FrousseActionService } from './application/services/frousse-action.service';
@@ -29,7 +29,7 @@ import { FrousseBotService } from './application/services/frousse-bot.service';
     SetupFlowModule,
     BoardEffectsPoliciesModule,
     TurnPoliciesModule,
-    PromptPoliciesModule,
+    PromptsModule,
   ],
   providers: [
     DeckPoliciesService,

@@ -1,6 +1,6 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import { BotRunnerService } from '../../../../../application/services/bot-runner.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import { BotRunnerService } from '../../../../../core/application/services/bot-runner.service';
 import * as AventureSauvageRulebook from '../../rulebook/rulebook';
 export class AventureSauvageBotService {
   constructor(private readonly botRunner: BotRunnerService) {}

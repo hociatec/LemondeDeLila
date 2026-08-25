@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
 import type { CaCard, CaMetadata, CaTile } from '../model/ca.types';
 
 export class CaSetupService {

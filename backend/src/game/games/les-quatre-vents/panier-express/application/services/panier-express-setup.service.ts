@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { DeckManagerService } from '../../../../../application/services/deck-manager.service';
+import { DeckManagerService } from '../../../../../cards/public-api';
 import {
   DeckPoolService,
   DeckPoolState,
-} from '../../../../../application/services/deck-pool.service';
-import { GameStateEntity } from '../../../../../application/models/game-state.model';
+} from '../../../../../cards/public-api';
+import { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import { seededShuffle } from '../../../../../../common/utils/public-api';
 import {
   PanierExpressDeckPool,
@@ -22,8 +22,8 @@ import {
   PanierExpressStandsJsonV1,
 } from '../../model/panier-express-content.model';
 import { GameContentLoaderService } from '../../../../../engine/public-api';
-import { loadV1Content } from '../../../../../application/helpers/content-loader.helper';
-import { loadCanonicalPawns } from '../../../../../application/helpers/pawn-catalog.helper';
+import { loadV1Content } from '../../../../../core/application/helpers/content-loader.helper';
+import { loadCanonicalPawns } from '../../../../../pawn-selection/public-api';
 
 @Injectable()
 export class PanierExpressSetupService {

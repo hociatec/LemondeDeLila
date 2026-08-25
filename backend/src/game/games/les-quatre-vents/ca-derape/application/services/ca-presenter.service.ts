@@ -1,8 +1,8 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameStateWithActions } from '../../../../../core/application/models/game-action.model';
 
-import { formatPresenterActions } from '../../../../../application/helpers/actions-presenter.helper';
-import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
+import { formatPresenterActions } from '../../../../../core/application/helpers/actions-presenter.helper';
+import { BoardPayloadService } from '../../../../../core/application/services/board-payload.service';
 import { CA_DERAPE_GAME } from '../../definitions/ca.definition';
 import * as Rulebook from '../../rulebook/ca.rulebook';
 import type { CaMetadata } from '../../model/ca.types';

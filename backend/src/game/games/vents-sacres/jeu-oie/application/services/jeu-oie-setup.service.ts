@@ -1,14 +1,14 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 
-import { getSafePlayers } from '../../../../../application/helpers/setup-service.helper';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
+import { getSafePlayers } from '../../../../../core/application/helpers/setup-service.helper';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
 import { GameContentLoaderService } from '../../../../../engine/public-api';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { queueConfiguredPawnSelection } from '../../../../../application/helpers/configured-pawn-setup.helper';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { queueConfiguredPawnSelection } from '../../../../../pawn-selection/public-api';
 import { ensureSeededRng } from '../../../../../../common/utils/public-api';
 import { seededShuffle } from '../../../../../../common/utils/public-api';
 import type { JeuOieCaseTextsJsonV1 } from '../../model/jeu-oie-content.model';
-import { loadV1Content } from '../../../../../application/helpers/content-loader.helper';
+import { loadV1Content } from '../../../../../core/application/helpers/content-loader.helper';
 import type {
   JeuOieMetadata,
   JeuOiePawn,

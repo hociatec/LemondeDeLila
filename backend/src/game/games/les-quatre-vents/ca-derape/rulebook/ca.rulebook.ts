@@ -1,15 +1,15 @@
-﻿import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../core/application/models/game-action.model';
 import {
   isRollActionType,
   normalizeActionType,
   normalizeLegacyRollAliasToUpper,
-} from '../../../../application/helpers/action-service.helper';
-import { isStartedState } from '../../../../application/helpers/rulebook-guard.helper';
+} from '../../../../core/application/helpers/action-service.helper';
+import { isStartedState } from '../../../../core/application/helpers/rulebook-guard.helper';
 import {
   GameValidationError,
   PlayerActionError,
-} from '../../../../domain/errors/public-api';
+} from '../../../../core/domain/errors/public-api';
 import {
   CA_DERAPE_GAME,
   type CaDerapeActionType,
@@ -21,7 +21,7 @@ import {
   validatePendingChooseTargetActionForActor,
   validatePendingDrawActionForActor,
   validatePendingNumberSetChoiceActionForActor,
-} from '../../../../application/helpers/pending-actions-rulebook.helper';
+} from '../../../../core/application/helpers/pending-actions-rulebook.helper';
 
 export function getAvailableActions(
   state: GameStateEntity,

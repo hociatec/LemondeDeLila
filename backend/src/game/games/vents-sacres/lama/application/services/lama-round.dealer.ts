@@ -1,11 +1,11 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import type { LamaCardValue, LamaMetadata } from '../../model/lama.model';
 import { lamaCardLabel } from '../../model/lama.model';
-import { RandomService } from '../../../../../application/services/random.service';
-import { createPendingState } from '../../../../../application/services/pending-action.service';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { createPendingState } from '../../../../../core/application/services/pending-action.service';
 import { LamaLogService } from './lama-log.service';
 import { LamaRoundRules } from './lama-round.rules';
 import { LamaSharedService } from './lama-shared.service';

@@ -1,13 +1,13 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
+} from '../../../../../core/application/models/game-action.model';
+import { AbstractGameService } from '../../../../../core/application/services/abstract-game.service';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../application/models/game-shortcuts.model';
+} from '../../../../../shortcuts/public-api';
 import { LeMarcheDesMerveillesActionService } from './le-marche-des-merveilles-action.service';
 import { LeMarcheDesMerveillesBotService } from './le-marche-des-merveilles-bot.service';
 import { LE_MARCHE_DES_MERVEILLES_GAME } from '../../definitions/game.definition';

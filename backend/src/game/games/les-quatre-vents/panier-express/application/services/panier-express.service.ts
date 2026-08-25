@@ -1,27 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
 import {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
-import { GameSingleActionDto } from '../../../../../application/models/game-action.model';
-import { GameStateWithActions } from '../../../../../application/models/game-action.model';
-import { AbstractGameService } from '../../../../../application/services/abstract-game.service';
-import { TurnService } from '../../../../../application/services/turn.service';
+} from '../../../../../core/application/models/game-state.model';
+import { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
+import { GameStateWithActions } from '../../../../../core/application/models/game-action.model';
+import { AbstractGameService } from '../../../../../core/application/services/abstract-game.service';
+import { TurnService } from '../../../../../core/application/services/turn.service';
 import {
   DeckPoolService,
   DeckPoolState,
-} from '../../../../../application/services/deck-pool.service';
-import { BoardMovementService } from '../../../../../application/services/board-movement.service';
-import { TileEffectRegistryService } from '../../../../../application/features/effects/services/tile-effect-registry.service';
-import { TurnActionsService } from '../../../../../application/services/turn-actions.service';
-import { StandEffectRegistryService } from '../../../../../application/features/effects/services/stand-effect-registry.service';
-import { ActionResolverService } from '../../../../../application/features/action-resolver/services/action-resolver.service';
-import { TurnStatusService } from '../../../../../application/services/turn-status.service';
-import { QuizRunnerService } from '../../../../../application/features/quiz/services/quiz-runner.service';
-import { VictoryService } from '../../../../../application/features/victory/services/victory.service';
-import { BotRunnerService } from '../../../../../application/services/bot-runner.service';
-import { ActionLogService } from '../../../../../application/features/actionlog/services/action-log.service';
+} from '../../../../../cards/public-api';
+import { BoardMovementService } from '../../../../../core/application/services/board-movement.service';
+import { TileEffectRegistryService } from '../../../../../effects/application/services/tile-effect-registry.service';
+import { TurnActionsService } from '../../../../../core/application/services/turn-actions.service';
+import { StandEffectRegistryService } from '../../../../../effects/application/services/stand-effect-registry.service';
+import { ActionResolverService } from '../../../../../action-resolver/application/services/action-resolver.service';
+import { TurnStatusService } from '../../../../../core/application/services/turn-status.service';
+import { QuizRunnerService } from '../../../../../quiz/application/services/quiz-runner.service';
+import { VictoryService } from '../../../../../victory/application/services/victory.service';
+import { BotRunnerService } from '../../../../../core/application/services/bot-runner.service';
+import { ActionLogService } from '../../../../../actionlog/application/services/action-log.service';
 import {
   PanierExpressMetadata,
   PanierExpressTile,
@@ -35,7 +35,7 @@ import { PanierExpressQuizService } from './panier-express-quiz.service';
 import {
   assignConfiguredBotPawns,
   queueConfiguredPawnSelection,
-} from '../../../../../application/helpers/configured-pawn-setup.helper';
+} from '../../../../../pawn-selection/public-api';
 import { PanierExpressExchangeService } from './panier-express-exchange.service';
 import { PanierExpressUtils } from './panier-express-utils.service';
 import * as PanierExpressRulebook from '../../rulebook/rulebook';
@@ -43,13 +43,13 @@ import { PanierExpressBotService } from './panier-express-bot.service';
 import { PanierExpressPhaseService } from './panier-express-phase.service';
 import { PanierExpressPresenterService } from './panier-express-presenter.service';
 import { PanierExpressStateService } from './panier-express-state.service';
-import { RandomService } from '../../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { resolvePendingPawnChoiceAction } from '../../../../../application/helpers/pawn-choice-action.helper';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { resolvePendingPawnChoiceAction } from '../../../../../pawn-selection/public-api';
 import type {
   GameShortcutHint,
   GameShortcutsContext,
-} from '../../../../../application/models/game-shortcuts.model';
+} from '../../../../../shortcuts/public-api';
 import { hydratePanierExpressInitialState } from '../../panier-express-initial-state.helpers';
 import {
   asStringDeckPool,

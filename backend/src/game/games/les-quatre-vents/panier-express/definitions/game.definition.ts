@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../application/models/game-definition.model';
+import type { GameDefinition } from '../../../../core/application/models/game-definition.model';
 import { PANIER_EXPRESS_VICTORY } from './victory.definition';
 
 export type PanierExpressGameId = 'panier-express';

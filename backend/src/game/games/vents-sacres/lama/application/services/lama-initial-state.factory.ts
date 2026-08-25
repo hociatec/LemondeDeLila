@@ -1,6 +1,6 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import { getSafePlayers } from '../../../../../application/helpers/setup-service.helper';
-import { createPendingState } from '../../../../../application/services/pending-action.service';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import { getSafePlayers } from '../../../../../core/application/helpers/setup-service.helper';
+import { createPendingState } from '../../../../../core/application/services/pending-action.service';
 import type { LamaMetadata } from '../../model/lama.model';
 import { LamaSharedService } from './lama-shared.service';
 

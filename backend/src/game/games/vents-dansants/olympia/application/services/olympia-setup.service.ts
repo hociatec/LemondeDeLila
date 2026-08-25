@@ -1,10 +1,10 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 
 import {
   getRngMeta,
   getSafePlayers,
-} from '../../../../../application/helpers/setup-service.helper';
-import { RandomService } from '../../../../../application/services/random.service';
+} from '../../../../../core/application/helpers/setup-service.helper';
+import { RandomService } from '../../../../../core/application/services/random.service';
 import { OLYMPIA_DECKS } from '../../model/olympia-cards';
 import type { OlympiaDeckType } from '../../model/olympia-cards';
 import type { OlympiaMetadata } from '../../model/olympia-state.model';

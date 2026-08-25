@@ -17,7 +17,7 @@ import { AdminModule } from './admin/public-api';
 import { SocialModule } from './social/public-api';
 import { WsRoutingModule } from './common/ws/public-api';
 import { ValidationModule } from './common/validation/public-api';
-import { GameWsModule } from './game/infrastructure/presentation/ws/public-api';
+import { GameWsModule } from './game/core/infrastructure/presentation/ws/public-api';
 import { RealtimeModule } from './realtime/public-api';
 import { NotificationModule } from './notification/public-api';
 import { GameLoggerModule } from './game/public-api';

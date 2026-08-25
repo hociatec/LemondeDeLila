@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../application/models/game-definition.model';
+import type { GameDefinition } from '../../../../core/application/models/game-definition.model';
 import { FOULEES_FANTASTIQUES_VICTORY } from './victory.definition';
 
 export type FouleesFantastiquesGameId = 'foulees-fantastiques';

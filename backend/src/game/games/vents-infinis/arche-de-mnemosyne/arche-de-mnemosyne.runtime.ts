@@ -1,8 +1,8 @@
-import { GameCoreService } from '../../../application/services/game-core.service';
-import { RandomService } from '../../../application/services/random.service';
-import { TurnFlowService } from '../../../application/services/turn-flow.service';
-import { TurnPoliciesService } from '../../../application/services/turn-policies.service';
-import { TurnService } from '../../../application/services/turn.service';
+import { GameCoreService } from '../../../core/application/services/game-core.service';
+import { RandomService } from '../../../core/application/services/random.service';
+import { TurnFlowService } from '../../../core/application/services/turn-flow.service';
+import { TurnPoliciesService } from '../../../core/application/services/turn-policies.service';
+import { TurnService } from '../../../core/application/services/turn.service';
 import { ArcheDeMnemosyneService } from './application/services/arche-de-mnemosyne.service';
 import { ArcheMnemoStateService } from './application/services/arche-mnemo-state.service';
 import { MnemoQuizStoreService } from './infrastructure/storage/mnemo-quiz-store.service';

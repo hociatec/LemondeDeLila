@@ -1,13 +1,13 @@
 import type {
   GameStateEntity,
   PendingState,
-} from '../../../../../application/models/game-state.model';
+} from '../../../../../core/application/models/game-state.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../../../application/models/game-action.model';
-import { BasePresenterService } from '../../../../../application/services/base-presenter.service';
-import { BoardPayloadService } from '../../../../../application/services/board-payload.service';
+} from '../../../../../core/application/models/game-action.model';
+import { BasePresenterService } from '../../../../../core/application/services/base-presenter.service';
+import { BoardPayloadService } from '../../../../../core/application/services/board-payload.service';
 import { GALOPONS_GAME } from '../../definitions/galopons.definition';
 import * as Rulebook from '../../rulebook/rulebook';
 import type { GaloponsMetadata } from '../../model/galopons.types';

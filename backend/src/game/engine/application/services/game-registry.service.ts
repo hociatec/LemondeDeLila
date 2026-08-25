@@ -1,1 +1,1 @@
-export { GameRegistryService } from '../../../application/services/game-registry.service';
+export { GameRegistryService } from '../../../core/application/services/game-registry.service';

@@ -1,5 +1,5 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
-import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
+import type { GameSingleActionDto } from '../../../../../core/application/models/game-action.model';
 import type { CorridorMetadata } from '../../model/corridor.model';
 import * as CorridorRulebook from '../../rulebook/rulebook';
 import {
@@ -8,14 +8,14 @@ import {
   dispatchByActionType,
   harmonizeActionStateReturn,
   normalizeLowerActionType,
-} from '../../../../../application/helpers/action-service.helper';
+} from '../../../../../core/application/helpers/action-service.helper';
 import { CorridorSetupService } from './corridor-setup.service';
-import { applyConfiguredPawnSelection } from '../../../../../application/helpers/configured-pawn-selection.helper';
+import { applyConfiguredPawnSelection } from '../../../../../pawn-selection/public-api';
 import {
   assignConfiguredBotPawns,
   queueConfiguredPawnSelection,
-} from '../../../../../application/helpers/configured-pawn-setup.helper';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
+} from '../../../../../pawn-selection/public-api';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
 import {
   appendUniqueCorridorLogMessages,
   toCorridorCellRef,

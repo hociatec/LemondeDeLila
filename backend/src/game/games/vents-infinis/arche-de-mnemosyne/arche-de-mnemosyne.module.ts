@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { GameCoreService } from '../../../application/services/game-core.service';
-import { RandomService } from '../../../application/services/random.service';
-import { TurnFlowService } from '../../../application/services/turn-flow.service';
-import { GameCoreModule } from '../../../module/game-core.module';
-import { RandomTurnGameKitModule } from '../../../module/board-game-kits.module';
+import { GameCoreService } from '../../../core/application/services/game-core.service';
+import { RandomService } from '../../../core/application/services/random.service';
+import { TurnFlowService } from '../../../core/application/services/turn-flow.service';
+import { GameCoreModule } from '../../../core/infrastructure/module/game-core.module';
+import { RandomTurnGameKitModule } from '../../../composition/board-game-kits.module';
 import { MNEMO_QUIZ_STORE } from './application/ports/mnemo-quiz-store.port';
 import { ArcheDeMnemosyneService } from './application/services/arche-de-mnemosyne.service';
 import { ArcheMnemoStateService } from './application/services/arche-mnemo-state.service';

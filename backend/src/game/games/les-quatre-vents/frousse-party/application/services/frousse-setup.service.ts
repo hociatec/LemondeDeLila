@@ -1,11 +1,11 @@
-import type { GameStateEntity } from '../../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../../core/application/models/game-state.model';
 import { GameContentLoaderService } from '../../../../../engine/public-api';
-import { RandomService } from '../../../../../application/services/random.service';
-import { SetupFlowService } from '../../../../../application/services/setup-flow.service';
-import { GameCoreService } from '../../../../../application/services/game-core.service';
-import { queueConfiguredPawnSelection } from '../../../../../application/helpers/configured-pawn-setup.helper';
-import { loadCanonicalPawns } from '../../../../../application/helpers/pawn-catalog.helper';
-import { loadV1Content } from '../../../../../application/helpers/content-loader.helper';
+import { RandomService } from '../../../../../core/application/services/random.service';
+import { SetupFlowService } from '../../../../../core/application/services/setup-flow.service';
+import { GameCoreService } from '../../../../../core/application/services/game-core.service';
+import { queueConfiguredPawnSelection } from '../../../../../pawn-selection/public-api';
+import { loadCanonicalPawns } from '../../../../../pawn-selection/public-api';
+import { loadV1Content } from '../../../../../core/application/helpers/content-loader.helper';
 import type {
   FrousseBoardJsonV1,
   FrousseCardsJsonV1,
