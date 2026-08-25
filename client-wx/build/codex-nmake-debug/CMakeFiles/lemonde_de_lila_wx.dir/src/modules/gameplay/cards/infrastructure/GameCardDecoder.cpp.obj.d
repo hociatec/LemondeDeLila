@@ -108,13 +108,13 @@ C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/cctype
 C:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/ctype.h
 C:/vcpkg/installed/x64-windows/include/nlohmann/detail/abi_macros.hpp
 C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/domain/GameCard.h
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
-C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/optional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xsmf_control.h
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/string_view
 C:/vcpkg/installed/x64-windows/include/nlohmann/json.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/algorithm
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_heap_algorithms.hpp
+C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/__msvc_minmax.hpp
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/functional
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/unordered_map
 C:/BuildTools/VC/Tools/MSVC/14.44.35207/include/xhash

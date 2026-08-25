@@ -70,6 +70,8 @@ set(OLD_GLOB
   "C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/presentation/ChatFrame.NavigationHistory.cpp"
   "C:/wamp64/www/lemondeDeLila/client-wx/src/modules/chat/presentation/ChatFrame.cpp"
   "C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.cpp"
+  "C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/application/GameCardActionResolver.cpp"
+  "C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/application/GameCardTextBuilder.cpp"
   "C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp"
   "C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/hand/presentation/GameHandPanel.cpp"
   "C:/wamp64/www/lemondeDeLila/client-wx/src/modules/gameplay/history/presentation/GameLogCursor.cpp"

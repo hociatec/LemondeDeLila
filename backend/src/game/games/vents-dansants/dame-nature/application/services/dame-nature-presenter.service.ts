@@ -33,6 +33,7 @@ export class DameNaturePresenterService {
       discardLabel: 'Famille ciblée',
       tableMessage: `Pollution : ${pollution}`,
     });
+    const presentedHand = this.buildHandCards(hand);
 
     return {
       ...state,
@@ -42,8 +43,7 @@ export class DameNaturePresenterService {
       },
       actions: formatPresenterActions(actions),
       extras: {
-        hand,
-        handCards: this.buildHandCards(hand),
+        hand: presentedHand,
         catalog: this.buildCatalog(),
         playerViews: this.buildPlayerViews(state.players),
         hands: meta.hands,
@@ -74,9 +74,13 @@ export class DameNaturePresenterService {
 
   private buildHandCards(
     hand: string[],
-  ): Array<{ familyId?: string; memberId: string; label: string }> {
-    const cards: Array<{ familyId?: string; memberId: string; label: string }> =
-      [];
+  ): Array<{ family?: string; id: string; label: string; description?: string }> {
+    const cards: Array<{
+      family?: string;
+      id: string;
+      label: string;
+      description?: string;
+    }> = [];
     for (const cardId of hand ?? []) {
       const definition = DAME_NATURE_CARD_BY_ID[cardId];
       if (!definition) {
@@ -84,8 +88,8 @@ export class DameNaturePresenterService {
       }
       if (definition.type === 'family') {
         cards.push({
-          familyId: definition.familyId,
-          memberId: definition.id,
+          family: definition.familyId,
+          id: definition.id,
           label: `${definition.familyName} - ${definition.memberName}`,
         });
         continue;
@@ -95,9 +99,9 @@ export class DameNaturePresenterService {
           ? definition.question
           : definition.description;
       cards.push({
-        familyId: undefined,
-        memberId: definition.id,
+        id: definition.id,
         label,
+        description: definition.type === 'quiz' ? definition.answer : undefined,
       });
     }
     return cards;

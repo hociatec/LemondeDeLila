@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <optional>
 #include <string>
 
@@ -24,9 +23,6 @@ public:
         const domain::GameState& state,
         const std::string& actionType,
         int selectedLine);
-    [[nodiscard]] static std::optional<domain::GameAction> ResolveHandAction(
-        const domain::GameState& state,
-        std::size_t selectedCard);
     [[nodiscard]] static std::string NormalizeKey(const wxKeyEvent& event);
     [[nodiscard]] static wxString BuildHelpText(const domain::GameState& state);
 };

@@ -1,6 +1,5 @@
 #include "modules/gameplay/cards/infrastructure/GameCardDecoder.h"
 
-#include <algorithm>
 #include <optional>
 #include <string_view>
 
@@ -40,17 +39,27 @@ std::optional<domain::GameCard> DecodeCard(const nlohmann::json& value)
     {
         auto text = ScalarText(value);
         if (text.empty()) return std::nullopt;
-        return domain::GameCard{text, std::move(text), {}};
+        return domain::GameCard{text, std::move(text)};
     }
     if (!value.is_object()) return std::nullopt;
 
     auto id = FirstText(value, {"id", "cardId", "memberId", "key", "value"});
     auto label = FirstText(value, {"label", "name", "title", "card", "value"});
     auto description = FirstText(value, {"description", "detail", "text"});
+    auto family = FirstText(value, {"family", "familyId"});
+    auto color = FirstText(value, {"color", "colour"});
+    const bool disabled = value.value("disabled", false);
+    std::optional<std::size_t> actionIndex;
+    const auto action = value.find("actionIndex");
+    if (action != value.end() && action->is_number_unsigned())
+        actionIndex = action->get<std::size_t>();
+    else if (action != value.end() && action->is_number_integer() && action->get<long long>() >= 0)
+        actionIndex = static_cast<std::size_t>(action->get<long long>());
     if (label.empty()) label = id;
     if (id.empty()) id = label;
     if (label.empty()) return std::nullopt;
-    return domain::GameCard{std::move(id), std::move(label), std::move(description)};
+    return domain::GameCard{std::move(id), std::move(label), std::move(description),
+        std::move(family), std::move(color), disabled, actionIndex};
 }
 
 std::vector<domain::GameCard> DecodeArray(const nlohmann::json& value)
@@ -70,19 +79,6 @@ std::vector<domain::GameCard> DecodeArray(const nlohmann::json& value)
 std::vector<domain::GameCard> GameCardDecoder::DecodeHand(const nlohmann::json& extras)
 {
     if (!extras.is_object()) return {};
-    const auto richCards = DecodeArray(extras.value("handCards", nlohmann::json::array()));
-    auto hand = DecodeArray(extras.value("hand", nlohmann::json::array()));
-    if (hand.empty()) return richCards;
-    if (richCards.empty()) return hand;
-
-    for (auto& card : hand)
-    {
-        const auto rich = std::find_if(richCards.begin(), richCards.end(), [&card](const auto& item)
-        {
-            return item.id == card.id;
-        });
-        if (rich != richCards.end()) card = *rich;
-    }
-    return hand;
+    return DecodeArray(extras.value("hand", nlohmann::json::array()));
 }
 }

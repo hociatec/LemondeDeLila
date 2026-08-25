@@ -10,6 +10,7 @@
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/cards/application/GameCardActionResolver.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
@@ -134,8 +135,8 @@ bool GamePlayPanel::ActivateSelectedHandCard()
 {
     const int selected = handPanel_->SelectedIndex();
     if (selected < 0) return false;
-    auto action = shortcuts::GameShortcutResolver::ResolveHandAction(
-        state_, static_cast<std::size_t>(selected));
+    auto action = application::cards::GameCardActionResolver::Resolve(
+        state_.hand, state_.actions, static_cast<std::size_t>(selected));
     if (!action)
     {
         UpdateStatus(wxString(L"Cette carte ne peut pas Ãªtre jouÃ©e."), true, true);

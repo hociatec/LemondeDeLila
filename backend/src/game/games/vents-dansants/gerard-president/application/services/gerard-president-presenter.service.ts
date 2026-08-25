@@ -57,10 +57,10 @@ export class GerardPresidentPresenterService {
       }),
       tableMessage: `Phase : ${metadata.roundPhase ?? 'en attente'}`,
     });
+    const presentedHand = this.buildHandCards(hand, specialHand);
     const extras = {
-      hand,
+      hand: presentedHand,
       specialHand,
-      handCards: this.buildHandCards(hand, specialHand),
       handCounts,
       playerViews: this.buildPlayerViews(state.players),
       submissions: metadata.juryOverrideId
@@ -157,11 +157,11 @@ export class GerardPresidentPresenterService {
   private buildHandCards(
     hand: string[],
     specialHand: string[],
-  ): Array<{ familyId?: string; memberId: string; label: string }> {
+  ): Array<{ family: string; id: string; label: string }> {
     const cards = [
       ...hand.map((card) => ({
-        familyId: 'name',
-        memberId: card,
+        family: 'name',
+        id: card,
         label: card,
       })),
       ...specialHand.map((cardId) => {
@@ -171,7 +171,7 @@ export class GerardPresidentPresenterService {
         const label = special
           ? `${special.name} – ${special.description}`
           : cardId;
-        return { familyId: 'special', memberId: cardId, label };
+        return { family: 'special', id: cardId, label };
       }),
     ];
     return cards;

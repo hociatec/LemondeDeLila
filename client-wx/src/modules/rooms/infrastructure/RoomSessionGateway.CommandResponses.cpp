@@ -98,10 +98,7 @@ domain::RoomEvent RoomSessionGateway::DecodeEvent(const nlohmann::json& message)
     if (type == protocol::Privacy)
     {
         const auto isPrivate = payload.value("isPrivate", false);
-        auto messageText = payload.value("message", std::string{});
-        if (messageText.empty())
-            messageText = isPrivate ? std::string("Table priv" "\xC3\xA9" "e.") : std::string("Table publique.");
-        return {domain::RoomEventType::PrivacyChanged, {}, {}, std::move(messageText), isPrivate};
+        return {domain::RoomEventType::PrivacyChanged, {}, {}, {}, isPrivate};
     }
     if (type == protocol::Role)
     {

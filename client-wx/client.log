@@ -1,0 +1,7 @@
+2026-08-25 05:14:15.421 [WARN ] [ChatProtocol] Le tableau 'messages' doit être un tableau JSON.
+2026-08-25 05:14:15.442 [WARN ] [Rooms] socket lost
+2026-08-25 05:14:16.677 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-25 05:14:17.003 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-25 05:14:17.693 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 05:14:17.696 [ERROR] [Chat] Envoi tchat échoué : send failed
+2026-08-25 05:14:17.697 [WARN ] [Chat] Reconnexion au serveur... : interrupted

@@ -5,6 +5,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "modules/gameplay/cards/application/GameCardActionResolver.h"
+#include "modules/gameplay/cards/application/GameCardTextBuilder.h"
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
@@ -89,10 +91,10 @@ void TestGenericCardsContract()
         {"roomId", 11},
         {"gameType", "card-game"},
         {"state", {{"extras", {
-            {"hand", nlohmann::json::array({"wolf", "moon", "unknown"})},
-            {"handCards", nlohmann::json::array({
-                {{"memberId", "moon"}, {"label", "La lune"}, {"description", "Carte nocturne"}},
-                {{"memberId", "wolf"}, {"label", "Le loup"}},
+            {"hand", nlohmann::json::array({
+                {{"id", "wolf"}, {"label", "Le loup"}},
+                {{"id", "moon"}, {"label", "La lune"}, {"description", "Carte nocturne"}},
+                {{"id", "unknown"}, {"label", "unknown"}},
             })},
         }}}},
     };
@@ -103,8 +105,41 @@ void TestGenericCardsContract()
         "Une carte doit recevoir le libelle riche correspondant a son identifiant.");
     Expect(state.hand[1].description == "Carte nocturne",
         "La description generique d'une carte doit etre conservee.");
+    Expect(lila::modules::gameplay::application::cards::GameCardTextBuilder::AccessibleText(state.hand[1]) ==
+            "La lune. Carte nocturne",
+        "La description d'une carte doit etre disponible au lecteur d'ecran.");
     Expect(state.hand[2].label == "unknown",
         "Une carte inconnue doit rester utilisable avec son identifiant comme libelle.");
+}
+
+void TestCardsCarryTheirActionsAcrossGames()
+{
+    using lila::modules::gameplay::application::cards::GameCardActionResolver;
+    const auto payload = nlohmann::json{
+        {"roomId", 12},
+        {"gameType", "generic-card-game"},
+        {"state", {
+            {"actions", nlohmann::json::array({
+                {{"type", "inspect"}, {"payload", nlohmann::json::object()}},
+                {{"type", "play"}, {"payload", {{"cardId", "wolf"}}}},
+                {{"type", "play"}, {"payload", {{"cardId", "wolf"}}}},
+            })},
+            {"extras", {{"hand", nlohmann::json::array({
+                {{"id", "wolf"}, {"label", "Le loup"}, {"actionIndex", 1}},
+                {{"id", "wolf"}, {"label", "Le second loup"}, {"actionIndex", 2}},
+                {{"id", "moon"}, {"label", "La lune"}, {"disabled", true}},
+            })}}},
+        }},
+    };
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    const auto first = GameCardActionResolver::Resolve(state.hand, state.actions, 0);
+    const auto second = GameCardActionResolver::Resolve(state.hand, state.actions, 1);
+    Expect(first.has_value() && first->payload.at("cardId") == "wolf",
+        "Une carte doit executer l'action explicitement associee par le serveur.");
+    Expect(second.has_value() && second->type == "play",
+        "Deux exemplaires d'une carte doivent conserver deux actions distinctes.");
+    Expect(!GameCardActionResolver::Resolve(state.hand, state.actions, 2).has_value(),
+        "Une carte desactivee doit rester consultable sans etre jouable.");
 }
 
 void TestServerDrivenPawnSelection()
@@ -195,6 +230,7 @@ int main()
         TestTypedInputs();
         TestActionLabelsRemainDistinct();
         TestGenericCardsContract();
+        TestCardsCarryTheirActionsAcrossGames();
         TestServerDrivenPawnSelection();
         TestPawnSelectionHiddenForPassiveViewer();
         TestGameLogCursor();

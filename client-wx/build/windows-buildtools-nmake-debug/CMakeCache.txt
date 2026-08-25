@@ -14,6 +14,9 @@
 # EXTERNAL cache entries
 ########################
 
+//Build the testing tree.
+BUILD_TESTING:BOOL=ON
+
 //Path to a program.
 CMAKE_AR:FILEPATH=C:/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib.exe
 
@@ -193,6 +196,62 @@ CMAKE_TOOLCHAIN_FILE:FILEPATH=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
+//Path to the coverage program that CTest uses for performing coverage
+// inspection
+COVERAGE_COMMAND:FILEPATH=COVERAGE_COMMAND-NOTFOUND
+
+//Extra command line flags to pass to the coverage tool
+COVERAGE_EXTRA_FLAGS:STRING=-l
+
+//How many times to retry timed-out CTest submissions.
+CTEST_SUBMIT_RETRY_COUNT:STRING=3
+
+//How long to wait between timed-out CTest submissions.
+CTEST_SUBMIT_RETRY_DELAY:STRING=5
+
+//Maximum time allowed before CTest will kill the test.
+DART_TESTING_TIMEOUT:STRING=1500
+
+//Racine locale du backend utilisee pour regenerer les contrats
+// protocole
+LILA_BACKEND_ROOT:PATH=C:/wamp64/www/lemondeDeLila/client-wx/../backend
+
+//Enable AddressSanitizer where supported
+LILA_ENABLE_ASAN:BOOL=OFF
+
+//Enable clang-tidy during compilation
+LILA_ENABLE_CLANG_TIDY:BOOL=OFF
+
+//Enable cppcheck during compilation
+LILA_ENABLE_CPPCHECK:BOOL=OFF
+
+//Enable ThreadSanitizer where supported
+LILA_ENABLE_TSAN:BOOL=OFF
+
+//Enable UndefinedBehaviorSanitizer where supported
+LILA_ENABLE_UBSAN:BOOL=OFF
+
+//DLL NVDA 64 bits facultative utilisee pour les annonces accessibles
+LILA_NVDA_CONTROLLER_DLL:FILEPATH=C:/wamp64/www/lemondeDeLila/client-wx/../client-win/client-win/libs/x64/nvdaControllerClient64.dll
+
+//Version à quatre composants du client WX
+LILA_PROJECT_VERSION:STRING=1.2.651.0
+
+//URL du manifeste de mise à jour WX
+LILA_UPDATE_MANIFEST_URL:STRING=https://api.lilas.hociatec.fr/api/client/releases/latest?platform=windows&arch=x64
+
+//Clé publique RSA DER/base64 des manifestes de mise à jour
+LILA_UPDATE_PUBLIC_KEY_DER_BASE64:STRING=
+
+//Command to build the project
+MAKECOMMAND:STRING="C:\Program Files\CMake\bin\cmake.exe" --build . --config "${CTEST_CONFIGURATION_TYPE}"
+
+//Path to the memory checking command, used for memory error detection.
+MEMORYCHECK_COMMAND:FILEPATH=MEMORYCHECK_COMMAND-NOTFOUND
+
+//File that contains suppressions for the memory checker
+MEMORYCHECK_SUPPRESSIONS_FILE:FILEPATH=
+
 //The directory containing a CMake configuration file for NanoSVG.
 NanoSVG_DIR:PATH=C:/vcpkg/installed/x64-windows/share/nanosvg
 
@@ -201,6 +260,9 @@ OPENGL_gl_LIBRARY:STRING=opengl32
 
 //GLU library for win32
 OPENGL_glu_LIBRARY:STRING=glu32
+
+//Name of the computer/site where compile is being run
+SITE:STRING=LAPTOP-R2SOOB2L
 
 //Automatically copy dependencies into the output directory for
 // executables.
@@ -395,6 +457,8 @@ CMAKE_COLOR_MAKEFILE-ADVANCED:INTERNAL=1
 CMAKE_COMMAND:INTERNAL=C:/Program Files/CMake/bin/cmake.exe
 //Path to cpack program executable.
 CMAKE_CPACK_COMMAND:INTERNAL=C:/Program Files/CMake/bin/cpack.exe
+//ADVANCED property for variable: CMAKE_CTEST_COMMAND
+CMAKE_CTEST_COMMAND-ADVANCED:INTERNAL=1
 //Path to ctest program executable.
 CMAKE_CTEST_COMMAND:INTERNAL=C:/Program Files/CMake/bin/ctest.exe
 //ADVANCED property for variable: CMAKE_CXX_COMPILER
@@ -507,16 +571,34 @@ CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 CMAKE_TOOLCHAIN_FILE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: COVERAGE_COMMAND
+COVERAGE_COMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: COVERAGE_EXTRA_FLAGS
+COVERAGE_EXTRA_FLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CTEST_SUBMIT_RETRY_COUNT
+CTEST_SUBMIT_RETRY_COUNT-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CTEST_SUBMIT_RETRY_DELAY
+CTEST_SUBMIT_RETRY_DELAY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: DART_TESTING_TIMEOUT
+DART_TESTING_TIMEOUT-ADVANCED:INTERNAL=1
 //Details about finding OpenGL
 FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[opengl32][c ][v()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //Details about finding nlohmann_json
 FIND_PACKAGE_MESSAGE_DETAILS_nlohmann_json:INTERNAL=[C:/vcpkg/installed/x64-windows/share/nlohmann_json/nlohmann_jsonConfig.cmake][v3.12.0()]
+//ADVANCED property for variable: MAKECOMMAND
+MAKECOMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MEMORYCHECK_COMMAND
+MEMORYCHECK_COMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MEMORYCHECK_SUPPRESSIONS_FILE
+MEMORYCHECK_SUPPRESSIONS_FILE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OPENGL_gl_LIBRARY
 OPENGL_gl_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OPENGL_glu_LIBRARY
 OPENGL_glu_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: SITE
+SITE-ADVANCED:INTERNAL=1
 //Install the dependencies listed in your manifest:
 //\n    If this is off, you will have to manually install your dependencies.
 //\n    See https://github.com/microsoft/vcpkg/tree/master/docs/specifications/manifests.md

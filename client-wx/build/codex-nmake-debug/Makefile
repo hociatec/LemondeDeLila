@@ -2191,6 +2191,60 @@ src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPan
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.s
 .PHONY : src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.s
 
+src\modules\gameplay\cards\application\GameCardActionResolver.obj: src\modules\gameplay\cards\application\GameCardActionResolver.cpp.obj
+.PHONY : src\modules\gameplay\cards\application\GameCardActionResolver.obj
+
+# target to build an object file
+src\modules\gameplay\cards\application\GameCardActionResolver.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\application\GameCardActionResolver.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\application\GameCardActionResolver.cpp.obj
+.PHONY : src\modules\gameplay\cards\application\GameCardActionResolver.cpp.obj
+
+src\modules\gameplay\cards\application\GameCardActionResolver.i: src\modules\gameplay\cards\application\GameCardActionResolver.cpp.i
+.PHONY : src\modules\gameplay\cards\application\GameCardActionResolver.i
+
+# target to preprocess a source file
+src\modules\gameplay\cards\application\GameCardActionResolver.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\application\GameCardActionResolver.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\application\GameCardActionResolver.cpp.i
+.PHONY : src\modules\gameplay\cards\application\GameCardActionResolver.cpp.i
+
+src\modules\gameplay\cards\application\GameCardActionResolver.s: src\modules\gameplay\cards\application\GameCardActionResolver.cpp.s
+.PHONY : src\modules\gameplay\cards\application\GameCardActionResolver.s
+
+# target to generate assembly for a file
+src\modules\gameplay\cards\application\GameCardActionResolver.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\application\GameCardActionResolver.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\application\GameCardActionResolver.cpp.s
+.PHONY : src\modules\gameplay\cards\application\GameCardActionResolver.cpp.s
+
+src\modules\gameplay\cards\application\GameCardTextBuilder.obj: src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.obj
+.PHONY : src\modules\gameplay\cards\application\GameCardTextBuilder.obj
+
+# target to build an object file
+src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.obj
+.PHONY : src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.obj
+
+src\modules\gameplay\cards\application\GameCardTextBuilder.i: src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.i
+.PHONY : src\modules\gameplay\cards\application\GameCardTextBuilder.i
+
+# target to preprocess a source file
+src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.i
+.PHONY : src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.i
+
+src\modules\gameplay\cards\application\GameCardTextBuilder.s: src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.s
+.PHONY : src\modules\gameplay\cards\application\GameCardTextBuilder.s
+
+# target to generate assembly for a file
+src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\lemonde_de_lila_wx_gameplay_tests.dir\src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.s
+.PHONY : src\modules\gameplay\cards\application\GameCardTextBuilder.cpp.s
+
 src\modules\gameplay\cards\infrastructure\GameCardDecoder.obj: src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj
 .PHONY : src\modules\gameplay\cards\infrastructure\GameCardDecoder.obj
 
@@ -8235,6 +8289,12 @@ help:
 	@echo ... src/modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.obj
 	@echo ... src/modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.i
 	@echo ... src/modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.s
+	@echo ... src/modules/gameplay/cards/application/GameCardActionResolver.obj
+	@echo ... src/modules/gameplay/cards/application/GameCardActionResolver.i
+	@echo ... src/modules/gameplay/cards/application/GameCardActionResolver.s
+	@echo ... src/modules/gameplay/cards/application/GameCardTextBuilder.obj
+	@echo ... src/modules/gameplay/cards/application/GameCardTextBuilder.i
+	@echo ... src/modules/gameplay/cards/application/GameCardTextBuilder.s
 	@echo ... src/modules/gameplay/cards/infrastructure/GameCardDecoder.obj
 	@echo ... src/modules/gameplay/cards/infrastructure/GameCardDecoder.i
 	@echo ... src/modules/gameplay/cards/infrastructure/GameCardDecoder.s

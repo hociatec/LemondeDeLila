@@ -8,6 +8,7 @@ import type { CatPattesMetadata } from '../../model/cat-pattes-state.model';
 import { CAT_PATTES_CARD_BY_ID } from '../../model/cat-pattes-cards';
 import { CAT_PATTES_DEFAULT_ROUNDS } from '../../model/cat-pattes-state.model';
 import { stringOrEmpty } from '@common/utils/public-api';
+import { bindHandCardActions } from '../../../../../application/helpers/hand-cards-presenter.helper';
 export class CatPattesPresenterService {
   private sanitizePlayerName(raw: unknown): string {
     return stringOrEmpty(raw).trim();
@@ -41,7 +42,14 @@ export class CatPattesPresenterService {
     const handIds = Array.isArray(meta.hands?.[userId])
       ? [...meta.hands[userId]]
       : [];
-    const hand = handIds.map((id) => CAT_PATTES_CARD_BY_ID[id]?.name ?? id);
+    const handLabels = handIds.map(
+      (id) => CAT_PATTES_CARD_BY_ID[id]?.name ?? id,
+    );
+    const hand = bindHandCardActions(
+      handIds.map((id, index) => ({ id, label: handLabels[index] })),
+      actions,
+      { actionTypes: ['play_card'], disableUnbound: true },
+    );
 
     const players = Array.isArray(state.players) ? state.players : [];
     const nameById: Record<number, string> = {};
@@ -102,7 +110,6 @@ export class CatPattesPresenterService {
 
     const extras = {
       hand,
-      handIds,
       positions: meta.positions,
       points: meta.points,
       roundsToPlay,
@@ -115,7 +122,7 @@ export class CatPattesPresenterService {
           hand: {
             title: 'Main',
             message: hand.length
-              ? `Main : ${hand.join(', ')}`
+              ? `Main : ${handLabels.join(', ')}`
               : 'Main : (vide)',
           },
           hands: {

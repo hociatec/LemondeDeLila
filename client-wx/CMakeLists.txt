@@ -199,6 +199,8 @@ add_executable(lemonde_de_lila_wx WIN32
     src/modules/catalog/presentation/CatalogShelfNavigator.cpp
 
     src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp
+    src/modules/gameplay/cards/application/GameCardActionResolver.cpp
+    src/modules/gameplay/cards/application/GameCardTextBuilder.cpp
     src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
     src/modules/gameplay/session/application/GameSessionService.cpp
     src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp
@@ -695,6 +697,8 @@ if(BUILD_TESTING)
 
         add_executable(lemonde_de_lila_wx_gameplay_tests
             tests/GameplayContractTests.cpp
+            src/modules/gameplay/cards/application/GameCardActionResolver.cpp
+            src/modules/gameplay/cards/application/GameCardTextBuilder.cpp
             src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
             src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp
             src/modules/gameplay/history/presentation/GameLogCursor.cpp

@@ -4,6 +4,7 @@
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 
+#include "modules/gameplay/cards/application/GameCardTextBuilder.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
@@ -30,7 +31,8 @@ void GameHandPanel::ApplyCards(const std::vector<domain::GameCard>& cards)
 {
     const int previousSelection = list_->GetSelection();
     list_->Clear();
-    for (const auto& card : cards) list_->Append(FromUtf8(card.label));
+    for (const auto& card : cards)
+        list_->Append(FromUtf8(application::cards::GameCardTextBuilder::AccessibleText(card)));
 
     const bool hasHand = list_->GetCount() > 0;
     Show(hasHand);

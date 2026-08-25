@@ -44,21 +44,6 @@ std::optional<domain::GameAction> GameShortcutResolver::ResolveAction(
     return found == state.actions.end() ? std::nullopt : std::optional<domain::GameAction>(*found);
 }
 
-std::optional<domain::GameAction> GameShortcutResolver::ResolveHandAction(
-    const domain::GameState& state,
-    std::size_t selectedCard)
-{
-    std::size_t cardIndex = 0;
-    for (const auto& action : state.actions)
-    {
-        if (action.type != "lama_play" && action.type != "lama_preview") continue;
-        if (cardIndex++ != selectedCard) continue;
-        if (action.disabled || action.type == "lama_preview") return std::nullopt;
-        return action;
-    }
-    return std::nullopt;
-}
-
 std::string GameShortcutResolver::NormalizeKey(const wxKeyEvent& event)
 {
     if (event.ControlDown() || event.AltDown() || event.MetaDown()) return {};

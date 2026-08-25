@@ -47,6 +47,7 @@ export class LesMainsPresenterService {
       victory: null,
       ...familyCatalog,
     };
+    const presentedHand = this.buildHandCards(hand);
 
     return {
       ...state,
@@ -55,8 +56,7 @@ export class LesMainsPresenterService {
         this.buildLabel(action),
       ),
       extras: {
-        hand,
-        handCards: this.buildHandCards(hand),
+        hand: presentedHand,
         catalog,
         deckCount: meta.deck?.length ?? 0,
         completedFamilies: meta.completedFamilies,
@@ -102,10 +102,10 @@ export class LesMainsPresenterService {
 
   private buildHandCards(
     hand: string[],
-  ): Array<{ familyId?: LesMainsFamily; memberId: string; label: string }> {
+  ): Array<{ family?: LesMainsFamily; id: string; label: string }> {
     type LesMainsHandCard = {
-      familyId?: LesMainsFamily;
-      memberId: string;
+      family?: LesMainsFamily;
+      id: string;
       label: string;
     };
 
@@ -119,8 +119,8 @@ export class LesMainsPresenterService {
         (familyId && FAMILY_LABELS[familyId]) || (familyId ?? 'Carte');
       const label = card.name ? `${familyLabel} - ${card.name}` : cardId;
       return {
-        familyId,
-        memberId: card.id,
+        family: familyId,
+        id: card.id,
         label,
       };
     });

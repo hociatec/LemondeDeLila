@@ -7,6 +7,8 @@ import {
 } from '../../model/lama.model';
 import { stringOrEmpty } from '@common/utils/public-api';
 import { isLamaDrawLocked } from '../policies/lama-draw.policy';
+import { bindHandCardActions } from '../../../../../application/helpers/hand-cards-presenter.helper';
+import type { GameSingleActionDto } from '../../../../../application/models/game-action.model';
 
 export class LamaExtrasPresenter {
   build(
@@ -15,14 +17,20 @@ export class LamaExtrasPresenter {
     userId: number,
     currentPlayerId: number | null,
     base: Record<string, unknown>,
+    actions: GameSingleActionDto[],
   ): Record<string, unknown> {
     const players = Array.isArray(state.players) ? state.players : [];
 
     const handValues = (metadata.handsByPlayerId ?? {})[String(userId)] ?? [];
-    const hand = handValues
+    const hand = bindHandCardActions(
+      handValues
       .filter((v) => typeof v === 'number' && v >= 1 && v <= LAMA_VALUE)
       .sort((a, b) => a - b)
-      .map(lamaCardLabel);
+      .map((value) => ({ id: String(value), label: lamaCardLabel(value) })),
+      actions,
+      { actionTypes: ['lama_play'], disableUnbound: true },
+    );
+    const handLabels = hand.map((card) => card.label);
 
     const scoreBy = metadata.scoresByPlayerId ?? {};
     const myScore = Number(scoreBy[String(userId)] ?? 0);
@@ -97,7 +105,9 @@ export class LamaExtrasPresenter {
         panels: {
           hand: {
             title: 'Main',
-            message: hand.length ? `Main: ${hand.join(', ')}` : 'Main: (vide)',
+            message: hand.length
+              ? `Main: ${handLabels.join(', ')}`
+              : 'Main: (vide)',
           },
           hands: {
             title: 'Mains',

@@ -147,12 +147,14 @@ export class LamaPresenter extends BasePresenterService {
     userId: number,
     currentPlayerId: number | null,
   ): Record<string, unknown> {
+    const actions = this.actionsPresenter.build(state, userId);
     return this.extrasPresenter.build(
       state,
       metadata,
       userId,
       currentPlayerId,
       this.getBaseExtras(state),
+      actions,
     );
   }
 

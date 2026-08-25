@@ -33,9 +33,9 @@ export class EntreRitesPresenterService {
       discardLabel: 'Familles',
       tableMessage: `Statut: ${state.status ?? 'en attente'}`,
     });
+    const presentedHand = this.buildHandCards(hand);
     const extras = {
-      hand,
-      handCards: this.buildHandCards(hand),
+      hand: presentedHand,
       catalog: this.buildCatalog(),
       playerViews: this.buildPlayerViews(state.players),
       hands,
@@ -72,23 +72,21 @@ export class EntreRitesPresenterService {
 
   private buildHandCards(
     hand: string[],
-  ): Array<{ familyId?: string; memberId: string; label: string }> {
-    const cards: Array<{ familyId?: string; memberId: string; label: string }> =
-      [];
+  ): Array<{ family?: string; id: string; label: string }> {
+    const cards: Array<{ family?: string; id: string; label: string }> = [];
     for (const cardId of hand ?? []) {
       const definition = ENTRE_RITES_CARD_BY_ID[cardId];
       if (!definition) continue;
       if (definition.type === 'family') {
         cards.push({
-          familyId: definition.familyId,
-          memberId: definition.id,
+          family: definition.familyId,
+          id: definition.id,
           label: `${definition.familyName} - ${definition.name}`,
         });
         continue;
       }
       cards.push({
-        familyId: undefined,
-        memberId: definition.id,
+        id: definition.id,
         label: definition.name,
       });
     }

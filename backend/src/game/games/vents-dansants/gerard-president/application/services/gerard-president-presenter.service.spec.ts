@@ -56,7 +56,7 @@ describe('GerardPresidentPresenterService', () => {
     expect(Array.isArray(result.catalog?.names)).toBe(true);
     expect(result.catalog?.specials?.length).toBeGreaterThan(0);
     expect(result.catalog?.themes?.length).toBeGreaterThan(0);
-    expect(result.extras?.handCards?.length).toBeGreaterThan(0);
+    expect(result.extras?.hand?.length).toBeGreaterThan(0);
     expect(result.extras?.playerViews?.length).toBe(2);
     expect(result.actions?.some((a) => a.type === 'play_name')).toBe(true);
     expect(result.extras?.submissions?.[2]?.[0]).toContain('Prénom secret');

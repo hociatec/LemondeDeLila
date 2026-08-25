@@ -1522,8 +1522,8 @@ void TestRoomSessionGatewayUsesWpfHandshakeContract()
         privacy.type == lila::modules::rooms::domain::RoomEventType::PrivacyChanged && privacy.value,
         "Table privee attendue");
     Expect(
-        privacy.message == std::string("Table priv" "\xC3\xA9" "e."),
-        "Annonce de table privee attendue");
+        privacy.message.empty(),
+        "Le changement de confidentialite doit rester silencieux; l'annonce est un evenement distinct.");
 
     socket.responses.push_back(nlohmann::json{
         {"type", "room.info"},
