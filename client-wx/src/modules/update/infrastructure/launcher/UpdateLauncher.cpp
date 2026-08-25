@@ -30,7 +30,12 @@ int lila::modules::update::RunUpdateLauncher()
         if (arguments) LocalFree(arguments);
         return RunLauncher(skipLauncherReplacement);
     } catch (const std::exception& error) {
-        MessageBoxW(nullptr, Widen(error.what()).c_str(), L"Le Monde de Lila - Mise Ã  jour",
+        try {
+            AppendLog(ExecutablePath().parent_path(), "ERROR",
+                std::string("Launcher stopped: ") + error.what());
+        } catch (...) {
+        }
+        MessageBoxW(nullptr, Widen(error.what()).c_str(), L"Le Monde de Lila - Mise à jour",
             MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
         return 1;
     }

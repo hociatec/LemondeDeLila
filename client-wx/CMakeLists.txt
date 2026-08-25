@@ -4,6 +4,7 @@ set(LILA_PROJECT_VERSION "1.2.651.0" CACHE STRING "Version à quatre composants 
 project(lemonde_de_lila_wx VERSION ${LILA_PROJECT_VERSION} LANGUAGES CXX)
 
 set(LILA_UPDATE_PUBLIC_KEY_DER_BASE64 "" CACHE STRING "Clé publique RSA DER/base64 des manifestes de mise à jour")
+set(LILA_UPDATE_AUTHENTICODE_SIGNER_SHA256 "" CACHE STRING "Empreinte SHA-256 du certificat Authenticode autorisé")
 set(LILA_UPDATE_MANIFEST_URL "https://api.lilas.hociatec.fr/api/client/releases/latest?platform=windows&arch=x64" CACHE STRING "URL du manifeste de mise à jour WX")
 
 include(CTest)
@@ -489,6 +490,7 @@ if(WIN32)
         src/modules/update/infrastructure/launcher/UpdateLauncher.Security.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.State.cpp
         src/modules/update/domain/UpdateProtocol.cpp
+        src/modules/update/domain/UpdateTrustPolicy.cpp
     )
     target_include_directories(lila_launcher PRIVATE
         src
@@ -698,6 +700,21 @@ if(BUILD_TESTING)
         add_test(
             NAME lemonde_de_lila_wx_update_tests
             COMMAND lemonde_de_lila_wx_update_tests
+        )
+
+        add_executable(lemonde_de_lila_wx_update_trust_tests
+            tests/UpdateTrustPolicyTests.cpp
+            src/modules/update/domain/UpdateTrustPolicy.cpp
+        )
+        target_include_directories(lemonde_de_lila_wx_update_trust_tests PRIVATE src)
+        if(MSVC)
+            target_compile_options(lemonde_de_lila_wx_update_trust_tests PRIVATE /W4 /permissive- /utf-8)
+        else()
+            target_compile_options(lemonde_de_lila_wx_update_trust_tests PRIVATE -Wall -Wextra -Wpedantic)
+        endif()
+        add_test(
+            NAME lemonde_de_lila_wx_update_trust_tests
+            COMMAND lemonde_de_lila_wx_update_trust_tests
         )
 
         add_executable(lemonde_de_lila_wx_gameplay_tests

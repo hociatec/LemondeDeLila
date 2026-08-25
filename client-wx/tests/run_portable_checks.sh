@@ -31,6 +31,12 @@ c++ -std=c++20 -I"$ROOT/src" \
 "$BUILD_DIR/navigation-state-tests"
 
 c++ -std=c++20 -I"$ROOT/src" \
+  "$ROOT/tests/UpdateTrustPolicyTests.cpp" \
+  "$ROOT/src/modules/update/domain/UpdateTrustPolicy.cpp" \
+  -o "$BUILD_DIR/update-trust-policy-tests"
+"$BUILD_DIR/update-trust-policy-tests"
+
+c++ -std=c++20 -I"$ROOT/src" \
   "$ROOT/tests/SocialProfileMapperTests.cpp" \
   -o "$BUILD_DIR/social-profile-mapper-tests"
 "$BUILD_DIR/social-profile-mapper-tests"

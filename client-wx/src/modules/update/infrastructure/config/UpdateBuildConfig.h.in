@@ -6,6 +6,7 @@ struct UpdateBuildConfig final
 {
     static constexpr const char* BuildVersion = "@LILA_PROJECT_VERSION@";
     static constexpr const char* PublicKeyDerBase64 = "@LILA_UPDATE_PUBLIC_KEY_DER_BASE64@";
+    static constexpr const char* AuthenticodeSignerSha256 = "@LILA_UPDATE_AUTHENTICODE_SIGNER_SHA256@";
     static constexpr const char* DefaultManifestUrl = "@LILA_UPDATE_MANIFEST_URL@";
 };
 }

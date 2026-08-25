@@ -6,6 +6,7 @@
 #include <array>
 #include <fstream>
 #include <stdexcept>
+#include <thread>
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
 
 namespace lila::modules::update::launcher
@@ -23,6 +24,18 @@ struct ParsedUrl
     INTERNET_PORT port = 0;
     bool secure = false;
 };
+
+[[noreturn]] void ThrowWinHttpError(const char* operation)
+{
+    const DWORD code = GetLastError();
+    throw std::runtime_error(
+        std::string(operation) + " (WinHTTP error " + std::to_string(code) + ").");
+}
+
+void WaitBeforeRetry(int attempt)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(500 * attempt));
+}
 
 ParsedUrl ParseUrl(const std::wstring& raw)
 {
@@ -55,22 +68,28 @@ void HttpGet(const std::string& url, std::uint64_t maximumBytes, Consumer&& cons
     InternetHandle session{WinHttpOpen(L"LeMondeDeLilaUpdater/1.0",
         WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME,
         WINHTTP_NO_PROXY_BYPASS, 0)};
-    if (!session.value) throw std::runtime_error("Unable to open HTTP session.");
+    if (!session.value) ThrowWinHttpError("Unable to open HTTP session");
     WinHttpSetTimeouts(session.value, 10000, 10000, 15000, 30000);
     InternetHandle connection{WinHttpConnect(session.value, parsed.host.c_str(), parsed.port, 0)};
-    if (!connection.value) throw std::runtime_error("Unable to connect to update server.");
+    if (!connection.value) ThrowWinHttpError("Unable to connect to update server");
     InternetHandle request{WinHttpOpenRequest(connection.value, L"GET", parsed.path.c_str(),
         nullptr, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES,
         parsed.secure ? WINHTTP_FLAG_SECURE : 0)};
     if (!request.value || !WinHttpSendRequest(request.value, WINHTTP_NO_ADDITIONAL_HEADERS,
             0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0) || !WinHttpReceiveResponse(request.value, nullptr)) {
-        throw std::runtime_error("Update request failed.");
+        ThrowWinHttpError("Update request failed");
     }
     DWORD status = 0;
     DWORD size = sizeof(status);
-    WinHttpQueryHeaders(request.value, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
-        WINHTTP_HEADER_NAME_BY_INDEX, &status, &size, WINHTTP_NO_HEADER_INDEX);
-    if (status != 200) throw std::runtime_error("Update server returned an error.");
+    if (!WinHttpQueryHeaders(request.value,
+            WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+            WINHTTP_HEADER_NAME_BY_INDEX, &status, &size, WINHTTP_NO_HEADER_INDEX)) {
+        ThrowWinHttpError("Unable to read update response status");
+    }
+    if (status != 200) {
+        throw std::runtime_error(
+            "Update server returned HTTP status " + std::to_string(status) + ".");
+    }
     DWORD contentLength = 0;
     size = sizeof(contentLength);
     if (WinHttpQueryHeaders(request.value,
@@ -84,7 +103,7 @@ void HttpGet(const std::string& url, std::uint64_t maximumBytes, Consumer&& cons
     while (true) {
         DWORD read = 0;
         if (!WinHttpReadData(request.value, buffer.data(), static_cast<DWORD>(buffer.size()), &read)) {
-            throw std::runtime_error("Update download was interrupted.");
+            ThrowWinHttpError("Update download was interrupted");
         }
         if (read == 0) break;
         total += read;
@@ -97,11 +116,21 @@ void HttpGet(const std::string& url, std::uint64_t maximumBytes, Consumer&& cons
 
 std::string DownloadText(const std::string& url)
 {
-    std::string result;
-    HttpGet(url, 1024 * 1024, [&result](const char* data, DWORD size) {
-        result.append(data, size);
-    });
-    return result;
+    std::string lastFailure;
+    for (int attempt = 1; attempt <= 3; ++attempt) {
+        try {
+            std::string result;
+            HttpGet(url, 1024 * 1024, [&result](const char* data, DWORD size) {
+                result.append(data, size);
+            });
+            return result;
+        } catch (const std::exception& error) {
+            lastFailure = error.what();
+            if (attempt < 3) WaitBeforeRetry(attempt);
+        }
+    }
+    throw std::runtime_error(
+        "Update manifest download failed after 3 attempts. Last error: " + lastFailure);
 }
 
 void DownloadFile(
@@ -111,28 +140,37 @@ void DownloadFile(
 {
     fs::create_directories(destination.parent_path());
     const fs::path partial = destination.wstring() + L".partial";
-    fs::remove(partial);
-    try {
-        std::ofstream output(partial, std::ios::binary | std::ios::trunc);
-        if (!output) throw std::runtime_error("Unable to create update download.");
-        std::uint64_t written = 0;
-        HttpGet(url, expectedBytes, [&output, &written](const char* data, DWORD size) {
-            output.write(data, size);
-            if (!output) throw std::runtime_error("Unable to save update download.");
-            written += size;
-        });
-        output.flush();
-        if (!output || written != expectedBytes) {
-            throw std::runtime_error("Downloaded update size does not match its manifest.");
-        }
-        output.close();
-        if (!MoveFileExW(partial.c_str(), destination.c_str(),
-                MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
-            throw std::runtime_error("Unable to commit update download.");
-        }
-    } catch (...) {
+    std::string lastFailure;
+    for (int attempt = 1; attempt <= 3; ++attempt) {
         fs::remove(partial);
-        throw;
+        try {
+            std::ofstream output(partial, std::ios::binary | std::ios::trunc);
+            if (!output) throw std::runtime_error("Unable to create update download.");
+            std::uint64_t written = 0;
+            HttpGet(url, expectedBytes, [&output, &written](const char* data, DWORD size) {
+                output.write(data, size);
+                if (!output) throw std::runtime_error("Unable to save update download.");
+                written += size;
+            });
+            output.flush();
+            if (!output || written != expectedBytes) {
+                throw std::runtime_error("Downloaded update size does not match its manifest.");
+            }
+            output.close();
+            if (!MoveFileExW(partial.c_str(), destination.c_str(),
+                    MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+                throw std::runtime_error(
+                    "Unable to commit update download (Windows error " +
+                    std::to_string(GetLastError()) + ").");
+            }
+            return;
+        } catch (const std::exception& error) {
+            fs::remove(partial);
+            lastFailure = error.what();
+            if (attempt < 3) WaitBeforeRetry(attempt);
+        }
     }
+    throw std::runtime_error(
+        "Update package download failed after 3 attempts. Last error: " + lastFailure);
 }
 }

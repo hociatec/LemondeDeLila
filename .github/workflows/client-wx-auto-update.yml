@@ -48,7 +48,11 @@ jobs:
           [IO.File]::WriteAllBytes($path, [Convert]::FromBase64String($env:PFX_BASE64))
           $password = ConvertTo-SecureString $env:PFX_PASSWORD -AsPlainText -Force
           $cert = Import-PfxCertificate -FilePath $path -Password $password -CertStoreLocation Cert:\CurrentUser\My
+          $sha256 = [Convert]::ToHexString(
+            [Security.Cryptography.SHA256]::HashData($cert.RawData)
+          ).ToLowerInvariant()
           "thumbprint=$($cert.Thumbprint)" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "sha256=$sha256" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v4
@@ -99,10 +103,18 @@ jobs:
         shell: cmd
         env:
           UPDATE_PUBLIC_KEY: ${{ secrets.LILA_UPDATE_PUBLIC_KEY_DER_BASE64 }}
+          UPDATE_SIGNER_SHA256: ${{ steps.certificate.outputs.sha256 }}
         run: |
           if "%UPDATE_PUBLIC_KEY%"=="" exit /b 2
-          cmake -S client-wx -B client-wx\build\ci-release -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows -DLILA_PROJECT_VERSION=${{ steps.version.outputs.value }} -DLILA_UPDATE_PUBLIC_KEY_DER_BASE64=%UPDATE_PUBLIC_KEY%
-          cmake --build client-wx\build\ci-release --target lemonde_de_lila_wx lila_launcher --parallel
+          if "%UPDATE_SIGNER_SHA256%"=="" exit /b 3
+          cmake -S client-wx -B client-wx\build\ci-release -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows -DLILA_PROJECT_VERSION=${{ steps.version.outputs.value }} -DLILA_UPDATE_PUBLIC_KEY_DER_BASE64=%UPDATE_PUBLIC_KEY% -DLILA_UPDATE_AUTHENTICODE_SIGNER_SHA256=%UPDATE_SIGNER_SHA256%
+          cmake --build client-wx\build\ci-release --target lemonde_de_lila_wx lila_launcher lemonde_de_lila_wx_update_tests lemonde_de_lila_wx_update_trust_tests --parallel
+
+      - name: Test WX update contracts
+        shell: pwsh
+        run: |
+          ctest --test-dir client-wx\build\ci-release --output-on-failure `
+            -R 'lemonde_de_lila_wx_update(_trust)?_tests'
 
       - name: Sign executables
         shell: pwsh
@@ -112,6 +124,7 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $timestamp = if ($env:TIMESTAMP_URL) { $env:TIMESTAMP_URL } else { 'http://timestamp.digicert.com' }
           $thumbprint = '${{ steps.certificate.outputs.thumbprint }}'
+          $expectedSha256 = '${{ steps.certificate.outputs.sha256 }}'
           signtool sign /sha1 $thumbprint /fd SHA256 /tr $timestamp /td SHA256 client-wx\build\ci-release\lemonde_de_lila_wx.exe
           signtool sign /sha1 $thumbprint /fd SHA256 /tr $timestamp /td SHA256 client-wx\build\ci-release\lila_launcher.exe
           foreach ($file in @('client-wx\build\ci-release\lemonde_de_lila_wx.exe', 'client-wx\build\ci-release\lila_launcher.exe')) {
@@ -127,6 +140,12 @@ jobs:
             }
             if ($signature.SignerCertificate.Thumbprint -ne $thumbprint) {
               throw "$file n'a pas été signé avec le certificat attendu."
+            }
+            $actualSha256 = [Convert]::ToHexString(
+              [Security.Cryptography.SHA256]::HashData($signature.SignerCertificate.RawData)
+            ).ToLowerInvariant()
+            if ($actualSha256 -ne $expectedSha256) {
+              throw "$file n'a pas l'empreinte SHA-256 Authenticode attendue."
             }
             if ($signature.Status -eq 'Valid') {
               signtool verify /pa /tw $file

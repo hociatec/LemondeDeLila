@@ -9,10 +9,13 @@
 #include <algorithm>
 #include <array>
 #include <fstream>
+#include <iomanip>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 
 #include "UpdateBuildConfig.h"
+#include "modules/update/domain/UpdateTrustPolicy.h"
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
 
 namespace lila::modules::update::launcher
@@ -61,7 +64,47 @@ std::string Sha256(const fs::path& path)
     return result;
 }
 
-bool VerifyAuthenticode(const fs::path& executable)
+std::string CertificateSha256(PCCERT_CONTEXT certificate)
+{
+    if (!certificate) return {};
+    std::array<BYTE, 32> digest{};
+    DWORD size = static_cast<DWORD>(digest.size());
+    if (!CryptHashCertificate2(BCRYPT_SHA256_ALGORITHM, 0, nullptr,
+            certificate->pbCertEncoded, certificate->cbCertEncoded,
+            digest.data(), &size) || size != digest.size()) return {};
+    static constexpr char Hex[] = "0123456789abcdef";
+    std::string result;
+    result.reserve(digest.size() * 2);
+    for (const auto byte : digest) {
+        result.push_back(Hex[byte >> 4]);
+        result.push_back(Hex[byte & 15]);
+    }
+    return result;
+}
+
+std::string FormatTrustFailure(
+    LONG status,
+    const std::string& actualFingerprint,
+    const std::string& expectedFingerprint)
+{
+    std::ostringstream message;
+    message << "trust status 0x" << std::hex << std::setfill('0') << std::setw(8)
+        << static_cast<std::uint32_t>(status);
+    if (actualFingerprint.empty()) {
+        message << ", signer certificate unavailable";
+    } else if (expectedFingerprint.empty()) {
+        message << ", no pinned signer configured";
+    } else if (lila::modules::update::NormalizeSignerSha256(expectedFingerprint).empty()) {
+        message << ", configured signer pin is invalid";
+    } else {
+        message << ", signer pin "
+            << (lila::modules::update::SignerSha256Matches(
+                    actualFingerprint, expectedFingerprint) ? "matched" : "mismatched");
+    }
+    return message.str();
+}
+
+bool VerifyAuthenticode(const fs::path& executable, std::string* failureReason)
 {
     WINTRUST_FILE_INFO file{};
     file.cbStruct = sizeof(file);
@@ -76,9 +119,30 @@ bool VerifyAuthenticode(const fs::path& executable)
     trust.dwProvFlags = WTD_CACHE_ONLY_URL_RETRIEVAL;
     GUID policy = WINTRUST_ACTION_GENERIC_VERIFY_V2;
     const LONG status = WinVerifyTrust(nullptr, &policy, &trust);
+
+    std::string actualFingerprint;
+    if (trust.hWVTStateData) {
+        const auto provider = WTHelperProvDataFromStateData(trust.hWVTStateData);
+        const auto signer = provider
+            ? WTHelperGetProvSignerFromChain(provider, 0, FALSE, 0)
+            : nullptr;
+        if (signer && signer->csCertChain > 0 && signer->pasCertChain) {
+            actualFingerprint = CertificateSha256(signer->pasCertChain[0].pCert);
+        }
+    }
     trust.dwStateAction = WTD_STATEACTION_CLOSE;
     WinVerifyTrust(nullptr, &policy, &trust);
-    return status == ERROR_SUCCESS;
+
+    const std::string expectedFingerprint =
+        lila::modules::update::UpdateBuildConfig::AuthenticodeSignerSha256;
+    const bool accepted = lila::modules::update::IsAuthenticodeTrustAccepted(
+        status == ERROR_SUCCESS,
+        status == CERT_E_UNTRUSTEDROOT || status == CERT_E_CHAINING,
+        actualFingerprint, expectedFingerprint);
+    if (!accepted && failureReason) {
+        *failureReason = FormatTrustFailure(status, actualFingerprint, expectedFingerprint);
+    }
+    return accepted;
 }
 
 std::vector<BYTE> DecodeBase64(const std::string& value)

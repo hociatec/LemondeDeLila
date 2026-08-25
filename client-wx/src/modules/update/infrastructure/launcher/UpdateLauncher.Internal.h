@@ -71,7 +71,7 @@ std::string RequiredVersion(const Manifest& manifest);
 std::string DownloadText(const std::string& url);
 void DownloadFile(const std::string& url, const fs::path& destination, std::uint64_t expectedBytes);
 std::string Sha256(const fs::path& path);
-bool VerifyAuthenticode(const fs::path& executable);
+bool VerifyAuthenticode(const fs::path& executable, std::string* failureReason = nullptr);
 bool VerifyManifestSignature(const Manifest& manifest);
 Manifest ParseManifest(const std::string& raw);
 std::string ManifestUrl(const std::string& currentVersion);

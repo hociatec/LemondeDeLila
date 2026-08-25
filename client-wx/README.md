@@ -13,6 +13,13 @@ atomiquement de version et revient à la version précédente si le signal de
 santé du client n'arrive pas sous trente secondes. Les erreurs sont consignées
 dans `state/update.log` avec rotation automatique.
 
+Le certificat Authenticode est épinglé par son empreinte SHA-256 dans le
+lanceur au moment du build. En production, la signature n'est acceptée que si
+son certificat correspond exactement à cette empreinte, y compris lorsque sa
+racine auto-signée n'est pas approuvée par Windows. Les téléchargements réseau
+sont retentés trois fois et une archive complète déjà validée est réutilisée
+après une interruption.
+
 Toute la responsabilité de distribution native est contenue dans
 `src/modules/update` : contrat de manifeste, comparaison des versions, signaux
 de cycle de vie, configuration et launcher. Le client métier ne remplace aucun

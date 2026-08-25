@@ -180,11 +180,16 @@ void ExtractArchive(
         fs::remove_all(destination);
         throw std::runtime_error("Update does not contain all required executables.");
     }
-    if (!AllowUnsignedUpdates() &&
-        (!VerifyAuthenticode(destination / AppExecutable) ||
-            !VerifyAuthenticode(destination / LauncherExecutable))) {
-        fs::remove_all(destination);
-        throw std::runtime_error("Update executables failed Authenticode verification.");
+    if (!AllowUnsignedUpdates()) {
+        for (const auto* executable : {AppExecutable, LauncherExecutable}) {
+            std::string failure;
+            if (!VerifyAuthenticode(destination / executable, &failure)) {
+                fs::remove_all(destination);
+                throw std::runtime_error(
+                    "Update executable " + Narrow(executable) +
+                    " failed Authenticode verification (" + failure + ").");
+            }
+        }
     }
     std::uint64_t actualExtractedBytes = 0;
     for (const auto& entry : fs::recursive_directory_iterator(destination)) {
@@ -216,14 +221,23 @@ fs::path PrepareRelease(const fs::path& root, const Manifest& manifest)
     const fs::path stagingRoot = root / L"staging";
     fs::create_directories(stagingRoot);
     const fs::path archive = stagingRoot / Widen(BuildStagedUpdateArchiveFileName(manifest.releaseId));
-    EnsureFreeSpace(root, manifest.size * 2);
-    DownloadFile(manifest.url, archive, manifest.size);
+    bool archiveReady;
+    try {
+        archiveReady = fs::is_regular_file(archive) &&
+            fs::file_size(archive) == manifest.size &&
+            Sha256(archive) == manifest.sha256;
+    } catch (...) { archiveReady = false; }
+    if (!archiveReady) {
+        fs::remove(archive);
+        EnsureFreeSpace(root, manifest.size);
+        DownloadFile(manifest.url, archive, manifest.size);
+    }
     if (fs::file_size(archive) != manifest.size || Sha256(archive) != manifest.sha256) {
         fs::remove(archive);
         throw std::runtime_error("Downloaded update failed integrity verification.");
     }
     const auto extractedBytes = InspectArchive(archive, manifest.size);
-    EnsureFreeSpace(root, extractedBytes + manifest.size);
+    EnsureFreeSpace(root, extractedBytes);
     const fs::path extracted = stagingRoot / (Widen(manifest.releaseId) + L".extracting");
     ExtractArchive(archive, extracted, extractedBytes);
     fs::create_directories(finalPath.parent_path());
@@ -233,4 +247,3 @@ fs::path PrepareRelease(const fs::path& root, const Manifest& manifest)
     return finalPath;
 }
 }
-

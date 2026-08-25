@@ -19,6 +19,7 @@ int RunLauncher(bool skipLauncherReplacement)
     if (!skipLauncherReplacement && RestartForLauncherUpdate(root, state)) return 0;
 
     std::optional<Manifest> pending;
+    std::string startupUpdateFailure;
     try {
         auto manifest = ParseManifest(DownloadText(ManifestUrl(state.currentVersion)));
         RecordSignedPolicy(root, state, manifest);
@@ -28,7 +29,8 @@ int RunLauncher(bool skipLauncherReplacement)
             pending = std::move(manifest);
         }
     } catch (const std::exception& error) {
-        AppendLog(root, "WARN", std::string("Startup update check failed: ") + error.what());
+        startupUpdateFailure = error.what();
+        AppendLog(root, "WARN", "Startup update check failed: " + startupUpdateFailure);
     }
     if (pending) {
         ActivateRelease(root, state, *pending);
@@ -37,8 +39,15 @@ int RunLauncher(bool skipLauncherReplacement)
     }
     if (state.currentReleaseId.empty()) throw std::runtime_error("No installed client version.");
     if (!LocalVersionIsAllowed(state)) {
-        throw std::runtime_error(
-            "A mandatory update is required and could not be installed. Check update.log and retry with network access.");
+        std::string message =
+            "La mise a jour obligatoire vers la version " + state.requiredVersion +
+            " n'a pas pu etre installee.";
+        if (!startupUpdateFailure.empty()) {
+            message += "\n\nCause : " + startupUpdateFailure;
+        }
+        message += "\n\nLe lanceur reessaiera au prochain demarrage. Journal :\n" +
+            Narrow((root / L"state" / L"update.log").wstring());
+        throw std::runtime_error(message);
     }
 
     while (true) {

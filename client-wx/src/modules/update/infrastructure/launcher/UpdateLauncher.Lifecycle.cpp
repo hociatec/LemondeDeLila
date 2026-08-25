@@ -1,4 +1,6 @@
+#include <optional>
 #include <stdexcept>
+#include <string_view>
 
 #include "UpdateBuildConfig.h"
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
@@ -42,7 +44,27 @@ void AdoptBundledVersion(const fs::path& root, State& state)
 void CleanupStaging(const fs::path& root) noexcept
 {
     try {
-        fs::remove_all(root / L"staging");
+        const fs::path staging = root / L"staging";
+        if (!fs::is_directory(staging)) return;
+        std::optional<fs::directory_entry> newestArchive;
+        for (const auto& entry : fs::directory_iterator(staging)) {
+            const std::string name = Narrow(entry.path().filename().wstring());
+            static constexpr std::string_view suffix = ".download.zip";
+            const bool resumableArchive = entry.is_regular_file() &&
+                name.ends_with(suffix) &&
+                IsSafeReleaseId(name.substr(0, name.size() - suffix.size()));
+            if (!resumableArchive) {
+                fs::remove_all(entry.path());
+                continue;
+            }
+            if (!newestArchive ||
+                entry.last_write_time() > newestArchive->last_write_time()) {
+                if (newestArchive) fs::remove(newestArchive->path());
+                newestArchive = entry;
+            } else {
+                fs::remove(entry.path());
+            }
+        }
     } catch (...) {
     }
 }
@@ -113,4 +135,3 @@ void ActivateRelease(const fs::path& root, State& state, const Manifest& manifes
     SaveState(root, state);
 }
 }
-
