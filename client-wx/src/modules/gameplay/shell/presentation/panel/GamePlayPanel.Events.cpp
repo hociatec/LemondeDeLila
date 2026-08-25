@@ -101,6 +101,13 @@ bool GamePlayPanel::ActivateFromZone()
     }
     if (handPanel_->Count() > 0) return ActivateSelectedHandCard();
     if (HasDiceAction()) return ActivateSelectedDie();
+    if (auto roll = ResolveRollAction())
+    {
+        lila::shared::logging::LogInfo(
+            "GameInput", "Zone roll action resolved: " + roll->type);
+        PrepareAndExecuteAction(std::move(*roll));
+        return true;
+    }
     if (promptSubmissionPending) return true;
     if (!state_.lines.empty())
     {

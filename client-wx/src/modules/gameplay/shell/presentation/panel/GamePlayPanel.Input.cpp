@@ -8,6 +8,7 @@
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/dice/application/GameDiceActionResolver.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
@@ -99,6 +100,13 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             static_cast<void>(ActivateSelectedDie());
             return true;
         }
+        if (auto roll = ResolveRollAction())
+        {
+            lila::shared::logging::LogInfo(
+                "GameInput", "Enter roll action resolved: " + roll->type);
+            PrepareAndExecuteAction(std::move(*roll));
+            return true;
+        }
         if (state_.prompt && submittedPromptActionType_ == state_.prompt->actionType)
             return true;
         ActivateSelectedLine();
@@ -178,6 +186,12 @@ std::optional<domain::GameAction> GamePlayPanel::ResolveShortcutAction(const std
 {
     return shortcuts::GameShortcutResolver::ResolveAction(
         state_, actionType, linesList_->GetSelection());
+}
+
+std::optional<domain::GameAction> GamePlayPanel::ResolveRollAction() const
+{
+    return application::dice::GameDiceActionResolver::ResolveClassicRoll(
+        state_.actions);
 }
 
 std::string GamePlayPanel::NormalizeKey(const wxKeyEvent& event) const

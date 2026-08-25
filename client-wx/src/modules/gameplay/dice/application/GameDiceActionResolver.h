@@ -16,5 +16,7 @@ public:
         const domain::GameDiceState& dice,
         const std::vector<domain::GameAction>& actions,
         std::size_t selectedDie);
+    [[nodiscard]] static std::optional<domain::GameAction> ResolveClassicRoll(
+        const std::vector<domain::GameAction>& actions);
 };
 }

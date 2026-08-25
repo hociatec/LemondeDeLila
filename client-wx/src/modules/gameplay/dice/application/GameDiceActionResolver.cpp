@@ -12,6 +12,11 @@ std::optional<domain::GameAction> At(
         return std::nullopt;
     return actions[*index];
 }
+
+bool IsClassicRollActionType(const std::string& type)
+{
+    return type == "roll" || type == "ROLL_DICE" || type == "roll_dice";
+}
 }
 
 std::optional<domain::GameAction> GameDiceActionResolver::Resolve(
@@ -26,5 +31,15 @@ std::optional<domain::GameAction> GameDiceActionResolver::Resolve(
         if (auto action = At(actions, die.actionIndex)) return action;
     }
     return At(actions, dice.rollActionIndex);
+}
+
+std::optional<domain::GameAction> GameDiceActionResolver::ResolveClassicRoll(
+    const std::vector<domain::GameAction>& actions)
+{
+    for (const auto& action : actions)
+    {
+        if (!action.disabled && IsClassicRollActionType(action.type)) return action;
+    }
+    return std::nullopt;
 }
 }

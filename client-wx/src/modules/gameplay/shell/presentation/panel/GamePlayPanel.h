@@ -78,6 +78,7 @@ private:
     bool ActivateSelectedHandCard();
     bool ActivateSelectedDie();
     [[nodiscard]] bool HasDiceAction() const;
+    [[nodiscard]] std::optional<domain::GameAction> ResolveRollAction() const;
     void SyncInlinePrompt();
     void ShowInlinePrompt(domain::GameAction action);
     void SyncContentVisibility();

@@ -266,6 +266,26 @@ void TestGenericDiceContract()
         "La valeur et le nombre de faces doivent former un texte accessible.");
 }
 
+void TestClassicRollActionContract()
+{
+    using lila::modules::gameplay::application::dice::GameDiceActionResolver;
+    const auto payload = nlohmann::json{
+        {"roomId", 16},
+        {"gameType", "classic-board-game"},
+        {"state", {
+            {"actions", nlohmann::json::array({
+                {{"type", "ROLL_DICE"}, {"payload", nlohmann::json::object()}},
+                {{"type", "roll"}, {"disabled", true}, {"payload", nlohmann::json::object()}},
+            })},
+        }},
+    };
+
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    const auto action = GameDiceActionResolver::ResolveClassicRoll(state.actions);
+    Expect(action.has_value() && action->type == "ROLL_DICE",
+        "Entree doit pouvoir lancer un de expose comme action classique sans module visuel.");
+}
+
 void TestDiceRollTracker()
 {
     using lila::modules::gameplay::application::dice::GameDiceRollTracker;
@@ -406,6 +426,7 @@ int main()
         TestCardsCarryTheirActionsAcrossGames();
         TestServerDrivenKeyboardActionsSurviveTheClientContract();
         TestGenericDiceContract();
+        TestClassicRollActionContract();
         TestDiceRollTracker();
         TestServerDrivenPawnSelection();
         TestPawnSelectionHiddenForPassiveViewer();
