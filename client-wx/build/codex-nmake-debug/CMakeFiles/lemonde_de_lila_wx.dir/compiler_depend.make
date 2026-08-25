@@ -8087,6 +8087,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\composition\infrastructure\game\
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\composition\infrastructure\game\GameComposition.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\actions\domain\GameAction.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\composition\infrastructure\game\GameComposition.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\composition\infrastructure\game\GameComposition.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\composition\infrastructure\game\GameComposition.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\composition\infrastructure\game\GameComposition.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\composition\infrastructure\game\GameComposition.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\bootstrap\composition\infrastructure\game\GameComposition.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -25761,6 +25762,232 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\actions\presentation\conf
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\actions\presentation\confirmation\GameActionConfirmationPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\presentation\theme\Theme.h
 
 
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\infrastructure\GameCardDecoder.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals_core.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vadefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xkeycheck.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\nmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\pmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\emmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json_fwd.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\abi_macros.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iterator
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\adl_serializer.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\value_t.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_scope.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\detected.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\void_t.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\version
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cassert
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_escape.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\position_t.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\cpp_future.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\type_traits.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iterator_traits.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\begin.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\end.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_concat.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\identity_tag.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\std_fs.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_json.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iteration_proxy.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ranges
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_int128.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_to.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_utils.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\byte_container_with_subtype.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\hash.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\binary_reader.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\input_adapters.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\numeric
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\json_sax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\lexer.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\is_sax.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\parser.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\internal_iterator.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\primitive_iterator.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iter_impl.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\json_reverse_iterator.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_custom_base_class.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_pointer.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_ref.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\binary_writer.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\output_adapters.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\serializer.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_chars.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\ordered_map.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
+
+
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\hand\presentation\GameHandPanel.cpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\hand\presentation\GameHandPanel.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstddef
@@ -25773,27 +26000,16 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHan
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stddef.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtr1common
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json_fwd.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdint
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdint.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xmemory
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdlib
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h"
@@ -25801,28 +26017,29 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHan
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_malloc.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_search.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdlib.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\limits
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cfloat
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\float.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\climits
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstdio
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstdio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_stdio_config.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wchar.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memcpy_s.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\errno.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wconio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wdirect.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wio.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\stat.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\sys\types.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.inl.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\setjmp.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\immintrin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\wmmintrin.h
@@ -25836,41 +26053,30 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHan
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\zmmintrin.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ammintrin.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\intrin0.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\new
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\yvals.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new_debug.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_new.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\use_ansi.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\type_traits
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\string.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_memory.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_exception.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\eh.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_terminate.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xutility
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_iter_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\utility
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\initializer_list
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\compare
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\concepts
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\tuple
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xpolymorphic_allocator.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_sanitizer_annotate_container.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\abi_macros.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\panel.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\window.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\event.h
@@ -25895,7 +26101,9 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHan
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdarg.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\wxcrtbase.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\wctype.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\io.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\strvararg.h
@@ -25905,11 +26113,16 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHan
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\iosfwrap.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iosfwd
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\fontenc.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\unichar.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xstring
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_string_view.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\string_view
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\stringops.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\beforestd.h
@@ -25919,11 +26132,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHan
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\afterstd.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\functional
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\typeinfo
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\unordered_map
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xhash
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cmath
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\list
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\xti.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\rtti.h
@@ -26245,6 +26461,13 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHan
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\language.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\atomic
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xatomic_wait.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xthreads.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\validate.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
@@ -26268,108 +26491,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHan
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\containr.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\adl_serializer.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\from_json.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\array
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\forward_list
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\valarray
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\exceptions.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\value_t.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_scope.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\detected.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\void_t.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\version
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cassert
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\assert.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_escape.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\position_t.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\cpp_future.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\type_traits.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iterator_traits.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\begin.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\call_std\end.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_concat.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\identity_tag.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\std_fs.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\filesystem
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\chrono
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfilesystem_abi.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_tzdb.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\format
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_format_ucd_tables.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_formatter.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_print.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_tuple_formatter.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\bit
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocale
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xfacet
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocinfo
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\clocale
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\charconv
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_ryu_tables.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcharconv_tables.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\locale
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocbuf
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\streambuf
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xiosbase
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\share.h"
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmes
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocmon
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xlocnum
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xloctime
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\istream
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ostream.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ios
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\optional
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xsmf_control.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_json.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iteration_proxy.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ranges
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_int128.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_ranges_to.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\span
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_utils.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\byte_container_with_subtype.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\hash.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\binary_reader.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\input_adapters.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\numeric
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\json_sax.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\lexer.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\meta\is_sax.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\input\parser.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\internal_iterator.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\primitive_iterator.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\iter_impl.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\iterators\json_reverse_iterator.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_custom_base_class.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_pointer.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\json_ref.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\binary_writer.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\output_adapters.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\output\serializer.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\conversions\to_chars.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\ordered_map.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\any
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
-CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\listbox.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\defs.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
@@ -26390,6 +26512,10 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHan
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\winundef.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\wx\msw\stattext.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\shell\presentation\formatting\GamePlayFormatters.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\json_fwd.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\map
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\abi_macros.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\hand\presentation\GameHandPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\ui\presentation\theme\Theme.h
 
 
@@ -26759,6 +26885,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\detail\macro_unscope.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\actions\domain\GameAction.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\information\presentation\GameInfoTextBuilder.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -28787,6 +28914,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameS
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameSessionService.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameSessionService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameSessionService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameSessionService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameSessionService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameSessionService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\application\GameSessionService.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -29028,6 +29156,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\Ga
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\session\infrastructure\GameSessionGateway.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -29929,6 +30058,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Actions.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -30562,6 +30692,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -31227,6 +31358,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Input.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -31875,6 +32007,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -32546,6 +32679,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.Session.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -33186,6 +33320,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -33856,6 +33991,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shell\presentation\panel\GamePlayPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -34148,6 +34284,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\Ga
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\shortcuts\domain\GameShortcut.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\shortcuts\presentation\GameShortcutResolver.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -34902,12 +35039,14 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\Game
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\actions\domain\GameAction.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\shortcuts\domain\GameShortcut.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GamePayloadJsonReader.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\infrastructure\GameStateSectionsDecoder.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\infrastructure\GameCardDecoder.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\gameplay\state\infrastructure\GameStatePayloadCodec.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\infrastructure\PawnSelectionDecoder.h
 
 
@@ -78902,6 +79041,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Events.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Events.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -79622,6 +79762,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Layout.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.Layout.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -80345,6 +80486,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.State.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.State.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -81013,6 +81155,7 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.cpp.obj: C:\vcpkg\installed\x64-windows\include\nlohmann\thirdparty\hedley\hedley_undef.hpp
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\session\domain\GameEvent.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameLine.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\modules\rooms\presentation\shell\RoomPanel.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\pawn_selection\domain\PawnSelection.h
@@ -115785,6 +115928,20 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\Wi
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.NativeState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\infrastructure\winhttp\WinHttpHandle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
@@ -116068,7 +116225,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\Wi
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xbit_ops.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextCatalog.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\text\presentation\catalog\UiTextKeys.def
-CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Connection.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winhttp.h"
 
 
@@ -116181,6 +116337,20 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\Wi
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.NativeState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\infrastructure\winhttp\WinHttpHandle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
@@ -116404,7 +116574,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\Wi
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\presentation\ErrorFormatting.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ModuleErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\NetworkErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.Messaging.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winhttp.h"
 
 
@@ -116517,6 +116686,20 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\Wi
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\application\websocket\IWebSocketClient.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stop_token
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.NativeState.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\mutex
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_chrono.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\ratio
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\cerrno
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xcall_once.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\xerrc.h
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\thread
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\process.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_startup.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h"
+CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_startup.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\network\infrastructure\winhttp\WinHttpHandle.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h"
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
@@ -116738,7 +116921,6 @@ CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\Wi
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\presentation\ErrorFormatting.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\ModuleErrorMessages.h
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\wamp64\www\lemondeDeLila\client-wx\src\shared\errors\catalog\NetworkErrorMessages.h
-CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: C:\BuildTools\VC\Tools\MSVC\14.44.35207\include\stdexcept
 CMakeFiles\lemonde_de_lila_wx.dir\src\shared\network\infrastructure\websocket\WinHttpWebSocketClient.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winhttp.h"
 
 
@@ -122693,6 +122875,8 @@ C:\vcpkg\installed\x64-windows\include\nlohmann\detail\string_escape.hpp:
 
 C:\vcpkg\installed\x64-windows\include\wx\msw\stdpaths.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\infrastructure\GameCardDecoder.cpp:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\catalog\application\CatalogService.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\objidl.h":
@@ -122750,6 +122934,8 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\presentation\Acti
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoollegacyapiset.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\threadpoolapiset.h":
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\infrastructure\GameCardDecoder.h:
 
 C:\vcpkg\installed\x64-windows\include\wx\region.h:
 
@@ -123519,6 +123705,12 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\shared\security\domain\JwtPayload.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\state\domain\GameState.h:
 
+C:\wamp64\www\lemondeDeLila\client-wx\src\bootstrap\runtime\application\AppRuntime.cpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\infrastructure\AppDataPaths.cpp:
+
+C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\cards\domain\GameCard.h:
+
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\prompts\domain\GamePrompt.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\gameplay\shortcuts\domain\GameShortcut.h:
@@ -123610,8 +123802,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\WsAuthenti
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\user\infrastructure\remote\UserAuthRemoteDataSource.h:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\bootstrap\runtime\application\AppRuntime.h:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\bootstrap\runtime\application\AppRuntime.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\modules\about\presentation\AboutPageCoordinator.h:
 
@@ -124028,8 +124218,6 @@ C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\presentation\Acce
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\accessibility\presentation\AccessibleListBox.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\concurrency\application\BackgroundExecutor.cpp:
-
-C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\infrastructure\AppDataPaths.cpp:
 
 C:\wamp64\www\lemondeDeLila\client-wx\src\shared\config\infrastructure\AppDataPaths.h:
 

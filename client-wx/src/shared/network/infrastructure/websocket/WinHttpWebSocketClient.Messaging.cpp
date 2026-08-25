@@ -18,20 +18,22 @@ namespace lila::shared::network::websocket
 void WinHttpWebSocketClient::Send(const std::string& payload)
 {
 #ifdef _WIN32
-    if (!IsConnected())
+    const auto operation = BeginOperation(false);
+    if (operation.handle == nullptr)
     {
         throw std::runtime_error(lila::shared::errors::WinHttpNoActiveConnection);
     }
 
     const auto rawPayload = reinterpret_cast<const BYTE*>(payload.data());
     const DWORD sendResult = WinHttpWebSocketSend(
-        state_->webSocket.Get(),
+        operation.handle,
         WINHTTP_WEB_SOCKET_UTF8_MESSAGE_BUFFER_TYPE,
         const_cast<BYTE*>(rawPayload),
         static_cast<DWORD>(payload.size()));
+    EndOperation(operation);
     if (sendResult != NO_ERROR)
     {
-        Close();
+        CancelIfCurrent(operation.generation);
         throw std::runtime_error(lila::shared::errors::WithDetails(
             lila::shared::errors::RealtimeSendFailed,
             "code WinHTTP " + std::to_string(sendResult)));
@@ -45,19 +47,22 @@ void WinHttpWebSocketClient::Send(const std::string& payload)
 std::string WinHttpWebSocketClient::Receive()
 {
 #ifdef _WIN32
-    if (!IsConnected())
+    const auto operation = BeginOperation(true);
+    if (operation.handle == nullptr)
     {
         throw std::runtime_error(lila::shared::errors::WinHttpNoActiveConnection);
     }
 
     try
     {
-        return detail::ReceiveMessage(state_->webSocket.Get());
+        auto message = detail::ReceiveMessage(operation.handle);
+        EndOperation(operation);
+        return message;
     }
-    catch (const std::exception& exception)
+    catch (...)
     {
-        (void)exception;
-        Close();
+        EndOperation(operation);
+        CancelIfCurrent(operation.generation);
         throw;
     }
 #else
@@ -65,4 +70,3 @@ std::string WinHttpWebSocketClient::Receive()
 #endif
 }
 }
-

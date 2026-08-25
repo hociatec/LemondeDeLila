@@ -13232,3 +13232,17 @@
 2026-08-25 04:24:20.890 [WARN ] [Chat] Reconnexion au serveur... : interrupted
 2026-08-25 04:24:20.890 [ERROR] [Chat] Envoi tchat échoué : send failed
 2026-08-25 04:24:20.890 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 04:32:46.748 [WARN ] [ChatProtocol] Le tableau 'messages' doit être un tableau JSON.
+2026-08-25 04:32:46.760 [WARN ] [Rooms] socket lost
+2026-08-25 04:32:47.984 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-25 04:32:48.316 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-25 04:32:49.003 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 04:32:49.004 [ERROR] [Chat] Envoi tchat échoué : send failed
+2026-08-25 04:32:49.005 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 04:38:31.010 [WARN ] [ChatProtocol] Le tableau 'messages' doit être un tableau JSON.
+2026-08-25 04:38:31.024 [WARN ] [Rooms] socket lost
+2026-08-25 04:38:32.236 [WARN ] [Chat] Reconnexion au serveur... : socket lost
+2026-08-25 04:38:32.572 [WARN ] [Chat] Connexion au serveur interrompue : open failed
+2026-08-25 04:38:33.274 [WARN ] [Chat] Reconnexion au serveur... : interrupted
+2026-08-25 04:38:33.275 [ERROR] [Chat] Envoi tchat échoué : send failed
+2026-08-25 04:38:33.275 [WARN ] [Chat] Reconnexion au serveur... : interrupted

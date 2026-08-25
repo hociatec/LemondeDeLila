@@ -1,11 +1,16 @@
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { RoomPayload } from '../../../../room/application/models/room-payload.model';
+import {
+  ROOM_GAME_PORT,
+  type RoomGamePort,
+} from '../../../../room/public-api';
 import { Room } from '../../../../room/infrastructure/persistence/typeorm/entities/room.entity';
 
 @Injectable()
@@ -13,6 +18,8 @@ export class GameWsRoomContextService {
   constructor(
     @InjectRepository(Room)
     private readonly rooms: Repository<Room>,
+    @Inject(ROOM_GAME_PORT)
+    private readonly roomGame: RoomGamePort,
   ) {}
 
   async ensureReadable(roomId: number, userId: number): Promise<void> {
@@ -35,6 +42,7 @@ export class GameWsRoomContextService {
   async transition(
     roomId: number,
     operation: 'reset' | 'start',
+    userId: number,
     requestedGameType = '',
   ): Promise<string> {
     const room = await this.findRoom(roomId);
@@ -42,14 +50,10 @@ export class GameWsRoomContextService {
     if (!gameType) throw new NotFoundException('Jeu introuvable');
 
     if (operation === 'reset') {
-      room.status = 'setup';
-      room.startedAt = null;
+      await this.roomGame.resetRoom(roomId, userId);
     } else {
-      room.status = 'started';
-      room.runId = Math.max(0, Number(room.runId ?? 0)) + 1;
-      room.startedAt = new Date(Math.floor(Date.now() / 1000) * 1000);
+      await this.roomGame.startRoom(roomId, userId);
     }
-    await this.rooms.save(room);
     return gameType;
   }
 

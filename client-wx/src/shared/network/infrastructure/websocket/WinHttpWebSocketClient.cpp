@@ -24,30 +24,7 @@ WinHttpWebSocketClient::~WinHttpWebSocketClient()
 
 void WinHttpWebSocketClient::Close()
 {
-#ifdef _WIN32
-    if (state_ != nullptr)
-    {
-        auto* webSocket = state_->webSocket.Release();
-        if (webSocket != nullptr)
-        {
-            WinHttpWebSocketClose(
-                webSocket,
-                WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS,
-                nullptr,
-                0);
-            WinHttpCloseHandle(webSocket);
-        }
-    }
-
-    if (state_ != nullptr)
-    {
-        state_->request.Reset();
-        state_->connection.Reset();
-        state_->session.Reset();
-        state_->endpoint.clear();
-        state_->headers.clear();
-    }
-#endif
+    CancelPendingOperation();
 }
 
 bool WinHttpWebSocketClient::IsConnected() const
@@ -61,27 +38,94 @@ bool WinHttpWebSocketClient::IsConnected() const
 
 bool WinHttpWebSocketClient::IsConnectedTo(const std::string& endpoint, const WebSocketHeaders& headers) const
 {
+    if (!IsConnected()) return false;
+    std::scoped_lock lock(state_->metadataMutex);
     return IsConnected() && state_->endpoint == endpoint && state_->headers == headers;
 }
 
 void WinHttpWebSocketClient::CancelPendingOperation() noexcept
 {
+    if (state_ == nullptr) return;
+    ++state_->generation;
+    ResetTransport();
+}
+
+void WinHttpWebSocketClient::CancelIfCurrent(std::uint64_t generation) noexcept
+{
+    if (state_ == nullptr) return;
+    auto expected = generation;
+    if (!state_->generation.compare_exchange_strong(expected, generation + 1)) return;
+    ResetTransport();
+}
+
+WinHttpWebSocketClient::OperationTicket WinHttpWebSocketClient::BeginOperation(bool receive)
+{
+    if (state_ == nullptr) return {};
+    std::scoped_lock lock(state_->operationMutex);
+    auto* handle = state_->webSocket.Get();
+    if (handle == nullptr) return {};
+    if (receive) ++state_->activeReceives;
+    else ++state_->activeSends;
+    return {handle, state_->generation.load(), receive};
+}
+
+void WinHttpWebSocketClient::EndOperation(const OperationTicket& ticket) noexcept
+{
+    if (state_ == nullptr || ticket.handle == nullptr) return;
+    {
+        std::scoped_lock lock(state_->operationMutex);
+        auto& count = ticket.receive ? state_->activeReceives : state_->activeSends;
+        if (count > 0) --count;
+    }
+    state_->operationFinished.notify_all();
+}
+
+void WinHttpWebSocketClient::ResetTransport() noexcept
+{
 #ifdef _WIN32
+    if (state_ == nullptr) return;
+    std::scoped_lock closeLock(state_->closeMutex);
+
+    HINTERNET webSocket = nullptr;
+    {
+        std::unique_lock lock(state_->operationMutex);
+        webSocket = state_->webSocket.Release();
+        state_->operationFinished.wait(lock, [this]()
+        {
+            return state_->activeSends == 0 && state_->activeHandshakes == 0;
+        });
+    }
+    if (webSocket != nullptr)
+    {
+        // The close frame wakes a synchronous Receive. The native handle is
+        // released only after every API call using it has returned.
+        static_cast<void>(WinHttpWebSocketClose(
+            webSocket,
+            WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS,
+            nullptr,
+            0));
+        {
+            std::unique_lock lock(state_->operationMutex);
+            state_->operationFinished.wait(lock, [this]() { return state_->activeReceives == 0; });
+        }
+        WinHttpCloseHandle(webSocket);
+    }
+    state_->request.Reset();
+    state_->connection.Reset();
+    state_->session.Reset();
+#endif
     if (state_ != nullptr)
     {
-        state_->webSocket.Reset();
-        state_->request.Reset();
-        state_->connection.Reset();
-        state_->session.Reset();
+        std::scoped_lock lock(state_->metadataMutex);
+        state_->endpoint.clear();
+        state_->headers.clear();
     }
-#endif
 }
 
 void WinHttpWebSocketClient::ThrowIfCancelled(std::stop_token stopToken)
 {
     if (stopToken.stop_requested())
     {
-        CancelPendingOperation();
         throw std::runtime_error("WebSocket operation cancelled.");
     }
 }

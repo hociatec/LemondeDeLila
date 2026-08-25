@@ -121,7 +121,7 @@ export class GameWsHandler {
   }
 
   async key(session: WsSession, payload: unknown) {
-    requireUser(session);
+    const user = requireUser(session);
     const roomId = this.commands.resolveRoomId(payload);
     const command = this.commands.resolveKey(payload);
     if (command.key !== 'X' && command.key !== 'ENTER') {
@@ -132,9 +132,9 @@ export class GameWsHandler {
     const gameType = await this.rooms.transition(
       roomId,
       operation,
+      user.id,
       command.gameType,
     );
-    await this.realtime.clear(roomId, gameType);
     return {
       type: 'game.ack',
       payload: {

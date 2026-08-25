@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <cstdint>
 #include <string>
 
 #include "shared/network/application/websocket/IWebSocketClient.h"
@@ -34,7 +35,18 @@ public:
         std::stop_token stopToken = {}) override;
 
 private:
+    struct OperationTicket final
+    {
+        void* handle = nullptr;
+        std::uint64_t generation = 0;
+        bool receive = false;
+    };
+
     void ThrowIfCancelled(std::stop_token stopToken);
+    void ResetTransport() noexcept;
+    void CancelIfCurrent(std::uint64_t generation) noexcept;
+    [[nodiscard]] OperationTicket BeginOperation(bool receive);
+    void EndOperation(const OperationTicket& ticket) noexcept;
 
     struct NativeState;
     std::unique_ptr<NativeState> state_;
