@@ -33,21 +33,12 @@ import type {
   GameConfigurationShape,
   GameConfigurationState,
 } from './configuration-kit';
-import {
-  defineGameContent,
-  type GameContentShape,
-} from './game-content';
-import type {
-  EffectEngineState,
-  GameEffectResolverShape,
-} from './effects-kit';
+import { defineGameContent, type GameContentShape } from './game-content';
+import type { EffectEngineState, GameEffectResolverShape } from './effects-kit';
 import type { GameCommandJournalState } from './game-command-journal';
 import type { SubmissionKitState } from './submission-kit';
 import type { GameSchedulerState } from './scheduler-kit';
-import {
-  composePatterns,
-  type GamePattern,
-} from './gameplay-patterns';
+import { composePatterns, type GamePattern } from './gameplay-patterns';
 
 export const GAME_DEFINITION_KIND = 'lila.game-definition' as const;
 
@@ -93,10 +84,9 @@ export interface GameActionShape<TState extends object> {
   ui?: GameActionUiHint;
 }
 
-export type GameActionMap<TState extends object> = Readonly<Record<
-  string,
-  GameActionShape<TState>
->>;
+export type GameActionMap<TState extends object> = Readonly<
+  Record<string, GameActionShape<TState>>
+>;
 
 export type GameActionExecution<TState extends object, TInput> = {
   state: TState;
@@ -105,7 +95,10 @@ export type GameActionExecution<TState extends object, TInput> = {
   ctx: GameContext<TState>;
 };
 
-export interface GameActionDefinition<TState extends object, TInput extends object> {
+export interface GameActionDefinition<
+  TState extends object,
+  TInput extends object,
+> {
   input: GameInputSchema<TInput>;
   available?: (input: {
     state: TState;
@@ -132,11 +125,16 @@ export interface GameActionDefinition<TState extends object, TInput extends obje
   ui?: GameActionUiHint;
 }
 
-export type DefinedGameAction<TState extends object, TInput extends object> =
-  GameActionDefinition<TState, TInput> & GameActionShape<TState>;
+export type DefinedGameAction<
+  TState extends object,
+  TInput extends object,
+> = GameActionDefinition<TState, TInput> & GameActionShape<TState>;
 
-export type GameActionInput<TAction> =
-  TAction extends { input: GameInputSchema<infer TInput> } ? TInput : never;
+export type GameActionInput<TAction> = TAction extends {
+  input: GameInputSchema<infer TInput>;
+}
+  ? TInput
+  : never;
 
 export type GameActionDecision<
   TActions extends Readonly<Record<string, { input: GameInputSchema<object> }>>,
@@ -194,8 +192,10 @@ export interface ChoiceResolver<TState extends object, TValue> {
   }): void;
 }
 
-export type DefinedChoiceResolver<TState extends object, TValue> =
-  ChoiceResolver<TState, TValue> & ChoiceResolverShape<TState>;
+export type DefinedChoiceResolver<
+  TState extends object,
+  TValue,
+> = ChoiceResolver<TState, TValue> & ChoiceResolverShape<TState>;
 
 export interface AutomaticRule<TState extends object> {
   id: string;
@@ -206,10 +206,7 @@ export interface AutomaticRule<TState extends object> {
 }
 
 export interface VictoryRule<TState extends object> {
-  evaluate(input: {
-    state: TState;
-    ctx: GameContext<TState>;
-  }): {
+  evaluate(input: { state: TState; ctx: GameContext<TState> }): {
     winnerPlayerIds: number[];
     reason?: string;
     ranking?: number[][];
@@ -300,13 +297,7 @@ export type GameDefinition<
   TPlayerView extends object,
   TExtras extends object = object,
   TBoard extends object = object,
-> = DeclarativeGameDefinition<
-  TState,
-  TActions,
-  TPlayerView,
-  TExtras,
-  TBoard
->;
+> = DeclarativeGameDefinition<TState, TActions, TPlayerView, TExtras, TBoard>;
 
 export type EngineKitsState = {
   cards?: CardsKitState;
@@ -401,6 +392,10 @@ export function defineGame<
     ...definition,
     patterns: [...(definition.patterns ?? [])],
     components,
+    initialization: mergeInitialization(
+      patterns.initialization,
+      definition.initialization,
+    ),
     turn: definition.turn ?? patterns.turn,
     lifecycle: mergeLifecycleHooks(patterns.lifecycle, definition.lifecycle),
     victory: mergeVictoryRules(definition.victory, patterns.victory),
@@ -413,13 +408,29 @@ export function defineGame<
       definition.initialPhase ??
       Object.keys(definition.phases ?? {})[0] ??
       'playing',
-    phases:
-      definition.phases ?? {
-        [definition.initialPhase ?? 'playing']: {},
-      },
+    phases: definition.phases ?? {
+      [definition.initialPhase ?? 'playing']: {},
+    },
   };
   assertGameDefinition(normalized);
   return deepFreeze({ ...normalized, kind: GAME_DEFINITION_KIND });
+}
+
+function mergeInitialization(
+  pattern?: GameInitialization,
+  game?: GameInitialization,
+): GameInitialization | undefined {
+  if (!pattern) return game;
+  if (!game) return pattern;
+  return {
+    ...pattern,
+    ...game,
+    scores: game.scores ?? pattern.scores,
+    resources: { ...pattern.resources, ...game.resources },
+    counters: { ...pattern.counters, ...game.counters },
+    tracks: { ...pattern.tracks, ...game.tracks },
+    pawns: [...(pattern.pawns ?? []), ...(game.pawns ?? [])],
+  };
 }
 
 function mergeLifecycleHooks<TState extends object>(
@@ -518,10 +529,7 @@ export function playerView<
   TExtras extends object = object,
   TBoard extends object = object,
 >(
-  projection: Omit<
-    GamePlayerProjection<TPlayerView, TExtras, TBoard>,
-    'kind'
-  >,
+  projection: Omit<GamePlayerProjection<TPlayerView, TExtras, TBoard>, 'kind'>,
 ): GamePlayerProjection<TPlayerView, TExtras, TBoard> {
   return {
     ...structuredClone(projection),
@@ -538,7 +546,7 @@ function deepFreeze<TValue>(value: TValue): TValue {
     return value;
   }
   for (const nested of Object.values(value)) deepFreeze(nested);
-  return Object.freeze(value) as TValue;
+  return Object.freeze(value);
 }
 
 export function isGamePlayerProjection<TPlayerView extends object>(

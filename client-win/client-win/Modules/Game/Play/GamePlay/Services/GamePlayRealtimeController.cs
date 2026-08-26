@@ -679,37 +679,20 @@ internal sealed class GamePlayRealtimeController
             return status;
         }
 
-        // Robustesse : si le serveur a déjà marqué un winner/finishedAt dans le metadata,
-        // mais que status reste "started" (race / transition), considérer la partie finie côté client
-        // pour permettre la relance (Entrée) et le reset (X).
+        // Le MatchKit est la source stable du lifecycle exposé au client.
         try
         {
-            var meta = state.Metadata;
-            if (meta.ValueKind != System.Text.Json.JsonValueKind.Object)
+            var extras = state.Extras;
+            if (extras.ValueKind != System.Text.Json.JsonValueKind.Object ||
+                !extras.TryGetProperty("match", out var match) ||
+                match.ValueKind != System.Text.Json.JsonValueKind.Object)
             {
                 return status;
             }
 
-            if (meta.TryGetProperty("finishedAt", out var finishedAt) &&
-                finishedAt.ValueKind == System.Text.Json.JsonValueKind.String &&
-                !string.IsNullOrWhiteSpace(finishedAt.GetString()))
-            {
-                return "finished";
-            }
-
-            if (meta.TryGetProperty("winnerId", out var winnerId) &&
-                winnerId.ValueKind == System.Text.Json.JsonValueKind.Number &&
-                winnerId.TryGetInt32(out var w) &&
-                w > 0)
-            {
-                return "finished";
-            }
-
-            if (meta.TryGetProperty("outcomesByPlayerId", out var outcomes) &&
-                outcomes.ValueKind == System.Text.Json.JsonValueKind.Object)
-            {
-                return "finished";
-            }
+            if (match.TryGetProperty("status", out var lifecycle) &&
+                lifecycle.ValueKind == System.Text.Json.JsonValueKind.String)
+                return lifecycle.GetString() ?? status;
         }
         catch
         {
@@ -1132,44 +1115,8 @@ internal sealed class GamePlayRealtimeController
 
     private static bool TryReadOutcomesByPlayerId(GameStateDto state, out Dictionary<int, string> outcomes)
     {
-        outcomes = new Dictionary<int, string>();
-        return TryReadOutcomesByPlayerId(state.Metadata, outcomes) || TryReadOutcomesByPlayerId(state.Extras, outcomes);
-    }
-
-    private static bool TryReadOutcomesByPlayerId(System.Text.Json.JsonElement source, Dictionary<int, string> target)
-    {
-        if (source.ValueKind != System.Text.Json.JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        if (!source.TryGetProperty("outcomesByPlayerId", out var outcomes) ||
-            outcomes.ValueKind != System.Text.Json.JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        foreach (var prop in outcomes.EnumerateObject())
-        {
-            if (!int.TryParse(prop.Name, out var playerId) || playerId <= 0)
-            {
-                continue;
-            }
-            if (prop.Value.ValueKind != System.Text.Json.JsonValueKind.String)
-            {
-                continue;
-            }
-
-            var value = (prop.Value.GetString() ?? string.Empty).Trim();
-            if (value.Length == 0)
-            {
-                continue;
-            }
-
-            target[playerId] = value;
-        }
-
-        return target.Count > 0;
+        outcomes = GamePlayWinnerReader.TryExtractOutcomeMap(state);
+        return outcomes.Count > 0;
     }
 
     private static string? GetUsername(GameStateDto state, int? playerId)

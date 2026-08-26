@@ -12,5 +12,4 @@ export type EntreRitesPlayerView = {
   specialsPlayed: PlayerMap<string[]>;
   peaceTurnsRemaining: number;
   silenceOwnerId: number | null;
-  winnerId: number | null;
 };

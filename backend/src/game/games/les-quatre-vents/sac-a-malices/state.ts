@@ -18,10 +18,5 @@ export type SacPlayerView = {
   jailCards: PlayerMap<number>;
   consecutiveDoubles: PlayerMap<number>;
   pot: number;
-  lastRoll: number;
   extraRoll: PlayerMap<boolean>;
-  eliminated: PlayerMap<boolean>;
-  positions: PlayerMap<number>;
-  winnerId: number | null;
-  skipTurns: PlayerMap<number>;
 };

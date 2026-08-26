@@ -88,8 +88,10 @@ export class GameQuizController {
       data: Record<string, unknown>,
       visibility?: EventVisibility,
     ) => void = () => {},
-    private readonly addScore: (playerId: number, amount: number) => void =
-      () => {},
+    private readonly addScore: (
+      playerId: number,
+      amount: number,
+    ) => void = () => {},
   ) {
     for (const definition of definitions) {
       this.definitions.set(definition.id, definition);
@@ -139,7 +141,9 @@ export class GameQuizController {
   assertValid(): void {
     for (const [bankId, order] of Object.entries(this.state.orders)) {
       const definition = this.definitions.get(bankId);
-      const known = new Set(definition?.questions.map((question) => question.id));
+      const known = new Set(
+        definition?.questions.map((question) => question.id),
+      );
       if (
         !definition ||
         new Set(order).size !== order.length ||
@@ -271,7 +275,11 @@ export class GameQuizController {
     const autoReveal =
       this.definition(session.bankId).autoReveal ?? 'all-answered';
     if (allAnswered && autoReveal === 'all-answered') this.reveal(sessionId);
-    return { correct, revealed: session.phase === 'revealed', allAnswered };
+    return {
+      correct,
+      revealed: this.requireSession(sessionId).phase === 'revealed',
+      allAnswered,
+    };
   }
 
   reveal(sessionId: string): QuizSession {
@@ -323,13 +331,15 @@ export class GameQuizController {
     const question = this.definition(bankId).questions.find(
       (candidate) => candidate.id === questionId,
     );
-    if (!question) throw new GameNotFoundError(`Question inconnue: ${questionId}`);
+    if (!question)
+      throw new GameNotFoundError(`Question inconnue: ${questionId}`);
     return question;
   }
 
   private requireSession(sessionId: string): QuizSessionState {
     const session = this.state.sessions[sessionId];
-    if (!session) throw new GameNotFoundError(`Session quiz inconnue: ${sessionId}`);
+    if (!session)
+      throw new GameNotFoundError(`Session quiz inconnue: ${sessionId}`);
     return session;
   }
 
@@ -364,7 +374,7 @@ function deepFreeze<TValue>(value: TValue): TValue {
     return value;
   }
   for (const nested of Object.values(value)) deepFreeze(nested);
-  return Object.freeze(value) as TValue;
+  return Object.freeze(value);
 }
 
 export function createQuizKitState(): QuizKitState {

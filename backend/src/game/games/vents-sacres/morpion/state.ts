@@ -5,7 +5,6 @@ export type MorpionPlayerView = {
   size: 3;
   board: number[];
   startingPlayerId: number;
-  winnerId: number | null;
   draw: boolean;
   pawns: ReadonlyArray<{
     id: string;

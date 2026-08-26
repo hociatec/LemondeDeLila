@@ -17,34 +17,9 @@ internal static class GamePlayWinnerReader
         {
             return null;
         }
-
-        static Outcome? ReadOutcome(System.Text.Json.JsonElement element, int id)
-        {
-            if (element.ValueKind != System.Text.Json.JsonValueKind.Object)
-            {
-                return null;
-            }
-
-            if (!element.TryGetProperty("outcomesByPlayerId", out var outcomes) ||
-                outcomes.ValueKind != System.Text.Json.JsonValueKind.Object)
-            {
-                return null;
-            }
-
-            var key = id.ToString();
-            if (!outcomes.TryGetProperty(key, out var entry) ||
-                entry.ValueKind != System.Text.Json.JsonValueKind.String)
-            {
-                return null;
-            }
-
-            var value = (entry.GetString() ?? string.Empty).Trim();
-            if (string.Equals(value, "won", System.StringComparison.OrdinalIgnoreCase)) return Outcome.Won;
-            if (string.Equals(value, "lost", System.StringComparison.OrdinalIgnoreCase)) return Outcome.Lost;
-            return null;
-        }
-
-        return ReadOutcome(state.Metadata, viewerPlayerId) ?? ReadOutcome(state.Extras, viewerPlayerId);
+        var winners = ReadWinnerIds(state.Extras);
+        if (winners.Count == 0) return null;
+        return winners.Contains(viewerPlayerId) ? Outcome.Won : Outcome.Lost;
     }
 
     internal static Dictionary<int, string> TryExtractOutcomeMap(GameStateDto? state)
@@ -55,8 +30,12 @@ internal static class GamePlayWinnerReader
             return outcomes;
         }
 
-        TryReadOutcomeMap(state.Metadata, outcomes);
-        TryReadOutcomeMap(state.Extras, outcomes);
+        var winners = ReadWinnerIds(state.Extras);
+        if (winners.Count == 0) return outcomes;
+        foreach (var player in state.Players ?? [])
+        {
+            outcomes[player.Id] = winners.Contains(player.Id) ? "won" : "lost";
+        }
         return outcomes;
     }
 
@@ -67,60 +46,30 @@ internal static class GamePlayWinnerReader
             return null;
         }
 
-        // Best-effort: games may store winner info in metadata under various keys.
-        static int? ReadWinnerId(System.Text.Json.JsonElement element)
-        {
-            if (element.ValueKind != System.Text.Json.JsonValueKind.Object)
-            {
-                return null;
-            }
-
-            foreach (var key in new[] { "winnerPlayerId", "winnerId", "winner_id" })
-            {
-                if (element.TryGetProperty(key, out var prop) &&
-                    prop.ValueKind == System.Text.Json.JsonValueKind.Number)
-                {
-                    try { return prop.GetInt32(); } catch { /* ignore */ }
-                }
-            }
-
-            return null;
-        }
-
-        return ReadWinnerId(state.Metadata) ?? ReadWinnerId(state.Extras);
+        var winners = ReadWinnerIds(state.Extras);
+        return winners.Count == 0 ? null : winners[0];
     }
 
-    private static void TryReadOutcomeMap(System.Text.Json.JsonElement source, Dictionary<int, string> target)
+    private static List<int> ReadWinnerIds(System.Text.Json.JsonElement extras)
     {
-        if (source.ValueKind != System.Text.Json.JsonValueKind.Object)
+        var winners = new List<int>();
+        if (extras.ValueKind != System.Text.Json.JsonValueKind.Object ||
+            !extras.TryGetProperty("match", out var match) ||
+            match.ValueKind != System.Text.Json.JsonValueKind.Object ||
+            !match.TryGetProperty("result", out var result) ||
+            result.ValueKind != System.Text.Json.JsonValueKind.Object ||
+            !result.TryGetProperty("winnerPlayerIds", out var ids) ||
+            ids.ValueKind != System.Text.Json.JsonValueKind.Array)
         {
-            return;
+            return winners;
         }
 
-        if (!source.TryGetProperty("outcomesByPlayerId", out var outcomes) ||
-            outcomes.ValueKind != System.Text.Json.JsonValueKind.Object)
+        foreach (var element in ids.EnumerateArray())
         {
-            return;
+            if (element.ValueKind == System.Text.Json.JsonValueKind.Number &&
+                element.TryGetInt32(out var playerId) && playerId > 0)
+                winners.Add(playerId);
         }
-
-        foreach (var prop in outcomes.EnumerateObject())
-        {
-            if (!int.TryParse(prop.Name, out var playerId) || playerId <= 0)
-            {
-                continue;
-            }
-            if (prop.Value.ValueKind != System.Text.Json.JsonValueKind.String)
-            {
-                continue;
-            }
-
-            var value = (prop.Value.GetString() ?? string.Empty).Trim();
-            if (value.Length == 0)
-            {
-                continue;
-            }
-
-            target[playerId] = value;
-        }
+        return winners;
     }
 }

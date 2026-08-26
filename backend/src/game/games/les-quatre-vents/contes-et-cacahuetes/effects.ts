@@ -1,14 +1,11 @@
-import {
-  defineEffect,
-  gameInput,
-} from '../../../core/application/public-api';
+import { defineEffect, gameInput } from '../../../core/application/public-api';
 import {
   applyTarget,
-  drawAndApply,
+  drawContesCard,
   drawBonusGift,
   drainResolution,
   extendTurnStatus,
-  moveAndLand,
+  moveContesAndResolve,
   position,
   previousMalus,
   queueDraws,
@@ -21,17 +18,14 @@ import {
 } from './resolution';
 import { CONTES_STATUSES } from './constants';
 import type { ContesCardType } from './content';
-import type {
-  ContesState,
-  ContesTargetEffect,
-} from './state';
+import type { ContesState, ContesTargetEffect } from './state';
 
 export const CONTES_EFFECTS = {
   'contes.move': defineEffect<ContesState, { delta: number }>({
     input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
     apply: ({ state, targetPlayerIds, data, ctx }) => {
       for (const playerId of targetPlayerIds) {
-        moveAndLand(state, playerId, data.delta, 0, ctx);
+        moveContesAndResolve(state, playerId, data.delta, 0, ctx);
       }
     },
   }),
@@ -51,7 +45,7 @@ export const CONTES_EFFECTS = {
             : data.mode === 'half'
               ? Math.floor(roll / 2)
               : -roll;
-        moveAndLand(state, playerId, delta, 0, ctx);
+        moveContesAndResolve(state, playerId, delta, 0, ctx);
       }
     },
   }),
@@ -61,7 +55,7 @@ export const CONTES_EFFECTS = {
     }),
     apply: ({ state, targetPlayerIds, data, ctx }) => {
       for (const playerId of targetPlayerIds) {
-        drawAndApply(state, playerId, data.type, 0, ctx);
+        drawContesCard(state, playerId, data.type, 0, ctx);
       }
     },
   }),
@@ -83,10 +77,7 @@ export const CONTES_EFFECTS = {
       if (playerId != null) scheduleContesTarget(playerId, data.effect, ctx);
     },
   }),
-  'contes.queue-draws': defineEffect<
-    ContesState,
-    { types: ContesCardType[] }
-  >({
+  'contes.queue-draws': defineEffect<ContesState, { types: ContesCardType[] }>({
     input: gameInput.object({
       types: gameInput.array(
         gameInput.enum(['bonus', 'malus', 'surprise', 'conte'] as const),
@@ -98,18 +89,17 @@ export const CONTES_EFFECTS = {
       if (playerId != null) queueDraws(state, playerId, data.types, ctx);
     },
   }),
-  'contes.queue-random-draws': defineEffect<
-    ContesState,
-    Record<string, never>
-  >({
-    input: gameInput.object({}),
-    apply: ({ state, targetPlayerIds, ctx }) => {
-      const playerId = targetPlayerIds[0];
-      if (playerId == null) return;
-      const types: ContesCardType[] = ['bonus', 'malus', 'surprise'];
-      queueDraws(state, playerId, ctx.random.shuffle(types).slice(0, 2), ctx);
+  'contes.queue-random-draws': defineEffect<ContesState, Record<string, never>>(
+    {
+      input: gameInput.object({}),
+      apply: ({ state, targetPlayerIds, ctx }) => {
+        const playerId = targetPlayerIds[0];
+        if (playerId == null) return;
+        const types: ContesCardType[] = ['bonus', 'malus', 'surprise'];
+        queueDraws(state, playerId, ctx.random.shuffle(types).slice(0, 2), ctx);
+      },
     },
-  }),
+  ),
   'contes.extend-status': defineEffect<
     ContesState,
     { status: 'contes.forced-one' | 'contes.no-bonus'; turns: number }
@@ -127,10 +117,7 @@ export const CONTES_EFFECTS = {
       }
     },
   }),
-  'contes.force-one-others': defineEffect<
-    ContesState,
-    Record<string, never>
-  >({
+  'contes.force-one-others': defineEffect<ContesState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ targetPlayerIds, ctx }) => {
       const playerId = targetPlayerIds[0];
@@ -142,10 +129,7 @@ export const CONTES_EFFECTS = {
       }
     },
   }),
-  'contes.swap-closest': defineEffect<
-    ContesState,
-    Record<string, never>
-  >({
+  'contes.swap-closest': defineEffect<ContesState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ targetPlayerIds, ctx }) => {
       const playerId = targetPlayerIds[0];
@@ -170,20 +154,14 @@ export const CONTES_EFFECTS = {
       if (playerId != null) drawBonusGift(state, playerId, ctx);
     },
   }),
-  'contes.skip-if-low-roll': defineEffect<
-    ContesState,
-    Record<string, never>
-  >({
+  'contes.skip-if-low-roll': defineEffect<ContesState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ targetPlayerIds, ctx }) => {
       const playerId = targetPlayerIds[0];
       if (playerId != null && rollDie(ctx) < 4) ctx.turn.skip(playerId, 1);
     },
   }),
-  'contes.previous-malus': defineEffect<
-    ContesState,
-    Record<string, never>
-  >({
+  'contes.previous-malus': defineEffect<ContesState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ state, targetPlayerIds, ctx }) => {
       const playerId = targetPlayerIds[0];
@@ -204,10 +182,7 @@ export const CONTES_EFFECTS = {
       if (playerId != null) requestLaughter(state, playerId, ctx);
     },
   }),
-  'contes.option': defineEffect<
-    ContesState,
-    { effect: 'song' | 'wish' }
-  >({
+  'contes.option': defineEffect<ContesState, { effect: 'song' | 'wish' }>({
     input: gameInput.object({
       effect: gameInput.enum(['song', 'wish'] as const),
     }),
@@ -245,21 +220,12 @@ export const CONTES_EFFECTS = {
         'wish-swap',
         'gold-key',
       ] as const),
-      cardId: gameInput.optional(
-        gameInput.number({ integer: true, min: 1 }),
-      ),
+      cardId: gameInput.optional(gameInput.number({ integer: true, min: 1 })),
     }),
     apply: ({ state, targetPlayerIds, data, ctx }) => {
       const targetId = targetPlayerIds[0];
       if (targetId == null) return;
-      applyTarget(
-        state,
-        data.actorId,
-        targetId,
-        data.effect,
-        data.cardId,
-        ctx,
-      );
+      applyTarget(state, data.actorId, targetId, data.effect, data.cardId, ctx);
       drainResolution(state, ctx);
     },
   }),

@@ -155,10 +155,7 @@ function effectInstructions(
       gameEffects.custom(
         'frousse.swap',
         {},
-        gameEffects.target.chosenOpponent(
-          'frousse.swap',
-          effect.canDecline,
-        ),
+        gameEffects.target.chosenOpponent('frousse.swap', effect.canDecline),
       ),
       gameEffects.completeTurn(),
     ];

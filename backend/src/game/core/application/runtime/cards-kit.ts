@@ -4,7 +4,17 @@ import {
   GameRuleViolationError,
   GameStateViolationError,
 } from '../../domain/errors/game-domain.errors';
+import type { GameRng } from '../models/game-execution-context.model';
 import type { EventVisibility } from '../models/game-event.model';
+
+export type CardId = string | number;
+export type CardDefinition<
+  TCard extends CardId | { id: CardId } = { id: CardId },
+> = TCard;
+
+export type CardInstance<TCard> = TCard;
+
+export type CardZone<TCard> = ReadonlyArray<CardInstance<TCard>>;
 
 export type DeckDefinition<TCard> = {
   readonly component: 'cards.deck';
@@ -63,7 +73,7 @@ export type CardsPlayerView = {
   >;
 };
 
-type CardContentId = string | number;
+type CardContentId = CardId;
 
 type CardCatalog = {
   readonly cardsById: ReadonlyMap<string, unknown>;
@@ -82,9 +92,7 @@ export const cards = {
         `La pioche ${definition.id} mélange références de contenu et valeurs libres`,
       );
     }
-    const identifiedIds = identifiedCards.map((card) =>
-      contentIdKey(card.id),
-    );
+    const identifiedIds = identifiedCards.map((card) => contentIdKey(card.id));
     if (new Set(identifiedIds).size !== identifiedIds.length) {
       throw new GameConfigurationError(
         `La pioche ${definition.id} contient des identifiants de carte dupliqués`,
@@ -111,7 +119,7 @@ export const cards = {
         Object.fromEntries(
           Object.entries(definition.sets).map(([setId, cardIds]) => [
             setId,
-            Object.freeze([...(cardIds as readonly TCardId[])]),
+            Object.freeze([...cardIds]),
           ]),
         ),
       ),
@@ -122,16 +130,14 @@ export const cards = {
 export class GameCardsController {
   constructor(
     private readonly state: CardsKitState,
-    private readonly random: { shuffle<T>(values: readonly T[]): T[] },
+    private readonly random: Pick<GameRng, 'pick' | 'shuffle'>,
     private readonly emit: (
       type: string,
       data: Record<string, unknown>,
       visibility?: EventVisibility,
     ) => void = () => {},
     definitions: readonly (
-      | DeckDefinition<unknown>
-      | HandsDefinition
-      | CardSetsDefinition
+      DeckDefinition<unknown> | HandsDefinition | CardSetsDefinition
     )[] = [],
   ) {
     for (const definition of definitions) this.registerDefinition(definition);
@@ -223,7 +229,9 @@ export class GameCardsController {
   assertValid(): void {
     for (const [deckId, deck] of Object.entries(this.state.decks)) {
       if (!Array.isArray(deck) || !Array.isArray(this.state.discards[deckId])) {
-        throw new GameStateViolationError('État de pioche invalide', { deckId });
+        throw new GameStateViolationError('État de pioche invalide', {
+          deckId,
+        });
       }
       if (!this.state.deckLifecycles[deckId]) {
         throw new GameStateViolationError('Cycle de pioche absent', { deckId });
@@ -240,7 +248,9 @@ export class GameCardsController {
         });
       }
       if (Object.values(hands).some((hand) => !Array.isArray(hand))) {
-        throw new GameStateViolationError('Contenu de main invalide', { handId });
+        throw new GameStateViolationError('Contenu de main invalide', {
+          handId,
+        });
       }
     }
     for (const [collectionId, definition] of Object.entries(
@@ -371,12 +381,7 @@ export class GameCardsController {
   ): TCard[] {
     const drawn: TCard[] = [];
     for (let index = 0; index < Math.max(0, count); index += 1) {
-      const card = this.drawToHand<TCard>(
-        deckId,
-        handId,
-        playerId,
-        options,
-      );
+      const card = this.drawToHand<TCard>(deckId, handId, playerId, options);
       if (card == null) break;
       drawn.push(card);
     }
@@ -389,8 +394,7 @@ export class GameCardsController {
     options: {
       recycle?: boolean;
       discard?:
-        | boolean
-        | ((input: { card: TCard; result: TResult }) => boolean);
+        boolean | ((input: { card: TCard; result: TResult }) => boolean);
     } = {},
   ): TResult | null {
     const card = options.recycle
@@ -545,9 +549,7 @@ export class GameCardsController {
       (playerId) => this.persistentHand(handId, playerId).length,
     );
     const shuffled = this.random.shuffle(
-      playerIds.flatMap((playerId) =>
-        this.persistentHand(handId, playerId),
-      ),
+      playerIds.flatMap((playerId) => this.persistentHand(handId, playerId)),
     );
     let cursor = 0;
     for (const [index, playerId] of playerIds.entries()) {
@@ -574,6 +576,23 @@ export class GameCardsController {
       fromPlayerId,
       toPlayerId,
     });
+  }
+
+  exchangeRandom<TCard>(
+    handId: string,
+    leftPlayerId: number,
+    rightPlayerId: number,
+  ): void {
+    if (leftPlayerId === rightPlayerId) return;
+    const leftCard = this.random.pick(this.hand<TCard>(handId, leftPlayerId));
+    const rightCard = this.random.pick(this.hand<TCard>(handId, rightPlayerId));
+    if (leftCard && rightCard) {
+      this.exchange(handId, leftPlayerId, leftCard, rightPlayerId, rightCard);
+      return;
+    }
+    if (leftCard) this.transfer(handId, leftPlayerId, rightPlayerId, leftCard);
+    else if (rightCard)
+      this.transfer(handId, rightPlayerId, leftPlayerId, rightCard);
   }
 
   stealRandom<TCard>(
@@ -762,15 +781,16 @@ export class GameCardsController {
   }
 
   private registerCatalog<TCard>(definition: DeckDefinition<TCard>): void {
+    const identifiedCards = definition.cards.filter(isIdentifiedCard);
     if (
       definition.cards.length === 0 ||
-      !definition.cards.every(isIdentifiedCard)
+      identifiedCards.length !== definition.cards.length
     ) {
       this.catalogs.delete(definition.id);
       return;
     }
     const cardsById = new Map<string, unknown>();
-    for (const card of definition.cards) {
+    for (const card of identifiedCards) {
       const key = contentIdKey(card.id);
       if (cardsById.has(key)) {
         throw new GameConfigurationError(
@@ -783,10 +803,7 @@ export class GameCardsController {
   }
 
   private registerDefinition(
-    definition:
-      | DeckDefinition<unknown>
-      | HandsDefinition
-      | CardSetsDefinition,
+    definition: DeckDefinition<unknown> | HandsDefinition | CardSetsDefinition,
   ): void {
     if (definition.component === 'cards.deck') {
       this.registerCatalog(definition);
@@ -906,9 +923,9 @@ export function projectCardsKitState(
   };
 }
 
-function isIdentifiedCard(
-  value: unknown,
-): value is { readonly id: CardContentId } {
+function isIdentifiedCard<TValue>(
+  value: TValue,
+): value is TValue & { readonly id: CardContentId } {
   if (value == null || typeof value !== 'object' || !('id' in value)) {
     return false;
   }
@@ -925,5 +942,5 @@ function deepFreeze<TValue>(value: TValue): TValue {
     return value;
   }
   for (const nested of Object.values(value)) deepFreeze(nested);
-  return Object.freeze(value) as TValue;
+  return Object.freeze(value);
 }

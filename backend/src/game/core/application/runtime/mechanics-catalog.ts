@@ -23,7 +23,8 @@ export const GAMEPLAY_MECHANICS_CATALOG = Object.freeze({
     extractionThreshold: MECHANIC_EXTRACTION_THRESHOLD,
     layers: Object.freeze({
       local: 'Mécanique réellement propre à un seul jeu.',
-      recipe: 'Combinaison sans état de primitives réutilisée par plusieurs jeux.',
+      recipe:
+        'Combinaison sans état de primitives réutilisée par plusieurs jeux.',
       pattern: 'Structure de gameplay composant plusieurs capacités.',
       kit: 'Capacité de domaine autonome possédant son état et ses invariants.',
       core: 'Invariant nécessaire à presque toutes les parties.',

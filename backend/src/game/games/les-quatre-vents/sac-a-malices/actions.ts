@@ -18,8 +18,7 @@ import type { SacManagementKind, SacState } from './state';
 export const roll = defineAction<SacState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Lance deux dés, déplace le pion et résout la case.',
-  available: ({ actor, ctx }) =>
-    ctx.match.playerStatus(actor.id) === 'active',
+  available: ({ actor, ctx }) => ctx.match.playerStatus(actor.id) === 'active',
   execute: ({ state, actor, ctx }) => {
     if (ctx.resources.get(actor.id, SAC_JAIL_TURNS) > 0) {
       resolveJailTurn(state, actor.id, ctx);
@@ -65,8 +64,7 @@ function managementAction(kind: SacManagementKind) {
         options,
         data: { flow: 'management', playerId: actor.id, kind },
         label: (tileIndex) =>
-          currentSacVariant(ctx).tiles[tileIndex]?.title ??
-          String(tileIndex),
+          currentSacVariant(ctx).tiles[tileIndex]?.title ?? String(tileIndex),
       });
     },
   });
@@ -80,7 +78,7 @@ export const unmortgage = managementAction('unmortgage');
 export const payFine = defineAction<SacState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Paie l’amende de prison lorsque la variante le permet.',
-  available: ({ state, actor, ctx }) => {
+  available: ({ state: _state, actor, ctx }) => {
     const rules = currentSacVariant(ctx).rules;
     return (
       ctx.resources.get(actor.id, SAC_JAIL_TURNS) > 0 &&
@@ -105,7 +103,7 @@ export const useJailCard = defineAction<SacState, Record<string, never>>({
   available: ({ actor, ctx }) =>
     ctx.resources.get(actor.id, SAC_JAIL_TURNS) > 0 &&
     ctx.resources.get(actor.id, SAC_JAIL_CARDS) > 0,
-  execute: ({ state, actor, ctx }) => {
+  execute: ({ state: _state, actor, ctx }) => {
     ctx.resources.remove(actor.id, SAC_JAIL_CARDS, 1);
     ctx.resources.set(actor.id, SAC_JAIL_TURNS, 0);
     ctx.events.message('sac.jail.card-used', { playerId: actor.id });

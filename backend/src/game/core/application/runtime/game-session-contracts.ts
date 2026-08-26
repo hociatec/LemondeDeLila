@@ -17,11 +17,10 @@ export function assertValidGameSession<TState extends object>(
       taskId,
       id: task.id,
     });
-    invariant(
-      Number.isFinite(task.dueAtMs),
-      'timer.deadline',
-      { taskId, dueAtMs: task.dueAtMs },
-    );
+    invariant(Number.isFinite(task.dueAtMs), 'timer.deadline', {
+      taskId,
+      dueAtMs: task.dueAtMs,
+    });
     invariant(
       ['public', 'private', 'internal'].includes(task.visibility.kind),
       'timer.visibility',
@@ -43,8 +42,7 @@ export function assertValidGameSession<TState extends object>(
   invariant(
     runtime.engine.configuration.ownerPlayerId == null ||
       (runtime.players ?? []).some(
-        (player) =>
-          player.id === runtime.engine.configuration.ownerPlayerId,
+        (player) => player.id === runtime.engine.configuration.ownerPlayerId,
       ),
     'configuration.owner',
     { ownerPlayerId: runtime.engine.configuration.ownerPlayerId },
@@ -145,9 +143,7 @@ export function assertValidEngineKits(
     );
     for (const [playerId, position] of Object.entries(positions)) {
       invariant(
-        Number.isInteger(position) &&
-          position >= 0 &&
-          position < track.spaces,
+        Number.isInteger(position) && position >= 0 && position < track.spaces,
         'movement.position',
         { trackId, playerId, position },
       );
@@ -238,7 +234,7 @@ export function assertValidEngineKits(
     invariant(
       Number.isInteger(cursor) &&
         cursor >= 0 &&
-      cursor <= (kits.quiz?.orders[bankId]?.length ?? 0),
+        cursor <= (kits.quiz?.orders[bankId]?.length ?? 0),
       'quiz.cursor',
       { bankId, cursor },
     );
@@ -250,7 +246,11 @@ function assertSerializable(
   path: string,
   seen: WeakSet<object>,
 ): void {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean') {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'boolean'
+  ) {
     return;
   }
   if (typeof value === 'number') {
@@ -270,7 +270,7 @@ function assertSerializable(
       assertSerializable(entry, `${path}[${index}]`, seen),
     );
   } else {
-    const prototype = Object.getPrototypeOf(value);
+    const prototype = Reflect.getPrototypeOf(value);
     invariant(
       prototype === Object.prototype || prototype === null,
       'serializable.prototype',

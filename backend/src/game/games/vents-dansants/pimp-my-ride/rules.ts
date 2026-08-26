@@ -1,6 +1,7 @@
 import {
   defineAction,
   discardCard as discardCardAction,
+  drawForPlayer,
   gameInput,
 } from '../../../core/application/public-api';
 import type { GameContext } from '../../../core/application/public-api';
@@ -13,8 +14,6 @@ import type { PimpMyRideState } from './state';
 
 const DECK = 'car-parts';
 const HANDS = 'players';
-const DRAWN_PLAYER_FLAG = 'pimp-my-ride.drawn-player-id';
-const DRAWN_CARD_FLAG = 'pimp-my-ride.drawn-card-id';
 const CAR_PARTS = 'pimp-my-ride.car-parts';
 export const PIMP_CAR_NAME_INDEX = 'pimp-my-ride.car-name-index';
 type RuleContext = GameContext<PimpMyRideState>;
@@ -42,7 +41,10 @@ export const playCard = defineAction<PimpMyRideState, { cardId: string }>({
       playerId: actor.id,
       cardId: input.cardId,
     });
-    if (ctx.inventory.count(CAR_PARTS, actor.id) >= PIMP_MY_RIDE_CATEGORY_ORDER.length) {
+    if (
+      ctx.inventory.count(CAR_PARTS, actor.id) >=
+      PIMP_MY_RIDE_CATEGORY_ORDER.length
+    ) {
       completeCar(state, actor.id, ctx);
     }
     ctx.turn.complete();
@@ -53,7 +55,7 @@ export const discardCard = discardCardAction<PimpMyRideState>({
   deckId: DECK,
   handId: HANDS,
   available: ({ actor, ctx }) =>
-    drawnPlayerId(ctx) === actor.id && drawnCardId(ctx) != null,
+    ctx.effects.sourcePlayerId() === actor.id && drawnCardId(ctx) != null,
   validate: ({ input, ctx }) => drawnCardId(ctx) === input.cardId,
   enumerate: ({ ctx }) => {
     const cardId = drawnCardId(ctx);
@@ -67,7 +69,7 @@ export const discardCard = discardCardAction<PimpMyRideState>({
 export const pass = defineAction<PimpMyRideState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Garde la carte piochée et termine le tour.',
-  execute: ({ state, actor, ctx }) => {
+  execute: ({ state: _state, actor, ctx }) => {
     ctx.events.message('pimp-my-ride.parts.kept', { playerId: actor.id });
     ctx.turn.complete();
   },
@@ -82,11 +84,13 @@ export const PIMP_MY_RIDE_ACTIONS = {
 export function drawCarPart(_state: PimpMyRideState, ctx: RuleContext): void {
   const current = ctx.players.current();
   if (!current) return;
-  const cardId = ctx.cards.drawOrRecycle<string>(DECK);
-  ctx.turn.flags.set(DRAWN_PLAYER_FLAG, current.id);
-  if (cardId) ctx.turn.flags.set(DRAWN_CARD_FLAG, cardId);
+  const cardId = drawForPlayer<PimpMyRideState, string>(ctx, {
+    deckId: DECK,
+    handId: HANDS,
+    playerId: current.id,
+    recycle: true,
+  })[0];
   if (cardId) {
-    ctx.cards.give(HANDS, current.id, cardId);
     ctx.events.message('game.card.drawn', {
       playerId: current.id,
       cardId,
@@ -97,7 +101,8 @@ export function drawCarPart(_state: PimpMyRideState, ctx: RuleContext): void {
 
 function requiredCategory(playerId: number, ctx: RuleContext) {
   return PIMP_MY_RIDE_CATEGORY_ORDER[
-    ctx.inventory.count(CAR_PARTS, playerId) % PIMP_MY_RIDE_CATEGORY_ORDER.length
+    ctx.inventory.count(CAR_PARTS, playerId) %
+      PIMP_MY_RIDE_CATEGORY_ORDER.length
   ];
 }
 
@@ -127,17 +132,11 @@ function completeCar(
   }
 }
 
-export function drawnPlayerId(ctx: RuleContext): number | null {
-  return ctx.turn.flags.get<number>(DRAWN_PLAYER_FLAG);
-}
-
 export function drawnCardId(ctx: RuleContext): string | null {
-  return ctx.turn.flags.get<string>(DRAWN_CARD_FLAG);
+  const cardId = ctx.effects.source()?.cardId;
+  return typeof cardId === 'string' ? cardId : null;
 }
 
-export function currentCarParts(
-  playerId: number,
-  ctx: RuleContext,
-): string[] {
+export function currentCarParts(playerId: number, ctx: RuleContext): string[] {
   return [...ctx.inventory.items(CAR_PARTS, playerId)];
 }

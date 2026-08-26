@@ -1,16 +1,13 @@
 import {
   defineAction,
   defineEffect,
+  drawAndResolve,
   gameEffects,
   gameInput,
 } from '../../../core/application/public-api';
 import type { GameContext } from '../../../core/application/public-api';
 import { MAMAN_CONTENT } from './content';
-import type {
-  MamanCard,
-  MamanTileType,
-  ToutPresDeMamanState,
-} from './state';
+import type { MamanCard, MamanTileType, ToutPresDeMamanState } from './state';
 
 const TRACK = 'forest';
 const DECK = 'events';
@@ -59,8 +56,7 @@ function applyTile(
   if (!tile) return;
   if (tile.type === 'start') gainTokens(playerId, 2, ctx);
   else if (tile.type === 'token') gainTokens(playerId, 1, ctx);
-  else if (tile.type === 'card')
-    drawAndApplyCard(playerId, ctx);
+  else if (tile.type === 'card') drawMamanCard(playerId, ctx);
   else if (tile.type === 'bonds')
     moveAndApply(state, playerId, 2, depth + 1, ctx);
   else if (tile.type === 'slide')
@@ -80,22 +76,14 @@ function applyTile(
     finishOrRewind(state, playerId, position, depth + 1, ctx);
 }
 
-function drawAndApplyCard(
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  ctx.cards.drawThenResolve<MamanCard, void>(
-    DECK,
-    (card) => {
-      ctx.events.message('game.card.drawn', {
-        playerId,
-        deckId: DECK,
-        cardId: card.id,
-      });
+function drawMamanCard(playerId: number, ctx: RuleContext): void {
+  drawAndResolve<ToutPresDeMamanState, MamanCard>(ctx, {
+    deckId: DECK,
+    playerId,
+    resolve: (card) => {
       ctx.effects.schedule(...card.effects);
     },
-    {},
-  );
+  });
 }
 
 function moveAndApply(
@@ -156,11 +144,7 @@ function setPosition(
   ctx.movement.move(TRACK, playerId, position - current);
 }
 
-function gainTokens(
-  playerId: number,
-  amount: number,
-  ctx: RuleContext,
-): void {
+function gainTokens(playerId: number, amount: number, ctx: RuleContext): void {
   ctx.resources.add(playerId, TOKEN, amount);
 }
 
@@ -225,10 +209,7 @@ export const MAMAN_EFFECTS = {
       if (targetId != null) moveAndApply(state, targetId, 1, 0, ctx);
     },
   }),
-  'maman.meeting': defineEffect<
-    ToutPresDeMamanState,
-    Record<string, never>
-  >({
+  'maman.meeting': defineEffect<ToutPresDeMamanState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ state, actorPlayerId, targetPlayerIds, ctx }) => {
       const targetId = targetPlayerIds[0];
@@ -238,10 +219,7 @@ export const MAMAN_EFFECTS = {
       }
     },
   }),
-  'maman.roll-move': defineEffect<
-    ToutPresDeMamanState,
-    Record<string, never>
-  >({
+  'maman.roll-move': defineEffect<ToutPresDeMamanState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ state, actorPlayerId, ctx }) => {
       if (actorPlayerId != null) {

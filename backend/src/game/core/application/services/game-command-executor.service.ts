@@ -42,7 +42,11 @@ export class GameCommandExecutorService {
       try {
         this.ensureClientVersion(current, candidate.meta?.knownVersion);
         this.ensureActionAllowed(input.handler, current, candidate, actorId);
-        const action = input.handler.validateAction(current, candidate, actorId);
+        const action = input.handler.validateAction(
+          current,
+          candidate,
+          actorId,
+        );
         const context = this.execution.create(
           current,
           actorId,
@@ -146,7 +150,7 @@ export class GameCommandExecutorService {
     const current = Number(state.version ?? 0);
     if (!Number.isInteger(expected) || expected !== current) {
       throw new GameStateConflictError(
-        `Version client obsolète: ${String(knownVersion)} (courante: ${current})`,
+        `Version client obsolète (courante: ${current})`,
       );
     }
   }

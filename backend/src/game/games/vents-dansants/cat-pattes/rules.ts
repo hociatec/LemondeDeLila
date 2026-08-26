@@ -1,6 +1,8 @@
 import {
   rejectRule,
+  completeRound,
   defineAction,
+  drawForPlayer,
   gameEffects,
   gameInput,
 } from '../../../core/application/public-api';
@@ -21,7 +23,6 @@ import type { CatPattesState } from './state';
 
 const DECK = 'cat-pattes';
 const HANDS = 'players';
-const DRAWN_PLAYER_FLAG = 'cat-pattes.drawn-player-id';
 const TRACK = 'cat-pattes';
 const CAT_STATUS_PREFIX = 'cat-pattes.';
 const CAT_OBSTACLE = `${CAT_STATUS_PREFIX}obstacle`;
@@ -54,13 +55,17 @@ const PARADE_DISABLED_BY_POWER: Record<
 export const draw = defineAction<CatPattesState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Pioche une carte au début du tour, une seule fois.',
-  available: ({ actor, ctx }) => drawnPlayerId(ctx) !== actor.id,
+  available: ({ actor, ctx }) => ctx.effects.sourcePlayerId() !== actor.id,
   execute: ({ actor, ctx }) => {
-    if (drawnPlayerId(ctx) === actor.id) rejectRule('Pioche déjà faite');
-    const cardId = ctx.cards.drawOrRecycle<string>(DECK);
-    ctx.turn.flags.set(DRAWN_PLAYER_FLAG, actor.id);
+    if (ctx.effects.sourcePlayerId() === actor.id)
+      rejectRule('Pioche déjà faite');
+    const cardId = drawForPlayer<CatPattesState, string>(ctx, {
+      deckId: DECK,
+      handId: HANDS,
+      playerId: actor.id,
+      recycle: true,
+    })[0];
     if (cardId) {
-      ctx.cards.give(HANDS, actor.id, cardId);
       ctx.events.message('game.card.drawn', {
         playerId: actor.id,
         deckId: DECK,
@@ -69,7 +74,7 @@ export const draw = defineAction<CatPattesState, Record<string, never>>({
       return;
     }
     if (ctx.cards.hand<string>(HANDS, actor.id).length === 0) {
-      ctx.turn.flags.consume(DRAWN_PLAYER_FLAG);
+      ctx.effects.clearSource();
       ctx.events.message('game.player.passed', {
         playerId: actor.id,
         reason: 'no-card',
@@ -87,14 +92,13 @@ export const playCard = defineAction<CatPattesState, CardInput>({
   documentation:
     'Joue une carte Pattes, Obstacle, Parade ou Pouvoir autorisée.',
   available: ({ state, actor, ctx }) =>
-    drawnPlayerId(ctx) === actor.id &&
+    ctx.effects.sourcePlayerId() === actor.id &&
     playableInputs(state, actor.id, ctx).length > 0,
   validate: ({ state, actor, input, ctx }) =>
     includesInput(playableInputs(state, actor.id, ctx), input),
-  enumerate: ({ state, actor, ctx }) =>
-    playableInputs(state, actor.id, ctx),
+  enumerate: ({ state, actor, ctx }) => playableInputs(state, actor.id, ctx),
   execute: ({ state, actor, input, ctx }) => {
-    if (drawnPlayerId(ctx) !== actor.id) {
+    if (ctx.effects.sourcePlayerId() !== actor.id) {
       rejectRule('Vous devez piocher avant de jouer');
     }
     if (!includesInput(playableInputs(state, actor.id, ctx), input)) {
@@ -106,10 +110,8 @@ export const playCard = defineAction<CatPattesState, CardInput>({
       playerId: actor.id,
       cardId: card.id,
     });
-    ctx.effects.schedule(
-      ...effectsForPlay(card, input.targetPlayerId ?? null),
-    );
-    ctx.turn.flags.consume(DRAWN_PLAYER_FLAG);
+    ctx.effects.schedule(...effectsForPlay(card, input.targetPlayerId ?? null));
+    ctx.effects.clearSource();
   },
 });
 
@@ -117,9 +119,13 @@ export const discard = defineAction<CatPattesState, { cardId?: string }>({
   input: gameInput.object({ cardId: gameInput.optional(gameInput.cardId()) }),
   documentation: 'Défausse une carte jouable ou passe avec une main vide.',
   available: ({ state, actor, ctx }) =>
-    drawnPlayerId(ctx) === actor.id && !mustCounter(state, actor.id, ctx),
+    ctx.effects.sourcePlayerId() === actor.id &&
+    !mustCounter(state, actor.id, ctx),
   validate: ({ state, actor, input, ctx }) => {
-    if (drawnPlayerId(ctx) !== actor.id || mustCounter(state, actor.id, ctx)) {
+    if (
+      ctx.effects.sourcePlayerId() !== actor.id ||
+      mustCounter(state, actor.id, ctx)
+    ) {
       return false;
     }
     const hand = ctx.cards.hand<string>(HANDS, actor.id);
@@ -128,20 +134,26 @@ export const discard = defineAction<CatPattesState, { cardId?: string }>({
       : hand.includes(input.cardId ?? '');
   },
   enumerate: ({ state, actor, ctx }) => {
-    if (drawnPlayerId(ctx) !== actor.id || mustCounter(state, actor.id, ctx)) {
+    if (
+      ctx.effects.sourcePlayerId() !== actor.id ||
+      mustCounter(state, actor.id, ctx)
+    ) {
       return [];
     }
     const hand = ctx.cards.hand<string>(HANDS, actor.id);
     return hand.length === 0 ? [{}] : hand.map((cardId) => ({ cardId }));
   },
   execute: ({ state, actor, input, ctx }) => {
-    if (drawnPlayerId(ctx) !== actor.id || mustCounter(state, actor.id, ctx)) {
+    if (
+      ctx.effects.sourcePlayerId() !== actor.id ||
+      mustCounter(state, actor.id, ctx)
+    ) {
       rejectRule('Défausse Cat Pattes interdite');
     }
     const hand = ctx.cards.hand<string>(HANDS, actor.id);
     const cardId = input.cardId ?? hand[0];
     if (cardId) ctx.cards.play(HANDS, DECK, actor.id, cardId);
-    ctx.turn.flags.consume(DRAWN_PLAYER_FLAG);
+    ctx.effects.clearSource();
     ctx.turn.end();
   },
 });
@@ -153,11 +165,11 @@ export const CAT_PATTES_ACTIONS = {
 };
 
 export function playableInputs(
-  state: CatPattesState,
+  _state: CatPattesState,
   actorId: number,
   ctx: RuleContext,
 ): CardInput[] {
-  if (drawnPlayerId(ctx) !== actorId) return [];
+  if (ctx.effects.sourcePlayerId() !== actorId) return [];
   const blocked = isBlocked(actorId, ctx);
   return ctx.cards.hand<string>(HANDS, actorId).flatMap((cardId) => {
     const card = CAT_PATTES_CARD_BY_ID[cardId];
@@ -197,16 +209,18 @@ function effectsForPlay(
   );
 }
 
-export function finishRound(
+export function completeCatPattesRound(
   roundWinnerId: number,
   ctx: RuleContext,
 ): void {
-  ctx.round.end([roundWinnerId]);
-  if (ctx.match.lifecycle() !== 'finished') ctx.round.start(roundWinnerId);
+  completeRound(ctx, {
+    winnerPlayerIds: [roundWinnerId],
+    next: { starterPlayerId: roundWinnerId },
+  });
 }
 
 export function resetCatPattesRound(
-  state: CatPattesState,
+  _state: CatPattesState,
   ctx: RuleContext,
 ): void {
   for (const player of ctx.players.all()) {
@@ -239,7 +253,7 @@ export function resetCatPattesRound(
 }
 
 export function scoreCatPattesRound(
-  state: CatPattesState,
+  _state: CatPattesState,
   ctx: RuleContext,
 ): void {
   for (const player of ctx.players.all()) {
@@ -252,10 +266,7 @@ export function scoreCatPattesRound(
       round: ctx.round.number,
     });
   }
-  if (
-    ctx.round.completed() >=
-    (ctx.config.get<number>('roundsToPlay') ?? 1)
-  ) {
+  if (ctx.round.completed() >= (ctx.config.get<number>('roundsToPlay') ?? 1)) {
     const winnerId = [...ctx.players.all()].sort(
       (left, right) =>
         ctx.score.get(right.id) - ctx.score.get(left.id) || left.id - right.id,
@@ -264,10 +275,6 @@ export function scoreCatPattesRound(
       ctx.match.finish({ winners: [winnerId], reason: 'most-pattes' });
     }
   }
-}
-
-export function drawnPlayerId(ctx: RuleContext): number | null {
-  return ctx.turn.flags.get<number>(DRAWN_PLAYER_FLAG);
 }
 
 function canPlayPattes(
@@ -369,16 +376,14 @@ function mustCounter(
   ctx: RuleContext,
 ): boolean {
   return (
-    isBlocked(playerId, ctx) &&
-    playableInputs(state, playerId, ctx).length > 0
+    isBlocked(playerId, ctx) && playableInputs(state, playerId, ctx).length > 0
   );
 }
 
 function isBlocked(playerId: number, ctx: RuleContext): boolean {
   const obstacle = currentObstacle(playerId, ctx);
   return (
-    obstacle != null &&
-    !powerIgnoresObstacle(powers(playerId, ctx), obstacle)
+    obstacle != null && !powerIgnoresObstacle(powers(playerId, ctx), obstacle)
   );
 }
 
@@ -438,37 +443,20 @@ export function catPattesPlayerState(ctx: RuleContext): {
   sunReady: PlayerMap<boolean>;
   obstacleLock: PlayerMap<boolean>;
 } {
-  const players = ctx.players.all();
   return {
-    obstacles: Object.fromEntries(
-      players.map((player) => [player.id, currentObstacle(player.id, ctx)]),
+    obstacles: ctx.players.byId((player) => currentObstacle(player.id, ctx)),
+    powers: ctx.players.byId((player) => powers(player.id, ctx)),
+    turboPlayed: ctx.players.byId((player) =>
+      ctx.resources.get(player.id, CAT_TURBO_PLAYED),
     ),
-    powers: Object.fromEntries(
-      players.map((player) => [player.id, powers(player.id, ctx)]),
+    hasSun: ctx.players.byId((player) =>
+      ctx.status.has(player.id, CAT_HAS_SUN),
     ),
-    turboPlayed: Object.fromEntries(
-      players.map((player) => [
-        player.id,
-        ctx.resources.get(player.id, CAT_TURBO_PLAYED),
-      ]),
+    sunReady: ctx.players.byId(
+      (player) => !ctx.status.has(player.id, CAT_SUN_NOT_READY),
     ),
-    hasSun: Object.fromEntries(
-      players.map((player) => [
-        player.id,
-        ctx.status.has(player.id, CAT_HAS_SUN),
-      ]),
-    ),
-    sunReady: Object.fromEntries(
-      players.map((player) => [
-        player.id,
-        !ctx.status.has(player.id, CAT_SUN_NOT_READY),
-      ]),
-    ),
-    obstacleLock: Object.fromEntries(
-      players.map((player) => [
-        player.id,
-        ctx.status.has(player.id, CAT_OBSTACLE_LOCK),
-      ]),
+    obstacleLock: ctx.players.byId((player) =>
+      ctx.status.has(player.id, CAT_OBSTACLE_LOCK),
     ),
   };
 }

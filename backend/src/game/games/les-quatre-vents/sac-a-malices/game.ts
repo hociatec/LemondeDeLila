@@ -20,11 +20,7 @@ import {
   SAC_JAIL_TURNS,
   SAC_POT,
 } from './economy';
-import {
-  resolveManagement,
-  resolvePurchase,
-  SAC_EFFECTS,
-} from './rules';
+import { resolveManagement, resolvePurchase, SAC_EFFECTS } from './rules';
 import type { SacPlayerView, SacState } from './state';
 
 const SAC_VARIANT_IDS = SAC_VARIANTS.map((variant) => variant.id);
@@ -52,11 +48,11 @@ export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
       title: 'Variante du plateau',
       submitLabel: 'Démarrer la partie',
     },
-    onConfigured: ({ state, config, ctx }) => {
+    onConfigured: ({ state: _state, config, ctx }) => {
       const selected = SAC_VARIANTS.find(
         (variant) => variant.id === config.variantId,
       );
-      if (!selected) ctx.reject('UNKNOWN_VARIANT', config);
+      if (!selected) return ctx.reject('UNKNOWN_VARIANT', config);
       for (const player of ctx.players.all()) {
         ctx.resources.set(player.id, 'money', selected.rules.startMoney);
       }
@@ -105,13 +101,11 @@ export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
   choices: {
     'sac.purchase': defineChoice<SacState, string>({
       input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ state, value, ctx }) =>
-        resolvePurchase(state, value, ctx),
+      resolve: ({ state, value, ctx }) => resolvePurchase(state, value, ctx),
     }),
     'sac.management': defineChoice<SacState, number>({
       input: gameInput.number({ integer: true }),
-      resolve: ({ state, value, ctx }) =>
-        resolveManagement(state, value, ctx),
+      resolve: ({ state, value, ctx }) => resolveManagement(state, value, ctx),
     }),
   },
   view: ({ state, ctx }) => {
@@ -120,9 +114,7 @@ export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
       ctx.movement.position('city', player.id),
     );
     const playerResourceMap = (resourceId: string) =>
-      ctx.players.byId((player) =>
-        ctx.resources.get(player.id, resourceId),
-      );
+      ctx.players.byId((player) => ctx.resources.get(player.id, resourceId));
     return playerView({
       game: {
         ...publicFields(state, ['buildings']),
@@ -130,17 +122,8 @@ export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
         jailCards: playerResourceMap(SAC_JAIL_CARDS),
         consecutiveDoubles: playerResourceMap(SAC_CONSECUTIVE_DOUBLES),
         pot: ctx.counters.get(SAC_POT),
-        lastRoll: ctx.dice.last('pair')?.total ?? 0,
         extraRoll: ctx.players.byId(
           (player) => ctx.turn.extraCount(player.id) > 0,
-        ),
-        eliminated: ctx.players.byId(
-          (player) => ctx.match.playerStatus(player.id) === 'eliminated',
-        ),
-        positions,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        skipTurns: ctx.players.byId((player) =>
-          ctx.turn.skipCount(player.id),
         ),
       },
       extras: {

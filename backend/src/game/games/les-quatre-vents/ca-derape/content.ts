@@ -329,28 +329,38 @@ export const CA_DERAPE_CARDS: CaCard[] = CARD_DEFINITIONS.map((card) => ({
 function cardInstructions(card: RawCaCard): readonly GameEffectInstruction[] {
   const effects: GameEffectInstruction[] = [];
   if (card.kind === 'move') {
-    effects.push(gameEffects.custom('ca-derape.move', {
-      delta: card.moveDelta ?? 0,
-    }));
+    effects.push(
+      gameEffects.custom('ca-derape.move', {
+        delta: card.moveDelta ?? 0,
+      }),
+    );
   } else if (card.kind === 'skip') {
     effects.push(gameEffects.custom('ca-derape.skip-penalty'));
   } else if (card.kind === 'special' && SPECIAL_BY_ID[card.id]) {
-    effects.push(gameEffects.custom('ca-derape.special', {
-      effect: SPECIAL_BY_ID[card.id],
-      delta: card.moveDelta ?? 0,
-    }));
+    effects.push(
+      gameEffects.custom('ca-derape.special', {
+        effect: SPECIAL_BY_ID[card.id],
+        delta: card.moveDelta ?? 0,
+      }),
+    );
   } else if (card.kind === 'global' && GLOBAL_BY_ID[card.id]) {
-    effects.push(gameEffects.custom('ca-derape.global', {
-      effect: GLOBAL_BY_ID[card.id],
-    }));
+    effects.push(
+      gameEffects.custom('ca-derape.global', {
+        effect: GLOBAL_BY_ID[card.id],
+      }),
+    );
   } else if (card.kind === 'conditional' && CONDITIONAL_BY_ID[card.id]) {
-    effects.push(gameEffects.custom('ca-derape.conditional', {
-      effect: CONDITIONAL_BY_ID[card.id],
-    }));
+    effects.push(
+      gameEffects.custom('ca-derape.conditional', {
+        effect: CONDITIONAL_BY_ID[card.id],
+      }),
+    );
   } else if (card.kind === 'rule' && RULE_BY_ID[card.id]) {
-    effects.push(gameEffects.custom('ca-derape.rule', {
-      effect: RULE_BY_ID[card.id],
-    }));
+    effects.push(
+      gameEffects.custom('ca-derape.rule', {
+        effect: RULE_BY_ID[card.id],
+      }),
+    );
   }
   effects.push(gameEffects.custom('ca-derape.mark-winner'));
   return effects;

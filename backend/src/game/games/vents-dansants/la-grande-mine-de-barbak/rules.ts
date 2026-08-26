@@ -13,15 +13,11 @@ import type { GrandeMineState, MineDomain } from './state';
 const DECK = 'mine';
 const HANDS = 'players';
 const HAND_LIMIT = 5;
-const DRAWN_PLAYER_FLAG = 'la-grande-mine.drawn-player-id';
 export const MINE_DOMAINS = 'mine-domains';
 export const MINE_DISCARD_NEXT_DRAW = 'mine.discard-next-draw';
 type RuleContext = GameContext<GrandeMineState>;
 
-export const playCard = defineAction<
-  GrandeMineState,
-  { cardId: string }
->({
+export const playCard = defineAction<GrandeMineState, { cardId: string }>({
   input: gameInput.object({
     cardId: gameInput.cardId(),
   }),
@@ -71,13 +67,15 @@ export function enumeratePlays(
     .map((cardId) => ({ cardId }));
 }
 
-export function drawAtTurnStart(
-  ctx: RuleContext,
-): void {
+export function drawAtTurnStart(ctx: RuleContext): void {
   const current = ctx.players.current();
   if (!current) return;
-  ctx.turn.flags.set(DRAWN_PLAYER_FLAG, current.id);
   const cardId = ctx.cards.drawOrRecycle<string>(DECK);
+  ctx.effects.recordSource({
+    playerId: current.id,
+    deckId: DECK,
+    ...(cardId ? { cardId } : {}),
+  });
   if (!cardId) {
     finishMine(ctx);
     return;
@@ -107,10 +105,7 @@ export function scoreDomain(domain: MineDomain): number {
   );
 }
 
-function resolveImmediate(
-  card: LaGrandeMineCard,
-  ctx: RuleContext,
-): void {
+function resolveImmediate(card: LaGrandeMineCard, ctx: RuleContext): void {
   ctx.effects.schedule(
     gameEffects.custom('mine.log-card', { cardId: card.id }),
     ...card.effects,
@@ -150,10 +145,7 @@ export function removeRandomDomainCard(
   ctx.cards.discard(DECK, cardId);
 }
 
-export function removeRandomTreasure(
-  playerId: number,
-  ctx: RuleContext,
-): void {
+export function removeRandomTreasure(playerId: number, ctx: RuleContext): void {
   const domain = mineDomain(playerId, ctx);
   const cardId = ctx.random.pick(domain.treasures);
   if (!cardId) return;
@@ -207,16 +199,8 @@ export function finishMine(ctx: RuleContext): void {
   ctx.match.finish({ winners: winnerIds, reason: 'mine-collapsed' });
 }
 
-export function drawnPlayerId(ctx: RuleContext): number | null {
-  return ctx.turn.flags.get<number>(DRAWN_PLAYER_FLAG);
-}
-
 export function mineDomains(ctx: RuleContext): PlayerMap<MineDomain> {
-  return Object.fromEntries(
-    ctx.players
-      .all()
-      .map((player) => [player.id, mineDomain(player.id, ctx)]),
-  );
+  return ctx.players.byId((player) => mineDomain(player.id, ctx));
 }
 
 function mineDomain(playerId: number, ctx: RuleContext): MineDomain {

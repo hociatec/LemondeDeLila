@@ -14,13 +14,8 @@ export type LamaState = Record<string, never>;
 
 export type LamaPlayerView = {
   step: LamaStep;
-  scores: PlayerMap<number>;
-  eliminated: PlayerMap<boolean>;
   droppedOut: PlayerMap<boolean>;
   drawnThisTurn: boolean;
-  roundNumber: number;
   roundStarterIndex: number;
-  roundWinnerId: number | null;
   topCard: number | null;
-  winnerId: number | null;
 };

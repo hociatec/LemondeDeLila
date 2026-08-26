@@ -127,18 +127,14 @@ const SPECIAL_EFFECTS: Readonly<
   'special-voyage-autour-du-monde': [
     gameEffects.custom('les-mains.exchange-random'),
   ],
-  'special-metier-disparu': [
-    gameEffects.custom('les-mains.complete-vanished'),
-  ],
+  'special-metier-disparu': [gameEffects.custom('les-mains.complete-vanished')],
   'special-formation-express': [
     gameEffects.gainResource('les-mains.extra-draws', 1),
   ],
   'special-greve-mondiale': [
     gameEffects.skipTurn(1, gameEffects.target.allOpponents()),
   ],
-  'special-boussole-perdue': [
-    gameEffects.custom('les-mains.mix-hands'),
-  ],
+  'special-boussole-perdue': [gameEffects.custom('les-mains.mix-hands')],
   'special-passation-de-savoir': [
     gameEffects.custom('les-mains.pass-knowledge'),
   ],
@@ -165,15 +161,6 @@ export const LES_MAINS_CARD_BY_ID: Record<string, LesMainsCardDefinition> =
   Object.fromEntries(LES_MAINS_DECK.map((card) => [card.id, card]));
 
 export const LES_MAINS_FAMILY_SIZE = 6;
-export const LES_MAINS_FAMILIES: LesMainsFamily[] = [
-  'tradition',
-  'nature',
-  'mer',
-  'art',
-  'insolites',
-  'innovation',
-  'sante',
-];
 export const LES_MAINS_SPECIAL_CARD_IDS = new Set(
   specialCards.map((card) => card.id),
 );

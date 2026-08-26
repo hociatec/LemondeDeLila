@@ -23,7 +23,12 @@ export type EffectTarget =
     };
 
 export type EffectCondition =
-  | { kind: 'has-resource'; resource: string; amount: number; target?: EffectTarget }
+  | {
+      kind: 'has-resource';
+      resource: string;
+      amount: number;
+      target?: EffectTarget;
+    }
   | { kind: 'has-status'; status: string; target?: EffectTarget }
   | {
       kind: 'track-position';
@@ -99,7 +104,19 @@ export type GameEffectInstruction =
       target?: EffectTarget;
     }
   | {
-      kind: 'gain-resource' | 'lose-resource';
+      kind: 'discard-random-inventory';
+      inventoryId: string;
+      count: number;
+      target?: EffectTarget;
+    }
+  | {
+      kind: 'gain-resource';
+      resource: string;
+      amount: number;
+      target?: EffectTarget;
+    }
+  | {
+      kind: 'lose-resource';
       resource: string;
       amount: number;
       allowPartial?: boolean;
@@ -133,6 +150,25 @@ export type GameEffectInstruction =
       right: EffectTarget;
     }
   | {
+      kind: 'steal-random-inventory';
+      inventoryId: string;
+      count?: number;
+      from: EffectTarget;
+      to?: EffectTarget;
+    }
+  | {
+      kind: 'swap-inventories';
+      inventoryId: string;
+      left: EffectTarget;
+      right: EffectTarget;
+    }
+  | {
+      kind: 'exchange-random-inventory';
+      inventoryId: string;
+      left: EffectTarget;
+      right: EffectTarget;
+    }
+  | {
       kind: 'gain-score';
       amount: number;
       target?: EffectTarget;
@@ -150,6 +186,7 @@ export type GameEffectInstruction =
     }
   | { kind: 'remove-status'; status: string; target?: EffectTarget }
   | { kind: 'roll-dice'; diceId?: string }
+  | { kind: 'reverse-turn-order' }
   | {
       kind: 'swap-positions';
       trackId: string;
@@ -181,6 +218,15 @@ export type EffectEngineState = {
   playerChoiceResolved: boolean;
   resolvedPlayerChoiceId: string | null;
   completeTurnWhenDrained: boolean;
+  /** Provenance de la chaîne courante, conservée pendant tout le tour. */
+  source?: EffectSource | null;
+};
+
+export type EffectSource = {
+  playerId: number | null;
+  cardId?: string | number;
+  deckId?: string;
+  tileId?: string | number;
 };
 
 export interface GameEffectResolverShape<TState extends object> {
@@ -188,6 +234,7 @@ export interface GameEffectResolverShape<TState extends object> {
   apply(input: {
     state: TState;
     actorPlayerId: number | null;
+    source: EffectSource | null;
     targetPlayerIds: readonly number[];
     data: unknown;
     ctx: GameContext<TState>;
@@ -199,6 +246,7 @@ export interface GameEffectResolver<TState extends object, TData> {
   apply(input: {
     state: TState;
     actorPlayerId: number | null;
+    source: EffectSource | null;
     targetPlayerIds: readonly number[];
     data: TData;
     ctx: GameContext<TState>;
@@ -222,6 +270,7 @@ export function createEffectEngineState(): EffectEngineState {
     playerChoiceResolved: false,
     resolvedPlayerChoiceId: null,
     completeTurnWhenDrained: false,
+    source: null,
   };
 }
 
@@ -334,6 +383,14 @@ export const gameEffects = {
     count: number;
     target?: EffectTarget;
   }): GameEffectInstruction => ({ kind: 'discard-random', ...options }),
+  discardInventory: (options: {
+    inventoryId: string;
+    count: number;
+    target?: EffectTarget;
+  }): GameEffectInstruction => ({
+    kind: 'discard-random-inventory',
+    ...options,
+  }),
   giveCard: (options: {
     handId: string;
     cardId: string;
@@ -355,6 +412,35 @@ export const gameEffects = {
     left: EffectTarget,
     right: EffectTarget,
   ): GameEffectInstruction => ({ kind: 'swap-hands', handId, left, right }),
+  stealInventory: (options: {
+    inventoryId: string;
+    from: EffectTarget;
+    to?: EffectTarget;
+    count?: number;
+  }): GameEffectInstruction => ({
+    kind: 'steal-random-inventory',
+    ...options,
+  }),
+  swapInventories: (
+    inventoryId: string,
+    left: EffectTarget,
+    right: EffectTarget,
+  ): GameEffectInstruction => ({
+    kind: 'swap-inventories',
+    inventoryId,
+    left,
+    right,
+  }),
+  exchangeRandomInventory: (
+    inventoryId: string,
+    left: EffectTarget,
+    right: EffectTarget,
+  ): GameEffectInstruction => ({
+    kind: 'exchange-random-inventory',
+    inventoryId,
+    left,
+    right,
+  }),
   gainResource: (
     resource: string,
     amount: number,
@@ -414,6 +500,9 @@ export const gameEffects = {
   rollDice: (diceId = 'main'): GameEffectInstruction => ({
     kind: 'roll-dice',
     diceId,
+  }),
+  reverseTurnOrder: (): GameEffectInstruction => ({
+    kind: 'reverse-turn-order',
   }),
   swapPositions: (
     trackId: string,

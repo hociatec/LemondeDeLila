@@ -27,8 +27,4 @@ export type JeuOieState = Record<string, never>;
 export type JeuOiePlayerView = {
   inWell: PlayerMap<boolean>;
   pawnByPlayerId: PlayerMap<string>;
-  positions: PlayerMap<number>;
-  skipTurns: PlayerMap<number>;
-  setupComplete: boolean;
-  lastRoll: number | null;
 };

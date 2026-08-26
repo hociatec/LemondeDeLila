@@ -12,6 +12,7 @@ import type { GerardState } from './state';
 import {
   GERARD_EXTRA_NAMES,
   GERARD_GHOST_NAMES,
+  GERARD_JUDGE,
   GERARD_JURY_OVERRIDE,
   GERARD_PHASES,
   GERARD_SUBMISSIONS,
@@ -40,7 +41,10 @@ export const setTheme = defineAction<GerardState, Record<string, never>>({
   available: ({ actor, ctx }) =>
     GERARD_PHASES.is(ctx, 'waiting-theme') && gerardMasterId(ctx) === actor.id,
   execute: ({ state, actor, ctx }) => {
-    if (!GERARD_PHASES.is(ctx, 'waiting-theme') || gerardMasterId(ctx) !== actor.id) {
+    if (
+      !GERARD_PHASES.is(ctx, 'waiting-theme') ||
+      gerardMasterId(ctx) !== actor.id
+    ) {
       rejectRule('Seul le maître peut révéler le thème');
     }
     const theme = ctx.cards.drawOrRecycle<GerardPresidentThemeCard>('themes');
@@ -48,16 +52,13 @@ export const setTheme = defineAction<GerardState, Record<string, never>>({
     state.currentThemeId = theme.id;
     state.secondThemeId = null;
     ctx.counters.set(GERARD_THEME_SECRET, 0);
-    const pendingPlayerIds = ctx.players
-      .all()
-      .filter((player) => player.id !== actor.id)
-      .map((player) => player.id);
-    ctx.submissions.clear(GERARD_SUBMISSIONS);
-    ctx.submissions.open({
-      id: GERARD_SUBMISSIONS,
-      players: pendingPlayerIds,
-      secret: true,
-    });
+    const { participantPlayerIds: pendingPlayerIds } =
+      ctx.submissionFlow.openForJudge({
+        submissionId: GERARD_SUBMISSIONS,
+        judgeId: GERARD_JUDGE,
+        players: ctx.players.all().map((player) => player.id),
+        secret: true,
+      });
     const nextPhase = pendingPlayerIds.length
       ? 'collecting-names'
       : 'choosing-winner';
@@ -79,7 +80,8 @@ export const playName = defineAction<GerardState, { names: string[] }>({
   }),
   documentation: 'Soumet secrètement un à trois prénoms autorisés.',
   available: ({ actor, ctx }) =>
-    GERARD_PHASES.is(ctx, 'collecting-names') && pendingPlayers(ctx)[0] === actor.id,
+    GERARD_PHASES.is(ctx, 'collecting-names') &&
+    pendingPlayers(ctx)[0] === actor.id,
   validate: ({ state, actor, input, ctx }) => {
     const allowed = allowedNameCount(actor.id, ctx);
     const names = new Set(input.names);
@@ -118,7 +120,7 @@ export const playName = defineAction<GerardState, { names: string[] }>({
       if (!card) rejectRule('Carte prénom absente de la main');
       ctx.cards.take(NAME_HANDS, actor.id, card);
     }
-    ctx.submissions.submit(GERARD_SUBMISSIONS, actor.id, distinct);
+    ctx.submissionFlow.submit(GERARD_SUBMISSIONS, actor.id, distinct);
     ctx.resources.set(actor.id, GERARD_EXTRA_NAMES, 0);
     advanceSubmission(actor.id, ctx);
   },
@@ -213,9 +215,10 @@ export const pass = defineAction<GerardState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Passe pendant la collecte des prénoms.',
   available: ({ actor, ctx }) =>
-    GERARD_PHASES.is(ctx, 'collecting-names') && pendingPlayers(ctx)[0] === actor.id,
+    GERARD_PHASES.is(ctx, 'collecting-names') &&
+    pendingPlayers(ctx)[0] === actor.id,
   execute: ({ actor, ctx }) => {
-    ctx.submissions.submit(GERARD_SUBMISSIONS, actor.id, []);
+    ctx.submissionFlow.submit(GERARD_SUBMISSIONS, actor.id, []);
     advanceSubmission(actor.id, ctx);
   },
 });

@@ -10,7 +10,6 @@ import {
   BANDE_A_BANANE_EFFECTS,
   bananaTroops,
   drawAtTurnStart,
-  drawnPlayerId,
   enumeratePlays,
 } from './rules';
 import type { BandeABananePlayerView, BandeABananeState } from './state';
@@ -44,23 +43,16 @@ export default defineGame<
   setup: () => ({}),
   actions: BANDE_A_BANANE_ACTIONS,
   effects: BANDE_A_BANANE_EFFECTS,
-  view: ({ state, actor, ctx }) => {
+  view: ({ state: _state, actor, ctx }) => {
     const troops = bananaTroops(ctx);
     const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
-    const skipTurns = Object.fromEntries(
-      ctx.players.all().map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-    );
     return playerView({
       game: {
         troops,
-        drawnPlayerId: drawnPlayerId(ctx),
-        skipTurns,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
       },
       extras: {
         cardCatalog: BANDE_A_BANANE_CARD_BY_ID,
         troops: structuredClone(troops),
-        statuses: { skipTurn: skipTurns },
         ui: {
           panels: [
             {

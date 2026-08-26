@@ -1,7 +1,4 @@
-import type {
-  AutomaticRule,
-  VictoryRule,
-} from './game-definition';
+import type { AutomaticRule, VictoryRule } from './game-definition';
 import type { GameContext } from './game-rule-context';
 
 export type GameConditionInput<TState extends object> = {
@@ -70,7 +67,9 @@ export const endConditions = Object.freeze({
     return ({ ctx }) => {
       const participants = ctx.round.participants();
       const left = new Set(ctx.round.leftPlayers());
-      return participants.length > 0 && participants.every((id) => left.has(id));
+      return (
+        participants.length > 0 && participants.every((id) => left.has(id))
+      );
     };
   },
 
@@ -111,10 +110,10 @@ export function endRoundWhen<TState extends object>(options: {
   return Object.freeze({
     id: options.id,
     priority: options.priority,
-    when: (input) =>
+    when: (input: GameConditionInput<TState>) =>
       input.ctx.round.status() === 'playing' && options.condition(input),
-    apply: (input) => {
-      input.ctx.round.end(options.winners?.(input) ?? []);
+    apply: (input: GameConditionInput<TState>) => {
+      input.ctx.round.end([...(options.winners?.(input) ?? [])]);
     },
   });
 }
@@ -151,20 +150,20 @@ export const victoryConditions = Object.freeze({
   }): VictoryRule<TState> {
     return conditionVictory({
       condition: ({ ctx }) =>
-        ctx.players.active().some((player) => ctx.score.get(player.id) >= options.target),
+        ctx.players
+          .active()
+          .some((player) => ctx.score.get(player.id) >= options.target),
       candidates: ({ ctx }) =>
         ctx.players
           .active()
           .filter((player) => ctx.score.get(player.id) >= options.target)
           .map((player) => player.id),
       reason: 'score-reached',
-      tieBreakers:
-        options.tieBreakers ??
-        [
-          defineTieBreaker<TState>({
-            value: ({ ctx, playerId }) => ctx.score.get(playerId),
-          }),
-        ],
+      tieBreakers: options.tieBreakers ?? [
+        defineTieBreaker<TState>({
+          value: ({ ctx, playerId }) => ctx.score.get(playerId),
+        }),
+      ],
     });
   },
 
@@ -183,19 +182,24 @@ export const victoryConditions = Object.freeze({
   lastStanding<TState extends object>(): VictoryRule<TState> {
     return conditionVictory({
       condition: ({ ctx }) => ctx.match.activePlayers().length === 1,
-      candidates: ({ ctx }) => ctx.match.activePlayers().map((player) => player.id),
+      candidates: ({ ctx }) =>
+        ctx.match.activePlayers().map((player) => player.id),
       reason: 'last-player-standing',
     });
   },
 
   objectiveCompleted<TState extends object>(options: {
-    completed(input: GameConditionInput<TState> & { playerId: number }): boolean;
+    completed(
+      input: GameConditionInput<TState> & { playerId: number },
+    ): boolean;
     tieBreakers?: readonly GameTieBreaker<TState>[];
   }): VictoryRule<TState> {
     const candidates = (input: GameConditionInput<TState>) =>
       input.ctx.players
         .active()
-        .filter((player) => options.completed({ ...input, playerId: player.id }))
+        .filter((player) =>
+          options.completed({ ...input, playerId: player.id }),
+        )
         .map((player) => player.id);
     return conditionVictory({
       condition: (input) => candidates(input).length > 0,

@@ -10,6 +10,145 @@ import type { DiceRollPolicy } from './dice-kit';
 import type { PawnDefinition } from './pawn-kit';
 import type { GameContext } from './game-rule-context';
 
+export type CompleteRoundOptions<TState extends object> = {
+  winnerPlayerIds?: readonly number[];
+  end?: boolean;
+  score?: (input: { state: TState; ctx: GameContext<TState> }) => void;
+  finishMatch?: (input: {
+    state: TState;
+    ctx: GameContext<TState>;
+  }) => boolean | void;
+  reset?: (input: { state: TState; ctx: GameContext<TState> }) => void;
+  next?:
+    | false
+    | 'rotate'
+    | { starterPlayerId: number }
+    | ((input: { state: TState; ctx: GameContext<TState> }) => number | null);
+};
+
+/**
+ * Pipeline unique de fin de manche: score, résultat de manche, résultat de
+ * partie, reset puis sélection/démarrage du prochain starter.
+ */
+export function completeRound<TState extends object>(
+  ctx: GameContext<TState>,
+  options: CompleteRoundOptions<TState>,
+): boolean {
+  const input = { state: ctx.state, ctx };
+  options.score?.(input);
+  if (options.end !== false) {
+    ctx.round.end([...(options.winnerPlayerIds ?? [])]);
+  }
+  const explicitlyFinished = options.finishMatch?.(input) === true;
+  if (explicitlyFinished || ctx.match.lifecycle() === 'finished') return false;
+  options.reset?.(input);
+  if (options.next === false) return false;
+  if (typeof options.next === 'function') {
+    const starterPlayerId = options.next(input);
+    if (starterPlayerId != null) ctx.round.start(starterPlayerId);
+  } else if (options.next && options.next !== 'rotate') {
+    ctx.round.start(options.next.starterPlayerId);
+  } else {
+    ctx.round.next();
+  }
+  return true;
+}
+
+export type DrawAndResolveOptions<TCard, TResult> = {
+  deckId: string;
+  playerId: number;
+  recycle?: boolean;
+  discard?: boolean | ((input: { card: TCard; result: TResult }) => boolean);
+  eventData?: (card: TCard) => Record<string, unknown>;
+  resolve: (card: TCard) => TResult;
+};
+
+export type DrawForPlayerOptions = {
+  deckId: string;
+  handId: string;
+  playerId: number;
+  count?: number;
+  recycle?: boolean;
+};
+
+/** Pioche ciblée vers une main et enregistre sa provenance pour tout le tour. */
+export function drawForPlayer<TState extends object, TCard>(
+  ctx: GameContext<TState>,
+  options: DrawForPlayerOptions,
+): TCard[] {
+  const drawn = ctx.cards.drawManyToHand<TCard>(
+    options.deckId,
+    options.handId,
+    options.playerId,
+    options.count ?? 1,
+    { recycle: options.recycle },
+  );
+  const last = drawn.at(-1);
+  ctx.effects.recordSource({
+    playerId: options.playerId,
+    deckId: options.deckId,
+    ...cardEventIdentity(last),
+  });
+  return drawn;
+}
+
+/** Pioche d'événement sans main, avec recyclage et provenance standardisés. */
+export function drawEvent<TState extends object, TCard>(
+  ctx: GameContext<TState>,
+  options: Omit<DrawForPlayerOptions, 'handId' | 'count'> & {
+    discard?: boolean;
+  },
+): TCard | null {
+  const card = options.recycle
+    ? ctx.cards.drawOrRecycle<TCard>(options.deckId)
+    : ctx.cards.draw<TCard>(options.deckId);
+  ctx.effects.recordSource({
+    playerId: options.playerId,
+    deckId: options.deckId,
+    ...cardEventIdentity(card),
+  });
+  if (card != null && options.discard) ctx.cards.discard(options.deckId, card);
+  return card;
+}
+
+/**
+ * Pioche une carte, publie sa provenance, résout sa règle puis applique le
+ * cycle de défausse du CardsKit. Cette forme impérative est utilisable dans
+ * les chaînes de cases et les effets, contrairement à la recipe d'action.
+ */
+export function drawAndResolve<TState extends object, TCard, TResult = void>(
+  ctx: GameContext<TState>,
+  options: DrawAndResolveOptions<TCard, TResult>,
+): TResult | null {
+  return ctx.cards.drawThenResolve<TCard, TResult>(
+    options.deckId,
+    (card) => {
+      ctx.effects.recordSource({
+        playerId: options.playerId,
+        deckId: options.deckId,
+        ...cardEventIdentity(card),
+      });
+      ctx.events.message('game.card.drawn', {
+        playerId: options.playerId,
+        deckId: options.deckId,
+        ...cardEventIdentity(card),
+        ...options.eventData?.(card),
+      });
+      return options.resolve(card);
+    },
+    {
+      recycle: options.recycle,
+      discard: options.discard,
+    },
+  );
+}
+
+function cardEventIdentity(card: unknown): Record<string, unknown> {
+  if (card == null || typeof card !== 'object' || !('id' in card)) return {};
+  const id = (card as { id?: unknown }).id;
+  return typeof id === 'string' || typeof id === 'number' ? { cardId: id } : {};
+}
+
 export function sequentialPawnSelection<TState extends object>(options: {
   setId: string;
   choiceId: string;
@@ -17,11 +156,7 @@ export function sequentialPawnSelection<TState extends object>(options: {
   complete: (input: { ctx: GameContext<TState> }) => void;
 }): {
   request: (playerId: number, ctx: GameContext<TState>) => void;
-  resolve: (
-    playerId: number,
-    pawnId: string,
-    ctx: GameContext<TState>,
-  ) => void;
+  resolve: (playerId: number, pawnId: string, ctx: GameContext<TState>) => void;
 } {
   const request = (playerId: number, ctx: GameContext<TState>): void => {
     const available = ctx.pawns.available(options.setId);
@@ -174,10 +309,7 @@ export function rollAndMove<TState extends object>(options: {
           reason: options.winOnFinish.reason ?? 'track-finished',
         });
       }
-      if (
-        options.endTurn &&
-        ctx.match.lifecycle() !== 'finished'
-      ) {
+      if (options.endTurn && ctx.match.lifecycle() !== 'finished') {
         ctx.turn.complete();
       }
     },
@@ -237,7 +369,14 @@ export function drawCard<TState extends object, TCard>(options: {
         actor.id,
         { recycle: options.recycle },
       );
-      if (card == null) ctx.reject('DECK_EMPTY', { deckId: options.deckId });
+      if (card == null) {
+        return ctx.reject('DECK_EMPTY', { deckId: options.deckId });
+      }
+      ctx.effects.recordSource({
+        playerId: actor.id,
+        deckId: options.deckId,
+        ...cardEventIdentity(card),
+      });
       options.afterDraw?.({
         state,
         playerId: actor.id,
@@ -303,7 +442,9 @@ export function discardCard<TState extends object>(options: {
     validate:
       options.validate ??
       (({ actor, input, ctx }) =>
-        ctx.cards.hand<string>(options.handId, actor.id).includes(input.cardId)),
+        ctx.cards
+          .hand<string>(options.handId, actor.id)
+          .includes(input.cardId)),
     enumerate:
       options.enumerate ??
       (({ actor, ctx }) =>
@@ -398,19 +539,13 @@ export function requestCardFromPlayer<TState extends object>(options: {
   }) => void;
   endTurnOnReceived?: boolean;
   endTurnOnMiss?: boolean;
-}): GameActionDefinition<
-  TState,
-  { cardId: string; targetPlayerId: number }
-> {
+}): GameActionDefinition<TState, { cardId: string; targetPlayerId: number }> {
   const requestsFor = (
     state: TState,
     playerId: number,
     ctx: Parameters<GameActionDefinition<TState, never>['execute']>[0]['ctx'],
   ) => options.requests({ state, playerId, ctx });
-  return defineAction<
-    TState,
-    { cardId: string; targetPlayerId: number }
-  >({
+  return defineAction<TState, { cardId: string; targetPlayerId: number }>({
     input: gameInput.object({
       cardId: gameInput.cardId(),
       targetPlayerId: gameInput.playerId(),
@@ -422,8 +557,7 @@ export function requestCardFromPlayer<TState extends object>(options: {
           request.cardId === input.cardId &&
           request.targetPlayerId === input.targetPlayerId,
       ),
-    enumerate: ({ state, actor, ctx }) =>
-      requestsFor(state, actor.id, ctx),
+    enumerate: ({ state, actor, ctx }) => requestsFor(state, actor.id, ctx),
     execute: ({ state, actor, input, ctx }) => {
       const callbackInput = {
         state,
@@ -458,10 +592,7 @@ export function requestCardFromPlayer<TState extends object>(options: {
 export function giveCard<TState extends object>(options: {
   handId: string;
 }): GameActionDefinition<TState, { cardId: string; targetPlayerId: number }> {
-  return defineAction<
-    TState,
-    { cardId: string; targetPlayerId: number }
-  >({
+  return defineAction<TState, { cardId: string; targetPlayerId: number }>({
     input: gameInput.object({
       cardId: gameInput.cardId(),
       targetPlayerId: gameInput.playerId(),
@@ -504,11 +635,7 @@ export function stealCard<TState extends object>(options: {
         )
         .map((player) => ({ targetPlayerId: player.id })),
     execute: ({ actor, input, ctx }) => {
-      ctx.cards.stealRandom(
-        options.handId,
-        input.targetPlayerId,
-        actor.id,
-      );
+      ctx.cards.stealRandom(options.handId, input.targetPlayerId, actor.id);
     },
     documentation: 'Vole une carte aléatoire à un autre joueur.',
   });
@@ -608,9 +735,11 @@ export function leaveRound<TState extends object>(): GameActionDefinition<
   });
 }
 
-export function skipTurn<TState extends object>(options: {
-  count?: number;
-} = {}): GameActionDefinition<TState, { targetPlayerId: number }> {
+export function skipTurn<TState extends object>(
+  options: {
+    count?: number;
+  } = {},
+): GameActionDefinition<TState, { targetPlayerId: number }> {
   return defineAction<TState, { targetPlayerId: number }>({
     input: gameInput.object({ targetPlayerId: gameInput.playerId() }),
     validate: ({ input, ctx }) => ctx.players.get(input.targetPlayerId) != null,
@@ -673,11 +802,15 @@ export function chooseTarget<TState extends object>(options: {
 }
 
 export function answerQuiz<TState extends object>(options: {
-  sessionId: string | ((input: {
-    state: TState;
-    playerId: number;
-    ctx: Parameters<GameActionDefinition<TState, never>['execute']>[0]['ctx'];
-  }) => string);
+  sessionId:
+    | string
+    | ((input: {
+        state: TState;
+        playerId: number;
+        ctx: Parameters<
+          GameActionDefinition<TState, never>['execute']
+        >[0]['ctx'];
+      }) => string);
   available?: GameActionDefinition<
     TState,
     { answerIndex: number }
@@ -798,7 +931,9 @@ export function completeSet<TState extends object>(options: {
     input: gameInput.object({ setId: gameInput.string({ min: 1 }) }),
     available: options.available,
     validate: ({ actor, input, ctx }) =>
-      ctx.cards.completableSets(options.collectionId, actor.id).includes(input.setId),
+      ctx.cards
+        .completableSets(options.collectionId, actor.id)
+        .includes(input.setId),
     enumerate: ({ actor, ctx }) =>
       ctx.cards
         .completableSets(options.collectionId, actor.id)
@@ -895,7 +1030,8 @@ export function submitSecret<TState extends object, TValue>(options: {
         ctx,
       });
     },
-    documentation: 'Enregistre une soumission secrète sans la révéler aux autres joueurs.',
+    documentation:
+      'Enregistre une soumission secrète sans la révéler aux autres joueurs.',
   });
 }
 
@@ -964,7 +1100,9 @@ export function revealSubmissions<TState extends object, TValue>(options: {
       input.ctx.submissions.has(options.sessionId) &&
       input.ctx.submissions.isComplete(options.sessionId),
     execute: ({ state, actor, ctx }) => {
-      const valuesByPlayerId = ctx.submissions.reveal<TValue>(options.sessionId);
+      const valuesByPlayerId = ctx.submissions.reveal<TValue>(
+        options.sessionId,
+      );
       options.afterReveal?.({
         state,
         playerId: actor.id,
@@ -984,11 +1122,13 @@ export function eliminateAtScore<TState extends object>(options: {
   return {
     id: 'eliminate-at-score',
     when: ({ state, ctx }) =>
-      ctx.players.active().some((player) =>
-        options.direction === 'at-most'
-          ? options.score(state, player.id) <= options.threshold
-          : options.score(state, player.id) >= options.threshold,
-      ),
+      ctx.players
+        .active()
+        .some((player) =>
+          options.direction === 'at-most'
+            ? options.score(state, player.id) <= options.threshold
+            : options.score(state, player.id) >= options.threshold,
+        ),
     apply: ({ state, ctx }) => {
       for (const player of ctx.players.active()) {
         const reached =
@@ -1001,7 +1141,9 @@ export function eliminateAtScore<TState extends object>(options: {
   };
 }
 
-export function winAtScore<TState extends object>(target: number): VictoryRule<TState> {
+export function winAtScore<TState extends object>(
+  target: number,
+): VictoryRule<TState> {
   return {
     evaluate: ({ ctx }) => {
       const winners = ctx.score
@@ -1014,7 +1156,9 @@ export function winAtScore<TState extends object>(target: number): VictoryRule<T
   };
 }
 
-export function lastPlayerStanding<TState extends object>(): VictoryRule<TState> {
+export function lastPlayerStanding<
+  TState extends object,
+>(): VictoryRule<TState> {
   return {
     evaluate: ({ ctx }) => {
       const active = ctx.match.activePlayers();

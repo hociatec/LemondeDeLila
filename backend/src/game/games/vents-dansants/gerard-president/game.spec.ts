@@ -19,7 +19,7 @@ describe('Gérard président declarative game', () => {
       .seed(54);
     await game.start();
     await game.as(1).do('set_theme', {});
-    expect(game.state().game.currentTheme).not.toBeNull();
+    expect(game.view(1).currentTheme).not.toBeNull();
     expect(game.replay()).toEqual(game.state());
   });
 });

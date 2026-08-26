@@ -5,7 +5,7 @@ import {
   gameInput,
   playerView,
   quiz,
-  simultaneous,
+  simultaneousAnswers,
 } from '../../../core/application/public-api';
 import { MNEMO_BANKS, MNEMO_CATEGORIES } from './content';
 import {
@@ -15,11 +15,7 @@ import {
   MNEMO_QUESTION_TIMER,
   MNEMO_SESSION,
 } from './rules';
-import type {
-  MnemoGameConfig,
-  MnemoPlayerView,
-  MnemoState,
-} from './state';
+import type { MnemoGameConfig, MnemoPlayerView, MnemoState } from './state';
 
 const MNEMO_DEFAULT_CONFIG: MnemoGameConfig = {
   categoryId: 'all',
@@ -45,6 +41,7 @@ export default defineGame<MnemoState, typeof MNEMO_ACTIONS, MnemoPlayerView>({
   subcategory: 'VentsInfinis',
   description: 'Quiz simultané par catégories aux réponses mélangées.',
   players: { min: 1, max: 8 },
+  patterns: [simultaneousAnswers()],
   config: defineConfiguration<MnemoState, MnemoGameConfig>({
     input: gameInput.object({
       categoryId: gameInput.enum(MNEMO_CATEGORY_IDS),
@@ -89,30 +86,23 @@ export default defineGame<MnemoState, typeof MNEMO_ACTIONS, MnemoPlayerView>({
   setup: () => ({}),
   initialPhase: MNEMO_PHASES.initialPhase,
   phases: MNEMO_PHASES.phases,
-  turn: simultaneous(),
   actions: MNEMO_ACTIONS,
   view: ({ ctx }) => {
     const session = ctx.quiz.session(MNEMO_SESSION);
     const currentSession = session?.phase === 'closed' ? null : session;
-    const answeredPlayerIds = Object.keys(
-      currentSession?.answers ?? {},
-    ).map(Number);
+    const answeredPlayerIds = Object.keys(currentSession?.answers ?? {}).map(
+      Number,
+    );
     return playerView({
       game: {
-        scores: ctx.players.byId((player) => ctx.score.get(player.id)),
         notBeforeMs: ctx.scheduler.deadline(MNEMO_NEXT_QUESTION_TIMER),
         answeredPlayerIds,
-        roundNumber: ctx.round.number,
         questionLeaderId: ctx.round.starter() ?? 0,
         currentQuestion: currentSession
           ? structuredClone(currentSession.question)
           : null,
         remainingMilliseconds: ctx.scheduler.remaining(MNEMO_QUESTION_TIMER),
-        categories: structuredClone(MNEMO_CATEGORIES),
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-      },
-      extras: {
-        scores: ctx.players.byId((player) => ctx.score.get(player.id)),
+        categories: MNEMO_CATEGORIES,
       },
     });
   },

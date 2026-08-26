@@ -58,7 +58,8 @@ export class DeclarativeChoiceRuntime<
     runtime: DeclarativeState<TState>,
     actor: PlayerStateEntity,
   ): GameSingleActionDto[] {
-    if (!runtime.pending || !isExpectedActor(runtime.pending, actor.id)) return [];
+    if (!runtime.pending || !isExpectedActor(runtime.pending, actor.id))
+      return [];
     const options = asRecord(runtime.pending.data).options;
     if (!isUnknownArray(options)) return [];
     if (isMultiChoice(asRecord(runtime.pending.data).kind)) {

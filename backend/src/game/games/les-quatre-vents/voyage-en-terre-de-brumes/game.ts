@@ -81,32 +81,21 @@ export default defineGame<VoyageState, typeof VOYAGE_ACTIONS, VoyagePlayerView>(
           resolveVoyageQuiz(state, value, ctx),
       }),
     },
-    view: ({ state, actor, ctx }) => {
+    view: ({ state: _state, actor, ctx }) => {
       const collections = voyageCollections(ctx);
       const lastTargetByActor = voyageLastTargets(ctx);
       const finishCountdown =
         ctx.counters.get(VOYAGE_FINISH_STARTED) > 0
           ? ctx.counters.get(VOYAGE_FINISH_COUNTDOWN)
           : null;
-      const positions = Object.fromEntries(
-        ctx.players
-          .all()
-          .map((player) => [
-            player.id,
-            ctx.movement.position('ireland', player.id),
-          ]),
+      const positions = ctx.players.byId((player) =>
+        ctx.movement.position('ireland', player.id),
       );
       return playerView({
         game: {
           collections,
           lastTargetByActor,
           finishCountdown,
-          lastRoll: ctx.dice.last('main')?.total ?? null,
-          positions,
-          winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-          skipTurns: Object.fromEntries(
-            ctx.players.all().map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-          ),
         },
         extras: {
           currentPlayerView: actor
@@ -125,7 +114,7 @@ export default defineGame<VoyageState, typeof VOYAGE_ACTIONS, VoyagePlayerView>(
             ],
           },
         },
-        board: { tiles: structuredClone(VOYAGE_CONTENT.tiles), positions },
+        board: { tiles: VOYAGE_CONTENT.tiles, positions },
       });
     },
     bot: { choose: () => ({ type: 'roll', payload: {} }) },

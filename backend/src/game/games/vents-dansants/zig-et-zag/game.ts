@@ -71,20 +71,19 @@ export default defineGame<
               ) {
                 return [];
               }
-              return [{
-                key: entry.key,
-                params: { roundNumber: summary.roundNumber },
-              }];
+              return [
+                {
+                  key: entry.key,
+                  params: { roundNumber: summary.roundNumber },
+                },
+              ];
             }),
         }
       : null;
     return playerView({
       game: {
-        initialDeckCounts: Object.fromEntries(
-          ctx.players.all().map((player) => [player.id, INITIAL_HAND_SIZE]),
-        ),
+        initialDeckCounts: ctx.players.byId(() => INITIAL_HAND_SIZE),
         lastRound,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
         stage,
         waitingPlayers,
       },

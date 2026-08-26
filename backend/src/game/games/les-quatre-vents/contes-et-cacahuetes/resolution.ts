@@ -1,4 +1,5 @@
 import {
+  drawAndResolve,
   gameEffects,
   rejectRule,
 } from '../../../core/application/public-api';
@@ -17,13 +18,7 @@ import type {
   ContesState,
   ContesTargetEffect,
 } from './state';
-import {
-  blockedPosition,
-  moveTo,
-  position,
-  rollDie,
-  swapPositions,
-} from './resolution-support';
+import { blockedPosition, moveTo, position } from './resolution-support';
 import { CONTES_RESOURCES, CONTES_STATUSES } from './constants';
 import { listTokens } from './tokens';
 
@@ -52,51 +47,59 @@ export function applyRoll(
   const delta = ctx.status.consume(playerId, CONTES_STATUSES.reverseNextTurn)
     ? -value
     : value;
-  moveAndLand(state, playerId, delta, 0, ctx);
+  moveContesAndResolve(state, playerId, delta, 0, ctx);
 }
 
-export function moveAndLand(
+export function moveContesAndResolve(
   state: ContesState,
   playerId: number,
   delta: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_CHAIN_DEPTH || ctx.match.lifecycle() === 'finished') return;
-  ctx.movement.moveAndLand('story-road', playerId, delta, () => {
-    releaseBlockedPlayers(state, playerId, ctx);
-    resolveLanding(state, playerId, depth + 1, ctx);
+  ctx.movement.moveAndResolve({
+    trackId: 'story-road',
+    playerId,
+    distance: delta,
+    tiles: CONTES_TILES,
+    depth: depth + 1,
+    maxDepth: MAX_CHAIN_DEPTH,
+    blocked: () => ctx.match.lifecycle() === 'finished',
+    onLand: ({ position: current, tile }) => {
+      releaseBlockedPlayers(state, playerId, ctx);
+      applyContesTile(state, playerId, current, tile, depth + 1, ctx);
+    },
   });
 }
 
-export function resolveLanding(
+function applyContesTile(
   state: ContesState,
   playerId: number,
+  current: number,
+  tile: (typeof CONTES_TILES)[number] | undefined,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_CHAIN_DEPTH || ctx.match.lifecycle() === 'finished') return;
-  const tile = CONTES_TILES[position(playerId, ctx)];
+  if (!tile) return;
   ctx.events.message('game.pawn.landed', {
     playerId,
-    tileId: position(playerId, ctx),
+    tileId: current,
   });
   if (tile.type === 'finish') {
     ctx.match.finish({ winners: [playerId], reason: 'story-road-finished' });
-  }
-  else if (tile.type === 'conte')
-    drawAndApply(state, playerId, 'conte', depth, ctx);
+  } else if (tile.type === 'conte')
+    drawContesCard(state, playerId, 'conte', depth, ctx);
   else if (tile.type === 'bonus') {
     if (!ctx.status.has(playerId, CONTES_STATUSES.noBonus))
-      drawAndApply(state, playerId, 'bonus', depth, ctx);
+      drawContesCard(state, playerId, 'bonus', depth, ctx);
   } else if (tile.type === 'malus') {
     if (!consumeMalusProtection(state, playerId, depth, ctx))
-      drawAndApply(state, playerId, 'malus', depth, ctx);
+      drawContesCard(state, playerId, 'malus', depth, ctx);
   } else if (tile.type === 'surprise')
-    drawAndApply(state, playerId, 'surprise', depth, ctx);
+    drawContesCard(state, playerId, 'surprise', depth, ctx);
 }
 
-export function drawAndApply(
+export function drawContesCard(
   state: ContesState,
   playerId: number,
   type: ContesCardType,
@@ -104,18 +107,13 @@ export function drawAndApply(
   ctx: RuleContext,
 ): void {
   if (depth > MAX_CHAIN_DEPTH || ctx.choice.current()) return;
-  ctx.cards.drawThenResolve<ContesCard, void>(
-    type,
-    (card) => {
-      ctx.events.message('game.card.drawn', {
-        playerId,
-        deckId: type,
-        cardId: card.id,
-      });
+  drawAndResolve<ContesState, ContesCard>(ctx, {
+    deckId: type,
+    playerId,
+    resolve: (card) => {
       applyCard(state, playerId, card, depth + 1, ctx);
     },
-    {},
-  );
+  });
 }
 
 export function applyCard(
@@ -163,25 +161,24 @@ export function applyTarget(
   ctx: RuleContext,
 ): void {
   if (effect === 'move-other-two')
-    moveAndLand(state, targetId, 2, 0, ctx);
+    moveContesAndResolve(state, targetId, 2, 0, ctx);
   else if (effect === 'swap-next-turns') {
     ctx.turn.swapUpcoming(actorId, targetId);
   } else if (effect === 'give-bonus') {
     if (cardId == null) rejectRule('Carte à donner absente');
-    const card = CONTES_DECKS.bonus.find((candidate) => candidate.id === cardId);
+    const card = CONTES_DECKS.bonus.find(
+      (candidate) => candidate.id === cardId,
+    );
     if (!card) rejectRule('Carte Bonus absente');
     applyCard(state, targetId, card, 0, ctx);
-  } else if (
-    effect === 'swap-positions' ||
-    effect === 'wish-swap'
-  )
-    swapPositions(actorId, targetId, ctx);
+  } else if (effect === 'swap-positions' || effect === 'wish-swap')
+    ctx.movement.swap('story-road', actorId, targetId);
   else if (effect === 'steal-token' || effect === 'song-steal')
     requestToken(state, actorId, targetId, ctx);
   else if (effect === 'travelling-book') {
     const actorPosition = position(actorId, ctx);
     moveTo(targetId, actorPosition, ctx);
-    moveAndLand(state, targetId, 1, 0, ctx);
+    moveContesAndResolve(state, targetId, 1, 0, ctx);
   } else requestOption(state, actorId, 'gold-key-type', ctx, targetId);
 }
 
@@ -207,7 +204,7 @@ export function scheduleContesTarget(
 }
 
 export function requestOption(
-  state: ContesState,
+  _state: ContesState,
   actorId: number,
   effect: 'song' | 'wish' | 'gold-key-type',
   ctx: RuleContext,
@@ -234,7 +231,7 @@ export function requestOption(
 }
 
 export function requestLaughter(
-  state: ContesState,
+  _state: ContesState,
   actorId: number,
   ctx: RuleContext,
 ): void {
@@ -261,7 +258,7 @@ export function requestNumber(
 }
 
 export function requestAbundance(
-  state: ContesState,
+  _state: ContesState,
   actorId: number,
   ctx: RuleContext,
 ): void {
@@ -286,7 +283,7 @@ export function requestAbundance(
 }
 
 export function drawBonusGift(
-  state: ContesState,
+  _state: ContesState,
   actorId: number,
   ctx: RuleContext,
 ): void {
@@ -297,7 +294,7 @@ export function drawBonusGift(
 }
 
 export function requestToken(
-  state: ContesState,
+  _state: ContesState,
   actorId: number,
   targetId: number,
   ctx: RuleContext,
@@ -334,7 +331,11 @@ export function queueDraws(
 export function drainDraws(state: ContesState, ctx: RuleContext): void {
   let depth = 0;
   let resolution = ctx.turn.flags.get<ContesResolution>(RESOLUTION_FLAG);
-  while (ctx.choice.current() == null && resolution && depth < MAX_CHAIN_DEPTH) {
+  while (
+    ctx.choice.current() == null &&
+    resolution &&
+    depth < MAX_CHAIN_DEPTH
+  ) {
     const [type, ...remainingTypes] = resolution.types;
     const playerId = resolution.playerId;
     if (!type || playerId == null) break;
@@ -342,7 +343,7 @@ export function drainDraws(state: ContesState, ctx: RuleContext): void {
       playerId,
       types: remainingTypes,
     });
-    drawAndApply(state, playerId, type, depth, ctx);
+    drawContesCard(state, playerId, type, depth, ctx);
     resolution = ctx.turn.flags.get<ContesResolution>(RESOLUTION_FLAG);
     depth += 1;
   }
@@ -355,7 +356,7 @@ export function consumeMalusProtection(
   ctx: RuleContext,
 ): boolean {
   if (ctx.status.consume(playerId, CONTES_STATUSES.cape)) {
-    moveAndLand(state, playerId, 1, depth, ctx);
+    moveContesAndResolve(state, playerId, 1, depth, ctx);
     return true;
   }
   if (ctx.resources.has(playerId, CONTES_RESOURCES.shield, 1)) {
@@ -377,7 +378,7 @@ export function previousMalus(
   let target = position(playerId, ctx) - 1;
   while (target > 0 && CONTES_TILES[target].type !== 'malus') target -= 1;
   moveTo(playerId, Math.max(0, target), ctx);
-  if (target > 0) drawAndApply(state, playerId, 'malus', depth, ctx);
+  if (target > 0) drawContesCard(state, playerId, 'malus', depth, ctx);
 }
 
 export function swapClosestBehind(playerId: number, ctx: RuleContext): void {
@@ -388,11 +389,11 @@ export function swapClosestBehind(playerId: number, ctx: RuleContext): void {
       (player) => player.id !== playerId && position(player.id, ctx) < own,
     )
     .sort((left, right) => position(right.id, ctx) - position(left.id, ctx))[0];
-  if (target) swapPositions(playerId, target.id, ctx);
+  if (target) ctx.movement.swap('story-road', playerId, target.id);
 }
 
 export function releaseBlockedPlayers(
-  state: ContesState,
+  _state: ContesState,
   moverId: number,
   ctx: RuleContext,
 ): void {

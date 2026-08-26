@@ -121,11 +121,12 @@ export const OLYMPIA_STATUS_KEYS: OlympiaStatusKey[] = [
 
 export const OLYMPIA_CARDS: OlympiaCardDefinition[] = data.cards.map((card) => {
   const effect = 'effect' in card ? parseEffects(card.effect) : undefined;
-  const effects = effect == null
-    ? []
-    : (Array.isArray(effect) ? effect : [effect]).flatMap((instruction) =>
-        effectInstructions(instruction, `olympia.${card.id}.target`),
-      );
+  const effects =
+    effect == null
+      ? []
+      : (Array.isArray(effect) ? effect : [effect]).flatMap((instruction) =>
+          effectInstructions(instruction, `olympia.${card.id}.target`),
+        );
   return {
     id: card.id,
     name: card.name,

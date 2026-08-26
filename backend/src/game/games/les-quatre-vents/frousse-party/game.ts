@@ -70,26 +70,13 @@ export default defineGame<
         return pawnId == null ? [] : [[player.id, pawnId]];
       }),
     );
-    const positions = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.movement.position('manor', player.id),
-        ]),
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('manor', player.id),
     );
     const booleanMap = (statusId: string) =>
-      Object.fromEntries(
-        ctx.players
-          .all()
-          .map((player) => [player.id, ctx.status.has(player.id, statusId)]),
-      );
+      ctx.players.byId((player) => ctx.status.has(player.id, statusId));
     const numberMap = (statusId: string) =>
-      Object.fromEntries(
-        ctx.players
-          .all()
-          .map((player) => [player.id, statusNumber(player.id, statusId, ctx)]),
-      );
+      ctx.players.byId((player) => statusNumber(player.id, statusId, ctx));
     return playerView({
       game: {
         ignoreNextTrap: booleanMap(FROUSSE_STATUSES.ignoreNextTrap),
@@ -100,33 +87,16 @@ export default defineGame<
         ignoreNextGhost: booleanMap(FROUSSE_STATUSES.ignoreNextGhost),
         nextMoveCap: numberMap(FROUSSE_STATUSES.nextMoveCap),
         nextRollMalus: numberMap(FROUSSE_STATUSES.nextRollMalus),
-        nextRollKeepLowest: booleanMap(
-          FROUSSE_STATUSES.nextRollKeepLowest,
-        ),
+        nextRollKeepLowest: booleanMap(FROUSSE_STATUSES.nextRollKeepLowest),
         nextRollDouble: booleanMap(FROUSSE_STATUSES.nextRollDouble),
         nextRollIfThreeBackTwo: booleanMap(
           FROUSSE_STATUSES.nextRollIfThreeBackTwo,
         ),
-        blocked: Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [player.id, blockedRule(player.id, ctx)]),
-        ),
+        blocked: ctx.players.byId((player) => blockedRule(player.id, ctx)),
         pawnByPlayerId,
-        starterId: ctx.round.starter() ?? 0,
-        replayTurns: Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [player.id, ctx.turn.extraCount(player.id)]),
+        replayTurns: ctx.players.byId((player) =>
+          ctx.turn.extraCount(player.id),
         ),
-        positions,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        skipTurns: Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-        ),
-        setupComplete: FROUSSE_PHASES.is(ctx, 'playing'),
       },
       extras: {
         pawn: actor

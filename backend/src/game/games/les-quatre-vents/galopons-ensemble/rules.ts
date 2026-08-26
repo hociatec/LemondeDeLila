@@ -1,4 +1,5 @@
 import {
+  drawAndResolve,
   rollDice,
   sequentialPawnSelection,
   setupPlayingPhases,
@@ -29,7 +30,7 @@ export const roll = rollDice<GaloponsState>({
   available: ({ ctx }) => GALOPONS_PHASES.is(ctx, 'playing'),
   execute: ({ state, playerId, total, ctx }) => {
     payIou(state, playerId, ctx);
-    moveAndLand(state, playerId, total, 0, ctx);
+    moveGaloponsAndResolve(state, playerId, total, 0, ctx);
     ctx.turn.complete({ waiting: ctx.choice.current() != null });
   },
 });
@@ -56,13 +57,13 @@ export function pairAdvance(
   delta: number,
   ctx: RuleContext,
 ): void {
-  moveAndLand(state, actorId, delta, 0, ctx);
+  moveGaloponsAndResolve(state, actorId, delta, 0, ctx);
   if (ctx.match.lifecycle() !== 'finished') {
-    moveAndLand(state, targetId, delta, 0, ctx);
+    moveGaloponsAndResolve(state, targetId, delta, 0, ctx);
   }
 }
 
-export function moveAndLand(
+export function moveGaloponsAndResolve(
   state: GaloponsState,
   playerId: number,
   delta: number,
@@ -71,11 +72,11 @@ export function moveAndLand(
 ): void {
   if (depth > MAX_DEPTH || ctx.match.lifecycle() === 'finished') return;
   moveHorse(state, playerId, delta, ctx);
-  resolveLanding(state, playerId, depth + 1, ctx);
+  resolveGaloponsTile(state, playerId, depth + 1, ctx);
 }
 
 function moveHorse(
-  state: GaloponsState,
+  _state: GaloponsState,
   playerId: number,
   delta: number,
   ctx: RuleContext,
@@ -104,56 +105,64 @@ function moveHorse(
   }
 }
 
-function resolveLanding(
+function resolveGaloponsTile(
   state: GaloponsState,
   playerId: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  const current = position(playerId, ctx);
-  const tile = GALOPONS_TILES[current];
-  ctx.events.message('game.pawn.landed', { playerId, tileId: current });
-  if (tile.type === 'finish') {
-    const apples = ctx.resources.add(playerId, APPLE, 1);
-    if (apples >= APPLES_TO_WIN) {
-      ctx.match.finish({
-        winners: [playerId],
-        reason: 'three-apples-at-finish',
-      });
-    } else ctx.status.add(playerId, RETURNING, { scope: 'until-used' });
-    return;
-  }
-  const occupant = ctx.players
-    .all()
-    .find(
-      (player) =>
-        player.id !== playerId && position(player.id, ctx) === current,
-    );
-  if (occupant) moveHorse(state, occupant.id, -5, ctx);
-  if (tile.type === 'bonus') ctx.resources.add(playerId, APPLE, tile.apples);
-  else if (tile.type === 'skip') ctx.turn.skip(playerId, tile.skipTurns);
-  else if (tile.type === 'card') drawAndApply(state, playerId, depth, ctx);
+  ctx.movement.resolveLanding({
+    trackId: TRACK,
+    playerId,
+    tiles: GALOPONS_TILES,
+    depth,
+    maxDepth: MAX_DEPTH,
+    blocked: () => ctx.match.lifecycle() === 'finished',
+    onLand: ({ position: current, tile }) => {
+      if (!tile) return;
+      ctx.events.message('game.pawn.landed', { playerId, tileId: current });
+      if (tile.type === 'finish') {
+        const apples = ctx.resources.add(playerId, APPLE, 1);
+        if (apples >= APPLES_TO_WIN) {
+          ctx.match.finish({
+            winners: [playerId],
+            reason: 'three-apples-at-finish',
+          });
+        } else ctx.status.add(playerId, RETURNING, { scope: 'until-used' });
+        return;
+      }
+      const occupant = ctx.players
+        .all()
+        .find(
+          (player) =>
+            player.id !== playerId && position(player.id, ctx) === current,
+        );
+      if (occupant) moveHorse(state, occupant.id, -5, ctx);
+      if (tile.type === 'bonus') {
+        ctx.resources.add(playerId, APPLE, tile.apples);
+      } else if (tile.type === 'skip') {
+        ctx.turn.skip(playerId, tile.skipTurns);
+      } else if (tile.type === 'card') {
+        drawGaloponsCard(state, playerId, depth, ctx);
+      }
+    },
+  });
 }
 
-function drawAndApply(
-  state: GaloponsState,
+function drawGaloponsCard(
+  _state: GaloponsState,
   playerId: number,
   depth: number,
   ctx: RuleContext,
 ): void {
   if (depth > MAX_DEPTH || ctx.choice.current() != null) return;
-  ctx.cards.drawThenResolve<GaloponsCard, void>(
-    DECK,
-    (card) => {
-      ctx.events.message('game.card.drawn', {
-        playerId,
-        deckId: DECK,
-        cardId: card.id,
-      });
+  drawAndResolve<GaloponsState, GaloponsCard>(ctx, {
+    deckId: DECK,
+    playerId,
+    resolve: (card) => {
       ctx.effects.schedule(...card.effects);
     },
-    {},
-  );
+  });
 }
 
 export function moveToNextRegion(
@@ -172,7 +181,7 @@ export function moveToNextRegion(
   );
   if (target >= 0) {
     ctx.movement.moveTo(TRACK, playerId, target);
-    resolveLanding(state, playerId, depth + 1, ctx);
+    resolveGaloponsTile(state, playerId, depth + 1, ctx);
   }
 }
 
@@ -193,14 +202,14 @@ export function helpAdvanceForApple(
   delta: number,
   ctx: RuleContext,
 ): void {
-  moveAndLand(state, targetId, delta, 0, ctx);
+  moveGaloponsAndResolve(state, targetId, delta, 0, ctx);
   if (ctx.resources.has(targetId, APPLE, 1)) {
     ctx.resources.transfer(targetId, actorId, APPLE, 1);
   }
 }
 
 function payIou(
-  state: GaloponsState,
+  _state: GaloponsState,
   playerId: number,
   ctx: RuleContext,
 ): void {
@@ -213,21 +222,15 @@ function payIou(
   ctx.resources.remove(playerId, iouResource(creditor), 1);
 }
 
-export function galoponsIous(
-  ctx: RuleContext,
-): PlayerMap<PlayerMap<number>> {
-  const playerIds = ctx.players.all().map((player) => player.id);
-  return Object.fromEntries(
-    playerIds.map((debtorId) => [
-      debtorId,
-      Object.fromEntries(
-        playerIds.flatMap((creditorId) => {
-          const count = ctx.resources.get(debtorId, iouResource(creditorId));
-          return count > 0 ? [[creditorId, count]] : [];
-        }),
+export function galoponsIous(ctx: RuleContext): PlayerMap<PlayerMap<number>> {
+  return ctx.players.byId((debtor) => {
+    const rows = Object.entries(
+      ctx.players.byId((creditor) =>
+        ctx.resources.get(debtor.id, iouResource(creditor.id)),
       ),
-    ]),
-  );
+    ).filter(([, count]) => count > 0);
+    return Object.fromEntries(rows);
+  });
 }
 
 function iouResource(creditorId: number): string {

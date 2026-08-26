@@ -33,8 +33,4 @@ export type ToutPresDeMamanState = Record<string, never>;
 export type ToutPresDeMamanPlayerView = {
   tokens: PlayerMap<number>;
   bonusReroll: PlayerMap<boolean>;
-  lastRoll: number | null;
-  positions: PlayerMap<number>;
-  winnerId: number | null;
-  skipTurns: PlayerMap<number>;
 };

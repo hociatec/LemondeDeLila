@@ -89,7 +89,9 @@ export class GameEconomyController {
     for (const [marketId, definition] of this.definitions) {
       const prices = this.state.prices[marketId];
       if (!prices) {
-        throw new GameStateViolationError('Prix de marché absents', { marketId });
+        throw new GameStateViolationError('Prix de marché absents', {
+          marketId,
+        });
       }
       for (const [itemId, price] of Object.entries(prices)) {
         if (
@@ -126,7 +128,10 @@ export class GameEconomyController {
     const previous = this.price(marketId, itemId);
     const price = Math.max(
       definition.minPrice ?? 0,
-      Math.min(definition.maxPrice ?? Number.MAX_SAFE_INTEGER, Math.trunc(value)),
+      Math.min(
+        definition.maxPrice ?? Number.MAX_SAFE_INTEGER,
+        Math.trunc(value),
+      ),
     );
     this.state.prices[marketId][itemId] = price;
     this.emit('economy.price-changed', {
@@ -140,7 +145,11 @@ export class GameEconomyController {
   }
 
   adjustPrice(marketId: string, itemId: string, delta: number): number {
-    return this.setPrice(marketId, itemId, this.price(marketId, itemId) + delta);
+    return this.setPrice(
+      marketId,
+      itemId,
+      this.price(marketId, itemId) + delta,
+    );
   }
 
   canAfford(marketId: string, playerId: number, itemId: string): boolean {

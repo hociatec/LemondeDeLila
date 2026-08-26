@@ -9,8 +9,7 @@ internal sealed class GamePlayDiceSoundPlayer
 {
     private readonly ISoundService _sounds;
     private bool _primed;
-    private int? _lastRoll;
-    private int _lastTurnIndex;
+    private string? _lastRollKey;
 
     internal GamePlayDiceSoundPlayer(ISoundService sounds)
     {
@@ -20,8 +19,7 @@ internal sealed class GamePlayDiceSoundPlayer
     internal void Reset()
     {
         _primed = false;
-        _lastRoll = null;
-        _lastTurnIndex = 0;
+        _lastRollKey = null;
     }
 
     internal void TryPlayDiceRollSound(
@@ -34,30 +32,48 @@ internal sealed class GamePlayDiceSoundPlayer
             return;
         }
 
-        var roll = state.LastRoll;
-        var turnIndex = state.TurnIndex;
+        var (roll, rollKey) = ReadDice(state);
         if (!_primed)
         {
             _primed = true;
-            _lastRoll = roll;
-            _lastTurnIndex = turnIndex;
+            _lastRollKey = rollKey;
             return;
         }
 
-        if (roll == null || roll <= 0)
+        if (roll == null || roll <= 0 || string.IsNullOrWhiteSpace(rollKey))
         {
-            _lastRoll = roll;
-            _lastTurnIndex = turnIndex;
+            _lastRollKey = rollKey;
             return;
         }
 
-        var shouldPlay = roll != _lastRoll;
+        var shouldPlay = !string.Equals(rollKey, _lastRollKey, StringComparison.Ordinal);
 
-        _lastRoll = roll;
-        _lastTurnIndex = turnIndex;
+        _lastRollKey = rollKey;
         if ((shouldPlay || forceForCurrentUpdate) && !suppressForCurrentUpdate)
         {
             _sounds.Play(SoundId.DiceRolled);
         }
+    }
+
+    private static (int? Total, string? RollKey) ReadDice(GameStateDto state)
+    {
+        var extras = state.Extras;
+        if (extras.ValueKind != System.Text.Json.JsonValueKind.Object ||
+            !extras.TryGetProperty("dice", out var dice) ||
+            dice.ValueKind != System.Text.Json.JsonValueKind.Object)
+        {
+            return (null, null);
+        }
+
+        int? total = dice.TryGetProperty("total", out var totalElement) &&
+                     totalElement.ValueKind == System.Text.Json.JsonValueKind.Number &&
+                     totalElement.TryGetInt32(out var value)
+            ? value
+            : null;
+        var key = dice.TryGetProperty("rollKey", out var keyElement) &&
+                  keyElement.ValueKind == System.Text.Json.JsonValueKind.String
+            ? keyElement.GetString()
+            : null;
+        return (total, key);
     }
 }

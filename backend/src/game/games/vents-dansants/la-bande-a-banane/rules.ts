@@ -18,7 +18,6 @@ import type { GameEffectInstruction } from '../../../core/application/public-api
 const DECK = 'banana';
 const HANDS = 'players';
 const HAND_LIMIT = 7;
-const DRAWN_PLAYER_FLAG = 'la-bande-a-banane.drawn-player-id';
 const TROOPS = 'banana-troops';
 export const BANANA_SPECIES = [
   'capucin',
@@ -45,9 +44,8 @@ export const playCard = defineAction<BandeABananeState, PlayCardInput>({
     enumeratePlays(state, actor.id, ctx).some((candidate) =>
       samePlayInput(candidate, input),
     ),
-  enumerate: ({ state, actor, ctx }) =>
-    enumeratePlays(state, actor.id, ctx),
-  execute: ({ state, actor, input, ctx }) => {
+  enumerate: ({ state, actor, ctx }) => enumeratePlays(state, actor.id, ctx),
+  execute: ({ state: _state, actor, input, ctx }) => {
     const card = BANDE_A_BANANE_CARD_BY_ID[input.cardId];
     ctx.cards.take(HANDS, actor.id, input.cardId);
     if (card.type === 'monkey' || card.type === 'joker') {
@@ -85,7 +83,7 @@ export const playCard = defineAction<BandeABananeState, PlayCardInput>({
 export const pass = defineAction<BandeABananeState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Termine le tour sans jouer de carte.',
-  execute: ({ state, actor, ctx }) => {
+  execute: ({ state: _state, actor, ctx }) => {
     ctx.events.message('game.player.passed', { playerId: actor.id });
     ctx.turn.complete();
   },
@@ -94,7 +92,7 @@ export const pass = defineAction<BandeABananeState, Record<string, never>>({
 export const BANDE_A_BANANE_ACTIONS = { play_card: playCard, pass };
 
 export function enumeratePlays(
-  state: BandeABananeState,
+  _state: BandeABananeState,
   playerId: number,
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
 ): PlayCardInput[] {
@@ -144,15 +142,11 @@ function samePlayInput(left: PlayCardInput, right: PlayCardInput): boolean {
   );
 }
 
-export const drawAtTurnStart = drawCardsAtTurnStart<
-  BandeABananeState,
-  string
->({
+export const drawAtTurnStart = drawCardsAtTurnStart<BandeABananeState, string>({
   deckId: DECK,
   handId: HANDS,
   afterAttempt: ({ player, ctx }) => {
     if (!player) return;
-    ctx.turn.flags.set(DRAWN_PLAYER_FLAG, player.id);
     ctx.events.message('game.card.drawn', {
       playerId: player.id,
       deckId: DECK,
@@ -191,9 +185,9 @@ function exchangeRandom(
   cardToGive: string,
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
 ): void {
-  const received = ctx.random.pick(ctx.cards.hand<string>(HANDS, targetId));
-  if (!received) return;
-  ctx.cards.exchange(HANDS, playerId, cardToGive, targetId, received);
+  const received = ctx.cards.stealRandom<string>(HANDS, targetId, playerId);
+  if (received == null) return;
+  ctx.cards.transfer(HANDS, playerId, targetId, cardToGive);
 }
 
 function enforceHandLimit(
@@ -221,9 +215,7 @@ function speciesCount(
 export function bananaTroops(
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
 ): PlayerMap<import('./state').BandeABananeTroopEntry[]> {
-  return Object.fromEntries(
-    ctx.players.all().map((player) => [player.id, troops(player.id, ctx)]),
-  );
+  return ctx.players.byId((player) => troops(player.id, ctx));
 }
 
 function troops(
@@ -250,12 +242,6 @@ function troopItemId(
   species: BandeABananeMonkeySpecies,
 ): string {
   return `${cardId}:${species}`;
-}
-
-export function drawnPlayerId(
-  ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): number | null {
-  return ctx.turn.flags.get<number>(DRAWN_PLAYER_FLAG);
 }
 
 export const BANDE_A_BANANE_EFFECTS = {

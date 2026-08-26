@@ -11,7 +11,4 @@ export type BandeABananeState = Record<string, never>;
 
 export type BandeABananePlayerView = {
   troops: PlayerMap<BandeABananeTroopEntry[]>;
-  drawnPlayerId: number | null;
-  skipTurns: PlayerMap<number>;
-  winnerId: number | null;
 };

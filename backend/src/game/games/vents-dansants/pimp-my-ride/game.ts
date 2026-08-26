@@ -14,7 +14,6 @@ import {
   currentCarParts,
   drawCarPart,
   drawnCardId,
-  drawnPlayerId,
   PIMP_MY_RIDE_ACTIONS,
   PIMP_CAR_NAME_INDEX,
 } from './rules';
@@ -55,11 +54,9 @@ export default defineGame<
     { key: 'D', type: 'action', actionType: 'discard_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
   ],
-  setup: ({ players }) => {
+  setup: ({ ctx }) => {
     return {
-      completedCars: Object.fromEntries(
-        players.map((player) => [player.id, []]),
-      ),
+      completedCars: ctx.players.byId(() => []),
     };
   },
   actions: PIMP_MY_RIDE_ACTIONS,
@@ -67,38 +64,31 @@ export default defineGame<
     when(
       'draw-car-part',
       ({ ctx }) =>
-        drawnPlayerId(ctx) !== (ctx.players.current()?.id ?? null),
+        ctx.effects.sourcePlayerId() !== (ctx.players.current()?.id ?? null),
       ({ state, ctx }) => drawCarPart(state, ctx),
     ),
   ],
   view: ({ state, ctx }) => {
-    const progress = Object.fromEntries(
-      ctx.players.all().map((player) => {
-        const carParts = currentCarParts(player.id, ctx);
-        return [
-          player.id,
-          {
-          stageIndex: carParts.length,
-          carParts,
-          completedCars: state.completedCars[player.id].map((completed) => {
-            const definition = PIMP_MY_RIDE_CAR_NAMES[completed.nameIndex];
-            return {
-              name: definition?.name ?? '',
-              description: definition?.description ?? '',
-              parts: [...completed.parts],
-            };
-          }),
-          },
-        ];
-      }),
-    );
+    const progress = ctx.players.byId((player) => {
+      const carParts = currentCarParts(player.id, ctx);
+      return {
+        stageIndex: carParts.length,
+        carParts,
+        completedCars: state.completedCars[player.id].map((completed) => {
+          const definition = PIMP_MY_RIDE_CAR_NAMES[completed.nameIndex];
+          return {
+            name: definition?.name ?? '',
+            description: definition?.description ?? '',
+            parts: [...completed.parts],
+          };
+        }),
+      };
+    });
     return playerView({
       game: {
         carNameIndex: ctx.counters.get(PIMP_CAR_NAME_INDEX),
         progress,
-        drawnPlayerId: drawnPlayerId(ctx),
         drawnCardId: drawnCardId(ctx),
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
       },
       extras: {
         cardCatalog: PIMP_MY_RIDE_CARD_BY_ID,

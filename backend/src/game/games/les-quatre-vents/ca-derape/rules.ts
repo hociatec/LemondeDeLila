@@ -1,6 +1,7 @@
 import {
   commonStatuses,
   defineAction,
+  drawEvent,
   gameEffects,
   gameInput,
   rejectRule,
@@ -36,9 +37,7 @@ export const roll = defineAction<CaDerapeState, Record<string, never>>({
   execute: ({ state, actor, ctx }) => {
     const mirroredFrom = mirrorSource(actor.id, ctx);
     let value =
-      mirroredFrom == null
-        ? 0
-        : ctx.resources.get(mirroredFrom, CA_LAST_ROLL);
+      mirroredFrom == null ? 0 : ctx.resources.get(mirroredFrom, CA_LAST_ROLL);
     if (value <= 0) value = ctx.dice.roll('main').total;
     ctx.status.remove(actor.id, CA_MIRROR_ROLL);
     if (ctx.status.consume(actor.id, commonStatuses.doubleRoll)) {
@@ -63,11 +62,8 @@ export const roll = defineAction<CaDerapeState, Record<string, never>>({
 
 export const CA_DERAPE_ACTIONS = { roll };
 
-export function resolveDeltaChoice(
-  value: number,
-  ctx: RuleContext,
-): void {
-  const pending = ctx.choice.consumeData<{
+export function resolveDeltaChoice(value: number, ctx: RuleContext): void {
+  const pending = ctx.choice.consumeContinuation<{
     kind: 'next-delta';
     actorId: number;
   }>();
@@ -79,29 +75,42 @@ export function resolveDeltaChoice(
   ctx.turn.complete({ waiting: ctx.choice.current() != null });
 }
 
-function resolveLanding(
-  state: CaDerapeState,
+function resolveCaDerapeTile(
+  _state: CaDerapeState,
   playerId: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_DEPTH || ctx.match.lifecycle() === 'finished') return;
-  const current = position(playerId, ctx);
-  const tile = CA_DERAPE_TILES[current];
-  ctx.events.message('game.pawn.landed', { playerId, tileId: current });
-  if (current >= FINISH) {
-    ctx.match.finish({ winners: [playerId], reason: 'finish-line' });
-    return;
-  }
-  if (tile.isNeutral) return;
-  const card = drawCard(ctx);
-  if (!card) return;
-  ctx.events.message('game.card.drawn', {
+  ctx.movement.resolveLanding({
+    trackId: TRACK,
     playerId,
-    deckId: 'events',
-    cardId: card.id,
+    tiles: CA_DERAPE_TILES,
+    depth,
+    maxDepth: MAX_DEPTH,
+    blocked: () => ctx.match.lifecycle() === 'finished',
+    onLand: ({ position: current, tile }) => {
+      if (!tile) return;
+      ctx.events.message('game.pawn.landed', { playerId, tileId: current });
+      if (current >= FINISH) {
+        ctx.match.finish({ winners: [playerId], reason: 'finish-line' });
+        return;
+      }
+      if (tile.isNeutral) return;
+      const card = drawEvent<CaDerapeState, CaCard>(ctx, {
+        deckId: DECK,
+        playerId,
+        recycle: true,
+        discard: true,
+      });
+      if (!card) return;
+      ctx.events.message('game.card.drawn', {
+        playerId,
+        deckId: 'events',
+        cardId: card.id,
+      });
+      ctx.effects.schedule(...card.effects);
+    },
   });
-  ctx.effects.schedule(...card.effects);
 }
 
 export function applySpecial(
@@ -164,10 +173,7 @@ export function applySpecial(
   }
 }
 
-export function applyGlobal(
-  effect: CaGlobalEffect,
-  ctx: RuleContext,
-): void {
+export function applyGlobal(effect: CaGlobalEffect, ctx: RuleContext): void {
   const ids = ctx.players.all().map((player) => player.id);
   if (effect === 'shuffle')
     assignPositions(
@@ -286,7 +292,12 @@ export function applyRule(
       ctx,
     );
   else if (effect === 'draw-extra') {
-    const extra = drawCard(ctx);
+    const extra = drawEvent<CaDerapeState, CaCard>(ctx, {
+      deckId: DECK,
+      playerId: actorId,
+      recycle: true,
+      discard: true,
+    });
     if (extra) ctx.effects.schedule(...extra.effects);
   } else if (effect === 'double-move')
     addUntilUsedStatus(actorId, commonStatuses.doubleMove, ctx);
@@ -320,10 +331,7 @@ function scheduleTargetEffect(
   );
 }
 
-function requestDeltaChoice(
-  actorId: number,
-  ctx: RuleContext,
-): void {
+function requestDeltaChoice(actorId: number, ctx: RuleContext): void {
   ctx.choice.one({
     id: 'ca-derape.next-delta',
     player: actorId,
@@ -356,7 +364,7 @@ function movePlayer(
   ctx.movement.moveTo(TRACK, playerId, target);
   ctx.resources.set(playerId, CA_LAST_MOVE, delta);
   if (delta !== 0) ctx.resources.set(playerId, CA_IDLE_TURNS, 0);
-  if (resolve) resolveLanding(state, playerId, depth + 1, ctx);
+  if (resolve) resolveCaDerapeTile(state, playerId, depth + 1, ctx);
 }
 
 export function consumePenaltyShield(
@@ -388,21 +396,11 @@ export function caResourceMap(
   ctx: RuleContext,
   resourceId: string,
 ): PlayerMap<number> {
-  return Object.fromEntries(
-    ctx.players
-      .all()
-      .map((player) => [player.id, ctx.resources.get(player.id, resourceId)]),
-  );
+  return ctx.players.byId((player) => ctx.resources.get(player.id, resourceId));
 }
 
-export function mirrorSourceMap(
-  ctx: RuleContext,
-): PlayerMap<number | null> {
-  return Object.fromEntries(
-    ctx.players
-      .all()
-      .map((player) => [player.id, mirrorSource(player.id, ctx)]),
-  );
+export function mirrorSourceMap(ctx: RuleContext): PlayerMap<number | null> {
+  return ctx.players.byId((player) => mirrorSource(player.id, ctx));
 }
 
 function mirrorSource(playerId: number, ctx: RuleContext): number | null {
@@ -417,12 +415,6 @@ export function markWinnerIfReached(ctx: RuleContext): void {
   if (winner) {
     ctx.match.finish({ winners: [winner.id], reason: 'finish-line' });
   }
-}
-
-function drawCard(ctx: RuleContext): CaCard | null {
-  const card = ctx.cards.drawOrRecycle<CaCard>(DECK);
-  if (card) ctx.cards.discard(DECK, card);
-  return card;
 }
 
 function moveAll(ids: number[], delta: number, ctx: RuleContext): void {

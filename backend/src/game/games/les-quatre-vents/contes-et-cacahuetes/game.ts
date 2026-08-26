@@ -116,7 +116,7 @@ export default defineGame<ContesState, typeof CONTES_ACTIONS, ContesPlayerView>(
     automatic: [
       when(
         'unblock-passed-player',
-        ({ state, ctx }) => {
+        ({ state: _state, ctx }) => {
           const player = ctx.players.current();
           const blocked = player ? blockedPosition(ctx, player.id) : null;
           return (
@@ -136,7 +136,7 @@ export default defineGame<ContesState, typeof CONTES_ACTIONS, ContesPlayerView>(
       ),
       when(
         'skip-sleeping-or-blocked-player',
-        ({ state, ctx }) => {
+        ({ state: _state, ctx }) => {
           const player = ctx.players.current();
           return (
             CONTES_PHASES.is(ctx, 'playing') &&
@@ -147,7 +147,7 @@ export default defineGame<ContesState, typeof CONTES_ACTIONS, ContesPlayerView>(
         ({ state, ctx }) => skipBlockedContesPlayer(state, ctx),
       ),
     ],
-    view: ({ state, actor, ctx }) => {
+    view: ({ state: _state, actor, ctx }) => {
       const pawnByPlayerId = Object.fromEntries(
         ctx.players.all().flatMap((player) => {
           const pawnId = ctx.pawns.assigned('contes', player.id)[0];
@@ -155,34 +155,22 @@ export default defineGame<ContesState, typeof CONTES_ACTIONS, ContesPlayerView>(
         }),
       );
       const numberMap = (value: (playerId: number) => number) =>
-        Object.fromEntries(
-          ctx.players.all().map((player) => [player.id, value(player.id)]),
-        );
+        ctx.players.byId((player) => value(player.id));
       const booleanMap = (statusId: string) =>
-        Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [player.id, ctx.status.has(player.id, statusId)]),
-        );
+        ctx.players.byId((player) => ctx.status.has(player.id, statusId));
       const lastConteEntry = [...ctx.events.messages()]
         .reverse()
         .find(
           (entry) =>
-            entry.key === 'game.card.drawn' &&
-            entry.params.deckId === 'conte',
+            entry.key === 'game.card.drawn' && entry.params.deckId === 'conte',
         );
       const lastConteCardId = Number(lastConteEntry?.params.cardId);
       const lastContePlayerId = Number(lastConteEntry?.params.playerId);
       const lastConteCard = Number.isInteger(lastConteCardId)
         ? CONTES_DECKS.conte.find((card) => card.id === lastConteCardId)
         : null;
-      const positions = Object.fromEntries(
-        ctx.players
-          .all()
-          .map((player) => [
-            player.id,
-            ctx.movement.position('story-road', player.id),
-          ]),
+      const positions = ctx.players.byId((player) =>
+        ctx.movement.position('story-road', player.id),
       );
       return playerView({
         game: {
@@ -201,13 +189,12 @@ export default defineGame<ContesState, typeof CONTES_ACTIONS, ContesPlayerView>(
           ),
           forcedOneTurns: numberMap(
             (playerId) =>
-              ctx.status.get(playerId, CONTES_STATUSES.forcedOne)?.remaining ?? 0,
+              ctx.status.get(playerId, CONTES_STATUSES.forcedOne)?.remaining ??
+              0,
           ),
           reverseNextTurn: booleanMap(CONTES_STATUSES.reverseNextTurn),
-          blockedAt: Object.fromEntries(
-            ctx.players
-              .all()
-              .map((player) => [player.id, blockedPosition(ctx, player.id)]),
+          blockedAt: ctx.players.byId((player) =>
+            blockedPosition(ctx, player.id),
           ),
           keyOfGold: booleanMap(CONTES_STATUSES.keyOfGold),
           pawnByPlayerId,
@@ -222,23 +209,9 @@ export default defineGame<ContesState, typeof CONTES_ACTIONS, ContesPlayerView>(
                   timestamp: lastConteEntry.timestamp ?? '',
                 }
               : null,
-          starterId: ctx.round.starter() ?? 0,
-          turnReplacement: Object.fromEntries(
-            ctx.players
-              .all()
-              .map((player) => [
-                player.id,
-                ctx.turn.replacementFor(player.id),
-              ]),
+          turnReplacement: ctx.players.byId((player) =>
+            ctx.turn.replacementFor(player.id),
           ),
-          positions,
-          winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-          skipTurns: Object.fromEntries(
-            ctx.players
-              .all()
-              .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-          ),
-          setupComplete: CONTES_PHASES.is(ctx, 'playing'),
         },
         extras: {
           pawn: actor

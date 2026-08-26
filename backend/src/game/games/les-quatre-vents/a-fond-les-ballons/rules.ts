@@ -1,5 +1,7 @@
 import {
   defineEffect,
+  drawAndResolve,
+  drawEvent,
   gameEffects,
   gameInput,
   rollDice,
@@ -47,11 +49,7 @@ const pawnSelection = sequentialPawnSelection<AFondLesBallonsState>({
 export const requestPawn = pawnSelection.request;
 export const resolvePawn = pawnSelection.resolve;
 
-function applySwap(
-  actorId: number,
-  targetId: number,
-  ctx: RuleContext,
-): void {
+function applySwap(actorId: number, targetId: number, ctx: RuleContext): void {
   ctx.movement.swap(TRACK, actorId, targetId);
   ctx.events.message('game.positions.swapped', { actorId, targetId });
 }
@@ -64,9 +62,16 @@ function moveBy(
   ctx: RuleContext,
 ): void {
   if (depth > MAX_DEPTH || ctx.match.lifecycle() === 'finished') return;
-  ctx.movement.moveAndLand(TRACK, playerId, delta, (target) =>
-    resolveLandedTile(state, playerId, target, depth + 1, ctx),
-  );
+  ctx.movement.moveAndResolve({
+    trackId: TRACK,
+    playerId,
+    distance: delta,
+    depth: depth + 1,
+    maxDepth: MAX_DEPTH,
+    blocked: () => ctx.match.lifecycle() === 'finished',
+    onLand: ({ position }) =>
+      resolveLandedTile(state, playerId, position, depth + 1, ctx),
+  });
 }
 
 function landOn(
@@ -77,9 +82,16 @@ function landOn(
   ctx: RuleContext,
 ): void {
   if (depth > MAX_DEPTH || ctx.match.lifecycle() === 'finished') return;
-  ctx.movement.moveToAndLand(TRACK, playerId, target, (position) =>
-    resolveLandedTile(state, playerId, position, depth, ctx),
-  );
+  ctx.movement.moveTo(TRACK, playerId, target);
+  ctx.movement.resolveLanding({
+    trackId: TRACK,
+    playerId,
+    depth,
+    maxDepth: MAX_DEPTH,
+    blocked: () => ctx.match.lifecycle() === 'finished',
+    onLand: ({ position }) =>
+      resolveLandedTile(state, playerId, position, depth, ctx),
+  });
 }
 
 function resolveLandedTile(
@@ -93,8 +105,7 @@ function resolveLandedTile(
   ctx.events.message('game.pawn.landed', { playerId, tileId: target });
   if (tile.type === 'finish') {
     ctx.match.finish({ winners: [playerId], reason: 'golden-nut' });
-  }
-  else if (tile.type === 'bonus') moveBy(state, playerId, 2, depth, ctx);
+  } else if (tile.type === 'bonus') moveBy(state, playerId, 2, depth, ctx);
   else if (tile.type === 'piege') {
     if (ctx.status.has(playerId, TRAP_IMMUNITY)) {
       ctx.events.message('a-fond-les-ballons.trap.ignored', { playerId });
@@ -114,29 +125,23 @@ function resolveLandedTile(
       ),
       gameEffects.completeTurn(),
     );
-  }
-  else if (tile.type === 'chaton') landOn(state, playerId, 0, depth + 1, ctx);
-  else if (tile.type === 'folie') drawAndApply(state, playerId, depth, ctx);
+  } else if (tile.type === 'chaton') landOn(state, playerId, 0, depth + 1, ctx);
+  else if (tile.type === 'folie') drawBalloonCard(state, playerId, depth, ctx);
 }
 
-function drawAndApply(
-  state: AFondLesBallonsState,
+function drawBalloonCard(
+  _state: AFondLesBallonsState,
   playerId: number,
-  depth: number,
+  _depth: number,
   ctx: RuleContext,
 ): void {
-  ctx.cards.drawThenResolve<BalloonCard, void>(
-    DECK,
-    (card) => {
-      ctx.events.message('game.card.drawn', {
-        playerId,
-        deckId: DECK,
-        cardId: card.id,
-      });
+  drawAndResolve<AFondLesBallonsState, BalloonCard>(ctx, {
+    deckId: DECK,
+    playerId,
+    resolve: (card) => {
       ctx.effects.schedule(...card.effects);
     },
-    {},
-  );
+  });
 }
 
 function moveToNextTile(
@@ -157,13 +162,19 @@ function position(playerId: number, ctx: RuleContext): number {
   return ctx.movement.position(TRACK, playerId);
 }
 
-function applyBoutique(
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  const cards = [drawCard(ctx), drawCard(ctx)].filter(
-    (card): card is BalloonCard => card != null,
-  );
+function applyBoutique(playerId: number, ctx: RuleContext): void {
+  const cards = [
+    drawEvent<AFondLesBallonsState, BalloonCard>(ctx, {
+      deckId: DECK,
+      playerId,
+      recycle: true,
+    }),
+    drawEvent<AFondLesBallonsState, BalloonCard>(ctx, {
+      deckId: DECK,
+      playerId,
+      recycle: true,
+    }),
+  ].filter((card): card is BalloonCard => card != null);
   const selected = cards.sort(
     (left, right) => left.retreatScore - right.retreatScore,
   )[0];

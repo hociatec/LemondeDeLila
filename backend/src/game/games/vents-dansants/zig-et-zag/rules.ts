@@ -1,4 +1,5 @@
 import {
+  completeRound,
   rejectRule,
   defineAction,
   defineGamePhases,
@@ -52,7 +53,8 @@ export const ZIG_ET_ZAG_ACTIONS = { draw_card: drawCard };
 
 function finalizeStage(state: ZigEtZagState, ctx: RuleContext): void {
   if (ZIG_ET_ZAG_PHASES.is(ctx, 'selection')) finishSelection(state, ctx);
-  else if (ZIG_ET_ZAG_PHASES.is(ctx, 'battle-face-down')) promoteFaceUp(state, ctx);
+  else if (ZIG_ET_ZAG_PHASES.is(ctx, 'battle-face-down'))
+    promoteFaceUp(state, ctx);
   else resolveBattle(state, ctx);
 }
 
@@ -60,15 +62,16 @@ function finishSelection(state: ZigEtZagState, ctx: RuleContext): void {
   const round = state.battle;
   if (
     round.plays.some(
-      (play) => ZIG_ET_ZAG_CARD_BY_ID[currentFaceUp(play) ?? '']?.type === 'joker',
+      (play) =>
+        ZIG_ET_ZAG_CARD_BY_ID[currentFaceUp(play) ?? '']?.type === 'joker',
     )
   ) {
-    finishRound(state, null, ctx);
+    completeZigEtZagRound(state, null, ctx);
     return;
   }
   const winners = highestPlayers(round.plays);
   if (winners.length <= 1) {
-    finishRound(state, winners[0] ?? null, ctx);
+    completeZigEtZagRound(state, winners[0] ?? null, ctx);
     return;
   }
   const waiting = winners.filter(
@@ -79,7 +82,8 @@ function finishSelection(state: ZigEtZagState, ctx: RuleContext): void {
   ctx.events.message('zig.battle.started', {
     roundNumber: ctx.round.number,
   });
-  if (waiting.length < 2) finishRound(state, waiting[0] ?? winners[0], ctx);
+  if (waiting.length < 2)
+    completeZigEtZagRound(state, waiting[0] ?? winners[0], ctx);
   else ctx.turn.to(waiting[0]);
 }
 
@@ -88,7 +92,11 @@ function promoteFaceUp(state: ZigEtZagState, ctx: RuleContext): void {
     (playerId) => ctx.cards.hand<string>(HANDS, playerId).length > 0,
   );
   if (waiting.length < 2) {
-    finishRound(state, waiting[0] ?? state.battle.tiedPlayers[0] ?? null, ctx);
+    completeZigEtZagRound(
+      state,
+      waiting[0] ?? state.battle.tiedPlayers[0] ?? null,
+      ctx,
+    );
     return;
   }
   state.battle.tiedPlayers = waiting;
@@ -105,14 +113,14 @@ function resolveBattle(state: ZigEtZagState, ctx: RuleContext): void {
   );
   const winners = highestPlayers(eligible);
   if (winners.length <= 1) {
-    finishRound(state, winners[0] ?? null, ctx);
+    completeZigEtZagRound(state, winners[0] ?? null, ctx);
     return;
   }
   const waiting = winners.filter(
     (playerId) => ctx.cards.hand<string>(HANDS, playerId).length > 0,
   );
   if (waiting.length < 2) {
-    finishRound(state, waiting[0] ?? winners[0] ?? null, ctx);
+    completeZigEtZagRound(state, waiting[0] ?? winners[0] ?? null, ctx);
     return;
   }
   state.battle.tiedPlayers = waiting;
@@ -123,7 +131,7 @@ function resolveBattle(state: ZigEtZagState, ctx: RuleContext): void {
   ctx.turn.to(waiting[0]);
 }
 
-function finishRound(
+function completeZigEtZagRound(
   state: ZigEtZagState,
   winnerId: number | null,
   ctx: RuleContext,
@@ -141,7 +149,6 @@ function finishRound(
     cardsWon: tableCards.length,
     plays: structuredClone(state.battle.plays),
   };
-  ctx.round.end(winnerId == null ? [] : [winnerId]);
   const alive = ctx.players
     .all()
     .filter((player) => ctx.cards.hand<string>(HANDS, player.id).length > 0);
@@ -150,21 +157,27 @@ function finishRound(
       ctx.cards.hand<string>(HANDS, player.id).length ===
       ZIG_ET_ZAG_TOTAL_CARDS,
   );
-  if (alive.length === 1 || owner) {
-    const matchWinnerId = owner?.id ?? alive[0]?.id ?? winnerId;
-    ctx.match.finish({
-      winners: matchWinnerId == null ? [] : [matchWinnerId],
-      reason: 'all-cards-captured',
-    });
-    return;
-  }
-  state.battle = createRound(ctx);
-  ZIG_ET_ZAG_PHASES.transition(ctx, 'selection');
-  const waitingPlayers = zigWaitingPlayers(state.battle, ctx);
-  if (waitingPlayers.length > 0) {
-    ctx.round.start(waitingPlayers[0]);
-    ctx.turn.to(waitingPlayers[0]);
-  }
+  completeRound(ctx, {
+    winnerPlayerIds: winnerId == null ? [] : [winnerId],
+    finishMatch: () => {
+      if (alive.length !== 1 && !owner) return false;
+      const matchWinnerId = owner?.id ?? alive[0]?.id ?? winnerId;
+      ctx.match.finish({
+        winners: matchWinnerId == null ? [] : [matchWinnerId],
+        reason: 'all-cards-captured',
+      });
+      return true;
+    },
+    reset: () => {
+      state.battle = createRound(ctx);
+      ZIG_ET_ZAG_PHASES.transition(ctx, 'selection');
+    },
+    next: () => {
+      const starterId = zigWaitingPlayers(state.battle, ctx)[0] ?? null;
+      if (starterId != null) ctx.turn.to(starterId);
+      return starterId;
+    },
+  });
 }
 
 function captureBonus(
@@ -195,15 +208,11 @@ function recordPlay(
   play.playedCards.push(cardId);
 }
 
-function isAllowedJoker(
-  play: ZigEtZagPlayState,
-  cardId: string,
-): boolean {
+function isAllowedJoker(play: ZigEtZagPlayState, cardId: string): boolean {
   const card = ZIG_ET_ZAG_CARD_BY_ID[cardId];
   if (card?.type !== 'joker') return true;
-  const triggerCard = ZIG_ET_ZAG_CARD_BY_ID[
-    play.playedCards[play.playedCards.length - 3] ?? ''
-  ];
+  const triggerCard =
+    ZIG_ET_ZAG_CARD_BY_ID[play.playedCards[play.playedCards.length - 3] ?? ''];
   return (
     card.color === triggerCard?.color &&
     triggerCard.family != null &&
@@ -256,14 +265,16 @@ export function zigWaitingPlayers(
 }
 
 export function zigRoundPlays(round: ZigEtZagRound): ZigEtZagPlay[] {
-  return round.plays.map((play) => ({
-    ...structuredClone(play),
-    ...(currentFaceDown(play) == null
-      ? {}
-      : { faceDownCard: currentFaceDown(play) }),
-    ...(currentFaceUp(play) == null ? {} : { faceUpCard: currentFaceUp(play) }),
-    ...(invalidJoker(play) ? { invalidJoker: true } : {}),
-  }));
+  return round.plays.map((play) => {
+    const faceDownCard = currentFaceDown(play);
+    const faceUpCard = currentFaceUp(play);
+    return {
+      ...structuredClone(play),
+      ...(faceDownCard == null ? {} : { faceDownCard }),
+      ...(faceUpCard == null ? {} : { faceUpCard }),
+      ...(invalidJoker(play) ? { invalidJoker: true } : {}),
+    };
+  });
 }
 
 function currentFaceUp(play: ZigEtZagPlayState): string | null {

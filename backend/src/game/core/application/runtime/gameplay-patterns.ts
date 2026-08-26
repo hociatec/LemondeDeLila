@@ -3,24 +3,31 @@ import { cards, type DeckDefinition, type HandsDefinition } from './cards-kit';
 import { diceKit } from './dice-kit';
 import type {
   GameComponentDefinition,
+  GameInitialization,
 } from './component-kit';
 import type {
   GameLifecycleHooks,
   RoundLifecycleInput,
   TurnLifecycleInput,
 } from './game-lifecycle-hooks';
+import type { GameContext } from './game-rule-context';
 import { movement } from './movement-kit';
 import type { GameEffectInstruction } from './effects-kit';
 import { pawns, type PawnDefinition } from './pawn-kit';
 import { quiz, type QuizQuestion } from './quiz-kit';
 import { clockwise, simultaneous, type TurnPolicy } from './turn-kit';
 import type { VictoryRule } from './game-definition';
+import { grid } from './grid-kit';
+import { economy } from './economy-kit';
+import { inventory } from './inventory-kit';
+import { completeRound } from './gameplay-recipes';
 
 export type GamePattern<TState extends object> = {
   readonly id: string;
   readonly mechanics: readonly string[];
   readonly components?: readonly GameComponentDefinition[];
   readonly lifecycle?: GameLifecycleHooks<TState>;
+  readonly initialization?: GameInitialization;
   readonly turn?: TurnPolicy;
   readonly victory?: VictoryRule<TState>;
 };
@@ -47,14 +54,15 @@ export function composePatterns<TState extends object>(
         pattern.lifecycle ? [pattern.lifecycle] : [],
       ),
     ),
+    initialization: composeInitialization(
+      patterns.map((pattern) => pattern.initialization),
+    ),
     turn: patterns.reduce<TurnPolicy | undefined>(
       (selected, pattern) => pattern.turn ?? selected,
       undefined,
     ),
     victory: composeVictory(
-      patterns.flatMap((pattern) =>
-        pattern.victory ? [pattern.victory] : [],
-      ),
+      patterns.flatMap((pattern) => (pattern.victory ? [pattern.victory] : [])),
     ),
   };
 }
@@ -152,6 +160,10 @@ export function pawnRace<TState extends object>(options: {
   spaces?: number;
   overshoot?: 'clamp' | 'wrap' | 'bounce' | 'exact';
   initialPosition?: number;
+  entryRoll?: number;
+  entryPosition?: number;
+  exactFinish?: boolean;
+  homeStretchFrom?: number;
   diceId?: string;
   diceCount?: number;
   diceSides?: number;
@@ -173,6 +185,10 @@ export function pawnRace<TState extends object>(options: {
         spaces: options.spaces,
         overshoot: options.overshoot,
         initialPosition: options.initialPosition,
+        entryRoll: options.entryRoll,
+        entryPosition: options.entryPosition,
+        exactFinish: options.exactFinish,
+        homeStretchFrom: options.homeStretchFrom,
       }),
     ],
   });
@@ -184,8 +200,7 @@ export function cardGame<TState extends object, TCard>(options: {
   cards: readonly TCard[];
   initialHandSize?: number;
   drawAtTurnStart?:
-    | number
-    | NonNullable<GameLifecycleHooks<TState>['beforeTurn']>;
+    number | NonNullable<GameLifecycleHooks<TState>['beforeTurn']>;
   visibility?: HandsDefinition['visibility'];
   shuffle?: boolean;
   empty?: DeckDefinition<TCard>['empty'];
@@ -213,7 +228,7 @@ export function cardGame<TState extends object, TCard>(options: {
         ? drawCardsAtTurnStart<TState, TCard>({
             deckId,
             handId,
-            count: options.drawAtTurnStart as number,
+            count: options.drawAtTurnStart,
           })
         : undefined;
   return definePattern({
@@ -232,9 +247,11 @@ export function drawCardsAtTurnStart<TState extends object, TCard>(options: {
   recycle?: boolean;
   when?: (input: TurnLifecycleInput<TState>) => boolean;
   afterDraw?: (input: TurnLifecycleInput<TState> & { card: TCard }) => void;
-  afterAttempt?: (input: TurnLifecycleInput<TState> & {
-    drawn: readonly TCard[];
-  }) => void;
+  afterAttempt?: (
+    input: TurnLifecycleInput<TState> & {
+      drawn: readonly TCard[];
+    },
+  ) => void;
 }): NonNullable<GameLifecycleHooks<TState>['beforeTurn']> {
   return (input) => {
     if (!input.player || (options.when && !options.when(input))) return;
@@ -245,6 +262,18 @@ export function drawCardsAtTurnStart<TState extends object, TCard>(options: {
       options.count ?? 1,
       { recycle: options.recycle },
     );
+    const last = drawn.at(-1);
+    input.ctx.effects.recordSource({
+      playerId: input.player.id,
+      deckId: options.deckId,
+      ...(last != null && typeof last === 'object' && 'id' in last
+        ? {
+            cardId: (last as { id: string | number }).id,
+          }
+        : typeof last === 'string' || typeof last === 'number'
+          ? { cardId: last }
+          : {}),
+    });
     for (const card of drawn) options.afterDraw?.({ ...input, card });
     options.afterAttempt?.({ ...input, drawn });
   };
@@ -284,7 +313,9 @@ export function pushYourLuck<TState extends object>(): GamePattern<TState> {
   });
 }
 
-export function simultaneousAnswers<TState extends object>(): GamePattern<TState> {
+export function simultaneousAnswers<
+  TState extends object,
+>(): GamePattern<TState> {
   return definePattern({
     id: 'simultaneous-answers',
     mechanics: ['simultaneous', 'secret-submissions', 'reveal'],
@@ -294,12 +325,291 @@ export function simultaneousAnswers<TState extends object>(): GamePattern<TState
 
 export function roundScoring<TState extends object>(options: {
   score: (input: RoundLifecycleInput<TState>) => void;
+  reset?: (input: RoundLifecycleInput<TState>) => void;
+  winner?: (input: RoundLifecycleInput<TState>) => number | number[] | null;
+  endWhen?: (input: RoundLifecycleInput<TState>) => boolean;
+  matchEndWhen?: (input: RoundLifecycleInput<TState>) => boolean;
+  rotateStarter?: boolean;
+  resetScope?: 'round' | 'match';
+  nextRound?:
+    | false
+    | 'rotate'
+    | { starterPlayerId: number }
+    | ((input: RoundLifecycleInput<TState>) => number | null);
+  matchReason?: string | ((input: RoundLifecycleInput<TState>) => string);
 }): GamePattern<TState> {
   return definePattern({
     id: 'round-scoring',
     mechanics: ['rounds', 'scoring', 'starter-rotation'],
-    lifecycle: { onRoundEnd: options.score },
+    lifecycle: {
+      onRoundEnd: ({ state, ctx }) => {
+        options.score({ state, roundNumber: ctx.round.number, ctx });
+        const winners = normalizeWinners(
+          options.winner?.({ state, ctx, roundNumber: ctx.round.number }),
+        );
+        if (winners.length > 0) ctx.round.winner(...winners);
+        if (!options.endWhen?.({ state, ctx, roundNumber: ctx.round.number }))
+          return;
+        const matchReason =
+          typeof options.matchReason === 'function'
+            ? options.matchReason({ state, ctx, roundNumber: ctx.round.number })
+            : (options.matchReason ?? 'match-end');
+        if (
+          options.matchEndWhen?.({ state, ctx, roundNumber: ctx.round.number })
+        ) {
+          ctx.match.finish({
+            winners,
+            reason: matchReason,
+          });
+          return;
+        }
+        const nextRoundOption = options.nextRound;
+        const nextRound =
+          typeof nextRoundOption === 'function'
+            ? ({ state, ctx }: { state: TState; ctx: GameContext<TState> }) =>
+                nextRoundOption({
+                  state,
+                  ctx,
+                  roundNumber: ctx.round.number,
+                })
+            : (nextRoundOption ??
+              (options.rotateStarter === false ? false : 'rotate'));
+        completeRound(ctx, {
+          winnerPlayerIds: winners,
+          next: nextRound,
+        });
+      },
+      onRoundStart: options.reset
+        ? ({ state, ctx, roundNumber }) => {
+            if (options.resetScope === 'match' && roundNumber > 1) return;
+            options.reset?.({ state, ctx, roundNumber });
+          }
+        : undefined,
+    },
   });
+}
+
+function normalizeWinners(
+  winners: number | number[] | null | undefined,
+): number[] {
+  const selected =
+    winners == null ? [] : Array.isArray(winners) ? winners : [winners];
+  return [
+    ...new Set(selected.filter((winnerId) => Number.isInteger(winnerId))),
+  ];
+}
+
+export function gridGame<TState extends object>(options: {
+  boardId?: string;
+  width: number;
+  height: number;
+  diagonals?: boolean;
+  winLength?: number;
+  drawWhenFull?: boolean;
+  winnerReason?: string;
+  drawReason?: string;
+}): GamePattern<TState> {
+  const boardId = options.boardId ?? 'main';
+  return definePattern({
+    id: 'grid-game',
+    mechanics: ['grid', 'legal-cells', 'grid-victory'],
+    turn: clockwise(),
+    components: [
+      grid.board({
+        id: boardId,
+        width: options.width,
+        height: options.height,
+        diagonals: options.diagonals,
+      }),
+    ],
+    ...(options.winLength
+      ? {
+          victory: {
+            evaluate: ({ ctx }) => {
+              const winner = ctx.grid.lineWinner<number>(
+                boardId,
+                options.winLength!,
+              );
+              if (winner != null) {
+                return {
+                  winnerPlayerIds: [winner],
+                  reason: options.winnerReason ?? 'grid-line',
+                };
+              }
+              return options.drawWhenFull && ctx.grid.full(boardId)
+                ? {
+                    winnerPlayerIds: [],
+                    reason: options.drawReason ?? 'draw',
+                  }
+                : null;
+            },
+          },
+        }
+      : {}),
+  });
+}
+
+export function marketGame<TState extends object>(options: {
+  marketId: string;
+  inventoryId: string;
+  items: readonly string[];
+  currency: string;
+  prices: Readonly<Record<string, number>>;
+  startingCurrency?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  turnsCounterId?: string;
+  maxRounds?: number;
+  winnerReason?: string;
+}): GamePattern<TState> {
+  return definePattern({
+    id: 'market-game',
+    mechanics: ['market', 'economy', 'buy', 'sell', 'solvency'],
+    turn: clockwise(),
+    components: [
+      inventory.set({
+        id: options.inventoryId,
+        items: options.items,
+        visibility: 'public',
+      }),
+      economy.market({
+        id: options.marketId,
+        inventory: options.inventoryId,
+        currency: options.currency,
+        prices: options.prices,
+        minPrice: options.minPrice,
+        maxPrice: options.maxPrice,
+      }),
+    ],
+    initialization: {
+      resources:
+        options.startingCurrency == null
+          ? undefined
+          : { [options.currency]: options.startingCurrency },
+      counters: options.turnsCounterId
+        ? { [options.turnsCounterId]: 0 }
+        : undefined,
+      firstPlayer: 'first',
+      startRound: true,
+    },
+    ...(options.turnsCounterId && options.maxRounds
+      ? {
+          victory: {
+            evaluate: ({ ctx }) => {
+              if (
+                ctx.counters.get(options.turnsCounterId!) <
+                ctx.players.count() * options.maxRounds!
+              ) {
+                return null;
+              }
+              return {
+                winnerPlayerIds: ctx.ranking.leaders(
+                  ctx.players.all().map((player) => player.id),
+                  {
+                    value: (playerId) =>
+                      ctx.economy.netWorth(options.marketId, playerId),
+                  },
+                ),
+                reason: options.winnerReason ?? 'market-closed',
+              };
+            },
+          },
+        }
+      : {}),
+  });
+}
+
+export const economyGame = marketGame;
+
+export function submissionJudgeGame<TState extends object>(
+  options: {
+    submissionId?: string;
+    voteId?: string;
+    judgeId?: string;
+    secret?: boolean;
+    openSubmissionOnRoundStart?: boolean;
+    rotateJudgeOnRoundEnd?: boolean;
+    targetScore?: number;
+    winnerReason?: string;
+  } = {},
+): GamePattern<TState> {
+  return definePattern({
+    id: 'submission-judge-game',
+    mechanics: [
+      'simultaneous',
+      'secret-submissions',
+      'reveal',
+      'judge',
+      'voting',
+      'scoring',
+    ],
+    turn: simultaneous(),
+    lifecycle: {
+      onRoundStart: ({ ctx }) => {
+        if (options.judgeId && !ctx.judge.has(options.judgeId)) {
+          ctx.submissionFlow.startJudge(options.judgeId, {
+            starterPlayerId: ctx.round.starter() ?? undefined,
+          });
+        }
+        if (options.openSubmissionOnRoundStart && options.submissionId) {
+          ctx.submissionFlow.open({
+            id: options.submissionId,
+            secret: options.secret ?? true,
+            waitForAll: true,
+          });
+        }
+      },
+      onRoundEnd: ({ ctx }) => {
+        if (
+          options.rotateJudgeOnRoundEnd &&
+          options.judgeId &&
+          ctx.judge.has(options.judgeId)
+        ) {
+          ctx.submissionFlow.nextJudge(options.judgeId);
+        }
+      },
+    },
+    ...(options.targetScore
+      ? {
+          victory: {
+            evaluate: ({ ctx }) => {
+              const reached = ctx.players
+                .all()
+                .filter(
+                  (player) => ctx.score.get(player.id) >= options.targetScore!,
+                );
+              return reached.length === 1
+                ? {
+                    winnerPlayerIds: [reached[0].id],
+                    reason: options.winnerReason ?? 'target-score',
+                  }
+                : null;
+            },
+          },
+        }
+      : {}),
+  });
+}
+
+export const submissionGame = submissionJudgeGame;
+
+function composeInitialization(
+  initializations: ReadonlyArray<GameInitialization | undefined>,
+): GameInitialization | undefined {
+  const active = initializations.filter(Boolean) as GameInitialization[];
+  if (active.length === 0) return undefined;
+  return active.reduce<GameInitialization>(
+    (result, value) => ({
+      ...result,
+      ...value,
+      scores: value.scores ?? result.scores,
+      resources: { ...result.resources, ...value.resources },
+      counters: { ...result.counters, ...value.counters },
+      tracks: { ...result.tracks, ...value.tracks },
+      pawns: [...(result.pawns ?? []), ...(value.pawns ?? [])],
+    }),
+    {},
+  );
 }
 
 function composeLifecycle<TState extends object>(
@@ -315,9 +625,7 @@ function composeLifecycle<TState extends object>(
 }
 
 function composeTurnHooks<TState extends object>(
-  hooks: ReadonlyArray<
-    GameLifecycleHooks<TState>['beforeTurn'] | undefined
-  >,
+  hooks: ReadonlyArray<GameLifecycleHooks<TState>['beforeTurn'] | undefined>,
 ): GameLifecycleHooks<TState>['beforeTurn'] {
   const active = hooks.filter(Boolean) as Array<
     NonNullable<GameLifecycleHooks<TState>['beforeTurn']>
@@ -329,9 +637,7 @@ function composeTurnHooks<TState extends object>(
 }
 
 function composeRoundHooks<TState extends object>(
-  hooks: ReadonlyArray<
-    GameLifecycleHooks<TState>['onRoundStart'] | undefined
-  >,
+  hooks: ReadonlyArray<GameLifecycleHooks<TState>['onRoundStart'] | undefined>,
 ): GameLifecycleHooks<TState>['onRoundStart'] {
   const active = hooks.filter(Boolean) as Array<
     NonNullable<GameLifecycleHooks<TState>['onRoundStart']>

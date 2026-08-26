@@ -65,16 +65,19 @@ export default defineGame<
     return {};
   },
   actions: DAME_NATURE_ACTIONS,
-  view: ({ state, ctx }) => {
+  view: ({ state: _state, ctx }) => {
     const result = ctx.match.result();
-    const lastQuizCardId = [...ctx.cards.discardPile<string>('nature')]
-      .reverse()
-      .find((cardId) => DAME_NATURE_CARD_BY_ID[cardId]?.type === 'quiz') ?? null;
+    const lastQuizCardId =
+      [...ctx.cards.discardPile<string>('nature')]
+        .reverse()
+        .find((cardId) => DAME_NATURE_CARD_BY_ID[cardId]?.type === 'quiz') ??
+      null;
     const pollutionLoserId =
       result?.reason === 'pollution-limit'
-        ? ctx.players
+        ? (ctx.players
             .all()
-            .find((player) => !result.winnerPlayerIds.includes(player.id))?.id ?? null
+            .find((player) => !result.winnerPlayerIds.includes(player.id))
+            ?.id ?? null)
         : null;
     const pollutionTokens = ctx.counters.get(DAME_NATURE_POLLUTION);
     return playerView({
@@ -82,7 +85,6 @@ export default defineGame<
         pollutionTokens,
         pollutionLoserId,
         lastQuizCardId,
-        winnerIds: result?.winnerPlayerIds ?? [],
       },
       extras: {
         cardCatalog: DAME_NATURE_CARD_BY_ID,

@@ -24,7 +24,8 @@ export function defineEvent<
     visibility,
     emit: <TState extends object>(ctx: GameContext<TState>, data: TData) => {
       const parsed = definition.data.parse(data, `event.${definition.type}`);
-      ctx.events.emit(definition.type, parsed, visibility);
+      const eventData = parsed as unknown as Record<string, unknown>;
+      ctx.events.emit(definition.type, eventData, visibility);
     },
   });
 }

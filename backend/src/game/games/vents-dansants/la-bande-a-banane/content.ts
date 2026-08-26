@@ -29,13 +29,10 @@ const createCopies = (
   count: number,
   details: Omit<BandeABananeCardDefinition, 'id'>,
 ): BandeABananeCardDefinition[] =>
-  Array.from(
-    { length: count },
-    (_, index): BandeABananeCardDefinition => ({
-      id: `${prefix}-${index + 1}`,
-      ...details,
-    }),
-  );
+  Array.from({ length: count }, (_, index): BandeABananeCardDefinition => ({
+    id: `${prefix}-${index + 1}`,
+    ...details,
+  }));
 
 const deck: BandeABananeCardDefinition[] = [
   ...createCopies('monkey-capucin', 6, {

@@ -22,9 +22,6 @@ public sealed class GameStateDto
     [JsonPropertyName("turnIndex")]
     public int TurnIndex { get; set; }
 
-    [JsonPropertyName("lastRoll")]
-    public int? LastRoll { get; set; }
-
     [JsonPropertyName("lastDraw")]
     public GameDrawDto? LastDraw { get; set; }
 

@@ -27,10 +27,8 @@ export type CorridorPlayerView = Pick<CorridorState, 'walls'> & {
   wallsRemaining: PlayerMap<number>;
   size: number;
   pawnByPlayerId: PlayerMap<string>;
-  positions: PlayerMap<CorridorPosition>;
   goalYByPlayerId: PlayerMap<number>;
   wallsPerPlayer: number;
   legalMoves: CorridorPosition[];
   legalWalls: CorridorWall[];
-  setupComplete: boolean;
 };

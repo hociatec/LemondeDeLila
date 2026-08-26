@@ -19,20 +19,20 @@ describe('Odyssée des Quatre Cieux declarative game', () => {
       } else {
         await game.as(actorId).do('roll', {});
       }
-      const moved = Object.values(game.state().game.pawnsByPlayer)
+      const moved = Object.values(game.view(actorId).pawnsByPlayer)
         .flat()
         .some((pawn) => pawn.progress >= 0);
       if (moved) break;
     }
 
     expect(
-      Object.values(game.state().game.pawnsByPlayer)
+      Object.values(game.view(1).pawnsByPlayer)
         .flat()
         .some((pawn) => pawn.progress >= 0),
     ).toBe(true);
-    expect(game.state().log.some((entry) => entry.message.includes('dé'))).toBe(
-      true,
-    );
+    expect(
+      game.state().log.some((entry) => entry.key === 'game.dice.rolled'),
+    ).toBe(true);
     expect(game.replay()).toEqual(game.state());
   });
 });

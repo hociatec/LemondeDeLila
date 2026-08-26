@@ -62,9 +62,7 @@ export class InMemoryGameSessionStore
     this.timelines.set(key, createGameTimeline(restored));
   }
 
-  async compareAndSet(
-    commit: GameStateCommit,
-  ): Promise<GameStateCommitResult> {
+  async compareAndSet(commit: GameStateCommit): Promise<GameStateCommitResult> {
     const key = this.key(commit.roomId, commit.gameType);
     const current = this.states.get(key);
     const currentVersion = current?.version ?? 0;

@@ -59,8 +59,7 @@ export default defineGame<MinuitState, typeof MINUIT_ACTIONS, MinuitPlayerView>(
       }),
       'minuit.resolve': defineChoice<MinuitState, number>({
         input: gameInput.number({ integer: true }),
-        resolve: ({ state, value, ctx }) =>
-          resolvePending(state, value, ctx),
+        resolve: ({ state, value, ctx }) => resolvePending(state, value, ctx),
       }),
     },
     view: ({ actor, ctx }) => {
@@ -70,16 +69,10 @@ export default defineGame<MinuitState, typeof MINUIT_ACTIONS, MinuitPlayerView>(
           return pawnId == null ? [] : [[player.id, pawnId]];
         }),
       );
-      const pendingResolution = ctx.choice.data<
-        import('./state').MinuitPending
-      >();
-      const positions = Object.fromEntries(
-        ctx.players
-          .all()
-          .map((player) => [
-            player.id,
-            ctx.movement.position('minuit', player.id),
-          ]),
+      const pendingResolution =
+        ctx.choice.continuation<import('./state').MinuitPending>();
+      const positions = ctx.players.byId((player) =>
+        ctx.movement.position('minuit', player.id),
       );
       const pendingQuiz =
         pendingResolution?.kind === 'quiz' &&
@@ -98,31 +91,13 @@ export default defineGame<MinuitState, typeof MINUIT_ACTIONS, MinuitPlayerView>(
             })()
           : null;
       const statusMap = (statusId: string) =>
-        Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [player.id, ctx.status.has(player.id, statusId)]),
-        );
+        ctx.players.byId((player) => ctx.status.has(player.id, statusId));
       return playerView({
         game: {
           ignoreNextMalus: statusMap('minuit.ignore-next-malus'),
           ignoreNextSkip: statusMap('minuit.ignore-next-skip'),
           forceDrawNextTurn: statusMap('minuit.force-draw-next-turn'),
           pawnByPlayerId,
-          starterId: ctx.round.starter() ?? 0,
-          keepTurns: Object.fromEntries(
-            ctx.players
-              .all()
-              .map((player) => [player.id, ctx.turn.extraCount(player.id)]),
-          ),
-          positions,
-          winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-          skipTurns: Object.fromEntries(
-            ctx.players
-              .all()
-              .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-          ),
-          setupComplete: MINUIT_PHASES.is(ctx, 'playing'),
         },
         extras: {
           pawn: actor

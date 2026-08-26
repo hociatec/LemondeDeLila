@@ -27,9 +27,4 @@ export type AventureSauvageState = Record<string, never>;
 
 export type AventureSauvagePlayerView = {
   pawnByPlayerId: PlayerMap<string>;
-  lastRoll: number | null;
-  positions: PlayerMap<number>;
-  winnerId: number | null;
-  skipTurns: PlayerMap<number>;
-  setupComplete: boolean;
 };

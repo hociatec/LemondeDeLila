@@ -20,7 +20,7 @@ export class DeclarativeLifecycle<
   ) {}
 
   enterInitialPhase(
-    runtime: DeclarativeState<TState>,
+    _runtime: DeclarativeState<TState>,
     context: GameContext<TState>,
   ): void {
     context.enterCurrentPhase();
@@ -38,10 +38,7 @@ export class DeclarativeLifecycle<
         trace.push(`automatic:${automaticRuleId}`);
         continue;
       }
-      const transitionedPhase = this.transitionAutomaticPhase(
-        runtime,
-        context,
-      );
+      const transitionedPhase = this.transitionAutomaticPhase(runtime, context);
       if (transitionedPhase) {
         trace.push(`phase:${transitionedPhase}`);
         continue;
@@ -84,8 +81,7 @@ export class DeclarativeLifecycle<
       }))
       .sort(
         (left, right) =>
-          (right.candidate.priority ?? 0) -
-            (left.candidate.priority ?? 0) ||
+          (right.candidate.priority ?? 0) - (left.candidate.priority ?? 0) ||
           left.declarationIndex - right.declarationIndex,
       )
       .map(({ candidate }) => candidate)

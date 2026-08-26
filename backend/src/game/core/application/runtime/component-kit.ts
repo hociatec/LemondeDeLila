@@ -36,18 +36,26 @@ export type GameComponentDefinition = GameComponent & {
 export function roundScoped<TComponent extends GameComponent>(
   component: TComponent,
 ): TComponent & { readonly scope: 'round' } {
-  return Object.freeze({ ...component, scope: 'round' });
+  return Object.freeze({
+    ...component,
+    scope: 'round',
+  }) as unknown as TComponent & {
+    readonly scope: 'round';
+  };
 }
 
 export function matchScoped<TComponent extends GameComponent>(
   component: TComponent,
 ): TComponent & { readonly scope: 'match' } {
-  return Object.freeze({ ...component, scope: 'match' });
+  return Object.freeze({
+    ...component,
+    scope: 'match',
+  }) as unknown as TComponent & {
+    readonly scope: 'match';
+  };
 }
 
-export type PerPlayerInitialValue =
-  | number
-  | Readonly<Record<string, number>>;
+export type PerPlayerInitialValue = number | Readonly<Record<string, number>>;
 
 export type GameInitialization = {
   firstPlayer?: 'first' | 'random' | number;

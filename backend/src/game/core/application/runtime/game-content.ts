@@ -40,7 +40,10 @@ export function loadGameContent<TData extends object>(
     } catch (error) {
       throw new GameContentValidationError(
         `JSON de contenu invalide pour ${gameId}`,
-        { gameId, cause: error instanceof Error ? error.message : String(error) },
+        {
+          gameId,
+          cause: error instanceof Error ? error.message : String(error),
+        },
       );
     }
   }
@@ -48,10 +51,10 @@ export function loadGameContent<TData extends object>(
     return defineGameContent(gameId, schema.parse(candidate, 'content'));
   } catch (error) {
     if (error instanceof GameContentValidationError) throw error;
-    throw new GameContentValidationError(
-      `Contenu invalide pour ${gameId}`,
-      { gameId, cause: error instanceof Error ? error.message : String(error) },
-    );
+    throw new GameContentValidationError(`Contenu invalide pour ${gameId}`, {
+      gameId,
+      cause: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 
@@ -137,8 +140,7 @@ export function assertUniqueContentIds(
 ): void {
   const ids = new Set<string>();
   for (const entry of entries) {
-    const id =
-      typeof entry.id === 'string' ? entry.id.trim() : entry.id;
+    const id = typeof entry.id === 'string' ? entry.id.trim() : entry.id;
     if (id === '') {
       throw new GameContentValidationError(`Identifiant de ${kind} vide`);
     }
@@ -291,7 +293,7 @@ function deepFreeze<TValue>(value: TValue): TValue {
     return value;
   }
   for (const nested of Object.values(value)) deepFreeze(nested);
-  return (Object.isFrozen(value) ? value : Object.freeze(value)) as TValue;
+  return Object.isFrozen(value) ? value : Object.freeze(value);
 }
 
 function disableCollectionMutators(

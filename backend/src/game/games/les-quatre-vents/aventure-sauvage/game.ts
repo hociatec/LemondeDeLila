@@ -18,7 +18,7 @@ import {
   AVENTURE_ACTIONS,
   AVENTURE_PHASES,
   requestPawn,
-  resolveLanding,
+  resolveAventureTile,
   resolvePawnChoice,
 } from './rules';
 import type { AventureSauvagePlayerView, AventureSauvageState } from './state';
@@ -62,7 +62,7 @@ export default defineGame<
     'aventure.resolve-landing': defineEffect({
       input: gameInput.object({}),
       apply: ({ actorPlayerId, ctx }) => {
-        if (actorPlayerId != null) resolveLanding(actorPlayerId, ctx);
+        if (actorPlayerId != null) resolveAventureTile(actorPlayerId, ctx);
       },
     }),
   },
@@ -78,12 +78,10 @@ export default defineGame<
       ctx.movement.position('jungle', player.id),
     );
     const pawnByPlayerId = Object.fromEntries(
-      ctx.players
-        .all()
-        .flatMap((player) => {
-          const pawnId = ctx.pawns.assigned('avatars', player.id)[0];
-          return pawnId == null ? [] : [[player.id, pawnId]];
-        }),
+      ctx.players.all().flatMap((player) => {
+        const pawnId = ctx.pawns.assigned('avatars', player.id)[0];
+        return pawnId == null ? [] : [[player.id, pawnId]];
+      }),
     );
     const pawn = actor
       ? (AVENTURE_PAWNS.find(
@@ -93,13 +91,6 @@ export default defineGame<
     return playerView({
       game: {
         pawnByPlayerId,
-        lastRoll: ctx.dice.last('main')?.total ?? null,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        setupComplete: AVENTURE_PHASES.is(ctx, 'playing'),
-        skipTurns: ctx.players.byId((player) =>
-          ctx.turn.skipCount(player.id),
-        ),
-        positions,
       },
       extras: {
         currentPlayerView: actor
@@ -107,7 +98,7 @@ export default defineGame<
           : null,
         pawn,
       },
-      board: { tiles: structuredClone(AVENTURE_TILES), positions },
+      board: { tiles: AVENTURE_TILES, positions },
     });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },

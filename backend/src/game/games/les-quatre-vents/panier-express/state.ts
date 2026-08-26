@@ -24,14 +24,7 @@ export type PanierPlayerView = {
   lastEventId: string | null;
   lastExchangeId: string | null;
   pawnByPlayerId: PlayerMap<string>;
-  starterId: number;
-  keepTurns: PlayerMap<number>;
-  movementDirection: 1 | -1;
-  positions: PlayerMap<number>;
   basketCounts: PlayerMap<number>;
   shoppingList: string[];
   basket: string[];
-  winnerId: number | null;
-  skipTurns: PlayerMap<number>;
-  setupComplete: boolean;
 };

@@ -1,11 +1,8 @@
-import {
-  defineEffect,
-  gameInput,
-} from '../../../core/application/public-api';
+import { defineEffect, gameInput } from '../../../core/application/public-api';
 import {
   collectFromOthers,
   dawnCycle,
-  drawForPlayer,
+  drawRitesCardForPlayer,
   drawTwoChoice,
   freeFamilyChoice,
   resurrectionChoice,
@@ -25,7 +22,7 @@ export const ENTRE_RITES_EFFECTS = {
     input: gameInput.object({}),
     apply: ({ state, targetPlayerIds, ctx }) => {
       const playerId = targetPlayerIds[0];
-      if (playerId != null) drawForPlayer(state, playerId, ctx);
+      if (playerId != null) drawRitesCardForPlayer(state, playerId, ctx);
     },
   }),
   'rites.collect': defineEffect<EntreRitesState, Record<string, never>>({
@@ -53,10 +50,7 @@ export const ENTRE_RITES_EFFECTS = {
     input: gameInput.object({}),
     apply: ({ state, ctx }) => dawnCycle(state, ctx),
   }),
-  'rites.steal-choice': defineEffect<
-    EntreRitesState,
-    Record<string, never>
-  >({
+  'rites.steal-choice': defineEffect<EntreRitesState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ state, targetPlayerIds, ctx }) => {
       const playerId = targetPlayerIds[0];

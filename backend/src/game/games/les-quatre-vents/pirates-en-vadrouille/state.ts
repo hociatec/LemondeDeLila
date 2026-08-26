@@ -38,8 +38,4 @@ export type PiratesState = Record<string, never>;
 export type PiratesPlayerView = {
   obstacleImmunity: PlayerMap<number>;
   collections: PlayerMap<PirateCollection>;
-  lastRoll: number | null;
-  positions: PlayerMap<number>;
-  winnerId: number | null;
-  skipTurns: PlayerMap<number>;
 };

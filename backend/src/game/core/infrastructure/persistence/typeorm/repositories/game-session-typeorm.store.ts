@@ -74,9 +74,7 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     );
   }
 
-  async compareAndSet(
-    commit: GameStateCommit,
-  ): Promise<GameStateCommitResult> {
+  async compareAndSet(commit: GameStateCommit): Promise<GameStateCommitResult> {
     return this.repository.manager.transaction(async (manager) => {
       const repository = manager.getRepository(GameSessionEntity);
       const row = await repository.findOne({
@@ -122,7 +120,11 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     gameType: string,
     expectedVersion: number,
   ): Promise<void> {
-    await this.repository.delete({ roomId, gameType, version: expectedVersion });
+    await this.repository.delete({
+      roomId,
+      gameType,
+      version: expectedVersion,
+    });
   }
 
   async clearRoom(roomId: number): Promise<void> {

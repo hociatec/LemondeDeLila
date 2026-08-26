@@ -19,9 +19,7 @@ export function describeGameDefinition<
     category: definition.category,
     stateVersion: definition.stateVersion,
     rulesVersion: definition.rulesVersion,
-    ...(definition.subcategory
-      ? { subcategory: definition.subcategory }
-      : {}),
+    ...(definition.subcategory ? { subcategory: definition.subcategory } : {}),
     players: { ...definition.players },
     actions: [
       ...(definition.config
@@ -52,9 +50,7 @@ export function describeGameDefinition<
     choices: Object.entries(definition.choices ?? {}).map(([id, choice]) => ({
       id,
       input: choice.input.describe(),
-      ...(choice.documentation
-        ? { documentation: choice.documentation }
-        : {}),
+      ...(choice.documentation ? { documentation: choice.documentation } : {}),
       ui: deriveUi(id, choice.input.describe(), choice.ui),
     })),
     phases: Object.entries(definition.phases ?? {}).map(([id, phase]) => ({
@@ -119,7 +115,8 @@ export function deriveGameShortcuts<
   );
   for (const [type, action] of Object.entries(definition.actions)) {
     if (actionTypes.has(type)) continue;
-    const key = action.ui?.shortcut ?? inferShortcut(type, action.input.describe());
+    const key =
+      action.ui?.shortcut ?? inferShortcut(type, action.input.describe());
     if (!key || usedKeys.has(key)) continue;
     shortcuts.push({ key, type: 'action', actionType: type });
     usedKeys.add(key);
@@ -131,13 +128,15 @@ export function deriveGameShortcuts<
 function deriveUi(
   id: string,
   input: Record<string, unknown>,
-  explicit: {
-    label?: string;
-    icon?: string;
-    intent?: 'primary' | 'secondary' | 'danger' | 'success';
-    control?: 'button' | 'card' | 'player' | 'pawn' | 'number' | 'form';
-    shortcut?: string;
-  } | undefined,
+  explicit:
+    | {
+        label?: string;
+        icon?: string;
+        intent?: 'primary' | 'secondary' | 'danger' | 'success';
+        control?: 'button' | 'card' | 'player' | 'pawn' | 'number' | 'form';
+        shortcut?: string;
+      }
+    | undefined,
 ) {
   return {
     label: explicit?.label ?? humanize(id),
@@ -151,7 +150,8 @@ function deriveUi(
 function inferControl(
   input: Record<string, unknown>,
 ): 'button' | 'card' | 'player' | 'pawn' | 'number' | 'form' {
-  if (input.type !== 'object') return input.type === 'number' ? 'number' : 'form';
+  if (input.type !== 'object')
+    return input.type === 'number' ? 'number' : 'form';
   const properties = asRecord(input.properties);
   const fields = Object.values(properties).map(asRecord);
   if (fields.length === 0) return 'button';
@@ -170,7 +170,8 @@ function inferShortcut(
 ): string | null {
   if (inferControl(input) !== 'button') return null;
   const normalized = actionType.toLowerCase().replaceAll('_', '-');
-  if (normalized.includes('roll') || normalized.includes('launch')) return 'Space';
+  if (normalized.includes('roll') || normalized.includes('launch'))
+    return 'Space';
   if (normalized.includes('draw') || normalized.includes('pick')) return 'D';
   if (
     normalized.includes('pass') ||

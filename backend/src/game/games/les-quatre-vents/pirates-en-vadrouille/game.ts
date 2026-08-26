@@ -60,54 +60,35 @@ export default defineGame<
   setup: () => ({}),
   actions: PIRATES_ACTIONS,
   effects: {
-    'pirates.steal-treasure': defineEffect<
-      PiratesState,
-      Record<string, never>
-    >({
-      input: gameInput.object({}),
-      apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
-        const targetId = targetPlayerIds[0];
-        if (actorPlayerId != null && targetId != null) {
-          stealTreasure(actorPlayerId, targetId, ctx);
-        }
+    'pirates.steal-treasure': defineEffect<PiratesState, Record<string, never>>(
+      {
+        input: gameInput.object({}),
+        apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
+          const targetId = targetPlayerIds[0];
+          if (actorPlayerId != null && targetId != null) {
+            stealTreasure(actorPlayerId, targetId, ctx);
+          }
+        },
       },
-    }),
+    ),
   },
-  view: ({ state, actor, ctx }) => {
-    const collections = Object.fromEntries(
-      ctx.players.all().map((player) => [
-        player.id,
-        resolveCollection(
-          pirateCollectionIds(player.id, ctx),
-          ctx.resources.get(player.id, 'pirate-gold'),
-        ),
-      ]),
+  view: ({ state: _state, actor, ctx }) => {
+    const collections = ctx.players.byId((player) =>
+      resolveCollection(
+        pirateCollectionIds(player.id, ctx),
+        ctx.resources.get(player.id, 'pirate-gold'),
+      ),
     );
-    const obstacleImmunities = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [player.id, obstacleImmunity(player.id, ctx)]),
+    const obstacleImmunities = ctx.players.byId((player) =>
+      obstacleImmunity(player.id, ctx),
     );
-    const positions = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.movement.position('island', player.id),
-        ]),
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('island', player.id),
     );
     return playerView({
       game: {
         obstacleImmunity: obstacleImmunities,
         collections,
-        lastRoll: ctx.dice.last('main')?.total ?? null,
-        positions,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        skipTurns: Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-        ),
       },
       extras: {
         currentPlayerView: actor
@@ -115,11 +96,7 @@ export default defineGame<
           : null,
         collections: structuredClone(collections),
         statuses: {
-          skipTurn: Object.fromEntries(
-            ctx.players
-              .all()
-              .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-          ),
+          skipTurn: ctx.players.byId((player) => ctx.turn.skipCount(player.id)),
           obstacleImmunity: structuredClone(obstacleImmunities),
         },
         ui: {
@@ -134,7 +111,7 @@ export default defineGame<
           ],
         },
       },
-      board: { tiles: structuredClone(PIRATES_CONTENT.tiles), positions },
+      board: { tiles: PIRATES_CONTENT.tiles, positions },
     });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
@@ -146,7 +123,9 @@ function resolveCollection(
 ): PirateCollection {
   const cards = (kind: 'treasure' | 'obstacle' | 'bonus', ids: number[]) =>
     ids.flatMap((id) => {
-      const card = PIRATES_CONTENT[kind].find((candidate) => candidate.id === id);
+      const card = PIRATES_CONTENT[kind].find(
+        (candidate) => candidate.id === id,
+      );
       return card ? [structuredClone(card)] : [];
     });
   return {

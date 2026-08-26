@@ -1,5 +1,6 @@
 import {
   defineEffect,
+  drawAndResolve,
   gameInput,
   rejectRule,
   raceTurn,
@@ -19,8 +20,8 @@ const MAX_EFFECT_DEPTH = 20;
 export const roll = raceTurn<MissionGalaxieState>({
   trackId: TRACK,
   documentation: 'Lance le dé et résout entièrement la case galactique.',
-  resolveLanding: ({ state, playerId, position, ctx }) => {
-    resolveLanding(state, playerId, position, 0, ctx);
+  resolveLanding: ({ state, playerId, ctx }) => {
+    resolveMissionTile(state, playerId, 0, ctx);
   },
 });
 
@@ -31,9 +32,8 @@ export function resolveMissionAnswer(
   value: number,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<
-    import('./state').MissionGalaxiePending
-  >();
+  const pending =
+    ctx.choice.consumeContinuation<import('./state').MissionGalaxiePending>();
   if (!pending || pending.kind !== 'answer') {
     rejectRule('Réponse Mission Galaxie introuvable');
   }
@@ -43,7 +43,7 @@ export function resolveMissionAnswer(
   if (!card) rejectRule('Carte Mission Galaxie inconnue');
   const delta =
     value === card.correctIndex ? card.correctDelta : card.wrongDelta;
-  moveAndLand(state, pending.actorId, delta, 0, ctx);
+  moveMissionAndResolve(state, pending.actorId, delta, 0, ctx);
   ctx.turn.complete({ waiting: ctx.choice.current() != null });
 }
 
@@ -52,9 +52,8 @@ export function resolveMissionEventMove(
   value: string,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<
-    import('./state').MissionGalaxiePending
-  >();
+  const pending =
+    ctx.choice.consumeContinuation<import('./state').MissionGalaxiePending>();
   if (!pending || pending.kind !== 'event-move') {
     rejectRule('Événement Mission Galaxie introuvable');
   }
@@ -68,53 +67,57 @@ export function resolveMissionEventMove(
     (candidate) => encodeMove(candidate) === value,
   );
   if (!option) rejectRule('Mouvement galactique invalide');
-  moveAndLand(state, option.targetId, option.delta, 0, ctx);
+  moveMissionAndResolve(state, option.targetId, option.delta, 0, ctx);
   ctx.turn.complete({ waiting: ctx.choice.current() != null });
 }
 
-function resolveLanding(
+function resolveMissionTile(
   state: MissionGalaxieState,
   playerId: number,
-  position: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (
-    depth > MAX_EFFECT_DEPTH ||
-    ctx.choice.current() ||
-    ctx.match.lifecycle() === 'finished'
-  ) {
-    return;
-  }
-  const tile = MISSION_GALAXIE_CONTENT.tiles[position];
-  if (!tile) return;
-  ctx.events.message('game.pawn.landed', { playerId, tileId: tile.n });
-  if (tile.type === 'move' && tile.delta) {
-    moveAndLand(state, playerId, tile.delta, depth + 1, ctx);
-  } else if (tile.type === 'skip') {
-    ctx.turn.skip(playerId, tile.skipTurns ?? 1);
-  } else if (tile.type === 'question' || tile.type === 'challenge') {
-    drawChoiceCard(
-      state,
-      playerId,
-      tile.type === 'question' ? 'questions' : 'challenges',
-      ctx,
-    );
-  } else if (tile.type === 'event') {
-    drawEvent(playerId, ctx);
-  } else if (tile.type === 'swapNearest') {
-    swapNearest(playerId, ctx);
-  } else if (tile.type === 'goto' && tile.target != null) {
-    setPosition(playerId, tile.target - 1, ctx);
-    resolveLanding(state, playerId, tile.target - 1, depth + 1, ctx);
-  } else if (tile.type === 'finish') {
-    ctx.match.finish({ winners: [playerId], reason: 'legendary-planet' });
-  }
-  if (tile.keepTurn && ctx.match.lifecycle() !== 'finished') ctx.turn.extra();
+  ctx.movement.resolveLanding({
+    trackId: TRACK,
+    playerId,
+    tiles: MISSION_GALAXIE_CONTENT.tiles,
+    depth,
+    maxDepth: MAX_EFFECT_DEPTH,
+    blocked: () =>
+      ctx.choice.current() != null || ctx.match.lifecycle() === 'finished',
+    onLand: ({ tile }) => {
+      if (!tile) return;
+      ctx.events.message('game.pawn.landed', { playerId, tileId: tile.n });
+      if (tile.type === 'move' && tile.delta) {
+        moveMissionAndResolve(state, playerId, tile.delta, depth + 1, ctx);
+      } else if (tile.type === 'skip') {
+        ctx.turn.skip(playerId, tile.skipTurns ?? 1);
+      } else if (tile.type === 'question' || tile.type === 'challenge') {
+        drawChoiceCard(
+          state,
+          playerId,
+          tile.type === 'question' ? 'questions' : 'challenges',
+          ctx,
+        );
+      } else if (tile.type === 'event') {
+        resolveMissionEvent(playerId, ctx);
+      } else if (tile.type === 'swapNearest') {
+        swapNearest(playerId, ctx);
+      } else if (tile.type === 'goto' && tile.target != null) {
+        setPosition(playerId, tile.target - 1, ctx);
+        resolveMissionTile(state, playerId, depth + 1, ctx);
+      } else if (tile.type === 'finish') {
+        ctx.match.finish({ winners: [playerId], reason: 'legendary-planet' });
+      }
+      if (tile.keepTurn && ctx.match.lifecycle() !== 'finished') {
+        ctx.turn.extra();
+      }
+    },
+  });
 }
 
 function drawChoiceCard(
-  state: MissionGalaxieState,
+  _state: MissionGalaxieState,
   playerId: number,
   deck: 'questions' | 'challenges',
   ctx: RuleContext,
@@ -137,19 +140,14 @@ function drawChoiceCard(
   });
 }
 
-function drawEvent(
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  const card = ctx.cards.drawOrRecycle<MissionGalaxieEventCard>('events');
-  if (!card) return;
-  ctx.cards.discard('events', card);
-  ctx.events.message('game.card.drawn', {
-    playerId,
+function resolveMissionEvent(playerId: number, ctx: RuleContext): void {
+  drawAndResolve<MissionGalaxieState, MissionGalaxieEventCard>(ctx, {
     deckId: 'events',
-    cardId: card.id,
+    playerId,
+    recycle: true,
+    discard: true,
+    resolve: (card) => ctx.effects.schedule(...card.effects),
   });
-  ctx.effects.schedule(...card.effects);
 }
 
 export function requestEventMove(
@@ -186,15 +184,23 @@ function eventMoveOptions(
   );
 }
 
-export function moveAndLand(
+export function moveMissionAndResolve(
   state: MissionGalaxieState,
   playerId: number,
   delta: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  const position = ctx.movement.move(TRACK, playerId, delta);
-  resolveLanding(state, playerId, position, depth + 1, ctx);
+  ctx.movement.moveAndResolve({
+    trackId: TRACK,
+    playerId,
+    distance: delta,
+    depth: depth + 1,
+    maxDepth: MAX_EFFECT_DEPTH,
+    blocked: () =>
+      ctx.choice.current() != null || ctx.match.lifecycle() === 'finished',
+    onLand: () => resolveMissionTile(state, playerId, depth + 1, ctx),
+  });
 }
 
 function swapNearest(playerId: number, ctx: RuleContext): void {
@@ -212,8 +218,7 @@ function swapNearest(playerId: number, ctx: RuleContext): void {
         a.id - b.id,
     )[0];
   if (!nearest) return;
-  setPosition(playerId, nearest.position, ctx);
-  setPosition(nearest.id, current, ctx);
+  ctx.movement.swap(TRACK, playerId, nearest.id);
 }
 
 function setPosition(playerId: number, next: number, ctx: RuleContext): void {
@@ -222,33 +227,29 @@ function setPosition(playerId: number, next: number, ctx: RuleContext): void {
 }
 
 export const MISSION_GALAXIE_EFFECTS = {
-  'mission-galaxie.move': defineEffect<
-    MissionGalaxieState,
-    { delta: number }
-  >({
+  'mission-galaxie.move': defineEffect<MissionGalaxieState, { delta: number }>({
     input: gameInput.object({
       delta: gameInput.number({ integer: true }),
     }),
     apply: ({ state, actorPlayerId, data, ctx }) => {
       if (actorPlayerId != null) {
-        moveAndLand(state, actorPlayerId, data.delta, 0, ctx);
+        moveMissionAndResolve(state, actorPlayerId, data.delta, 0, ctx);
       }
     },
   }),
-  'mission-galaxie.goto': defineEffect<
-    MissionGalaxieState,
-    { target: number }
-  >({
-    input: gameInput.object({
-      target: gameInput.number({ integer: true, min: 1 }),
-    }),
-    apply: ({ state, actorPlayerId, data, ctx }) => {
-      if (actorPlayerId == null) return;
-      const position = data.target - 1;
-      setPosition(actorPlayerId, position, ctx);
-      resolveLanding(state, actorPlayerId, position, 0, ctx);
+  'mission-galaxie.goto': defineEffect<MissionGalaxieState, { target: number }>(
+    {
+      input: gameInput.object({
+        target: gameInput.number({ integer: true, min: 1 }),
+      }),
+      apply: ({ state, actorPlayerId, data, ctx }) => {
+        if (actorPlayerId == null) return;
+        const position = data.target - 1;
+        setPosition(actorPlayerId, position, ctx);
+        resolveMissionTile(state, actorPlayerId, 0, ctx);
+      },
     },
-  }),
+  ),
   'mission-galaxie.choose-player-move': defineEffect<
     MissionGalaxieState,
     { cardId: number; deltas: number[] }
@@ -259,12 +260,7 @@ export const MISSION_GALAXIE_EFFECTS = {
     }),
     apply: ({ actorPlayerId, data, ctx }) => {
       if (actorPlayerId != null) {
-        requestEventMove(
-          actorPlayerId,
-          data.cardId,
-          data.deltas,
-          ctx,
-        );
+        requestEventMove(actorPlayerId, data.cardId, data.deltas, ctx);
       }
     },
   }),

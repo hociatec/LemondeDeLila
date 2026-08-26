@@ -22,8 +22,7 @@ export class GameRankingController {
       for (const [index, criterion] of criteria.entries()) {
         const factor = criterion.direction === 'asc' ? 1 : -1;
         const difference =
-          factor *
-          ((left.values[index] ?? 0) - (right.values[index] ?? 0));
+          factor * ((left.values[index] ?? 0) - (right.values[index] ?? 0));
         if (difference !== 0) return difference;
       }
       return left.playerId - right.playerId;
@@ -47,13 +46,12 @@ export class GameRankingController {
     playerIds: readonly number[],
     ...criteria: readonly RankingCriterion[]
   ): number[][] {
-    return this.rank(playerIds, ...criteria).reduce<number[][]>(
-      (tiers, entry) => {
+    return this.rank(playerIds, ...criteria)
+      .reduce<number[][]>((tiers, entry) => {
         (tiers[entry.rank - 1] ??= []).push(entry.playerId);
         return tiers;
-      },
-      [],
-    ).filter((tier) => tier.length > 0);
+      }, [])
+      .filter((tier) => tier.length > 0);
   }
 
   leaders(

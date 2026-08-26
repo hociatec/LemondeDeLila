@@ -46,7 +46,7 @@ export function updateWinner(_state: SacState, ctx: RuleContext): void {
 }
 
 export function sendToJail(
-  state: SacState,
+  _state: SacState,
   playerId: number,
   ctx: RuleContext,
 ): void {

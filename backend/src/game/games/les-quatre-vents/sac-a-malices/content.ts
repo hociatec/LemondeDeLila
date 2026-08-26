@@ -4,12 +4,7 @@ import {
   rejectContent,
 } from '../../../core/application/public-api';
 import type { GameEffectInstruction } from '../../../core/application/public-api';
-import {
-  moneyDelta,
-  movementDelta,
-  normalize,
-  skipTurns,
-} from './text-parser';
+import { moneyDelta, movementDelta, normalize, skipTurns } from './text-parser';
 import classicBoard from './model/content/board.json';
 import classicChance from './model/content/chance-cards.json';
 import classicCommunity from './model/content/community-cards.json';

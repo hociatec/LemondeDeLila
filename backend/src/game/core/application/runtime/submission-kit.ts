@@ -11,7 +11,7 @@ export type SubmissionSession = {
   kind: 'submission' | 'vote';
   participantPlayerIds: number[];
   valuesByPlayerId: Record<string, unknown>;
-  allowedValues: unknown[] | null;
+  allowedValues: readonly unknown[] | null;
   secret: boolean;
   closed: boolean;
   revealed: boolean;
@@ -19,10 +19,7 @@ export type SubmissionSession = {
 
 export type SubmissionKitState = {
   sessions: Record<string, SubmissionSession>;
-  judges: Record<
-    string,
-    { playerIds: number[]; index: number }
-  >;
+  judges: Record<string, { playerIds: number[]; index: number }>;
 };
 
 export type SubmissionPlayerView = {
@@ -44,6 +41,14 @@ export type SubmissionPlayerView = {
     { playerId: number; playerIds: number[]; index: number }
   >;
 };
+
+export type SubmissionFlowStage =
+  | 'idle'
+  | 'collecting'
+  | 'ready-to-reveal'
+  | 'revealed'
+  | 'voting'
+  | 'complete';
 
 type SubmissionEmitter = (
   type: string,
@@ -131,6 +136,11 @@ export class GameSubmissionController {
     return this.state.sessions[id] != null;
   }
 
+  session(id: string): SubmissionSession | null {
+    const session = this.state.sessions[id];
+    return session ? structuredClone(session) : null;
+  }
+
   reorderPending(id: string, playerIds: readonly number[]): void {
     const session = this.require(id);
     const pending = this.pendingPlayers(id);
@@ -166,9 +176,7 @@ export class GameSubmissionController {
       sessionId: id,
       valuesByPlayerId: structuredClone(session.valuesByPlayerId),
     });
-    return structuredClone(
-      session.valuesByPlayerId as Record<string, TValue>,
-    );
+    return structuredClone(session.valuesByPlayerId as Record<string, TValue>);
   }
 
   values<TValue>(id: string): Record<string, TValue> {
@@ -190,7 +198,10 @@ export class GameSubmissionController {
     },
     allowedValues: readonly unknown[] | null,
   ): void {
-    if (this.state.sessions[options.id] && !this.state.sessions[options.id].closed) {
+    if (
+      this.state.sessions[options.id] &&
+      !this.state.sessions[options.id].closed
+    ) {
       throw new GameStateViolationError('Session de soumission déjà ouverte', {
         sessionId: options.id,
       });
@@ -203,10 +214,13 @@ export class GameSubmissionController {
       participantPlayerIds.length === 0 ||
       participantPlayerIds.some((playerId) => !known.has(playerId))
     ) {
-      throw new GameStateViolationError('Participants de soumission invalides', {
-        sessionId: options.id,
-        participantPlayerIds,
-      });
+      throw new GameStateViolationError(
+        'Participants de soumission invalides',
+        {
+          sessionId: options.id,
+          participantPlayerIds,
+        },
+      );
     }
     this.state.sessions[options.id] = {
       id: options.id,
@@ -317,8 +331,8 @@ export class GameVotingController extends GameSubmissionController {
     }
     const results: Array<{ value: unknown; votes: number }> = [];
     for (const value of Object.values(session.valuesByPlayerId)) {
-      const existing = results.find(
-        (candidate) => sameSerializableValue(candidate.value, value),
+      const existing = results.find((candidate) =>
+        sameSerializableValue(candidate.value, value),
       );
       if (existing) existing.votes += 1;
       else results.push({ value: structuredClone(value), votes: 1 });
@@ -333,6 +347,10 @@ export class GameJudgeController {
     private readonly players: readonly PlayerStateEntity[],
     private readonly emit: SubmissionEmitter,
   ) {}
+
+  has(id: string): boolean {
+    return this.state.judges[id] != null;
+  }
 
   start(
     id: string,
@@ -409,6 +427,128 @@ export class GameJudgeController {
   }
 }
 
+/**
+ * Pipeline commun collecte → reveal → vote/jury. Il compose les trois
+ * contrôleurs spécialisés et porte la synchronisation des tours simultanés,
+ * sans introduire de champs `roundStage` ou `pending*` dans l'état du jeu.
+ */
+export class GameSubmissionFlowController {
+  constructor(
+    private readonly submissions: GameSubmissionController,
+    private readonly voting: GameVotingController,
+    private readonly judge: GameJudgeController,
+    private readonly simultaneous: {
+      waitForAll(sessionId: string): void;
+      completeWaiting(sessionId: string): boolean;
+    },
+  ) {}
+
+  open(options: {
+    id: string;
+    players?: readonly number[];
+    secret?: boolean;
+    waitForAll?: boolean;
+    replace?: boolean;
+  }): void {
+    if (options.replace !== false && this.submissions.has(options.id)) {
+      this.submissions.clear(options.id);
+    }
+    this.submissions.open(options);
+    if (options.waitForAll) this.simultaneous.waitForAll(options.id);
+  }
+
+  openForJudge(options: {
+    submissionId: string;
+    judgeId: string;
+    players: readonly number[];
+    secret?: boolean;
+    rotateJudge?: boolean;
+    waitForAll?: boolean;
+  }): { judgePlayerId: number; participantPlayerIds: number[] } {
+    const judgePlayerId = options.rotateJudge
+      ? this.judge.next(options.judgeId)
+      : this.judge.current(options.judgeId);
+    const participantPlayerIds = options.players.filter(
+      (playerId) => playerId !== judgePlayerId,
+    );
+    this.open({
+      id: options.submissionId,
+      players: participantPlayerIds,
+      secret: options.secret,
+      waitForAll: options.waitForAll,
+    });
+    return { judgePlayerId, participantPlayerIds };
+  }
+
+  submit<TValue>(id: string, playerId: number, value: TValue): boolean {
+    this.submissions.submit(id, playerId, value);
+    return this.submissions.isComplete(id);
+  }
+
+  vote<TValue>(id: string, playerId: number, value: TValue): boolean {
+    this.voting.vote(id, playerId, value);
+    return this.voting.isComplete(id);
+  }
+
+  completeWaiting(id: string): boolean {
+    return this.simultaneous.completeWaiting(id);
+  }
+
+  reveal<TValue>(id: string): Record<string, TValue> {
+    return this.submissions.reveal<TValue>(id);
+  }
+
+  revealAndOpenVote<TValue>(options: {
+    submissionId: string;
+    voteId: string;
+    choices?: readonly unknown[];
+    voters?: readonly number[];
+    secret?: boolean;
+    waitForAll?: boolean;
+  }): Record<string, TValue> {
+    const submissions = this.reveal<TValue>(options.submissionId);
+    if (this.voting.has(options.voteId)) this.voting.clear(options.voteId);
+    this.voting.open({
+      id: options.voteId,
+      players: options.voters,
+      choices:
+        options.choices ??
+        Object.keys(submissions).map((playerId) => +playerId),
+      secret: options.secret,
+    });
+    if (options.waitForAll) this.simultaneous.waitForAll(options.voteId);
+    return submissions;
+  }
+
+  startJudge(
+    id: string,
+    options: { players?: readonly number[]; starterPlayerId?: number } = {},
+  ): number {
+    return this.judge.has(id)
+      ? this.judge.current(id)
+      : this.judge.start(id, options);
+  }
+
+  nextJudge(id: string): number {
+    return this.judge.next(id);
+  }
+
+  stage(submissionId: string, voteId?: string): SubmissionFlowStage {
+    const vote = voteId ? this.voting.session(voteId) : null;
+    if (vote) return vote.closed ? 'complete' : 'voting';
+    const submission = this.submissions.session(submissionId);
+    if (!submission) return 'idle';
+    if (!submission.closed) return 'collecting';
+    return submission.revealed ? 'revealed' : 'ready-to-reveal';
+  }
+
+  reset(...sessionIds: readonly string[]): void {
+    for (const sessionId of sessionIds) {
+      if (this.submissions.has(sessionId)) this.submissions.clear(sessionId);
+    }
+  }
+}
+
 export function projectSubmissions(
   state: SubmissionKitState,
   viewerPlayerId: number | null,
@@ -416,7 +556,9 @@ export function projectSubmissions(
   return {
     sessions: Object.fromEntries(
       Object.entries(state.sessions).map(([id, session]) => {
-        const submittedPlayerIds = Object.keys(session.valuesByPlayerId).map(Number);
+        const submittedPlayerIds = Object.keys(session.valuesByPlayerId).map(
+          Number,
+        );
         const pendingPlayerIds = session.participantPlayerIds.filter(
           (playerId) => !submittedPlayerIds.includes(playerId),
         );

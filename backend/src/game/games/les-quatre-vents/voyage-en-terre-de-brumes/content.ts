@@ -32,7 +32,9 @@ export const VOYAGE_CONTENT = loadContent();
 function loadContent(): VoyageContent {
   const directory = contentDirectory();
   return {
-    tiles: readArray(directory, 'board.json', 'tiles', isTile).map(decorateTile),
+    tiles: readArray(directory, 'board.json', 'tiles', isTile).map(
+      decorateTile,
+    ),
     legend: readCards(directory, 'legend-cards.json', 'legend'),
     farce: readCards(directory, 'farce-cards.json', 'farce'),
     treasure: readCards(directory, 'treasure-cards.json', 'treasure'),
@@ -172,12 +174,13 @@ function cardInstructions(text: string): VoyageCard['effects'] {
     ];
   }
   if (/tirez\s+au\s+hasard\s+une\s+carte/i.test(text) && /perdez/i.test(text)) {
-    const allowed = (['legend', 'farce', 'treasure', 'landscape'] as const)
-      .filter(
-        (kind) =>
-          !/l[ée]gende|paysage|tr[ée]sor|farce/i.test(text) ||
-          new RegExp(kind === 'landscape' ? 'paysage' : kind, 'i').test(text),
-      );
+    const allowed = (
+      ['legend', 'farce', 'treasure', 'landscape'] as const
+    ).filter(
+      (kind) =>
+        !/l[ée]gende|paysage|tr[ée]sor|farce/i.test(text) ||
+        new RegExp(kind === 'landscape' ? 'paysage' : kind, 'i').test(text),
+    );
     return [gameEffects.custom('voyage.lose-random-card', { allowed })];
   }
   const delta = extractMoveDelta(text);

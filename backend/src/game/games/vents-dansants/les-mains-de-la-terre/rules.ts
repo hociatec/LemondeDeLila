@@ -1,5 +1,6 @@
 import {
   defineEffect,
+  drawEvent,
   gameInput,
   requestCardFromPlayer,
 } from '../../../core/application/public-api';
@@ -28,16 +29,16 @@ export const requestCard = requestCardFromPlayer<LesMainsState>({
   beforeRequest: ({ playerId, ctx }) => {
     ctx.status.remove(playerId, LES_MAINS_FREE_REQUEST);
   },
-  onReceived: ({ state, playerId, cardId, ctx }) => {
+  onReceived: ({ state: _state, playerId, cardId, ctx }) => {
     ctx.events.message('game.card.received', { playerId, cardId });
     completeFamily(playerId, cardId, ctx);
     maybeFinish(ctx);
   },
-  onMiss: ({ state, playerId, ctx }) => {
+  onMiss: ({ state: _state, playerId, ctx }) => {
     const drawCount = 1 + ctx.resources.get(playerId, LES_MAINS_EXTRA_DRAWS);
     ctx.resources.set(playerId, LES_MAINS_EXTRA_DRAWS, 0);
     for (let count = 0; count < drawCount; count += 1) {
-      drawCard(playerId, ctx);
+      drawLesMainsCard(playerId, ctx);
     }
     maybeFinish(ctx);
   },
@@ -46,7 +47,7 @@ export const requestCard = requestCardFromPlayer<LesMainsState>({
 export const LES_MAINS_ACTIONS = { request_card: requestCard };
 
 export function enumerateRequests(
-  state: LesMainsState,
+  _state: LesMainsState,
   playerId: number,
   ctx: RuleContext,
 ): Array<{ cardId: string; targetPlayerId: number }> {
@@ -90,11 +91,12 @@ export function dealProfessionHands(
   ctx.cards.putOnTop(DECK, specialBuffer);
 }
 
-function drawCard(
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  const cardId = ctx.cards.drawOrRecycle<string>(DECK);
+function drawLesMainsCard(playerId: number, ctx: RuleContext): void {
+  const cardId = drawEvent<LesMainsState, string>(ctx, {
+    deckId: DECK,
+    playerId,
+    recycle: true,
+  });
   if (!cardId) return;
   if (isLesMainsSpecialCard(cardId)) {
     ctx.cards.discard(DECK, cardId);
@@ -114,13 +116,13 @@ function completeFamily(
 ): void {
   const family = LES_MAINS_CARD_BY_ID[cardId]?.family;
   if (!family || !ctx.cards.completeSet(FAMILIES, playerId, family)) return;
-  ctx.events.message('les-mains.family.completed', { playerId, familyId: family });
+  ctx.events.message('les-mains.family.completed', {
+    playerId,
+    familyId: family,
+  });
 }
 
-function completeVanished(
-  playerId: number,
-  ctx: RuleContext,
-): void {
+function completeVanished(playerId: number, ctx: RuleContext): void {
   if (ctx.status.has(playerId, LES_MAINS_VANISHED_USED)) return;
   const hand = ctx.cards.hand<string>(HANDS, playerId);
   const completed = ctx.cards.playerCompletedSets(FAMILIES, playerId);
@@ -152,12 +154,12 @@ function exchangeRandom(playerId: number, ctx: RuleContext): void {
           player.id !== playerId && ctx.cards.hand(HANDS, player.id).length > 0,
       ),
   );
+  if (!target || ownHand.length === 0) return;
+  const stolenCard = ctx.cards.stealRandom<string>(HANDS, target.id, playerId);
+  if (stolenCard == null) return;
   const ownCard = ctx.random.pick(ownHand);
-  const targetCard = target
-    ? ctx.random.pick(ctx.cards.hand<string>(HANDS, target.id))
-    : null;
-  if (!target || !ownCard || !targetCard) return;
-  ctx.cards.exchange(HANDS, playerId, ownCard, target.id, targetCard);
+  if (!ownCard) return;
+  ctx.cards.transfer(HANDS, playerId, target.id, ownCard);
 }
 
 function mixHands(playerId: number, ctx: RuleContext): void {
@@ -173,10 +175,7 @@ function mixHands(playerId: number, ctx: RuleContext): void {
   ctx.cards.shuffleHands(HANDS, [playerId, target.id]);
 }
 
-function passKnowledge(
-  playerId: number,
-  ctx: RuleContext,
-): void {
+function passKnowledge(playerId: number, ctx: RuleContext): void {
   const ownFamilies = new Set(
     ctx.cards
       .hand<string>(HANDS, playerId)
@@ -237,10 +236,7 @@ export const LES_MAINS_EFFECTS = {
       if (actorPlayerId != null) completeVanished(actorPlayerId, ctx);
     },
   }),
-  'les-mains.mix-hands': defineEffect<
-    LesMainsState,
-    Record<string, never>
-  >({
+  'les-mains.mix-hands': defineEffect<LesMainsState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ actorPlayerId, ctx }) => {
       if (actorPlayerId != null) mixHands(actorPlayerId, ctx);

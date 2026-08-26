@@ -23,8 +23,5 @@ export type MonVillageState = Record<string, never>;
 
 export type MonVillagePlayerView = {
   collections: PlayerMap<VillageCollection>;
-  lastRoll: number | null;
-  positions: PlayerMap<number>;
   availableCards: Record<number, number>;
-  winnerId: number | null;
 };

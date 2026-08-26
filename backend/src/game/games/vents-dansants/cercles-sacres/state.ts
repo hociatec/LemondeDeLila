@@ -11,6 +11,4 @@ export type CerclesSacresState = Record<string, never>;
 
 export type CerclesSacresPlayerView = {
   circles: PlayerMap<CerclesSacresCircle[]>;
-  drawnPlayerId: number | null;
-  winnerId: number | null;
 };

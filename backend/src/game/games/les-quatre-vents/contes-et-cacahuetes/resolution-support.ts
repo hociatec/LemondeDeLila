@@ -12,7 +12,7 @@ export function requirePending<TKind extends ContesPendingEffect['kind']>(
   kind: TKind,
   actorId: number,
 ): Extract<ContesPendingEffect, { kind: TKind }> {
-  const pending = ctx.choice.consumeData<ContesPendingEffect>();
+  const pending = ctx.choice.consumeContinuation<ContesPendingEffect>();
   if (!pending || !hasKind(pending, kind) || pending.actorId !== actorId)
     rejectRule(`Choix Contes ${kind} absent`);
   return pending;
@@ -41,19 +41,12 @@ export function moveTo(
   ctx.movement.moveTo(TRACK, playerId, target);
 }
 
-export function swapPositions(
-  firstId: number,
-  secondId: number,
-  ctx: RuleContext,
-): void {
-  ctx.movement.swap(TRACK, firstId, secondId);
-}
-
 export function blockedPosition(
   ctx: RuleContext,
   playerId: number,
 ): number | null {
-  const value = ctx.status.get(playerId, CONTES_STATUSES.blocked)?.data.position;
+  const value = ctx.status.get(playerId, CONTES_STATUSES.blocked)?.data
+    .position;
   return typeof value === 'number' ? value : null;
 }
 

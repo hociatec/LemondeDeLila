@@ -66,7 +66,7 @@ export default defineGame<GerardState, typeof GERARD_ACTIONS, GerardPlayerView>(
       { key: 'S', type: 'action', actionType: 'play_special' },
     ],
     setup: ({ players, ctx }) => {
-      ctx.judge.start(GERARD_JUDGE, {
+      ctx.submissionFlow.startJudge(GERARD_JUDGE, {
         players: players.map((player) => player.id),
       });
       return {
@@ -94,8 +94,7 @@ export default defineGame<GerardState, typeof GERARD_ACTIONS, GerardPlayerView>(
           Number(playerId),
           isJury || Number(playerId) === actor?.id
             ? cardIds.map(
-                (cardId) =>
-                  GERARD_PRESIDENT_NAME_BY_ID[cardId]?.name ?? cardId,
+                (cardId) => GERARD_PRESIDENT_NAME_BY_ID[cardId]?.name ?? cardId,
               )
             : cardIds.map(() => 'Prénom secret'),
         ]),
@@ -109,13 +108,11 @@ export default defineGame<GerardState, typeof GERARD_ACTIONS, GerardPlayerView>(
           themeSecretActive,
           juryOverrideId,
           targetScore: GERARD_TARGET_SCORE,
-          scores: ctx.players.byId((player) => ctx.score.get(player.id)),
           phase: GERARD_PHASES.current(ctx),
           masterId,
           pendingPlayers: ctx.submissions.has(GERARD_SUBMISSIONS)
             ? ctx.submissions.pendingPlayers(GERARD_SUBMISSIONS)
             : [],
-          roundNumber: ctx.round.number,
           currentTheme: themeHidden
             ? 'Thème secret'
             : state.currentThemeId == null
@@ -129,17 +126,15 @@ export default defineGame<GerardState, typeof GERARD_ACTIONS, GerardPlayerView>(
               : (GERARD_PRESIDENT_THEME_BY_ID[state.secondThemeId]?.text ??
                 null),
           submissions,
-          winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
         },
         extras: {
           specialCardCatalog: GERARD_PRESIDENT_SPECIAL_CARDS,
           submissions,
-          scores: ctx.players.byId((player) => ctx.score.get(player.id)),
         },
       });
     },
     bot: {
-      choose: ({ state, actor, ctx }) => {
+      choose: ({ state: _state, actor, ctx }) => {
         if (GERARD_PHASES.is(ctx, 'waiting-theme'))
           return { type: 'set_theme', payload: {} };
         if (GERARD_PHASES.is(ctx, 'choosing-winner')) {

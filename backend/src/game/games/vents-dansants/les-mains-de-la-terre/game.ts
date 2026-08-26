@@ -64,33 +64,18 @@ export default defineGame<
   actions: LES_MAINS_ACTIONS,
   effects: LES_MAINS_EFFECTS,
   view: ({ actor, ctx }) => {
-    const extraDraws = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.resources.get(player.id, LES_MAINS_EXTRA_DRAWS),
-        ]),
+    const extraDraws = ctx.players.byId((player) =>
+      ctx.resources.get(player.id, LES_MAINS_EXTRA_DRAWS),
     );
     const statusMap = (statusId: string) =>
-      Object.fromEntries(
-        ctx.players
-          .all()
-          .map((player) => [player.id, ctx.status.has(player.id, statusId)]),
-      );
+      ctx.players.byId((player) => ctx.status.has(player.id, statusId));
     const freeFamilyRequest = statusMap(LES_MAINS_FREE_REQUEST);
     const vanishedProfessionUsed = statusMap(LES_MAINS_VANISHED_USED);
-    const skipTurns = Object.fromEntries(
-      ctx.players.all().map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-    );
     return playerView({
       game: {
         extraDraws,
         freeFamilyRequest,
         vanishedProfessionUsed,
-        gameOver: ctx.match.lifecycle() === 'finished',
-        winnerIds: ctx.match.result()?.winnerPlayerIds ?? [],
-        skipTurns,
       },
       extras: {
         cardCatalog: LES_MAINS_CARD_BY_ID,

@@ -40,9 +40,7 @@ export default defineGame<
   subcategory: 'LesQuatreVents',
   description: 'Course chaotique sur 30 cases avec cartes Situation.',
   players: { min: 2, max: 10 },
-  patterns: [
-    raceGame({ trackId: 'derape', spaces: CA_DERAPE_TILES.length }),
-  ],
+  patterns: [raceGame({ trackId: 'derape', spaces: CA_DERAPE_TILES.length })],
   components: [
     cards.deck({ id: 'situations', cards: CA_DERAPE_CARDS, shuffle: true }),
   ],
@@ -63,8 +61,11 @@ export default defineGame<
   },
   view: ({ ctx }) => {
     const pending = ctx.choice.current();
-    const choiceId = pending?.data.choiceId;
-    const local = ctx.choice.data<{ kind?: string; actorId?: number }>();
+    const choiceId = pending?.data?.choiceId;
+    const local = ctx.choice.continuation<{
+      kind?: string;
+      actorId?: number;
+    }>();
     const pendingKind: import('./state').CaPendingKind | null =
       choiceId === 'ca-derape.swap'
         ? 'swap'
@@ -75,13 +76,8 @@ export default defineGame<
             : local?.kind === 'next-delta'
               ? 'next-delta'
               : null;
-    const positions = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.movement.position('derape', player.id),
-        ]),
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('derape', player.id),
     );
     return playerView({
       game: {
@@ -91,16 +87,10 @@ export default defineGame<
         mirrorNextRollFrom: mirrorSourceMap(ctx),
         nextPlayerDelta: ctx.counters.get(CA_NEXT_PLAYER_DELTA) || null,
         pendingKind,
-        pendingActorId: pendingKind ? pending?.playerId ?? null : null,
+        pendingActorId: pendingKind ? (pending?.playerId ?? null) : null,
         ignoreNextPenalty: statusMap(ctx, commonStatuses.shield),
         doubleNextMove: statusMap(ctx, commonStatuses.doubleMove),
         doubleNextRoll: statusMap(ctx, commonStatuses.doubleRoll),
-        extraTurn: ctx.turn.extraCount() > 0,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        skipTurns: Object.fromEntries(
-          ctx.players.all().map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-        ),
-        positions,
       },
       board: { tiles: CA_DERAPE_TILES, positions },
     });
@@ -112,9 +102,5 @@ function statusMap(
   ctx: GameContext<CaDerapeState>,
   statusId: string,
 ): PlayerMap<boolean> {
-  return Object.fromEntries(
-    ctx.players
-      .all()
-      .map((player) => [player.id, ctx.status.has(player.id, statusId)]),
-  );
+  return ctx.players.byId((player) => ctx.status.has(player.id, statusId));
 }

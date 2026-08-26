@@ -1,6 +1,7 @@
 import {
   defineAction,
   defineEffect,
+  drawForPlayer as drawCardsForPlayer,
   gameInput,
   gameEffects,
   rejectRule,
@@ -19,7 +20,6 @@ import type { OlympiaState } from './state';
 
 const HANDS = 'players';
 const PRESTIGE_TO_WIN = 30;
-const DRAWN_PLAYER_FLAG = 'olympia.drawn-player-id';
 type RuleContext = GameContext<OlympiaState>;
 
 const DECKS: OlympiaDeckType[] = [
@@ -38,22 +38,25 @@ export const drawCard = defineAction<OlympiaState, DrawInput>({
   input: gameInput.object({ deck: gameInput.enum(DECKS) }),
   documentation: 'Pioche une carte dans un paquet non vide, une fois par tour.',
   available: ({ actor, ctx }) =>
-    drawnPlayerId(ctx) !== actor.id &&
+    ctx.effects.sourcePlayerId() !== actor.id &&
     !hasStatus(ctx, actor.id, 'block_actions'),
   validate: ({ input, ctx }) => ctx.cards.deckCount(input.deck) > 0,
   enumerate: ({ actor, ctx }) =>
-    drawnPlayerId(ctx) === actor.id ||
+    ctx.effects.sourcePlayerId() === actor.id ||
     hasStatus(ctx, actor.id, 'block_actions')
       ? []
       : DECKS.filter((deck) => ctx.cards.deckCount(deck) > 0).map((deck) => ({
           deck,
         })),
   execute: ({ actor, input, ctx }) => {
-    if (drawnPlayerId(ctx) === actor.id) rejectRule('Pioche déjà effectuée');
-    const cardId = ctx.cards.draw<string>(input.deck);
+    if (ctx.effects.sourcePlayerId() === actor.id)
+      rejectRule('Pioche déjà effectuée');
+    const cardId = drawCardsForPlayer<OlympiaState, string>(ctx, {
+      deckId: input.deck,
+      handId: HANDS,
+      playerId: actor.id,
+    })[0];
     if (!cardId) rejectRule(`Le paquet ${input.deck} est vide`);
-    ctx.cards.give(HANDS, actor.id, cardId);
-    ctx.turn.flags.set(DRAWN_PLAYER_FLAG, actor.id);
     ctx.events.message('game.card.drawn', {
       playerId: actor.id,
       cardId,
@@ -147,7 +150,7 @@ function addPrestige(ctx: RuleContext, playerId: number, amount: number): void {
   ctx.score.set(playerId, Math.max(0, ctx.score.get(playerId) + amount));
 }
 
-function drawForPlayer(
+function drawOlympiaCardsForPlayer(
   playerId: number,
   amount: number,
   decks: OlympiaDeckType[],
@@ -156,8 +159,11 @@ function drawForPlayer(
   for (let index = 0; index < amount; index += 1) {
     const deck = decks.find((candidate) => ctx.cards.deckCount(candidate) > 0);
     if (!deck) return;
-    const card = ctx.cards.draw<string>(deck);
-    if (card) ctx.cards.give(HANDS, playerId, card);
+    drawCardsForPlayer<OlympiaState, string>(ctx, {
+      deckId: deck,
+      handId: HANDS,
+      playerId,
+    });
   }
 }
 
@@ -232,18 +238,11 @@ function requireOwnedCard(
   return card;
 }
 
-export function drawnPlayerId(ctx: RuleContext): number | null {
-  return ctx.turn.flags.get<number>(DRAWN_PLAYER_FLAG);
-}
-
 function chooseWinner(ctx: RuleContext): void {
   const reached = ctx.players
     .all()
     .filter((player) => ctx.score.get(player.id) >= PRESTIGE_TO_WIN)
-    .sort(
-      (a, b) =>
-        ctx.score.get(b.id) - ctx.score.get(a.id) || a.id - b.id,
-    );
+    .sort((a, b) => ctx.score.get(b.id) - ctx.score.get(a.id) || a.id - b.id);
   if (reached.length > 0) {
     ctx.match.finish({ winners: [reached[0].id], reason: 'prestige-30' });
   }
@@ -257,10 +256,7 @@ function hasStatus(
   return ctx.status.has(playerId, key);
 }
 
-function hasGlobalStatus(
-  ctx: RuleContext,
-  key: OlympiaStatusKey,
-): boolean {
+function hasGlobalStatus(ctx: RuleContext, key: OlympiaStatusKey): boolean {
   return ctx.players.all().some((player) => ctx.status.has(player.id, key));
 }
 
@@ -306,7 +302,7 @@ export const OLYMPIA_EFFECTS = {
     }),
     apply: ({ targetPlayerIds, data, ctx }) => {
       for (const playerId of targetPlayerIds) {
-        drawForPlayer(playerId, data.amount, data.decks, ctx);
+        drawOlympiaCardsForPlayer(playerId, data.amount, data.decks, ctx);
       }
     },
   }),
@@ -342,10 +338,7 @@ export const OLYMPIA_EFFECTS = {
       }
     },
   }),
-  'olympia.finish-card': defineEffect<
-    OlympiaState,
-    Record<string, never>
-  >({
+  'olympia.finish-card': defineEffect<OlympiaState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ ctx }) => chooseWinner(ctx),
   }),
