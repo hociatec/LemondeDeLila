@@ -1,10 +1,8 @@
 import {
   commonStatuses,
   defineGame,
-  economy,
-  inventory,
+  marketGame,
   playerView,
-  standardTurn,
 } from '../../../core/application/public-api';
 import {
   GOOD_LABELS,
@@ -26,27 +24,21 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Achetez, vendez et influencez les cours du marché.',
   players: { min: 2, max: 6 },
-  components: [
-    inventory.set({
-      id: 'wonder-goods',
+  patterns: [
+    marketGame({
+      marketId: 'wonders',
+      inventoryId: 'wonder-goods',
       items: WONDER_GOODS,
-      visibility: 'public',
-    }),
-    economy.market({
-      id: 'wonders',
-      inventory: 'wonder-goods',
       currency: 'coins',
       prices: INITIAL_PRICES,
+      startingCurrency: MARKET_RULES.startingCoins,
       minPrice: 1,
       maxPrice: 10,
+      turnsCounterId: MARKET_TURNS_TAKEN,
+      maxRounds: MARKET_RULES.maxRounds,
+      winnerReason: 'market-closed',
     }),
   ],
-  initialization: {
-    resources: { coins: MARKET_RULES.startingCoins },
-    counters: { [MARKET_TURNS_TAKEN]: 0 },
-    firstPlayer: 'first',
-    startRound: true,
-  },
   shortcuts: [
     { key: 'A', type: 'action', actionType: 'buy' },
     { key: 'Q', type: 'action', actionType: 'sell' },
@@ -56,9 +48,8 @@ export default defineGame<
     { key: 'O', type: 'action', actionType: 'pass' },
   ],
   setup: () => ({}),
-  turn: standardTurn(),
   actions: MARKET_ACTIONS,
-  view: ({ state, actor, ctx }) => {
+  view: ({ state: _state, actor, ctx }) => {
     const prices = ctx.economy.prices('wonders');
     const myInventory = actor
       ? ctx.inventory.quantities('wonder-goods', actor.id)
@@ -76,16 +67,9 @@ export default defineGame<
         turnsTaken: ctx.counters.get(MARKET_TURNS_TAKEN),
         lastMarketEvent: ctx.events.latestMessage(),
         maxRounds: MARKET_RULES.maxRounds,
-        protectedPlayers: Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [
-              player.id,
-              ctx.status.has(player.id, commonStatuses.protected),
-            ]),
+        protectedPlayers: ctx.players.byId((player) =>
+          ctx.status.has(player.id, commonStatuses.protected),
         ),
-        round: ctx.round.number,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
       },
       extras: {
         market: marketLines,
@@ -99,8 +83,7 @@ export default defineGame<
             {
               title: 'Mon étal',
               lines: WONDER_GOODS.map(
-                (good) =>
-                  `${GOOD_LABELS[good]} : ${myInventory[good] ?? 0}`,
+                (good) => `${GOOD_LABELS[good]} : ${myInventory[good] ?? 0}`,
               ),
             },
           ],
@@ -110,8 +93,8 @@ export default defineGame<
   },
   bot: {
     choose: ({ actor, ctx }) => {
-      const sellable = WONDER_GOODS.find(
-        (good) => ctx.inventory.has('wonder-goods', actor.id, good),
+      const sellable = WONDER_GOODS.find((good) =>
+        ctx.inventory.has('wonder-goods', actor.id, good),
       );
       if (sellable) return { type: 'sell', payload: { good: sellable } };
       const buyable = [...WONDER_GOODS]

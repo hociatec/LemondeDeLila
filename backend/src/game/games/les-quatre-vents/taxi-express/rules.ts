@@ -1,8 +1,10 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
+import {
+  defineAction,
+  drawEvent,
+  gameInput,
+} from '../../../core/application/public-api';
 import type { GameContext } from '../../../core/application/public-api';
 import {
-  TAXI_CLIENTS,
-  TAXI_EVENTS,
   TAXI_TILES,
   TAXI_TARGET_TRIPS,
   type TaxiClient,
@@ -24,7 +26,18 @@ export const roll = defineAction<TaxiState, Record<string, never>>({
       ctx.turn.end();
       return;
     }
-    const event = drawEvent(ctx);
+    const event = drawEvent<TaxiState, TaxiEvent>(ctx, {
+      deckId: 'events',
+      playerId: actor.id,
+      recycle: true,
+      discard: true,
+    });
+    if (event) {
+      ctx.events.message('taxi.event.drawn', {
+        eventId: event.id,
+        blockedTileId: event.blockedTileId,
+      });
+    }
     const start = ctx.movement.position(TRACK, actor.id);
     const value = ctx.dice.roll('main').total;
     const destination = Math.min(TAXI_TILES.length - 1, start + value);
@@ -59,10 +72,7 @@ export const roll = defineAction<TaxiState, Record<string, never>>({
 
 export const TAXI_ACTIONS = { roll };
 
-function ensureClient(
-  playerId: number,
-  ctx: RuleContext,
-): TaxiClient | null {
+function ensureClient(playerId: number, ctx: RuleContext): TaxiClient | null {
   const existing = ctx.cards.hand<TaxiClient>('taxi-clients', playerId)[0];
   if (existing) return existing;
   const client = ctx.cards.drawToHand<TaxiClient>(
@@ -80,17 +90,6 @@ function ensureClient(
   return client;
 }
 
-function drawEvent(ctx: RuleContext): TaxiEvent | null {
-  const event = ctx.cards.drawOrRecycle<TaxiEvent>('events');
-  if (!event) return null;
-  ctx.cards.discard('events', event);
-  ctx.events.message('taxi.event.drawn', {
-    eventId: event.id,
-    blockedTileId: event.blockedTileId,
-  });
-  return event;
-}
-
 function discardClient(
   playerId: number,
   client: TaxiClient,
@@ -101,10 +100,4 @@ function discardClient(
 
 function crosses(start: number, destination: number, blocked: number): boolean {
   return blocked > start && blocked <= destination;
-}
-
-function tileTitle(tileId: number): string {
-  return (
-    TAXI_TILES.find((tile) => tile.id === tileId)?.title ?? `Case ${tileId}`
-  );
 }

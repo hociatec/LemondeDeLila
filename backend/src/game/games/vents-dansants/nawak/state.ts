@@ -23,9 +23,7 @@ export interface NawakState {
 
 export type NawakPlayerView = {
   targetScore: number;
-  scores: PlayerMap<number>;
   currentChallenge: NawakChallenge;
   lastRound: (NawakRoundState & { prompt: string }) | null;
   roundStage: NawakStage;
-  winnerId: number | null;
 };

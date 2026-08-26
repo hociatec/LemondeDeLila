@@ -1,4 +1,5 @@
 import {
+  completeRound,
   rejectRule,
   defineAction,
   defineGamePhases,
@@ -66,8 +67,7 @@ export const draw = defineAction<LamaState, Record<string, never>>({
       cardId: card,
       deckId: DECK,
     });
-    if (lamaConfig(ctx).allowPlayAfterDraw)
-      ctx.turn.flags.set(DRAWN_TURN_FLAG);
+    if (lamaConfig(ctx).allowPlayAfterDraw) ctx.turn.flags.set(DRAWN_TURN_FLAG);
     else {
       ctx.turn.end();
     }
@@ -123,12 +123,12 @@ export function resolveReturn(
   if (value > ctx.score.get(playerId)) rejectRule('Jetons LAMA insuffisants');
   ctx.score.subtract(playerId, value);
   ctx.events.message('lama.tokens.returned', { playerId, value });
-  finishRound(state, ctx);
+  advanceAfterLamaRound(state, ctx);
 }
 
 export function resolvePause(_state: LamaState, ctx: RuleContext): void {
   if (!LAMA_PHASES.is(ctx, 'pause')) rejectRule('Pause LAMA absente');
-  ctx.round.next();
+  completeRound(ctx, { end: false, next: 'rotate' });
 }
 
 export function skipInactiveLamaPlayer(
@@ -143,10 +143,7 @@ export function startLama(_state: LamaState, ctx: RuleContext): void {
   ctx.round.start(ctx.players.active()[0]?.id);
 }
 
-export function prepareLamaRound(
-  _state: LamaState,
-  ctx: RuleContext,
-): void {
+export function prepareLamaRound(_state: LamaState, ctx: RuleContext): void {
   const players = ctx.players.all();
   const survivors = ctx.round.activePlayers();
   const config = lamaConfig(ctx);
@@ -180,7 +177,10 @@ function endRound(
   winnerId: number | null,
   ctx: RuleContext,
 ): void {
-  ctx.round.end(winnerId == null ? [] : [winnerId]);
+  completeRound(ctx, {
+    winnerPlayerIds: winnerId == null ? [] : [winnerId],
+    next: false,
+  });
   LAMA_PHASES.transition(ctx, 'return');
   ctx.events.message('game.round.ended', { round: ctx.round.number });
   if (
@@ -200,7 +200,7 @@ function endRound(
     });
     return;
   }
-  finishRound(state, ctx);
+  advanceAfterLamaRound(state, ctx);
 }
 
 export function scoreLamaRound(_state: LamaState, ctx: RuleContext): void {
@@ -209,15 +209,12 @@ export function scoreLamaRound(_state: LamaState, ctx: RuleContext): void {
     const unique = new Set(ctx.cards.hand<LamaCard>(HANDS, player.id));
     ctx.score.add(
       player.id,
-      [...unique].reduce(
-        (total, card) => total + lamaPenalty(card),
-        0,
-      ),
+      [...unique].reduce((total, card) => total + lamaPenalty(card), 0),
     );
   }
 }
 
-function finishRound(state: LamaState, ctx: RuleContext): void {
+function advanceAfterLamaRound(_state: LamaState, ctx: RuleContext): void {
   const players = ctx.players.all();
   for (const player of ctx.players.active()) {
     if (ctx.score.get(player.id) >= lamaConfig(ctx).loseAtScore) {
@@ -247,7 +244,7 @@ function finishRound(state: LamaState, ctx: RuleContext): void {
       },
       label: () => 'Continuer',
     });
-  } else ctx.round.next();
+  } else completeRound(ctx, { end: false, next: 'rotate' });
 }
 
 function lamaConfig(ctx: RuleContext): LamaConfig {

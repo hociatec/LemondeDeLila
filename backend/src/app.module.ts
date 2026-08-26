@@ -85,7 +85,9 @@ type EnvValidationInput = Record<string, unknown>;
           .falsy('false')
           .default(true),
         ENABLE_PROTOTYPE_GAMES: Joi.string().optional(),
-        GAME_DEVTOOLS_ENABLED: Joi.string().valid('true', 'false').default('false'),
+        GAME_DEVTOOLS_ENABLED: Joi.string()
+          .valid('true', 'false')
+          .default('false'),
         CLIENT_UPDATES_DIR: Joi.string().optional(),
         CLIENT_UPDATES_META_PATH: Joi.string().optional(),
         CLIENT_UPDATES_UPLOADS_DIR: Joi.string().optional(),

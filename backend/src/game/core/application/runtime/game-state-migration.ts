@@ -1,9 +1,6 @@
 import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
 import type { GameStateEntity } from '../models/game-state.model';
-import type {
-  DeclarativeState,
-  GameStateMigration,
-} from './game-definition';
+import type { DeclarativeState, GameStateMigration } from './game-definition';
 import {
   createGameConfigurationState,
   type GameConfigurationShape,
@@ -53,7 +50,9 @@ export function migrateDeclarativeState<TState extends object>(
   }
 
   while (version < targetVersion) {
-    const migration = migrations.find((candidate) => candidate.from === version);
+    const migration = migrations.find(
+      (candidate) => candidate.from === version,
+    );
     if (!migration || migration.to <= version) {
       throw new GameStateViolationError(
         `Migration d’état manquante pour ${gameId}`,
@@ -75,10 +74,10 @@ export function migrateDeclarativeState<TState extends object>(
   runtime.engine.effects.awaitingPlayerChoice ??= null;
   runtime.engine.effects.playerChoiceResolved ??=
     runtime.engine.effects.chosenPlayerId != null;
-  runtime.engine.effects.resolvedPlayerChoiceId ??=
-    runtime.engine.effects.playerChoiceResolved
-      ? runtime.engine.effects.awaitingChoiceId
-      : null;
+  runtime.engine.effects.resolvedPlayerChoiceId ??= runtime.engine.effects
+    .playerChoiceResolved
+    ? runtime.engine.effects.awaitingChoiceId
+    : null;
   runtime.engine.effects.completeTurnWhenDrained ??= false;
   runtime.engine.commands ??= createGameCommandJournalState();
   runtime.engine.submissions ??= createSubmissionKitState();
@@ -129,8 +128,7 @@ function stripLegacyStaticKitDefinitions(
     grid: ['boards'],
   })) {
     const state = kits[kit as keyof typeof kits] as unknown as
-      | Record<string, unknown>
-      | undefined;
+      Record<string, unknown> | undefined;
     if (!state) continue;
     for (const field of fields) delete state[field];
   }

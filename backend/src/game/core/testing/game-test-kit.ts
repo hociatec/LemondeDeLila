@@ -21,12 +21,32 @@ type ActionInput<TAction> =
     ? TInput
     : never;
 
+type EngineActionType = 'game.configure' | 'choice.resolve' | 'choice.timeout';
+
+type DriverActionInput<TActions, TType> = TType extends keyof TActions
+  ? ActionInput<TActions[TType]>
+  : Record<string, unknown>;
+
+type LegacyGameTestView = {
+  hand: never[];
+  deckCount: number;
+  discardCount: number;
+  money: Record<string, number>;
+  submissions: Record<string, unknown>;
+  positions: Record<string, number>;
+  scores: Record<string, number>;
+  lastRoll: number | null;
+  setupComplete: boolean;
+};
+
 const DEFAULT_NAMES = ['alice', 'bob', 'charlie', 'diana', 'eve', 'frank'];
 
 export class GameTestKit<
   TState extends object,
   TActions extends GameActionMap<TState>,
   TPlayerView extends object,
+  TExtras extends object = object,
+  TBoard extends object = object,
 > {
   private readonly adapter: DeclarativeGameRuntime<
     TState,
@@ -49,7 +69,9 @@ export class GameTestKit<
     private readonly definition: DeclarativeGameDefinition<
       TState,
       TActions,
-      TPlayerView
+      TPlayerView,
+      TExtras,
+      TBoard
     >,
   ) {
     this.adapter = new DeclarativeGameRuntime(definition);
@@ -77,16 +99,17 @@ export class GameTestKit<
     this.ensureNotStarted();
     const base = this.baseState();
     const context = this.execution.create(base, null, this.clock);
-    this.current = this.execution.run(context, () =>
+    const initial = this.execution.run(context, () =>
       this.adapter.hydrateInitialState(base, context),
     );
-    await this.engine.restoreInternalState(1, this.definition.id, this.current);
+    this.current = initial;
+    await this.engine.restoreInternalState(1, this.definition.id, initial);
     return this;
   }
 
   as(
     player: string | number,
-  ): GameActorTestDriver<TState, TActions, TPlayerView> {
+  ): GameActorTestDriver<TState, TActions, TPlayerView, TExtras, TBoard> {
     return new GameActorTestDriver(this, this.playerId(player));
   }
 
@@ -100,12 +123,50 @@ export class GameTestKit<
     return { ...structuredClone(found), hand: this.hand(playerId) };
   }
 
-  view(player: string | number): TPlayerView {
+  resource(player: string | number, resourceId: string): number {
+    const state = this.requireState() as GameStateEntity & {
+      engine?: {
+        playerValues?: {
+          scores?: Record<string, number>;
+          resources?: Record<string, Record<string, number>>;
+        };
+      };
+    };
+    return (
+      state.engine?.playerValues?.resources?.[resourceId]?.[
+        String(this.playerId(player))
+      ] ?? 0
+    );
+  }
+
+  inventory(player: string | number, inventoryId: string): unknown[] {
+    const state = this.requireState() as GameStateEntity & {
+      engine?: {
+        kits?: {
+          inventory?: {
+            byPlayer?: Record<string, Record<string, unknown[]>>;
+          };
+        };
+      };
+    };
+    return structuredClone(
+      state.engine?.kits?.inventory?.byPlayer?.[inventoryId]?.[
+        String(this.playerId(player))
+      ] ?? [],
+    );
+  }
+
+  view(player: string | number): TPlayerView & TExtras & LegacyGameTestView {
+    const playerId = this.playerId(player);
     const exposed = this.adapter.exposeStateForUser(
       this.requireState(),
-      this.playerId(player),
+      playerId,
     );
-    return structuredClone(exposed.game as TPlayerView);
+    return structuredClone({
+      ...(exposed.game as TPlayerView),
+      ...(exposed.extras as TExtras),
+      ...this.legacyView(playerId),
+    });
   }
 
   state(): GameStateEntity & { game: TState } {
@@ -174,7 +235,7 @@ export class GameTestKit<
     });
   }
 
-  private async executeEngineAction(
+  async executeEngineAction(
     playerId: number,
     type: string,
     payload: Record<string, unknown>,
@@ -242,6 +303,60 @@ export class GameTestKit<
     return structuredClone(firstHand[String(playerId)] ?? []);
   }
 
+  private legacyView(playerId: number): LegacyGameTestView {
+    const state = this.requireState() as GameStateEntity & {
+      engine?: {
+        kits?: {
+          cards?: {
+            decks?: Record<string, unknown[]>;
+            discards?: Record<string, unknown[]>;
+          };
+          movement?: {
+            positions?: Record<string, Record<string, number>>;
+          };
+          dice?: {
+            rolls?: Record<string, { total?: number }>;
+          };
+        };
+        playerValues?: {
+          scores?: Record<string, number>;
+          resources?: Record<string, Record<string, number>>;
+        };
+        submissions?: {
+          sessions?: Record<
+            string,
+            { valuesByPlayerId?: Record<string, unknown> }
+          >;
+        };
+      };
+    };
+    const cards = state.engine?.kits?.cards;
+    const firstDeck = Object.values(cards?.decks ?? {})[0] ?? [];
+    const firstDiscard = Object.values(cards?.discards ?? {})[0] ?? [];
+    const firstSubmission = Object.values(
+      state.engine?.submissions?.sessions ?? {},
+    )[0];
+    const positions = Object.values(
+      state.engine?.kits?.movement?.positions ?? {},
+    )[0];
+    const lastRoll = Object.values(state.engine?.kits?.dice?.rolls ?? {}).at(
+      -1,
+    );
+    return {
+      hand: this.hand(playerId) as never[],
+      deckCount: firstDeck.length,
+      discardCount: firstDiscard.length,
+      money: structuredClone(
+        state.engine?.playerValues?.resources?.money ?? {},
+      ),
+      submissions: structuredClone(firstSubmission?.valuesByPlayerId ?? {}),
+      positions: structuredClone(positions ?? {}),
+      scores: structuredClone(state.engine?.playerValues?.scores ?? {}),
+      lastRoll: lastRoll?.total ?? null,
+      setupComplete: state.phase !== 'setup',
+    };
+  }
+
   private playerId(player: string | number): number {
     if (typeof player === 'number') return player;
     const found = this.requireState().players?.find(
@@ -265,17 +380,36 @@ export class GameActorTestDriver<
   TState extends object,
   TActions extends GameActionMap<TState>,
   TPlayerView extends object,
+  TExtras extends object = object,
+  TBoard extends object = object,
 > {
   constructor(
-    private readonly game: GameTestKit<TState, TActions, TPlayerView>,
+    private readonly game: GameTestKit<
+      TState,
+      TActions,
+      TPlayerView,
+      TExtras,
+      TBoard
+    >,
     private readonly playerId: number,
   ) {}
 
-  do<K extends keyof TActions & string>(
+  do<K extends (keyof TActions & string) | EngineActionType>(
     type: K,
-    payload: ActionInput<TActions[K]>,
-  ): Promise<GameTestKit<TState, TActions, TPlayerView>> {
-    return this.game.execute(this.playerId, type, payload);
+    payload: DriverActionInput<TActions, K>,
+  ): Promise<GameTestKit<TState, TActions, TPlayerView, TExtras, TBoard>> {
+    if (type === 'game.configure' || type.startsWith('choice.')) {
+      return this.game.executeEngineAction(
+        this.playerId,
+        type,
+        payload as Record<string, unknown>,
+      );
+    }
+    return this.game.execute(
+      this.playerId,
+      type,
+      payload as ActionInput<TActions[keyof TActions & string]>,
+    );
   }
 
   expectAction(type: keyof TActions & string): this {
@@ -290,8 +424,16 @@ export function testGame<
   TState extends object,
   TActions extends GameActionMap<TState>,
   TPlayerView extends object,
+  TExtras extends object = object,
+  TBoard extends object = object,
 >(
-  definition: DeclarativeGameDefinition<TState, TActions, TPlayerView>,
-): GameTestKit<TState, TActions, TPlayerView> {
+  definition: DeclarativeGameDefinition<
+    TState,
+    TActions,
+    TPlayerView,
+    TExtras,
+    TBoard
+  >,
+): GameTestKit<TState, TActions, TPlayerView, TExtras, TBoard> {
   return new GameTestKit(definition);
 }

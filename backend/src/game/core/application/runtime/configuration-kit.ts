@@ -116,7 +116,8 @@ export function canConfigureGame<TState extends object>(
   ctx: GameContext<TState>,
 ): boolean {
   if (state.complete) return false;
-  if (definition.phase && ctx.phase() !== definition.phase) return false;
+  if (definition.phase && ctx.phase.current() !== definition.phase)
+    return false;
   if (
     (definition.permission ?? 'owner') === 'owner' &&
     actor.id !== state.ownerPlayerId
@@ -132,10 +133,7 @@ export function parseGameConfiguration<TState extends object>(
   input: unknown,
 ): object {
   const overrides = asConfigurationRecord(input);
-  return definition.input.parse(
-    { ...state.values, ...overrides },
-    'config',
-  );
+  return definition.input.parse({ ...state.values, ...overrides }, 'config');
 }
 
 export function commitGameConfiguration(

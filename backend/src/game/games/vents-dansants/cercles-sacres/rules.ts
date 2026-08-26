@@ -14,7 +14,6 @@ export const CERCLES_SACRES_HAND_LIMIT = 8;
 const DECK = 'sacred-circles';
 const HANDS = 'players';
 const CIRCLES = 'sacred-circles-completed';
-const DRAWN_PLAYER_FLAG = 'cercles-sacres.drawn-player-id';
 const CERCLES_THEMES: readonly CerclesSacresTheme[] = [
   'totem',
   'nature',
@@ -76,7 +75,7 @@ export const pass = defineAction<CerclesSacresState, Record<string, never>>({
   documentation: 'Termine le tour sans former de cercle.',
   available: ({ actor, ctx }) =>
     ctx.cards.hand(HANDS, actor.id).length <= CERCLES_SACRES_HAND_LIMIT,
-  execute: ({ state, actor, ctx }) => {
+  execute: ({ state: _state, actor, ctx }) => {
     ctx.events.message('game.player.passed', { playerId: actor.id });
     ctx.turn.complete();
   },
@@ -107,23 +106,19 @@ export function completeCircles(hand: readonly string[]): string[][] {
   );
 }
 
-export const drawAtTurnStart = drawCardsAtTurnStart<
-  CerclesSacresState,
-  string
->({
-  deckId: DECK,
-  handId: HANDS,
-  afterDraw: ({ player, ctx }) => {
-    if (player)
-      ctx.events.message('game.card.drawn', {
-        playerId: player.id,
-        deckId: DECK,
-      });
+export const drawAtTurnStart = drawCardsAtTurnStart<CerclesSacresState, string>(
+  {
+    deckId: DECK,
+    handId: HANDS,
+    afterDraw: ({ player, ctx }) => {
+      if (player)
+        ctx.events.message('game.card.drawn', {
+          playerId: player.id,
+          deckId: DECK,
+        });
+    },
   },
-  afterAttempt: ({ player, ctx }) => {
-    if (player) ctx.turn.flags.set(DRAWN_PLAYER_FLAG, player.id);
-  },
-});
+);
 
 function fillHand(
   playerId: number,
@@ -136,30 +131,23 @@ function fillHand(
   }
 }
 
-export function drawnPlayerId(
-  ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): number | null {
-  return ctx.turn.flags.get<number>(DRAWN_PLAYER_FLAG);
-}
-
 export function sacredCircles(
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
 ): PlayerMap<CerclesSacresCircle[]> {
-  return Object.fromEntries(
-    ctx.players.all().map((player) => [
-      player.id,
-      ctx.inventory.items(CIRCLES, player.id).flatMap((itemId, index) => {
-        const cards = parseCardIds(itemId);
-        if (!cards) return [];
-        const themes = circleThemes(cards);
-        if (!themes) return [];
-        return [{
+  return ctx.players.byId((player) =>
+    ctx.inventory.items(CIRCLES, player.id).flatMap((itemId, index) => {
+      const cards = parseCardIds(itemId);
+      if (!cards) return [];
+      const themes = circleThemes(cards);
+      if (!themes) return [];
+      return [
+        {
           id: `circle-${player.id}-${index + 1}`,
           cards,
           themes,
-        }];
-      }),
-    ]),
+        },
+      ];
+    }),
   );
 }
 
@@ -183,8 +171,9 @@ function circleThemes(
     const card = CERCLES_SACRES_CARD_BY_ID[cardId];
     if (card) byTheme.set(card.theme, cardId);
   }
-  const [totem, nature, plante, esprit, parole, nation] =
-    CERCLES_THEMES.map((theme) => byTheme.get(theme));
+  const [totem, nature, plante, esprit, parole, nation] = CERCLES_THEMES.map(
+    (theme) => byTheme.get(theme),
+  );
   if (!totem || !nature || !plante || !esprit || !parole || !nation) {
     return null;
   }

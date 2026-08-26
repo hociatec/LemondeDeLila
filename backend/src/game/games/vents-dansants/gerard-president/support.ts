@@ -1,4 +1,5 @@
 import {
+  completeRound,
   defineGamePhases,
   rejectRule,
 } from '../../../core/application/public-api';
@@ -56,7 +57,7 @@ export function updateCollectionPhase(ctx: RuleContext): void {
     : 'choosing-winner';
   GERARD_PHASES.transition(ctx, nextPhase);
   if (nextPhase === 'choosing-winner') {
-    ctx.submissions.reveal(GERARD_SUBMISSIONS);
+    ctx.submissionFlow.reveal(GERARD_SUBMISSIONS);
   }
   syncTurn(ctx);
 }
@@ -75,35 +76,40 @@ export function closeRound(
   winnerId: number,
   ctx: RuleContext,
 ): void {
-  ctx.round.end([winnerId]);
-  discardSubmissions(ctx);
-  if (state.currentThemeId) {
-    const theme = GERARD_PRESIDENT_THEME_BY_ID[state.currentThemeId];
-    if (theme) ctx.cards.discard('themes', theme);
-  }
-  if (state.secondThemeId) {
-    const theme = GERARD_PRESIDENT_THEME_BY_ID[state.secondThemeId];
-    if (theme) ctx.cards.discard('themes', theme);
-  }
-  for (const player of ctx.players.all()) {
-    refillHand(NAME_HANDS, 'names', player.id, 10, ctx);
-    refillHand(SPECIAL_HANDS, 'specials', player.id, 2, ctx);
-  }
-  const masterId = ctx.judge.next(GERARD_JUDGE);
-  state.currentThemeId = null;
-  state.secondThemeId = null;
-  state.lockedNameId = null;
-  ctx.submissions.clear(GERARD_SUBMISSIONS);
-  for (const player of ctx.players.all()) {
-    ctx.resources.set(player.id, GERARD_EXTRA_NAMES, 0);
-    ctx.status.remove(player.id, GERARD_DEFENSE);
-  }
-  clearSpecialAttackers(ctx);
-  ctx.counters.set(GERARD_THEME_SECRET, 0);
-  ctx.counters.set(GERARD_JURY_OVERRIDE, 0);
-  ctx.counters.set(GERARD_GHOST_NAMES, 0);
-  GERARD_PHASES.transition(ctx, 'waiting-theme');
-  ctx.turn.to(masterId);
+  completeRound(ctx, {
+    winnerPlayerIds: [winnerId],
+    reset: () => {
+      discardSubmissions(ctx);
+      if (state.currentThemeId) {
+        const theme = GERARD_PRESIDENT_THEME_BY_ID[state.currentThemeId];
+        if (theme) ctx.cards.discard('themes', theme);
+      }
+      if (state.secondThemeId) {
+        const theme = GERARD_PRESIDENT_THEME_BY_ID[state.secondThemeId];
+        if (theme) ctx.cards.discard('themes', theme);
+      }
+      for (const player of ctx.players.all()) {
+        refillHand(NAME_HANDS, 'names', player.id, 10, ctx);
+        refillHand(SPECIAL_HANDS, 'specials', player.id, 2, ctx);
+      }
+      const masterId = ctx.submissionFlow.nextJudge(GERARD_JUDGE);
+      state.currentThemeId = null;
+      state.secondThemeId = null;
+      state.lockedNameId = null;
+      ctx.submissionFlow.reset(GERARD_SUBMISSIONS);
+      for (const player of ctx.players.all()) {
+        ctx.resources.set(player.id, GERARD_EXTRA_NAMES, 0);
+        ctx.status.remove(player.id, GERARD_DEFENSE);
+      }
+      clearSpecialAttackers(ctx);
+      ctx.counters.set(GERARD_THEME_SECRET, 0);
+      ctx.counters.set(GERARD_JURY_OVERRIDE, 0);
+      ctx.counters.set(GERARD_GHOST_NAMES, 0);
+      GERARD_PHASES.transition(ctx, 'waiting-theme');
+      ctx.turn.to(masterId);
+    },
+    next: false,
+  });
 }
 
 export function discardSubmissions(ctx: RuleContext): void {
@@ -125,8 +131,11 @@ export function takeRandomName(
 }
 
 export function discardRandomName(playerId: number, ctx: RuleContext): void {
-  const name = takeRandomName(playerId, ctx);
-  if (name) ctx.cards.discard('names', name);
+  ctx.cards.discardRandom<GerardPresidentNameCard>(
+    NAME_HANDS,
+    'names',
+    playerId,
+  );
 }
 
 export function exchangeRandomNames(
@@ -134,10 +143,7 @@ export function exchangeRandomNames(
   second: number,
   ctx: RuleContext,
 ): void {
-  const firstName = takeRandomName(first, ctx);
-  const secondName = takeRandomName(second, ctx);
-  if (firstName) ctx.cards.give(NAME_HANDS, second, firstName);
-  if (secondName) ctx.cards.give(NAME_HANDS, first, secondName);
+  ctx.cards.exchangeRandom<GerardPresidentNameCard>(NAME_HANDS, first, second);
 }
 
 export function redrawNames(
@@ -306,7 +312,8 @@ export function takeSpecialAttacker(
 }
 
 function specialAttackers(playerId: number, ctx: RuleContext): number[] {
-  const value = ctx.status.get(playerId, GERARD_SPECIAL_ATTACKERS)?.data.playerIds;
+  const value = ctx.status.get(playerId, GERARD_SPECIAL_ATTACKERS)?.data
+    .playerIds;
   return Array.isArray(value)
     ? value.filter(
         (candidate): candidate is number => typeof candidate === 'number',

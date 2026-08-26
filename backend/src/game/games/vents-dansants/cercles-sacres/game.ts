@@ -8,7 +8,6 @@ import { CERCLES_SACRES_CARD_BY_ID, CERCLES_SACRES_DECK } from './content';
 import {
   CERCLES_SACRES_ACTIONS,
   drawAtTurnStart,
-  drawnPlayerId,
   sacredCircles,
 } from './rules';
 import type { CerclesSacresPlayerView, CerclesSacresState } from './state';
@@ -44,14 +43,12 @@ export default defineGame<
   ],
   setup: () => ({}),
   actions: CERCLES_SACRES_ACTIONS,
-  view: ({ state, actor, ctx }) => {
+  view: ({ state: _state, actor, ctx }) => {
     const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
     const circles = sacredCircles(ctx);
     return playerView({
       game: {
         circles,
-        drawnPlayerId: drawnPlayerId(ctx),
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
       },
       extras: {
         circles: structuredClone(circles),

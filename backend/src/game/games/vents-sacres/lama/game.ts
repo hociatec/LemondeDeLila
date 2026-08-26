@@ -96,8 +96,7 @@ export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
   choices: {
     'lama.return': defineChoice<LamaState, number>({
       input: gameInput.number({ integer: true, min: 0, max: 10 }),
-      resolve: ({ state, value, ctx }) =>
-        resolveReturn(state, value, ctx),
+      resolve: ({ state, value, ctx }) => resolveReturn(state, value, ctx),
     }),
     'lama.pause': defineChoice<LamaState, string>({
       input: gameInput.literal('continue'),
@@ -107,13 +106,11 @@ export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
   automatic: [
     when(
       'skip-inactive-lama-player',
-      ({ state, ctx }) => {
+      ({ state: _state, ctx }) => {
         const currentId = ctx.players.current()?.id ?? 0;
         return (
           LAMA_PHASES.is(ctx, 'turn') &&
-          !ctx.round
-            .activePlayers()
-            .some((player) => player.id === currentId)
+          !ctx.round.activePlayers().some((player) => player.id === currentId)
         );
       },
       ({ state, ctx }) => skipInactiveLamaPlayer(state, ctx),
@@ -124,33 +121,22 @@ export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
     return playerView({
       game: {
         step: LAMA_PHASES.current(ctx),
-        scores: ctx.players.byId((player) => ctx.score.get(player.id)),
         droppedOut: ctx.players.byId((player) =>
           ctx.round.leftPlayers().includes(player.id),
         ),
-        drawnThisTurn:
-          ctx.turn.flags.get<boolean>('lama.drawn') === true,
-        roundNumber: ctx.round.number,
+        drawnThisTurn: ctx.turn.flags.get<boolean>('lama.drawn') === true,
         roundStarterIndex: Math.max(
           0,
           ctx.players
             .all()
             .findIndex((player) => player.id === ctx.round.starter()),
         ),
-        roundWinnerId: ctx.round.winners()[0] ?? null,
-        eliminated: ctx.players.byId(
-          (player) => ctx.match.playerStatus(player.id) === 'eliminated',
-        ),
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
         topCard: discard.at(-1) ?? null,
-      },
-      extras: {
-        scores: ctx.players.byId((player) => ctx.score.get(player.id)),
       },
     });
   },
   bot: {
-    choose: ({ state, actor, availableActions, ctx }) => {
+    choose: ({ state: _state, actor, availableActions, ctx }) => {
       if (availableActions.includes('lama_play')) {
         const discard = ctx.cards.discardPile<LamaCard>('lama');
         const top = discard.at(-1);

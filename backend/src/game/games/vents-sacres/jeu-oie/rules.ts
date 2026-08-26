@@ -9,7 +9,6 @@ import { GOOSE_TILES } from './content';
 import type { JeuOieState } from './state';
 
 const TRACK = 'goose-board';
-const FINISH = 63;
 export const GOOSE_IN_WELL = 'goose.in-well';
 type RuleContext = GameContext<JeuOieState>;
 export const JEU_OIE_PHASES = setupPlayingPhases<JeuOieState>();
@@ -55,7 +54,7 @@ export function assignPawn(
   pawnId: string,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<{
+  const pending = ctx.choice.consumeContinuation<{
     selectionOrder: number[];
     selectionIndex: number;
   }>();
@@ -120,8 +119,7 @@ function land(
   }
   if (tile.type === 'finish') {
     ctx.match.finish({ winners: [playerId], reason: 'case-63' });
-  }
-  else if (tile.type === 'bridge')
+  } else if (tile.type === 'bridge')
     land(playerId, 12, rollValue, depth + 1, ctx);
   else if (tile.type === 'death' || tile.type === 'labyrinth') {
     land(playerId, tile.backTo ?? 1, rollValue, depth + 1, ctx);
@@ -139,8 +137,7 @@ function land(
     );
   } else if (tile.type === 'well') {
     ctx.status.add(playerId, GOOSE_IN_WELL, { scope: 'match' });
-  }
-  else if (tile.type === 'goose') {
+  } else if (tile.type === 'goose') {
     land(
       playerId,
       ctx.movement.preview(TRACK, playerId, rollValue),

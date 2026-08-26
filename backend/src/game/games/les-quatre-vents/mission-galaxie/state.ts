@@ -1,7 +1,4 @@
-import type {
-  GameEffectInstruction,
-  PlayerMap,
-} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
 
 export type MissionGalaxieTileType =
   | 'start'
@@ -66,11 +63,6 @@ export type MissionGalaxiePending =
       cardId: number;
     };
 
-export interface MissionGalaxieState {}
+export type MissionGalaxieState = Record<string, never>;
 
-export type MissionGalaxiePlayerView = {
-  lastRoll: number | null;
-  positions: PlayerMap<number>;
-  winnerId: number | null;
-  skipTurns: PlayerMap<number>;
-};
+export type MissionGalaxiePlayerView = Record<string, never>;

@@ -48,15 +48,16 @@ export default defineGame<
   ],
   setup: ({ players, ctx }) => {
     const playerIds = players.map((player) => player.id);
-    const judge = ctx.judge.start(ABSURDISSIMES_JUDGE, {
+    const judge = ctx.submissionFlow.startJudge(ABSURDISSIMES_JUDGE, {
       players: playerIds,
     });
-    const remainingPlayers = playerIds.filter((playerId) => playerId !== judge);
-    ctx.submissions.open({
-      id: ABSURDISSIMES_ANSWERS,
-      players: remainingPlayers,
-      secret: true,
-    });
+    const { participantPlayerIds: remainingPlayers } =
+      ctx.submissionFlow.openForJudge({
+        submissionId: ABSURDISSIMES_ANSWERS,
+        judgeId: ABSURDISSIMES_JUDGE,
+        players: playerIds,
+        secret: true,
+      });
     ctx.round.start(judge, remainingPlayers);
     ctx.turn.to(remainingPlayers[0] ?? judge);
     drawWhiteCard(ctx);
@@ -65,7 +66,7 @@ export default defineGame<
   initialPhase: ABSURDISSIMES_PHASES.initialPhase,
   phases: ABSURDISSIMES_PHASES.phases,
   actions: ABSURDISSIMES_ACTIONS,
-  view: ({ state, ctx }) => {
+  view: ({ state: _state, ctx }) => {
     const roundStage = ABSURDISSIMES_PHASES.current(ctx);
     const currentWhite = currentWhiteCard(ctx);
     return playerView({
@@ -73,24 +74,13 @@ export default defineGame<
         currentWhite,
         roundStage,
         targetScore: ABSURDISSIMES_TARGET_SCORE,
-        scores: Object.fromEntries(
-          ctx.players.all().map((player) => [player.id, ctx.score.get(player.id)]),
-        ),
-        remainingPlayers: ctx.round
-          .activePlayers()
-          .map((player) => player.id),
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+        remainingPlayers: ctx.round.activePlayers().map((player) => player.id),
       },
       extras: {
         stage: roundStage,
         currentWhite,
         judgeId: ctx.judge.current(ABSURDISSIMES_JUDGE),
-        remainingPlayers: ctx.round
-          .activePlayers()
-          .map((player) => player.id),
-        scores: Object.fromEntries(
-          ctx.players.all().map((player) => [player.id, ctx.score.get(player.id)]),
-        ),
+        remainingPlayers: ctx.round.activePlayers().map((player) => player.id),
         targetScore: ABSURDISSIMES_TARGET_SCORE,
       },
     });
@@ -99,9 +89,9 @@ export default defineGame<
     choose: ({ actor, ctx }) => {
       if (ABSURDISSIMES_PHASES.is(ctx, 'judge')) {
         const winnerId = ctx.random.pick(
-          Object.keys(
-            ctx.submissions.values(ABSURDISSIMES_ANSWERS),
-          ).map(Number),
+          Object.keys(ctx.submissions.values(ABSURDISSIMES_ANSWERS)).map(
+            Number,
+          ),
         );
         return winnerId == null
           ? null

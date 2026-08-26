@@ -10,9 +10,4 @@ export type CatPattesPlayerView = {
   hasSun: PlayerMap<boolean>;
   sunReady: PlayerMap<boolean>;
   obstacleLock: PlayerMap<boolean>;
-  positions: PlayerMap<number>;
-  points: PlayerMap<number>;
-  completedRounds: number;
-  drawnPlayerId: number | null;
-  winnerId: number | null;
 };

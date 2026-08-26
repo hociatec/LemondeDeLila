@@ -36,41 +36,30 @@ export default defineGame<TaxiState, typeof TAXI_ACTIONS, TaxiPlayerView>({
       cards: TAXI_CLIENTS,
     }),
   ],
-  components: [
-    cards.deck({ id: 'events', cards: TAXI_EVENTS, shuffle: true }),
-  ],
+  components: [cards.deck({ id: 'events', cards: TAXI_EVENTS, shuffle: true })],
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
   setup: () => ({}),
   initialPhase: TAXI_PHASES.initialPhase,
   phases: TAXI_PHASES.phases,
   actions: TAXI_ACTIONS,
   view: ({ actor, ctx }) => {
-    const completedTrips = Object.fromEntries(
-      ctx.players.all().map((player) => [player.id, ctx.score.get(player.id)]),
+    const completedTrips = ctx.players.byId((player) =>
+      ctx.score.get(player.id),
     );
     const lastEvent = ctx.cards.discardPile<TaxiEvent>('events').at(-1) ?? null;
-    const positions = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [player.id, ctx.movement.position('city', player.id)]),
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('city', player.id),
     );
     return playerView({
       game: {
         completedTrips,
         lastEvent,
-        lastRoll: ctx.dice.last('main')?.total ?? null,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        positions,
         activeClient: actor
           ? (ctx.cards.hand<TaxiClient>('taxi-clients', actor.id)[0] ?? null)
           : null,
-        hasActiveClient: Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [
-              player.id,
-              ctx.cards.hand<TaxiClient>('taxi-clients', player.id).length > 0,
-            ]),
+        hasActiveClient: ctx.players.byId(
+          (player) =>
+            ctx.cards.hand<TaxiClient>('taxi-clients', player.id).length > 0,
         ),
       },
       board: { tiles: TAXI_TILES, positions },

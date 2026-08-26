@@ -1,9 +1,8 @@
 import {
-  clockwise,
   defineChoice,
   defineGame,
   gameInput,
-  grid,
+  gridGame,
   pawns,
   playerView,
 } from '../../../core/application/public-api';
@@ -24,10 +23,18 @@ export default defineGame<
   subcategory: 'Les Vents Sacrés',
   description: 'Alignez 3 symboles sur une grille 3×3.',
   players: { min: 2, max: 2 },
-  components: [
-    grid.board({ id: 'morpion', width: 3, height: 3 }),
-    pawns.set({ id: 'morpion', pawns: MORPION_PAWNS }),
+  patterns: [
+    gridGame({
+      boardId: 'morpion',
+      width: 3,
+      height: 3,
+      winLength: 3,
+      drawWhenFull: true,
+      winnerReason: 'line-3',
+      drawReason: 'draw',
+    }),
   ],
+  components: [pawns.set({ id: 'morpion', pawns: MORPION_PAWNS })],
   initialization: { firstPlayer: 'first', startRound: true },
   shortcuts: [
     { key: 'P', type: 'interface', id: 'position' },
@@ -52,7 +59,6 @@ export default defineGame<
     }
     return {};
   },
-  turn: clockwise(),
   actions: MORPION_ACTIONS,
   choices: {
     [PAWN_CHOICE]: defineChoice<MorpionState, string>({
@@ -66,7 +72,9 @@ export default defineGame<
         });
         const next = ctx.players
           .all()
-          .find((player) => ctx.pawns.assigned('morpion', player.id).length === 0);
+          .find(
+            (player) => ctx.pawns.assigned('morpion', player.id).length === 0,
+          );
         if (next) {
           ctx.turn.to(next.id);
           ctx.choice.one({
@@ -138,9 +146,8 @@ export default defineGame<
         size: 3,
         board,
         startingPlayerId: ctx.round.starter() ?? 0,
-        winnerId,
         draw,
-        pawns: structuredClone(MORPION_PAWNS),
+        pawns: MORPION_PAWNS,
       },
       extras: {
         grid: { kind: 'grid', size: 3, entities, cellActions, statusLines },
@@ -162,7 +169,7 @@ export default defineGame<
     });
   },
   bot: {
-    choose: ({ state, actor, ctx }) => {
+    choose: ({ state: _state, actor, ctx }) => {
       const opponentId =
         ctx.players.all().find((player) => player.id !== actor.id)?.id ?? null;
       const move = chooseBotMove(ctx, actor.id, opponentId);

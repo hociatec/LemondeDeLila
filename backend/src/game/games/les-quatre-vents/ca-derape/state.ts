@@ -15,8 +15,4 @@ export type CaDerapePlayerView = {
   ignoreNextPenalty: PlayerMap<boolean>;
   doubleNextMove: PlayerMap<boolean>;
   doubleNextRoll: PlayerMap<boolean>;
-  extraTurn: boolean;
-  positions: PlayerMap<number>;
-  winnerId: number | null;
-  skipTurns: PlayerMap<number>;
 };

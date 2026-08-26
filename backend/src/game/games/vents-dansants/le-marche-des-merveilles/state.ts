@@ -14,7 +14,5 @@ export type WonderMarketPlayerView = {
     timestamp?: string;
   } | null;
   maxRounds: number;
-  round: number;
   protectedPlayers: PlayerMap<boolean>;
-  winnerId: number | null;
 };

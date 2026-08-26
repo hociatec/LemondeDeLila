@@ -47,7 +47,11 @@ const draw = (type: ContesCardType): GameEffectInstruction =>
 const target = (effect: string): GameEffectInstruction =>
   custom('contes.schedule-target', { effect });
 const status = (statusId: string): GameEffectInstruction =>
-  gameEffects.addStatus({ status: statusId, scope: 'until-used', target: self });
+  gameEffects.addStatus({
+    status: statusId,
+    scope: 'until-used',
+    target: self,
+  });
 
 const BONUS_EFFECTS: Readonly<
   Record<number, readonly GameEffectInstruction[]>

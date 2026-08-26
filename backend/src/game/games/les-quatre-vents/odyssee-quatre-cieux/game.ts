@@ -6,7 +6,12 @@ import {
   playerView,
 } from '../../../core/application/public-api';
 import { ODYSSEE_CONTENT } from './content';
-import { applyMove, endMove, ODYSSEE_ACTIONS, type OdysseeMove } from './rules';
+import {
+  endMove,
+  moveOdysseePawn,
+  ODYSSEE_ACTIONS,
+  type OdysseeMove,
+} from './rules';
 import type { OdysseePlayerView, OdysseeState } from './state';
 
 const ODYSSEE_PAWNS = Array.from({ length: 4 }, (_seat, seatIndex) =>
@@ -34,6 +39,10 @@ export default defineGame<
       perPlayer: ODYSSEE_CONTENT.pawnsPerPlayer,
       spaces: ODYSSEE_CONTENT.trackLength + ODYSSEE_CONTENT.homeLength,
       initialPosition: -1,
+      entryRoll: 6,
+      entryPosition: 0,
+      exactFinish: true,
+      homeStretchFrom: ODYSSEE_CONTENT.trackLength,
     }),
   ],
   initialization: {
@@ -50,34 +59,31 @@ export default defineGame<
   choices: {
     'odyssee.move': defineChoice<OdysseeState, OdysseeMove>({
       input: gameInput.object({
-        pawnIndex: gameInput.number({ integer: true, min: 0 }),
-        targetProgress: gameInput.number({ integer: true }),
+        pawnId: gameInput.string({ min: 1, max: 128 }),
+        from: gameInput.number({ integer: true }),
+        to: gameInput.number({ integer: true }),
+        distance: gameInput.number({ integer: true }),
         roll: gameInput.number({ integer: true, min: 1 }),
       }),
       resolve: ({ state, actor, value, ctx }) => {
-        applyMove(state, actor.id, value, ctx);
+        moveOdysseePawn(state, actor.id, value, ctx);
         if (ctx.match.lifecycle() !== 'finished') endMove(ctx, value.roll);
       },
     }),
   },
   view: ({ actor, ctx }) => {
     const players = ctx.players.all();
-    const offsets = Object.fromEntries(
-      players.map((player, index) => [
-        player.id,
-        (index * 14) % ODYSSEE_CONTENT.trackLength,
-      ]),
+    const offsets = ctx.players.byId(
+      (_player, index) => (index * 14) % ODYSSEE_CONTENT.trackLength,
     );
-    const pawnsByPlayer = Object.fromEntries(
-      players.map((player) => [
-        player.id,
-        ctx.pawns.assigned('odyssee', player.id).map((pawnId) => ({
-          pawnIndex: Number(pawnId.split(':')[1]),
-          progress: ctx.pawns.position('odyssee', pawnId),
-        })),
-      ]),
+    const pawnsByPlayer = ctx.players.byId((player) =>
+      ctx.pawns.assigned('odyssee', player.id).map((pawnId) => ({
+        pawnIndex: Number(pawnId.split(':')[1]),
+        progress: ctx.pawns.position('odyssee', pawnId),
+      })),
     );
-    const arrival = ODYSSEE_CONTENT.trackLength + ODYSSEE_CONTENT.homeLength - 1;
+    const arrival =
+      ODYSSEE_CONTENT.trackLength + ODYSSEE_CONTENT.homeLength - 1;
     const myPawns = actor ? (pawnsByPlayer[actor.id] ?? []) : [];
     const stableLines = [
       `Base: ${myPawns.filter((pawn) => pawn.progress < 0).length}/4.`,
@@ -96,8 +102,6 @@ export default defineGame<
         pawnsByPlayer,
         trackLength: ODYSSEE_CONTENT.trackLength,
         homeLength: ODYSSEE_CONTENT.homeLength,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        lastRoll: ctx.dice.last('main')?.total ?? null,
       },
       extras: {
         currentPlayerView: actor

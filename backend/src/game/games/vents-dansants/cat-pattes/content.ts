@@ -31,13 +31,10 @@ const createCopies = (
   count: number,
   value: Omit<CatPattesCardDefinition, 'id'>,
 ) =>
-  Array.from(
-    { length: count },
-    (_, index): CatPattesCardDefinition => ({
-      id: `${prefix}-${index + 1}`,
-      ...value,
-    }),
-  );
+  Array.from({ length: count }, (_, index): CatPattesCardDefinition => ({
+    id: `${prefix}-${index + 1}`,
+    ...value,
+  }));
 
 const pattesEffects = (value: number): readonly GameEffectInstruction[] => [
   gameEffects.custom('cat-pattes.move', { value }),

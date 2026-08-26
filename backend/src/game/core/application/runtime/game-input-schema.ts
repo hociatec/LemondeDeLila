@@ -221,10 +221,10 @@ function taggedMap<TValue, TMapped>(
   format: string,
   map: (value: TValue) => TMapped,
 ): GameInputSchema<TMapped> {
-  return schema(
-    (value, path) => map(input.parse(value, path)),
-    { ...input.describe(), format },
-  );
+  return schema((value, path) => map(input.parse(value, path)), {
+    ...input.describe(),
+    format,
+  });
 }
 
 function schema<T>(

@@ -39,13 +39,8 @@ export default defineGame<
   actions: MON_VILLAGE_ACTIONS,
   view: ({ actor, ctx }) => {
     const collections = villageCollections(ctx);
-    const positions = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.movement.position('village', player.id),
-        ]),
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('village', player.id),
     );
     const availableCards = Object.fromEntries(
       VILLAGE_ZONES.map((zone) => [
@@ -67,16 +62,12 @@ export default defineGame<
     return playerView({
       game: {
         collections,
-        lastRoll: ctx.dice.last('main')?.total ?? null,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        positions,
         availableCards,
       },
       extras: {
         currentPlayerView: actor
           ? { id: actor.id, username: actor.username }
           : null,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
         scoreLeaderId: collectionWinner(collections),
         ui: {
           panels: [
@@ -90,7 +81,7 @@ export default defineGame<
           ],
         },
       },
-      board: { tiles: structuredClone(VILLAGE_TILES), positions },
+      board: { tiles: VILLAGE_TILES, positions },
     });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },

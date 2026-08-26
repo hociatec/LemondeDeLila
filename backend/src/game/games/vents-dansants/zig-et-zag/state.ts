@@ -36,9 +36,7 @@ export interface ZigEtZagBattleLogEntry {
 export type ZigEtZagPlayerView = {
   initialDeckCounts: PlayerMap<number>;
   lastRound:
-    | (ZigEtZagRoundSummary & { battleLog: ZigEtZagBattleLogEntry[] })
-    | null;
+    (ZigEtZagRoundSummary & { battleLog: ZigEtZagBattleLogEntry[] }) | null;
   stage: 'selection' | 'battle-face-down' | 'battle-face-up';
   waitingPlayers: number[];
-  winnerId: number | null;
 };

@@ -1,4 +1,5 @@
 import {
+  drawAndResolve,
   gameEffects,
   rejectRule,
   raceTurn,
@@ -34,7 +35,7 @@ export const roll = raceTurn<VoyageState>({
   trackId: TRACK,
   documentation: 'Lance le dé, avance avec rebond et résout la case atteinte.',
   resolveLanding: ({ state, playerId, ctx }) => {
-    resolveLanding(state, playerId, false, ctx);
+    resolveVoyageTile(state, playerId, false, ctx);
   },
 });
 
@@ -45,56 +46,58 @@ export function resolveVoyageQuiz(
   value: string,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<VoyagePendingChoice>();
+  const pending = ctx.choice.consumeContinuation<VoyagePendingChoice>();
   if (!pending) rejectRule('Choix Voyage introuvable');
   resolveQuiz(state, pending, value, ctx);
   ctx.turn.complete({ waiting: ctx.choice.current() != null });
 }
 
-export function resolveLanding(
+export function resolveVoyageTile(
   state: VoyageState,
   playerId: number,
   fromPassage: boolean,
   ctx: RuleContext,
 ): void {
-  const tile = VOYAGE_CONTENT.tiles[position(playerId, ctx)];
-  if (!tile) return;
-  ctx.events.message('game.pawn.landed', {
+  ctx.movement.resolveLanding({
+    trackId: TRACK,
     playerId,
-    tileId: position(playerId, ctx),
+    tiles: VOYAGE_CONTENT.tiles,
+    onLand: ({ position: current, tile }) => {
+      if (!tile) return;
+      ctx.events.message('game.pawn.landed', {
+        playerId,
+        tileId: current,
+      });
+      if (tile.type === 'finish') {
+        if (ctx.counters.get(VOYAGE_FINISH_STARTED) === 0) {
+          ctx.counters.set(VOYAGE_FINISH_STARTED, 1);
+          ctx.counters.set(VOYAGE_FINISH_COUNTDOWN, ctx.players.all().length);
+        }
+      } else if (tile.type === 'rest') {
+        ctx.turn.skip(playerId, 1);
+      } else if (tile.type === 'passage' && !fromPassage) {
+        if (tile.passageEffect?.kind === 'swap-position') {
+          scheduleTargetEffect(playerId, 'swap-position', 1, ctx);
+        } else if (tile.passageEffect?.kind === 'move') {
+          ctx.movement.move(TRACK, playerId, tile.passageEffect.delta);
+          resolveVoyageTile(state, playerId, true, ctx);
+        }
+      } else if (isDeckTile(tile.type)) {
+        drawVoyageCard(playerId, tile.type, ctx);
+      }
+    },
   });
-  if (tile.type === 'finish') {
-    if (ctx.counters.get(VOYAGE_FINISH_STARTED) === 0) {
-      ctx.counters.set(VOYAGE_FINISH_STARTED, 1);
-      ctx.counters.set(VOYAGE_FINISH_COUNTDOWN, ctx.players.all().length);
-    }
-  } else if (tile.type === 'rest') {
-    ctx.turn.skip(playerId, 1);
-  } else if (tile.type === 'passage' && !fromPassage) {
-    if (tile.passageEffect?.kind === 'swap-position') {
-      scheduleTargetEffect(playerId, 'swap-position', 1, ctx);
-    } else if (tile.passageEffect?.kind === 'move') {
-      ctx.movement.move(TRACK, playerId, tile.passageEffect.delta);
-      resolveLanding(state, playerId, true, ctx);
-    }
-  } else if (isDeckTile(tile.type)) {
-    drawAndApply(playerId, tile.type, ctx);
-  }
 }
 
-function drawAndApply(
+function drawVoyageCard(
   playerId: number,
   deck: VoyageCollectionKind,
   ctx: RuleContext,
 ): void {
-  ctx.cards.drawThenResolve<VoyageCard, boolean>(
-    deck,
-    (card) => {
-      ctx.events.message('game.card.drawn', {
-        playerId,
-        deckId: deck,
-        cardId: card.id,
-      });
+  drawAndResolve<VoyageState, VoyageCard, boolean>(ctx, {
+    deckId: deck,
+    playerId,
+    resolve: (card) => {
       if (card.quiz) {
         const quiz = card.quiz;
         const pending: VoyagePendingChoice = {
@@ -114,8 +117,8 @@ function drawAndApply(
       ctx.effects.schedule(...card.effects);
       return card.discardAfterResolve;
     },
-    { discard: ({ result }) => result },
-  );
+    discard: ({ result }) => result,
+  });
 }
 
 function resolveQuiz(
@@ -146,7 +149,7 @@ function resolveQuiz(
   gain(pending.actorId, 'legend', ctx);
   if (quiz.successDelta !== 0) {
     ctx.movement.move(TRACK, pending.actorId, quiz.successDelta);
-    resolveLanding(state, pending.actorId, false, ctx);
+    resolveVoyageTile(state, pending.actorId, false, ctx);
   }
 }
 
@@ -158,7 +161,7 @@ export function applyVoyageTarget(
   ctx: RuleContext,
 ): void {
   if (effect === 'swap-position') {
-    swapPositions(actorId, targetId, ctx);
+    ctx.movement.swap(TRACK, actorId, targetId);
   } else if (effect === 'skip-turn') {
     ctx.turn.skip(targetId, 1);
   } else {
@@ -188,10 +191,7 @@ export function scheduleTargetEffect(
   );
 }
 
-function targetOptions(
-  actorId: number,
-  ctx: RuleContext,
-): number[] {
+function targetOptions(actorId: number, ctx: RuleContext): number[] {
   const last = lastTarget(actorId, ctx);
   return ctx.players.otherIds(actorId).filter((id) => id !== last);
 }
@@ -237,7 +237,7 @@ function takeRandomKind(
 }
 
 export function advanceFinishCountdown(
-  state: VoyageState,
+  _state: VoyageState,
   ctx: RuleContext,
 ): void {
   if (ctx.counters.get(VOYAGE_FINISH_STARTED) === 0) return;
@@ -279,23 +279,23 @@ function total(collection: VoyageCollection): number {
 export function voyageCollections(
   ctx: RuleContext,
 ): PlayerMap<VoyageCollection> {
-  return Object.fromEntries(
-    ctx.players
-      .all()
-      .map((player) => [player.id, voyageCollection(player.id, ctx)]),
-  );
+  return ctx.players.byId((player) => voyageCollection(player.id, ctx));
 }
 
 export function voyageLastTargets(ctx: RuleContext): PlayerMap<number> {
   return Object.fromEntries(
-    ctx.players.all().flatMap((player) => {
-      const target = lastTarget(player.id, ctx);
-      return target == null ? [] : [[player.id, target]];
-    }),
+    Object.entries(
+      ctx.players.byId((player) => lastTarget(player.id, ctx)),
+    ).flatMap(([playerId, target]) =>
+      target == null ? [] : [[playerId, target]],
+    ),
   );
 }
 
-function voyageCollection(playerId: number, ctx: RuleContext): VoyageCollection {
+function voyageCollection(
+  playerId: number,
+  ctx: RuleContext,
+): VoyageCollection {
   return {
     legend: ctx.resources.get(playerId, collectionResource('legend')),
     farce: ctx.resources.get(playerId, collectionResource('farce')),
@@ -309,20 +309,13 @@ function collectionResource(kind: VoyageCollectionKind): string {
 }
 
 function lastTarget(playerId: number, ctx: RuleContext): number | null {
-  const value = ctx.status.get(playerId, VOYAGE_LAST_TARGET)?.data.targetPlayerId;
+  const value = ctx.status.get(playerId, VOYAGE_LAST_TARGET)?.data
+    .targetPlayerId;
   return typeof value === 'number' ? value : null;
 }
 
 export function position(playerId: number, ctx: RuleContext): number {
   return ctx.movement.position(TRACK, playerId);
-}
-
-export function swapPositions(
-  firstId: number,
-  secondId: number,
-  ctx: RuleContext,
-): void {
-  ctx.movement.swap(TRACK, firstId, secondId);
 }
 
 function normalize(value: string): string {

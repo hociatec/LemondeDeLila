@@ -204,7 +204,7 @@ public sealed partial class SoundService : ISoundService, IDisposable
                     ? _options.Current.SoundTavernAmbienceVolume
                     : _options.Current.SoundAmbienceVolume) / 100.0)),
             [SoundId.DiceRolled] = new SoundEntry(
-                // Son déclenché à chaque lancer de dé (générique, basé sur `lastRoll`).
+                // Son déclenché à chaque lancer de dé via la projection DiceKit.
                 // Configurable globalement via l'interface admin (son uploadé = RemoteSoundCache).
                 DefaultRelativePath: Path.Combine("Assets", "Sounds", "DiceRolled.wav"),
                 OverridePath: null,

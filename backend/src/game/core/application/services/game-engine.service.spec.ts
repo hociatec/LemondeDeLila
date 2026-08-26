@@ -93,8 +93,8 @@ describe('GameEngineService room cleanup', () => {
       current = result.state;
     }
 
-    const events = engine.listEvents(9, 'replayable');
-    const snapshot = engine.exportLatestSnapshot(9, 'replayable');
+    const events = await engine.listEvents(9, 'replayable');
+    const snapshot = await engine.exportLatestSnapshot(9, 'replayable');
     expect(events).toHaveLength(26);
     expect(events[0]).toMatchObject({
       seq: 1,
@@ -103,7 +103,7 @@ describe('GameEngineService room cleanup', () => {
       type: 'game.command.accepted',
     });
     expect(snapshot?.seq).toBe(26);
-    expect(engine.replay(9, 'replayable')).toEqual(current);
+    expect(await engine.replay(9, 'replayable')).toEqual(current);
     expect(current).not.toHaveProperty('engine.pendingEvents');
   });
 
@@ -111,7 +111,7 @@ describe('GameEngineService room cleanup', () => {
     const engine = createEngine();
     await engine.restoreInternalState(10, 'cas-log', state('initial'));
     await engine.compareAndSetInternalState(10, 'cas-log', 1, state('first'));
-    const eventCount = engine.listEvents(10, 'cas-log').length;
+    const eventCount = (await engine.listEvents(10, 'cas-log')).length;
 
     const stale = await engine.compareAndSetInternalState(
       10,
@@ -121,6 +121,6 @@ describe('GameEngineService room cleanup', () => {
     );
 
     expect(stale.committed).toBe(false);
-    expect(engine.listEvents(10, 'cas-log')).toHaveLength(eventCount);
+    expect(await engine.listEvents(10, 'cas-log')).toHaveLength(eventCount);
   });
 });

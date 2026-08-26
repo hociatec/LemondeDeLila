@@ -17,11 +17,8 @@ export type GerardPlayerView = {
   themeSecretActive: boolean;
   juryOverrideId: number | null;
   targetScore: number;
-  scores: PlayerMap<number>;
   phase: GerardPhase;
   masterId: number;
   pendingPlayers: number[];
-  roundNumber: number;
   submissions: PlayerMap<string[]>;
-  winnerId: number | null;
 };

@@ -281,16 +281,9 @@ export function corridorPositions(
   );
 }
 
-export function corridorWallsRemaining(
-  ctx: RuleContext,
-): PlayerMap<number> {
-  return Object.fromEntries(
-    ctx.players
-      .all()
-      .map((player) => [
-        player.id,
-        ctx.resources.get(player.id, CORRIDOR_WALLS),
-      ]),
+export function corridorWallsRemaining(ctx: RuleContext): PlayerMap<number> {
+  return ctx.players.byId((player) =>
+    ctx.resources.get(player.id, CORRIDOR_WALLS),
   );
 }
 

@@ -20,9 +20,7 @@ export interface VoyageTile {
   type: VoyageTileType;
   label?: string;
   description?: string;
-  passageEffect?:
-    | { kind: 'swap-position' }
-    | { kind: 'move'; delta: number };
+  passageEffect?: { kind: 'swap-position' } | { kind: 'move'; delta: number };
 }
 
 export interface VoyageCard {
@@ -59,8 +57,4 @@ export type VoyagePlayerView = {
   collections: PlayerMap<VoyageCollection>;
   lastTargetByActor: PlayerMap<number>;
   finishCountdown: number | null;
-  lastRoll: number | null;
-  positions: PlayerMap<number>;
-  winnerId: number | null;
-  skipTurns: PlayerMap<number>;
 };

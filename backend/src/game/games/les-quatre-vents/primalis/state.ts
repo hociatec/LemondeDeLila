@@ -16,6 +16,4 @@ export type PrimalisPlayerView = {
   dangerAmplified: boolean;
   collections: PlayerMap<PrimalisResources>;
   lastFace: PrimalisFace | null;
-  positions: PlayerMap<number>;
-  lastRoll: number | null;
 };

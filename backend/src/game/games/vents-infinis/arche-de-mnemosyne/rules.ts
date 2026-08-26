@@ -16,13 +16,13 @@ export const MNEMO_NEXT_QUESTION_TIMER = 'mnemosyne.next-question';
 export const draw = defineAction<MnemoState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Pioche la question suivante de la catégorie sélectionnée.',
-  available: ({ state, actor, ctx }) =>
+  available: ({ state: _state, actor, ctx }) =>
     MNEMO_PHASES.is(ctx, 'playing') &&
     actor.id === ctx.round.starter() &&
     currentSession(ctx) == null &&
     (!ctx.scheduler.has(MNEMO_NEXT_QUESTION_TIMER) ||
       ctx.scheduler.isDue(MNEMO_NEXT_QUESTION_TIMER)),
-  execute: ({ state, ctx }) => {
+  execute: ({ state: _state, ctx }) => {
     const config = mnemoConfig(ctx);
     const bankId = config.categoryId;
     const session = ctx.quiz.ask(
@@ -55,7 +55,7 @@ export const answer = defineAction<MnemoState, { answerIndex: number }>({
     answerIndex: gameInput.number({ integer: true, min: 0, max: 3 }),
   }),
   documentation: 'Répond une fois à la question en cours.',
-  available: ({ state, actor, ctx }) => {
+  available: ({ state: _state, actor, ctx }) => {
     const session = currentSession(ctx);
     return (
       session != null &&
@@ -71,12 +71,8 @@ export const answer = defineAction<MnemoState, { answerIndex: number }>({
     currentSession(ctx)?.question.choices.map((_choice, answerIndex) => ({
       answerIndex,
     })) ?? [],
-  execute: ({ state, actor, input, ctx }) => {
-    const result = ctx.quiz.answer(
-      MNEMO_SESSION,
-      actor.id,
-      input.answerIndex,
-    );
+  execute: ({ state: _state, actor, input, ctx }) => {
+    const result = ctx.quiz.answer(MNEMO_SESSION, actor.id, input.answerIndex);
     if (result.allAnswered) resolveQuestion([], ctx);
   },
 });
@@ -87,7 +83,7 @@ export const timeout = defineAction<MnemoState, Record<string, never>>({
   available: ({ ctx }) =>
     currentSession(ctx)?.phase === 'answering' &&
     ctx.scheduler.isDue(MNEMO_QUESTION_TIMER),
-  execute: ({ state, ctx }) => {
+  execute: ({ state: _state, ctx }) => {
     const session = currentSession(ctx);
     const timedOut =
       session?.participantPlayerIds.filter(

@@ -147,11 +147,13 @@ function eventInstructions(
   effect: PanierEventEffect,
 ): readonly GameEffectInstruction[] {
   if (effect.kind === 'move') {
-    return [gameEffects.custom('panier.move', { delta: effect.delta })];
+    return [
+      gameEffects.custom('panier.move-and-resolve', { delta: effect.delta }),
+    ];
   }
   if (effect.kind === 'draw') {
     return [
-      gameEffects.custom('panier.draw', {
+      gameEffects.custom('panier.draw-course', {
         count: effect.count,
         everyone: effect.everyone ?? false,
       }),
@@ -160,15 +162,16 @@ function eventInstructions(
   if (effect.kind === 'skip') return [gameEffects.skipTurn(effect.turns)];
   if (effect.kind === 'extra-turn') return [gameEffects.extraTurn()];
   if (effect.kind === 'discard') {
-    return [
-      gameEffects.custom('panier.discard', {
-        count: effect.count,
-        everyone: effect.everyone ?? false,
-      }),
-    ];
+    return discardInventoryInstructions(effect.count, effect.everyone);
   }
   if (effect.kind === 'reverse') {
-    return [gameEffects.custom('panier.reverse')];
+    return [
+      gameEffects.addStatus({
+        status: 'panier.reversed-until-owner-turn',
+        scope: 'until-used',
+      }),
+      gameEffects.reverseTurnOrder(),
+    ];
   }
   if (effect.kind === 'quiz') return [gameEffects.custom('panier.quiz')];
   if (effect.kind === 'nearest-stand') {
@@ -190,21 +193,54 @@ function exchangeInstructions(
   effect: PanierExchangeEffect,
 ): readonly GameEffectInstruction[] {
   return effect === 'discard'
-    ? [gameEffects.custom('panier.discard', { count: 1, everyone: false })]
+    ? discardInventoryInstructions(1, false)
     : targetInstructions(effect);
 }
 
 function targetInstructions(
   kind: Exclude<PanierExchangeEffect, 'discard'> | 'steal' | 'swap-inventories',
 ): readonly GameEffectInstruction[] {
-  return [
-    gameEffects.custom(
-      'panier.target',
-      { kind },
-      gameEffects.target.chosenOpponent(`panier.${kind}`),
-    ),
-    gameEffects.completeTurn(),
-  ];
+  const target = gameEffects.target.chosenOpponent(`panier.${kind}`);
+  const instruction =
+    kind === 'swap-inventories'
+      ? gameEffects.swapInventories(
+          'market-items',
+          gameEffects.target.self(),
+          target,
+        )
+      : kind === 'steal'
+        ? gameEffects.stealInventory({
+            inventoryId: 'market-items',
+            from: target,
+          })
+        : kind === 'random-swap'
+          ? gameEffects.exchangeRandomInventory(
+              'market-items',
+              gameEffects.target.self(),
+              target,
+            )
+          : gameEffects.custom('panier.strategic-swap', {}, target);
+  return [instruction, gameEffects.completeTurn()];
+}
+
+function discardInventoryInstructions(
+  count: number,
+  everyone = false,
+): readonly GameEffectInstruction[] {
+  const ownDiscard = gameEffects.discardInventory({
+    inventoryId: 'market-items',
+    count,
+  });
+  return everyone
+    ? [
+        ownDiscard,
+        gameEffects.discardInventory({
+          inventoryId: 'market-items',
+          count,
+          target: gameEffects.target.allOpponents(),
+        }),
+      ]
+    : [ownDiscard];
 }
 
 function requiredEventEffect(index: number, id: string): PanierEventEffect {

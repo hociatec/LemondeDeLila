@@ -1,4 +1,5 @@
 import {
+  completeRound,
   defineAction,
   defineEvent,
   defineGamePhases,
@@ -17,13 +18,14 @@ export const ABSURDISSIMES_JUDGE = 'absurdissimes.judge';
 export const ABSURDISSIMES_TARGET_SCORE = 10;
 const SUBMISSIONS_REVEALED = defineEvent({
   type: 'absurdissimes.submissions.revealed',
-  data: gameInput.object({ count: gameInput.number({ integer: true, min: 0 }) }),
+  data: gameInput.object({
+    count: gameInput.number({ integer: true, min: 0 }),
+  }),
 });
-export const ABSURDISSIMES_PHASES =
-  defineGamePhases<AbsurdissimesState>()({
-    initialPhase: 'play',
-    phases: { play: {}, judge: {} },
-  });
+export const ABSURDISSIMES_PHASES = defineGamePhases<AbsurdissimesState>()({
+  initialPhase: 'play',
+  phases: { play: {}, judge: {} },
+});
 
 export const playCard = defineAction<AbsurdissimesState, { cardId: string }>({
   input: gameInput.object({ cardId: gameInput.cardId() }),
@@ -44,7 +46,7 @@ export const playCard = defineAction<AbsurdissimesState, { cardId: string }>({
       .find((candidate) => candidate.id === input.cardId);
     if (!card) return rejectRule('Carte Absurdissimes absente de la main');
     ctx.cards.play(HAND, BLACK_DECK, actor.id, card);
-    ctx.submissions.submit(ABSURDISSIMES_ANSWERS, actor.id, input.cardId);
+    ctx.submissionFlow.submit(ABSURDISSIMES_ANSWERS, actor.id, input.cardId);
     const replacement = ctx.cards.draw<AbsurdissimesCard>(BLACK_DECK);
     if (replacement) ctx.cards.give(HAND, actor.id, replacement);
     ctx.round.leave(actor.id);
@@ -56,12 +58,11 @@ export const playCard = defineAction<AbsurdissimesState, { cardId: string }>({
     });
     if (remainingPlayers.length === 0) {
       ABSURDISSIMES_PHASES.transition(ctx, 'judge');
-      ctx.submissions.reveal(ABSURDISSIMES_ANSWERS);
+      ctx.submissionFlow.reveal(ABSURDISSIMES_ANSWERS);
       ctx.turn.to(ctx.judge.current(ABSURDISSIMES_JUDGE));
       SUBMISSIONS_REVEALED.emit(ctx, {
-        count: Object.keys(
-          ctx.submissions.values(ABSURDISSIMES_ANSWERS),
-        ).length,
+        count: Object.keys(ctx.submissions.values(ABSURDISSIMES_ANSWERS))
+          .length,
       });
     } else {
       ctx.turn.to(remainingPlayers[0]);
@@ -76,24 +77,29 @@ export const judgePick = defineAction<AbsurdissimesState, { winnerId: number }>(
       ABSURDISSIMES_PHASES.is(ctx, 'judge') &&
       actor.id === ctx.judge.current(ABSURDISSIMES_JUDGE),
     validate: ({ input, ctx }) =>
-      input.winnerId in
-      ctx.submissions.values(ABSURDISSIMES_ANSWERS),
+      input.winnerId in ctx.submissions.values(ABSURDISSIMES_ANSWERS),
     enumerate: ({ ctx }) =>
-      Object.keys(ctx.submissions.values(ABSURDISSIMES_ANSWERS)).map((playerId) => ({
-        winnerId: Number(playerId),
-      })),
+      Object.keys(ctx.submissions.values(ABSURDISSIMES_ANSWERS)).map(
+        (playerId) => ({
+          winnerId: Number(playerId),
+        }),
+      ),
     execute: ({ input, ctx }) => {
       const score = ctx.score.add(input.winnerId, 1);
       ctx.events.message('game.round.won', { playerId: input.winnerId });
-      ctx.round.end([input.winnerId]);
-      if (score >= ABSURDISSIMES_TARGET_SCORE) {
-        ctx.match.finish({
-          winners: [input.winnerId],
-          reason: 'target-score',
-        });
-        return;
-      }
-      prepareNextRound(ctx);
+      completeRound(ctx, {
+        winnerPlayerIds: [input.winnerId],
+        finishMatch: () => {
+          if (score < ABSURDISSIMES_TARGET_SCORE) return false;
+          ctx.match.finish({
+            winners: [input.winnerId],
+            reason: 'target-score',
+          });
+          return true;
+        },
+        reset: () => prepareNextRound(ctx),
+        next: false,
+      });
     },
   },
 );
@@ -103,22 +109,18 @@ export const ABSURDISSIMES_ACTIONS = {
   judge_pick: judgePick,
 };
 
-export function prepareNextRound(
-  ctx: GameContext<AbsurdissimesState>,
-): void {
+export function prepareNextRound(ctx: GameContext<AbsurdissimesState>): void {
   const playerIds = ctx.players.all().map((player) => player.id);
-  const nextJudge = ctx.judge.next(ABSURDISSIMES_JUDGE);
+  const { judgePlayerId: nextJudge, participantPlayerIds: remainingPlayers } =
+    ctx.submissionFlow.openForJudge({
+      submissionId: ABSURDISSIMES_ANSWERS,
+      judgeId: ABSURDISSIMES_JUDGE,
+      players: playerIds,
+      secret: true,
+      rotateJudge: true,
+    });
   drawWhiteCard(ctx);
   ABSURDISSIMES_PHASES.transition(ctx, 'play');
-  const remainingPlayers = playerIds.filter(
-    (playerId) => playerId !== nextJudge,
-  );
-  ctx.submissions.clear(ABSURDISSIMES_ANSWERS);
-  ctx.submissions.open({
-    id: ABSURDISSIMES_ANSWERS,
-    players: remainingPlayers,
-    secret: true,
-  });
   ctx.round.start(nextJudge, remainingPlayers);
   ctx.turn.to(remainingPlayers[0] ?? nextJudge);
 }

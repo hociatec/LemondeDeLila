@@ -13,6 +13,8 @@ export type DiceDefinition = {
 
 export type DiceKitState = {
   rolls: Record<string, { values: number[]; total: number }>;
+  lastRollId: string | null;
+  sequence: number;
 };
 
 export type DiceRollResult = { values: number[]; total: number };
@@ -58,6 +60,8 @@ export class GameDiceController {
     ) => void = () => {},
     definitions: readonly DiceDefinition[] = [],
   ) {
+    this.state.lastRollId ??= Object.keys(this.state.rolls).at(-1) ?? null;
+    this.state.sequence ??= Object.keys(this.state.rolls).length;
     for (const definition of definitions) {
       this.definitions.set(definition.id, definition);
     }
@@ -82,6 +86,9 @@ export class GameDiceController {
   reset(id: string): void {
     this.definitions.delete(id);
     delete this.state.rolls[id];
+    if (this.state.lastRollId === id) {
+      this.state.lastRollId = Object.keys(this.state.rolls).at(-1) ?? null;
+    }
   }
 
   assertValid(): void {
@@ -131,6 +138,8 @@ export class GameDiceController {
         (policy.modifier ?? 0),
     };
     this.state.rolls[id] = result;
+    this.state.lastRollId = id;
+    this.state.sequence += 1;
     this.emit('dice.rolled', {
       diceId: id,
       ...result,
@@ -189,5 +198,5 @@ function keepValues(
 }
 
 export function createDiceKitState(): DiceKitState {
-  return { rolls: {} };
+  return { rolls: {}, lastRollId: null, sequence: 0 };
 }

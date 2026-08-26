@@ -1212,12 +1212,14 @@ public sealed class GamePlayViewFocusTests
         IReadOnlyList<GameLogEntryDto>? logMessages = null)
     {
         var pendingChoices = new List<string>(choices ?? Array.Empty<string>());
+        object? dice = lastRoll is int total
+            ? new { total, rollKey = $"{turnIndex}:{total}" }
+            : null;
         return new GameStateDto
         {
             Status = "started",
             Phase = "play",
             TurnIndex = turnIndex,
-            LastRoll = lastRoll,
             LastDraw = lastDraw,
             Players =
             [
@@ -1259,6 +1261,7 @@ public sealed class GamePlayViewFocusTests
             Extras = JsonSerializer.SerializeToElement(new
             {
                 viewerPlayerId = 1,
+                dice,
             }),
         };
     }

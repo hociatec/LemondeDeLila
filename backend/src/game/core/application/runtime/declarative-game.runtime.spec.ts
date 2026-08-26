@@ -9,7 +9,12 @@ import type {
 import { victoryWhen, when } from './automatic-kit';
 import { cards } from './cards-kit';
 import { DeclarativeGameRuntime } from './declarative-game.runtime';
-import { defineAction, defineChoice, defineGame } from './game-definition';
+import {
+  defineAction,
+  defineChoice,
+  defineGame,
+  playerView,
+} from './game-definition';
 import { gameInput } from './game-input-schema';
 import { movement } from './movement-kit';
 import { phase } from './phase-kit';
@@ -117,7 +122,7 @@ const sampleGame = defineGame({
       ? { winnerPlayerIds: [ctx.actor?.id ?? 0], reason: 'target' }
       : null,
   ),
-  view: ({ state }) => ({ score: state.score }),
+  view: ({ state }) => playerView({ game: { score: state.score } }),
   bot: {
     choose: ({ availableActions }) =>
       availableActions.includes('score')

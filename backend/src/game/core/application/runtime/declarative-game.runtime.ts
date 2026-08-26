@@ -33,13 +33,12 @@ import type {
 } from './game-definition';
 import { playerView } from './game-definition';
 import { GameContext } from './game-rule-context';
-import { projectGameKits } from './game-kit-view';
 import {
   initializeGameComponents,
   installGameComponents,
 } from './component-kit';
 import { standardTurn, type TurnPolicy } from './turn-kit';
-import { projectPlayerValues } from './player-values-kit';
+import { projectGameSystemView } from './game-system-view';
 import { projectVisibility } from './visibility-kit';
 import { asRecord } from './runtime-game-action';
 import {
@@ -57,10 +56,7 @@ import {
   parseGameConfiguration,
 } from './configuration-kit';
 import { projectSubmissions } from './submission-kit';
-import {
-  nextScheduledAction,
-  projectScheduler,
-} from './scheduler-kit';
+import { nextScheduledAction, projectScheduler } from './scheduler-kit';
 
 export class DeclarativeGameRuntime<
   TState extends object,
@@ -201,7 +197,8 @@ export class DeclarativeGameRuntime<
       return { ...action, meta: { ...(action.meta ?? {}), actorId: actor.id } };
     }
     const definition = this.actionDefinition(action.type);
-    const input = definition.parseInput?.(action.payload ?? {}) ??
+    const input =
+      definition.parseInput?.(action.payload ?? {}) ??
       definition.input.parse(action.payload ?? {});
     this.ensureActionAvailable(runtime, actor, action.type, context, input);
     return {
@@ -319,11 +316,13 @@ export class DeclarativeGameRuntime<
           offset,
           limit: requested,
         })
-      : (definition.enumerateInputs?.({
-          state: runtime.game,
-          actor,
-          ctx: context,
-        }) ?? [{}]).slice(offset, offset + requested);
+      : (
+          definition.enumerateInputs?.({
+            state: runtime.game,
+            actor,
+            ctx: context,
+          }) ?? [{}]
+        ).slice(offset, offset + requested);
     const hasMore = candidates.length > limit;
     return {
       actionType,
@@ -361,12 +360,12 @@ export class DeclarativeGameRuntime<
       ...publicState
     } = runtime;
     const pending = projectPending(runtime.pending, actor?.id ?? null);
-    const match = structuredClone(runtime.engine.match);
-    const round = structuredClone(runtime.engine.round);
-    const playerValues = projectPlayerValues(
-      runtime.engine.playerValues,
-      actor?.id ?? null,
-    );
+    const system = projectGameSystemView({
+      runtime,
+      viewerPlayerId: actor?.id ?? null,
+      components: this.definition.components,
+      hasConfiguration: this.definition.config != null,
+    });
     return {
       ...publicState,
       phase:
@@ -376,19 +375,7 @@ export class DeclarativeGameRuntime<
       game: projection.game,
       extras: {
         ...(publicState.extras ?? {}),
-        ...projectGameKits(
-          runtime.engine.kits,
-          actor?.id ?? null,
-          runtime.turn?.turnNumber ?? 0,
-          this.definition.components ?? [],
-        ),
-        match,
-        round,
-        scores: playerValues.scores,
-        scoring: playerValues.scoring,
-        resources: playerValues.resources,
-        counters: playerValues.counters,
-        statuses: playerValues.statuses,
+        ...system,
         submissions: projectSubmissions(
           runtime.engine.submissions,
           actor?.id ?? null,
@@ -402,30 +389,26 @@ export class DeclarativeGameRuntime<
           ? {
               configuration: {
                 complete: runtime.engine.configuration.complete,
-                ownerPlayerId:
-                  runtime.engine.configuration.ownerPlayerId,
-                values: structuredClone(
-                  runtime.engine.configuration.values,
-                ),
+                ownerPlayerId: runtime.engine.configuration.ownerPlayerId,
+                values: structuredClone(runtime.engine.configuration.values),
                 schema: this.definition.config.input.describe(),
                 ui: structuredClone(this.definition.config.ui ?? {}),
               },
             }
           : {}),
-        ...(match.result
+        ...(system.match.result
           ? {
               victory: {
-                ...match.result,
+                ...system.match.result,
                 ranking:
-                  match.result.ranking ??
-                  playerValues.scoring.leaderboard.reduce<number[][]>(
-                    (tiers, entry) => {
+                  system.match.result.ranking ??
+                  system.score.leaderboard
+                    .reduce<number[][]>((tiers, entry) => {
                       (tiers[entry.rank - 1] ??= []).push(entry.playerId);
                       return tiers;
-                    },
-                    [],
-                  ).filter((tier) => tier.length > 0),
-                finalScores: structuredClone(playerValues.scores),
+                    }, [])
+                    .filter((tier) => tier.length > 0),
+                finalScores: structuredClone(system.scores),
               },
             }
           : {}),
@@ -433,8 +416,7 @@ export class DeclarativeGameRuntime<
       },
       board: projection.board ?? publicState.board,
       metadata: {},
-      actions:
-        userId == null ? [] : this.getAvailableActions(runtime, userId),
+      actions: userId == null ? [] : this.getAvailableActions(runtime, userId),
       pending,
     };
   }
@@ -492,13 +474,14 @@ export class DeclarativeGameRuntime<
       ctx: context,
     });
     if (!selected) return null;
-    return [
-      this.validateAction(
-        runtime,
-        { ...selected, meta: { actorId: botPlayerId } },
-        botPlayerId,
-      ),
-    ];
+    const selectedAction: GameSingleActionDto = {
+      type: selected.type,
+      ...(selected.payload === undefined
+        ? {}
+        : { payload: selected.payload as Record<string, unknown> }),
+      meta: { actorId: botPlayerId },
+    };
+    return [this.validateAction(runtime, selectedAction, botPlayerId)];
   }
 
   getAutomaticActions(state: GameStateEntity) {
@@ -514,10 +497,15 @@ export class DeclarativeGameRuntime<
       (playerId) =>
         !(runtime.pending?.resolvedPlayerIds ?? []).includes(playerId),
     );
+    const rawChoiceId = data.choiceId;
+    const choiceId =
+      typeof rawChoiceId === 'string' || typeof rawChoiceId === 'number'
+        ? String(rawChoiceId)
+        : '';
     const choicePlan =
       runtime.pending && choiceDeadline != null
         ? {
-            key: `choice-timeout:${String(data.choiceId ?? '')}:${choiceDeadline}`,
+            key: `choice-timeout:${choiceId}:${choiceDeadline}`,
             executeAtMs: choiceDeadline,
             actions: [
               {
@@ -609,7 +597,8 @@ export class DeclarativeGameRuntime<
     context: GameContext<TState>,
   ): void {
     const definition = this.actionDefinition(action.type);
-    const input = definition.parseInput?.(action.payload ?? {}) ??
+    const input =
+      definition.parseInput?.(action.payload ?? {}) ??
       definition.input.parse(action.payload ?? {});
     this.ensureActionAvailable(runtime, actor, action.type, context, input);
     const schedulerId = action.meta?.schedulerId;

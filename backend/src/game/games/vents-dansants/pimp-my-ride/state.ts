@@ -27,7 +27,5 @@ export type PimpMyRidePlayerView = {
     number,
     Omit<CarProgress, 'completedCars'> & { completedCars: CompletedCarView[] }
   >;
-  drawnPlayerId: number | null;
   drawnCardId: string | null;
-  winnerId: number | null;
 };

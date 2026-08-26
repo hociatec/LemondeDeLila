@@ -1,6 +1,7 @@
 import {
   defineAction,
   defineGame,
+  playerView,
 } from '../application/runtime/game-definition';
 import { gameInput } from '../application/runtime/game-input-schema';
 import { testGame } from './game-test-kit';
@@ -25,7 +26,7 @@ const race = defineGame({
       },
     }),
   },
-  view: ({ state }) => structuredClone(state),
+  view: ({ state }) => playerView({ game: structuredClone(state) }),
 });
 
 describe('GameTestKit', () => {

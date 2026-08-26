@@ -7,6 +7,7 @@ import type {
 export type GameEffectValidationReferences = {
   readonly decks: ReadonlyMap<string, unknown>;
   readonly hands: ReadonlyMap<string, unknown>;
+  readonly inventories: ReadonlyMap<string, unknown>;
   readonly tracks: ReadonlySet<string>;
   readonly diceSets: ReadonlySet<string>;
   readonly effects?: Readonly<Record<string, unknown>>;
@@ -15,17 +16,19 @@ export type GameEffectValidationReferences = {
 type ValidationFailure = (path: string, reason: string) => never;
 
 export function assertEffectInstructions(
-  instructions: readonly GameEffectInstruction[],
+  instructions: unknown,
   path: string,
   references: GameEffectValidationReferences,
   fail: ValidationFailure,
 ): void {
   if (!Array.isArray(instructions)) fail(path, 'séquence d’effets invalide');
-  for (const [index, instruction] of instructions.entries()) {
+  const values: readonly unknown[] = instructions;
+  for (const [index, value] of values.entries()) {
     const effectPath = `${path}.${index}`;
-    if (!instruction || typeof instruction !== 'object') {
+    if (!value || typeof value !== 'object') {
       fail(effectPath, 'instruction invalide');
     }
+    const instruction = value as GameEffectInstruction;
     validateEffectTarget(
       'target' in instruction ? instruction.target : undefined,
       `${effectPath}.target`,
@@ -100,10 +103,7 @@ export function assertEffectInstructions(
         references,
         fail,
       );
-    } else if (
-      instruction.kind === 'move' ||
-      instruction.kind === 'move-to'
-    ) {
+    } else if (instruction.kind === 'move' || instruction.kind === 'move-to') {
       requireReference(
         references.tracks,
         instruction.trackId,
@@ -111,9 +111,7 @@ export function assertEffectInstructions(
         fail,
       );
       requireFinite(
-        instruction.kind === 'move'
-          ? instruction.spaces
-          : instruction.position,
+        instruction.kind === 'move' ? instruction.spaces : instruction.position,
         effectPath,
         fail,
       );
@@ -140,6 +138,14 @@ export function assertEffectInstructions(
         references.hands,
         instruction.handId,
         `${effectPath}.handId`,
+        fail,
+      );
+      requirePositiveInteger(instruction.count, `${effectPath}.count`, fail);
+    } else if (instruction.kind === 'discard-random-inventory') {
+      requireReference(
+        references.inventories,
+        instruction.inventoryId,
+        `${effectPath}.inventoryId`,
         fail,
       );
       requirePositiveInteger(instruction.count, `${effectPath}.count`, fail);
@@ -170,6 +176,30 @@ export function assertEffectInstructions(
         references.hands,
         instruction.handId,
         `${effectPath}.handId`,
+        fail,
+      );
+      validateEffectTarget(instruction.left, `${effectPath}.left`, fail);
+      validateEffectTarget(instruction.right, `${effectPath}.right`, fail);
+    } else if (instruction.kind === 'steal-random-inventory') {
+      requireReference(
+        references.inventories,
+        instruction.inventoryId,
+        `${effectPath}.inventoryId`,
+        fail,
+      );
+      validateEffectTarget(instruction.from, `${effectPath}.from`, fail);
+      validateEffectTarget(instruction.to, `${effectPath}.to`, fail);
+      if (instruction.count != null) {
+        requirePositiveInteger(instruction.count, `${effectPath}.count`, fail);
+      }
+    } else if (
+      instruction.kind === 'swap-inventories' ||
+      instruction.kind === 'exchange-random-inventory'
+    ) {
+      requireReference(
+        references.inventories,
+        instruction.inventoryId,
+        `${effectPath}.inventoryId`,
         fail,
       );
       validateEffectTarget(instruction.left, `${effectPath}.left`, fail);
@@ -219,7 +249,8 @@ export function assertEffectInstructions(
       }
     } else if (
       instruction.kind !== 'choose-player' &&
-      instruction.kind !== 'complete-turn'
+      instruction.kind !== 'complete-turn' &&
+      instruction.kind !== 'reverse-turn-order'
     ) {
       fail(
         effectPath,
@@ -313,8 +344,8 @@ function validateEffectTarget(
   if (target.kind === 'chosen-player') {
     if (
       target.playerIds.length === 0 ||
-      target.playerIds.some((playerId) =>
-        !Number.isInteger(playerId) || playerId < 1
+      target.playerIds.some(
+        (playerId) => !Number.isInteger(playerId) || playerId < 1,
       ) ||
       new Set(target.playerIds).size !== target.playerIds.length
     ) {

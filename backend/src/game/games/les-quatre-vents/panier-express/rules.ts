@@ -1,5 +1,6 @@
 import {
   defineAction,
+  drawAndResolve,
   gameInput,
   rejectRule,
   sequentialPawnSelection,
@@ -16,12 +17,6 @@ import type { PanierPending, PanierState } from './state';
 
 type RuleContext = GameContext<PanierState>;
 export const PANIER_PHASES = setupPlayingPhases<PanierState>();
-export type PanierTargetEffect =
-  | 'swap-inventories'
-  | 'strategic-swap'
-  | 'discard'
-  | 'steal'
-  | 'random-swap';
 const TRACK = 'market';
 const INVENTORY = 'market-items';
 const SHOPPING_LISTS = 'shopping-lists';
@@ -46,13 +41,7 @@ export const roll = defineAction<PanierState, Record<string, never>>({
       diceId: 'main',
       total: rollValue,
     });
-    moveAndResolve(
-      state,
-      actor.id,
-      rollValue * ctx.turn.direction(),
-      0,
-      ctx,
-    );
+    moveAndResolve(state, actor.id, rollValue * ctx.turn.direction(), 0, ctx);
     finishResolution(ctx);
   },
 });
@@ -78,7 +67,7 @@ export function resolveDirection(
   value: string,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<PanierPending>();
+  const pending = ctx.choice.consumeContinuation<PanierPending>();
   if (!pending || pending.kind !== 'direction' || pending.actorId !== actorId)
     rejectRule('Choix de direction absent');
   moveAndResolve(
@@ -97,14 +86,10 @@ export function resolveQuiz(
   answerIndex: number,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<PanierPending>();
+  const pending = ctx.choice.consumeContinuation<PanierPending>();
   if (!pending || pending.kind !== 'quiz' || pending.actorId !== actorId)
     rejectRule('Quiz Panier absent');
-  const { correct } = ctx.quiz.answer(
-    pending.sessionId,
-    actorId,
-    answerIndex,
-  );
+  const { correct } = ctx.quiz.answer(pending.sessionId, actorId, answerIndex);
   ctx.quiz.close(pending.sessionId);
   ctx.events.message('game.quiz.answered', {
     playerId: actorId,
@@ -120,7 +105,7 @@ export function resolveTake(
   card: string,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<PanierPending>();
+  const pending = ctx.choice.consumeContinuation<PanierPending>();
   if (!pending || pending.kind !== 'take' || pending.actorId !== actorId)
     rejectRule('Choix de carte adverse absent');
   if (!ctx.inventory.items(INVENTORY, pending.targetId).includes(card)) {
@@ -151,7 +136,7 @@ export function resolveGive(
   card: string,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<PanierPending>();
+  const pending = ctx.choice.consumeContinuation<PanierPending>();
   if (!pending || pending.kind !== 'give' || pending.actorId !== actorId)
     rejectRule('Choix de carte à donner absent');
   if (!ctx.inventory.items(INVENTORY, actorId).includes(card)) {
@@ -179,7 +164,12 @@ export function moveAndResolve(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_DEPTH || ctx.choice.current() || ctx.match.lifecycle() === 'finished') return;
+  if (
+    depth > MAX_DEPTH ||
+    ctx.choice.current() ||
+    ctx.match.lifecycle() === 'finished'
+  )
+    return;
   const before = position(playerId, ctx);
   const raw = before + distance;
   ctx.movement.move(TRACK, playerId, distance);
@@ -199,11 +189,9 @@ function resolveTile(
     tileId: position(playerId, ctx),
   });
   if (tile.type === 'start') checkVictory(playerId, ctx);
-  else if (tile.type === 'stand')
-    drawCourse(playerId, tile.standId, ctx);
-  else if (tile.type === 'bonus_course')
-    drawCourse(playerId, 'bonus', ctx);
-  else if (tile.type === 'event') drawEvent(playerId, ctx);
+  else if (tile.type === 'stand') drawCourse(playerId, tile.standId, ctx);
+  else if (tile.type === 'bonus_course') drawCourse(playerId, 'bonus', ctx);
+  else if (tile.type === 'event') resolvePanierEvent(playerId, ctx);
   else if (tile.type === 'exchange') drawExchange(playerId, ctx);
   else if (tile.type === 'quiz') requestQuiz(playerId, ctx);
   else if (tile.type === 'move_choice')
@@ -229,7 +217,10 @@ export function drawCourse(
     !ctx.inventory.has(BASKETS, playerId, card)
   ) {
     ctx.inventory.add(BASKETS, playerId, card);
-    ctx.events.message('panier.item.added-to-basket', { playerId, itemId: card });
+    ctx.events.message('panier.item.added-to-basket', {
+      playerId,
+      itemId: card,
+    });
   } else {
     ctx.inventory.add(INVENTORY, playerId, card);
     ctx.events.message('panier.item.added-to-inventory', {
@@ -239,51 +230,32 @@ export function drawCourse(
   }
 }
 
-function drawEvent(
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  const event =
-    ctx.cards.drawOrRecycle<(typeof PANIER_EVENTS)[number]>('events');
-  if (!event) return;
-  ctx.cards.discard('events', event);
-  ctx.events.message('game.card.drawn', {
-    playerId,
+function resolvePanierEvent(playerId: number, ctx: RuleContext): void {
+  drawAndResolve<PanierState, (typeof PANIER_EVENTS)[number]>(ctx, {
     deckId: 'events',
-    cardId: event.id,
-  });
-  ctx.effects.schedule(...event.effects);
-}
-
-function drawExchange(
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  const exchange =
-    ctx.cards.drawOrRecycle<(typeof PANIER_EXCHANGES)[number]>('exchanges');
-  if (!exchange) return;
-  ctx.cards.discard('exchanges', exchange);
-  ctx.events.message('game.card.drawn', {
     playerId,
-    deckId: 'exchanges',
-    cardId: exchange.id,
+    recycle: true,
+    discard: true,
+    resolve: (event) => ctx.effects.schedule(...event.effects),
   });
-  ctx.effects.schedule(...exchange.effects);
 }
 
-export function applyPanierTarget(
+function drawExchange(playerId: number, ctx: RuleContext): void {
+  drawAndResolve<PanierState, (typeof PANIER_EXCHANGES)[number]>(ctx, {
+    deckId: 'exchanges',
+    playerId,
+    recycle: true,
+    discard: true,
+    resolve: (exchange) => ctx.effects.schedule(...exchange.effects),
+  });
+}
+
+export function requestStrategicSwap(
   actorId: number,
   targetId: number,
-  kind: PanierTargetEffect,
   ctx: RuleContext,
 ): void {
-  if (kind === 'swap-inventories') {
-    ctx.inventory.swap(INVENTORY, actorId, targetId);
-  } else if (kind === 'strategic-swap')
-    requestTake(actorId, targetId, ctx);
-  else if (kind === 'discard') discardRandom(targetId, 1, ctx);
-  else if (kind === 'steal') stealRandom(actorId, targetId, ctx);
-  else randomSwap(actorId, targetId, ctx);
+  requestTake(actorId, targetId, ctx);
 }
 
 function requestTake(
@@ -306,10 +278,7 @@ function requestTake(
   });
 }
 
-export function requestQuiz(
-  playerId: number,
-  ctx: RuleContext,
-): void {
+export function requestQuiz(playerId: number, ctx: RuleContext): void {
   const session = ctx.quiz.ask('market-quiz', [playerId]);
   if (!session) return;
   const question = session.question;
@@ -362,40 +331,6 @@ export function moveToNearestStand(
       moveAndResolve(state, playerId, distance, depth, ctx);
       return;
     }
-  }
-}
-
-function stealRandom(
-  actorId: number,
-  targetId: number,
-  ctx: RuleContext,
-): void {
-  ctx.inventory.stealRandom(INVENTORY, targetId, actorId);
-}
-
-function randomSwap(
-  actorId: number,
-  targetId: number,
-  ctx: RuleContext,
-): void {
-  const own = ctx.random.pick(ctx.inventory.items(INVENTORY, actorId));
-  const other = ctx.random.pick(ctx.inventory.items(INVENTORY, targetId));
-  if (own && other) {
-    ctx.inventory.exchange(INVENTORY, actorId, own, targetId, other);
-  } else if (own) {
-    ctx.inventory.transfer(INVENTORY, actorId, targetId, own);
-  } else if (other) {
-    ctx.inventory.transfer(INVENTORY, targetId, actorId, other);
-  }
-}
-
-export function discardRandom(
-  playerId: number,
-  count: number,
-  ctx: RuleContext,
-): void {
-  for (let index = 0; index < count; index += 1) {
-    if (ctx.inventory.removeRandom(INVENTORY, playerId) == null) return;
   }
 }
 

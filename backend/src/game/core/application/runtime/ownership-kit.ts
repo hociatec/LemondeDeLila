@@ -31,9 +31,9 @@ export const ownership = {
       definition.assets.some((assetId) => assetId.trim().length === 0) ||
       new Set(definition.assets).size !== definition.assets.length
     ) {
-      throw new GameConfigurationError('Catalogue de propriété invalide', {
-        registryId: definition.id,
-      });
+      throw new GameConfigurationError(
+        `Catalogue de propriété invalide: ${definition.id}`,
+      );
     }
     return Object.freeze({
       ...definition,
@@ -141,7 +141,9 @@ export class GameOwnershipController {
     this.requireAsset(registryId, assetId);
     const owners = this.state.owners[registryId]?.[assetId] ?? [];
     const released =
-      playerId == null ? [...owners] : owners.filter((owner) => owner === playerId);
+      playerId == null
+        ? [...owners]
+        : owners.filter((owner) => owner === playerId);
     if (released.length === 0) return;
     if (playerId == null) delete this.state.owners[registryId][assetId];
     else {
@@ -205,7 +207,9 @@ export class GameOwnershipController {
   private requireRegistry(registryId: string): OwnershipDefinition {
     const definition = this.definitions.get(registryId);
     if (!definition) {
-      throw new GameNotFoundError(`Registre de propriété inconnu: ${registryId}`);
+      throw new GameNotFoundError(
+        `Registre de propriété inconnu: ${registryId}`,
+      );
     }
     return definition;
   }

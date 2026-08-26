@@ -29,9 +29,5 @@ export type FouleesPlayerView = {
   trackLength: number;
   homeLength: number;
   safeTiles: number[];
-  positions: PlayerMap<number>;
   arrived: PlayerMap<number>;
-  winnerId: number | null;
-  setupComplete: boolean;
-  lastRoll: number | null;
 };

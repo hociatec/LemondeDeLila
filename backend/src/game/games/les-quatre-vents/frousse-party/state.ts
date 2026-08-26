@@ -15,10 +15,5 @@ export type FroussePlayerView = {
   nextRollIfThreeBackTwo: PlayerMap<boolean>;
   blocked: PlayerMap<FrousseBlock | null>;
   pawnByPlayerId: PlayerMap<string>;
-  starterId: number;
   replayTurns: PlayerMap<number>;
-  positions: PlayerMap<number>;
-  winnerId: number | null;
-  skipTurns: PlayerMap<number>;
-  setupComplete: boolean;
 };

@@ -50,7 +50,5 @@ export function recordCommandReceipt(
 export function normalizeCommandId(value: unknown): string | null {
   if (typeof value !== 'string') return null;
   const normalized = value.trim();
-  return normalized.length >= 8 && normalized.length <= 128
-    ? normalized
-    : null;
+  return normalized.length >= 8 && normalized.length <= 128 ? normalized : null;
 }

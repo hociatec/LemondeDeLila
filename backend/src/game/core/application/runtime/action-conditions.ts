@@ -24,7 +24,9 @@ export function anyCondition<TState extends object>(
   return (input) => conditions.some((condition) => condition(input));
 }
 
-export function whenTurnOfActor<TState extends object>(): ActionCondition<TState> {
+export function whenTurnOfActor<
+  TState extends object,
+>(): ActionCondition<TState> {
   return ({ actor, ctx }) => ctx.turn.is(actor.id);
 }
 
@@ -39,10 +41,12 @@ export function whenHasCard<TState extends object>(
 export function whenPhase<TState extends object>(
   ...phaseIds: readonly string[]
 ): ActionCondition<TState> {
-  return ({ ctx }) => phaseIds.includes(ctx.phase());
+  return ({ ctx }) => phaseIds.includes(ctx.phase.current());
 }
 
-export function whenNoPending<TState extends object>(): ActionCondition<TState> {
+export function whenNoPending<
+  TState extends object,
+>(): ActionCondition<TState> {
   return ({ ctx }) =>
     ctx.choice.current() == null && !ctx.effects.isResolving();
 }
@@ -54,19 +58,13 @@ export function whenResourceAtLeast<TState extends object>(
   return ({ actor, ctx }) => ctx.resources.has(actor.id, resourceId, amount);
 }
 
-export function allValidators<
-  TState extends object,
-  TInput extends object,
->(
+export function allValidators<TState extends object, TInput extends object>(
   ...validators: readonly ActionValidator<TState, TInput>[]
 ): ActionValidator<TState, TInput> {
   return (input) => validators.every((validator) => validator(input));
 }
 
-export function ownCard<
-  TState extends object,
-  TInput extends object,
->(options: {
+export function ownCard<TState extends object, TInput extends object>(options: {
   handId: string;
   cardId: (input: TInput) => string;
 }): ActionValidator<TState, TInput> {
@@ -76,10 +74,9 @@ export function ownCard<
       .includes(options.cardId(input));
 }
 
-export function otherPlayer<
-  TState extends object,
-  TInput extends object,
->(playerId: (input: TInput) => number): ActionValidator<TState, TInput> {
+export function otherPlayer<TState extends object, TInput extends object>(
+  playerId: (input: TInput) => number,
+): ActionValidator<TState, TInput> {
   return ({ actor, input, ctx }) => {
     const targetId = playerId(input);
     return targetId !== actor.id && ctx.players.get(targetId) != null;
@@ -116,10 +113,9 @@ export function legalMove<
   };
 }
 
-export function positiveInteger<
-  TState extends object,
-  TInput extends object,
->(value: (input: TInput) => number): ActionValidator<TState, TInput> {
+export function positiveInteger<TState extends object, TInput extends object>(
+  value: (input: TInput) => number,
+): ActionValidator<TState, TInput> {
   return ({ input }) => {
     const candidate = value(input);
     return Number.isInteger(candidate) && candidate > 0;

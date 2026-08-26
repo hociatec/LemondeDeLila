@@ -8,10 +8,7 @@ import type { GameStateEntity } from '../application/models/game-state.model';
 import { GameExecutionScopeService } from '../application/services/game-execution-scope.service';
 
 export type GameSimulationStatus =
-  | 'finished'
-  | 'deadlock'
-  | 'step-limit'
-  | 'failed';
+  'finished' | 'deadlock' | 'step-limit' | 'failed';
 
 export type GameSimulationResult = {
   status: GameSimulationStatus;
@@ -158,8 +155,11 @@ export class GameSimulator {
     return {
       games,
       finished: results.filter((result) => result.status === 'finished').length,
-      deadlocks: results.filter((result) => result.status === 'deadlock').length,
-      stepLimitReached: results.filter((result) => result.status === 'step-limit').length,
+      deadlocks: results.filter((result) => result.status === 'deadlock')
+        .length,
+      stepLimitReached: results.filter(
+        (result) => result.status === 'step-limit',
+      ).length,
       failed: results.filter((result) => result.status === 'failed').length,
       averageCommands:
         results.reduce((total, result) => total + result.commands, 0) / games,
@@ -175,7 +175,9 @@ export class GameSimulator {
           ),
         ),
       ),
-      eventFrequency: mergeCounts(results.map((result) => result.eventFrequency)),
+      eventFrequency: mergeCounts(
+        results.map((result) => result.eventFrequency),
+      ),
       cardFrequency: mergeCounts(results.map((result) => result.cardFrequency)),
       results: options.retainResults === false ? [] : results,
     };
@@ -221,7 +223,7 @@ export class GameSimulator {
       const actorId = Number(candidate.meta?.actorId);
       const normalizedActorId = Number.isFinite(actorId)
         ? actorId
-        : current.turn?.currentPlayerId ?? null;
+        : (current.turn?.currentPlayerId ?? null);
       const validated = runtime.validateAction(
         current,
         candidate,
@@ -235,7 +237,7 @@ export class GameSimulator {
       };
       current = this.execution.run(context, () =>
         runtime.applyActions(current, [validated], context),
-      ) as RuntimeState;
+      );
     }
     return current;
   }

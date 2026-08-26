@@ -50,10 +50,5 @@ export type ContesPlayerView = {
     text: string;
     timestamp: string;
   } | null;
-  starterId: number;
   turnReplacement: PlayerMap<number | null>;
-  positions: PlayerMap<number>;
-  winnerId: number | null;
-  skipTurns: PlayerMap<number>;
-  setupComplete: boolean;
 };

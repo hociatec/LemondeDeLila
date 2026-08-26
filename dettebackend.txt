@@ -1,3 +1,168 @@
+Oui. J’ai relancé l’analyse **à zéro** sur la dernière archive, et le diagnostic est plus précis que ma passe précédente.
+
+Le moteur a clairement progressé : `structuredClone(state)`, `throw new Error`, `ctx.history`, les gros `switch(card/effect)` et `availableInputs` ont disparu de `games/**`. Tu as aussi généralisé `GameContext`, les patterns, le CAS/store, l’EffectEngine et l’auto-registration. Donc plusieurs anciennes critiques sont désormais corrigées.
+
+Ce qu’il reste maintenant est surtout de la **centralisation de dernière étape**.
+
+32: `roundScoring()` actuel est trop minimal: Il exécute surtout un callback `score`. Il pourrait gérer `endWhen`, `score`, `winner`, `resetScope`, `rotateStarter`, `nextRound`, `matchEndWhen`.
+
+33: State scoping round/match doit être exploité davantage: Une bonne partie des resets manuels disparaîtrait si les composants pouvaient être déclarés `scope: 'round' | 'match'`.
+
+34: CardsKit reste encore imparfaitement typé: Le catalogue et certaines structures utilisent encore `unknown`. Il faut terminer la distinction `CardDefinition<T>`, `CardInstance`, `CardId`, `CardZone<T>` afin que le jeu n’ait plus à caster.
+
+35: Deck/hand/discard ne doivent jamais être dupliqués dans `TState`: Vérifier les jeux restants pour garantir que CardsKit est la seule source de vérité.
+
+36: InventoryKit/ResourceKit doit devenir aussi fort que CardsKit: Des jeux comme Panier Express et Marché des Merveilles devraient pouvoir manipuler produits/ressources sans `Record<number,...>` métier ni helpers de transfert custom.
+
+37: `exchangeRandom`, `discardRandom`, `stealRandom` sont encore réimplémentés: Ces opérations doivent devenir des recipes officielles Cards/Inventory/Resources.
+
+38: `transfer` doit être universel selon la ressource: Plutôt que plusieurs implémentations, ResourceKit doit garantir transfert atomique, validation de quantité et événements.
+
+39: ScoreKit doit absorber davantage de scoring standard: Plusieurs jeux conservent encore `scores` en state. Quand il s’agit simplement d’un score numérique par joueur, ScoreKit doit être la source unique.
+
+40: Les scores spécifiques peuvent rester métier: En revanche, un état comme “familles complétées”, “voitures terminées”, “domaines” reste spécifique ; ScoreKit ne doit pas avaler les données qui servent à calculer le score.
+
+41: `PlayerMap<T>` doit être utilisé systématiquement: Beaucoup de states ont encore des maps joueur explicites. Une abstraction uniforme améliore typing, initialisation et projection.
+
+43: Board projection doit devenir générique: Beaucoup de `game.ts` reconstruisent `{ tiles, positions }`. Movement/Grid/Pawn kits devraient produire automatiquement une représentation standard du board.
+
+45: Le moteur doit séparer encore plus clairement `Content` et `Session`: Tiles, cartes, questions et descriptions ne doivent pas être copiées à chaque projection si un ID/catalogue suffit au frontend.
+
+46: Les plus gros `rules.ts` restent un signal fort: `Cat'Pattes` ~498 lignes, `Entre Rites et Lumières` ~465, `Ça Dérape` ~449, `Sac à Malices` ~445, `Panier Express` ~419. Ils doivent être analysés en priorité pour extraire les dernières mechanics partagées.
+
+47: La taille des gros jeux a tout de même fortement baissé: C’est positif. Le fait que les plus gros `rules.ts` soient maintenant sous ~500 lignes montre que la centralisation fonctionne ; il faut éviter de viser artificiellement 100 lignes si la complexité est réellement spécifique.
+
+48: Benchmark famille de parcours à poursuivre: `resolveLanding`, `moveAndLand`, `applyTile`, `drawAndApply` montrent encore qu’un pattern “race + tile resolution + event deck” manque probablement.
+
+49: Créer un pattern `eventTrackGame`: Pour les nombreux jeux `roll → move → resolve tile → éventuellement draw event → apply effect → end turn`, un pattern plus haut niveau que `raceGame()` ferait gagner énormément de code.
+
+50: Créer un `TileDefinition` riche: Une case devrait pouvoir déclarer `onLand`, `onPass`, tags, event deck, movement effect, status effect, quiz trigger, etc., sans que `rules.ts` fasse un switch sur le type de case.
+
+51: `landingEffects` dans `raceGame()` est un bon début mais trop indexé par position: Il faut éventuellement permettre des effets par tag/type de case et des conditions, pas seulement `Record<number, effects>`.
+
+52: Generic “draw event on tile” recipe: Très fréquente dans les Quatre Vents ; devrait être déclarative dans la définition de tile.
+
+53: Turn-end automatique après pipeline de case: Le jeu ne devrait pas appeler manuellement `completeTurn()` après chaque landing si le pattern connaît la règle de fin de tour.
+
+54: Support générique “garder/rejouer son tour”: `keepTurns` et équivalents doivent être entièrement consommés par TurnKit/StatusKit, pas projetés/stockés localement.
+
+55: Support générique direction par joueur vs direction globale: Certains jeux semblent utiliser `movementDirection` par joueur. Il faut distinguer clairement direction globale de tour et direction de déplacement individuelle dans MovementKit.
+
+56: StatusKit doit permettre des valeurs typées, pas seulement booléens/comptes: Cela peut absorber davantage de `revealTurns`, `keepTurns`, boosts, handicaps et autres temporaires.
+
+57: Expiration automatique des statuts: Aucun jeu ne devrait décrémenter lui-même `skipTurns`, protections ou buffs.
+
+58: Status events automatiques: Ajout, consommation, tick et expiration doivent produire leurs DomainEvents sans code spécifique.
+
+59: Match result doit être la source unique du résultat final: Tous les `winnerId` projetés doivent à terme dériver exclusivement de `ctx.match.result()`.
+
+60: Résultat de round séparé du résultat de match: Certains `winnerId` peuvent être des gagnants de round ; ne pas les supprimer à tort. Formaliser `ctx.round.result()` pour éviter qu’ils restent en `TState`.
+
+61: `roundWinnerId` devrait disparaître des states lorsque RoundKit peut le porter: Même principe que MatchKit.
+
+62: `lastRound` doit être clarifié: Si c’est une donnée de lifecycle générique, RoundKit doit la porter ; si c’est une règle spécifique, elle peut rester.
+
+63: Game over booléen dérivé: `gameOver` doit généralement être `ctx.match.finished()` plutôt qu’un booléen métier.
+
+64: Generic setup doit encore progresser: Les jeux font encore du setup custom pour initialiser des maps/positions/scores que leurs kits pourraient initialiser automatiquement.
+
+65: `defineGame()` devrait pouvoir fonctionner avec `setup` absent plus souvent: Les composants déclaratifs doivent prendre en charge leurs propres defaults.
+
+66: Les patterns devraient pouvoir installer leurs actions standards: `raceGame()` pourrait fournir `roll`, `move` quand la règle est standard ; `cardGame()` pourrait fournir `draw`/`play` via recipes configurables.
+
+67: Override contrôlé des actions de pattern: Un jeu doit pouvoir remplacer seulement une étape d’un pattern sans copier tout le comportement.
+
+68: Hooks de pattern précis: `beforeRoll`, `afterRoll`, `beforeMove`, `afterMove`, `beforeLand`, `afterLand`, etc. peuvent permettre d’éviter les forks complets de pattern.
+
+69: Ne pas rendre les patterns trop magiques: Toute centralisation doit rester inspectable et testable ; le jeu doit pouvoir comprendre quelle action/hook est installée.
+
+70: Introspection des patterns: DevTools/docs doivent afficher les mechanics/actions/components ajoutés par chaque pattern.
+
+71: Generated registry est une bonne correction: L’auto-discovery au build est maintenant en place ; conserver cette approche et supprimer toute découverte filesystem runtime résiduelle.
+
+72: Vérifier qu’il n’existe plus de double registry: Si ancienne discovery/runtime registry existe encore, la supprimer pour éviter deux sources de vérité.
+
+75: Contract tests de frontières: Un test CI peut parcourir les imports des 38 jeux et garantir que seules les APIs autorisées sont utilisées.
+
+76: EffectEngine contract tests par primitive: Chaque effet générique doit avoir des invariants et tests indépendants des jeux.
+
+77: Pattern contract tests: Chaque pattern doit être testé une fois sur un jeu minimal fictif afin que les 38 jeux ne répètent pas ses comportements standards.
+
+78: Kit projection contract tests: Vérifier automatiquement que la PlayerView ne fuit aucune donnée cachée et que les vues génériques sont cohérentes.
+
+79: Contract tests de state ownership: Détecter si un jeu stocke `positions`, `deck`, `hand`, `skipTurns`, etc. alors qu’il possède déjà le kit correspondant.
+
+80: Lint de champs interdits conditionnel aux kits: Si `movement` est déclaré, signaler `positions` dans le state ; si `dice` est déclaré, signaler `lastRoll`; si `match` est utilisé, signaler un `winnerId` final.
+
+81: Détection automatique du boilerplate restant: Générer un rapport CI sur les noms de fonctions répétés dans `rules.ts`. C’est justement ce qui révèle ici `resolveLanding`, `drawAndApply`, etc.
+
+82: Règle des trois occurrences à appliquer automatiquement: Une mécanique réimplémentée dans trois jeux ou plus doit déclencher une revue d’extraction.
+
+83: Les fonctions uniques ne doivent pas être généralisées sans preuve: `nearestStand`, règles propres à Cat’Pattes, etc. restent dans leur jeu tant qu’elles n’ont pas d’équivalent ailleurs.
+
+84: `GameEffectInstruction` doit rester extensible: Les recipes/patterns doivent pouvoir produire des instructions sans forcer chaque nouvelle combinaison dans l’union centrale.
+
+85: Typage des effets custom à renforcer: Les paramètres d’un `GameEffect` spécifique doivent être inférés de sa définition sans `unknown`/casts.
+
+86: Provenance des effets à exploiter davantage: Beaucoup de champs temporaires peuvent être supprimés si l’EffectContext porte `sourcePlayer`, `sourceCard`, `sourceTile`, etc.
+
+87: Reprise après choice dans une chaîne d’effets à tester systématiquement: Redémarrage serveur et reconnexion doivent reprendre exactement au bon effet.
+
+88: Pending/Effect queue doit être une seule source de vérité: Ne pas dupliquer la continuation dans `pending` + state jeu + EffectEngine.
+
+89: Available actions pendant une effect queue: Le moteur doit automatiquement restreindre les actions lorsqu’une résolution est suspendue.
+
+90: Bots et effects/choices: Les bots doivent pouvoir résoudre les choices produites par l’EffectEngine via le même pipeline que les humains.
+
+91: Replay doit inclure les décisions de choice: Sinon une chaîne d’effets interactive ne sera pas entièrement reproductible.
+
+92: Game version + content version: Avec des contenus statiques de plus en plus déclaratifs, versionner aussi le catalogue de contenu utilisé par une partie.
+
+93: Les cartes/tiles modifiées après déploiement ne doivent pas changer une partie en cours: Le snapshot doit référencer une version de définition/content stable.
+
+94: Migrations des continuations: Si la structure d’un EffectInstruction évolue, une partie suspendue sur une vieille instruction doit rester chargeable.
+
+95: Build validation des patterns: Un jeu déclarant deux patterns incompatibles sur le même TurnPolicy ou composant doit échouer avec un diagnostic clair.
+
+96: Conflits de composants dans `composePatterns`: Aujourd’hui plusieurs patterns peuvent concaténer leurs components ; il faut vérifier collision d’IDs (`main`, `players`, etc.) au build.
+
+97: Conflits de TurnPolicy entre patterns: `composePatterns()` prend actuellement le dernier turn défini. Ce comportement est dangereux si deux patterns imposent des politiques différentes. Il faut détecter conflit ou exiger un override explicite.
+
+98: Conflits de VictoryRule: `composeVictory()` applique la première règle qui gagne. Il faut rendre la priorité explicite/documentée lorsqu’un jeu compose plusieurs patterns de victoire.
+
+99: Conflits de lifecycle hooks: Les hooks sont simplement exécutés dans l’ordre. Il faut documenter/typer leur ordre et éventuellement gérer priorités/dépendances si plusieurs patterns modifient le même lifecycle.
+
+100: IDs de patterns non uniques dans une composition: Vérifier qu’un jeu ne compose pas accidentellement deux fois le même pattern ou deux instances incompatibles sans intention explicite.
+
+101: `mechanics` doit devenir exploitable: Les strings de mechanics peuvent alimenter documentation, frontend, analytics et validation, au lieu d’être seulement descriptives.
+
+102: `mechanics` typées: Éviter une liste libre de strings si elles servent au moteur ; utiliser un registry ou des tags typés.
+
+103: Pattern composition diagnostics: Pouvoir inspecter après compilation la définition finale : composants ajoutés, turn policy retenue, victory rules, lifecycle hooks et provenance de chaque élément.
+
+104: Compile step de `defineGame()`: Une phase de compilation/normalisation unique serait utile pour fusionner patterns, components, actions, phases, effects et validations avant runtime.
+
+105: Runtime simplifié après compilation: Le runtime ne devrait pas recalculer/merger constamment les définitions ; il consomme une `CompiledGameDefinition`.
+
+106: Validation d’incompatibilités au build plutôt qu’au premier match: Toute collision de component ID, phase, action, effect ou pattern doit être détectée en CI.
+
+107: Mesure objective de la cible “spécifique uniquement”: Pour chaque jeu, générer un rapport indiquant `LOC content`, `LOC declarative`, `LOC custom rules`. Le chiffre important est la dernière catégorie.
+
+108: Priorité de travail maintenant: Commencer par les duplications avec fréquence élevée (`resolveLanding`, `drawAndApply`, positions/skipTurns/views), pas par inventer de nouvelles abstractions théoriques.
+
+109: Premier chantier conseillé — Generic PlayerView: C’est probablement le plus rentable actuellement car les 38 jeux ont encore `view()` et beaucoup recopient les mêmes données de kits.
+
+110: Deuxième chantier — Landing/EventTrack pipeline: C’est la duplication comportementale la plus visible dans les `rules.ts`.
+
+111: Troisième chantier — Round/temporary state cleanup: Retirer `winnerId`, `setupComplete`, `skipTurns`, `lastRoll`, starter/round flags lorsqu’ils sont dérivables des kits.
+
+112: Quatrième chantier — Choice/Effect continuation: Éliminer les `pending*` métier résiduels.
+
+113: Cinquième chantier — Patterns plus haut niveau: Une fois les quatre précédents faits, réexaminer les gros jeux pour extraire `eventTrackGame`, `submissionGame`, `marketGame`, etc.
+
+
+Le signal de fin que je viserais est très concret : parmi les fonctions répétées actuellement, `resolveLanding`, `drawAndApply`, `moveAndLand`, `finishRound`, `swapPositions`, `drawCard`, `computeMoves`, etc. devraient finir à **1 implémentation générique chacune dans le framework**, et les 38 `view()` devraient tomber à quelques vues custom réellement nécessaires.
+
 104: Replay de partie systématique: Chaque jeu doit passer automatiquement un test `snapshot + events => même state`.
 
 105: State serialization contract: Tester que tous les states, kits, pendings et événements sont JSON-serialisables.

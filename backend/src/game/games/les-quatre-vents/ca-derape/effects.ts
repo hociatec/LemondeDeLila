@@ -1,7 +1,4 @@
-import {
-  defineEffect,
-  gameInput,
-} from '../../../core/application/public-api';
+import { defineEffect, gameInput } from '../../../core/application/public-api';
 import {
   CA_CONDITIONAL_EFFECTS,
   CA_GLOBAL_EFFECTS,
@@ -34,10 +31,7 @@ export const CA_DERAPE_EFFECTS = {
       }
     },
   }),
-  'ca-derape.skip-penalty': defineEffect<
-    CaDerapeState,
-    Record<string, never>
-  >({
+  'ca-derape.skip-penalty': defineEffect<CaDerapeState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ actorPlayerId, ctx }) => {
       if (actorPlayerId != null && !consumePenaltyShield(actorPlayerId, ctx)) {
@@ -84,10 +78,7 @@ export const CA_DERAPE_EFFECTS = {
       }
     },
   }),
-  'ca-derape.mark-winner': defineEffect<
-    CaDerapeState,
-    Record<string, never>
-  >({
+  'ca-derape.mark-winner': defineEffect<CaDerapeState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ ctx }) => markWinnerIfReached(ctx),
   }),
@@ -99,10 +90,7 @@ export const CA_DERAPE_EFFECTS = {
       ctx.movement.swap(TRACK, actorPlayerId, targetId);
     },
   }),
-  'ca-derape.next-player': defineEffect<
-    CaDerapeState,
-    Record<string, never>
-  >({
+  'ca-derape.next-player': defineEffect<CaDerapeState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ targetPlayerIds, ctx }) => {
       const targetId = targetPlayerIds[0];

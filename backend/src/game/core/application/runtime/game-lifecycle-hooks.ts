@@ -14,8 +14,8 @@ export type RoundLifecycleInput<TState extends object> = {
 };
 
 export interface GameLifecycleHooks<TState extends object> {
-  beforeTurn?(input: TurnLifecycleInput<TState>): void;
-  afterTurn?(input: TurnLifecycleInput<TState>): void;
-  onRoundStart?(input: RoundLifecycleInput<TState>): void;
-  onRoundEnd?(input: RoundLifecycleInput<TState>): void;
+  readonly beforeTurn?: (input: TurnLifecycleInput<TState>) => void;
+  readonly afterTurn?: (input: TurnLifecycleInput<TState>) => void;
+  readonly onRoundStart?: (input: RoundLifecycleInput<TState>) => void;
+  readonly onRoundEnd?: (input: RoundLifecycleInput<TState>) => void;
 }

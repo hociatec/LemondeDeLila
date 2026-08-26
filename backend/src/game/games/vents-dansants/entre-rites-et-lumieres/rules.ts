@@ -1,6 +1,7 @@
 import {
   rejectRule,
   defineAction,
+  drawEvent,
   gameEffects,
   gameInput,
 } from '../../../core/application/public-api';
@@ -10,7 +11,6 @@ import type {
 } from '../../../core/application/public-api';
 import {
   ENTRE_RITES_CARD_BY_ID,
-  ENTRE_RITES_CUSTOM_FAMILY_SIZE,
   ENTRE_RITES_FAMILY_CARDS,
   ENTRE_RITES_FAMILY_IDS,
   type RiteFamilyCard,
@@ -52,7 +52,7 @@ export const askCard = defineAction<
       determineVictory(state, ctx);
       return;
     }
-    drawForPlayer(state, actor.id, ctx);
+    drawRitesCardForPlayer(state, actor.id, ctx);
     determineVictory(state, ctx);
     if (ctx.match.lifecycle() !== 'finished' && ctx.choice.current() == null)
       ctx.turn.complete();
@@ -62,7 +62,7 @@ export const askCard = defineAction<
 export const pass = defineAction<EntreRitesState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Passe volontairement le tour.',
-  execute: ({ state, actor, ctx }) => {
+  execute: ({ state: _state, actor, ctx }) => {
     ctx.events.message('game.player.passed', { playerId: actor.id });
     ctx.turn.complete();
   },
@@ -118,7 +118,7 @@ export function resolveRitesCardChoice(
   cardId: string,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<RitesPendingChoice>();
+  const pending = ctx.choice.consumeContinuation<RitesPendingChoice>();
   if (!pending) rejectRule('Choix rituel introuvable');
   if (pending.kind === 'draw-one') {
     resolveDrawOne(state, pending, cardId, ctx);
@@ -136,7 +136,7 @@ export function resolveRitesFamilyChoice(
   cardIds: string[],
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<RitesPendingChoice>();
+  const pending = ctx.choice.consumeContinuation<RitesPendingChoice>();
   if (!pending || pending.kind !== 'free-family') {
     rejectRule('Choix de famille rituel invalide');
   }
@@ -149,7 +149,7 @@ export function resolveRitesStealChoice(
   selection: RitesStealChoice,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<RitesPendingChoice>();
+  const pending = ctx.choice.consumeContinuation<RitesPendingChoice>();
   if (!pending || pending.kind !== 'reveal-and-steal') {
     rejectRule('Choix de vol rituel invalide');
   }
@@ -167,12 +167,16 @@ function finishChoiceResolution(
     ctx.turn.complete();
 }
 
-export function drawForPlayer(
+export function drawRitesCardForPlayer(
   state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
 ): void {
-  const cardId = ctx.cards.drawOrRecycle<string>(DECK);
+  const cardId = drawEvent<EntreRitesState, string>(ctx, {
+    deckId: DECK,
+    playerId,
+    recycle: true,
+  });
   if (cardId) handleDrawnCard(state, playerId, cardId, ctx);
 }
 
@@ -272,7 +276,7 @@ function resolveDrawOne(
 }
 
 export function resurrectionChoice(
-  state: EntreRitesState,
+  _state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
 ): void {
@@ -291,7 +295,7 @@ export function resurrectionChoice(
 }
 
 export function freeFamilyChoice(
-  state: EntreRitesState,
+  _state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
 ): void {
@@ -359,15 +363,15 @@ export function dawnCycle(state: EntreRitesState, ctx: RuleContext): void {
     if (cardId) ctx.cards.play(HANDS, DECK, player.id, cardId);
   }
   for (const player of ctx.players.all()) {
-    drawForPlayer(state, player.id, ctx);
+    drawRitesCardForPlayer(state, player.id, ctx);
     if (ctx.choice.current()) return;
-    drawForPlayer(state, player.id, ctx);
+    drawRitesCardForPlayer(state, player.id, ctx);
     if (ctx.choice.current()) return;
   }
 }
 
 export function stealChoice(
-  state: EntreRitesState,
+  _state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
 ): void {
@@ -444,20 +448,19 @@ function cardName(cardId: string): string {
 }
 
 export function peaceTurnsRemaining(ctx: RuleContext): number {
-  return ctx.players.all().reduce(
-    (remaining, player) =>
-      Math.max(
-        remaining,
-        ctx.status.get(player.id, RITES_PEACE)?.remaining ?? 0,
-      ),
-    0,
-  );
+  return ctx.players
+    .all()
+    .reduce(
+      (remaining, player) =>
+        Math.max(
+          remaining,
+          ctx.status.get(player.id, RITES_PEACE)?.remaining ?? 0,
+        ),
+      0,
+    );
 }
 
-export function statusOwner(
-  statusId: string,
-  ctx: RuleContext,
-): number | null {
+export function statusOwner(statusId: string, ctx: RuleContext): number | null {
   return (
     ctx.players.all().find((player) => ctx.status.has(player.id, statusId))
       ?.id ?? null

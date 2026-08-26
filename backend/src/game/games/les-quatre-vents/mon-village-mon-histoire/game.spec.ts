@@ -10,7 +10,7 @@ describe('Mon Village, Mon Histoire declarative game', () => {
     await game.as(1).do('roll', {});
 
     expect(game.state().game.lastRoll).not.toBeNull();
-    expect(game.state().game.collections[1].total).toBe(1);
+    expect(game.view(1).collections[1]?.total).toBe(1);
     expect(game.view(1).positions[1]).toBeGreaterThan(0);
     expect(game.replay()).toEqual(game.state());
   });

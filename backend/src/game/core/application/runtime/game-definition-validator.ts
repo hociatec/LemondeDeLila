@@ -41,9 +41,7 @@ type DefinitionToValidate = {
   effects?: Readonly<Record<string, { input?: unknown; apply?: unknown }>>;
 };
 
-export function assertGameDefinition(
-  definition: DefinitionToValidate,
-): void {
+export function assertGameDefinition(definition: DefinitionToValidate): void {
   const fail = (path: string, reason: string): never => {
     throw new GameConfigurationError(
       `Définition ${definition.id || '<sans identifiant>'}.${path}: ${reason}`,
@@ -120,7 +118,10 @@ export function assertGameDefinition(
   for (const [phaseName, phase] of Object.entries(definition.phases ?? {})) {
     for (const actionName of phase.actions ?? []) {
       if (!actionNames.has(actionName)) {
-        fail(`phases.${phaseName}.actions`, `action inconnue « ${actionName} »`);
+        fail(
+          `phases.${phaseName}.actions`,
+          `action inconnue « ${actionName} »`,
+        );
       }
     }
     if (phase.next && !phaseNames.has(phase.next)) {
@@ -150,8 +151,14 @@ export function assertGameDefinition(
   }
 
   const componentKeys = new Set<string>();
-  const decks = new Map<string, Extract<GameComponentDefinition, { component: 'cards.deck' }>>();
-  const hands = new Map<string, Extract<GameComponentDefinition, { component: 'cards.hands' }>>();
+  const decks = new Map<
+    string,
+    Extract<GameComponentDefinition, { component: 'cards.deck' }>
+  >();
+  const hands = new Map<
+    string,
+    Extract<GameComponentDefinition, { component: 'cards.hands' }>
+  >();
   const inventories = new Map<
     string,
     Extract<GameComponentDefinition, { component: 'inventory.set' }>
@@ -161,15 +168,20 @@ export function assertGameDefinition(
   for (const component of definition.components ?? []) {
     const id = 'id' in component ? component.id : undefined;
     if (typeof id !== 'string' || id.trim().length === 0) {
-      fail('components', `identifiant manquant pour « ${component.component} »`);
+      fail(
+        'components',
+        `identifiant manquant pour « ${component.component} »`,
+      );
     }
     const key = `${component.component}:${id}`;
     if (componentKeys.has(key)) {
       fail('components', `composant dupliqué « ${key} »`);
     }
     componentKeys.add(key);
-    if (component.component === 'cards.deck') decks.set(component.id, component);
-    if (component.component === 'cards.hands') hands.set(component.id, component);
+    if (component.component === 'cards.deck')
+      decks.set(component.id, component);
+    if (component.component === 'cards.hands')
+      hands.set(component.id, component);
     if (component.component === 'inventory.set') {
       inventories.set(component.id, component);
     }
@@ -179,6 +191,7 @@ export function assertGameDefinition(
   const effectReferences = {
     decks,
     hands,
+    inventories,
     tracks,
     diceSets,
     effects: definition.effects,
@@ -299,10 +312,7 @@ export function assertGameDefinition(
     if (automaticIds.has(automatic.id)) {
       fail('automatic', `règle dupliquée « ${automatic.id} »`);
     }
-    if (
-      automatic.priority != null &&
-      !Number.isFinite(automatic.priority)
-    ) {
+    if (automatic.priority != null && !Number.isFinite(automatic.priority)) {
       fail(
         `automatic.${automatic.id}.priority`,
         'la priorité doit être un nombre fini',
@@ -365,7 +375,10 @@ export function assertGameDefinition(
       migration.to <= migration.from ||
       migration.to > targetVersion
     ) {
-      fail('migrations', `transition invalide ${migration.from}→${migration.to}`);
+      fail(
+        'migrations',
+        `transition invalide ${migration.from}→${migration.to}`,
+      );
     }
     if (migrationsBySource.has(migration.from)) {
       fail('migrations', `source dupliquée « ${migration.from} »`);

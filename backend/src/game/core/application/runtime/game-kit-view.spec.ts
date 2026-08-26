@@ -1,5 +1,5 @@
-import { createCardsKitState } from './cards-kit';
-import { createDiceKitState } from './dice-kit';
+import { createCardsKitState, type HandsDefinition } from './cards-kit';
+import { createDiceKitState, type DiceDefinition } from './dice-kit';
 import type { EngineKitsState } from './game-definition';
 import { projectGameKits } from './game-kit-view';
 import { createGridKitState } from './grid-kit';
@@ -9,18 +9,18 @@ import { createQuizKitState } from './quiz-kit';
 describe('projectGameKits', () => {
   it('reveals owner hands and redacts every other private hand', () => {
     const kits = createKits();
-    kits.cards.decks.main = ['hidden'];
-    kits.cards.discards.main = ['played'];
-    kits.cards.handDefinitions.main = {
+    const handDefinition = {
       component: 'cards.hands',
       id: 'main',
       deck: 'main',
       initial: 1,
       visibility: 'owner',
-    };
+    } satisfies HandsDefinition;
+    kits.cards.decks.main = ['hidden'];
+    kits.cards.discards.main = ['played'];
     kits.cards.hands.main = { '1': ['mine'], '2': ['theirs'] };
 
-    expect(projectGameKits(kits, 1, 3)).toEqual({
+    expect(projectGameKits(kits, 1, 3, [handDefinition])).toEqual({
       cards: {
         decks: { main: { count: 1 } },
         discards: { main: { count: 1, cards: ['played'] } },
@@ -32,7 +32,7 @@ describe('projectGameKits', () => {
         },
       },
     });
-    expect(projectGameKits(kits, null, 3)).toEqual({
+    expect(projectGameKits(kits, null, 3, [handDefinition])).toEqual({
       cards: {
         decks: { main: { count: 1 } },
         discards: { main: { count: 1, cards: ['played'] } },
@@ -48,17 +48,17 @@ describe('projectGameKits', () => {
 
   it('reveals public hands to every viewer', () => {
     const kits = createKits();
-    kits.cards.decks.main = [];
-    kits.cards.handDefinitions.table = {
+    const handDefinition = {
       component: 'cards.hands',
       id: 'table',
       deck: 'main',
       initial: 0,
       visibility: 'public',
-    };
+    } satisfies HandsDefinition;
+    kits.cards.decks.main = [];
     kits.cards.hands.table = { '1': ['visible'] };
 
-    expect(projectGameKits(kits, null, 0)).toMatchObject({
+    expect(projectGameKits(kits, null, 0, [handDefinition])).toMatchObject({
       cards: {
         hands: {
           table: {
@@ -72,10 +72,15 @@ describe('projectGameKits', () => {
 
   it('projects deterministic dice results without exposing kit internals', () => {
     const kits = createKits();
-    kits.dice.sets.main = { id: 'main', count: 2, sides: 6 };
+    const diceDefinition = {
+      component: 'dice.set',
+      id: 'main',
+      count: 2,
+      sides: 6,
+    } satisfies DiceDefinition;
     kits.dice.rolls.main = { values: [2, 5], total: 7 };
 
-    expect(projectGameKits(kits, 1, 4)).toEqual({
+    expect(projectGameKits(kits, 1, 4, [diceDefinition])).toEqual({
       dice: {
         id: 'main',
         label: 'Dés',
@@ -91,12 +96,12 @@ describe('projectGameKits', () => {
   });
 });
 
-function createKits(): EngineKitsState {
+function createKits() {
   return {
     cards: createCardsKitState(),
     movement: createMovementKitState(),
     dice: createDiceKitState(),
     grid: createGridKitState(),
     quiz: createQuizKitState(),
-  };
+  } satisfies EngineKitsState;
 }

@@ -1,17 +1,14 @@
 import {
   defineAction,
   defineEffect,
+  drawAndResolve,
   gameInput,
   rejectRule,
   sequentialPawnSelection,
   setupPlayingPhases,
 } from '../../../core/application/public-api';
 import type { GameContext } from '../../../core/application/public-api';
-import {
-  MINUIT_CARDS,
-  MINUIT_TILES,
-  type MinuitCard,
-} from './content';
+import { MINUIT_CARDS, MINUIT_TILES, type MinuitCard } from './content';
 import type { MinuitPending, MinuitState } from './state';
 
 type RuleContext = GameContext<MinuitState>;
@@ -30,7 +27,7 @@ export const roll = defineAction<MinuitState, Record<string, never>>({
   available: ({ ctx }) => MINUIT_PHASES.is(ctx, 'playing'),
   execute: ({ state, actor, ctx }) => {
     if (ctx.status.consume(actor.id, FORCE_DRAW_NEXT_TURN)) {
-      drawAndApply(state, actor.id, 0, ctx);
+      drawMinuitCard(state, actor.id, 0, ctx);
     } else {
       const value = ctx.dice.roll('main').total;
       ctx.events.message('game.dice.rolled', {
@@ -38,7 +35,7 @@ export const roll = defineAction<MinuitState, Record<string, never>>({
         diceId: 'main',
         total: value,
       });
-      moveAndLand(state, actor.id, value, 0, ctx);
+      moveMinuitAndResolve(state, actor.id, value, 0, ctx);
     }
     ctx.turn.complete({ waiting: ctx.choice.current() != null });
   },
@@ -64,23 +61,21 @@ export function resolvePending(
   value: number,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<MinuitPending>();
+  const pending = ctx.choice.consumeContinuation<MinuitPending>();
   if (!pending) rejectRule('Choix Minuit absent');
   if (pending.kind === 'quiz') {
-    const card = MINUIT_CARDS.find((candidate) => candidate.id === pending.cardId);
+    const card = MINUIT_CARDS.find(
+      (candidate) => candidate.id === pending.cardId,
+    );
     if (!card?.quiz) {
       rejectRule('Question Minuit inconnue');
     }
     const quiz = card.quiz;
-    if (
-      !Number.isInteger(value) ||
-      value < 0 ||
-      value >= quiz.choices.length
-    ) {
+    if (!Number.isInteger(value) || value < 0 || value >= quiz.choices.length) {
       rejectRule('Réponse Minuit invalide');
     }
     const correct = (quiz.anyCorrect ?? false) || value === quiz.correctIndex;
-    moveAndLand(
+    moveMinuitAndResolve(
       state,
       pending.actorId,
       correct ? quiz.successDelta : quiz.failureDelta,
@@ -91,31 +86,50 @@ export function resolvePending(
   ctx.turn.complete({ waiting: ctx.choice.current() != null });
 }
 
-function moveAndLand(
+function moveMinuitAndResolve(
   state: MinuitState,
   playerId: number,
   delta: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_DEPTH || ctx.match.lifecycle() === 'finished') return;
-  ctx.movement.moveAndLand(TRACK, playerId, delta, () =>
-    resolveLanding(state, playerId, depth + 1, ctx),
-  );
+  ctx.movement.moveAndResolve({
+    trackId: TRACK,
+    playerId,
+    distance: delta,
+    tiles: MINUIT_TILES,
+    depth: depth + 1,
+    maxDepth: MAX_DEPTH,
+    blocked: () =>
+      ctx.choice.current() != null || ctx.match.lifecycle() === 'finished',
+    onLand: () => applyMinuitTile(state, playerId, depth + 1, ctx),
+  });
 }
 
-function resolveLanding(
+function resolveMinuitDestination(
   state: MinuitState,
   playerId: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (
-    depth > MAX_DEPTH ||
-    ctx.choice.current() ||
-    ctx.match.lifecycle() === 'finished'
-  )
-    return;
+  ctx.movement.resolveLanding({
+    trackId: TRACK,
+    playerId,
+    tiles: MINUIT_TILES,
+    depth,
+    maxDepth: MAX_DEPTH,
+    blocked: () =>
+      ctx.choice.current() != null || ctx.match.lifecycle() === 'finished',
+    onLand: () => applyMinuitTile(state, playerId, depth, ctx),
+  });
+}
+
+function applyMinuitTile(
+  state: MinuitState,
+  playerId: number,
+  depth: number,
+  ctx: RuleContext,
+): void {
   let current = position(playerId, ctx);
   const occupied = ctx.players
     .all()
@@ -133,40 +147,29 @@ function resolveLanding(
     ctx.match.finish({ winners: [playerId], reason: 'midnight' });
   } else if (tile.type === 'move') {
     if (!(tile.delta < 0 && ctx.status.consume(playerId, IGNORE_NEXT_MALUS))) {
-      moveAndLand(state, playerId, tile.delta, depth, ctx);
+      moveMinuitAndResolve(state, playerId, tile.delta, depth, ctx);
     }
   } else if (tile.type === 'skip') {
     if (ctx.status.consume(playerId, IGNORE_NEXT_SKIP)) return;
     ctx.turn.skip(playerId, tile.skipTurns);
-  } else if (tile.type === 'card') drawAndApply(state, playerId, depth, ctx);
+  } else if (tile.type === 'card') drawMinuitCard(state, playerId, depth, ctx);
 }
 
-function drawAndApply(
-  state: MinuitState,
+function drawMinuitCard(
+  _state: MinuitState,
   playerId: number,
   depth: number,
   ctx: RuleContext,
 ): void {
   if (depth > MAX_DEPTH || ctx.choice.current()) return;
-  ctx.cards.drawThenResolve<MinuitCard, void>(
-    DECK,
-    (card) => {
-      ctx.events.message('game.card.drawn', {
-        playerId,
-        deckId: DECK,
-        cardId: card.id,
-      });
-      applyCard(playerId, card, ctx);
-    },
-    {},
-  );
+  drawAndResolve<MinuitState, MinuitCard>(ctx, {
+    deckId: DECK,
+    playerId,
+    resolve: (card) => applyCard(playerId, card, ctx),
+  });
 }
 
-function applyCard(
-  playerId: number,
-  card: MinuitCard,
-  ctx: RuleContext,
-): void {
+function applyCard(playerId: number, card: MinuitCard, ctx: RuleContext): void {
   if (card.quiz) {
     const pending: MinuitPending = {
       kind: 'quiz',
@@ -195,7 +198,7 @@ function applyCardMove(
   if (delta < 0 && ctx.status.consume(playerId, IGNORE_NEXT_MALUS)) {
     return;
   }
-  moveAndLand(state, playerId, delta, depth, ctx);
+  moveMinuitAndResolve(state, playerId, delta, depth, ctx);
 }
 
 function moveToTypedTile(
@@ -215,7 +218,7 @@ function moveToTypedTile(
   const selected = direction === 1 ? candidates[0] : candidates.at(-1);
   if (!selected) return;
   ctx.movement.moveTo(TRACK, playerId, selected.n - 1);
-  resolveLanding(state, playerId, depth + 1, ctx);
+  resolveMinuitDestination(state, playerId, depth + 1, ctx);
 }
 
 export function applyGift(
@@ -225,7 +228,7 @@ export function applyGift(
   ctx: RuleContext,
 ): void {
   moveDirect(targetId, 1, ctx);
-  moveAndLand(state, actorId, 2, 0, ctx);
+  moveMinuitAndResolve(state, actorId, 2, 0, ctx);
 }
 
 export function applySwap(
@@ -233,7 +236,7 @@ export function applySwap(
   targetId: number,
   ctx: RuleContext,
 ): void {
-  swapPositions(actorId, targetId, ctx);
+  ctx.movement.swap(TRACK, actorId, targetId);
 }
 
 function swapWithBehind(actorId: number, ctx: RuleContext): void {
@@ -245,15 +248,7 @@ function swapWithBehind(actorId: number, ctx: RuleContext): void {
         player.id !== actorId && position(player.id, ctx) < actorPosition,
     )
     .sort((left, right) => position(right.id, ctx) - position(left.id, ctx))[0];
-  if (behind) swapPositions(actorId, behind.id, ctx);
-}
-
-function swapPositions(
-  firstId: number,
-  secondId: number,
-  ctx: RuleContext,
-): void {
-  ctx.movement.swap(TRACK, firstId, secondId);
+  if (behind) ctx.movement.swap(TRACK, actorId, behind.id);
 }
 
 function moveDirect(playerId: number, delta: number, ctx: RuleContext): void {
@@ -279,7 +274,13 @@ export const MINUIT_EFFECTS = {
     input: gameInput.object({}),
     apply: ({ state, actorPlayerId, ctx }) => {
       if (actorPlayerId != null) {
-        moveAndLand(state, actorPlayerId, ctx.dice.roll('main').total, 0, ctx);
+        moveMinuitAndResolve(
+          state,
+          actorPlayerId,
+          ctx.dice.roll('main').total,
+          0,
+          ctx,
+        );
       }
     },
   }),

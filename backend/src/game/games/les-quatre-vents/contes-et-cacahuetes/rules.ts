@@ -14,8 +14,8 @@ import {
   CONTES_STATUSES,
   blockedPosition,
   drainResolution,
-  drawAndApply,
-  moveAndLand,
+  drawContesCard,
+  moveContesAndResolve,
   position,
   requestNumber,
   scheduleContesTarget,
@@ -44,7 +44,10 @@ export const roll = defineAction<ContesState, Record<string, never>>({
     let value = ctx.status.has(actor.id, CONTES_STATUSES.forcedOne)
       ? 1
       : rollDie(ctx);
-    if (value === 1 && ctx.status.consume(actor.id, CONTES_STATUSES.replaceOne)) {
+    if (
+      value === 1 &&
+      ctx.status.consume(actor.id, CONTES_STATUSES.replaceOne)
+    ) {
       value = 4;
     }
     ctx.events.message('game.dice.rolled', {
@@ -52,7 +55,10 @@ export const roll = defineAction<ContesState, Record<string, never>>({
       diceId: 'main',
       total: value,
     });
-    if (ctx.resources.has(actor.id, CONTES_RESOURCES.reroll, 1) && value !== 1) {
+    if (
+      ctx.resources.has(actor.id, CONTES_RESOURCES.reroll, 1) &&
+      value !== 1
+    ) {
       const pending = {
         kind: 'reroll' as const,
         actorId: actor.id,
@@ -122,18 +128,17 @@ export function resolveOption(
 ): void {
   const pending = requirePending(ctx, 'option', actorId);
   if (pending.effect === 'song') {
-    if (value === 'move-three') moveAndLand(state, actorId, 3, 0, ctx);
+    if (value === 'move-three') moveContesAndResolve(state, actorId, 3, 0, ctx);
     else scheduleContesTarget(actorId, 'song-steal', ctx);
   } else if (pending.effect === 'wish') {
-    if (value === 'move-two') moveAndLand(state, actorId, 2, 0, ctx);
-    else if (value === 'swap')
-      scheduleContesTarget(actorId, 'wish-swap', ctx);
-    else drawAndApply(state, actorId, 'bonus', 0, ctx);
+    if (value === 'move-two') moveContesAndResolve(state, actorId, 2, 0, ctx);
+    else if (value === 'swap') scheduleContesTarget(actorId, 'wish-swap', ctx);
+    else drawContesCard(state, actorId, 'bonus', 0, ctx);
   } else {
     const targetId = pending.targetId;
     if (targetId == null) rejectRule('Cible de la Clé d’or absente');
     ctx.status.remove(actorId, CONTES_STATUSES.keyOfGold);
-    drawAndApply(
+    drawContesCard(
       state,
       targetId,
       value === 'bonus' ? 'bonus' : 'malus',
@@ -160,7 +165,7 @@ export function resolveLaughter(
   }
   const maximum = Math.max(...Object.values(pending.picks));
   for (const [id, pick] of Object.entries(pending.picks))
-    if (pick === maximum) moveAndLand(state, Number(id), 1, 0, ctx);
+    if (pick === maximum) moveContesAndResolve(state, Number(id), 1, 0, ctx);
   drainResolution(state, ctx);
 }
 
@@ -197,7 +202,7 @@ export function resolveToken(
 }
 
 export function skipBlockedContesPlayer(
-  state: ContesState,
+  _state: ContesState,
   ctx: RuleContext,
 ): void {
   const player = ctx.players.current();
@@ -207,7 +212,7 @@ export function skipBlockedContesPlayer(
 }
 
 export function unblockPassedPlayers(
-  state: ContesState,
+  _state: ContesState,
   ctx: RuleContext,
 ): void {
   const current = ctx.players.current();

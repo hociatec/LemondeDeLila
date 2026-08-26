@@ -4,11 +4,7 @@ import {
   playerView,
   victoryWhen,
 } from '../../../core/application/public-api';
-import {
-  PARADE_CARD_BY_ID,
-  PARADE_CARDS,
-  PARADE_SEQUENCE,
-} from './content';
+import { PARADE_CARD_BY_ID, PARADE_CARDS, PARADE_SEQUENCE } from './content';
 import {
   candyCounts,
   PARADE_ACTIONS,
@@ -60,16 +56,12 @@ export default defineGame<
       ? { winnerPlayerIds: winners(ctx), reason: 'parade-complete' }
       : null;
   }),
-  view: ({ state, actor, ctx }) => {
+  view: ({ state: _state, actor, ctx }) => {
     const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
     const handCounts = ctx.cards.handCounts('players');
     const currentSequenceIndex = sequenceIndex(ctx);
     const played = playedCards(ctx);
-    const candies = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [player.id, candyCounts(player.id, ctx)]),
-    );
+    const candies = ctx.players.byId((player) => candyCounts(player.id, ctx));
     const nextCard = PARADE_SEQUENCE[currentSequenceIndex] ?? null;
     const scoreLines = ctx.players
       .all()

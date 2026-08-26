@@ -17,7 +17,6 @@ import {
 import {
   CAT_PATTES_ACTIONS,
   catPattesPlayerState,
-  drawnPlayerId,
   playableInputs,
   resetCatPattesRound,
   scoreCatPattesRound,
@@ -86,27 +85,14 @@ export default defineGame<
   },
   actions: CAT_PATTES_ACTIONS,
   effects: CAT_PATTES_EFFECTS,
-  view: ({ state, ctx }) => {
+  view: ({ state: _state, ctx }) => {
     const playerState = catPattesPlayerState(ctx);
-    const positions = ctx.players.byId((player) =>
-      ctx.movement.position('cat-pattes', player.id),
-    );
-    const points = ctx.players.byId((player) =>
-      ctx.score.get(player.id),
-    );
     return playerView({
       game: {
         ...playerState,
-        positions,
-        points,
-        completedRounds: ctx.round.completed(),
-        drawnPlayerId: drawnPlayerId(ctx),
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
       },
       extras: {
         cardCatalog: CAT_PATTES_CARD_BY_ID,
-        positions,
-        points,
         obstacles: structuredClone(playerState.obstacles),
         powers: structuredClone(playerState.powers),
       },
@@ -114,7 +100,7 @@ export default defineGame<
   },
   bot: {
     choose: ({ state, actor, ctx }) => {
-      if (drawnPlayerId(ctx) !== actor.id) {
+      if (ctx.effects.sourcePlayerId() !== actor.id) {
         return { type: 'draw', payload: {} };
       }
       const input = playableInputs(state, actor.id, ctx)[0];

@@ -158,10 +158,7 @@ export function assertGameStateSize(
   });
 }
 
-function createGameSnapshot(
-  state: GameStateEntity,
-  seq: number,
-): GameSnapshot {
+function createGameSnapshot(state: GameStateEntity, seq: number): GameSnapshot {
   return {
     seq,
     version: state.version ?? 1,
@@ -183,9 +180,7 @@ function capturePeriodicSnapshot(
   const reachedSize =
     maxEventBytes != null &&
     Buffer.byteLength(
-      JSON.stringify(
-        timeline.events.filter((event) => event.seq > previous),
-      ),
+      JSON.stringify(timeline.events.filter((event) => event.seq > previous)),
       'utf8',
     ) >= maxEventBytes;
   if (!reachedCount && !reachedSize) return;

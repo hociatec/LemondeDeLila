@@ -1,16 +1,10 @@
+import { defineEffect, gameInput } from '../../../core/application/public-api';
 import {
-  defineEffect,
-  gameInput,
-} from '../../../core/application/public-api';
-import {
-  applyPanierTarget,
-  discardRandom,
   drawCourse,
   moveAndResolve,
   moveToNearestStand,
-  type PanierTargetEffect,
-  PANIER_REVERSED,
   requestQuiz,
+  requestStrategicSwap,
 } from './rules';
 import type { PanierState } from './state';
 
@@ -20,7 +14,7 @@ const countInput = gameInput.object({
 });
 
 export const PANIER_EFFECTS = {
-  'panier.move': defineEffect<PanierState, { delta: number }>({
+  'panier.move-and-resolve': defineEffect<PanierState, { delta: number }>({
     input: gameInput.object({
       delta: gameInput.number({ integer: true }),
     }),
@@ -30,7 +24,7 @@ export const PANIER_EFFECTS = {
       }
     },
   }),
-  'panier.draw': defineEffect<
+  'panier.draw-course': defineEffect<
     PanierState,
     { count: number; everyone: boolean }
   >({
@@ -48,30 +42,6 @@ export const PANIER_EFFECTS = {
       }
     },
   }),
-  'panier.discard': defineEffect<
-    PanierState,
-    { count: number; everyone: boolean }
-  >({
-    input: countInput,
-    apply: ({ actorPlayerId, data, ctx }) => {
-      const recipients = data.everyone
-        ? ctx.players.all().map((player) => player.id)
-        : actorPlayerId == null
-          ? []
-          : [actorPlayerId];
-      for (const recipient of recipients) {
-        discardRandom(recipient, data.count, ctx);
-      }
-    },
-  }),
-  'panier.reverse': defineEffect<PanierState, Record<string, never>>({
-    input: gameInput.object({}),
-    apply: ({ actorPlayerId, ctx }) => {
-      if (actorPlayerId == null) return;
-      ctx.status.add(actorPlayerId, PANIER_REVERSED, { scope: 'until-used' });
-      ctx.turn.reverse();
-    },
-  }),
   'panier.quiz': defineEffect<PanierState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ actorPlayerId, ctx }) => {
@@ -86,20 +56,12 @@ export const PANIER_EFFECTS = {
       }
     },
   }),
-  'panier.target': defineEffect<PanierState, { kind: PanierTargetEffect }>({
-    input: gameInput.object({
-      kind: gameInput.enum([
-        'swap-inventories',
-        'strategic-swap',
-        'discard',
-        'steal',
-        'random-swap',
-      ] as const),
-    }),
-    apply: ({ actorPlayerId, targetPlayerIds, data, ctx }) => {
+  'panier.strategic-swap': defineEffect<PanierState, Record<string, never>>({
+    input: gameInput.object({}),
+    apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
       const targetId = targetPlayerIds[0];
       if (actorPlayerId != null && targetId != null) {
-        applyPanierTarget(actorPlayerId, targetId, data.kind, ctx);
+        requestStrategicSwap(actorPlayerId, targetId, ctx);
       }
     },
   }),

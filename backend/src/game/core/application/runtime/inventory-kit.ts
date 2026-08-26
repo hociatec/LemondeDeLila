@@ -34,7 +34,9 @@ export const inventory = {
     return Object.freeze({
       ...definition,
       component: 'inventory.set',
-      items: definition.items ? Object.freeze([...definition.items]) : undefined,
+      items: definition.items
+        ? Object.freeze([...definition.items])
+        : undefined,
     });
   },
 };
@@ -64,10 +66,7 @@ export class GameInventoryController {
 
   private readonly definitions = new Map<string, InventoryDefinition>();
 
-  create(
-    definition: InventoryDefinition,
-    playerIds: readonly number[],
-  ): void {
+  create(definition: InventoryDefinition, playerIds: readonly number[]): void {
     this.definitions.set(definition.id, definition);
     this.state.byPlayer[definition.id] = Object.fromEntries(
       playerIds.map((playerId) => [String(playerId), []]),
@@ -105,12 +104,7 @@ export class GameInventoryController {
     return (byPlayer[String(playerId)] ??= []);
   }
 
-  add(
-    inventoryId: string,
-    playerId: number,
-    itemId: string,
-    count = 1,
-  ): void {
+  add(inventoryId: string, playerId: number, itemId: string, count = 1): void {
     this.requireItem(inventoryId, itemId);
     const items = this.items(inventoryId, playerId);
     for (let index = 0; index < Math.max(0, count); index += 1) {
@@ -258,6 +252,32 @@ export class GameInventoryController {
     if (!itemId) return null;
     this.transfer(inventoryId, fromPlayerId, toPlayerId, itemId);
     return itemId;
+  }
+
+  exchangeRandom(
+    inventoryId: string,
+    leftPlayerId: number,
+    rightPlayerId: number,
+  ): void {
+    const leftItemId = this.random.shuffle(
+      this.items(inventoryId, leftPlayerId),
+    )[0];
+    const rightItemId = this.random.shuffle(
+      this.items(inventoryId, rightPlayerId),
+    )[0];
+    if (leftItemId && rightItemId) {
+      this.exchange(
+        inventoryId,
+        leftPlayerId,
+        leftItemId,
+        rightPlayerId,
+        rightItemId,
+      );
+    } else if (leftItemId) {
+      this.transfer(inventoryId, leftPlayerId, rightPlayerId, leftItemId);
+    } else if (rightItemId) {
+      this.transfer(inventoryId, rightPlayerId, leftPlayerId, rightItemId);
+    }
   }
 
   removeRandom(inventoryId: string, playerId: number): string | null {

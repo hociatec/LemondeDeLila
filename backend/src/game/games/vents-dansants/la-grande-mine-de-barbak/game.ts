@@ -7,7 +7,6 @@ import {
 import { LA_GRANDE_MINE_CARD_BY_ID, LA_GRANDE_MINE_CARDS } from './content';
 import {
   drawAtTurnStart,
-  drawnPlayerId,
   enumeratePlays,
   GRANDE_MINE_ACTIONS,
   MINE_DISCARD_NEXT_DRAW,
@@ -54,17 +53,10 @@ export default defineGame<
     const scores = ctx.players.byId((player) =>
       scoreDomain(domains[player.id]),
     );
-    const skipTurns = ctx.players.byId((player) =>
-      ctx.turn.skipCount(player.id),
-    );
     return playerView({
       game: {
         domains,
         discardNextDraw,
-        drawnPlayerId: drawnPlayerId(ctx),
-        gameOver: ctx.match.lifecycle() === 'finished',
-        winnerIds: ctx.match.result()?.winnerPlayerIds ?? [],
-        skipTurns,
         scores,
       },
       extras: {

@@ -1,11 +1,7 @@
 import { GameRuleViolationError } from '../../domain/errors/game-domain.errors';
 
 export type StatusScope =
-  | 'turn'
-  | 'global-turn'
-  | 'round'
-  | 'match'
-  | 'until-used';
+  'turn' | 'global-turn' | 'round' | 'match' | 'until-used';
 
 export const commonStatuses = {
   blocked: 'blocked',
@@ -199,9 +195,53 @@ export class GameResourcesController {
   }
 
   transfer(from: number, to: number, resource: string, amount: number): void {
-    this.remove(from, resource, amount);
-    this.add(to, resource, amount);
-    this.emit('resource.transferred', { from, to, resource, amount });
+    const normalizedAmount = this.normalizePositiveAmount(amount);
+    if (normalizedAmount === 0 || from === to) return;
+    const fromKey = String(from);
+    const toKey = String(to);
+    const resources = (this.state.resources[resource] ??= {});
+    const sourceAmount = resources[fromKey] ?? 0;
+    if (sourceAmount < normalizedAmount) {
+      throw new GameRuleViolationError(
+        'RESOURCE_INSUFFICIENT',
+        { from, to, resource, amount, available: sourceAmount },
+        'Ressource insuffisante',
+      );
+    }
+    const destinationAmount = resources[toKey] ?? 0;
+    resources[fromKey] = sourceAmount - normalizedAmount;
+    resources[toKey] = destinationAmount + normalizedAmount;
+    this.emit('resource.changed', {
+      playerId: from,
+      resource,
+      previous: sourceAmount,
+      value: resources[fromKey],
+      delta: -normalizedAmount,
+    });
+    this.emit('resource.changed', {
+      playerId: to,
+      resource,
+      previous: destinationAmount,
+      value: resources[toKey],
+      delta: normalizedAmount,
+    });
+    this.emit('resource.transferred', {
+      from,
+      to,
+      resource,
+      amount: normalizedAmount,
+    });
+  }
+
+  private normalizePositiveAmount(amount: number): number {
+    if (!Number.isInteger(amount) || amount < 1) {
+      throw new GameRuleViolationError(
+        'RESOURCE_TRANSFER_AMOUNT',
+        { amount },
+        "Quantité d'échange invalide",
+      );
+    }
+    return amount;
   }
 }
 

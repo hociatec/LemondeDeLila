@@ -35,9 +35,13 @@ describe('Morpion declarative game', () => {
     expect(
       game
         .state()
-        .log.map((entry) => entry.message)
-        .join('\n'),
-    ).toContain('A3');
+        .log.some(
+          (entry) =>
+            entry.key === 'morpion.mark.placed' &&
+            entry.params.x === 2 &&
+            entry.params.y === 0,
+        ),
+    ).toBe(true);
     expect(game.replay()).toEqual(game.state());
   });
 

@@ -156,21 +156,22 @@ function eventInstructions(
   const effect = card.effect;
   if (effect.kind === 'none') return [];
   if (effect.kind === 'move') {
-    return [gameEffects.custom('mission-galaxie.move', { delta: effect.delta })];
+    return [
+      gameEffects.custom('mission-galaxie.move', { delta: effect.delta }),
+    ];
   }
   if (effect.kind === 'skip') return [gameEffects.skipTurn(effect.turns)];
   if (effect.kind === 'reroll' || effect.kind === 'keepTurn') {
     return [gameEffects.extraTurn()];
   }
   if (effect.kind === 'goto') {
-    return [gameEffects.custom('mission-galaxie.goto', { target: effect.target })];
+    return [
+      gameEffects.custom('mission-galaxie.goto', { target: effect.target }),
+    ];
   }
   if (effect.kind === 'skipOthers') {
     return [
-      gameEffects.skipTurn(
-        effect.turns,
-        gameEffects.target.allOpponents(),
-      ),
+      gameEffects.skipTurn(effect.turns, gameEffects.target.allOpponents()),
     ];
   }
   return [

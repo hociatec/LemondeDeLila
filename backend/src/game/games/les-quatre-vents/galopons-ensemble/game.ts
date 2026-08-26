@@ -7,7 +7,6 @@ import {
   pawns,
   playerView,
   raceGame,
-  type PlayerMap,
 } from '../../../core/application/public-api';
 import { GALOPONS_CARDS, GALOPONS_PAWNS, GALOPONS_TILES } from './content';
 import {
@@ -16,7 +15,7 @@ import {
   galoponsIous,
   giveAppleWithIou,
   helpAdvanceForApple,
-  moveAndLand,
+  moveGaloponsAndResolve,
   moveToNextRegion,
   pairAdvance,
   requestPawn,
@@ -35,9 +34,7 @@ export default defineGame<
   subcategory: 'LesQuatreVents',
   description: 'Course équestre coopétitive avec pommes et aventures.',
   players: { min: 2, max: 4 },
-  patterns: [
-    raceGame({ trackId: 'galopons', spaces: GALOPONS_TILES.length }),
-  ],
+  patterns: [raceGame({ trackId: 'galopons', spaces: GALOPONS_TILES.length })],
   components: [
     pawns.set({ id: 'galopons', pawns: GALOPONS_PAWNS }),
     cards.deck({
@@ -69,7 +66,7 @@ export default defineGame<
       }),
       apply: ({ state, actorPlayerId, data, ctx }) => {
         if (actorPlayerId != null) {
-          moveAndLand(state, actorPlayerId, data.delta, 0, ctx);
+          moveGaloponsAndResolve(state, actorPlayerId, data.delta, 0, ctx);
         }
       },
     }),
@@ -86,10 +83,7 @@ export default defineGame<
         }
       },
     }),
-    'galopons.give-apple': defineEffect<
-      GaloponsState,
-      Record<string, never>
-    >({
+    'galopons.give-apple': defineEffect<GaloponsState, Record<string, never>>({
       input: gameInput.object({}),
       apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
         const targetId = targetPlayerIds[0];
@@ -98,10 +92,7 @@ export default defineGame<
         }
       },
     }),
-    'galopons.help-advance': defineEffect<
-      GaloponsState,
-      { delta: number }
-    >({
+    'galopons.help-advance': defineEffect<GaloponsState, { delta: number }>({
       input: gameInput.object({
         delta: gameInput.number({ integer: true }),
       }),
@@ -112,10 +103,7 @@ export default defineGame<
         }
       },
     }),
-    'galopons.pair-advance': defineEffect<
-      GaloponsState,
-      { delta: number }
-    >({
+    'galopons.pair-advance': defineEffect<GaloponsState, { delta: number }>({
       input: gameInput.object({
         delta: gameInput.number({ integer: true }),
       }),
@@ -127,9 +115,9 @@ export default defineGame<
       },
     }),
   },
-  view: ({ state, actor, ctx }) => {
+  view: ({ state: _state, actor, ctx }) => {
     const pending = ctx.choice.current();
-    const choiceId = pending?.data.choiceId;
+    const choiceId = pending?.data?.choiceId;
     const targetKind =
       choiceId === 'galopons.give-apple'
         ? 'give-apple'
@@ -144,43 +132,20 @@ export default defineGame<
         return pawnId == null ? [] : [[player.id, pawnId]];
       }),
     );
-    const positions = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.movement.position('galopons', player.id),
-        ]),
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('galopons', player.id),
     );
-    const apples = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [player.id, ctx.resources.get(player.id, 'apple')]),
-    );
-    const movementDirection: PlayerMap<1 | -1> = Object.fromEntries(
-      ctx.players.all().map((player) => [
-        player.id,
-        ctx.status.has(player.id, 'galopons.returning') ? -1 : 1,
-      ]),
+    const apples = ctx.players.byId((player) =>
+      ctx.resources.get(player.id, 'apple'),
     );
     return playerView({
       game: {
         ious: galoponsIous(ctx),
         apples,
-        movementDirection,
         targetKind,
         targetActorId: targetKind == null ? null : (pending?.playerId ?? null),
         pawnByPlayerId,
         replay: ctx.turn.extraCount() > 0,
-        starterId: ctx.round.starter() ?? 0,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        skipTurns: Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-        ),
-        setupComplete: GALOPONS_PHASES.is(ctx, 'playing'),
-        positions,
       },
       extras: {
         pawn: actor

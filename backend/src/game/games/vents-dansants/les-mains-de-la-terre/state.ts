@@ -6,7 +6,4 @@ export type LesMainsPlayerView = {
   extraDraws: PlayerMap<number>;
   freeFamilyRequest: PlayerMap<boolean>;
   vanishedProfessionUsed: PlayerMap<boolean>;
-  gameOver: boolean;
-  winnerIds: number[];
-  skipTurns: PlayerMap<number>;
 };

@@ -96,28 +96,19 @@ export default defineGame<
     }),
   },
   view: ({ ctx }) => {
-    const specialsPlayed = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.inventory.items(RITES_SPECIALS, player.id),
-        ]),
+    const specialsPlayed = ctx.players.byId((player) =>
+      ctx.inventory.items(RITES_SPECIALS, player.id),
     );
     return playerView({
       game: {
         specialsPlayed,
         peaceTurnsRemaining: peaceTurnsRemaining(ctx),
         silenceOwnerId: statusOwner(RITES_SILENCE, ctx),
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
       },
       extras: {
         cardCatalog: ENTRE_RITES_CARD_BY_ID,
-        specialsPlayedCount: Object.fromEntries(
-          Object.entries(specialsPlayed).map(([playerId, cards]) => [
-            playerId,
-            cards.length,
-          ]),
+        specialsPlayedCount: ctx.players.byId(
+          (player) => specialsPlayed[player.id].length,
         ),
       },
     });
@@ -125,7 +116,9 @@ export default defineGame<
   bot: {
     choose: ({ actor, ctx }) => {
       const request =
-        peaceTurnsRemaining(ctx) === 0 ? enumerateRequests(actor.id, ctx)[0] : null;
+        peaceTurnsRemaining(ctx) === 0
+          ? enumerateRequests(actor.id, ctx)[0]
+          : null;
       return request
         ? { type: 'ask_card', payload: request }
         : { type: 'pass', payload: {} };

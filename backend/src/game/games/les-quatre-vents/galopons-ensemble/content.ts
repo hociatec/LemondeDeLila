@@ -263,10 +263,7 @@ function cardInstructions(
   if (effect.kind === 'global_skip_turn') {
     return [
       gameEffects.skipTurn(effect.count),
-      gameEffects.skipTurn(
-        effect.count,
-        gameEffects.target.allOpponents(),
-      ),
+      gameEffects.skipTurn(effect.count, gameEffects.target.allOpponents()),
     ];
   }
   if (effect.kind === 'discard_apple_and_replay') {

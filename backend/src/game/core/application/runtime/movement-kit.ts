@@ -19,6 +19,35 @@ export type MovementKitState = {
   positions: Record<string, Record<string, number>>;
 };
 
+export type MovementLanding<TTile> = {
+  trackId: string;
+  playerId: number;
+  position: number;
+  tile: TTile | undefined;
+  depth: number;
+};
+
+export type MovementLandingOptions<TTile> = {
+  trackId: string;
+  playerId: number;
+  tiles?: readonly TTile[];
+  tileAt?: (position: number) => TTile | undefined;
+  depth?: number;
+  maxDepth?: number;
+  blocked?: () => boolean;
+  onLand: (landing: MovementLanding<TTile>) => void;
+  onComplete?: (landing: MovementLanding<TTile>) => void;
+};
+
+export type MovementPipelineOptions<TTile> = MovementLandingOptions<TTile> & {
+  distance: number;
+  onPass?: (input: {
+    trackId: string;
+    playerId: number;
+    position: number;
+  }) => void;
+};
+
 export const movement = {
   track(definition: Omit<TrackDefinition, 'component'>): TrackDefinition {
     if (!Number.isInteger(definition.spaces) || definition.spaces < 1) {
@@ -29,7 +58,9 @@ export const movement = {
     if (
       Object.keys(definition.landingEffects ?? {}).some((position) => {
         const value = Number(position);
-        return !Number.isInteger(value) || value < 0 || value >= definition.spaces;
+        return (
+          !Number.isInteger(value) || value < 0 || value >= definition.spaces
+        );
       })
     ) {
       throw new GameConfigurationError(
@@ -153,6 +184,15 @@ export class GameMovementController {
   }
 
   move(trackId: string, playerId: number, distance: number): number {
+    return this.performMove(trackId, playerId, distance);
+  }
+
+  private performMove(
+    trackId: string,
+    playerId: number,
+    distance: number,
+    onPass?: (position: number) => void,
+  ): number {
     const current = this.position(trackId, playerId);
     const next = this.preview(trackId, playerId, distance);
     (this.state.positions[trackId] ??= {})[String(playerId)] = next;
@@ -163,36 +203,60 @@ export class GameMovementController {
       to: next,
       distance: Math.trunc(distance),
     });
+    for (const position of this.passedPositions(trackId, current, distance)) {
+      onPass?.(position);
+    }
     this.emit('pawn.landed', { trackId, playerId, position: next });
     const effects = this.definitions.get(trackId)?.landingEffects?.[next] ?? [];
     this.scheduleEffects(...effects);
     return next;
   }
 
-  moveTo(trackId: string, playerId: number, position: number): number {
-    return this.move(trackId, playerId, position - this.position(trackId, playerId));
-  }
-
-  moveAndLand(
-    trackId: string,
-    playerId: number,
-    distance: number,
-    onLand: (position: number) => void,
-  ): number {
-    const position = this.move(trackId, playerId, distance);
-    onLand(position);
+  /** Résout une destination courante avec les garde-fous communs. */
+  resolveLanding<TTile>(options: MovementLandingOptions<TTile>): number | null {
+    const depth = options.depth ?? 0;
+    if (depth > (options.maxDepth ?? Number.POSITIVE_INFINITY)) return null;
+    if (options.blocked?.()) return null;
+    const position = this.position(options.trackId, options.playerId);
+    const landing: MovementLanding<TTile> = {
+      trackId: options.trackId,
+      playerId: options.playerId,
+      position,
+      tile: options.tileAt?.(position) ?? options.tiles?.[position],
+      depth,
+    };
+    options.onLand(landing);
+    options.onComplete?.(landing);
     return position;
   }
 
-  moveToAndLand(
-    trackId: string,
-    playerId: number,
-    position: number,
-    onLand: (position: number) => void,
-  ): number {
-    const next = this.moveTo(trackId, playerId, position);
-    onLand(next);
-    return next;
+  /** Exécute move -> onPass -> onLand -> effets déclarés -> fin de mouvement. */
+  moveAndResolve<TTile>(
+    options: MovementPipelineOptions<TTile>,
+  ): number | null {
+    const depth = options.depth ?? 0;
+    if (depth > (options.maxDepth ?? Number.POSITIVE_INFINITY)) return null;
+    if (options.blocked?.()) return null;
+    this.performMove(
+      options.trackId,
+      options.playerId,
+      options.distance,
+      (position) =>
+        options.onPass?.({
+          trackId: options.trackId,
+          playerId: options.playerId,
+          position,
+        }),
+    );
+    return this.resolveLanding(options);
+  }
+
+  moveTo(trackId: string, playerId: number, position: number): number {
+    return this.move(
+      trackId,
+      playerId,
+      position - this.position(trackId, playerId),
+    );
   }
 
   swap(trackId: string, leftPlayerId: number, rightPlayerId: number): void {
@@ -200,6 +264,28 @@ export class GameMovementController {
     const right = this.position(trackId, rightPlayerId);
     this.moveTo(trackId, leftPlayerId, right);
     this.moveTo(trackId, rightPlayerId, left);
+  }
+
+  private passedPositions(
+    trackId: string,
+    current: number,
+    distance: number,
+  ): number[] {
+    const track = this.requireTrack(trackId);
+    const steps = Math.abs(Math.trunc(distance));
+    if (steps <= 1) return [];
+    const direction = distance < 0 ? -1 : 1;
+    const passed: number[] = [];
+    for (let step = 1; step < steps; step += 1) {
+      const position = resolveTrackPosition(
+        current,
+        current + direction * step,
+        track.spaces,
+        track.overshoot ?? 'clamp',
+      );
+      passed.push(position);
+    }
+    return passed;
   }
 
   private requireTrack(trackId: string): TrackDefinition {
@@ -214,7 +300,7 @@ function deepFreeze<TValue>(value: TValue): TValue {
     return value;
   }
   for (const nested of Object.values(value)) deepFreeze(nested);
-  return Object.freeze(value) as TValue;
+  return Object.freeze(value);
 }
 
 export function resolveTrackPosition(

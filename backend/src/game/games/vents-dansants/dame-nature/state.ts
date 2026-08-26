@@ -4,5 +4,4 @@ export type DameNaturePlayerView = {
   pollutionTokens: number;
   pollutionLoserId: number | null;
   lastQuizCardId: string | null;
-  winnerIds: number[];
 };

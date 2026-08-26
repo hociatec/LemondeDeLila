@@ -1,6 +1,7 @@
 import {
   defineEvent,
   gameInput,
+  playerId as toPlayerId,
   raceTurn,
   type GameContext,
   type PlayerMap,
@@ -100,7 +101,7 @@ function collectCard(
     cardId: card.id,
   });
   CARD_COLLECTED.emit(ctx, {
-    playerId,
+    playerId: toPlayerId(playerId),
     zoneId,
     cardId: card.id,
   });
@@ -120,20 +121,15 @@ export function deckForZone(zoneId: number): string {
 export function villageCollections(
   ctx: GameContext<MonVillageState>,
 ): PlayerMap<VillageCollection> {
-  return Object.fromEntries(
-    ctx.players.all().map((player) => [
-      player.id,
-      {
-        total: ctx.score.get(player.id),
-        byZone: Object.fromEntries(
-          ZONE_RANGES.map((zone) => [
-            zone.id,
-            ctx.resources.get(player.id, zoneResource(zone.id)),
-          ]),
-        ),
-      },
-    ]),
-  );
+  return ctx.players.byId((player) => ({
+    total: ctx.score.get(player.id),
+    byZone: Object.fromEntries(
+      ZONE_RANGES.map((zone) => [
+        zone.id,
+        ctx.resources.get(player.id, zoneResource(zone.id)),
+      ]),
+    ),
+  }));
 }
 
 function zoneResource(zoneId: number): string {

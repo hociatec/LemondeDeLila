@@ -137,6 +137,38 @@ export class GameGridController {
     );
   }
 
+  full(boardId: string): boolean {
+    const board = this.requireBoard(boardId);
+    return (
+      Object.keys(this.state.cells[boardId] ?? {}).length >=
+      board.width * board.height
+    );
+  }
+
+  emptyCells(boardId: string): GridPosition[] {
+    const board = this.requireBoard(boardId);
+    const empty: GridPosition[] = [];
+    for (let y = 0; y < board.height; y += 1) {
+      for (let x = 0; x < board.width; x += 1) {
+        if (this.get(boardId, { x, y }) == null) empty.push({ x, y });
+      }
+    }
+    return empty;
+  }
+
+  lineWinner<TValue>(boardId: string, length: number): TValue | null {
+    const board = this.requireBoard(boardId);
+    const cells = Array.from(
+      { length: board.width * board.height },
+      (_, index) =>
+        this.get<TValue>(boardId, {
+          x: index % board.width,
+          y: Math.floor(index / board.width),
+        }),
+    );
+    return scanGridWinner(cells, board.width, board.height, length);
+  }
+
   neighbors(boardId: string, position: GridPosition): GridPosition[] {
     const board = this.requireBoard(boardId);
     const offsets = [
@@ -171,4 +203,43 @@ export function createGridKitState(): GridKitState {
 
 function cellKey(position: GridPosition): string {
   return `${position.x},${position.y}`;
+}
+
+export function scanGridWinner<TValue>(
+  cells: readonly (TValue | null)[],
+  width: number,
+  height: number,
+  length: number,
+): TValue | null {
+  const directions = [
+    { x: 1, y: 0 },
+    { x: 0, y: 1 },
+    { x: 1, y: 1 },
+    { x: 1, y: -1 },
+  ];
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const owner = cells[y * width + x];
+      if (owner == null) continue;
+      for (const direction of directions) {
+        let complete = true;
+        for (let offset = 1; offset < length; offset += 1) {
+          const nextX = x + direction.x * offset;
+          const nextY = y + direction.y * offset;
+          if (
+            nextX < 0 ||
+            nextY < 0 ||
+            nextX >= width ||
+            nextY >= height ||
+            cells[nextY * width + nextX] !== owner
+          ) {
+            complete = false;
+            break;
+          }
+        }
+        if (complete) return owner;
+      }
+    }
+  }
+  return null;
 }

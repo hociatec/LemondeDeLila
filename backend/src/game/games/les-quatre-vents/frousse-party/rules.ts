@@ -1,6 +1,7 @@
 import {
   defineAction,
   defineEffect,
+  drawAndResolve,
   gameInput,
   sequentialPawnSelection,
   setupPlayingPhases,
@@ -60,12 +61,12 @@ export const roll = defineAction<FrousseState, Record<string, never>>({
       total: value,
     });
     if (ctx.status.consume(actor.id, FROUSSE_STATUSES.nextRollIfThreeBackTwo)) {
-      if (value === 3) moveAndLand(state, actor.id, -2, 0, ctx);
+      if (value === 3) moveFrousseAndResolve(state, actor.id, -2, 0, ctx);
     }
     if (ctx.match.lifecycle() !== 'finished' && !pendingSwap(ctx)) {
       const cap = statusNumber(actor.id, FROUSSE_STATUSES.nextMoveCap, ctx);
       ctx.status.remove(actor.id, FROUSSE_STATUSES.nextMoveCap);
-      moveAndLand(
+      moveFrousseAndResolve(
         state,
         actor.id,
         cap > 0 ? Math.min(value, cap) : value,
@@ -92,10 +93,7 @@ const pawnSelection = sequentialPawnSelection<FrousseState>({
 export const requestPawn = pawnSelection.request;
 export const resolvePawn = pawnSelection.resolve;
 
-function modifiedRoll(
-  playerId: number,
-  ctx: RuleContext,
-): number {
+function modifiedRoll(playerId: number, ctx: RuleContext): number {
   let value: number;
   if (ctx.status.consume(playerId, FROUSSE_STATUSES.nextRollKeepLowest)) {
     const first = ctx.dice.roll('main').total;
@@ -116,63 +114,60 @@ function passesBlock(value: number, block: FrousseBlock): boolean {
   return value % 2 === 0;
 }
 
-function moveAndLand(
+function moveFrousseAndResolve(
   state: FrousseState,
   playerId: number,
   delta: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_CHAIN_DEPTH || ctx.match.lifecycle() === 'finished') return;
-  ctx.movement.moveAndLand(TRACK, playerId, delta, () =>
-    resolveLanding(state, playerId, depth + 1, ctx),
-  );
+  ctx.movement.moveAndResolve({
+    trackId: TRACK,
+    playerId,
+    distance: delta,
+    tiles: FROUSSE_TILES,
+    depth: depth + 1,
+    maxDepth: MAX_CHAIN_DEPTH,
+    blocked: () => ctx.match.lifecycle() === 'finished' || pendingSwap(ctx),
+    onLand: ({ position: current, tile }) =>
+      applyFrousseTile(state, playerId, current, tile, depth + 1, ctx),
+  });
 }
 
-function resolveLanding(
+function applyFrousseTile(
   state: FrousseState,
   playerId: number,
+  current: number,
+  tile: (typeof FROUSSE_TILES)[number] | undefined,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (
-    depth > MAX_CHAIN_DEPTH ||
-    ctx.match.lifecycle() === 'finished' ||
-    pendingSwap(ctx)
-  )
-    return;
-  const tile = FROUSSE_TILES[position(playerId, ctx)];
+  if (!tile) return;
   ctx.events.message('game.pawn.landed', {
     playerId,
-    tileId: position(playerId, ctx),
+    tileId: current,
   });
   if (tile.type === 'finish') {
     ctx.match.finish({ winners: [playerId], reason: 'escaped-manor' });
-  }
-  else if (tile.type === 'card') drawAndApply(state, playerId, depth, ctx);
+  } else if (tile.type === 'card') drawFrousseCard(state, playerId, depth, ctx);
 }
 
-function drawAndApply(
-  state: FrousseState,
+function drawFrousseCard(
+  _state: FrousseState,
   playerId: number,
   depth: number,
   ctx: RuleContext,
 ): void {
   if (depth > MAX_CHAIN_DEPTH || pendingSwap(ctx)) return;
-  ctx.cards.drawThenResolve<FrousseCard, void>(
-    DECK,
-    (card) => {
-      ctx.events.message('game.card.drawn', {
-        playerId,
-        deckId: DECK,
-        cardId: card.id,
-        category: card.category,
-      });
+  drawAndResolve<FrousseState, FrousseCard>(ctx, {
+    deckId: DECK,
+    playerId,
+    eventData: (card) => ({ category: card.category }),
+    resolve: (card) => {
       if (isProtected(playerId, card.category, ctx)) return;
       ctx.effects.schedule(...card.effects);
     },
-    {},
-  );
+  });
 }
 
 function isProtected(
@@ -206,22 +201,8 @@ function isProtected(
   return false;
 }
 
-function pendingSwap(
-  ctx: RuleContext,
-): boolean {
-  return ctx.choice.current()?.data.choiceId === 'frousse.swap';
-}
-
-function swapPositions(
-  firstId: number,
-  secondId: number,
-  ctx: RuleContext,
-): void {
-  ctx.movement.swap(TRACK, firstId, secondId);
-}
-
-function position(playerId: number, ctx: RuleContext): number {
-  return ctx.movement.position(TRACK, playerId);
+function pendingSwap(ctx: RuleContext): boolean {
+  return ctx.choice.current()?.data?.choiceId === 'frousse.swap';
 }
 
 export function blockedRule(
@@ -261,7 +242,7 @@ export const FROUSSE_EFFECTS = {
     input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
     apply: ({ state, actorPlayerId, data, ctx }) => {
       if (actorPlayerId != null) {
-        moveAndLand(state, actorPlayerId, data.delta, 0, ctx);
+        moveFrousseAndResolve(state, actorPlayerId, data.delta, 0, ctx);
       }
     },
   }),
@@ -272,7 +253,15 @@ export const FROUSSE_EFFECTS = {
     apply: ({ state, actorPlayerId, data, ctx }) => {
       if (actorPlayerId == null) return;
       ctx.movement.moveTo(TRACK, actorPlayerId, data.position);
-      resolveLanding(state, actorPlayerId, 0, ctx);
+      ctx.movement.resolveLanding({
+        trackId: TRACK,
+        playerId: actorPlayerId,
+        tiles: FROUSSE_TILES,
+        maxDepth: MAX_CHAIN_DEPTH,
+        blocked: () => ctx.match.lifecycle() === 'finished' || pendingSwap(ctx),
+        onLand: ({ position: current, tile }) =>
+          applyFrousseTile(state, actorPlayerId, current, tile, 0, ctx),
+      });
     },
   }),
   'frousse.swap': defineEffect<FrousseState, Record<string, never>>({
@@ -280,7 +269,7 @@ export const FROUSSE_EFFECTS = {
     apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
       const targetId = targetPlayerIds[0];
       if (actorPlayerId != null && targetId != null) {
-        swapPositions(actorPlayerId, targetId, ctx);
+        ctx.movement.swap(TRACK, actorPlayerId, targetId);
       }
     },
   }),
@@ -288,7 +277,7 @@ export const FROUSSE_EFFECTS = {
     input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
     apply: ({ state, targetPlayerIds, data, ctx }) => {
       for (const targetId of targetPlayerIds) {
-        moveAndLand(state, targetId, data.delta, 0, ctx);
+        moveFrousseAndResolve(state, targetId, data.delta, 0, ctx);
       }
     },
   }),

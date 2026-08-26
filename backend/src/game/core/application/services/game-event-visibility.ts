@@ -1,7 +1,4 @@
-import type {
-  GameEvent,
-  ProjectedGameEvent,
-} from '../models/game-event.model';
+import type { GameEvent, ProjectedGameEvent } from '../models/game-event.model';
 
 export function projectGameEvent(
   event: GameEvent,
@@ -11,8 +8,7 @@ export function projectGameEvent(
   if (visibility.kind === 'internal') return null;
   if (
     visibility.kind === 'private' &&
-    (viewerPlayerId == null ||
-      !visibility.playerIds.includes(viewerPlayerId))
+    (viewerPlayerId == null || !visibility.playerIds.includes(viewerPlayerId))
   ) {
     return null;
   }

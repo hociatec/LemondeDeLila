@@ -5,14 +5,8 @@ import type { SchedulerVisibility } from './scheduler-kit';
 export interface PhaseConfiguration<TState extends object> {
   readonly actions?: readonly string[];
   readonly visibility?: 'public' | 'hidden';
-  readonly enter?: (input: {
-    state: TState;
-    ctx: GameContext<TState>;
-  }) => void;
-  readonly exit?: (input: {
-    state: TState;
-    ctx: GameContext<TState>;
-  }) => void;
+  readonly enter?: (input: { state: TState; ctx: GameContext<TState> }) => void;
+  readonly exit?: (input: { state: TState; ctx: GameContext<TState> }) => void;
   readonly next?: string;
   readonly autoTransition?: (input: {
     state: TState;
@@ -42,17 +36,12 @@ export type GamePhaseSet<TState extends object, TId extends string> = {
   readonly phases: Readonly<Record<TId, PhaseConfiguration<TState>>>;
   current(ctx: GameContext<TState>): TId;
   is(ctx: GameContext<TState>, phaseId: TId): boolean;
-  transition(
-    ctx: GameContext<TState>,
-    phaseId: TId,
-  ): void;
+  transition(ctx: GameContext<TState>, phaseId: TId): void;
 };
 
 export function defineGamePhases<TState extends object>() {
   return <
-    const TPhases extends Readonly<
-      Record<string, PhaseConfiguration<TState>>
-    >,
+    const TPhases extends Readonly<Record<string, PhaseConfiguration<TState>>>,
     const TInitial extends keyof TPhases & string,
   >(definition: {
     initialPhase: TInitial;
@@ -61,11 +50,15 @@ export function defineGamePhases<TState extends object>() {
     type PhaseId = keyof TPhases & string;
     const phaseIds = new Set(Object.keys(definition.phases));
     const current = (ctx: GameContext<TState>): PhaseId => {
-      const phaseId = ctx.phase();
+      const phaseId = ctx.phase.current();
       if (!phaseIds.has(phaseId)) {
-        ctx.reject('UNKNOWN_PHASE', { phase: phaseId }, `Phase inconnue: ${phaseId}`);
+        ctx.reject(
+          'UNKNOWN_PHASE',
+          { phase: phaseId },
+          `Phase inconnue: ${phaseId}`,
+        );
       }
-      return phaseId as PhaseId;
+      return phaseId;
     };
     return Object.freeze({
       initialPhase: definition.initialPhase,

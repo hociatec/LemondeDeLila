@@ -26,10 +26,7 @@ import {
 import { GameRankingController } from './ranking-kit';
 import type { DeclarativeState } from './game-definition';
 import { GameChoiceController } from './game-choice-controller';
-import {
-  createMovementKitState,
-  GameMovementController,
-} from './movement-kit';
+import { createMovementKitState, GameMovementController } from './movement-kit';
 import {
   createPawnKitState,
   GamePawnController,
@@ -70,6 +67,7 @@ import { GameEffectEngineController } from './effect-engine';
 import type { GameEffectResolverShape } from './effects-kit';
 import {
   GameSubmissionController,
+  GameSubmissionFlowController,
   GameJudgeController,
   GameVotingController,
 } from './submission-kit';
@@ -126,6 +124,7 @@ export class GameContext<TState extends object> {
   readonly status: GameStatusController;
   readonly config: GameConfigurationController;
   readonly submissions: GameSubmissionController;
+  readonly submissionFlow: GameSubmissionFlowController;
   readonly judge: GameJudgeController;
   readonly voting: GameVotingController;
   readonly scheduler: GameSchedulerController;
@@ -161,10 +160,7 @@ export class GameContext<TState extends object> {
         visibility: resolveEngineVisibility(type, visibility),
       });
     },
-    message: (
-      key: string,
-      params: Record<string, unknown> = {},
-    ) => {
+    message: (key: string, params: Record<string, unknown> = {}) => {
       const normalizedKey = key.trim();
       if (!normalizedKey) return;
       this.eventsBuffer.push({
@@ -228,9 +224,7 @@ export class GameContext<TState extends object> {
       this.playerAtOffset(playerId, -offset),
     randomOther: (playerId = this.actor?.id ?? null) =>
       this.random.pick(
-        (this.runtime.players ?? []).filter(
-          (player) => player.id !== playerId,
-        ),
+        (this.runtime.players ?? []).filter((player) => player.id !== playerId),
       ) ?? null,
   };
   readonly turn = {
@@ -249,8 +243,7 @@ export class GameContext<TState extends object> {
       this.runtime.engine.playerValues.scheduledSkips[String(playerId)] ?? 0,
     cancelSkip: (playerId: number, count = 1) =>
       this.cancelScheduledSkips(playerId, count),
-    extra: (count = 1, playerId?: number) =>
-      this.addExtraTurn(count, playerId),
+    extra: (count = 1, playerId?: number) => this.addExtraTurn(count, playerId),
     extraCount: (playerId?: number) => this.extraTurnCount(playerId),
     clearExtra: (playerId?: number) => this.clearExtraTurns(playerId),
     replaceUpcoming: (playerId: number, replacementId: number) =>
@@ -265,19 +258,16 @@ export class GameContext<TState extends object> {
     remaining: () => this.runtime.turn?.actionPointsRemaining ?? null,
     to: (playerId: number) => this.moveTurnTo(playerId),
     waitForAll: (sessionId: string) => this.waitForAll(sessionId),
-    waitingSession: () =>
-      this.runtime.turn?.simultaneousSessionId ?? null,
-    waitingPlayers: (sessionId?: string) =>
-      this.waitingPlayers(sessionId),
-    completeWaiting: (sessionId?: string) =>
-      this.completeWaiting(sessionId),
+    waitingSession: () => this.runtime.turn?.simultaneousSessionId ?? null,
+    waitingPlayers: (sessionId?: string) => this.waitingPlayers(sessionId),
+    completeWaiting: (sessionId?: string) => this.completeWaiting(sessionId),
     flags: {
       get: <TValue>(key: string): TValue | null =>
         (this.runtime.engine.playerValues.turnFlags[key] as
-          | TValue
-          | undefined) ?? null,
+          TValue | undefined) ?? null,
       set: (key: string, value: unknown = true) => {
-        this.runtime.engine.playerValues.turnFlags[key] = structuredClone(value);
+        this.runtime.engine.playerValues.turnFlags[key] =
+          structuredClone(value);
       },
       consume: (key: string): boolean => {
         if (!(key in this.runtime.engine.playerValues.turnFlags)) return false;
@@ -305,9 +295,7 @@ export class GameContext<TState extends object> {
         (
           component,
         ): component is (
-          | DeckDefinition<unknown>
-          | HandsDefinition
-          | CardSetsDefinition
+          DeckDefinition<unknown> | HandsDefinition | CardSetsDefinition
         ) & {
           readonly scope?: import('./component-kit').GameComponentScope;
         } => component.component.startsWith('cards.'),
@@ -356,7 +344,9 @@ export class GameContext<TState extends object> {
       (this.runtime.engine.kits.movement ??= createMovementKitState()),
       this.emitDomainEvent,
       this.components.filter(
-        (component): component is import('./movement-kit').TrackDefinition & {
+        (
+          component,
+        ): component is import('./movement-kit').TrackDefinition & {
           readonly scope?: import('./component-kit').GameComponentScope;
         } => component.component === 'movement.track',
       ),
@@ -403,7 +393,9 @@ export class GameContext<TState extends object> {
       (this.runtime.engine.kits.quiz ??= createQuizKitState()),
       this.execution.rng,
       this.components.filter(
-        (component): component is QuizDefinition & {
+        (
+          component,
+        ): component is QuizDefinition & {
           readonly scope?: import('./component-kit').GameComponentScope;
         } => component.component === 'quiz.bank',
       ),
@@ -417,7 +409,9 @@ export class GameContext<TState extends object> {
     readonly actor: PlayerStateEntity | null,
     private readonly execution: GameExecutionContext,
     private readonly turnPolicy: TurnPolicy,
-    private readonly phases: Readonly<Record<string, PhaseConfiguration<TState>>>,
+    private readonly phases: Readonly<
+      Record<string, PhaseConfiguration<TState>>
+    >,
     private readonly lifecycleHooks: GameLifecycleHooks<TState> = {},
     private readonly components: readonly GameComponentDefinition[] = [],
     effectResolvers: Readonly<
@@ -507,6 +501,15 @@ export class GameContext<TState extends object> {
       this.runtime.players ?? [],
       emit,
     );
+    this.submissionFlow = new GameSubmissionFlowController(
+      this.submissions,
+      this.voting,
+      this.judge,
+      {
+        waitForAll: (sessionId) => this.turn.waitForAll(sessionId),
+        completeWaiting: (sessionId) => this.turn.completeWaiting(sessionId),
+      },
+    );
     this.scheduler = new GameSchedulerController(
       this.runtime.engine.scheduler,
       () => this.clock.nowMs(),
@@ -529,10 +532,6 @@ export class GameContext<TState extends object> {
 
   get state(): TState {
     return this.runtime.game;
-  }
-
-  phase(): string {
-    return this.runtime.phase;
   }
 
   transitionTo(phase: string): void {
@@ -621,6 +620,7 @@ export class GameContext<TState extends object> {
     this.status.tick('turn', endedPlayerId ?? undefined);
     this.status.tick('global-turn');
     this.runtime.engine.playerValues.turnFlags = {};
+    this.effects.clearSource();
     if (this.runtime.engine.match.status === 'finished') {
       this.events.engine('turn.ended', {
         playerId: endedPlayerId,
@@ -653,11 +653,12 @@ export class GameContext<TState extends object> {
       current.currentPlayerId = current.replacedSlotOwnerId;
       current.replacedSlotOwnerId = null;
     }
-    let nextTurn = this.turnPolicy.advance(
-      current,
-      this.runtime.players ?? [],
-    );
-    for (let checked = 0; checked < (this.runtime.players?.length ?? 0); checked += 1) {
+    let nextTurn = this.turnPolicy.advance(current, this.runtime.players ?? []);
+    for (
+      let checked = 0;
+      checked < (this.runtime.players?.length ?? 0);
+      checked += 1
+    ) {
       const nextPlayerId = nextTurn.currentPlayerId;
       if (nextPlayerId == null) break;
       const remaining =
@@ -670,10 +671,7 @@ export class GameContext<TState extends object> {
       this.runTurnHook(this.lifecycleHooks.afterTurn, nextPlayerId);
       this.status.tick('turn', nextPlayerId);
       this.status.tick('global-turn');
-      nextTurn = this.turnPolicy.advance(
-        nextTurn,
-        this.runtime.players ?? [],
-      );
+      nextTurn = this.turnPolicy.advance(nextTurn, this.runtime.players ?? []);
     }
     this.applyScheduledTurnReplacement(nextTurn);
     this.runtime.turn = nextTurn;
@@ -700,7 +698,11 @@ export class GameContext<TState extends object> {
     const targetId = playerId ?? this.runtime.turn?.currentPlayerId;
     if (targetId == null) return;
     if (!this.players.get(targetId)) {
-      this.reject('UNKNOWN_PLAYER', { playerId: targetId }, 'Joueur absent de la partie');
+      this.reject(
+        'UNKNOWN_PLAYER',
+        { playerId: targetId },
+        'Joueur absent de la partie',
+      );
     }
     const amount = Math.max(1, Math.floor(count));
     if (targetId === this.runtime.turn?.currentPlayerId) {
@@ -708,7 +710,8 @@ export class GameContext<TState extends object> {
         (this.runtime.turn.extraTurns ?? 0) + amount;
       return;
     }
-    const scheduled = (this.runtime.engine.playerValues.scheduledExtraTurns ??= {});
+    const scheduled = (this.runtime.engine.playerValues.scheduledExtraTurns ??=
+      {});
     const key = String(targetId);
     scheduled[key] = (scheduled[key] ?? 0) + amount;
   }
@@ -757,7 +760,8 @@ export class GameContext<TState extends object> {
   private applyScheduledTurnReplacement(
     turn: NonNullable<DeclarativeState<TState>['turn']>,
   ): void {
-    if (turn.replacedSlotOwnerId != null || turn.currentPlayerId == null) return;
+    if (turn.replacedSlotOwnerId != null || turn.currentPlayerId == null)
+      return;
     const key = String(turn.currentPlayerId);
     const replacementId = turn.scheduledTurnReplacements?.[key];
     if (replacementId == null) return;
@@ -792,15 +796,19 @@ export class GameContext<TState extends object> {
   }
 
   private spendActionPoints(points: number): number {
-    if (this.turnPolicy.kind !== 'action-points' || !this.runtime.turn) {
+    const turn = this.runtime.turn;
+    if (this.turnPolicy.kind !== 'action-points') {
       this.reject(
         'ACTION_POINTS_DISABLED',
         {},
         'Cette partie n’utilise pas de points d’action',
       );
     }
+    if (!turn) {
+      return this.reject('TURN_NOT_INITIALIZED', {}, 'Tour non initialisé');
+    }
     const amount = Math.max(1, Math.floor(points));
-    const remaining = this.runtime.turn.actionPointsRemaining ?? 0;
+    const remaining = turn.actionPointsRemaining ?? 0;
     if (amount > remaining) {
       this.reject(
         'ACTION_POINTS_INSUFFICIENT',
@@ -808,8 +816,8 @@ export class GameContext<TState extends object> {
         'Points d’action insuffisants',
       );
     }
-    this.runtime.turn.actionPointsRemaining = remaining - amount;
-    if (this.runtime.turn.actionPointsRemaining === 0) this.endTurn();
+    turn.actionPointsRemaining = remaining - amount;
+    if (turn.actionPointsRemaining === 0) this.endTurn();
     return this.runtime.turn?.actionPointsRemaining ?? 0;
   }
 
@@ -920,7 +928,7 @@ export class GameContext<TState extends object> {
     const index = players.findIndex((player) => player.id === playerId);
     if (index < 0) return null;
     const normalized =
-      ((index + Math.trunc(offset)) % players.length + players.length) %
+      (((index + Math.trunc(offset)) % players.length) + players.length) %
       players.length;
     return players[normalized] ?? null;
   }

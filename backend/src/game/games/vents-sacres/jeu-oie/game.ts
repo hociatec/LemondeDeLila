@@ -57,35 +57,22 @@ export default defineGame<
       resolve: ({ actor, value, ctx }) => assignPawn(actor.id, value, ctx),
     }),
   },
-  view: ({ state, actor, ctx }) => {
+  view: ({ state: _state, actor, ctx }) => {
     const pawnByPlayerId = Object.fromEntries(
       ctx.players.all().flatMap((player) => {
         const pawnId = ctx.pawns.assigned('goose', player.id)[0];
         return pawnId == null ? [] : [[player.id, pawnId]];
       }),
     );
-    const positions = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.movement.position('goose-board', player.id),
-        ]),
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('goose-board', player.id),
     );
     return playerView({
       game: {
-        inWell: Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [player.id, ctx.status.has(player.id, GOOSE_IN_WELL)]),
+        inWell: ctx.players.byId((player) =>
+          ctx.status.has(player.id, GOOSE_IN_WELL),
         ),
         pawnByPlayerId,
-        positions,
-        setupComplete: JEU_OIE_PHASES.is(ctx, 'playing'),
-        lastRoll: ctx.dice.last('main')?.total ?? null,
-        skipTurns: Object.fromEntries(
-          ctx.players.all().map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-        ),
       },
       extras: {
         currentPlayerView: actor
@@ -94,7 +81,7 @@ export default defineGame<
         pawns: GOOSE_PAWNS,
         pawnByPlayerId,
       },
-      board: { tiles: structuredClone(GOOSE_TILES), positions },
+      board: { tiles: GOOSE_TILES, positions },
     });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },

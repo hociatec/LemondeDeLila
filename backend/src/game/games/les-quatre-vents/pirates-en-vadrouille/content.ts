@@ -30,10 +30,7 @@ const BONUS_EFFECTS: Readonly<
   4: [gameEffects.move(TRACK, 2)],
   5: [immunity(1)],
   6: [gameEffects.move(TRACK, 3)],
-  7: [
-    gameEffects.move(TRACK, -1, chosenOpponent),
-    gameEffects.completeTurn(),
-  ],
+  7: [gameEffects.move(TRACK, -1, chosenOpponent), gameEffects.completeTurn()],
   8: [gameEffects.gainResource(GOLD, 1)],
   9: [
     gameEffects.custom('pirates.steal-treasure', {}, chosenOpponent),
@@ -43,7 +40,7 @@ const BONUS_EFFECTS: Readonly<
 };
 
 const OBSTACLE_EFFECTS: Readonly<
-  Record<number, readonly PirateCard['effects'][number>[]>
+  Record<number, readonly PirateCard['effects'][number][]>
 > = {
   1: [gameEffects.move(TRACK, -2)],
   2: [gameEffects.skipTurn(1)],

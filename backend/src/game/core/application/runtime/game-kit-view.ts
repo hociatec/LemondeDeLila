@@ -1,5 +1,6 @@
 import {
   projectCardsKitState,
+  type CardsPlayerView,
   type CardSetsDefinition,
   type HandsDefinition,
 } from './cards-kit';
@@ -9,10 +10,7 @@ import {
   projectInventoryKitState,
   type InventoryDefinition,
 } from './inventory-kit';
-import {
-  projectEconomyKitState,
-  type MarketDefinition,
-} from './economy-kit';
+import { projectEconomyKitState, type MarketDefinition } from './economy-kit';
 import {
   projectOwnershipKitState,
   type OwnershipDefinition,
@@ -23,13 +21,75 @@ import type { DiceDefinition } from './dice-kit';
 import type { GridDefinition } from './grid-kit';
 import type { PawnSetDefinition } from './pawn-kit';
 
+export type DiceSetPlayerView = {
+  id: string;
+  label: string;
+  sides: number;
+  dice: Array<{
+    id: string;
+    label: string;
+    sides: number;
+    value?: number;
+  }>;
+  total?: number;
+  rollKey?: string;
+};
+
+export type DicePlayerView = DiceSetPlayerView & {
+  activeSetId: string;
+  sets: Record<string, DiceSetPlayerView>;
+};
+
+export type MovementPlayerView = {
+  tracks: Record<
+    string,
+    {
+      spaces: number;
+      overshoot: NonNullable<TrackDefinition['overshoot']>;
+      positions: Record<string, number>;
+    }
+  >;
+};
+
+export type PawnSetsPlayerView = {
+  sets: Record<
+    string,
+    {
+      definitions: PawnSetDefinition['pawns'];
+      owners: Record<string, number>;
+      assignments: Record<string, string[]>;
+      positions: Record<string, number>;
+    }
+  >;
+};
+
+export type GameKitsPlayerView = {
+  cards?: CardsPlayerView;
+  inventory?: ReturnType<typeof projectInventoryKitState>;
+  economy?: ReturnType<typeof projectEconomyKitState>;
+  ownership?: ReturnType<typeof projectOwnershipKitState>;
+  dice?: DicePlayerView;
+  movement?: MovementPlayerView;
+  pawns?: PawnSetsPlayerView;
+  grid?: {
+    boards: Record<
+      string,
+      Partial<GridDefinition> & { cells: Record<string, unknown> }
+    >;
+  };
+  quiz?: {
+    banks: Record<string, { count: number; cursor: number; remaining: number }>;
+    sessions: Record<string, Record<string, unknown>>;
+  };
+};
+
 export function projectGameKits(
   kits: EngineKitsState,
   viewerPlayerId: number | null,
   turnNumber: number,
   components: readonly GameComponentDefinition[] = [],
-): Record<string, unknown> {
-  const extras: Record<string, unknown> = {};
+): GameKitsPlayerView {
+  const extras: GameKitsPlayerView = {};
   if (kits.cards && Object.keys(kits.cards.decks).length > 0) {
     extras.cards = projectCardsKitState(
       kits.cards,
@@ -71,32 +131,32 @@ export function projectGameKits(
     );
   }
   const dice = kits.dice;
-  const latest = dice ? Object.entries(dice.rolls).at(-1) : undefined;
   const diceDefinitions = components.filter(
     (component): component is DiceDefinition =>
       component.component === 'dice.set',
   );
-  const setId = latest?.[0] ?? diceDefinitions[0]?.id;
-  const definition = diceDefinitions.find((candidate) => candidate.id === setId);
-  if (setId && definition) {
-    const roll = latest?.[0] === setId ? latest[1] : null;
-    extras.dice = {
-      id: setId,
-      label: definition.count > 1 ? 'Dés' : 'Dé',
-      sides: definition.sides,
-      dice: Array.from({ length: definition.count }, (_, index) => ({
-        id: `${setId}-${index + 1}`,
-        label: `Dé ${index + 1}`,
-        sides: definition.sides,
-        ...(roll?.values[index] == null ? {} : { value: roll.values[index] }),
-      })),
-      ...(roll
-        ? {
-            total: roll.total,
-            rollKey: `${turnNumber}:${roll.values.join('-')}`,
-          }
-        : {}),
-    };
+  const activeSetId = dice?.lastRollId ?? diceDefinitions[0]?.id;
+  if (dice && activeSetId) {
+    const sets = Object.fromEntries(
+      diceDefinitions.map((definition) => [
+        definition.id,
+        projectDiceSet(
+          definition,
+          dice.rolls[definition.id],
+          turnNumber,
+          dice.sequence,
+        ),
+      ]),
+    );
+    const active =
+      sets[activeSetId] ??
+      projectDiceSet(
+        { component: 'dice.set', id: activeSetId, count: 1, sides: 6 },
+        dice.rolls[activeSetId],
+        turnNumber,
+        dice.sequence,
+      );
+    extras.dice = { ...active, activeSetId, sets };
   }
   const movement = kits.movement;
   const trackDefinitions = components.filter(
@@ -111,13 +171,12 @@ export function projectGameKits(
             (definition) => definition.id === trackId,
           );
           return [
-          trackId,
-          {
-            spaces: track?.spaces ?? 0,
-            overshoot:
-              track?.overshoot ?? (track?.wrap ? 'wrap' : 'clamp'),
-            positions: structuredClone(positions),
-          },
+            trackId,
+            {
+              spaces: track?.spaces ?? 0,
+              overshoot: track?.overshoot ?? 'clamp',
+              positions: structuredClone(positions),
+            },
           ];
         }),
       ),
@@ -140,9 +199,7 @@ export function projectGameKits(
             {
               definitions: structuredClone(definition?.pawns ?? []),
               owners: structuredClone(pawns.owners[setId] ?? {}),
-              assignments: structuredClone(
-                pawns.assignments[setId] ?? {},
-              ),
+              assignments: structuredClone(pawns.assignments[setId] ?? {}),
               positions: structuredClone(positions),
             },
           ];
@@ -222,6 +279,31 @@ export function projectGameKits(
     };
   }
   return extras;
+}
+
+function projectDiceSet(
+  definition: DiceDefinition,
+  roll: { values: number[]; total: number } | undefined,
+  turnNumber: number,
+  sequence: number,
+): DiceSetPlayerView {
+  return {
+    id: definition.id,
+    label: definition.count > 1 ? 'Dés' : 'Dé',
+    sides: definition.sides,
+    dice: Array.from({ length: definition.count }, (_, index) => ({
+      id: `${definition.id}-${index + 1}`,
+      label: `Dé ${index + 1}`,
+      sides: definition.sides,
+      ...(roll?.values[index] == null ? {} : { value: roll.values[index] }),
+    })),
+    ...(roll
+      ? {
+          total: roll.total,
+          rollKey: `${turnNumber}:${sequence}:${definition.id}`,
+        }
+      : {}),
+  };
 }
 
 function publicQuizQuestion(

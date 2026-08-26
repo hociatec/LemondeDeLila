@@ -1,7 +1,4 @@
-import {
-  defineEffect,
-  gameInput,
-} from '../../../core/application/public-api';
+import { defineEffect, gameInput } from '../../../core/application/public-api';
 import type { GrandeMineState } from './state';
 import {
   discardRandomHand,
@@ -45,19 +42,16 @@ export const GRANDE_MINE_EFFECTS = {
       }
     },
   }),
-  'mine.discard-hand-all': defineEffect<
-    GrandeMineState,
-    Record<string, never>
-  >({
-    input: gameInput.object({}),
-    apply: ({ ctx }) => {
-      for (const player of ctx.players.all()) discardRandomHand(player.id, ctx);
+  'mine.discard-hand-all': defineEffect<GrandeMineState, Record<string, never>>(
+    {
+      input: gameInput.object({}),
+      apply: ({ ctx }) => {
+        for (const player of ctx.players.all())
+          discardRandomHand(player.id, ctx);
+      },
     },
-  }),
-  'mine.remove-treasure-all': defineEffect<
-    GrandeMineState,
-    { count: number }
-  >({
+  ),
+  'mine.remove-treasure-all': defineEffect<GrandeMineState, { count: number }>({
     input: gameInput.object({
       count: gameInput.number({ integer: true, min: 0 }),
     }),
@@ -75,15 +69,14 @@ export const GRANDE_MINE_EFFECTS = {
       if (actorPlayerId != null) recoverDiscard(actorPlayerId, ctx);
     },
   }),
-  'mine.give-random-next': defineEffect<
-    GrandeMineState,
-    Record<string, never>
-  >({
-    input: gameInput.object({}),
-    apply: ({ actorPlayerId, ctx }) => {
-      if (actorPlayerId != null) giveRandomToNext(actorPlayerId, ctx);
+  'mine.give-random-next': defineEffect<GrandeMineState, Record<string, never>>(
+    {
+      input: gameInput.object({}),
+      apply: ({ actorPlayerId, ctx }) => {
+        if (actorPlayerId != null) giveRandomToNext(actorPlayerId, ctx);
+      },
     },
-  }),
+  ),
   'mine.draw-passive': defineEffect<GrandeMineState, { count: number }>({
     input: gameInput.object({
       count: gameInput.number({ integer: true, min: 0 }),
@@ -96,10 +89,7 @@ export const GRANDE_MINE_EFFECTS = {
       }
     },
   }),
-  'mine.draw-and-give': defineEffect<
-    GrandeMineState,
-    Record<string, never>
-  >({
+  'mine.draw-and-give': defineEffect<GrandeMineState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ actorPlayerId, ctx }) => {
       if (actorPlayerId == null) return;

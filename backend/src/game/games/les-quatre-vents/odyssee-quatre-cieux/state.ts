@@ -9,6 +9,4 @@ export type OdysseePlayerView = {
   pawnsByPlayer: PlayerMap<OdysseePawn[]>;
   trackLength: number;
   homeLength: number;
-  winnerId: number | null;
-  lastRoll: number | null;
 };

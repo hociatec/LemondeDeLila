@@ -34,6 +34,20 @@ export type {
   RawChoiceResolution,
   VictoryRule,
 } from './game-definition';
+export type {
+  GameStatusPlayerView,
+  GameSetupPlayerView,
+  GameTurnPlayerView,
+  GenericBoardPlayerView,
+  GenericGamePlayerView,
+} from './game-system-view';
+export type {
+  DicePlayerView,
+  DiceSetPlayerView,
+  GameKitsPlayerView,
+  MovementPlayerView,
+  PawnSetsPlayerView,
+} from './game-kit-view';
 export {
   boardContent,
   cardContent,
@@ -55,11 +69,7 @@ export { gameInput } from './game-input-schema';
 export type { GameInputSchema } from './game-input-schema';
 export { defineEvent } from './game-event-definition';
 export type { GameEventDefinition } from './game-event-definition';
-export {
-  defineSelector,
-  memoizeSelector,
-  selectAll,
-} from './game-selectors';
+export { defineSelector, memoizeSelector, selectAll } from './game-selectors';
 export type { GameSelector } from './game-selectors';
 export {
   defineTieBreaker,
@@ -125,11 +135,7 @@ export type {
   ScorePlayerView,
   StatusScope,
 } from './player-values-kit';
-export {
-  defineGamePhases,
-  phase,
-  setupPlayingPhases,
-} from './phase-kit';
+export { defineGamePhases, phase, setupPlayingPhases } from './phase-kit';
 export type {
   GamePhaseId,
   GamePhaseSet,
@@ -156,12 +162,13 @@ export {
   whenResourceAtLeast,
   whenTurnOfActor,
 } from './action-conditions';
-export type {
-  ActionCondition,
-  ActionValidator,
-} from './action-conditions';
+export type { ActionCondition, ActionValidator } from './action-conditions';
 export { cards } from './cards-kit';
 export type {
+  CardDefinition,
+  CardInstance,
+  CardZone,
+  CardId as KitCardId,
   CardSetsDefinition,
   DeckDefinition,
   HandsDefinition,
@@ -171,14 +178,16 @@ export type { InventoryDefinition, InventoryKitState } from './inventory-kit';
 export { economy } from './economy-kit';
 export type { EconomyKitState, MarketDefinition } from './economy-kit';
 export { ownership } from './ownership-kit';
-export type {
-  OwnershipDefinition,
-  OwnershipKitState,
-} from './ownership-kit';
+export type { OwnershipDefinition, OwnershipKitState } from './ownership-kit';
 export { GameRankingController } from './ranking-kit';
 export type { RankingCriterion, RankingEntry } from './ranking-kit';
 export { movement } from './movement-kit';
-export type { TrackDefinition } from './movement-kit';
+export type {
+  MovementLanding,
+  MovementLandingOptions,
+  MovementPipelineOptions,
+  TrackDefinition,
+} from './movement-kit';
 export { diceKit } from './dice-kit';
 export type {
   DiceDefinition,
@@ -192,7 +201,7 @@ export type {
   PawnMove,
   PawnSetDefinition,
 } from './pawn-kit';
-export { grid } from './grid-kit';
+export { grid, scanGridWinner } from './grid-kit';
 export type { GridDefinition, GridPosition } from './grid-kit';
 export { quiz } from './quiz-kit';
 export type { QuizDefinition, QuizQuestion } from './quiz-kit';
@@ -202,15 +211,21 @@ export type {
   EffectCondition,
   EffectTarget,
   GameEffectInstruction,
+  EffectSource,
   GameEffectResolver,
   GameEffectResolverShape,
 } from './effects-kit';
+export type { SubmissionFlowStage } from './submission-kit';
 export {
   answerQuiz,
   chooseTarget,
   collectSets,
+  completeRound,
   completeSet,
   discardCard,
+  drawAndResolve,
+  drawEvent,
+  drawForPlayer,
   drawCard,
   drawThenResolve,
   eliminateAtScore,
@@ -236,18 +251,28 @@ export {
   vote,
   winAtScore,
 } from './gameplay-recipes';
+export type {
+  CompleteRoundOptions,
+  DrawAndResolveOptions,
+  DrawForPlayerOptions,
+} from './gameplay-recipes';
 export {
   cardGame,
   collectionGame,
   composePatterns,
   definePattern,
   drawCardsAtTurnStart,
+  economyGame,
+  gridGame,
+  marketGame,
   pushYourLuck,
   raceGame,
   pawnRace,
   quizRace,
   roundScoring,
   simultaneousAnswers,
+  submissionGame,
+  submissionJudgeGame,
 } from './gameplay-patterns';
 export type { GamePattern } from './gameplay-patterns';
 export {
@@ -255,10 +280,7 @@ export {
   GAMEPLAY_MECHANICS_CATALOG,
   MECHANIC_EXTRACTION_THRESHOLD,
 } from './mechanics-catalog';
-export type {
-  MechanismAdmission,
-  MechanismLayer,
-} from './mechanics-catalog';
+export type { MechanismAdmission, MechanismLayer } from './mechanics-catalog';
 export {
   GameSubmissionController,
   GameJudgeController,

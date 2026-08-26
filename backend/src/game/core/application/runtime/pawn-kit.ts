@@ -21,6 +21,10 @@ export type PawnSetDefinition = {
   readonly spaces?: number;
   readonly overshoot?: 'clamp' | 'wrap' | 'bounce' | 'exact';
   readonly initialPosition?: number;
+  readonly entryRoll?: number;
+  readonly entryPosition?: number;
+  readonly exactFinish?: boolean;
+  readonly homeStretchFrom?: number;
 };
 
 export type PawnMove = {
@@ -163,7 +167,7 @@ export class GamePawnController {
   }
 
   definitions(setId: string): PawnDefinition[] {
-    return structuredClone(this.requireSet(setId).pawns);
+    return [...structuredClone(this.requireSet(setId).pawns)];
   }
 
   perPlayer(setId: string): number {
@@ -253,17 +257,19 @@ export class GamePawnController {
         if (target == null) return [];
         to = target;
       } else if (from < 0) {
-        if (options.enterOn != null && distance !== options.enterOn) return [];
-        to = options.entryPosition ?? 0;
+        const entryRoll = options.enterOn ?? definition.entryRoll;
+        if (entryRoll != null && distance !== entryRoll) return [];
+        to = options.entryPosition ?? definition.entryPosition ?? 0;
       } else if (definition.spaces) {
         const raw = from + Math.trunc(distance);
         const finish = definition.spaces - 1;
-        if (options.exactFinish && raw > finish) return [];
+        const exactFinish = options.exactFinish ?? definition.exactFinish;
+        if (exactFinish && raw > finish) return [];
         to = resolveTrackPosition(
           from,
           raw,
           definition.spaces,
-          options.exactFinish ? 'exact' : (definition.overshoot ?? 'clamp'),
+          exactFinish ? 'exact' : (definition.overshoot ?? 'clamp'),
         );
       } else {
         to = from + Math.trunc(distance);
@@ -290,6 +296,53 @@ export class GamePawnController {
       });
     }
     return this.moveTo(setId, move.pawnId, move.to);
+  }
+
+  /** Applique un mouvement de course validé et exécute ses hooks métier. */
+  applyRaceMove(
+    setId: string,
+    playerId: number,
+    move: PawnMove,
+    options: {
+      beforeMove?: (move: Readonly<PawnMove>) => void;
+      afterMove?: (move: Readonly<PawnMove>) => void;
+      finishAt?: number;
+      onFinish?: () => void;
+    } = {},
+  ): number {
+    if (this.owner(setId, move.pawnId) !== playerId) {
+      throw new GameRuleViolationError('PAWN_NOT_OWNED', {
+        setId,
+        pawnId: move.pawnId,
+        playerId,
+      });
+    }
+    options.beforeMove?.(move);
+    const position = this.applyMove(setId, move);
+    options.afterMove?.(move);
+    const definition = this.requireSet(setId);
+    const finishAt =
+      options.finishAt ??
+      (definition.exactFinish && definition.spaces != null
+        ? definition.spaces - 1
+        : undefined);
+    if (
+      finishAt != null &&
+      this.assigned(setId, playerId).every(
+        (pawnId) => this.position(setId, pawnId) >= finishAt,
+      )
+    ) {
+      options.onFinish?.();
+    }
+    return position;
+  }
+
+  inHomeStretch(setId: string, pawnId: string): boolean {
+    const definition = this.requireSet(setId);
+    return (
+      definition.homeStretchFrom != null &&
+      this.position(setId, pawnId) >= definition.homeStretchFrom
+    );
   }
 
   position(setId: string, pawnId: string): number {

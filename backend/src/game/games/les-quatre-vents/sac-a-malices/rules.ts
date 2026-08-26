@@ -1,4 +1,5 @@
 import {
+  drawAndResolve,
   defineEffect,
   gameInput,
   rejectRule,
@@ -35,13 +36,14 @@ import type { SacManagementKind, SacState } from './state';
 type RuleContext = GameContext<SacState>;
 const MAX_CHAIN_DEPTH = 24;
 const PROPERTIES = 'properties';
+const TRACK = 'city';
 
 export function resolvePurchase(
   state: SacState,
   decision: string,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<{
+  const pending = ctx.choice.consumeContinuation<{
     flow: 'purchase';
     playerId: number;
     tileIndex: number;
@@ -58,7 +60,7 @@ export function resolveManagement(
   tileIndex: number,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeData<{
+  const pending = ctx.choice.consumeContinuation<{
     flow: 'management';
     playerId: number;
     kind: SacManagementKind;
@@ -133,31 +135,36 @@ export function moveForward(
     );
   }
   moveTo(playerId, modulo(raw, variant.tiles.length), ctx);
-  resolveLanding(state, playerId, depth + 1, ctx);
+  resolveSacTile(state, playerId, depth + 1, ctx);
 }
 
-function resolveLanding(
+function resolveSacTile(
   state: SacState,
   playerId: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (
-    depth > MAX_CHAIN_DEPTH ||
-    ctx.match.playerStatus(playerId) === 'eliminated'
-  )
-    return;
   const variant = currentSacVariant(ctx);
-  const tileIndex = position(playerId, ctx);
-  const tile = variant.tiles[tileIndex];
-  ctx.events.message('game.pawn.landed', { playerId, tileId: tileIndex });
-  if (tile.type === 'go_to_jail') sendToJail(state, playerId, ctx);
-  else if (tile.type === 'free') collectPot(state, playerId, variant, ctx);
-  else if (tile.type === 'tax') payTax(state, playerId, tile, ctx);
-  else if (tile.type === 'chance' || tile.type === 'community')
-    drawAndApply(playerId, tile.type, ctx);
-  else if (isOwnable(tile))
-    resolveOwnable(state, playerId, tileIndex, tile, ctx);
+  ctx.movement.resolveLanding({
+    trackId: TRACK,
+    playerId,
+    tiles: variant.tiles,
+    depth,
+    maxDepth: MAX_CHAIN_DEPTH,
+    blocked: () => ctx.match.playerStatus(playerId) === 'eliminated',
+    onLand: ({ position: tileIndex, tile }) => {
+      if (!tile) return;
+      ctx.events.message('game.pawn.landed', { playerId, tileId: tileIndex });
+      if (tile.type === 'go_to_jail') sendToJail(state, playerId, ctx);
+      else if (tile.type === 'free') collectPot(state, playerId, variant, ctx);
+      else if (tile.type === 'tax') payTax(state, playerId, tile, ctx);
+      else if (tile.type === 'chance' || tile.type === 'community') {
+        drawSacCard(playerId, tile.type, ctx);
+      } else if (isOwnable(tile)) {
+        resolveOwnable(state, playerId, tileIndex, tile, ctx);
+      }
+    },
+  });
 }
 
 function resolveOwnable(
@@ -206,27 +213,21 @@ function resolveOwnable(
   });
 }
 
-function drawAndApply(
+function drawSacCard(
   playerId: number,
   deck: 'chance' | 'community',
   ctx: RuleContext,
 ): void {
   const deckId = `${deck}:${currentSacVariant(ctx).id}`;
-  ctx.cards.drawThenResolve<SacCard, boolean>(
+  drawAndResolve<SacState, SacCard, boolean>(ctx, {
     deckId,
-    (card) => {
-      ctx.events.message('game.card.drawn', {
-        playerId,
-        deckId,
-        cardId: card.id,
-      });
+    playerId,
+    resolve: (card) => {
       ctx.effects.schedule(...card.effects);
       return card.retained;
     },
-    {
-      discard: ({ result: retained }) => !retained,
-    },
-  );
+    discard: ({ result: retained }) => !retained,
+  });
 }
 
 function applyCardMovement(
@@ -252,7 +253,7 @@ function applyCardMovement(
     );
   }
   moveTo(playerId, target, ctx);
-  resolveLanding(state, playerId, 1, ctx);
+  resolveSacTile(state, playerId, 1, ctx);
 }
 
 function movementTarget(
@@ -272,6 +273,7 @@ function movementTarget(
   if (movement.kind === 'next-group') {
     return nextGroupTile(variant, position(playerId, ctx), movement.group);
   }
+  if (movement.kind !== 'named') return null;
   return findTile(
     variant,
     movement.name,
@@ -308,10 +310,7 @@ const movementInput = gameInput.union([
 ]);
 
 export const SAC_EFFECTS = {
-  'sac.lose-infrastructure': defineEffect<
-    SacState,
-    Record<string, never>
-  >({
+  'sac.lose-infrastructure': defineEffect<SacState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ state, actorPlayerId, ctx }) => {
       if (actorPlayerId != null) {

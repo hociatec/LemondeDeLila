@@ -1,7 +1,4 @@
-import {
-  defineEffect,
-  gameInput,
-} from '../../../core/application/public-api';
+import { defineEffect, gameInput } from '../../../core/application/public-api';
 import type { GameEffectResolver } from '../../../core/application/public-api';
 import { type GerardPresidentThemeCard } from './content';
 import type { GerardSpecialEffect } from './special-cards';
@@ -155,13 +152,15 @@ export const GERARD_EFFECTS = {
   'gerard.prenom-fantome': gerardSpecial('prenom-fantome', ({ ctx }) => {
     ctx.counters.add(GERARD_GHOST_NAMES, 1);
   }),
-  'gerard.inversion-role': gerardSpecial('inversion-role', ({ actorId, ctx }) => {
-    ctx.judge.setCurrent(GERARD_JUDGE, actorId);
-  }),
+  'gerard.inversion-role': gerardSpecial(
+    'inversion-role',
+    ({ actorId, ctx }) => {
+      ctx.judge.setCurrent(GERARD_JUDGE, actorId);
+    },
+  ),
   'gerard.chaos-temporel': gerardSpecial('chaos-temporel', ({ ctx }) => {
     discardSubmissions(ctx);
-    ctx.submissions.clear(GERARD_SUBMISSIONS);
-    ctx.submissions.open({
+    ctx.submissionFlow.open({
       id: GERARD_SUBMISSIONS,
       players: ctx.players.otherIds(gerardMasterId(ctx)),
       secret: true,

@@ -3,11 +3,10 @@ import {
   defineConfiguration,
   defineGame,
   gameInput,
-  grid,
+  gridGame,
   pawns,
   playerView,
   publicFields,
-  standardTurn,
 } from '../../../core/application/public-api';
 import {
   CORRIDOR_DEFAULT_WALLS,
@@ -38,6 +37,13 @@ export default defineGame<
   subcategory: 'VentsSacres',
   description: 'Atteignez le bord opposé sans fermer tous les chemins.',
   players: { min: 2, max: 2 },
+  patterns: [
+    gridGame({
+      boardId: 'corridor',
+      width: CORRIDOR_SIZE,
+      height: CORRIDOR_SIZE,
+    }),
+  ],
   config: defineConfiguration<CorridorState, { wallsPerPlayer: number }>({
     input: gameInput.object({
       wallsPerPlayer: gameInput.number({ integer: true, min: 0, max: 20 }),
@@ -52,10 +58,7 @@ export default defineGame<
     onConfigured: ({ config, ctx }) =>
       startCorridorSetup(config.wallsPerPlayer, ctx),
   }),
-  components: [
-    grid.board({ id: 'corridor', width: CORRIDOR_SIZE, height: CORRIDOR_SIZE }),
-    pawns.set({ id: 'corridor', pawns: CORRIDOR_PAWNS }),
-  ],
+  components: [pawns.set({ id: 'corridor', pawns: CORRIDOR_PAWNS })],
   initialization: {
     resources: { [CORRIDOR_WALLS]: CORRIDOR_DEFAULT_WALLS },
     startRound: false,
@@ -79,13 +82,11 @@ export default defineGame<
   },
   initialPhase: CORRIDOR_PHASES.initialPhase,
   phases: CORRIDOR_PHASES.phases,
-  turn: standardTurn(),
   actions: CORRIDOR_ACTIONS,
   choices: {
     'corridor.pawn': defineChoice<CorridorState, string>({
       input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ actor, value, ctx }) =>
-        resolvePawn(actor.id, value, ctx),
+      resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
     }),
   },
   view: ({ state, actor, ctx }) => {
@@ -96,10 +97,8 @@ export default defineGame<
         return pawnId == null ? [] : [[player.id, pawnId]];
       }),
     );
-    const goalYByPlayerId = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player, index) => [player.id, index === 0 ? CORRIDOR_SIZE - 1 : 0]),
+    const goalYByPlayerId = ctx.players.byId((_player, index) =>
+      index === 0 ? CORRIDOR_SIZE - 1 : 0,
     );
     const moves =
       actor && ctx.turn.is(actor.id) && CORRIDOR_PHASES.is(ctx, 'playing')
@@ -115,24 +114,18 @@ export default defineGame<
         wallsRemaining: corridorWallsRemaining(ctx),
         size: CORRIDOR_SIZE,
         pawnByPlayerId,
-        positions,
         goalYByPlayerId,
-        setupComplete: CORRIDOR_PHASES.is(ctx, 'playing'),
         wallsPerPlayer:
           ctx.config.get<number>('wallsPerPlayer') ?? CORRIDOR_DEFAULT_WALLS,
         legalMoves: moves,
         legalWalls: walls,
       },
       extras: {
-        pawns: Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [
-              player.id,
-              CORRIDOR_PAWNS.find(
-                (pawn) => pawn.id === pawnByPlayerId[player.id],
-              ) ?? null,
-            ]),
+        pawns: ctx.players.byId(
+          (player) =>
+            CORRIDOR_PAWNS.find(
+              (pawn) => pawn.id === pawnByPlayerId[player.id],
+            ) ?? null,
         ),
         grid: {
           kind: 'grid',

@@ -71,35 +71,20 @@ export default defineGame<
         resolveMissionEventMove(state, value, ctx),
     }),
   },
-  view: ({ state, actor, ctx }) => {
-    const positions = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.movement.position('galaxy', player.id),
-        ]),
+  view: ({ state: _state, actor, ctx }) => {
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('galaxy', player.id),
     );
-    const pending = ctx.choice.data<
-      import('./state').MissionGalaxiePending
-    >();
+    const pending =
+      ctx.choice.continuation<import('./state').MissionGalaxiePending>();
     const pendingCard =
-      actor &&
-      pending?.kind === 'answer' &&
-      pending.actorId === actor.id
-        ? MISSION_GALAXIE_CONTENT[pending.deck].find(
+      actor && pending?.kind === 'answer' && pending.actorId === actor.id
+        ? (MISSION_GALAXIE_CONTENT[pending.deck].find(
             (card) => card.id === pending.cardId,
-          ) ?? null
+          ) ?? null)
         : null;
     return playerView({
-      game: {
-        lastRoll: ctx.dice.last('main')?.total ?? null,
-        positions,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        skipTurns: Object.fromEntries(
-          ctx.players.all().map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-        ),
-      },
+      game: {},
       extras: {
         currentPlayerView: actor
           ? { id: actor.id, username: actor.username }
@@ -113,7 +98,7 @@ export default defineGame<
           : null,
       },
       board: {
-        tiles: structuredClone(MISSION_GALAXIE_CONTENT.tiles),
+        tiles: MISSION_GALAXIE_CONTENT.tiles,
         positions,
       },
     });

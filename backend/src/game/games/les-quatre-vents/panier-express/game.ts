@@ -92,13 +92,11 @@ export default defineGame<PanierState, typeof PANIER_ACTIONS, PanierPlayerView>(
       }),
       'panier.take': defineChoice<PanierState, string>({
         input: gameInput.string({ min: 1, max: 128 }),
-        resolve: ({ actor, value, ctx }) =>
-          resolveTake(actor.id, value, ctx),
+        resolve: ({ actor, value, ctx }) => resolveTake(actor.id, value, ctx),
       }),
       'panier.give': defineChoice<PanierState, string>({
         input: gameInput.string({ min: 1, max: 128 }),
-        resolve: ({ actor, value, ctx }) =>
-          resolveGive(actor.id, value, ctx),
+        resolve: ({ actor, value, ctx }) => resolveGive(actor.id, value, ctx),
       }),
     },
     automatic: [
@@ -137,30 +135,15 @@ export default defineGame<PanierState, typeof PANIER_ACTIONS, PanierPlayerView>(
           .all()
           .find((player) => ctx.status.has(player.id, PANIER_REVERSED))?.id ??
         null;
-      const positions = Object.fromEntries(
-        ctx.players
-          .all()
-          .map((player) => [
-            player.id,
-            ctx.movement.position('market', player.id),
-          ]),
+      const positions = ctx.players.byId((player) =>
+        ctx.movement.position('market', player.id),
       );
-      const basketCounts = Object.fromEntries(
-        ctx.players
-          .all()
-          .map((player) => [
-            player.id,
-            ctx.inventory.count('shopping-baskets', player.id),
-          ]),
+      const basketCounts = ctx.players.byId((player) =>
+        ctx.inventory.count('shopping-baskets', player.id),
       );
-      const laps = Object.fromEntries(
-        ctx.players.all().map((player) => [player.id, ctx.score.get(player.id)]),
-      );
-      const revealTurns = Object.fromEntries(
-        ctx.players.all().map((player) => [
-          player.id,
-          ctx.status.get(player.id, PANIER_REVEAL)?.remaining ?? 0,
-        ]),
+      const laps = ctx.players.byId((player) => ctx.score.get(player.id));
+      const revealTurns = ctx.players.byId(
+        (player) => ctx.status.get(player.id, PANIER_REVEAL)?.remaining ?? 0,
       );
       return playerView({
         game: {
@@ -170,14 +153,6 @@ export default defineGame<PanierState, typeof PANIER_ACTIONS, PanierPlayerView>(
           lastEventId,
           lastExchangeId,
           pawnByPlayerId,
-          starterId: ctx.round.starter() ?? 0,
-          keepTurns: Object.fromEntries(
-            ctx.players
-              .all()
-              .map((player) => [player.id, ctx.turn.extraCount(player.id)]),
-          ),
-          movementDirection: ctx.turn.direction(),
-          positions,
           basketCounts,
           shoppingList: actor
             ? ctx.inventory.items('shopping-lists', actor.id)
@@ -185,13 +160,6 @@ export default defineGame<PanierState, typeof PANIER_ACTIONS, PanierPlayerView>(
           basket: actor
             ? ctx.inventory.items('shopping-baskets', actor.id)
             : [],
-          winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-          skipTurns: Object.fromEntries(
-            ctx.players
-              .all()
-              .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-          ),
-          setupComplete: PANIER_PHASES.is(ctx, 'playing'),
         },
         extras: {
           pawn: actor

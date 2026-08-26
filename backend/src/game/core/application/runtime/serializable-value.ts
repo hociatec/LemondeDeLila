@@ -5,9 +5,7 @@ export function sameSerializableValue(left: unknown, right: unknown): boolean {
       Array.isArray(left) &&
       Array.isArray(right) &&
       left.length === right.length &&
-      left.every((value, index) =>
-        sameSerializableValue(value, right[index]),
-      )
+      left.every((value, index) => sameSerializableValue(value, right[index]))
     );
   }
   if (!isRecord(left) || !isRecord(right)) return false;

@@ -49,12 +49,8 @@ export class GameSchedulerController {
     this.state.tasks[normalizedId] = {
       id: normalizedId,
       dueAtMs,
-      ...(options.action
-        ? { action: structuredClone(options.action) }
-        : {}),
-      visibility: structuredClone(
-        options.visibility ?? { kind: 'public' },
-      ),
+      ...(options.action ? { action: structuredClone(options.action) } : {}),
+      visibility: structuredClone(options.visibility ?? { kind: 'public' }),
     };
     this.emit('timer.scheduled', { id: normalizedId, dueAtMs });
   }

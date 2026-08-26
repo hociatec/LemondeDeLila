@@ -111,15 +111,13 @@ export class GameChoiceController {
   ): void {
     const playerIds = [...new Set(options.players)];
     if (playerIds.length === 0) {
-      throw new GameConfigurationError('Un choix collectif requiert des joueurs');
+      throw new GameConfigurationError(
+        'Un choix collectif requiert des joueurs',
+      );
     }
-    this.create(
-      'one',
-      { ...options, player: playerIds[0] },
-      1,
-      1,
-      { playerIds },
-    );
+    this.create('one', { ...options, player: playerIds[0] }, 1, 1, {
+      playerIds,
+    });
   }
 
   sequence<TValue>(options: {
@@ -157,15 +155,25 @@ export class GameChoiceController {
     return this.getPending() ?? null;
   }
 
-  data<TData extends object>(): TData | null {
+  continuation<TData extends object>(): TData | null {
     const data = this.current()?.data ?? this.resolvedData;
     return data ? (structuredClone(data) as TData) : null;
   }
 
-  consumeData<TData extends object>(): TData | null {
-    const data = this.data<TData>();
+  consumeContinuation<TData extends object>(): TData | null {
+    const data = this.continuation<TData>();
     this.resolvedData = null;
     return data;
+  }
+
+  /** @deprecated Utiliser `continuation()`: ces données appartiennent au workflow. */
+  data<TData extends object>(): TData | null {
+    return this.continuation<TData>();
+  }
+
+  /** @deprecated Utiliser `consumeContinuation()`. */
+  consumeData<TData extends object>(): TData | null {
+    return this.consumeContinuation<TData>();
   }
 
   clear(): void {

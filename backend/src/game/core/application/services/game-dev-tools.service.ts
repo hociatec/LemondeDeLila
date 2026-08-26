@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type {
-  GameEvent,
-  GameSnapshot,
-} from '../models/game-event.model';
+import type { GameEvent, GameSnapshot } from '../models/game-event.model';
 import type { GameStateEntity } from '../models/game-state.model';
 import { GameConfigurationError } from '../../domain/errors/game-domain.errors';
 import { GameEngineService } from './game-engine.service';
@@ -113,7 +110,8 @@ export class GameDevToolsService {
       throw new GameConfigurationError('Séquence de replay invalide');
     }
     const state = await this.engine.replay(roomId, gameType, sequence);
-    if (!state) throw new GameConfigurationError('Replay de partie introuvable');
+    if (!state)
+      throw new GameConfigurationError('Replay de partie introuvable');
     await this.engine.restoreInternalState(roomId, gameType, state);
     return structuredClone(state);
   }

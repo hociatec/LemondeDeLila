@@ -74,11 +74,7 @@ function isCard(value: unknown): value is RawMamanCard {
 }
 
 const move = (delta: number): readonly GameEffectInstruction[] => [
-  gameEffects.custom(
-    'maman.move',
-    { delta },
-    gameEffects.target.self(),
-  ),
+  gameEffects.custom('maman.move', { delta }, gameEffects.target.self()),
 ];
 const moveTo = (
   type: 'card' | 'token' | 'bonds',
@@ -87,19 +83,11 @@ const moveTo = (
   gameEffects.custom('maman.move-to-type', { type, direction }),
 ];
 const target = (effectId: string): readonly GameEffectInstruction[] => [
-  gameEffects.custom(
-    effectId,
-    {},
-    gameEffects.target.chosenOpponent(effectId),
-  ),
+  gameEffects.custom(effectId, {}, gameEffects.target.chosenOpponent(effectId)),
   gameEffects.completeTurn(),
 ];
 const allMove = (delta: number): readonly GameEffectInstruction[] => [
-  gameEffects.custom(
-    'maman.move',
-    { delta },
-    gameEffects.target.self(),
-  ),
+  gameEffects.custom('maman.move', { delta }, gameEffects.target.self()),
   gameEffects.custom(
     'maman.move',
     { delta },

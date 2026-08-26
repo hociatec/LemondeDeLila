@@ -43,7 +43,7 @@ export default defineGame<
   ],
   setup: () => ({}),
   actions: PRIMALIS_ACTIONS,
-  victory: victoryWhen(({ state, ctx }) => {
+  victory: victoryWhen(({ state: _state, ctx }) => {
     const finished = ctx.players
       .all()
       .some(
@@ -58,17 +58,12 @@ export default defineGame<
       ? null
       : { winnerPlayerIds: [winnerId], reason: 'comet-impact' };
   }),
-  view: ({ state, actor, ctx }) => {
+  view: ({ state: _state, actor, ctx }) => {
     const collections = primalisCollections(ctx);
     const lastRoll = ctx.dice.last('main')?.total ?? null;
     const lastFace = lastRoll == null ? null : faceFromRoll(lastRoll);
-    const positions = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.movement.position('comet', player.id),
-        ]),
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('comet', player.id),
     );
     const mine = actor ? collections[actor.id] : null;
     const scoreLines = ctx.players
@@ -82,8 +77,6 @@ export default defineGame<
         dangerAmplified: ctx.counters.get(PRIMALIS_DANGER_AMPLIFIED) > 0,
         collections,
         lastFace,
-        lastRoll,
-        positions,
       },
       extras: {
         currentPlayerView: actor
@@ -101,7 +94,7 @@ export default defineGame<
           },
         },
       },
-      board: { tiles: structuredClone(PRIMALIS_TILES), positions },
+      board: { tiles: PRIMALIS_TILES, positions },
     });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },

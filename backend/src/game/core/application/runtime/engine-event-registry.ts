@@ -219,9 +219,7 @@ export type EngineEventMap = {
 };
 
 export type EngineEventType = keyof EngineEventMap;
-export type EngineEventVisibilityPolicy =
-  | EventVisibility['kind']
-  | 'dynamic';
+export type EngineEventVisibilityPolicy = EventVisibility['kind'] | 'dynamic';
 
 export const ENGINE_EVENT_VISIBILITY = {
   'turn.started': 'public',

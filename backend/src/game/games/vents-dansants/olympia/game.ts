@@ -7,14 +7,9 @@ import {
 import {
   OLYMPIA_CARD_BY_ID,
   OLYMPIA_DECKS,
-  isOlympiaStatusKey,
   type OlympiaDeckType,
 } from './content';
-import {
-  drawnPlayerId,
-  OLYMPIA_ACTIONS,
-  OLYMPIA_EFFECTS,
-} from './rules';
+import { OLYMPIA_ACTIONS, OLYMPIA_EFFECTS } from './rules';
 import type { OlympiaPlayerView, OlympiaState } from './state';
 
 const DECKS: OlympiaDeckType[] = [
@@ -76,53 +71,17 @@ export default defineGame<
   },
   actions: OLYMPIA_ACTIONS,
   effects: OLYMPIA_EFFECTS,
-  view: ({ state, ctx }) => {
-    const divinity = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.cards.hand<string>('divinities', player.id)[0] ?? '',
-        ]),
-    );
-    const prestige = Object.fromEntries(
-      ctx.players.all().map((player) => [player.id, ctx.score.get(player.id)]),
-    );
-    const statuses = Object.fromEntries(
-      ctx.players.all().map((player) => [
-        player.id,
-        ctx.status
-          .list(player.id)
-          .filter((status) => isOlympiaStatusKey(status.id))
-          .map((status) => {
-            const value = status.data.value;
-            return {
-              key: status.id,
-              turns: status.remaining ?? 0,
-              ...(typeof value === 'number' ? { value } : {}),
-            };
-          }),
-      ]),
-    );
-    const skipTurns = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+  view: ({ ctx }) => {
+    const divinity = ctx.players.byId(
+      (player) => ctx.cards.hand<string>('divinities', player.id)[0] ?? '',
     );
     return playerView({
       game: {
         divinity,
-        prestige,
-        statuses,
-        drawnPlayerId: drawnPlayerId(ctx),
-        winnerIds: ctx.match.result()?.winnerPlayerIds ?? [],
-        skipTurns,
       },
       extras: {
         cardCatalog: OLYMPIA_CARD_BY_ID,
-        prestige: structuredClone(prestige),
         divinity: structuredClone(divinity),
-        statuses: structuredClone(statuses),
       },
     });
   },

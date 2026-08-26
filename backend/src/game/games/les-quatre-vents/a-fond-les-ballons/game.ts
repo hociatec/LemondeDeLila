@@ -72,20 +72,13 @@ export default defineGame<
         return pawnId == null ? [] : [[player.id, pawnId]];
       }),
     );
-    const positions = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [
-          player.id,
-          ctx.movement.position('balloons', player.id),
-        ]),
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('balloons', player.id),
     );
-    const trapImmunityTurns = Object.fromEntries(
-      ctx.players.all().map((player) => [
-        player.id,
+    const trapImmunityTurns = ctx.players.byId(
+      (player) =>
         ctx.status.get(player.id, 'a-fond-les-ballons.trap-immunity')
           ?.remaining ?? 0,
-      ]),
     );
     const pending = ctx.choice.current();
     const swapPlayerId =
@@ -97,17 +90,6 @@ export default defineGame<
         trapImmunityTurns,
         swapPlayerId,
         pawnByPlayerId,
-        starterId: ctx.round.starter() ?? 0,
-        lastRoll: ctx.dice.last('main')?.total ?? null,
-        extraTurn: ctx.turn.extraCount() > 0,
-        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
-        skipTurns: Object.fromEntries(
-          ctx.players
-            .all()
-            .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
-        ),
-        setupComplete: A_FOND_LES_BALLONS_PHASES.is(ctx, 'playing'),
-        positions,
       },
       extras: {
         pawn: actor

@@ -45,11 +45,7 @@ export const playCard = playCardAction<LaParadeSucreeState>({
       for (const candyType of CANDY_TYPES) {
         const amount = reward[candyType];
         if (amount == null) continue;
-        ctx.resources.add(
-          playerId,
-          candyResource(candyType),
-          amount ?? 0,
-        );
+        ctx.resources.add(playerId, candyResource(candyType), amount ?? 0);
       }
       ctx.events.message('parade.candies.won', {
         playerId,
@@ -79,9 +75,7 @@ export function scoreCandies(
   );
 }
 
-export function winners(
-  ctx: RuleContext,
-): number[] {
+export function winners(ctx: RuleContext): number[] {
   return ctx.ranking.leaders(
     ctx.players.all().map((player) => player.id),
     { value: (playerId) => scoreCandies(candyCounts(playerId, ctx)) },
@@ -96,10 +90,7 @@ export function playedCards(ctx: RuleContext): string[] {
   return ctx.cards.discardPile<string>(DECK);
 }
 
-export function candyCounts(
-  playerId: number,
-  ctx: RuleContext,
-): CandyCounts {
+export function candyCounts(playerId: number, ctx: RuleContext): CandyCounts {
   return {
     Chamallow: ctx.resources.get(playerId, candyResource('Chamallow')),
     Chocobon: ctx.resources.get(playerId, candyResource('Chocobon')),
