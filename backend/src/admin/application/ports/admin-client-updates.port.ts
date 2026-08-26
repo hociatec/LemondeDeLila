@@ -16,9 +16,7 @@ export interface AdminClientUpdatesPort {
     publicUrl: string | null;
     minRequiredVersion: string;
   }): Promise<void>;
-  resolveClientPublicUrl(
-    latest: AdminClientUpdateLatest | null,
-  ): string | null;
+  resolveClientPublicUrl(latest: AdminClientUpdateLatest | null): string | null;
 }
 
 export const ADMIN_CLIENT_UPDATES_PORT = Symbol('ADMIN_CLIENT_UPDATES_PORT');

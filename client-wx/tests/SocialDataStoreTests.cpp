@@ -2,7 +2,6 @@
 #include <vector>
 
 #include "modules/social/presentation/SocialDataStore.h"
-#include "modules/social/presentation/SocialDataStore.inl"
 
 using namespace lila::modules::social;
 
@@ -10,10 +9,23 @@ int main()
 {
     presentation::SocialDataStore store;
 
-    domain::SocialUser alice{1, "alice", "", "2026-01-01"};
-    domain::SocialUser bob{2, "bob", "", "2026-02-01"};
-    domain::SocialUser blockedFriend{3, "charlie", "", "2026-03-01", "", "2026-04-01"};
-    domain::SocialUser blockedOnly{4, "dora", "", "", "", "2026-04-02"};
+    domain::SocialUser alice;
+    alice.id = 1;
+    alice.username = "alice";
+    alice.since = "2026-01-01";
+    domain::SocialUser bob;
+    bob.id = 2;
+    bob.username = "bob";
+    bob.since = "2026-02-01";
+    domain::SocialUser blockedFriend;
+    blockedFriend.id = 3;
+    blockedFriend.username = "charlie";
+    blockedFriend.since = "2026-03-01";
+    blockedFriend.blockedAt = "2026-04-01";
+    domain::SocialUser blockedOnly;
+    blockedOnly.id = 4;
+    blockedOnly.username = "dora";
+    blockedOnly.blockedAt = "2026-04-02";
 
     store.ReplaceAll(
         {alice, bob},

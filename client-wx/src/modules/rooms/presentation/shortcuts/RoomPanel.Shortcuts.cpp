@@ -4,6 +4,7 @@
 #include <wx/textctrl.h>
 #include <wx/window.h>
 
+#include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/rooms/presentation/shortcuts/RoomShortcutPolicy.h"
 
 namespace lila::modules::rooms::presentation
@@ -19,11 +20,23 @@ int NormalizeShortcutKey(const wxKeyEvent& event)
         key = 'A' + key - 'a';
     return key;
 }
+
+bool IsEditableTextFocused()
+{
+    const auto* focusedText = dynamic_cast<wxTextCtrl*>(wxWindow::FindFocus());
+    return focusedText != nullptr && focusedText->IsEditable();
+}
 }
 
 void RoomPanel::HandleShortcut(wxKeyEvent& event)
 {
-    if (TryHandleShortcut(event))
+    if (IsEditableTextFocused())
+    {
+        event.Skip();
+        return;
+    }
+
+    if (gamePlayPanel_->HandleKey(event) || TryHandleShortcut(event))
     {
         event.Skip(false);
         return;
@@ -36,8 +49,7 @@ bool RoomPanel::TryHandleShortcut(wxKeyEvent& event)
     const int key = NormalizeShortcutKey(event);
     if (state_ != State::Ready) return false;
 
-    const auto* focusedText = dynamic_cast<wxTextCtrl*>(wxWindow::FindFocus());
-    if (focusedText != nullptr && focusedText->IsEditable() && !event.ControlDown())
+    if (IsEditableTextFocused() && !event.ControlDown())
         return false;
 
     const auto action = RoomShortcutPolicy::Resolve(

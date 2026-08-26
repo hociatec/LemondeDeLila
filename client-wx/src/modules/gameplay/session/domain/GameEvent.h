@@ -16,11 +16,22 @@ enum class GameEventType
     Ignored,
 };
 
+struct GameAcknowledgement final
+{
+    std::string command;
+    bool ok = false;
+    std::string key;
+    std::string panelId;
+    std::string roomOperation;
+    std::string message;
+};
+
 struct GameEvent final
 {
     GameEventType type = GameEventType::Ignored;
     std::optional<GameState> state;
     std::string message;
     bool isError = false;
+    std::optional<GameAcknowledgement> acknowledgement;
 };
 }

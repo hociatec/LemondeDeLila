@@ -44,9 +44,17 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
   }
 
   async countActiveByRoom(roomId: number): Promise<number> {
-    return this.participants.count({
-      where: { room: { id: roomId }, leftAt: IsNull() },
-    });
+    const result = await this.participants
+      .createQueryBuilder('participant')
+      .select('COUNT(DISTINCT participant.user_id)', 'count')
+      .where('participant.room_id = :roomId', { roomId })
+      .andWhere('participant.left_at IS NULL')
+      .andWhere('LOWER(participant.role) IN (:...roles)', {
+        roles: ['owner', 'player', 'participant'],
+      })
+      .getRawOne<{ count?: string | number }>();
+    const count = Number(result?.count ?? 0);
+    return Number.isFinite(count) ? Math.max(0, Math.trunc(count)) : 0;
   }
 
   async findActiveByRoomAndUser(

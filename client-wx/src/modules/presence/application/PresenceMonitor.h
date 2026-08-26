@@ -3,6 +3,7 @@
 #include <functional>
 #include <mutex>
 #include <memory>
+#include <stop_token>
 #include <string>
 #include <vector>
 
@@ -36,11 +37,10 @@ public:
     [[nodiscard]] std::vector<domain::PresencePlayer> Players() const;
     [[nodiscard]] std::string Status() const;
     [[nodiscard]] bool HasSnapshot() const;
-    [[nodiscard]] std::optional<int> CurrentRoomId() const noexcept;
 
 private:
     void ReceiveLoop(std::stop_token stopToken);
-    void Connect();
+    void Connect(std::stop_token stopToken);
     void ApplyUpdate(const std::string& rawJson);
     void SetStatus(std::string status);
     void NotifyChanged(const PlayersChangedHandler& handler) const;
@@ -55,7 +55,6 @@ private:
     std::vector<domain::PresencePlayer> players_;
     std::string status_ = "Présence déconnectée.";
     bool hasSnapshot_ = false;
-    std::optional<int> currentRoomId_;
     PlayersChangedHandler onPlayersChanged_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> receiveTask_;
 };

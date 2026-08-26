@@ -6,10 +6,7 @@ import { PrivateMessagingService } from '../application/services/private-messagi
 
 @Module({
   imports: MESSAGING_MODULE_IMPORTS,
-  providers: [
-    ...MESSAGING_CORE_PROVIDERS,
-    ...MESSAGING_PRESENTATION_PROVIDERS,
-  ],
+  providers: [...MESSAGING_CORE_PROVIDERS, ...MESSAGING_PRESENTATION_PROVIDERS],
   exports: [PrivateMessagingService],
 })
 export class MessagingModule {}

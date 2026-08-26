@@ -29,7 +29,6 @@ public:
         std::string_view gameType,
         std::stop_token stopToken) override;
     void RequestState(std::stop_token stopToken) override;
-    void RequestTurn(std::stop_token stopToken) override;
     void SendKey(std::string_view key, std::stop_token stopToken) override;
     void ExecuteAction(const domain::GameAction& action, std::stop_token stopToken) override;
     [[nodiscard]] domain::GameEvent ReceiveEvent(std::stop_token stopToken) override;
@@ -40,7 +39,6 @@ private:
     void Connect(std::stop_token stopToken);
     void SendJson(const nlohmann::json& message);
     [[nodiscard]] domain::GameState AwaitState(std::stop_token stopToken);
-    [[nodiscard]] domain::GameEvent DecodeEvent(const nlohmann::json& message);
 
     std::string endpoint_;
     lila::shared::network::websocket::IWebSocketClient& client_;

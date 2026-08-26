@@ -11,23 +11,17 @@ export class GameWsRegistrar implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    // Rules fetching: keep backward-compatible aliases.
-    const rulesHandler = (session: WsSession, payload: unknown) =>
-      this.handler.rules(session, payload);
-    this.registry.register('game.rules', rulesHandler);
-    this.registry.register('game.rules.get', rulesHandler);
-    this.registry.register('game.rulebook', rulesHandler);
-    this.registry.register('game.rulebook.get', rulesHandler);
-    this.registry.register('rules', rulesHandler);
+    this.registry.register(
+      'game.rules',
+      (session: WsSession, payload: unknown) =>
+        this.handler.rules(session, payload),
+    );
 
     this.registry.register('game.modules', (session) =>
       this.handler.modules(session),
     );
 
     this.registry.register('game.state', (session, payload) =>
-      this.handler.state(session, payload),
-    );
-    this.registry.register('game.state.get', (session, payload) =>
       this.handler.state(session, payload),
     );
     this.registry.register('game.join', (session, payload) =>
@@ -40,12 +34,6 @@ export class GameWsRegistrar implements OnModuleInit {
       this.handler.ping(session, payload),
     );
     this.registry.register('game.action', (session, payload) =>
-      this.handler.action(session, payload),
-    );
-    this.registry.register('game.actions', (session, payload) =>
-      this.handler.action(session, payload),
-    );
-    this.registry.register('game.actions.apply', (session, payload) =>
       this.handler.action(session, payload),
     );
     this.registry.register('game.key', (session, payload) =>

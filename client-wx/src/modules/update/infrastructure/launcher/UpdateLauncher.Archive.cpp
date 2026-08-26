@@ -145,8 +145,10 @@ void RenameWithRetry(const fs::path& source, const fs::path& destination)
 void ExtractArchive(
     const fs::path& archive,
     const fs::path& destination,
-    std::uint64_t expectedExtractedBytes)
+    std::uint64_t expectedExtractedBytes,
+    UpdateProgressDialog* progress)
 {
+    if (progress) progress->SetStage(L"Installation des fichiers…", 88);
     fs::remove_all(destination);
     fs::create_directories(destination);
     std::wstring command = L"powershell.exe -NoLogo -NoProfile -NonInteractive "
@@ -175,6 +177,7 @@ void ExtractArchive(
         fs::remove_all(destination);
         throw std::runtime_error("Update archive extraction failed.");
     }
+    if (progress) progress->SetStage(L"Vérification des exécutables…", 94);
     if (!fs::is_regular_file(destination / AppExecutable) ||
         !fs::is_regular_file(destination / LauncherExecutable)) {
         fs::remove_all(destination);
@@ -183,7 +186,7 @@ void ExtractArchive(
     if (!AllowUnsignedUpdates()) {
         for (const auto* executable : {AppExecutable, LauncherExecutable}) {
             std::string failure;
-            if (!VerifyAuthenticode(destination / executable, &failure)) {
+            if (!VerifyAuthenticodeWithRetry(destination / executable, &failure)) {
                 fs::remove_all(destination);
                 throw std::runtime_error(
                     "Update executable " + Narrow(executable) +
@@ -191,6 +194,7 @@ void ExtractArchive(
             }
         }
     }
+    if (progress) progress->SetStage(L"Contrôle de l'installation…", 97);
     std::uint64_t actualExtractedBytes = 0;
     for (const auto& entry : fs::recursive_directory_iterator(destination)) {
         if (entry.is_symlink() || (entry.status().permissions() == fs::perms::unknown)) {
@@ -213,37 +217,4 @@ void ExtractArchive(
     }
 }
 
-fs::path PrepareRelease(const fs::path& root, const Manifest& manifest)
-{
-    const fs::path finalPath = ReleasePath(root, manifest.releaseId);
-    if (fs::is_regular_file(finalPath / AppExecutable) &&
-        fs::is_regular_file(finalPath / LauncherExecutable)) return finalPath;
-    const fs::path stagingRoot = root / L"staging";
-    fs::create_directories(stagingRoot);
-    const fs::path archive = stagingRoot / Widen(BuildStagedUpdateArchiveFileName(manifest.releaseId));
-    bool archiveReady;
-    try {
-        archiveReady = fs::is_regular_file(archive) &&
-            fs::file_size(archive) == manifest.size &&
-            Sha256(archive) == manifest.sha256;
-    } catch (...) { archiveReady = false; }
-    if (!archiveReady) {
-        fs::remove(archive);
-        EnsureFreeSpace(root, manifest.size);
-        DownloadFile(manifest.url, archive, manifest.size);
-    }
-    if (fs::file_size(archive) != manifest.size || Sha256(archive) != manifest.sha256) {
-        fs::remove(archive);
-        throw std::runtime_error("Downloaded update failed integrity verification.");
-    }
-    const auto extractedBytes = InspectArchive(archive, manifest.size);
-    EnsureFreeSpace(root, extractedBytes);
-    const fs::path extracted = stagingRoot / (Widen(manifest.releaseId) + L".extracting");
-    ExtractArchive(archive, extracted, extractedBytes);
-    fs::create_directories(finalPath.parent_path());
-    if (fs::exists(finalPath)) fs::remove_all(finalPath);
-    RenameWithRetry(extracted, finalPath);
-    fs::remove(archive);
-    return finalPath;
-}
 }

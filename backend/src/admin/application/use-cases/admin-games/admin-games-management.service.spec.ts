@@ -3,7 +3,9 @@ import { AdminGamesManagementService } from './admin-games-management.service';
 describe('AdminGamesManagementService', () => {
   it('creates a category and invalidates the catalog', async () => {
     const deps = createDeps();
-    deps.presenter.buildCategoriesPayload.mockResolvedValue({ items: ['arcade'] });
+    deps.presenter.buildCategoriesPayload.mockResolvedValue({
+      items: ['arcade'],
+    });
 
     const service = new AdminGamesManagementService(
       deps.presenter as any,

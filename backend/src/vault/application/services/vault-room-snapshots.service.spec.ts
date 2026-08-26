@@ -1,4 +1,6 @@
 import { VaultRoomSnapshotsService } from './vault-room-snapshots.service';
+import { VaultSnapshotRestoreService } from './vault-snapshot-restore.service';
+import { VaultSnapshotWriterService } from './vault-snapshot-writer.service';
 
 type SnapshotRecord = {
   id: string;
@@ -175,13 +177,24 @@ describe('VaultRoomSnapshotsService', () => {
       isUserInTavern: jest.fn(() => true),
     };
 
-    const service = new VaultRoomSnapshotsService(
+    const writer = new VaultSnapshotWriterService(
+      snapshots,
+      rooms as any,
+      game as any,
+    );
+    const restorer = new VaultSnapshotRestoreService(
       snapshots,
       rooms as any,
       bots as any,
       notifier as any,
       game as any,
       presence as any,
+    );
+    const service = new VaultRoomSnapshotsService(
+      snapshots,
+      rooms as any,
+      writer,
+      restorer,
     );
 
     const firstSave = await service.save(1, 10);
@@ -200,8 +213,7 @@ describe('VaultRoomSnapshotsService', () => {
     expect(restored.roomId).toBe(20);
     expect(bots.addSystemBot).toHaveBeenCalledTimes(1);
     expect(game.restoreState).toHaveBeenCalledTimes(1);
-    const restoredState = (game.restoreState as jest.Mock).mock
-      .calls[0][2];
+    const restoredState = (game.restoreState as jest.Mock).mock.calls[0][2];
     expect(restoredState.players.some((p: any) => p.id === -99)).toBe(true);
     expect(restoredState.turn.currentPlayerId).toBe(-99);
     expect(restoredState.metadata.roomId).toBe(20);
@@ -282,13 +294,24 @@ describe('VaultRoomSnapshotsService', () => {
       adminDestroyRoom: jest.fn(async () => undefined),
     };
 
-    const service = new VaultRoomSnapshotsService(
+    const writer = new VaultSnapshotWriterService(
+      snapshots,
+      rooms as any,
+      {} as any,
+    );
+    const restorer = new VaultSnapshotRestoreService(
       snapshots,
       rooms as any,
       bots as any,
-      { notifyRoomRestoreReady: jest.fn(async () => undefined) } as any,
+      { notifyRoomRestoreReady: jest.fn() } as any,
       {} as any,
       {} as any,
+    );
+    const service = new VaultRoomSnapshotsService(
+      snapshots,
+      rooms as any,
+      writer,
+      restorer,
     );
 
     const ok = await service.abandonRestoredRoom(1, 20);

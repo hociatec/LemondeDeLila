@@ -11,7 +11,6 @@
 #include <wx/msgdlg.h>
 #include <wx/textctrl.h>
 
-#include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 
 namespace lila::modules::messaging::presentation

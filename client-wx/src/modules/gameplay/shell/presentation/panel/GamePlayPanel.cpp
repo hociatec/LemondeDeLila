@@ -2,8 +2,14 @@
 
 #include <utility>
 
+#include <wx/listbox.h>
+
+#include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/session/application/GameSessionService.h"
+#include "modules/gameplay/dice/presentation/GameDicePanel.h"
+#include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
+#include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -22,7 +28,11 @@ GamePlayPanel::~GamePlayPanel()
     CloseSession();
 }
 
-void GamePlayPanel::Open(int roomId, std::string gameType, std::string gameName)
+void GamePlayPanel::Open(
+    int roomId,
+    std::string gameType,
+    std::string gameName,
+    bool roomStarted)
 {
     if (roomId <= 0 || gameType.empty()) return;
     if (IsOpenFor(roomId, gameType)) return;
@@ -31,19 +41,30 @@ void GamePlayPanel::Open(int roomId, std::string gameType, std::string gameName)
     roomId_ = roomId;
     gameType_ = std::move(gameType);
     gameName_ = std::move(gameName);
+    roomStarted_ = roomStarted;
+    roomStartFlowRequested_ = false;
+    roomStartPending_ = false;
+    startConfigurationFlow_.Reset();
     ClearView();
+    Show(roomStarted_);
     StartJoin();
 }
 
 void GamePlayPanel::CloseSession()
 {
     requestSlot_.Cancel();
+    inputRequestSlot_.Cancel();
+    inputSubmissionGuard_.Reset();
     service_.ClearEventHandler();
     service_.Close();
     roomId_ = 0;
     gameType_.clear();
     gameName_.clear();
     state_ = {};
+    roomStarted_ = true;
+    roomStartFlowRequested_ = false;
+    roomStartPending_ = false;
+    startConfigurationFlow_.Reset();
     ClearView();
 }
 
@@ -82,10 +103,96 @@ void GamePlayPanel::SetDiceRolledHandler(DiceRolledHandler handler)
     onDiceRolled_ = std::move(handler);
 }
 
-wxWindow* GamePlayPanel::ActiveNavigationTarget() const noexcept
+void GamePlayPanel::SetRoomStartRequestedHandler(RoomStartRequestedHandler handler)
 {
-    return pawnSelectionPanel_ != nullptr
-        ? pawnSelectionPanel_->NavigationTarget()
-        : nullptr;
+    onRoomStartRequested_ = std::move(handler);
+}
+
+bool GamePlayPanel::BeginRoomStart()
+{
+    if (!IsOpen() || roomStarted_ || roomStartPending_) return false;
+    startConfigurationFlow_.Reset();
+    roomStartFlowRequested_ = true;
+    Show();
+    if (state_.roomId <= 0)
+    {
+        UpdateStatus(wxString(L"Chargement de la configuration..."));
+        if (GetParent()) GetParent()->Layout();
+        return true;
+    }
+    if (state_.prompt && state_.prompt->submitThenStart)
+    {
+        dismissedPromptActionType_.clear();
+        submittedPromptActionType_.clear();
+        SyncInlinePrompt();
+        if (GetParent()) GetParent()->Layout();
+        return true;
+    }
+    roomStartFlowRequested_ = false;
+    roomStartPending_ = true;
+    if (onRoomStartRequested_) onRoomStartRequested_();
+    return true;
+}
+
+void GamePlayPanel::SetRoomStarted(bool started)
+{
+    const bool becameStarted = started && !roomStarted_;
+    roomStarted_ = started;
+    if (started)
+    {
+        roomStartFlowRequested_ = false;
+        roomStartPending_ = false;
+        startConfigurationFlow_.Reset();
+    }
+    Show(roomStarted_ || roomStartFlowRequested_ || roomStartPending_);
+    if (becameStarted && onZoneFocusRequested_) onZoneFocusRequested_();
+}
+
+void GamePlayPanel::NotifyRoomStartFailed(const wxString& message)
+{
+    if (roomStarted_) return;
+    roomStartPending_ = false;
+    roomStartFlowRequested_ = true;
+    startConfigurationFlow_.Reset();
+    submittedPromptActionType_.clear();
+    UpdateStatus(message, true, true);
+    SyncInlinePrompt();
+    Show();
+    if (GetParent()) GetParent()->Layout();
+}
+
+wxWindow* GamePlayPanel::PreferredNavigationTarget() const
+{
+    if (confirmationPanel_ != nullptr && confirmationPanel_->IsActive())
+    {
+        const auto targets = confirmationPanel_->TabTargets();
+        if (!targets.empty()) return targets.front();
+    }
+    if (promptPanel_ != nullptr && promptPanel_->IsActive())
+    {
+        const auto targets = promptPanel_->TabTargets();
+        if (!targets.empty()) return targets.front();
+    }
+    // State received during start-up may already expose a hand. Until the room
+    // is confirmed started, keep RoomPanel's game-zone anchor as the target so
+    // the transient hand cannot become a keyboard trap.
+    if (!roomStarted_) return nullptr;
+    if (pawnSelectionPanel_ != nullptr)
+    {
+        if (auto* target = pawnSelectionPanel_->NavigationTarget()) return target;
+    }
+    if (handPanel_ != nullptr)
+    {
+        if (auto* target = handPanel_->NavigationTarget()) return target;
+    }
+    if (dicePanel_ != nullptr)
+    {
+        if (auto* target = dicePanel_->NavigationTarget()) return target;
+    }
+    if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
+        return choicesList_;
+    if (linesList_ != nullptr && linesList_->IsShown() && linesList_->GetCount() > 0)
+        return linesList_;
+    return nullptr;
 }
 }

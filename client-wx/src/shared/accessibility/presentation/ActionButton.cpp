@@ -32,32 +32,6 @@ bool ActionButton::ShouldPreserveVerticalNavigation(int keyCode) noexcept
     }
 }
 
-bool ActionButton::ShouldSuppressHorizontalNavigation(int keyCode) noexcept
-{
-    switch (keyCode)
-    {
-    case WXK_LEFT:
-    case WXK_RIGHT:
-    case WXK_NUMPAD_LEFT:
-    case WXK_NUMPAD_RIGHT:
-        return true;
-    default:
-        return false;
-    }
-}
-
-bool ActionButton::ShouldSuppressTabNavigation(int keyCode) noexcept
-{
-    switch (keyCode)
-    {
-    case WXK_TAB:
-    case WXK_NUMPAD_TAB:
-        return true;
-    default:
-        return false;
-    }
-}
-
 ActionButton::ActionButton(
     wxWindow* parent,
     wxWindowID id,
@@ -68,11 +42,6 @@ ActionButton::ActionButton(
     : wxButton(parent, id, label, pos, size, style)
 {
     Bind(wxEVT_CHAR_HOOK, &ActionButton::OnCharHook, this);
-}
-
-void ActionButton::SetMenuNavigationMode(bool enabled) noexcept
-{
-    menuNavigationMode_ = enabled;
 }
 
 void ActionButton::OnCharHook(wxKeyEvent& event)
@@ -90,16 +59,6 @@ void ActionButton::OnCharHook(wxKeyEvent& event)
     if (ShouldPreserveVerticalNavigation(keyCode))
     {
         event.Skip();
-        return;
-    }
-
-    if (menuNavigationMode_ && ShouldSuppressHorizontalNavigation(keyCode))
-    {
-        return;
-    }
-
-    if (menuNavigationMode_ && ShouldSuppressTabNavigation(keyCode))
-    {
         return;
     }
 

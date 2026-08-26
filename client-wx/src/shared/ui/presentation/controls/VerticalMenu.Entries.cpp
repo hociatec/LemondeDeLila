@@ -167,10 +167,6 @@ void VerticalMenu::OnEntryKeyDown(std::size_t index, wxKeyEvent& event)
     }
     if (Navigator::IsTabKey(key))
     {
-        if (tabNavigationEnabled_ && Navigator::HandleDirectedTab(event, backwardTabTarget_, forwardTabTarget_))
-        {
-            return;
-        }
         event.Skip(false);
         return;
     }

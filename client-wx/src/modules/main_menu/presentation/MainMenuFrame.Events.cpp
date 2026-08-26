@@ -54,7 +54,7 @@ void MainMenuFrame::OnMenuSelectionChanged(std::size_t index)
         return;
     }
 
-    if (!optionsStore_.Current().showNavigationStatus)
+    if (!optionsStore_.Current().general.showNavigationStatus)
     {
         SetStatus(wxString(L"Flèches haut/bas : naviguer. Entrée : sélectionner."));
         return;

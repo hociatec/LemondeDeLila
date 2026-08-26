@@ -14,15 +14,15 @@ import { User } from '../../../../../user/public-api';
 import { SocialRelationshipEntity } from '../entities/social-relationship.entity';
 
 @Injectable()
-export class SocialRelationshipTypeormRepository
-  implements SocialRelationshipRepository
-{
+export class SocialRelationshipTypeormRepository implements SocialRelationshipRepository {
   constructor(
     @InjectRepository(SocialRelationshipEntity)
     private readonly relationships: Repository<SocialRelationshipEntity>,
   ) {}
 
-  async listAcceptedForUser(userId: number): Promise<SocialRelationshipRecord[]> {
+  async listAcceptedForUser(
+    userId: number,
+  ): Promise<SocialRelationshipRecord[]> {
     const relations = await this.relationships.find({
       where: [
         { requester: { id: userId }, status: 'accepted' },

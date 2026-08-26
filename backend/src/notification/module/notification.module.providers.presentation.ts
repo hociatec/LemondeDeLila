@@ -6,6 +6,7 @@ import { NotificationFriendPresenceNotifierService } from '../infrastructure/pre
 import { NotificationWsBadgeCountsService } from '../infrastructure/presentation/ws/notification-ws-badge-counts.service';
 import { NotificationWsConnectionService } from '../infrastructure/presentation/ws/notification-ws-connection.service';
 import { NotificationWsHandler } from '../infrastructure/presentation/ws/notification-ws.handler';
+import { NotificationWsInboxHandler } from '../infrastructure/presentation/ws/notification-ws-inbox.handler';
 import { NotificationWsInboxNotifierService } from '../infrastructure/presentation/ws/notification-ws-inbox-notifier.service';
 import { NotificationWsSessionService } from '../infrastructure/presentation/ws/notification-ws-session.service';
 
@@ -13,6 +14,7 @@ export const NOTIFICATION_PRESENTATION_PROVIDERS = [
   NotificationGateway,
   NotificationWsConnectionService,
   NotificationWsHandler,
+  NotificationWsInboxHandler,
   NotificationFriendPresenceNotifierService,
   NotificationWsBadgeCountsService,
   NotificationWsInboxNotifierService,

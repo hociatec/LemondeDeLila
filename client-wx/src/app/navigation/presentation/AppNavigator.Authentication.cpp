@@ -6,6 +6,7 @@
 #include <wx/weakref.h>
 
 #include "modules/catalog/application/CatalogService.h"
+#include "modules/catalog/domain/CatalogErrorMessages.h"
 #include "modules/audio/application/IAudioService.h"
 #include "modules/audio/domain/SoundCue.h"
 #include "modules/home/presentation/HomeFrame.h"
@@ -66,7 +67,9 @@ void AppNavigator::OnLoginSucceeded(const modules::user::domain::AuthenticationR
     session.token = result.token;
     session.refreshToken = result.refreshToken;
     session.expiresAt = result.expiresAt;
-    sessionStore_.Open(std::move(session), result.rememberSession && optionsStore_.Current().restoreSessionOnStartup);
+    sessionStore_.Open(
+        std::move(session),
+        result.rememberSession && optionsStore_.Current().general.restoreSessionOnStartup);
     ShowSession(0, true);
 }
 

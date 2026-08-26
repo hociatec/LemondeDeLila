@@ -21,7 +21,6 @@
 #include "modules/social/presentation/SocialPresentationModel.h"
 #include "modules/social/presentation/SocialSelectionMemory.h"
 #include "modules/social/presentation/SocialNavigationState.h"
-#include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 
 class wxButton;

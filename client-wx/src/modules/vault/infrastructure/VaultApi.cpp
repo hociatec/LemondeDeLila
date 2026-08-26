@@ -4,7 +4,7 @@
 
 #include "modules/session/application/SessionStore.h"
 #include "modules/vault/infrastructure/VaultPayloadCodec.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/vault/domain/VaultErrorMessages.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 
 namespace lila::modules::vault::infrastructure

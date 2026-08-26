@@ -35,8 +35,6 @@ public:
 private:
     void Confirm();
     void Cancel();
-    void CycleFocus(bool backwards);
-
     wxStaticText* title_ = nullptr;
     wxStaticText* message_ = nullptr;
     wxButton* cancelButton_ = nullptr;

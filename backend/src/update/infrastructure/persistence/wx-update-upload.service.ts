@@ -89,6 +89,7 @@ export class WxUpdateUploadService {
     if (
       hasInstaller &&
       (!/^[a-f0-9]{64}$/.test(installerSha256) ||
+        installerTotalBytes === null ||
         !Number.isSafeInteger(installerTotalBytes) ||
         installerTotalBytes <= 0 ||
         installerTotalBytes > this.updates.getMaxArtifactBytes())
@@ -217,6 +218,7 @@ export class WxUpdateUploadService {
       });
       meta.completedAt = new Date().toISOString();
       await this.writeJsonAtomic(metaPath, meta);
+      await this.removeUploadedParts(dir).catch(() => undefined);
       return { ok: true, manifest };
     } finally {
       await lock.close().catch(() => undefined);
@@ -325,6 +327,15 @@ export class WxUpdateUploadService {
     });
   }
 
+  private async removeUploadedParts(dir: string): Promise<void> {
+    const entries = await fs.promises.readdir(dir).catch(() => []);
+    await Promise.all(
+      entries
+        .filter((name) => /^(artifact|installer)\.\d+\.part$/.test(name))
+        .map((name) => fs.promises.rm(path.join(dir, name), { force: true })),
+    );
+  }
+
   private async pruneExpiredUploads(): Promise<void> {
     const expiration = Date.now() - 24 * 60 * 60 * 1000;
     const entries = await fs.promises
@@ -336,7 +347,10 @@ export class WxUpdateUploadService {
         .map(async (entry) => {
           const target = path.join(this.uploadsRoot, entry.name);
           const stat = await fs.promises.stat(target).catch(() => null);
-          if (stat && stat.mtimeMs < expiration) {
+          const meta = await this.readMeta(
+            path.join(target, 'meta.json'),
+          ).catch(() => null);
+          if (meta?.completedAt || (stat && stat.mtimeMs < expiration)) {
             await fs.promises.rm(target, { recursive: true, force: true });
           }
         }),

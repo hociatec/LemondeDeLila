@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace lila::shared::network::http
 {
@@ -17,8 +18,12 @@ public:
 class WsTicketRequestError final : public std::runtime_error
 {
 public:
-    WsTicketRequestError(std::string message, unsigned long statusCode);
-    [[nodiscard]] unsigned long StatusCode() const;
+    WsTicketRequestError(std::string message, unsigned long statusCode)
+        : std::runtime_error(std::move(message)), statusCode_(statusCode)
+    {
+    }
+
+    [[nodiscard]] unsigned long StatusCode() const { return statusCode_; }
 
 private:
     unsigned long statusCode_;

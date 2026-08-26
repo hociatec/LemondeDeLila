@@ -3,10 +3,7 @@ import { Inject } from '@nestjs/common';
 import { CatalogService } from '../../../catalog/public-api';
 import type { GameStateEntity } from '../../../game/public-api';
 import { GameStatsGameTypeRequiredError } from '../../domain/errors/game-stats-domain.errors';
-import {
-  GameMatchOutcome,
-  type GameMatchPlayerRecord,
-} from '../models/game-match-player.model';
+import { GameMatchOutcome } from '../models/game-match-player.model';
 import type { GameMatchRecord } from '../models/game-match.model';
 import {
   GAME_MATCH_REPOSITORY,
@@ -216,7 +213,9 @@ export class GameStatsService {
     return userId === winnerId ? 'won' : 'lost';
   }
 
-  private async getActiveMatch(roomId: number): Promise<GameMatchRecord | null> {
+  private async getActiveMatch(
+    roomId: number,
+  ): Promise<GameMatchRecord | null> {
     return this.statsRepo.findActiveMatchByRoomId(roomId);
   }
 

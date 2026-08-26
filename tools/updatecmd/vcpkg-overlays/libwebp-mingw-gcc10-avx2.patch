@@ -1,0 +1,17 @@
+diff --git a/src/dsp/lossless_avx2.c b/src/dsp/lossless_avx2.c
+index 419cf04..f28bc46 100644
+--- a/src/dsp/lossless_avx2.c
++++ b/src/dsp/lossless_avx2.c
+@@ -18,6 +18,12 @@
+ #include <stddef.h>
+ #include <immintrin.h>
+ 
++// MinGW GCC 10 does not expose this AVX2 convenience intrinsic. It is exactly
++// the extraction of the low 128-bit lane followed by the existing SSE2 helper.
++#if defined(__GNUC__) && (__GNUC__ == 10)
++#define _mm256_cvtsi256_si32(value) _mm_cvtsi128_si32(_mm256_castsi256_si128(value))
++#endif
++
+ #include "src/dsp/cpu.h"
+ #include "src/dsp/lossless.h"
+ #include "src/webp/format_constants.h"

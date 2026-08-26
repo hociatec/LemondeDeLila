@@ -5,7 +5,7 @@
 
 #include "modules/session/application/SessionStore.h"
 #include "modules/social/infrastructure/SocialProtocolFields.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/social/domain/SocialErrorMessages.h"
 #include "shared/network/domain/WsMessageTypes.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"

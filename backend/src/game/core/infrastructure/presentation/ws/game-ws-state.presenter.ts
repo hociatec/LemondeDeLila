@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import type { GameRulesAdapter } from '../../../application/contracts/game-rules-adapter.interface';
+import type { GameRuntime } from '../../../application/contracts/game-runtime.interface';
 import type { GameStateEntity } from '../../../application/models/game-state.model';
 import type { GameShortcutHint } from '../../../../shortcuts/public-api';
-import { GameWsPayloadCompatibilityAdapter } from './game-ws-payload-compatibility.adapter';
 import { withDicePresentation } from '../../../../dice/public-api';
+import { GameVisibilityService } from '../../../application/services/game-visibility.service';
 
 type PresentStateInput = {
   state: GameStateEntity;
-  handler: GameRulesAdapter;
+  handler: GameRuntime;
   roomId: number;
   gameType: string;
   version: number;
@@ -16,50 +16,54 @@ type PresentStateInput = {
 
 @Injectable()
 export class GameWsStatePresenter {
-  constructor(
-    private readonly compatibility: GameWsPayloadCompatibilityAdapter,
-  ) {}
+  constructor(private readonly visibility: GameVisibilityService) {}
 
   present(input: PresentStateInput): Record<string, unknown> {
-    const exposed = withDicePresentation(
-      this.expose(input.handler, input.state, input.viewerPlayerId),
+    const exposedByGame = this.expose(
+      input.handler,
+      input.state,
+      input.viewerPlayerId,
     );
-    return this.compatibility.build(exposed, {
+    const exposed = withDicePresentation(
+      this.visibility.project(
+        input.state,
+        exposedByGame,
+        Number(input.viewerPlayerId ?? 0) || null,
+      ),
+    );
+    return {
+      ...exposed,
       roomId: input.roomId,
       gameType: input.gameType,
       version: input.version,
-      viewerPlayerId: input.viewerPlayerId,
-      shortcuts: this.resolveShortcuts(input.handler, input.state, exposed),
-    });
+      extras: {
+        ...(exposed.extras ?? {}),
+        shortcuts: this.resolveShortcuts(input.handler, input.state, exposed),
+      },
+    };
   }
 
   private expose(
-    handler: GameRulesAdapter,
+    handler: GameRuntime,
     state: GameStateEntity,
     viewerPlayerId?: number | null,
   ): GameStateEntity {
     const viewerId = Number(viewerPlayerId ?? 0);
-    if (
-      handler.exposeStateForUser &&
-      Number.isFinite(viewerId) &&
-      viewerId > 0
-    ) {
+    if (Number.isFinite(viewerId) && viewerId > 0) {
       return handler.exposeStateForUser(state, viewerId);
     }
-    return handler.exposeState ? handler.exposeState(state) : state;
+    return handler.exposeStateForUser(state, 0);
   }
 
   private resolveShortcuts(
-    handler: GameRulesAdapter,
+    handler: GameRuntime,
     state: GameStateEntity,
     exposed: GameStateEntity,
   ): GameShortcutHint[] {
-    const shortcuts =
-      handler.getShortcuts?.({
-        metadata: state.metadata ?? {},
-        currentPlayerId: state.turn?.currentPlayerId ?? null,
-        started: String(state.status ?? '').toLowerCase() === 'started',
-      }) ?? [];
+    const shortcuts = handler.getShortcuts({
+      currentPlayerId: state.turn?.currentPlayerId ?? null,
+      started: String(state.status ?? '').toLowerCase() === 'started',
+    });
     const rawActions = (exposed as GameStateEntity & { actions?: unknown })
       .actions;
     const actionTypes = new Set(

@@ -1,15 +1,9 @@
-import { RoomGateway } from './room.gateway';
 import { RoomGatewayActionsService } from './room-gateway-actions.service';
+import { RoomGatewayBotActionsService } from './room-gateway-bot-actions.service';
 import { RoomGatewayCommandService } from './room-gateway-command.service';
-import { RoomGatewayConnectionService } from './room-gateway-connection.service';
 import { RoomGatewayLifecycleService } from './room-gateway-lifecycle.service';
 import { RoomGatewayLifecyclePresenter } from './room-gateway-lifecycle.presenter';
 import { RoomGatewayPresenceService } from './room-gateway-presence.service';
-import { RoomGatewaySessionService } from './room-gateway-session.service';
-import { RoomGatewaySessionPresenter } from './room-gateway-session.presenter';
-import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
-import { RoomGatewayStateService } from './room-gateway-state.service';
-import { RoomClientPolicyService } from '../../../application/services/room-client-policy.service';
 import { RoomJoinPolicyService } from '../../../application/services/room-join-policy.service';
 import { RoomAdminPolicyService } from '../../../application/services/room-admin-policy.service';
 import { RoomGatewayPresenter } from './room-gateway.presenter';
@@ -18,18 +12,6 @@ type GatewayFixture = {
   gateway: any;
   deps: {
     roomsService: any;
-    roomState: any;
-    addBotToRoom: any;
-    getLastRoomBot: any;
-    removeBotFromRoom: any;
-    auth: any;
-    catalog: any;
-    perf: any;
-    invites: any;
-    clientUpdates: any;
-    wsTickets: any;
-    realtimeTracker: any;
-    sounds: any;
   };
 };
 
@@ -132,7 +114,6 @@ function createGatewayFixture(): GatewayFixture {
   const addBotToRoom: any = { execute: jest.fn() };
   const getLastRoomBot: any = { execute: jest.fn() };
   const removeBotFromRoom: any = { execute: jest.fn() };
-  const auth: any = {};
   const catalog: any = {
     getGame: jest.fn().mockResolvedValue({
       id: 'lama',
@@ -148,27 +129,12 @@ function createGatewayFixture(): GatewayFixture {
       .fn()
       .mockImplementation(async (_metric: string, fn: any) => await fn()),
   };
-  const invites: any = {
-    canSpectate: jest.fn().mockReturnValue(true),
-  };
-  const clientUpdates: any = {
-    getMinRequiredVersion: jest.fn().mockResolvedValue(null),
-  };
-  const wsTickets: any = {
-    validate: jest.fn().mockReturnValue(true),
-  };
   const realtimeTracker: any = {
     setSocketParticipantRoom: jest.fn(),
     clearSocket: jest.fn(),
   };
-  const sounds: any = {
-    listTableAmbiencesWithFilter: jest.fn().mockResolvedValue({ items: [] }),
-  };
   const joinPolicy = new RoomJoinPolicyService();
-  const clientPolicy = new RoomClientPolicyService();
   const lifecyclePresenter = new RoomGatewayLifecyclePresenter();
-  const sessionPresenter = new RoomGatewaySessionPresenter();
-  const statePresenter = new RoomGatewayStatePresenter();
   const adminPolicy = new RoomAdminPolicyService();
   const gatewayPresenter = new RoomGatewayPresenter();
   const lifecycle = new RoomGatewayLifecycleService(
@@ -181,92 +147,162 @@ function createGatewayFixture(): GatewayFixture {
     joinPolicy,
     lifecyclePresenter,
   ) as any;
+  const botActions = new RoomGatewayBotActionsService(
+    addBotToRoom,
+    getLastRoomBot,
+    removeBotFromRoom,
+    perf,
+    roomState,
+    gatewayPresenter,
+  ) as any;
   const actions = new RoomGatewayActionsService(
     roomsService,
     roomsService,
     roomState,
     adminPolicy,
-    addBotToRoom,
-    getLastRoomBot,
-    removeBotFromRoom,
     perf,
     realtimeTracker,
     gatewayPresenter,
+    botActions,
   ) as any;
   const commands = new RoomGatewayCommandService() as any;
-  const connection = new RoomGatewayConnectionService(
-    roomsService,
-    roomState,
-    auth,
-    clientUpdates,
-    wsTickets,
-    joinPolicy,
-    lifecyclePresenter,
-  ) as any;
   const presence = new RoomGatewayPresenceService(
     roomsService,
     roomState,
   ) as any;
-  const state = new RoomGatewayStateService(
-    roomState,
-    clientPolicy,
-    statePresenter,
-  ) as any;
-  const session = new RoomGatewaySessionService(
-    clientPolicy,
-    roomState,
-    sessionPresenter,
-  ) as any;
-  const roomEvents = {
-    onRoomStateUpdated: jest.fn(),
-    onRoomDeleted: jest.fn(),
+  const clients = new Map();
+  const rooms = new Map();
+  const silentRooms = new Map();
+  const pendingParticipantLeaves = new Map();
+  const gateway: any = {
+    broadcastRoomPayload: jest.fn().mockResolvedValue(undefined),
+    broadcastRoomIntent: jest.fn().mockResolvedValue(undefined),
+    broadcast: jest.fn().mockResolvedValue(undefined),
+    sendRoomState: jest.fn().mockResolvedValue(undefined),
+    sendRoomStateToClient: jest.fn().mockResolvedValue(undefined),
+    sendError: jest.fn().mockResolvedValue(undefined),
+    leavePreviousRoomOnSwitch: jest.fn().mockResolvedValue(undefined),
+    tryUpdateRoomPayload: jest.fn().mockResolvedValue(true),
+    canSpectate: jest.fn().mockResolvedValue(true),
+    withAllowedActionsForClient: jest.fn((payload: any) => payload),
   };
-
-  const gateway = new RoomGateway(
-    catalog,
-    perf,
-    invites,
-    realtimeTracker,
-    sounds,
-    actions,
-    commands,
-    connection,
-    lifecycle,
-    presence,
-    statePresenter,
-    state,
-    session,
-    roomEvents,
-  ) as any;
-
-  gateway.broadcastRoomPayload = jest.fn().mockResolvedValue(undefined);
-  gateway.broadcastRoomIntent = jest.fn().mockResolvedValue(undefined);
-  gateway.broadcast = jest.fn().mockResolvedValue(undefined);
-  gateway.sendRoomState = jest.fn().mockResolvedValue(undefined);
-  gateway.sendRoomStateToClient = jest.fn().mockResolvedValue(undefined);
-  gateway.sendError = jest.fn().mockResolvedValue(undefined);
-  gateway.leavePreviousRoomOnSwitch = jest.fn().mockResolvedValue(undefined);
-  gateway.tryUpdateRoomPayload = jest.fn().mockResolvedValue(true);
-  gateway.canSpectate = jest.fn().mockResolvedValue(true);
-  gateway.withAllowedActionsForClient = jest.fn((payload: any) => payload);
+  const asRecord = (value: unknown): Record<string, unknown> =>
+    value != null && typeof value === 'object'
+      ? (value as Record<string, unknown>)
+      : {};
+  const safeSend = (client: any, payload: unknown): void => {
+    if (client.readyState === 1) client.send(JSON.stringify(payload));
+  };
+  const lifecycleContext = () => ({
+    server: {} as any,
+    rooms,
+    silentRooms,
+    clients,
+    sendRoomLeftOrDeleted: jest.fn().mockResolvedValue(undefined),
+    resetClientRoomState: jest.fn(),
+    hasUserConnections: (roomId: number, userId: number) =>
+      presence.hasUserConnections(presenceContext(), roomId, userId),
+    sendRoomState: (...args: any[]) => gateway.sendRoomState(...args),
+    sendRoomStateToClient: (...args: any[]) =>
+      gateway.sendRoomStateToClient(...args),
+    broadcast: (...args: any[]) => gateway.broadcast(...args),
+    broadcastRoomIntent: (...args: any[]) =>
+      gateway.broadcastRoomIntent(...args),
+    broadcastRoomPayload: (...args: any[]) =>
+      gateway.broadcastRoomPayload(...args),
+    sendError: (...args: any[]) => gateway.sendError(...args),
+    safeSend,
+    tryUpdateRoomPayload: (...args: any[]) =>
+      gateway.tryUpdateRoomPayload(...args),
+    canSpectate: (...args: any[]) => gateway.canSpectate(...args),
+    leavePreviousRoomOnSwitch: (...args: any[]) =>
+      gateway.leavePreviousRoomOnSwitch(...args),
+    withAllowedActionsForClient: (...args: any[]) =>
+      gateway.withAllowedActionsForClient(...args),
+    asRecord,
+  });
+  const presenceContext = (): any => ({
+    clients,
+    rooms,
+    silentRooms,
+    pendingParticipantLeaves,
+    participantDisconnectGraceMs: 60_000,
+    clearRealtimeSocket: jest.fn(),
+    stopHeartbeat: jest.fn(),
+    deleteMessageQueue: jest.fn(),
+    sendRoomState: (...args: any[]) => gateway.sendRoomState(...args),
+    resetClientRoomState: jest.fn(),
+    sendRoomLeftOrDeleted: jest.fn().mockResolvedValue(undefined),
+    sendRoomError: jest.fn(),
+  });
+  const actionsContext = () => ({
+    server: {} as any,
+    rooms,
+    silentRooms,
+    clients,
+    broadcast: (...args: any[]) => gateway.broadcast(...args),
+    broadcastRoomIntent: (...args: any[]) =>
+      gateway.broadcastRoomIntent(...args),
+    sendRoomState: (...args: any[]) => gateway.sendRoomState(...args),
+    tryUpdateRoomPayload: (...args: any[]) =>
+      gateway.tryUpdateRoomPayload(...args),
+    sendError: (...args: any[]) => gateway.sendError(...args),
+    safeSend,
+    sendRoomError: jest.fn(),
+    sendRoomLeftOrDeleted: jest.fn().mockResolvedValue(undefined),
+    hasUserConnections: (roomId: number, userId: number) =>
+      presence.hasUserConnections(presenceContext(), roomId, userId),
+    resetClientRoomState: jest.fn(),
+    asRecord,
+  });
+  const commandContext = (): any => ({
+    safeSend,
+    asRecord,
+    sendImmediateAckIfNeeded: (...args: any[]) =>
+      gateway.sendImmediateAckIfNeeded(...args),
+    executeLegacyRoomCommand: (...args: any[]) =>
+      gateway.executeLegacyRoomCommand(...args),
+    handleRoomLeave: jest.fn().mockResolvedValue(undefined),
+    handleChatSend: jest.fn().mockResolvedValue(undefined),
+    handleChatHistory: jest.fn().mockResolvedValue(undefined),
+    handleRoomStart: (...args: any[]) => gateway.handleRoomStart(...args),
+    handleRoomReset: jest.fn().mockResolvedValue(undefined),
+    handleSetRole: (...args: any[]) => gateway.handleSetRole(...args),
+    handleKickOrBan: jest.fn().mockResolvedValue(undefined),
+    handleSetOwner: jest.fn().mockResolvedValue(undefined),
+    handleSetAmbience: jest.fn().mockResolvedValue(undefined),
+    handleTogglePrivacy: (...args: any[]) =>
+      gateway.handleTogglePrivacy(...args),
+    handleRoomInfo: jest.fn().mockResolvedValue(undefined),
+    handleBotAdd: jest.fn().mockResolvedValue(undefined),
+    handleBotRemove: jest.fn().mockResolvedValue(undefined),
+    handleRoomCreate: (...args: any[]) => gateway.handleRoomCreate(...args),
+    handleRoomJoin: (...args: any[]) => gateway.handleRoomJoin(...args),
+  });
+  gateway.handleRoomCreate = (...args: any[]) =>
+    lifecycle.handleRoomCreate(lifecycleContext(), ...args);
+  gateway.handleRoomJoin = (...args: any[]) =>
+    lifecycle.handleRoomJoin(lifecycleContext(), ...args);
+  gateway.handleRoomStart = (...args: any[]) =>
+    lifecycle.handleRoomStart(lifecycleContext(), ...args);
+  gateway.handleTogglePrivacy = (...args: any[]) =>
+    lifecycle.handleTogglePrivacy(lifecycleContext(), ...args);
+  gateway.handleSetRole = (...args: any[]) =>
+    actions.handleSetRole(actionsContext(), ...args);
+  gateway.hasUserConnections = (roomId: number, userId: number) =>
+    presence.hasUserConnections(presenceContext(), roomId, userId);
+  gateway.scheduleDelayedParticipantLeave = (roomId: number, userId: number) =>
+    presence.scheduleDelayedParticipantLeave(presenceContext(), roomId, userId);
+  gateway.sendImmediateAckIfNeeded = (...args: any[]) =>
+    commands.sendImmediateAckIfNeeded(commandContext(), ...args);
+  gateway.executeLegacyRoomCommand = (...args: any[]) =>
+    commands.executeLegacyRoomCommand(commandContext(), ...args);
+  gateway.handleRoomIntentExecute = (...args: any[]) =>
+    commands.handleRoomIntentExecute(commandContext(), ...args);
 
   return {
     gateway,
-    deps: {
-      roomsService,
-      roomState,
-      addBotToRoom,
-      getLastRoomBot,
-      removeBotFromRoom,
-      auth,
-      catalog,
-      perf,
-      invites,
-      clientUpdates,
-      wsTickets,
-      realtimeTracker,
-      sounds,
-    },
+    deps: { roomsService },
   };
 }
 

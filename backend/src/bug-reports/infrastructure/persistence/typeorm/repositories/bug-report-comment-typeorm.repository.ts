@@ -9,9 +9,7 @@ import type { BugReportCommentRecord } from '../../../../application/models/bug-
 import { BugReportCommentEntity } from '../entities/bug-report-comment.entity';
 
 @Injectable()
-export class BugReportCommentTypeormRepository
-  implements BugReportCommentRepository
-{
+export class BugReportCommentTypeormRepository implements BugReportCommentRepository {
   constructor(
     @InjectRepository(BugReportCommentEntity)
     private readonly repo: Repository<BugReportCommentEntity>,

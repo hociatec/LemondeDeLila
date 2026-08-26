@@ -1,25 +1,16 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { WS_EVENTS } from '../../../../realtime/public-api';
-import { AdminContactService } from '../../../application/services/admin-contact.service';
-import { UserBadgeCountsService } from '../../../application/services/user-badge-counts.service';
-import { NotificationIdentifierRequiredError } from '../../../domain/errors/notification-domain.errors';
-import type { NotificationClientMeta } from './notification-ws.types';
 import { UpdatePolicyService } from '../../../../update/public-api';
-
-type NotificationInboxActor = {
-  id: number;
-  username: string;
-  roles: string[];
-};
+import type { NotificationClientMeta } from './notification-ws.types';
+import { NotificationWsInboxHandler } from './notification-ws-inbox.handler';
 
 @Injectable()
 export class NotificationWsHandler {
   private readonly logger = new Logger(NotificationWsHandler.name);
 
   constructor(
-    private readonly adminContacts: AdminContactService,
-    private readonly counts: UserBadgeCountsService,
+    private readonly inbox: NotificationWsInboxHandler,
     private readonly updates: UpdatePolicyService,
   ) {}
 
@@ -30,393 +21,48 @@ export class NotificationWsHandler {
     requestId: string | null,
   ): Promise<void> {
     const type = typeof parsed.type === 'string' ? parsed.type : '';
-    const payload =
-      parsed.payload && typeof parsed.payload === 'object'
-        ? (parsed.payload as Record<string, unknown>)
-        : {};
-    if (!type) {
-      return;
-    }
-
-    if (type === WS_EVENTS.notify.countsGet) {
-      this.logger.log(
-        `notify.counts.get received user=${meta.userId} requestId=${requestId ?? 'none'}`,
+    if (!type) return;
+    const payload = this.readPayload(parsed.payload);
+    if (this.inbox.handles(type)) {
+      await this.inbox.handle(
+        client,
+        meta,
+        type,
+        payload,
+        requestId,
+        this.safeSendResponse.bind(this),
       );
-      try {
-        const payload = await this.counts.getCounts(meta.userId);
-        this.logger.log(
-          `notify.counts.get for user ${meta.userId}: ${JSON.stringify(payload)}`,
-        );
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.counts,
-          payload,
-          requestId,
-        );
-      } catch {
-        this.logger.warn(
-          `notify.counts.get failed for user ${meta.userId}, returning zeros`,
-        );
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.counts,
-          { unreadNotifications: 0, unreadMessages: 0 },
-          requestId,
-        );
-      }
       return;
     }
-
-    if (type === WS_EVENTS.notify.inbox.list) {
-      try {
-        const items = await this.adminContacts.listInbox(meta.userId, 200);
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.snapshot,
-          { items },
-          requestId,
-        );
-      } catch {
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.snapshot,
-          { items: [] },
-          requestId,
-        );
-      }
-      return;
+    if (type === 'client.hello') {
+      await this.handleClientHello(client, meta, payload);
     }
+  }
 
-    if (type === WS_EVENTS.notify.inbox.delete) {
-      const id = typeof payload.id === 'string' ? payload.id.trim() : '';
-      if (!id) {
-        return;
-      }
-      try {
-        this.logger.log(`notify.inbox.delete user=${meta.userId} id=${id}`);
-        await this.adminContacts.deleteInboxItem(meta.userId, id);
-        const items = await this.adminContacts.listInbox(meta.userId, 200);
-        const sampleIds = items
-          .slice(0, 5)
-          .map((item) => item.id)
-          .join(',');
-        this.logger.log(
-          `notify.inbox.snapshot after delete user=${meta.userId} count=${items.length} ids=[${sampleIds}]`,
-        );
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.snapshot,
-          { items },
-          requestId,
-        );
-      } catch {
-        // ignore
-      }
-      return;
-    }
-
-    if (type === WS_EVENTS.notify.inbox.markRead) {
-      const id = typeof payload.id === 'string' ? payload.id.trim() : '';
-      if (!id) {
-        return;
-      }
-      try {
-        await this.adminContacts.markRead(meta.userId, id);
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.markRead,
-          { ok: true },
-          requestId,
-        );
-      } catch {
-        // ignore
-      }
-      return;
-    }
-
-    if (type === WS_EVENTS.notify.inbox.send) {
-      try {
-        const message =
-          typeof payload.message === 'string' ? payload.message : '';
-        const item = await this.adminContacts.sendFromUserToStaff(
-          this.toInboxActor(meta),
-          message,
-        );
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.sent,
-          { id: item.id, contactId: item.contactId },
-          requestId,
-        );
-      } catch (err: unknown) {
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.error,
-          { message: this.toErrorMessage(err) },
-          requestId,
-        );
-      }
-      return;
-    }
-
-    if (type === WS_EVENTS.notify.inbox.reply) {
-      try {
-        const from = this.toInboxActor(meta);
-        const message =
-          typeof payload.message === 'string' ? payload.message : '';
-        const contactId =
-          typeof payload.contactId === 'string' ? payload.contactId : '';
-        const toUserId =
-          typeof payload.toUserId === 'number' ? payload.toUserId : 0;
-        const isStaff =
-          Array.isArray(from.roles) &&
-          (from.roles.includes('ROLE_ADMIN') ||
-            from.roles.includes('admin') ||
-            from.roles.includes('ROLE_MODERATOR') ||
-            from.roles.includes('moderator'));
-        const item = isStaff
-          ? await this.adminContacts.replyFromStaffToUser(
-              from,
-              toUserId,
-              message,
-              contactId,
-            )
-          : await this.adminContacts.sendFromUserToStaff(
-              from,
-              message,
-              contactId,
-            );
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.sent,
-          { id: item.id, contactId: item.contactId },
-          requestId,
-        );
-      } catch (err: unknown) {
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.error,
-          { message: this.toErrorMessage(err) },
-          requestId,
-        );
-      }
-      return;
-    }
-
-    if (type === WS_EVENTS.notify.inbox.setHandled) {
-      try {
-        const contactId =
-          typeof payload.contactId === 'string' ? payload.contactId : '';
-        const handled = Boolean(payload.handled);
-        await this.adminContacts.setHandledForContact(
-          this.toInboxActor(meta),
-          contactId,
-          handled,
-        );
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.setHandled,
-          { ok: true },
-          requestId,
-        );
-      } catch (err: unknown) {
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.error,
-          { message: this.toErrorMessage(err) },
-          requestId,
-        );
-      }
-      return;
-    }
-
-    if (type === WS_EVENTS.notify.inbox.setStatus) {
-      try {
-        const contactId =
-          typeof payload.contactId === 'string' ? payload.contactId : '';
-        const inboxItemId = typeof payload.id === 'string' ? payload.id : '';
-        const status = typeof payload.status === 'string' ? payload.status : '';
-        const from = this.toInboxActor(meta);
-        if (contactId) {
-          await this.adminContacts.setStatusForContact(from, contactId, status);
-        } else if (inboxItemId) {
-          await this.adminContacts.setStatusForInboxItem(
-            from,
-            meta.userId,
-            inboxItemId,
-            status,
-          );
-        } else {
-          throw new NotificationIdentifierRequiredError();
-        }
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.setStatus,
-          { ok: true },
-          requestId,
-        );
-      } catch (err: unknown) {
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.error,
-          { message: this.toErrorMessage(err) },
-          requestId,
-        );
-      }
-      return;
-    }
-
-    if (type === WS_EVENTS.notify.inbox.cycleStatus) {
-      try {
-        const contactId =
-          typeof payload.contactId === 'string' ? payload.contactId : '';
-        const inboxItemId = typeof payload.id === 'string' ? payload.id : '';
-        const from = this.toInboxActor(meta);
-        const result = contactId
-          ? await this.adminContacts.cycleStatusForContact(from, contactId)
-          : inboxItemId
-            ? await this.adminContacts.cycleStatusForInboxItem(
-                from,
-                meta.userId,
-                inboxItemId,
-              )
-            : (() => {
-                throw new NotificationIdentifierRequiredError();
-              })();
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.cycleStatus,
-          { ok: true, status: result.status },
-          requestId,
-        );
-      } catch (err: unknown) {
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.error,
-          { message: this.toErrorMessage(err) },
-          requestId,
-        );
-      }
-      return;
-    }
-
-    if (type === WS_EVENTS.notify.inbox.threads) {
-      try {
-        const limitThreads =
-          typeof payload.limit === 'number' ? payload.limit : undefined;
-        const threads = await this.adminContacts.listThreads(meta.userId, {
-          limitThreads,
-        });
-        const sections = {
-          open: threads.filter((thread) => thread.status === 'open'),
-          in_progress: threads.filter(
-            (thread) => thread.status === 'in_progress',
-          ),
-          handled: threads.filter((thread) => thread.status === 'handled'),
-        };
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.threads,
-          {
-            sections: [
-              {
-                id: 'open',
-                title: 'Ouvert',
-                collapsed: true,
-                items: sections.open,
-              },
-              {
-                id: 'in_progress',
-                title: 'En cours',
-                collapsed: true,
-                items: sections.in_progress,
-              },
-              {
-                id: 'handled',
-                title: 'Traité',
-                collapsed: true,
-                items: sections.handled,
-              },
-            ],
-            total: threads.length,
-          },
-          requestId,
-        );
-      } catch (err: unknown) {
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.error,
-          { message: this.toErrorMessage(err) },
-          requestId,
-        );
-      }
-      return;
-    }
-
-    if (type === WS_EVENTS.notify.inbox.deleteThread) {
-      try {
-        const contactId =
-          typeof payload.contactId === 'string' ? payload.contactId : '';
-        await this.adminContacts.deleteThreadForContact(
-          this.toInboxActor(meta),
-          contactId,
-        );
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.deleteThread,
-          { ok: true },
-          requestId,
-        );
-      } catch (err: unknown) {
-        this.safeSendResponse(
-          client,
-          WS_EVENTS.notify.inbox.error,
-          { message: this.toErrorMessage(err) },
-          requestId,
-        );
-      }
-      return;
-    }
-
-    if (type !== 'client.hello') {
-      return;
-    }
-
+  private async handleClientHello(
+    client: WebSocket,
+    meta: NotificationClientMeta,
+    payload: Record<string, unknown>,
+  ): Promise<void> {
     const version =
       typeof payload.version === 'string' ? payload.version.trim() : '';
-    if (!version) {
-      return;
-    }
-
+    if (!version) return;
     try {
       const notice = await this.updates.getNotice(
         meta.product,
         version,
         meta.origin,
       );
-
       if (notice.updateRequired && notice.minimumVersion) {
-        this.safeSend(client, {
-          type: WS_EVENTS.clientUpdate.required,
-          payload: {
-            minRequiredVersion: notice.minimumVersion,
-            currentVersion: version,
-            message:
-              notice.message ??
-              'Une mise à jour du client est requise pour continuer.',
-            publishedAt: notice.publishedAt,
-            url: notice.url,
-          },
-        });
+        this.sendRequiredUpdate(client, version, notice);
         await new Promise((resolve) => setTimeout(resolve, 300));
         try {
           client.close(4406, 'update required');
         } catch {
-          /* ignore */
+          // The socket may already be closed by the client.
         }
         return;
       }
-
       if (notice.latestVersion && notice.updateAvailable === true) {
         this.safeSend(client, {
           type: WS_EVENTS.clientUpdate.available,
@@ -428,28 +74,45 @@ export class NotificationWsHandler {
           },
         });
       }
-    } catch (err) {
-      this.logger.debug('Echec vérification version client', err as Error);
+    } catch (error) {
+      this.logger.debug('Echec vérification version client', error as Error);
     }
   }
 
-  private safeSend(client: WebSocket, payload: unknown) {
-    if (client.readyState !== WebSocket.OPEN) {
-      return;
-    }
+  private sendRequiredUpdate(
+    client: WebSocket,
+    currentVersion: string,
+    notice: Awaited<ReturnType<UpdatePolicyService['getNotice']>>,
+  ): void {
+    this.safeSend(client, {
+      type: WS_EVENTS.clientUpdate.required,
+      payload: {
+        minRequiredVersion: notice.minimumVersion,
+        currentVersion,
+        message:
+          notice.message ??
+          'Une mise à jour du client est requise pour continuer.',
+        publishedAt: notice.publishedAt,
+        url: notice.url,
+      },
+    });
+  }
+
+  private safeSend(client: WebSocket, payload: unknown): void {
+    if (client.readyState !== WebSocket.OPEN) return;
     try {
       client.send(JSON.stringify(payload));
-    } catch (err) {
+    } catch (error) {
       const record = payload as Record<string, unknown> | null;
       const type =
         record && typeof record.type === 'string' ? record.type : 'unknown';
       this.logger.warn(
-        `Echec envoi WS notify (type=${type}) : ${(err as Error).message}`,
+        `Echec envoi WS notify (type=${type}) : ${(error as Error).message}`,
       );
       try {
         client.close();
       } catch {
-        /* ignore */
+        // The socket may already be closed by the client.
       }
     }
   }
@@ -459,22 +122,16 @@ export class NotificationWsHandler {
     type: string,
     payload: unknown,
     requestId: string | null,
-  ) {
+  ): void {
     this.safeSend(
       client,
       requestId ? { type, payload, requestId } : { type, payload },
     );
   }
 
-  private toInboxActor(meta: NotificationClientMeta): NotificationInboxActor {
-    return {
-      id: meta.userId,
-      username: meta.username,
-      roles: meta.roles,
-    };
-  }
-
-  private toErrorMessage(error: unknown): string {
-    return error instanceof Error && error.message ? error.message : 'Erreur';
+  private readPayload(value: unknown): Record<string, unknown> {
+    return value && typeof value === 'object'
+      ? (value as Record<string, unknown>)
+      : {};
   }
 }

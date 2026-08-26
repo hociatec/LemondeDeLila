@@ -5,19 +5,12 @@
 
 #include <nlohmann/json.hpp>
 
+#include "shared/data/json/JsonCoercion.h"
+
 namespace lila::modules::gameplay::infrastructure
 {
 namespace
 {
-std::string ScalarText(const nlohmann::json& value)
-{
-    if (value.is_string()) return value.get<std::string>();
-    if (value.is_number_integer()) return std::to_string(value.get<long long>());
-    if (value.is_number_unsigned()) return std::to_string(value.get<unsigned long long>());
-    if (value.is_number_float()) return std::to_string(value.get<double>());
-    return {};
-}
-
 std::string FirstText(
     const nlohmann::json& value,
     std::initializer_list<std::string_view> keys)
@@ -27,7 +20,7 @@ std::string FirstText(
     {
         const auto item = value.find(std::string(key));
         if (item == value.end()) continue;
-        auto text = ScalarText(*item);
+        auto text = lila::shared::data::json::ScalarText(*item);
         if (!text.empty()) return text;
     }
     return {};
@@ -37,9 +30,10 @@ std::optional<domain::GameCard> DecodeCard(const nlohmann::json& value)
 {
     if (value.is_string() || value.is_number())
     {
-        auto text = ScalarText(value);
+        auto text = lila::shared::data::json::ScalarText(value);
         if (text.empty()) return std::nullopt;
-        return domain::GameCard{text, std::move(text)};
+        return domain::GameCard{
+            text, std::move(text), {}, {}, {}, false, std::nullopt};
     }
     if (!value.is_object()) return std::nullopt;
 

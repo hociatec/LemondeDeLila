@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <utility>
 
+#include <wx/listbox.h>
+
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 
@@ -43,6 +45,11 @@ void GamePlayPanel::SyncInlinePrompt()
         promptPanel_->HidePrompt(true);
         return;
     }
+    if (!roomStarted_ && !roomStartFlowRequested_)
+    {
+        promptPanel_->HidePrompt(false);
+        return;
+    }
     if (!submittedPromptActionType_.empty() &&
         submittedPromptActionType_ != state_.prompt->actionType)
         submittedPromptActionType_.clear();
@@ -78,5 +85,22 @@ void GamePlayPanel::ShowInlinePrompt(domain::GameAction action)
     if (!state_.prompt || state_.prompt->actionType != action.type) return;
     confirmationPanel_->HideConfirmation();
     promptPanel_->ShowPrompt(*state_.prompt, std::move(action));
+}
+
+bool GamePlayPanel::ActivateSelectedPendingChoice()
+{
+    if (!state_.pending || !state_.pending->viewerActionable) return false;
+    const int selected = choicesList_->GetSelection();
+    if (selected == wxNOT_FOUND || selected < 0 ||
+        static_cast<std::size_t>(selected) >= state_.pending->choices.size())
+        return false;
+    const auto& choice = state_.pending->choices[static_cast<std::size_t>(selected)];
+    if (!choice.action)
+    {
+        UpdateStatus(wxString(L"Ce choix n'a pas d'action fournie par le serveur."), true, true);
+        return true;
+    }
+    PrepareAndExecuteAction(*choice.action);
+    return true;
 }
 }

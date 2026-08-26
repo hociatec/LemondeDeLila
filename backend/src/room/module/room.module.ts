@@ -7,6 +7,10 @@ import { RoomMaintenanceSettingsService } from '../application/services/room-mai
 import { ROOM_MODULE_IMPORTS } from './room.module.imports';
 import { ROOM_CORE_PROVIDERS } from './room.module.providers.core';
 import { ROOM_PRESENTATION_PROVIDERS } from './room.module.providers.presentation';
+import {
+  GAME_ROOM_CONTEXT_PORT,
+  GAME_ROOM_EVENTS_PORT,
+} from '../../game/public-api';
 
 @Module({
   imports: ROOM_MODULE_IMPORTS,
@@ -17,6 +21,8 @@ import { ROOM_PRESENTATION_PROVIDERS } from './room.module.providers.presentatio
     ROOM_GAME_PORT,
     ROOM_VAULT_PORT,
     ROOM_EVENTS_PORT,
+    GAME_ROOM_CONTEXT_PORT,
+    GAME_ROOM_EVENTS_PORT,
   ],
 })
 export class RoomModule {}

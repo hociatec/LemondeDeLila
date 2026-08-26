@@ -78,7 +78,3 @@ export class AdminChatUnbanWsDto extends AdminUserIdWsDto {
   @IsBoolean()
   _noop?: boolean;
 }
-
-
-
-

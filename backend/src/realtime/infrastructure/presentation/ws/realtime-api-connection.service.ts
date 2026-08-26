@@ -2,10 +2,10 @@
 import { randomUUID } from 'crypto';
 import { WebSocket } from 'ws';
 import type { WsAuthPayload } from '../../../../common/interfaces/public-api';
-import type { WsTicketScope } from '../../../../common/ws/application/models/ws-ticket.model';
 import {
   WsApiHubService,
   WsJwtAuthService,
+  type WsTicketScope,
   WsTicketAuthService,
 } from '../../../../common/ws/public-api';
 import { RealtimeApiHandlerService } from './realtime-api-handler.service';

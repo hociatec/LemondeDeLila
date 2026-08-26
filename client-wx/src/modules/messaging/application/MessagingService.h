@@ -27,9 +27,6 @@ public:
     [[nodiscard]] std::vector<domain::MessagingMessage> LoadBox(
         domain::MessagingBox box,
         int limit = lila::modules::messaging::infrastructure::fields::DefaultPageLimit) const;
-    [[nodiscard]] std::vector<domain::MessagingMessage> LoadConversation(
-        int userId,
-        int limit = lila::modules::messaging::infrastructure::fields::DefaultPageLimit) const;
     [[nodiscard]] std::optional<domain::MessagingMessage> Send(
         int recipientId,
         const std::string& text,

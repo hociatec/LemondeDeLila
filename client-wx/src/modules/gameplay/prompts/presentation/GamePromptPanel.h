@@ -53,7 +53,6 @@ private:
     void RebuildFields(const domain::GamePrompt& prompt);
     void Submit();
     void Cancel();
-    void CycleFocus(bool backwards);
     void FocusFirst();
     [[nodiscard]] static std::string BuildSignature(const domain::GamePrompt& prompt);
 

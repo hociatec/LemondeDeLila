@@ -41,4 +41,3 @@ export class AdminListUsersDto {
   @Max(100)
   limit: number = 20;
 }
-

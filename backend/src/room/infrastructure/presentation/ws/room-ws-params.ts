@@ -5,7 +5,7 @@ type WsRequestLike = {
   headers?: Record<string, unknown>;
 };
 
-type WsClientLike = WebSocket & {
+type WsClientLike = {
   upgradeReq?: WsRequestLike;
   req?: WsRequestLike;
   url?: string;
@@ -27,7 +27,7 @@ export function extractRoomWsParams(
   client: WebSocket,
   args: unknown[],
 ): RoomWsParams {
-  const wsClient = client as WsClientLike;
+  const wsClient = client as unknown as WsClientLike;
   const request =
     ((args && args[0]) as WsRequestLike | undefined) ??
     wsClient.upgradeReq ??
@@ -77,7 +77,9 @@ export function extractRoomWsParams(
   return { token, roomId, spectator, silent };
 }
 
-function extractBearer(headers: Record<string, unknown> | undefined): string | null {
+function extractBearer(
+  headers: Record<string, unknown> | undefined,
+): string | null {
   if (!headers) return null;
   const authHeader = headers.authorization ?? headers.Authorization;
   if (authHeader && typeof authHeader === 'string') {

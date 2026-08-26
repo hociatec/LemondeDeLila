@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "shared/errors/domain/AppError.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 
 namespace lila::shared::concurrency

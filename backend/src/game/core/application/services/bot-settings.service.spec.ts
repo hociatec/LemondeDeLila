@@ -1,7 +1,4 @@
-import {
-  BOT_SETTINGS_REPOSITORY,
-  type BotSettingsRepository,
-} from '../contracts/bot-settings.repository';
+import type { BotSettingsRepository } from '../contracts/bot-settings.repository';
 import { BotSettingsService } from './bot-settings.service';
 
 describe('BotSettingsService', () => {
@@ -11,16 +8,18 @@ describe('BotSettingsService', () => {
   });
 
   it('seeds defaults when repository is empty', async () => {
+    const findSettings = jest.fn(async () => null);
+    const saveSettings = jest.fn(async () => undefined);
     const repo: BotSettingsRepository = {
-      findSettings: jest.fn(async () => null),
-      saveSettings: jest.fn(async () => undefined),
+      findSettings,
+      saveSettings,
     };
 
     const service = new BotSettingsService(repo);
     await service.onModuleInit();
 
-    expect(repo.findSettings).toHaveBeenCalledTimes(1);
-    expect(repo.saveSettings).toHaveBeenCalledWith({
+    expect(findSettings).toHaveBeenCalledTimes(1);
+    expect(saveSettings).toHaveBeenCalledWith({
       botTurnDelayMs: 600,
       botStartDelayMs: 250,
       botDrawDelayMs: 250,
@@ -33,13 +32,15 @@ describe('BotSettingsService', () => {
   });
 
   it('clamps and persists updated settings', async () => {
+    const findSettings = jest.fn(async () => ({
+      botTurnDelayMs: 700,
+      botStartDelayMs: 300,
+      botDrawDelayMs: 350,
+    }));
+    const saveSettings = jest.fn(async () => undefined);
     const repo: BotSettingsRepository = {
-      findSettings: jest.fn(async () => ({
-        botTurnDelayMs: 700,
-        botStartDelayMs: 300,
-        botDrawDelayMs: 350,
-      })),
-      saveSettings: jest.fn(async () => undefined),
+      findSettings,
+      saveSettings,
     };
 
     const service = new BotSettingsService(repo);
@@ -56,6 +57,6 @@ describe('BotSettingsService', () => {
       botStartDelayMs: 60000,
       botDrawDelayMs: 150,
     });
-    expect(repo.saveSettings).toHaveBeenLastCalledWith(updated);
+    expect(saveSettings).toHaveBeenLastCalledWith(updated);
   });
 });

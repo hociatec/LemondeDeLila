@@ -4,19 +4,12 @@
 #include <string>
 #include <string_view>
 
+#include "shared/data/json/JsonCoercion.h"
+
 namespace lila::modules::gameplay::application::cards
 {
 namespace
 {
-std::string ScalarText(const nlohmann::json& value)
-{
-    if (value.is_string()) return value.get<std::string>();
-    if (value.is_number_integer()) return std::to_string(value.get<long long>());
-    if (value.is_number_unsigned()) return std::to_string(value.get<unsigned long long>());
-    if (value.is_number_float()) return std::to_string(value.get<double>());
-    return {};
-}
-
 bool TargetsCard(const domain::GameAction& action, const std::string& cardId)
 {
     if (!action.payload.is_object() || cardId.empty()) return false;
@@ -25,13 +18,15 @@ bool TargetsCard(const domain::GameAction& action, const std::string& cardId)
     for (const auto key : keys)
     {
         const auto found = action.payload.find(std::string(key));
-        if (found != action.payload.end() && ScalarText(*found) == cardId) return true;
+        if (found != action.payload.end() &&
+            lila::shared::data::json::ScalarText(*found) == cardId)
+            return true;
     }
     return false;
 }
 }
 
-std::optional<domain::GameAction> GameCardActionResolver::Resolve(
+std::optional<std::size_t> GameCardActionResolver::ResolveIndex(
     const std::vector<domain::GameCard>& cards,
     const std::vector<domain::GameAction>& actions,
     std::size_t selectedCard)
@@ -42,7 +37,7 @@ std::optional<domain::GameAction> GameCardActionResolver::Resolve(
     if (card.actionIndex.has_value())
     {
         const auto index = *card.actionIndex;
-        if (index < actions.size() && !actions[index].disabled) return actions[index];
+        if (index < actions.size() && !actions[index].disabled) return index;
     }
 
     // When the server explicitly marks a card as disabled and doesn't bind an
@@ -54,11 +49,23 @@ std::optional<domain::GameAction> GameCardActionResolver::Resolve(
     for (std::size_t index = 0; index < selectedCard; ++index)
         if (cards[index].id == card.id) ++occurrence;
 
-    for (const auto& action : actions)
+    for (std::size_t index = 0; index < actions.size(); ++index)
     {
+        const auto& action = actions[index];
         if (action.disabled || !TargetsCard(action, card.id)) continue;
-        if (occurrence-- == 0) return action;
+        if (occurrence-- == 0) return index;
     }
     return std::nullopt;
+}
+
+std::optional<domain::GameAction> GameCardActionResolver::Resolve(
+    const std::vector<domain::GameCard>& cards,
+    const std::vector<domain::GameAction>& actions,
+    std::size_t selectedCard)
+{
+    const auto index = ResolveIndex(cards, actions, selectedCard);
+    return index.has_value()
+        ? std::optional<domain::GameAction>(actions[*index])
+        : std::nullopt;
 }
 }

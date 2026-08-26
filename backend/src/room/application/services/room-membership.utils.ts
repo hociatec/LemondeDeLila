@@ -1,5 +1,6 @@
 import type { RoomRecord } from '../models/room-record.model';
 import { OPEN_ROOM_STATUSES } from '../models/room-status.model';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 export function hasAdminRoomRole(roles: unknown): boolean {
   const list = Array.isArray(roles) ? roles : [];
@@ -11,7 +12,7 @@ export function getRoomManifestStatus(manifest: unknown): string {
     return 'finished';
   }
   const status = (manifest as { status?: unknown }).status;
-  return String(status ?? 'finished').toLowerCase();
+  return (stringOrEmpty(status) || 'finished').toLowerCase();
 }
 
 export function resolveRoomMaxPlayers(params: {

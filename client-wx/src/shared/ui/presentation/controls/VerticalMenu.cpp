@@ -7,7 +7,6 @@
 #include <wx/listbox.h>
 #include <wx/window.h>
 
-#include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/ui/presentation/controls/VerticalMenuEntry.h"
 
@@ -39,22 +38,6 @@ void VerticalMenu::SetActivatedHandler(ActivatedHandler handler)
 void VerticalMenu::SetKeyHandler(KeyHandler handler)
 {
     onKey_ = std::move(handler);
-}
-
-void VerticalMenu::SetSelectedIndex(std::size_t index)
-{
-    if (itemCount_ == 0)
-    {
-        selectedIndex_ = 0;
-        return;
-    }
-
-    if (index >= itemCount_)
-    {
-        throw std::out_of_range(lila::shared::text::ui::VerticalMenuIndexOutOfRange.str());
-    }
-
-    FocusIndex(index);
 }
 
 void VerticalMenu::SetSelectedIndexSilently(std::size_t index)
@@ -129,37 +112,6 @@ void VerticalMenu::SetItems(std::span<const VerticalMenuItem> items)
     UpdateVisualSelection();
 }
 
-void VerticalMenu::FocusSelectedItem()
-{
-    if (itemCount_ > 0)
-    {
-        FocusIndex(selectedIndex_);
-    }
-}
-
-void VerticalMenu::FocusFirstItem()
-{
-    if (itemCount_ > 0)
-    {
-        FocusIndex(0);
-    }
-}
-
-void VerticalMenu::SetForwardTabTarget(wxWindow* target)
-{
-    forwardTabTarget_ = target;
-}
-
-void VerticalMenu::SetBackwardTabTarget(wxWindow* target)
-{
-    backwardTabTarget_ = target;
-}
-
-void VerticalMenu::SetTabNavigationEnabled(bool enabled)
-{
-    tabNavigationEnabled_ = enabled;
-}
-
 std::size_t VerticalMenu::GetSelectedIndex() const
 {
     return selectedIndex_;
@@ -205,8 +157,4 @@ wxWindow* VerticalMenu::GetFirstButton() const
     return entries_.empty() ? static_cast<wxWindow*>(listBox_) : entries_.front();
 }
 
-wxWindow* VerticalMenu::GetLastButton() const
-{
-    return entries_.empty() ? static_cast<wxWindow*>(listBox_) : entries_.back();
-}
 }

@@ -1,15 +1,46 @@
 #include "modules/audio/infrastructure/BassAudioBackend.h"
 
+#include <sstream>
 #include <string>
 
-#include <bass.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX 1
+#include <windows.h>
+#endif
 
 #include "modules/audio/domain/SoundCatalog.h"
+#include "modules/audio/infrastructure/BassApi.h"
 #include "modules/audio/infrastructure/SoundAssetPath.h"
 #include "shared/logging/application/Logger.h"
 
 namespace lila::modules::audio::infrastructure
 {
+namespace
+{
+bool PinBassModule()
+{
+#ifdef _WIN32
+    HMODULE module = nullptr;
+    if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, L"bass.dll", &module))
+    {
+        lila::shared::logging::LogWarning(
+            "Audio", "BASS DLL could not be pinned in memory; audio is disabled.");
+        return false;
+    }
+    std::ostringstream message;
+    message << "BASS DLL pinned in memory at " << static_cast<const void*>(module) << '.';
+    lila::shared::logging::LogInfo("Audio", message.str());
+#endif
+    return true;
+}
+}
+
+BassAudioBackend::BassAudioBackend()
+    : modulePinned_(PinBassModule())
+{
+}
+
 BassAudioBackend::~BassAudioBackend()
 {
     InterruptPlayback();
@@ -108,7 +139,7 @@ void BassAudioBackend::Shutdown() noexcept
 
 bool BassAudioBackend::EnsureInitialized()
 {
-    if (shuttingDown_.load(std::memory_order_acquire))
+    if (!modulePinned_ || shuttingDown_.load(std::memory_order_acquire))
     {
         return false;
     }

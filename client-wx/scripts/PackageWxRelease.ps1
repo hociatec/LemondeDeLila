@@ -27,6 +27,44 @@ Copy-Item -LiteralPath $launcherExe -Destination $payload
 Get-ChildItem -LiteralPath $build -File -Filter '*.dll' | ForEach-Object {
     Copy-Item -LiteralPath $_.FullName -Destination $payload
 }
+
+# Les DLL vcpkg sont placées dans le dossier de build, mais le runtime MSVC ne
+# l'est pas toujours. Une archive publiée sans ces fichiers peut fonctionner sur
+# le runner et échouer sur un poste Windows qui n'a pas le redistribuable exact.
+$requiredMsvcRuntime = @(
+    'msvcp140.dll',
+    'msvcp140_atomic_wait.dll',
+    'vcruntime140.dll',
+    'vcruntime140_1.dll'
+)
+$missingMsvcRuntime = @(
+    $requiredMsvcRuntime | Where-Object {
+        !(Test-Path -LiteralPath (Join-Path $payload $_))
+    }
+)
+if ($missingMsvcRuntime.Count -gt 0) {
+    $redistRoot = $env:VCToolsRedistDir
+    if ([string]::IsNullOrWhiteSpace($redistRoot)) {
+        throw "VCToolsRedistDir absent; runtime MSVC non empaqueté: $($missingMsvcRuntime -join ', ')."
+    }
+    $crtDirectory = Join-Path $redistRoot 'x64\Microsoft.VC143.CRT'
+    if (!(Test-Path -LiteralPath $crtDirectory -PathType Container)) {
+        throw "Runtime MSVC x64 introuvable: $crtDirectory"
+    }
+    foreach ($runtimeName in $missingMsvcRuntime) {
+        $runtimePath = Join-Path $crtDirectory $runtimeName
+        if (!(Test-Path -LiteralPath $runtimePath -PathType Leaf)) {
+            throw "DLL MSVC requise absente: $runtimePath"
+        }
+        Copy-Item -LiteralPath $runtimePath -Destination $payload
+    }
+}
+
+foreach ($runtimeName in $requiredMsvcRuntime) {
+    if (!(Test-Path -LiteralPath (Join-Path $payload $runtimeName) -PathType Leaf)) {
+        throw "Paquet incomplet: runtime MSVC absent ($runtimeName)."
+    }
+}
 $resources = Join-Path $build 'resources'
 if (Test-Path -LiteralPath $resources) {
     Copy-Item -LiteralPath $resources -Destination $payload -Recurse

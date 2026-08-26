@@ -12,10 +12,11 @@ describe('RoomMaintenanceSettingsService', () => {
   });
 
   it('seeds defaults when repository is empty', async () => {
+    const insert = jest.fn(async () => undefined);
     const repo: RoomMaintenanceSettingsRepository = {
       findSingleton: jest.fn(async () => null),
       save: jest.fn(async () => undefined),
-      insert: jest.fn(async () => undefined),
+      insert,
     };
 
     process.env.ROOM_AUTO_CLEANUP_ENABLED = 'true';
@@ -29,7 +30,7 @@ describe('RoomMaintenanceSettingsService', () => {
     );
     await service.onModuleInit();
 
-    expect(repo.insert).toHaveBeenCalledWith({
+    expect(insert).toHaveBeenCalledWith({
       id: 1,
       autoCleanupEnabled: true,
       autoCleanupIntervalSeconds: 120,
@@ -45,6 +46,7 @@ describe('RoomMaintenanceSettingsService', () => {
   });
 
   it('normalizes updates before saving', async () => {
+    const save = jest.fn(async () => undefined);
     const repo: RoomMaintenanceSettingsRepository = {
       findSingleton: jest.fn(async () => ({
         id: 1,
@@ -53,7 +55,7 @@ describe('RoomMaintenanceSettingsService', () => {
         autoCleanupOlderThanMinutes: 60,
         autoCleanupLimit: 1000,
       })),
-      save: jest.fn(async () => undefined),
+      save,
       insert: jest.fn(async () => undefined),
     };
 
@@ -76,7 +78,7 @@ describe('RoomMaintenanceSettingsService', () => {
       autoCleanupOlderThanMinutes: 5,
       autoCleanupLimit: 5000,
     });
-    expect(repo.save).toHaveBeenCalledWith({
+    expect(save).toHaveBeenCalledWith({
       id: 1,
       autoCleanupEnabled: true,
       autoCleanupIntervalSeconds: 30,

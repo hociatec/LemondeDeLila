@@ -1,4 +1,11 @@
-import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import {
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class AdminClientUpdateAnnounceWsDto {
   @IsOptional()
@@ -37,7 +44,3 @@ export class AdminClientUpdateScheduleWsDto {
   @Max(86400)
   delaySeconds?: number;
 }
-
-
-
-

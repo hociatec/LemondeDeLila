@@ -1,6 +1,6 @@
 #include "shared/network/infrastructure/websocket/WinHttpWebSocketInternals.h"
 
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/NetworkErrorMessages.h"
 #include "shared/network/domain/WebSocketConstants.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 

@@ -2,7 +2,8 @@
 #include "modules/home/presentation/HomeFrame.h"
 #include "shared/accessibility/application/FocusCoordinator.h"
 #include "shared/ui/application/BackgroundTask.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
+#include "modules/user/domain/UserErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 
 #include <chrono>

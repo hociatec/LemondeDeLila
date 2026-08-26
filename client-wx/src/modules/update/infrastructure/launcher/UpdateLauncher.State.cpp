@@ -45,7 +45,7 @@ void AppendLog(const fs::path& root, const char* level, const std::string& messa
 void WriteTextAtomic(const fs::path& path, const std::string& text)
 {
     fs::create_directories(path.parent_path());
-    const auto temporary = path.wstring() + L".tmp";
+    const fs::path temporary = path.wstring() + L".tmp";
     {
         std::ofstream output(temporary, std::ios::binary | std::ios::trunc);
         if (!output) throw std::runtime_error("Unable to write updater state.");
@@ -53,7 +53,7 @@ void WriteTextAtomic(const fs::path& path, const std::string& text)
         output.flush();
         if (!output) throw std::runtime_error("Unable to flush updater state.");
     }
-    const auto backup = path.wstring() + L".bak";
+    const fs::path backup = path.wstring() + L".bak";
     DeleteFileW(backup.c_str());
     const BOOL committed = fs::exists(path)
         ? ReplaceFileW(path.c_str(), temporary.c_str(), backup.c_str(),

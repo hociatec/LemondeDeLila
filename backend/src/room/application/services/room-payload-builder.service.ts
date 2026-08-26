@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { RoomPayload } from '../models/room-payload.model';
 import type { RoomRecord } from '../models/room-record.model';
 import { CatalogService } from '../../../catalog/public-api';
+import { buildUniqueActiveRoomPlayers } from './room-participant-roster';
 
 @Injectable()
 export class RoomPayloadBuilderService {
@@ -9,6 +10,7 @@ export class RoomPayloadBuilderService {
 
   async build(room: RoomRecord): Promise<RoomPayload> {
     const manifest = await this.catalog.getGame(room.gameType);
+    const players = buildUniqueActiveRoomPlayers(room.participants);
     return {
       manifest: manifest
         ? {
@@ -31,20 +33,13 @@ export class RoomPayloadBuilderService {
         runId: room.runId,
         tableAmbienceSoundId: room.tableAmbienceSoundId,
         counts: {
-          players: (room.participants || []).filter(
-            (participant) => !participant.leftAt,
-          ).length,
+          players: players.length,
           spectators: 0,
         },
         owner: room.owner
           ? { id: room.owner.id, username: room.owner.username }
           : null,
-        players: (room.participants || [])
-          .filter((participant) => !participant.leftAt)
-          .map((participant) => ({
-            id: participant.user.id,
-            username: participant.user.username,
-          })),
+        players,
         spectators: [],
         bots: (room.bots || []).map((bot) => ({ id: bot.id, name: bot.name })),
       },

@@ -22,6 +22,7 @@ namespace lila::shared::security
 {
 namespace
 {
+#ifdef _WIN32
 std::string Base64Encode(const std::uint8_t* data, std::size_t length)
 {
     static constexpr char Table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -63,6 +64,7 @@ std::vector<std::uint8_t> Base64Decode(const std::string& input)
     }
     return out;
 }
+#endif
 }
 
 void SecureWipeMemory(void* ptr, std::size_t size)

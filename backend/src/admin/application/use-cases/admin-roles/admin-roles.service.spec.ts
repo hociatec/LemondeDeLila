@@ -11,9 +11,12 @@ describe('AdminRolesService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     };
-    const service = new AdminRolesService(roleDefinitions as any, {
-      notifyCatalogInvalidated: jest.fn(),
-    } as any);
+    const service = new AdminRolesService(
+      roleDefinitions as any,
+      {
+        notifyCatalogInvalidated: jest.fn(),
+      } as any,
+    );
 
     await expect(service.list()).resolves.toEqual({
       roles: ['ROLE_ADMIN', 'ROLE_USER'],
@@ -36,9 +39,12 @@ describe('AdminRolesService', () => {
       delete: jest.fn(),
     };
     const notifyCatalogInvalidated = jest.fn().mockResolvedValue(undefined);
-    const service = new AdminRolesService(roleDefinitions as any, {
-      notifyCatalogInvalidated,
-    } as any);
+    const service = new AdminRolesService(
+      roleDefinitions as any,
+      {
+        notifyCatalogInvalidated,
+      } as any,
+    );
 
     await expect(
       service.create(7, {
@@ -68,9 +74,12 @@ describe('AdminRolesService', () => {
       delete: jest.fn().mockResolvedValue(undefined),
     };
     const notifyCatalogInvalidated = jest.fn().mockResolvedValue(undefined);
-    const service = new AdminRolesService(roleDefinitions as any, {
-      notifyCatalogInvalidated,
-    } as any);
+    const service = new AdminRolesService(
+      roleDefinitions as any,
+      {
+        notifyCatalogInvalidated,
+      } as any,
+    );
 
     await service.update(9, {
       name: 'ROLE_USER',

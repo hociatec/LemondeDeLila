@@ -53,7 +53,7 @@ type LifecycleContext = {
   tryUpdateRoomPayload: (
     roomId: number,
     updater: (payload: RoomPayload) => RoomPayload | null,
-  ) => Promise<RoomPayload | null>;
+  ) => Promise<boolean>;
   canSpectate: (roomId: number, userId: number) => Promise<boolean>;
   leavePreviousRoomOnSwitch: (
     previousRoomId: number,
@@ -65,6 +65,12 @@ type LifecycleContext = {
     meta: ClientMeta,
   ) => RoomPayload;
   asRecord: (value: unknown) => Record<string, unknown>;
+};
+
+type JoinResolution = {
+  roomId: number;
+  silent: boolean;
+  spectator: boolean;
 };
 
 @Injectable()
@@ -163,7 +169,8 @@ export class RoomGatewayLifecycleService {
           state.room.startedAt = room.startedAt
             ? room.startedAt.toISOString()
             : null;
-          const roomWithRuntime = room as unknown as RoomWithOptionalRuntimeFields;
+          const roomWithRuntime =
+            room as unknown as RoomWithOptionalRuntimeFields;
           state.room.runId =
             typeof roomWithRuntime.runId === 'number'
               ? roomWithRuntime.runId
@@ -343,107 +350,9 @@ export class RoomGatewayLifecycleService {
     await this.perf.measure(
       'ws.room.join.total',
       async () => {
-        const row = ctx.asRecord(payload);
-        const { roomId: parsedRoomId, spectator, silent } =
-          parseRoomJoinRequest(row);
-        const roomId = this.joinPolicy.requireValidRoomId(parsedRoomId);
-
-        if (
-          this.joinPolicy.isBanned(this.roomState.isBanned(roomId, meta.userId))
-        ) {
-          await ctx.sendError(client, this.presenter.presentJoinBannedError());
-          return;
-        }
-
-        const effectiveSilent = Boolean(silent);
-        if (
-          effectiveSilent &&
-          !this.joinPolicy.canUseSilentMode(meta.isAdmin || false)
-        ) {
-          client.close(4003, this.presenter.presentSilentModeForbiddenReason());
-          return;
-        }
-
-        let effectiveSpectator = spectator || effectiveSilent;
-        if (
-          this.joinPolicy.shouldValidateSpectatorAccess(
-            effectiveSpectator,
-            effectiveSilent,
-          )
-        ) {
-          const allowed = await ctx.canSpectate(roomId, meta.userId);
-          if (!allowed) {
-            client.close(4003, this.presenter.presentSpectatorForbiddenReason());
-            return;
-          }
-        }
-
-        if (!effectiveSpectator) {
-          try {
-            await this.membership.joinRoom(roomId, meta.userId);
-          } catch (err) {
-            const state = await this.roomState.getRoomPayload(roomId);
-            if (!this.joinPolicy.shouldFallbackToSpectator(state, meta.userId)) {
-              throw err;
-            }
-            const allowed = await ctx.canSpectate(roomId, meta.userId);
-            if (!allowed) {
-              throw new RoomWsPrivateInvitationRequiredError();
-            }
-            effectiveSpectator = true;
-          }
-        }
-
-        const previousRoomId = meta.roomId;
-        const previousRole = meta.role;
-        const previousSilent = meta.silent === true;
-        if (previousRoomId !== roomId || previousSilent !== effectiveSilent) {
-          removeSocketFromRoomMembership(
-            ctx.rooms,
-            ctx.silentRooms,
-            previousRoomId,
-            client,
-          );
-          addSocketToRoomMembership(
-            ctx.rooms,
-            ctx.silentRooms,
-            roomId,
-            client,
-            effectiveSilent,
-          );
-        }
-
-        meta.roomId = roomId;
-        meta.role = effectiveSpectator ? 'spectator' : 'participant';
-        meta.silent = effectiveSilent;
-        this.realtimeTracker.setSocketParticipantRoom(
-          client,
-          meta.role === 'participant' && meta.silent !== true
-            ? meta.roomId
-            : null,
-        );
-        if (effectiveSilent) {
-          await ctx.sendRoomStateToClient(client, roomId, {
-            includeRealtimePlayers: true,
-            includeHiddenSelf: {
-              userId: meta.userId,
-              username: meta.username,
-            },
-          });
-        } else {
-          await ctx.sendRoomState(roomId);
-        }
-
-        if (
-          Number.isFinite(previousRoomId) &&
-          previousRoomId > 0 &&
-          previousRoomId !== roomId
-        ) {
-          await ctx.leavePreviousRoomOnSwitch(
-            previousRoomId,
-            meta.userId,
-            previousRole,
-          );
+        const resolution = await this.resolveJoin(ctx, client, meta, payload);
+        if (resolution) {
+          await this.applyJoin(ctx, client, meta, resolution);
         }
       },
       {
@@ -453,6 +362,99 @@ export class RoomGatewayLifecycleService {
         ...trace,
       },
     );
+  }
+
+  private async resolveJoin(
+    ctx: LifecycleContext,
+    client: WebSocket,
+    meta: ClientMeta,
+    payload: unknown,
+  ): Promise<JoinResolution | null> {
+    const request = parseRoomJoinRequest(ctx.asRecord(payload));
+    const roomId = this.joinPolicy.requireValidRoomId(request.roomId);
+    if (
+      this.joinPolicy.isBanned(this.roomState.isBanned(roomId, meta.userId))
+    ) {
+      await ctx.sendError(client, this.presenter.presentJoinBannedError());
+      return null;
+    }
+    const silent = Boolean(request.silent);
+    if (silent && !this.joinPolicy.canUseSilentMode(meta.isAdmin || false)) {
+      client.close(4003, this.presenter.presentSilentModeForbiddenReason());
+      return null;
+    }
+    let spectator = request.spectator || silent;
+    if (this.joinPolicy.shouldValidateSpectatorAccess(spectator, silent)) {
+      if (!(await ctx.canSpectate(roomId, meta.userId))) {
+        client.close(4003, this.presenter.presentSpectatorForbiddenReason());
+        return null;
+      }
+    }
+    if (!spectator) {
+      try {
+        await this.membership.joinRoom(roomId, meta.userId);
+      } catch (error) {
+        const state = await this.roomState.getRoomPayload(roomId);
+        if (!this.joinPolicy.shouldFallbackToSpectator(state, meta.userId)) {
+          throw error;
+        }
+        if (!(await ctx.canSpectate(roomId, meta.userId))) {
+          throw new RoomWsPrivateInvitationRequiredError();
+        }
+        spectator = true;
+      }
+    }
+    return { roomId, silent, spectator };
+  }
+
+  private async applyJoin(
+    ctx: LifecycleContext,
+    client: WebSocket,
+    meta: ClientMeta,
+    resolution: JoinResolution,
+  ): Promise<void> {
+    const previousRoomId = meta.roomId;
+    const previousRole = meta.role;
+    if (
+      previousRoomId !== resolution.roomId ||
+      (meta.silent === true) !== resolution.silent
+    ) {
+      removeSocketFromRoomMembership(
+        ctx.rooms,
+        ctx.silentRooms,
+        previousRoomId,
+        client,
+      );
+      addSocketToRoomMembership(
+        ctx.rooms,
+        ctx.silentRooms,
+        resolution.roomId,
+        client,
+        resolution.silent,
+      );
+    }
+    meta.roomId = resolution.roomId;
+    meta.role = resolution.spectator ? 'spectator' : 'participant';
+    meta.silent = resolution.silent;
+    this.realtimeTracker.setSocketParticipantRoom(
+      client,
+      meta.role === 'participant' && !meta.silent ? meta.roomId : null,
+    );
+    if (resolution.silent) {
+      await ctx.sendRoomStateToClient(client, resolution.roomId, {
+        includeRealtimePlayers: true,
+        includeHiddenSelf: { userId: meta.userId, username: meta.username },
+      });
+    } else {
+      await ctx.sendRoomState(resolution.roomId);
+    }
+    if (previousRoomId > 0 && previousRoomId !== resolution.roomId) {
+      await ctx.leavePreviousRoomOnSwitch(
+        previousRoomId,
+        meta.userId,
+        previousRole,
+      );
+    }
   }
 
   private async promoteConnectedSpectatorsToParticipants(

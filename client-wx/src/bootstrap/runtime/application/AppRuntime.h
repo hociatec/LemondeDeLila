@@ -24,6 +24,7 @@ public:
 
     void Assemble(const StepLogger& setStep);
     bool StartNavigator() const;
+    void FocusCurrentView() const;
 
 private:
     void CreateNavigator(const StepLogger& setStep);

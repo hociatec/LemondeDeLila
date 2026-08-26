@@ -1,4 +1,13 @@
-import { IsBoolean, IsInt, IsOptional, IsPositive, IsString, MaxLength, Min, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class AdminBotNamesListWsDto {
   @IsOptional()
@@ -61,7 +70,3 @@ export class AdminBotSettingsUpdateWsDto {
   @Min(0)
   botDrawDelayMs?: number;
 }
-
-
-
-

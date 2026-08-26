@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
-#include <string_view>
-#include <utility>
+#include <cstddef>
 #include <span>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include <wx/string.h>
@@ -16,7 +16,6 @@ struct MenuBlueprintItem
 {
     std::string id;
     wxString label;
-    wxString statusMessage;
 };
 
 [[nodiscard]] inline std::vector<lila::shared::ui::controls::VerticalMenuItem> BuildMenuItems(
@@ -42,15 +41,5 @@ inline void BindMenuHandlers(
 {
     menu.SetSelectionChangedHandler(std::forward<SelectionChangedHandler>(onSelectionChanged));
     menu.SetActivatedHandler(std::forward<ActivatedHandler>(onActivated));
-}
-
-[[nodiscard]] inline wxString GetMenuStatus(std::span<const MenuBlueprintItem> items, std::size_t index)
-{
-    if (index >= items.size())
-    {
-        return wxEmptyString;
-    }
-
-    return items[index].statusMessage;
 }
 }

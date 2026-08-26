@@ -28,7 +28,6 @@ void CatalogPanel::BuildLayout()
         root,
         std::span<const lila::shared::ui::controls::VerticalMenuItem>{},
         lila::shared::ui::controls::VerticalMenuRole::Entries);
-    shelvesMenu_->SetTabNavigationEnabled(false);
     shelvesMenu_->SetMinSize(wxSize(360, -1));
 
     statusLabel_ = new wxStaticText(root, wxID_ANY, wxString{});

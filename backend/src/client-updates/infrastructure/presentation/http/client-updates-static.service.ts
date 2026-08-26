@@ -66,81 +66,78 @@ export class ClientUpdatesStaticService implements OnModuleInit {
     }
 
     const updatesDir = this.updates.getTargetDir();
+    this.ensureUpdatesDirectory(updatesDir);
+    instance.use(
+      '/updates/client-win',
+      this.landingPageMiddleware(updatesDir),
+      this.normalizePathSeparators.bind(this),
+      express.static(updatesDir, {
+        setHeaders: this.setStaticHeaders.bind(this),
+      }),
+    );
+  }
+
+  private ensureUpdatesDirectory(updatesDir: string): void {
     try {
       fs.mkdirSync(updatesDir, { recursive: true });
     } catch {
-      /* ignore */
+      // The static middleware will surface inaccessible paths if requested.
     }
+  }
 
-    instance.use(
-      '/updates/client-win',
-      (
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction,
-      ) => {
-        try {
-          const url = typeof req.url === 'string' ? req.url : '';
-          const pathname = url.split('?')[0] || '';
-          if (
-            pathname === '' ||
-            pathname === '/' ||
-            pathname === '/index.html'
-          ) {
-            res.setHeader('Content-Type', 'text/html; charset=utf-8');
-            res.setHeader(
-              'Cache-Control',
-              'no-store, no-cache, must-revalidate, proxy-revalidate',
-            );
-            res.setHeader('Pragma', 'no-cache');
-            res.setHeader('Expires', '0');
-            res.status(200).send(buildUpdatesLandingPageHtml(updatesDir));
-            return;
-          }
-        } catch {
-          // ignore (best-effort)
+  private landingPageMiddleware(updatesDir: string): express.RequestHandler {
+    return (req, res, next) => {
+      try {
+        const url = typeof req.url === 'string' ? req.url : '';
+        const pathname = url.split('?')[0] || '';
+        if (pathname === '' || pathname === '/' || pathname === '/index.html') {
+          this.setNoCacheHeaders(res);
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.status(200).send(buildUpdatesLandingPageHtml(updatesDir));
+          return;
         }
-        next();
-      },
-      (
-        req: express.Request,
-        _res: express.Response,
-        next: express.NextFunction,
-      ) => {
-        try {
-          if (
-            typeof req.url === 'string' &&
-            (req.url.includes('\\') || /%5c/i.test(req.url))
-          ) {
-            req.url = req.url.replace(/%5c/gi, '/').replace(/\\/g, '/');
-          }
-        } catch {
-          // ignore
-        }
-        next();
-      },
-      express.static(updatesDir, {
-        setHeaders: (res, filePath) => {
-          const ext = path.extname(filePath).toLowerCase();
-          if (ext === '.application') {
-            res.setHeader('Content-Type', 'application/x-ms-application');
-            res.setHeader(
-              'Cache-Control',
-              'no-store, no-cache, must-revalidate, proxy-revalidate',
-            );
-            res.setHeader('Pragma', 'no-cache');
-            res.setHeader('Expires', '0');
-          } else if (ext === '.manifest') {
-            res.setHeader('Content-Type', 'application/x-ms-manifest');
-            res.setHeader(
-              'Cache-Control',
-              'no-store, no-cache, must-revalidate, proxy-revalidate',
-            );
-            res.setHeader('Pragma', 'no-cache');
-            res.setHeader('Expires', '0');
-          }
-        },
-      }),
+      } catch {
+        // Landing page rendering is best effort.
+      }
+      next();
+    };
+  }
+
+  private normalizePathSeparators(
+    req: express.Request,
+    _res: express.Response,
+    next: express.NextFunction,
+  ): void {
+    try {
+      if (
+        typeof req.url === 'string' &&
+        (req.url.includes('\\') || /%5c/i.test(req.url))
+      ) {
+        req.url = req.url.replace(/%5c/gi, '/').replace(/\\/g, '/');
+      }
+    } catch {
+      // Keep serving the original URL.
+    }
+    next();
+  }
+
+  private setStaticHeaders(res: express.Response, filePath: string): void {
+    const extension = path.extname(filePath).toLowerCase();
+    if (extension === '.application') {
+      res.setHeader('Content-Type', 'application/x-ms-application');
+      this.setNoCacheHeaders(res);
+    } else if (extension === '.manifest') {
+      res.setHeader('Content-Type', 'application/x-ms-manifest');
+      this.setNoCacheHeaders(res);
+    }
+  }
+
+  private setNoCacheHeaders(res: express.Response): void {
+    res.setHeader(
+      'Cache-Control',
+      'no-store, no-cache, must-revalidate, proxy-revalidate',
     );
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
   }
 }

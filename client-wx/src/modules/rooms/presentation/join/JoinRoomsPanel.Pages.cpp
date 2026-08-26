@@ -5,9 +5,8 @@
 #include <wx/stattext.h>
 
 #include "modules/rooms/presentation/lobby/RoomLobbyPresentationModel.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
-#include "shared/ui/presentation/theme/Theme.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "shared/ui/presentation/layout/ListPagePresentation.h"
 
 namespace lila::modules::rooms::presentation
 {
@@ -24,8 +23,7 @@ void JoinRoomsPanel::ShowRooms()
     const auto items = RoomLobbyPresentationModel::BuildItems(navigator_, state_ == State::Error);
     menu_->SetItems(items);
     menu_->SetSelectedIndexSilently(std::min(navigator_.SelectedIndex(), items.size() - 1));
-    statusLabel_->Hide();
-    Layout();
+    lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, wxString{}, false);
     FocusMenuIfVisible();
 }
 
@@ -33,16 +31,12 @@ void JoinRoomsPanel::ShowError(const wxString& message, PreparedHandler onPrepar
 {
     state_ = State::Error;
     ShowRooms();
-    statusLabel_->SetLabel(message);
-    statusLabel_->SetForegroundColour(lila::shared::ui::Theme::Error());
-    statusLabel_->Show();
-    Layout();
+    lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, message, true);
     if (onPrepared) onPrepared();
 }
 
 void JoinRoomsPanel::FocusMenuIfVisible()
 {
-    if (IsShownOnScreen())
-        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
+    lila::shared::ui::layout::FocusListPageIfVisible(*this, BuildFocusPlan());
 }
 }

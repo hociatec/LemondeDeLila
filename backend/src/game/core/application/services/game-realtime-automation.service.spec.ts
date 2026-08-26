@@ -1,8 +1,13 @@
-import type { GameRulesAdapter } from '../contracts/game-rules-adapter.interface';
+import type { GameRuntime } from '../contracts/game-runtime.interface';
 import type { GameStateEntity } from '../models/game-state.model';
 import { GameRealtimeAutomationService } from './game-realtime-automation.service';
 
 describe('GameRealtimeAutomationService', () => {
+  const executor = () => ({
+    execute: jest.fn(({ handler, state, actions }) =>
+      handler.applyActions(state, actions),
+    ),
+  });
   const state = (overrides: Record<string, unknown> = {}) =>
     ({
       status: 'started',
@@ -36,13 +41,14 @@ describe('GameRealtimeAutomationService', () => {
         actions: [{ type: 'resume', payload: {} }],
       }),
       applyActions,
-    } as unknown as GameRulesAdapter;
+    } as unknown as GameRuntime;
     const commit = jest.fn().mockResolvedValue(undefined);
     const service = new GameRealtimeAutomationService(
       engine as never,
       { suggestForHandler: jest.fn() } as never,
       scheduler as never,
       { getBotTurnDelayMs: () => 10 } as never,
+      executor() as never,
     );
 
     service.schedule({
@@ -70,8 +76,9 @@ describe('GameRealtimeAutomationService', () => {
     });
     const applyActions = jest.fn().mockReturnValue(current);
     const handler = {
+      getAutomaticActions: () => null,
       applyActions,
-    } as unknown as GameRulesAdapter;
+    } as unknown as GameRuntime;
     const service = new GameRealtimeAutomationService(
       { exportInternalState: jest.fn().mockResolvedValue(current) } as never,
       {
@@ -87,6 +94,7 @@ describe('GameRealtimeAutomationService', () => {
         }),
       } as never,
       { getBotTurnDelayMs: () => 25 } as never,
+      executor() as never,
     );
 
     service.schedule({
@@ -116,12 +124,13 @@ describe('GameRealtimeAutomationService', () => {
         executeAtMs: Date.now() + 1000,
         actions: [{ type: 'resume', payload: {} }],
       }),
-    } as unknown as GameRulesAdapter;
+    } as unknown as GameRuntime;
     const service = new GameRealtimeAutomationService(
       {} as never,
       {} as never,
       scheduler as never,
       {} as never,
+      executor() as never,
     );
     const input = {
       roomId: 1,
@@ -161,12 +170,16 @@ describe('GameRealtimeAutomationService', () => {
       } as never,
       scheduler as never,
       { getBotTurnDelayMs: () => 25 } as never,
+      executor() as never,
     );
 
     service.schedule({
       roomId: 4,
       gameType: 'lama',
-      handler: { applyActions } as unknown as GameRulesAdapter,
+      handler: {
+        getAutomaticActions: () => null,
+        applyActions,
+      } as unknown as GameRuntime,
       state: current,
       commit: jest.fn(),
     });

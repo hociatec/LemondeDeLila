@@ -2,9 +2,10 @@
 
 #include <string>
 #include <nlohmann/json.hpp>
+#include "shared/data/json/JsonCoercion.h"
 #include "shared/data/json/JsonReaders.h"
 #include "shared/errors/domain/AppError.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/rooms/domain/RoomErrorMessages.h"
 
 namespace lila::modules::rooms::infrastructure::codec
 {
@@ -13,7 +14,6 @@ namespace
 [[noreturn]] void Invalid(const std::string& details)
 {
     throw lila::shared::errors::AppException(lila::shared::errors::ToAppError(
-        lila::shared::errors::ErrorCode::JsonCorrupted,
         lila::shared::errors::RoomPayloadInvalid,
         details));
 }
@@ -77,6 +77,8 @@ domain::RoomState ReadRoomState(const nlohmann::json& payload)
     const auto& room = *roomValue;
     domain::RoomState result;
     result.id = lila::shared::data::json::ReadRequiredInteger(room, "id");
+    result.runId = lila::shared::data::json::ReadOptionalIntegerCoerced(
+        room, "runId").value_or(0);
     result.name = lila::shared::data::json::ReadRequiredString(room, "name");
     result.gameType = lila::shared::data::json::ReadRequiredString(room, "gameType");
     result.status = lila::shared::data::json::ReadRequiredString(room, "status");
@@ -92,7 +94,7 @@ domain::RoomState ReadRoomState(const nlohmann::json& payload)
     result.chatEnabled = manifest == payload.end() || !manifest->is_object() ||
         manifest->value("chatEnabled", true);
     result.minPlayers = manifest != payload.end() && manifest->is_object()
-        ? manifest->value("minPlayers", 1) : 1;
+        ? manifest->value("minPlayers", 2) : 2;
     const auto owner = room.find("owner");
     if (owner != room.end() && owner->is_object())
     {

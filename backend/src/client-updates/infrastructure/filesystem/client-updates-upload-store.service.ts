@@ -51,7 +51,7 @@ export class ClientUpdatesUploadStoreService {
           typeof parsed.completedAt === 'string'
             ? parsed.completedAt
             : new Date().toISOString(),
-        meta: meta as ClientUpdateMeta,
+        meta: meta,
       };
     } catch {
       return null;
@@ -62,7 +62,9 @@ export class ClientUpdatesUploadStoreService {
     uploadId: string,
     meta: ClientUpdateMeta,
   ): Promise<void> {
-    await fs.promises.mkdir(this.getCompletedUploadsRoot(), { recursive: true });
+    await fs.promises.mkdir(this.getCompletedUploadsRoot(), {
+      recursive: true,
+    });
     const marker: CompletedUploadMarker = {
       uploadId,
       completedAt: new Date().toISOString(),

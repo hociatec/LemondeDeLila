@@ -9,7 +9,7 @@
 
 #include "modules/chat/application/ChatService.h"
 #include "modules/options/application/OptionsStore.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/chat/domain/ChatErrorMessages.h"
 #include "shared/text/domain/StringUtils.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 
@@ -190,7 +190,7 @@ void ChatFrame::HandleDeleteSelected()
 
 bool ChatFrame::ConfirmClose()
 {
-    if (!optionsStore_.Current().confirmChatExit)
+    if (!optionsStore_.Current().chat.confirmChatExit)
     {
         return true;
     }

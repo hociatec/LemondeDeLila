@@ -11,15 +11,15 @@ import { User } from '../../../../../user/public-api';
 import { PrivateMessageEntity } from '../entities/private-message.entity';
 
 @Injectable()
-export class PrivateMessageTypeormRepository
-  implements PrivateMessageRepository
-{
+export class PrivateMessageTypeormRepository implements PrivateMessageRepository {
   constructor(
     @InjectRepository(PrivateMessageEntity)
     private readonly messages: Repository<PrivateMessageEntity>,
   ) {}
 
-  async create(input: CreatePrivateMessageInput): Promise<PrivateMessageRecord> {
+  async create(
+    input: CreatePrivateMessageInput,
+  ): Promise<PrivateMessageRecord> {
     const entity = this.messages.create({
       sender: { id: input.senderId } as User,
       recipient: { id: input.recipientId } as User,
@@ -39,7 +39,9 @@ export class PrivateMessageTypeormRepository
     return this.getByIdOrThrow(message.id);
   }
 
-  async findByMessageId(messageId: string): Promise<PrivateMessageRecord | null> {
+  async findByMessageId(
+    messageId: string,
+  ): Promise<PrivateMessageRecord | null> {
     const message = await this.messages.findOne({ where: { messageId } });
     return message ? this.toModel(message) : null;
   }

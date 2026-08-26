@@ -50,4 +50,3 @@ export class VaultWsHandler {
     return { type: 'vault.abandon', payload: { ok } };
   }
 }
-

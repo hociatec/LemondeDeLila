@@ -16,7 +16,6 @@
 #include "modules/social/application/SocialService.h"
 #include "modules/user/domain/AuthenticationResult.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
-#include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 
 namespace lila::app::navigation

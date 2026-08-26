@@ -4,8 +4,9 @@
 #include <utility>
 #include <nlohmann/json.hpp>
 #include "modules/rooms/infrastructure/RoomProtocol.h"
+#include "modules/session/application/SessionConnectionRetry.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/config/domain/AppConfig.h"
+#include "shared/network/application/websocket/AuthenticatedWebSocketHeaders.h"
 #include "shared/network/domain/WebSocketConstants.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
@@ -19,39 +20,21 @@ RoomSessionGateway::RoomSessionGateway(
     lila::modules::session::application::SessionStore& sessionStore)
     : endpoint_(std::move(endpoint)), client_(client), ticketProvider_(ticketProvider), sessionStore_(sessionStore) {}
 
-void RoomSessionGateway::Connect()
+void RoomSessionGateway::Connect(std::stop_token stopToken)
 {
     if (!sessionStore_.HasActiveSession()) throw std::runtime_error("Aucune session active pour la table.");
     std::scoped_lock sendLock(sendMutex_);
     client_.Close();
-    const auto connect = [this](const std::string& token)
+    const auto connect = [this, stopToken](const std::string& token)
     {
-        const auto ticket = ticketProvider_.GetTicket(
-            std::string(lila::shared::network::ws::WsTicketScopeRoom),
-            token);
-        lila::shared::network::websocket::WebSocketHeaders headers{
-            {std::string(lila::shared::network::ws::ClientProductHeader),
-             std::string(lila::shared::network::ws::ClientProduct)},
-            {std::string(lila::shared::network::ws::AuthorizationHeader),
-             std::string(lila::shared::network::ws::AuthorizationScheme) + token},
-            {std::string(lila::shared::network::ws::WsTicketHeader), ticket},
-            {std::string(lila::shared::network::ws::ClientVersionHeader),
-             lila::shared::config::AppConfig::ResolveClientVersion()}};
-        client_.Connect(endpoint_, headers);
+        client_.Connect(
+            endpoint_,
+            lila::shared::network::websocket::BuildAuthenticatedHeaders(
+                ticketProvider_, lila::shared::network::ws::WsTicketScopeRoom, token),
+            stopToken);
     };
-    try
-    {
-        connect(sessionStore_.AccessToken());
-    }
-    catch (const lila::shared::network::http::WsTicketRequestError& exception)
-    {
-        if (exception.StatusCode() != 401 && exception.StatusCode() != 403)
-        {
-            throw;
-        }
-        client_.Close();
-        connect(sessionStore_.RefreshAccessToken());
-    }
+    lila::modules::session::application::ConnectWithSessionRefresh(
+        sessionStore_, stopToken, [this] { client_.Close(); }, connect);
 }
 
 void RoomSessionGateway::SendJson(const nlohmann::json& message)
@@ -64,7 +47,7 @@ void RoomSessionGateway::SendJson(const nlohmann::json& message)
 domain::RoomState RoomSessionGateway::Create(std::string_view gameType, std::stop_token stopToken)
 {
     if (gameType.empty()) throw std::invalid_argument("gameType requis");
-    Connect();
+    Connect(stopToken);
     SendJson(nlohmann::json{
         {"type", protocol::Create},
         {"payload", {{"gameType", std::string(gameType)}}}});
@@ -77,7 +60,7 @@ domain::RoomState RoomSessionGateway::Create(std::string_view gameType, std::sto
 domain::RoomState RoomSessionGateway::Join(int roomId, bool spectator, std::stop_token stopToken)
 {
     if (roomId <= 0) throw std::invalid_argument("roomId invalide");
-    Connect();
+    Connect(stopToken);
     SendJson(nlohmann::json{{"type", protocol::Join},
         {"payload", {{"roomId", roomId}, {"spectator", spectator}, {"hidden", false}}}});
     selfSpectator_.store(spectator);
@@ -98,7 +81,7 @@ domain::RoomState RoomSessionGateway::Reconnect(std::stop_token stopToken)
         std::scoped_lock lock(pendingEventsMutex_);
         pendingEvents_.clear();
     }
-    Connect();
+    Connect(stopToken);
     SendJson(nlohmann::json{{"type", protocol::Join},
         {"payload", {{"roomId", roomId}, {"spectator", spectator}, {"hidden", false}}}});
     auto state = AwaitState(stopToken);

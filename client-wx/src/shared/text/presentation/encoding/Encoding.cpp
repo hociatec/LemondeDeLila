@@ -1,18 +1,13 @@
 #include "shared/text/presentation/encoding/Encoding.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
 #include <stdexcept>
-#include <atomic>
 
 namespace lila::shared::text {
-namespace
-{
-std::atomic_bool repairBrokenAccentsEnabled{true};
-}
 
 wxString FromUtf8(std::string_view value)
 {
@@ -26,7 +21,7 @@ wxString FromUtf8(std::string_view value)
     {
         throw std::runtime_error(lila::shared::errors::Utf8DecodeFailed);
     }
-    return repairBrokenAccentsEnabled.load(std::memory_order_relaxed)
+    return IsBrokenAccentRepairEnabled()
         ? RepairBrokenAccents(converted)
         : converted;
 }
@@ -58,16 +53,6 @@ std::string ToUtf8(const wxString& value)
         throw std::runtime_error(lila::shared::errors::Utf8EncodeFailed);
     }
     return std::string(converted.data(), converted.length());
-}
-
-void SetBrokenAccentRepairEnabled(bool enabled) noexcept
-{
-    repairBrokenAccentsEnabled.store(enabled, std::memory_order_relaxed);
-}
-
-bool IsBrokenAccentRepairEnabled() noexcept
-{
-    return repairBrokenAccentsEnabled.load(std::memory_order_relaxed);
 }
 
 wxString RepairBrokenAccents(const wxString& value)

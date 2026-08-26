@@ -1,15 +1,15 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import {
-  ROOM_EVENTS_PORT,
-  type RoomEventsPort,
-} from '../../../../../room/public-api';
+  GAME_ROOM_EVENTS_PORT,
+  type GameRoomEventsPort,
+} from '../../../application/ports/game-room.port';
 import { GameWsRealtimeStateService } from './game-ws-realtime-state.service';
 
 @Injectable()
 export class GameRoomLifecycleResetBinder implements OnModuleInit {
   constructor(
-    @Inject(ROOM_EVENTS_PORT)
-    private readonly roomEvents: RoomEventsPort,
+    @Inject(GAME_ROOM_EVENTS_PORT)
+    private readonly roomEvents: GameRoomEventsPort,
     private readonly realtime: GameWsRealtimeStateService,
   ) {}
 

@@ -1,11 +1,11 @@
-import type { GameRulesAdapter } from '../../../application/contracts/game-rules-adapter.interface';
+import type { GameRuntime } from '../../../application/contracts/game-runtime.interface';
 import type { GameStateEntity } from '../../../application/models/game-state.model';
 import { GameWsStatePresenter } from './game-ws-state.presenter';
-import { GameWsPayloadCompatibilityAdapter } from './game-ws-payload-compatibility.adapter';
+import { GameVisibilityService } from '../../../application/services/game-visibility.service';
 
 describe('GameWsStatePresenter', () => {
   const createPresenter = () =>
-    new GameWsStatePresenter(new GameWsPayloadCompatibilityAdapter());
+    new GameWsStatePresenter(new GameVisibilityService());
 
   it('publishes only shortcuts whose actions are visible to the viewer', () => {
     const state = {
@@ -26,7 +26,7 @@ describe('GameWsStatePresenter', () => {
         { key: 'Q', type: 'action', actionType: 'quit' },
         { key: 'S', type: 'interface', id: 'score' },
       ],
-    } as unknown as GameRulesAdapter;
+    } as unknown as GameRuntime;
 
     const payload = createPresenter().present({
       state,
@@ -41,12 +41,10 @@ describe('GameWsStatePresenter', () => {
       'P',
       'S',
     ]);
-    expect((payload.state as Record<string, any>).extras.shortcuts).toEqual(
-      extras.shortcuts,
-    );
+    expect(payload.state).toBeUndefined();
   });
 
-  it('preserves a server-driven configuration prompt', () => {
+  it('publishes a server-driven configuration prompt without legacy rewriting', () => {
     const prompt = {
       type: 'config_prompt',
       label: 'Configuration',
@@ -65,7 +63,10 @@ describe('GameWsStatePresenter', () => {
       pending: prompt,
       actions: [{ type: 'configure', payload: {} }],
     } as unknown as GameStateEntity;
-    const handler = { exposeState: () => state } as unknown as GameRulesAdapter;
+    const handler = {
+      exposeStateForUser: () => state,
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
 
     const payload = createPresenter().present({
       state,
@@ -77,17 +78,54 @@ describe('GameWsStatePresenter', () => {
     expect(payload.pending).toEqual(prompt);
   });
 
+  it('preserves an explicit server mapping between pending choices and actions', () => {
+    const mappedAction = { type: 'pick_beta', payload: { value: 2 } };
+    const state = {
+      status: 'started',
+      phase: 'turn',
+      turnIndex: 1,
+      players: [{ id: 1, username: 'A' }],
+      turn: { currentPlayerId: 1, direction: 1 },
+      metadata: {},
+      actions: [{ type: 'unrelated_action', payload: {} }, mappedAction],
+      pending: {
+        type: 'pick_one',
+        playerId: 1,
+        choices: ['Beta'],
+        data: { choiceActionsByIndex: [mappedAction] },
+      },
+    } as unknown as GameStateEntity;
+    const handler = {
+      exposeStateForUser: () => state,
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state,
+      handler,
+      roomId: 5,
+      gameType: 'opaque-game',
+      version: 2,
+      viewerPlayerId: 1,
+    });
+    expect((payload.pending as any).data.choiceActionsByIndex).toEqual([
+      mappedAction,
+    ]);
+  });
+
   it('publishes the generic dice contract', () => {
     const state = {
       status: 'started',
       phase: 'turn',
-      turnIndex: 3,
-      lastRoll: 5,
+      turn: { currentPlayerId: null, direction: 1, turnNumber: 3 },
       players: [],
       actions: [{ type: 'roll', payload: {} }],
-      extras: {},
+      extras: { dice: { total: 5 } },
     } as unknown as GameStateEntity;
-    const handler = { exposeState: () => state } as unknown as GameRulesAdapter;
+    const handler = {
+      exposeStateForUser: () => state,
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
 
     const payload = createPresenter().present({
       state,
@@ -99,8 +137,6 @@ describe('GameWsStatePresenter', () => {
     expect((payload.extras as any).dice).toEqual(
       expect.objectContaining({ total: 5, rollActionIndex: 0 }),
     );
-    expect((payload.state as any).extras.dice).toEqual(
-      (payload.extras as any).dice,
-    );
+    expect(payload.state).toBeUndefined();
   });
 });

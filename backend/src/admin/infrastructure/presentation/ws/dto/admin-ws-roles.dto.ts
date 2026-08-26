@@ -1,4 +1,11 @@
-import { ArrayNotEmpty, IsArray, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class AdminRoleDefinitionDto {
   @IsString()
@@ -60,7 +67,3 @@ export class AdminRoleDefinitionDeleteWsDto {
   @MinLength(1)
   name!: string;
 }
-
-
-
-

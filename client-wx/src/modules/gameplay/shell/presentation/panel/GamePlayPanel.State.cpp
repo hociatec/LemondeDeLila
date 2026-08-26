@@ -1,5 +1,6 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
+#include <algorithm>
 #include <utility>
 
 #include <wx/listbox.h>
@@ -7,9 +8,9 @@
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
+#include "modules/gameplay/actions/application/GameActionPresentationPolicy.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
-#include "modules/gameplay/dice/application/GameDiceActionResolver.h"
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/information/presentation/GameInfoTextBuilder.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
@@ -24,6 +25,7 @@ namespace lila::modules::gameplay::presentation
 {
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
+    const bool hadNavigationTarget = PreferredNavigationTarget() != nullptr;
     if (!application::GameStateUpdatePolicy::ShouldApply(state_, state))
     {
         lila::shared::logging::LogWarning(
@@ -36,6 +38,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     }
     if (!gameName_.empty()) state.gameName = gameName_;
     const bool diceRolled = diceRollTracker_.Observe(state.dice, state.turnIndex);
+    state.lines = application::GameActionPresentationPolicy::GenericLines(state);
     state_ = std::move(state);
     if (diceRolled && onDiceRolled_) onDiceRolled_();
     UpdateStatus(wxString{});
@@ -45,34 +48,64 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         confirmationPanel_->HideConfirmation();
         promptPanel_->HidePrompt(true);
         pawnSelectionPanel_->Clear();
-        handPanel_->ClearHand();
-        dicePanel_->Clear();
-        Hide();
-        if (GetParent()) GetParent()->Layout();
-        if (onZoneFocusRequested_) onZoneFocusRequested_();
-        return;
     }
-    Show();
+    Show(roomStarted_ || roomStartFlowRequested_ || roomStartPending_);
     headerLabel_->SetLabel(BuildHeaderText());
+    stateSummaryLabel_->SetLabel(BuildStateSummaryText());
+    stateSummaryLabel_->Show(!stateSummaryLabel_->GetLabel().empty());
+    pendingLabel_->SetLabel(BuildPendingText());
+    pendingLabel_->Show(!pendingLabel_->GetLabel().empty());
     RebuildLines();
     handPanel_->ApplyCards(state_.hand);
     dicePanel_->Apply(state_.dice);
-    const bool hasHand = handPanel_->Count() > 0;
-    const bool hasPrimaryAction = hasHand || HasDiceAction();
-    infoText_->Show(!hasPrimaryAction);
-    actionsLabel_->Show(!hasPrimaryAction);
-    linesList_->Show(!hasPrimaryAction);
-    shortcutsLabel_->Show(!hasPrimaryAction);
+    const auto ui = state_.extras.find("ui");
+    if (activeInfoPanel_ == "details" && ui != state_.extras.end() && ui->is_object())
+    {
+        const auto defaultPanel = ui->find("defaultPanel");
+        if (defaultPanel != ui->end() && defaultPanel->is_string() &&
+            !defaultPanel->get<std::string>().empty())
+            activeInfoPanel_ = defaultPanel->get<std::string>();
+    }
+    const bool hasActions = !state_.lines.empty() &&
+        (!state_.pending || state_.pending->type.empty());
+    actionsLabel_->Show(hasActions);
+    linesList_->Show(hasActions);
+    choicesList_->Clear();
+    const bool hasActionableChoices = state_.pending && state_.pending->viewerActionable &&
+        std::any_of(
+            state_.pending->choices.begin(), state_.pending->choices.end(),
+            [](const domain::GamePendingChoice& choice) { return choice.action.has_value(); });
+    if (hasActionableChoices)
+    {
+        for (const auto& choice : state_.pending->choices)
+            choicesList_->Append(FromUtf8(choice.label));
+        if (choicesList_->GetCount() > 0) choicesList_->SetSelection(0);
+    }
+    choicesLabel_->Show(hasActionableChoices);
+    choicesList_->Show(hasActionableChoices);
     shortcutsLabel_->SetLabel(BuildShortcutText());
+    shortcutsLabel_->Show(!shortcutsLabel_->GetLabel().empty());
     UpdateInfoPanel();
+    infoText_->Show(!infoText_->GetValue().empty());
     SyncInlinePrompt();
     const bool pawnSelectionCompleted =
         pawnSelectionPanel_->IsActive() && !state_.pawnSelection.has_value();
-    if (pawnSelectionCompleted && onZoneFocusRequested_) onZoneFocusRequested_();
     pawnSelectionPanel_->Apply(state_.pawnSelection);
+    if (pawnSelectionCompleted && onZoneFocusRequested_) onZoneFocusRequested_();
     SyncContentVisibility();
     Layout();
     if (GetParent()) GetParent()->Layout();
+    if (!hadNavigationTarget && PreferredNavigationTarget() != nullptr &&
+        onZoneFocusRequested_)
+        onZoneFocusRequested_();
+    if (!roomStarted_ && roomStartFlowRequested_ &&
+        !startConfigurationFlow_.IsAwaitingActionAcknowledgement() &&
+        (!state_.prompt || !state_.prompt->submitThenStart))
+    {
+        roomStartFlowRequested_ = false;
+        roomStartPending_ = true;
+        if (onRoomStartRequested_) onRoomStartRequested_();
+    }
 }
 
 void GamePlayPanel::UpdateInfoPanel()
@@ -101,13 +134,21 @@ void GamePlayPanel::PublishLogMessages(const std::vector<std::string>& messages)
 
 void GamePlayPanel::ClearView()
 {
+    activeInfoPanel_ = "details";
     dismissedPromptActionType_.clear();
     submittedPromptActionType_.clear();
     confirmationPanel_->HideConfirmation();
     promptPanel_->HidePrompt(true);
     pawnSelectionPanel_->Clear();
     headerLabel_->SetLabel(wxString(L"Zone de jeu"));
+    stateSummaryLabel_->SetLabel(wxString{});
+    stateSummaryLabel_->Hide();
+    pendingLabel_->SetLabel(wxString{});
+    pendingLabel_->Hide();
     linesList_->Clear();
+    choicesList_->Clear();
+    choicesLabel_->Hide();
+    choicesList_->Hide();
     handPanel_->ClearHand();
     dicePanel_->Clear();
     infoText_->Clear();
@@ -138,35 +179,9 @@ void GamePlayPanel::RebuildLines()
     }
 }
 
-bool GamePlayPanel::HasDiceAction() const
-{
-    if (!state_.dice) return false;
-    const auto count = state_.dice->dice.empty() ? std::size_t{1} : state_.dice->dice.size();
-    for (std::size_t index = 0; index < count; ++index)
-        if (application::dice::GameDiceActionResolver::Resolve(*state_.dice, state_.actions, index))
-            return true;
-    return false;
-}
-
 wxString GamePlayPanel::BuildShortcutText() const
 {
     return shortcuts::GameShortcutResolver::BuildHelpText(state_);
-}
-
-wxString GamePlayPanel::BuildHeaderText() const
-{
-    wxString text;
-    const auto append = [&text](const std::string& value)
-    {
-        if (value.empty()) return;
-        if (!text.empty()) text += wxString(L" - ");
-        text += FromUtf8(value);
-    };
-    append(state_.phase);
-    append(state_.currentPlayerLabel);
-    append(state_.turnLabel);
-    if (text.empty()) text = wxString(L"Partie");
-    return text;
 }
 
 wxString GamePlayPanel::BuildLineDetail() const

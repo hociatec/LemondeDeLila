@@ -5,7 +5,9 @@ export class RenameRoomBotService {
 
   async execute(botId: number, name: string): Promise<void> {
     const normalizedBotId =
-      typeof botId === 'number' && Number.isFinite(botId) ? Math.floor(botId) : 0;
+      typeof botId === 'number' && Number.isFinite(botId)
+        ? Math.floor(botId)
+        : 0;
     const normalizedName = String(name ?? '').trim();
 
     if (normalizedBotId <= 0 || !normalizedName) {

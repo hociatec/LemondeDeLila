@@ -4,9 +4,7 @@ import type { AdminClientUpdateForceLatestCommand } from './admin-client-updates
 
 @Injectable()
 export class AdminClientUpdateForceLatestService {
-  constructor(
-    private readonly shared: AdminClientUpdatesSharedService,
-  ) {}
+  constructor(private readonly shared: AdminClientUpdatesSharedService) {}
 
   async execute(
     command: AdminClientUpdateForceLatestCommand,

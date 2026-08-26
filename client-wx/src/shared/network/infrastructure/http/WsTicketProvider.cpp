@@ -4,7 +4,7 @@
 #include "shared/network/domain/UrlUtils.h"
 #include "shared/data/json/JsonReaders.h"
 #include "shared/network/domain/WebSocketConstants.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/NetworkErrorMessages.h"
 
 
 #include <array>
@@ -104,17 +104,4 @@ std::string WsTicketProvider::GetTicket(const std::string& scope, const std::str
     throw std::runtime_error(lila::shared::errors::WsTicketUnsupportedTransport);
 #endif
 }
-}
-
-lila::shared::network::http::WsTicketRequestError::WsTicketRequestError(
-    std::string message,
-    unsigned long statusCode)
-    : std::runtime_error(std::move(message)),
-      statusCode_(statusCode)
-{
-}
-
-unsigned long lila::shared::network::http::WsTicketRequestError::StatusCode() const
-{
-    return statusCode_;
 }

@@ -8,7 +8,7 @@
 
 #include "modules/leaderboard/application/LeaderboardService.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/leaderboard/domain/LeaderboardErrorMessages.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::leaderboard::presentation

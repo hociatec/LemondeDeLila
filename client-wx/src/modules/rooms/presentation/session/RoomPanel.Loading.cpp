@@ -10,7 +10,7 @@
 #include "modules/rooms/application/RoomSessionService.h"
 #include "modules/audio/application/IAudioService.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/rooms/domain/RoomErrorMessages.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation

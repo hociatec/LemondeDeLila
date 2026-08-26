@@ -7,7 +7,11 @@ type LobbyWsVariant = 'legacy' | 'lobby';
 
 @Injectable()
 export class RoomLobbyPresenter {
-  mapType(variant: LobbyWsVariant, legacyType: string, lobbyType: string): string {
+  mapType(
+    variant: LobbyWsVariant,
+    legacyType: string,
+    lobbyType: string,
+  ): string {
     return variant === 'lobby' ? lobbyType : legacyType;
   }
 
@@ -55,12 +59,13 @@ export class RoomLobbyPresenter {
     };
   }
 
-  presentInviteSent(
-    variant: LobbyWsVariant,
-    payload: Record<string, unknown>,
-  ) {
+  presentInviteSent(variant: LobbyWsVariant, payload: Record<string, unknown>) {
     return {
-      type: this.mapType(variant, 'rooms.invite.sent', 'room.lobby.invite.sent'),
+      type: this.mapType(
+        variant,
+        'rooms.invite.sent',
+        'room.lobby.invite.sent',
+      ),
       payload,
     };
   }

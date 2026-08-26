@@ -4,11 +4,10 @@
 #include <stdexcept>
 
 #include <wx/msgdlg.h>
-#include <wx/weakref.h>
 
 #include "modules/social/presentation/SocialView.h"
 #include "shared/accessibility/application/FocusManager.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/ui/application/BackgroundTask.h"
@@ -91,29 +90,15 @@ void SocialFrame::RunBackgroundTask(
     }
 
     SetBusyState(true, busyMessage, announceBusy);
-    wxWeakRef<SocialFrame> weakSelf(this);
-    lila::shared::ui::RunBackgroundTask(
-        this,
+    lila::shared::ui::RunManagedBackgroundTask(
+        *this,
         worker,
-        [weakSelf, onSuccess](std::string errorMessage) mutable
+        [](SocialFrame& frame) { frame.SetBusyState(false); },
+        [](SocialFrame& frame, std::string errorMessage)
         {
-            if (!weakSelf)
-            {
-                return;
-            }
-
-            weakSelf->SetBusyState(false);
-            if (!errorMessage.empty())
-            {
-                weakSelf->UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
-                return;
-            }
-
-            if (onSuccess)
-            {
-                weakSelf->RunUiAction(onSuccess);
-            }
-        });
+            frame.UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
+        },
+        [onSuccess](SocialFrame& frame) { if (onSuccess) frame.RunUiAction(onSuccess); });
 }
 
 void SocialFrame::SetBusyState(bool busy, const wxString& message, bool announce)
@@ -129,8 +114,7 @@ void SocialFrame::SetBusyState(bool busy, const wxString& message, bool announce
 
 void SocialFrame::ApplyBusyState()
 {
-    // Ne pas dÃ©sactiver les contrÃ´les pendant les chargements :
-    // le lecteur d'Ã©cran annonce alors "indisponible" sur les Ã©crans sociaux.
+    // Ne pas désactiver les contrôles pendant les chargements :
+    // le lecteur d'écran annonce alors « indisponible » sur les écrans sociaux.
 }
 }
-

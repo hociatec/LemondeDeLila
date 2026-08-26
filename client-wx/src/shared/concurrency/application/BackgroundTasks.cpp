@@ -54,38 +54,20 @@ std::shared_ptr<BackgroundTaskHandle> RunAsync(
     BackgroundTaskPriority priority,
     std::string userMessageOnFailure)
 {
-    auto stopSource = std::make_shared<std::stop_source>();
-    const auto handle = std::make_shared<BackgroundTaskHandle>(stopSource);
-
-    CurrentBackgroundExecutor().Submit(
-        stopSource,
-        priority,
-        [worker = std::move(worker),
-         stopSource,
-         completion = std::move(completion),
-         userMessageOnFailure = std::move(userMessageOnFailure)]() mutable
+    return RunAsync<bool>(
+        [worker = std::move(worker)](std::stop_token stopToken)
         {
-            std::optional<lila::shared::errors::AppError> error;
-
-            try
-            {
-                if (!stopSource->stop_requested())
-                {
-                    worker(stopSource->get_token());
-                }
-            }
-            catch (const std::exception& exception)
-            {
-                error = lila::shared::errors::ToAppError(exception, userMessageOnFailure);
-            }
-
-            if (completion != nullptr && !stopSource->stop_requested())
-            {
-                completion(std::move(error));
-            }
-        });
-
-    return handle;
+            worker(stopToken);
+            return true;
+        },
+        [completion = std::move(completion)](
+            std::optional<lila::shared::errors::AppError> error,
+            std::optional<bool>) mutable
+        {
+            if (completion) completion(std::move(error));
+        },
+        priority,
+        std::move(userMessageOnFailure));
 }
 
 std::shared_ptr<BackgroundTaskHandle> RunAsync(

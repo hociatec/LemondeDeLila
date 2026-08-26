@@ -23,14 +23,13 @@ ResolvedPlaybackSettings ResolvePlaybackSettings(
 
     bool familyEnabled = true;
     int familyVolume = 100;
-    using enum domain::SoundFamily;
     switch (sound.family)
     {
-    case AppLaunch:
+    case domain::SoundFamily::AppLaunch:
         familyEnabled = settings.appLaunchEnabled;
         familyVolume = settings.appLaunchVolume;
         break;
-    case Ambience:
+    case domain::SoundFamily::Ambience:
         familyEnabled = settings.ambienceEnabled;
         familyVolume = settings.splitAmbienceVolume
             ? (sound.cue == domain::SoundCue::MainMenuMusic
@@ -38,19 +37,19 @@ ResolvedPlaybackSettings ResolvePlaybackSettings(
                 : settings.tavernAmbienceVolume)
             : settings.ambienceVolume;
         break;
-    case Navigate:
+    case domain::SoundFamily::Navigate:
         familyEnabled = settings.navigationEnabled;
         familyVolume = settings.navigationVolume;
         break;
-    case Select:
+    case domain::SoundFamily::Select:
         familyEnabled = settings.selectionEnabled;
         familyVolume = settings.selectionVolume;
         break;
-    case Messages:
+    case domain::SoundFamily::Messages:
         familyEnabled = settings.messagesEnabled;
         familyVolume = settings.messagesVolume;
         break;
-    case TableAmbience:
+    case domain::SoundFamily::TableAmbience:
         familyEnabled = settings.tableAmbienceEnabled;
         familyVolume = settings.tableAmbienceVolume;
         break;

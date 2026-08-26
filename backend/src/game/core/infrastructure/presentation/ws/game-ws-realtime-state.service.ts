@@ -1,38 +1,43 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { stringOrEmpty } from '@common/utils/public-api';
 import type { WsSession } from '../../../../../realtime/public-api';
 import { WsApiHubService } from '../../../../../common/ws/public-api';
-import type { GameRulesAdapter } from '../../../application/contracts/game-rules-adapter.interface';
+import type { GameRuntime } from '../../../application/contracts/game-runtime.interface';
 import type { GameStateEntity } from '../../../application/models/game-state.model';
-import { GameCoreService } from '../../../application/services/game-core.service';
+import { resolveGameStateRunId } from '../../../application/helpers/game-room-run-id.helper';
+import { GameRoomStateFactory } from '../../../application/services/game-room-state.factory';
 import { GameEngineService } from '../../../application/services/game-engine.service';
 import { GameRealtimeAutomationService } from '../../../application/services/game-realtime-automation.service';
 import { GameRegistryService } from '../../../application/services/game-registry.service';
 import { GameWsRoomContextService } from './game-ws-room-context.service';
 import { GameWsStatePresenter } from './game-ws-state.presenter';
+import { GameStateConflictError } from '../../../domain/errors/game-domain.errors';
+import { GameExecutionScopeService } from '../../../application/services/game-execution-scope.service';
 
 type VersionedGameState = GameStateEntity & { version?: number };
 
 export type ResolvedGameState = {
   gameType: string;
   state: GameStateEntity;
-  handler: GameRulesAdapter;
+  handler: GameRuntime;
 };
 
 @Injectable()
 export class GameWsRealtimeStateService {
   constructor(
-    private readonly core: GameCoreService,
+    private readonly stateFactory: GameRoomStateFactory,
     private readonly engine: GameEngineService,
     private readonly registry: GameRegistryService,
     private readonly automation: GameRealtimeAutomationService,
     private readonly presenter: GameWsStatePresenter,
     private readonly hub: WsApiHubService,
     private readonly rooms: GameWsRoomContextService,
+    private readonly execution: GameExecutionScopeService,
   ) {}
 
   async resolve(roomId: number): Promise<ResolvedGameState> {
     const room = await this.rooms.buildPayload(roomId);
-    const gameType = String(room.room.gameType ?? '').trim();
+    const gameType = stringOrEmpty(room.room.gameType).trim();
     const handler = this.registry.getHandler(gameType);
     if (!handler) throw new NotFoundException(`Jeu introuvable: ${gameType}`);
 
@@ -43,8 +48,11 @@ export class GameWsRealtimeStateService {
     }
     if (existing) await this.clear(roomId, gameType);
 
-    const baseState = this.core.buildBaseState(room, gameType);
-    const state = handler.hydrateInitialState(baseState);
+    const baseState = this.stateFactory.build(room, gameType);
+    const context = this.execution.create(baseState, null);
+    const state = this.execution.run(context, () =>
+      handler.hydrateInitialState(baseState, context),
+    );
     this.preserveRoomRunId(baseState, state);
     this.ensureVersion(state);
     await this.engine.restoreInternalState(roomId, gameType, state);
@@ -91,10 +99,22 @@ export class GameWsRealtimeStateService {
     next: GameStateEntity,
   ): Promise<void> {
     this.preserveRoomRunId(previous, next);
-    const version = this.bumpVersion(next, previous);
-    await this.engine.restoreInternalState(roomId, resolved.gameType, next);
-    this.broadcast(roomId, resolved.gameType, next, resolved.handler, version);
-    this.schedule(roomId, { ...resolved, state: next });
+    const expectedVersion = this.ensureVersion(previous);
+    const result = await this.engine.compareAndSetInternalState(
+      roomId,
+      resolved.gameType,
+      expectedVersion,
+      next,
+    );
+    if (!result.committed) throw new GameStateConflictError();
+    this.broadcast(
+      roomId,
+      resolved.gameType,
+      result.state,
+      resolved.handler,
+      result.version,
+    );
+    this.schedule(roomId, { ...resolved, state: result.state });
   }
 
   async clear(roomId: number, gameType: string): Promise<void> {
@@ -111,13 +131,12 @@ export class GameWsRealtimeStateService {
     state: GameStateEntity,
     room: { status?: unknown; runId?: unknown },
   ): boolean {
-    if (String(room.status ?? '').toLowerCase() !== 'started') return false;
-    const stateRunId = (state.metadata as Record<string, unknown> | undefined)
-      ?.roomRunId;
+    const stateRunId = state.metadata?.roomRunId;
+    const expectedRunId = resolveGameStateRunId(room);
     return (
       typeof stateRunId === 'number' &&
-      typeof room.runId === 'number' &&
-      stateRunId === room.runId
+      expectedRunId != null &&
+      stateRunId === expectedRunId
     );
   }
 
@@ -125,18 +144,10 @@ export class GameWsRealtimeStateService {
     source: GameStateEntity,
     target: GameStateEntity,
   ): void {
-    const sourceMetadata =
-      source.metadata && typeof source.metadata === 'object'
-        ? (source.metadata as Record<string, unknown>)
-        : {};
-    const roomRunId = sourceMetadata.roomRunId;
+    const roomRunId = source.metadata?.roomRunId;
     if (typeof roomRunId !== 'number') return;
 
-    const targetMetadata =
-      target.metadata && typeof target.metadata === 'object'
-        ? (target.metadata as Record<string, unknown>)
-        : {};
-    target.metadata = { ...targetMetadata, roomRunId };
+    target.metadata = { ...(target.metadata ?? {}), roomRunId };
   }
 
   private ensureVersion(state: GameStateEntity): number {
@@ -147,20 +158,11 @@ export class GameWsRealtimeStateService {
     return 1;
   }
 
-  private bumpVersion(
-    next: GameStateEntity,
-    previous: GameStateEntity,
-  ): number {
-    const nextVersion = this.ensureVersion(previous) + 1;
-    (next as VersionedGameState).version = nextVersion;
-    return nextVersion;
-  }
-
   private broadcast(
     roomId: number,
     gameType: string,
     state: GameStateEntity,
-    handler: GameRulesAdapter,
+    handler: GameRuntime,
     version: number,
   ): void {
     for (const connection of this.hub.listConnections()) {

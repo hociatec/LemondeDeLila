@@ -7,7 +7,6 @@ import { ChatModule } from '../../chat/public-api';
 import { ValidationModule } from '../../common/validation/public-api';
 import { EngineServicesModule } from '../../game/core/infrastructure/module/engine-services.module';
 import { GameRegistryModule } from '../../game/public-api';
-import { ArcheDeMnemosyneModule } from '../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
 import { BotModule as GameBotModule } from '../../game/public-api';
 import { NotificationModule } from '../../notification/public-api';
 import { RoomModule } from '../../room/public-api';
@@ -22,7 +21,6 @@ export const ADMIN_MODULE_IMPORTS = [
   ValidationModule,
   EngineServicesModule,
   GameRegistryModule,
-  ArcheDeMnemosyneModule,
   NotificationModule,
   UpdateModule,
   ChatModule,

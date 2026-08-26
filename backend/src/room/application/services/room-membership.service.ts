@@ -14,20 +14,16 @@ import {
   type RoomParticipantRepository,
 } from '../ports/room-participant.repository';
 import { ROOM_REPOSITORY, type RoomRepository } from '../ports/room.repository';
-import {
-  ROOM_VAULT_SNAPSHOT_REPOSITORY,
-  type RoomVaultSnapshotRepository,
-} from '../ports/room-vault-snapshot.repository';
 import type { RoomRecord } from '../models/room-record.model';
-import type { RoomUserRecord } from '../models/room-user.model';
-import {
-  AddSystemBotToRoomService,
-  RemoveAllRoomBotsService,
-} from '../../../bot/public-api';
+import type {
+  RoomLeaveOptions,
+  RoomMembershipContext,
+} from '../models/room-membership-context.model';
+export type { RoomMembershipContext } from '../models/room-membership-context.model';
 import { PresenceService } from '../../../presence/public-api';
 import { CatalogService } from '../../../catalog/public-api';
 import { GameStatsService } from '../../../stats/public-api';
-import { RoomRuntimeStateService } from './room-runtime-state.service';
+import { RoomLeaveService } from './room-leave.service';
 import {
   getRoomManifestStatus,
   hasAdminRoomRole,
@@ -38,29 +34,6 @@ import {
   resolveRoomName,
 } from './room-membership.utils';
 
-export type RoomMembershipContext = {
-  invalidateRoomPayloadCache: (roomId: number) => Promise<void>;
-  requireRoom: (roomId: number) => Promise<RoomRecord>;
-  requireUser: (userId: number) => Promise<RoomUserRecord>;
-  countActiveHumans: (roomId: number) => Promise<number>;
-  countBots: (roomId: number) => Promise<number>;
-  leaveAllRoomsForUser: (
-    userId: number,
-    opts?: { exceptRoomId?: number },
-  ) => Promise<void>;
-  leaveRoom: (
-    roomId: number,
-    userId: number,
-    opts?: {
-      preserveRoom?: boolean;
-      disconnectOnly?: boolean;
-      preserveOwner?: boolean;
-      replaceWithBot?: boolean;
-    },
-  ) => Promise<RoomRecord | null>;
-  destroyRoom: (roomId: number) => Promise<{ ok: true; roomId: number }>;
-};
-
 @Injectable()
 export class RoomMembershipService {
   private readonly logger = new Logger(RoomMembershipService.name);
@@ -70,16 +43,12 @@ export class RoomMembershipService {
     private readonly rooms: RoomRepository,
     @Inject(ROOM_PARTICIPANT_REPOSITORY)
     private readonly participants: RoomParticipantRepository,
-    @Inject(ROOM_VAULT_SNAPSHOT_REPOSITORY)
-    private readonly vaultSnapshots: RoomVaultSnapshotRepository,
-    private readonly addSystemBotToRoom: AddSystemBotToRoomService,
-    private readonly removeAllRoomBots: RemoveAllRoomBotsService,
     private readonly presenceService: PresenceService,
     private readonly catalog: CatalogService,
     private readonly stats: GameStatsService,
-    private readonly runtimeState: RoomRuntimeStateService,
     @Inject(ROOM_EVENT_PUBLISHER)
     private readonly roomEvents: RoomEventPublisherPort,
+    private readonly roomLeave: RoomLeaveService,
   ) {}
 
   async createRoom(
@@ -235,132 +204,9 @@ export class RoomMembershipService {
     context: RoomMembershipContext,
     roomId: number,
     userId: number,
-    opts?: {
-      preserveRoom?: boolean;
-      disconnectOnly?: boolean;
-      preserveOwner?: boolean;
-      replaceWithBot?: boolean;
-    },
+    opts?: RoomLeaveOptions,
   ): Promise<RoomRecord | null> {
-    const room = await context.requireRoom(roomId);
-    const user = await context.requireUser(userId);
-    const participant = await this.participants.findActiveByRoomAndUser(
-      room.id,
-      user.id,
-    );
-
-    if (opts?.disconnectOnly) {
-      this.presenceService.broadcastPresence();
-      return room;
-    }
-
-    if (participant) {
-      participant.leftAt = new Date();
-      await this.participants.save(participant);
-    }
-    await context.invalidateRoomPayloadCache(room.id);
-
-    if (
-      participant &&
-      opts?.disconnectOnly !== true &&
-      room.restoredFromSnapshotId &&
-      room.restoredOwnerUserId === userId
-    ) {
-      const activeHumansAfterLeave = await context.countActiveHumans(room.id);
-      if (activeHumansAfterLeave === 0) {
-        const snapshotId = String(room.restoredFromSnapshotId ?? '').trim();
-        this.logger.log(
-          'Restored room abandoned (no humans left => delete room)',
-          {
-            roomId: room.id,
-            userId,
-            snapshotId: snapshotId || null,
-          },
-        );
-        if (snapshotId) {
-          try {
-            await this.vaultSnapshots.deleteOwnedSnapshot(snapshotId, userId);
-          } catch {
-            // best effort
-          }
-        }
-        await context.destroyRoom(room.id);
-        return null;
-      }
-    }
-
-    if (participant && isStartedRoom(room)) {
-      try {
-        await this.stats.markQuit(room.id, user.id);
-      } catch {
-        // best effort
-      }
-    }
-
-    if (
-      participant &&
-      room.owner &&
-      room.owner.id === userId &&
-      opts?.preserveOwner !== true
-    ) {
-      const next = await this.participants.findFirstActiveByRoomWithUser(
-        room.id,
-      );
-      if (next?.user) {
-        room.owner = next.user;
-        await this.rooms.save(room);
-        await context.invalidateRoomPayloadCache(room.id);
-      }
-    }
-
-    const started = isStartedRoom(room);
-    if (participant && started && opts?.replaceWithBot !== false) {
-      try {
-        const activeHumans = await context.countActiveHumans(room.id);
-        if (activeHumans > 0) {
-          await this.addSystemBotToRoom.execute(room.id);
-          await context.invalidateRoomPayloadCache(room.id);
-        }
-      } catch {
-        // best effort
-      }
-    }
-
-    if (opts?.preserveRoom) {
-      this.presenceService.broadcastPresence();
-      await this.roomEvents.publishLobbyChanged(room.id, 'left');
-      return room;
-    }
-
-    let activeHumans = await context.countActiveHumans(room.id);
-    if (activeHumans === 0) {
-      await this.removeAllRoomBots.execute(room.id);
-    }
-    activeHumans = await context.countActiveHumans(room.id);
-    const bots = await context.countBots(room.id);
-    const remaining = activeHumans + bots;
-
-    if (remaining === 0) {
-      this.logger.log('Room deleted (empty)', {
-        roomId: room.id,
-        userId,
-        disconnectOnly: opts?.disconnectOnly === true,
-        preserveRoom: opts?.preserveRoom === true,
-        activeHumans,
-        bots,
-      });
-      await this.roomEvents.publishRoomDeleted(room.id);
-      await this.rooms.delete(room.id);
-      this.runtimeState.clearRoomBans(room.id);
-      await context.invalidateRoomPayloadCache(room.id);
-      this.presenceService.broadcastPresence();
-      await this.roomEvents.publishLobbyChanged(room.id, 'deleted');
-      return null;
-    }
-
-    this.presenceService.broadcastPresence();
-    await this.roomEvents.publishLobbyChanged(room.id, 'left');
-    return room;
+    return this.roomLeave.leave(context, roomId, userId, opts);
   }
 
   async leaveAllRoomsForUser(

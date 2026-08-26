@@ -6,9 +6,7 @@ import type { SocialProfileSettingsRepository } from '../../../../application/po
 import { SocialProfileSettingsEntity } from '../entities/social-profile-settings.entity';
 
 @Injectable()
-export class SocialProfileSettingsTypeormRepository
-  implements SocialProfileSettingsRepository
-{
+export class SocialProfileSettingsTypeormRepository implements SocialProfileSettingsRepository {
   constructor(
     @InjectRepository(SocialProfileSettingsEntity)
     private readonly repo: Repository<SocialProfileSettingsEntity>,

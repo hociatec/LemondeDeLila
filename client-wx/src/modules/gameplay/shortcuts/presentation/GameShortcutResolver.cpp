@@ -1,6 +1,7 @@
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 
 #include <algorithm>
+#include <string_view>
 
 #include <wx/event.h>
 
@@ -8,7 +9,33 @@
 
 namespace lila::modules::gameplay::presentation::shortcuts
 {
-const domain::GameShortcut* GameShortcutResolver::Find(
+namespace
+{
+std::string UnmodifiedFallback(const std::string& normalizedKey)
+{
+    constexpr std::string_view ShiftPrefix = "SHIFT+";
+    if (normalizedKey.size() == ShiftPrefix.size() + 1 &&
+        normalizedKey.compare(0, ShiftPrefix.size(), ShiftPrefix) == 0)
+        return normalizedKey.substr(ShiftPrefix.size());
+    return {};
+}
+
+const domain::GameShortcut* FindAvailableAction(
+    const domain::GameState& state,
+    const std::string& normalizedKey)
+{
+    const auto found = std::find_if(
+        state.shortcuts.begin(), state.shortcuts.end(),
+        [&state, &normalizedKey](const domain::GameShortcut& shortcut)
+        {
+            return shortcut.normalizedKey == normalizedKey &&
+                shortcut.kind == domain::GameShortcutKind::Action &&
+                GameShortcutResolver::ResolveAction(state, shortcut.actionType, -1).has_value();
+        });
+    return found == state.shortcuts.end() ? nullptr : &*found;
+}
+
+const domain::GameShortcut* FindInterface(
     const domain::GameState& state,
     const std::string& normalizedKey)
 {
@@ -16,9 +43,27 @@ const domain::GameShortcut* GameShortcutResolver::Find(
         state.shortcuts.begin(), state.shortcuts.end(),
         [&normalizedKey](const domain::GameShortcut& shortcut)
         {
-            return shortcut.normalizedKey == normalizedKey;
+            return shortcut.normalizedKey == normalizedKey &&
+                shortcut.kind == domain::GameShortcutKind::Interface;
         });
     return found == state.shortcuts.end() ? nullptr : &*found;
+}
+}
+
+const domain::GameShortcut* GameShortcutResolver::Find(
+    const domain::GameState& state,
+    const std::string& normalizedKey)
+{
+    // As in the WPF client, a currently available game action wins over an
+    // interface panel using the same key. Explicit Shift+ shortcuts win first,
+    // then Shift falls back to the ordinary letter shortcut.
+    if (const auto* action = FindAvailableAction(state, normalizedKey)) return action;
+    if (const auto* interfaceShortcut = FindInterface(state, normalizedKey)) return interfaceShortcut;
+
+    const auto fallback = UnmodifiedFallback(normalizedKey);
+    if (fallback.empty()) return nullptr;
+    if (const auto* action = FindAvailableAction(state, fallback)) return action;
+    return FindInterface(state, fallback);
 }
 
 std::optional<domain::GameAction> GameShortcutResolver::ResolveAction(
@@ -53,9 +98,19 @@ std::string GameShortcutResolver::NormalizeKey(const wxKeyEvent& event)
     if (key == WXK_SPACE || key == WXK_NUMPAD_SPACE) return "SPACE";
     if (key == WXK_BACK) return "BACK";
     if (key == WXK_F5) return "F5";
-    if (key >= 'A' && key <= 'Z') return std::string(1, static_cast<char>(key));
-    if (key >= 'a' && key <= 'z') return std::string(1, static_cast<char>(key - 'a' + 'A'));
+    if (key >= 'A' && key <= 'Z')
+    {
+        const std::string letter(1, static_cast<char>(key));
+        return event.ShiftDown() ? "SHIFT+" + letter : letter;
+    }
+    if (key >= 'a' && key <= 'z')
+    {
+        const std::string letter(1, static_cast<char>(key - 'a' + 'A'));
+        return event.ShiftDown() ? "SHIFT+" + letter : letter;
+    }
     if (key >= '0' && key <= '9') return std::string(1, static_cast<char>(key));
+    if (key >= WXK_NUMPAD0 && key <= WXK_NUMPAD9)
+        return std::string(1, static_cast<char>('0' + key - WXK_NUMPAD0));
     return {};
 }
 

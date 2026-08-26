@@ -96,8 +96,7 @@ import {
       useFactory: (
         registry: BotNameRegistryService,
         config: BotNameCacheConfig,
-      ) =>
-        new BotNameCacheService(registry, config),
+      ) => new BotNameCacheService(registry, config),
       inject: [BotNameRegistryService, BOT_NAME_CACHE_CONFIG],
     },
     {
@@ -121,7 +120,11 @@ import {
         cache: BotNameCacheService,
         normalizer: BotNameNormalizerService,
       ) => new CreateBotNameService(botNames, cache, normalizer),
-      inject: [BOT_NAME_REPOSITORY, BotNameCacheService, BotNameNormalizerService],
+      inject: [
+        BOT_NAME_REPOSITORY,
+        BotNameCacheService,
+        BotNameNormalizerService,
+      ],
     },
     {
       provide: UpdateBotNameService,
@@ -130,14 +133,15 @@ import {
         cache: BotNameCacheService,
         normalizer: BotNameNormalizerService,
       ) => new UpdateBotNameService(botNames, cache, normalizer),
-      inject: [BOT_NAME_REPOSITORY, BotNameCacheService, BotNameNormalizerService],
+      inject: [
+        BOT_NAME_REPOSITORY,
+        BotNameCacheService,
+        BotNameNormalizerService,
+      ],
     },
     {
       provide: DeleteBotNameService,
-      useFactory: (
-        botNames: BotNameRepository,
-        cache: BotNameCacheService,
-      ) =>
+      useFactory: (botNames: BotNameRepository, cache: BotNameCacheService) =>
         new DeleteBotNameService(botNames, cache),
       inject: [BOT_NAME_REPOSITORY, BotNameCacheService],
     },
@@ -148,7 +152,11 @@ import {
         names: BotNameSelectionService,
         policy: BotRoomPolicyService,
       ) => new AddBotToRoomService(rooms, names, policy),
-      inject: [BOT_ROOM_REPOSITORY, BotNameSelectionService, BotRoomPolicyService],
+      inject: [
+        BOT_ROOM_REPOSITORY,
+        BotNameSelectionService,
+        BotRoomPolicyService,
+      ],
     },
     {
       provide: AddSystemBotToRoomService,
@@ -157,7 +165,11 @@ import {
         names: BotNameSelectionService,
         policy: BotRoomPolicyService,
       ) => new AddSystemBotToRoomService(rooms, names, policy),
-      inject: [BOT_ROOM_REPOSITORY, BotNameSelectionService, BotRoomPolicyService],
+      inject: [
+        BOT_ROOM_REPOSITORY,
+        BotNameSelectionService,
+        BotRoomPolicyService,
+      ],
     },
     {
       provide: RemoveBotFromRoomService,
@@ -173,8 +185,7 @@ import {
     },
     {
       provide: RenameRoomBotService,
-      useFactory: (rooms: BotRoomRepository) =>
-        new RenameRoomBotService(rooms),
+      useFactory: (rooms: BotRoomRepository) => new RenameRoomBotService(rooms),
       inject: [BOT_ROOM_REPOSITORY],
     },
     {
@@ -185,8 +196,7 @@ import {
     },
     {
       provide: CountRoomBotsService,
-      useFactory: (rooms: BotRoomRepository) =>
-        new CountRoomBotsService(rooms),
+      useFactory: (rooms: BotRoomRepository) => new CountRoomBotsService(rooms),
       inject: [BOT_ROOM_REPOSITORY],
     },
     {

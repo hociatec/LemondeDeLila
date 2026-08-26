@@ -1,5 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
+#define NOMINMAX 1
 #include <windows.h>
 #include <winhttp.h>
 
@@ -136,7 +136,8 @@ std::string DownloadText(const std::string& url)
 void DownloadFile(
     const std::string& url,
     const fs::path& destination,
-    std::uint64_t expectedBytes)
+    std::uint64_t expectedBytes,
+    UpdateProgressDialog* progress)
 {
     fs::create_directories(destination.parent_path());
     const fs::path partial = destination.wstring() + L".partial";
@@ -144,13 +145,18 @@ void DownloadFile(
     for (int attempt = 1; attempt <= 3; ++attempt) {
         fs::remove(partial);
         try {
+            if (progress && attempt > 1) {
+                progress->SetStage(L"Nouvelle tentative de téléchargement…", 5);
+            }
             std::ofstream output(partial, std::ios::binary | std::ios::trunc);
             if (!output) throw std::runtime_error("Unable to create update download.");
             std::uint64_t written = 0;
-            HttpGet(url, expectedBytes, [&output, &written](const char* data, DWORD size) {
+            HttpGet(url, expectedBytes, [&output, &written, progress, expectedBytes](
+                    const char* data, DWORD size) {
                 output.write(data, size);
                 if (!output) throw std::runtime_error("Unable to save update download.");
                 written += size;
+                if (progress) progress->SetDownloadProgress(written, expectedBytes);
             });
             output.flush();
             if (!output || written != expectedBytes) {

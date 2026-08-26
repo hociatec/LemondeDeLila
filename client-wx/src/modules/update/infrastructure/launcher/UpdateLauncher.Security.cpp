@@ -1,5 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
+#define NOMINMAX 1
 #include <windows.h>
 #include <bcrypt.h>
 #include <wincrypt.h>
@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 
 #include "UpdateBuildConfig.h"
@@ -143,6 +144,21 @@ bool VerifyAuthenticode(const fs::path& executable, std::string* failureReason)
         *failureReason = FormatTrustFailure(status, actualFingerprint, expectedFingerprint);
     }
     return accepted;
+}
+
+bool VerifyAuthenticodeWithRetry(const fs::path& executable, std::string* failureReason)
+{
+    // Antivirus/indexing can briefly lock a freshly extracted PE and make
+    // WinVerifyTrust return CRYPT_E_FILE_ERROR (0x80092003). Verification is
+    // never bypassed: a successful cryptographic check remains mandatory.
+    for (int attempt = 0; attempt < 8; ++attempt) {
+        if (failureReason) failureReason->clear();
+        if (VerifyAuthenticode(executable, failureReason)) return true;
+        if (attempt < 7) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(300 * (attempt + 1)));
+        }
+    }
+    return false;
 }
 
 std::vector<BYTE> DecodeBase64(const std::string& value)

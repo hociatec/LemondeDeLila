@@ -5,7 +5,7 @@
 #include <string_view>
 
 #include "shared/network/domain/WebSocketConstants.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/NetworkErrorMessages.h"
 
 namespace lila::shared::network
 {

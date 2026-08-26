@@ -1,9 +1,11 @@
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 
+#include <algorithm>
 #include <stdexcept>
 #include <utility>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
+#include "modules/gameplay/state/infrastructure/GamePendingDecoder.h"
 #include "modules/gameplay/state/infrastructure/GameStateSectionsDecoder.h"
 #include "modules/gameplay/cards/infrastructure/GameCardDecoder.h"
 #include "modules/gameplay/dice/infrastructure/GameDiceDecoder.h"
@@ -24,6 +26,7 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     state.version = ReadInt(payload, "version");
     if (state.version <= 0) state.version = ReadInt(stateNode, "version");
     state.turnIndex = ReadInt(stateNode, "turnIndex");
+    state.round = ReadInt(stateNode, "round");
     state.gameType = ReadString(payload, "gameType");
     if (state.gameType.empty()) state.gameType = ReadString(stateNode, "gameType");
     state.gameName = ReadString(payload, "gameName");
@@ -32,6 +35,7 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     state.turnLabel = ReadString(stateNode, "turnLabel");
     if (state.turnLabel.empty()) state.turnLabel = ReadString(payload, "turnLabel");
     state.currentPlayerLabel = ReadString(stateNode, "currentPlayerUsername");
+    state.botThinking = ReadBool(stateNode, "botThinking");
 
     const auto turn = stateNode.find("turn");
     if (turn != stateNode.end() && turn->is_object())
@@ -42,6 +46,7 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     }
 
     state.metadata = ObjectOrEmpty(stateNode.value("metadata", payload.value("metadata", nlohmann::json::object())));
+    state.runId = ReadInt(state.metadata, "roomRunId");
     state.extras = ObjectOrEmpty(stateNode.value("extras", payload.value("extras", nlohmann::json::object())));
     state.hand = GameCardDecoder::DecodeHand(state.extras);
     state.dice = GameDiceDecoder::Decode(state.extras);
@@ -51,16 +56,21 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     state.logMessages = DecodeLog(stateNode);
     if (state.logMessages.empty()) state.logMessages = DecodeLog(payload);
     state.lines = BuildLines(state.actions);
+    state.pending = GamePendingDecoder::Decode(stateNode, state.metadata, state.extras);
     state.prompt = DecodePrompt(stateNode);
-    const auto pending = stateNode.find("pending");
-    const auto pendingType = pending != stateNode.end() && pending->is_object()
-        ? ToUpper(Trim(ReadString(*pending, "type")))
-        : std::string{};
+    const auto pendingType = state.pending ? ToUpper(Trim(state.pending->type)) : std::string{};
     const auto phase = ToUpper(Trim(state.phase));
+    const bool promptActionAvailable = state.prompt && std::any_of(
+        state.actions.begin(), state.actions.end(),
+        [&state](const domain::GameAction& action)
+        {
+            return action.type == state.prompt->actionType;
+        });
     if (state.prompt && pendingType == "CONFIG_PROMPT" &&
-        (phase == "ROUND" || !state.hand.empty()))
+        (!promptActionAvailable || phase == "ROUND" || !state.hand.empty()))
     {
         state.prompt.reset();
+        state.pending.reset();
     }
     state.pawnSelection = PawnSelectionDecoder::Decode(stateNode, state.actions);
 

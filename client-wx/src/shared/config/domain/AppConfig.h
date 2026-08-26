@@ -28,7 +28,6 @@ struct AppConfig
     static constexpr std::string_view ChatReconnectMaxDelayMsEnvVar = "LILA_CHAT_RECONNECT_MAX_DELAY_MS";
 
     [[nodiscard]] static BackendProfile ResolveBackendProfile();
-    [[nodiscard]] static std::string ResolveBackendProfileName();
     [[nodiscard]] static std::string ResolveBackendApiWs();
     [[nodiscard]] static std::string ResolvePresenceWs();
     [[nodiscard]] static std::string ResolveClientVersion();

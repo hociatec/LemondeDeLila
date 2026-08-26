@@ -7,10 +7,13 @@
 #include "modules/audio/application/IAudioService.h"
 #include "modules/presence/infrastructure/PresenceConnectionFactory.h"
 #include "modules/presence/infrastructure/PresencePayloadCodec.h"
+#include "modules/session/application/SessionConnectionRetry.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
+#include "shared/network/application/websocket/AuthenticatedWebSocketHeaders.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
+#include "shared/network/domain/WebSocketConstants.h"
 
 namespace lila::modules::presence::application
 {
@@ -99,41 +102,27 @@ bool PresenceMonitor::HasSnapshot() const
     return hasSnapshot_;
 }
 
-std::optional<int> PresenceMonitor::CurrentRoomId() const noexcept
-{
-    return currentRoomId_;
-}
-
 void PresenceMonitor::ReceiveLoop(std::stop_token stopToken)
 {
-    Connect();
+    Connect(stopToken);
     while (!stopToken.stop_requested())
     {
         ApplyUpdate(webSocketClient_.Receive());
     }
 }
 
-void PresenceMonitor::Connect()
+void PresenceMonitor::Connect(std::stop_token stopToken)
 {
-    const auto connect = [this](const std::string& token)
+    const auto connect = [this, stopToken](const std::string& token)
     {
         webSocketClient_.Connect(
             endpoint_,
-            lila::modules::presence::infrastructure::BuildPresenceHeaders(ticketProvider_, token));
+            lila::shared::network::websocket::BuildAuthenticatedHeaders(
+                ticketProvider_, lila::shared::network::ws::WsTicketScopePresence, token),
+            stopToken);
     };
-    try
-    {
-        connect(sessionStore_.AccessToken());
-    }
-    catch (const lila::shared::network::http::WsTicketRequestError& exception)
-    {
-        if (exception.StatusCode() != 401 && exception.StatusCode() != 403)
-        {
-            throw;
-        }
-        webSocketClient_.Close();
-        connect(sessionStore_.RefreshAccessToken());
-    }
+    lila::modules::session::application::ConnectWithSessionRefresh(
+        sessionStore_, stopToken, [this] { webSocketClient_.Close(); }, connect);
     webSocketClient_.Send(lila::modules::presence::infrastructure::TavernContextPayload());
     SetStatus("Présence connectée.");
 }

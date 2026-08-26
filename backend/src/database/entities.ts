@@ -47,4 +47,3 @@ export const ORM_ENTITIES = [
   NotificationInboxItemEntity,
   VaultRoomSnapshotEntity,
 ];
-

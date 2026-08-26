@@ -16,6 +16,7 @@ import {
 } from '../../application/ports/client-updates-upload-store.port';
 import {
   ClientUpdateMeta,
+  CompletedUploadMarker,
   UploadMetaFile,
 } from '../../application/models/client-update-meta.record';
 import { ClientUpdatesService } from '../../application/use-cases/client-updates/client-updates.service';
@@ -193,10 +194,10 @@ export class ClientUpdatesUploadService {
     if (!uploadId) {
       throw new BadRequestException('uploadId manquant.');
     }
-
     const dir = path.join(this.uploadStore.getUploadsRoot(), uploadId);
     const metaPath = path.join(dir, 'meta.json');
-    const completedMarker = await this.uploadStore.readCompletedMarker(uploadId);
+    const completedMarker =
+      await this.uploadStore.readCompletedMarker(uploadId);
     if (!fs.existsSync(metaPath)) {
       if (completedMarker) {
         return { ok: true, alreadyCompleted: true, meta: completedMarker.meta };
@@ -205,138 +206,168 @@ export class ClientUpdatesUploadService {
         `Upload introuvable (uploadId=${uploadId}).`,
       );
     }
-
     const lockPath = path.join(dir, '.complete.lock');
-    let lockFd: fs.promises.FileHandle | null = null;
+    const lockFd = await this.acquireCompletionLock(lockPath);
     try {
-      lockFd = await fs.promises.open(lockPath, 'wx');
+      return await this.completeLocked(
+        uploadId,
+        dir,
+        metaPath,
+        completedMarker,
+      );
+    } finally {
+      await lockFd.close().catch(() => undefined);
+      fs.promises.rm(lockPath, { force: true }).catch(() => undefined);
+    }
+  }
+
+  private async acquireCompletionLock(
+    lockPath: string,
+  ): Promise<fs.promises.FileHandle> {
+    try {
+      return await fs.promises.open(lockPath, 'wx');
     } catch {
       throw new ConflictException('Finalisation deja en cours.');
     }
+  }
 
+  private async completeLocked(
+    uploadId: string,
+    dir: string,
+    metaPath: string,
+    marker: CompletedUploadMarker | null,
+  ) {
+    const meta = await this.readUploadMeta(metaPath);
+    if (meta.completedAt) {
+      return this.completedResult(meta, marker);
+    }
+    const parts = await this.listContiguousParts(dir);
+    const zipPath = path.join(
+      os.tmpdir(),
+      `lila-client-update-${uploadId}.zip`,
+    );
+    let published = false;
+    let markerWritten = false;
     try {
-      const metaRaw = await fs.promises.readFile(metaPath, 'utf-8');
-      const meta = JSON.parse(metaRaw.replace(/^\uFEFF/, '')) as UploadMetaFile;
-
-      if (meta.completedAt) {
-        if (completedMarker) {
-          return {
-            ok: true,
-            alreadyCompleted: true,
-            meta: completedMarker.meta,
-          };
-        }
-        const fallbackMeta: ClientUpdateMeta = {
-          version: meta.version || `uploaded-${Date.now()}`,
-          publishedAt:
-            meta.completedAt || meta.createdAt || new Date().toISOString(),
-          message: meta.message || null,
-          publicUrl: this.updates.getPublicUrl(),
-          minRequiredVersion: meta.minRequiredVersion || null,
-        };
-        return { ok: true, alreadyCompleted: true, meta: fallbackMeta };
-      }
-
-      const parts = (await fs.promises.readdir(dir))
-        .filter((f) => f.endsWith('.part'))
-        .map((f) => ({
-          name: f,
-          index: Number.parseInt(f.replace('.part', ''), 10),
-        }))
-        .filter((p) => Number.isFinite(p.index))
-        .sort((a, b) => a.index - b.index);
-
-      if (parts.length === 0) {
-        throw new BadRequestException('Aucun chunk recu.');
-      }
-
-      for (let expected = 0; expected < parts.length; expected++) {
-        if (parts[expected].index !== expected) {
-          throw new BadRequestException(
-            `Chunks manquants ou index non-contigus (attendu ${expected}).`,
-          );
-        }
-      }
-
-      const zipPath = path.join(
-        os.tmpdir(),
-        `lila-client-update-${uploadId}.zip`,
+      await this.assembleArchive(dir, parts, zipPath);
+      const saved = this.toPublishedMeta(meta);
+      await this.saveAndApplyZip(zipPath, saved);
+      await fs.promises.writeFile(
+        metaPath,
+        JSON.stringify(
+          { ...meta, completedAt: new Date().toISOString() },
+          null,
+          2,
+        ),
       );
-      const out = fs.createWriteStream(zipPath);
-      const outDone = new Promise<void>((resolve, reject) => {
-        out.on('error', reject);
-        out.on('finish', resolve);
-      });
-      let published = false;
-      let markerWritten = false;
-
-      try {
-        for (const part of parts) {
-          const partPath = path.join(dir, part.name);
-          await new Promise<void>((resolve, reject) => {
-            const input = fs.createReadStream(partPath);
-            input.on('error', reject);
-            input.on('end', resolve);
-            input.pipe(out, { end: false });
-          });
-        }
-        out.end();
-        await outDone;
-
-        const saved: ClientUpdateMeta = {
-          version: meta.version || `uploaded-${Date.now()}`,
-          publishedAt: new Date().toISOString(),
-          message: meta.message || null,
-          publicUrl: this.updates.getPublicUrl(),
-          minRequiredVersion: meta.minRequiredVersion || null,
-        };
-        await this.saveAndApplyZip(zipPath, saved);
-
-        const updatedMeta: UploadMetaFile = {
-          ...meta,
-          completedAt: new Date().toISOString(),
-        };
-        await fs.promises.writeFile(
-          metaPath,
-          JSON.stringify(updatedMeta, null, 2),
-        );
-        published = true;
-        try {
-          await this.uploadStore.writeCompletedMarker(uploadId, saved);
-          markerWritten = true;
-        } catch (err) {
-          this.logger.warn(
-            `Impossible d'ecrire le marqueur de finalisation uploadId=${uploadId}: ${getErrorMessage(
-              err,
-            )}`,
-          );
-        }
-
-        return { ok: true, meta: saved };
-      } finally {
-        try {
-          out.destroy();
-        } catch {
-          /* ignore */
-        }
-        fs.promises.rm(zipPath, { force: true }).catch(() => {
-          /* ignore */
-        });
-        if (published && markerWritten) {
-          fs.promises.rm(dir, { recursive: true, force: true }).catch(() => {
-            /* ignore */
-          });
-        }
-      }
+      published = true;
+      markerWritten = await this.writeCompletionMarker(uploadId, saved);
+      return { ok: true, meta: saved };
     } finally {
-      try {
-        await lockFd?.close();
-      } catch {
-        /* ignore */
+      fs.promises.rm(zipPath, { force: true }).catch(() => undefined);
+      if (published && markerWritten) {
+        fs.promises
+          .rm(dir, { recursive: true, force: true })
+          .catch(() => undefined);
       }
-      fs.promises.rm(lockPath, { force: true }).catch(() => {
-        /* ignore */
-      });
+    }
+  }
+
+  private async readUploadMeta(metaPath: string): Promise<UploadMetaFile> {
+    const raw = await fs.promises.readFile(metaPath, 'utf-8');
+    return JSON.parse(raw.replace(/^\uFEFF/, '')) as UploadMetaFile;
+  }
+
+  private completedResult(
+    meta: UploadMetaFile,
+    marker: CompletedUploadMarker | null,
+  ) {
+    return {
+      ok: true,
+      alreadyCompleted: true,
+      meta: marker?.meta ?? {
+        version: meta.version || `uploaded-${Date.now()}`,
+        publishedAt:
+          meta.completedAt || meta.createdAt || new Date().toISOString(),
+        message: meta.message || null,
+        publicUrl: this.updates.getPublicUrl(),
+        minRequiredVersion: meta.minRequiredVersion || null,
+      },
+    };
+  }
+
+  private async listContiguousParts(
+    dir: string,
+  ): Promise<Array<{ name: string; index: number }>> {
+    const parts = (await fs.promises.readdir(dir))
+      .filter((file) => file.endsWith('.part'))
+      .map((name) => ({
+        name,
+        index: Number.parseInt(name.replace('.part', ''), 10),
+      }))
+      .filter((part) => Number.isFinite(part.index))
+      .sort((left, right) => left.index - right.index);
+    if (parts.length === 0) {
+      throw new BadRequestException('Aucun chunk recu.');
+    }
+    for (let expected = 0; expected < parts.length; expected++) {
+      if (parts[expected].index !== expected) {
+        throw new BadRequestException(
+          `Chunks manquants ou index non-contigus (attendu ${expected}).`,
+        );
+      }
+    }
+    return parts;
+  }
+
+  private async assembleArchive(
+    dir: string,
+    parts: Array<{ name: string }>,
+    zipPath: string,
+  ): Promise<void> {
+    const output = fs.createWriteStream(zipPath);
+    const finished = new Promise<void>((resolve, reject) => {
+      output.on('error', reject);
+      output.on('finish', resolve);
+    });
+    try {
+      for (const part of parts) {
+        await new Promise<void>((resolve, reject) => {
+          const input = fs.createReadStream(path.join(dir, part.name));
+          input.on('error', reject);
+          input.on('end', resolve);
+          input.pipe(output, { end: false });
+        });
+      }
+      output.end();
+      await finished;
+    } finally {
+      output.destroy();
+    }
+  }
+
+  private toPublishedMeta(meta: UploadMetaFile): ClientUpdateMeta {
+    return {
+      version: meta.version || `uploaded-${Date.now()}`,
+      publishedAt: new Date().toISOString(),
+      message: meta.message || null,
+      publicUrl: this.updates.getPublicUrl(),
+      minRequiredVersion: meta.minRequiredVersion || null,
+    };
+  }
+
+  private async writeCompletionMarker(
+    uploadId: string,
+    meta: ClientUpdateMeta,
+  ): Promise<boolean> {
+    try {
+      await this.uploadStore.writeCompletedMarker(uploadId, meta);
+      return true;
+    } catch (error) {
+      this.logger.warn(
+        `Impossible d'ecrire le marqueur de finalisation uploadId=${uploadId}: ${getErrorMessage(error)}`,
+      );
+      return false;
     }
   }
 }

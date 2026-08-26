@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import { extractTraceMeta, isImmediateAckAction, mapIntentToLegacyCommand } from './room-command.helpers';
+import {
+  extractTraceMeta,
+  isImmediateAckAction,
+  mapIntentToLegacyCommand,
+} from './room-command.helpers';
 import type { ClientMeta, IncomingPayload } from './room-gateway.types';
 import {
   RoomWsIntentIdRequiredError,
@@ -30,10 +34,7 @@ type CommandContext = {
     meta: ClientMeta,
     data: unknown,
   ) => Promise<void>;
-  handleChatHistory: (
-    client: WebSocket,
-    meta: ClientMeta,
-  ) => Promise<void>;
+  handleChatHistory: (client: WebSocket, meta: ClientMeta) => Promise<void>;
   handleRoomStart: (
     meta: ClientMeta,
     payload: unknown,
@@ -66,10 +67,7 @@ type CommandContext = {
     payload: unknown,
     receivedAtMs: number,
   ) => Promise<void>;
-  handleRoomInfo: (
-    client: WebSocket,
-    meta: ClientMeta,
-  ) => Promise<void>;
+  handleRoomInfo: (client: WebSocket, meta: ClientMeta) => Promise<void>;
   handleBotAdd: (
     meta: ClientMeta,
     payload: unknown,
@@ -133,13 +131,7 @@ export class RoomGatewayCommandService {
     }
 
     ctx.sendImmediateAckIfNeeded(client, meta, type, data, receivedAtMs);
-    await ctx.executeLegacyRoomCommand(
-      client,
-      meta,
-      type,
-      data,
-      receivedAtMs,
-    );
+    await ctx.executeLegacyRoomCommand(client, meta, type, data, receivedAtMs);
   }
 
   async handleRoomIntentExecute(

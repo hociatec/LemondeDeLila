@@ -2,7 +2,7 @@
 #include "modules/options/infrastructure/OptionsJsonSchemaMigrator.h"
 #include "modules/options/infrastructure/OptionsStateJsonMapper.h"
 
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 
 #include <stdexcept>
 

@@ -3,7 +3,7 @@
 #include "modules/user/infrastructure/remote/UserAuthFields.h"
 #include "shared/network/domain/WsMessageTypes.h"
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/user/domain/UserErrorMessages.h"
 
 #include <stdexcept>
 

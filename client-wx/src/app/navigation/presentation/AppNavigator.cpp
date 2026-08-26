@@ -67,7 +67,7 @@ bool AppNavigator::Start()
                     return false;
                 }
                 const bool forcedUpdate = lila::modules::update::IsForcedUpdateRequested();
-                if (!forcedUpdate && optionsStore_.Current().confirmExit &&
+                if (!forcedUpdate && optionsStore_.Current().general.confirmExit &&
                     wxMessageBox(
                         wxString(L"Voulez-vous vraiment fermer l'application ?"),
                         wxString(L"Confirmer la fermeture"),
@@ -89,9 +89,9 @@ bool AppNavigator::Start()
     lila::shared::logging::LogInfo(
         "Navigator",
         std::string("restoreSessionOnStartup=") +
-            (optionsStore_.Current().restoreSessionOnStartup ? "true" : "false"));
+            (optionsStore_.Current().general.restoreSessionOnStartup ? "true" : "false"));
 
-    if (optionsStore_.Current().restoreSessionOnStartup)
+    if (optionsStore_.Current().general.restoreSessionOnStartup)
     {
         try
         {

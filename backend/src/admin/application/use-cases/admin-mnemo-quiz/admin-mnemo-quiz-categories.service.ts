@@ -1,9 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { MnemoQuizStoreService } from '../../../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  ADMIN_MNEMO_QUIZ_STORE_PORT,
+  type AdminMnemoQuizStorePort,
+} from '../../ports/admin-mnemo-quiz-store.port';
 
 @Injectable()
 export class AdminMnemoQuizCategoriesService {
-  constructor(private readonly store: MnemoQuizStoreService) {}
+  constructor(
+    @Inject(ADMIN_MNEMO_QUIZ_STORE_PORT)
+    private readonly store: AdminMnemoQuizStorePort,
+  ) {}
 
   list() {
     return this.store.listCategories();

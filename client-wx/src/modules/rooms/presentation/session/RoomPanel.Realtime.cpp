@@ -1,5 +1,6 @@
 #include "modules/rooms/presentation/shell/RoomPanel.h"
 
+#include <algorithm>
 #include <utility>
 
 #include <wx/textctrl.h>
@@ -74,6 +75,31 @@ void RoomPanel::HandleRoomEvent(domain::RoomEvent event)
         ShowRoom();
         if (!event.message.empty())
             UpdateStatus(lila::shared::text::FromUtf8(event.message), false, true);
+        return;
+    case domain::RoomEventType::BotAdded:
+        if (event.member && std::none_of(
+                room_.bots.begin(), room_.bots.end(),
+                [&event](const domain::RoomMember& bot)
+                {
+                    return bot.id == event.member->id;
+                }))
+        {
+            room_.bots.push_back(*event.member);
+            ShowRoom();
+        }
+        return;
+    case domain::RoomEventType::BotRemoved:
+        if (event.member)
+        {
+            const auto previousSize = room_.bots.size();
+            std::erase_if(
+                room_.bots,
+                [&event](const domain::RoomMember& bot)
+                {
+                    return bot.id == event.member->id;
+                });
+            if (room_.bots.size() != previousSize) ShowRoom();
+        }
         return;
     case domain::RoomEventType::ChatMessage:
         {

@@ -1,11 +1,11 @@
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 
 #include <stdexcept>
-#include <chrono>
 #include <utility>
 
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/domain/WebSocketConstants.h"
+#include "shared/network/application/realtime/RealtimeClientSupport.h"
 #include "shared/network/application/realtime/RealtimeProtocol.h"
 
 namespace lila::shared::network::realtime
@@ -27,21 +27,12 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
     const std::string& bearerToken,
     std::stop_token stopToken) const
 {
-    RealtimeApiResponse response;
-    response.type = request.type;
-
     try
     {
         std::unique_lock<std::timed_mutex> requestLock(requestMutex_, std::defer_lock);
-        while (!requestLock.try_lock_for(std::chrono::milliseconds(25)))
-        {
-            if (stopToken.stop_requested())
-            {
-                response.errorKind = RealtimeErrorKind::Cancelled;
-                response.errorMessage = "WebSocket operation cancelled.";
-                return response;
-            }
-        }
+        if (!detail::AcquireRequestLock(requestLock, stopToken))
+            return detail::ErrorResponse(
+                request.type, RealtimeErrorKind::Cancelled, detail::OperationCancelled);
         websocket::WebSocketHeaders headers;
         headers.emplace(
             std::string(lila::shared::network::ws::ClientProductHeader),
@@ -83,24 +74,20 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
     }
     catch (const protocol::RealtimeProtocolError& exception)
     {
-        response.errorKind = RealtimeErrorKind::Protocol;
-        response.errorMessage = exception.what();
-        return response;
+        return detail::ErrorResponse(
+            request.type, RealtimeErrorKind::Protocol, exception.what());
     }
     catch (const http::WsTicketRequestError& exception)
     {
-        response.errorKind = RealtimeErrorKind::Authentication;
-        response.statusCode = exception.StatusCode();
-        response.errorMessage = exception.what();
-        return response;
+        return detail::ErrorResponse(
+            request.type,
+            RealtimeErrorKind::Authentication,
+            exception.what(),
+            exception.StatusCode());
     }
     catch (const std::exception& exception)
     {
-        response.errorKind = stopToken.stop_requested()
-            ? RealtimeErrorKind::Cancelled
-            : RealtimeErrorKind::Transport;
-        response.errorMessage = exception.what();
-        return response;
+        return detail::TransportErrorResponse(request.type, stopToken, exception);
     }
 }
 }

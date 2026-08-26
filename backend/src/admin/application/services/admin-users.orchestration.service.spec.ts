@@ -10,9 +10,10 @@ describe('AdminUserRolesUpdateService', () => {
       deps.catalogInvalidation as any,
     );
 
-    await expect(
-      service.updateRoles(9, 4, ['ROLE_ADMIN']),
-    ).resolves.toEqual({ id: 4, roles: ['ROLE_ADMIN'] });
+    await expect(service.updateRoles(9, 4, ['ROLE_ADMIN'])).resolves.toEqual({
+      id: 4,
+      roles: ['ROLE_ADMIN'],
+    });
 
     expect(deps.commands.update).toHaveBeenCalledWith(4, {
       roles: ['ROLE_ADMIN'],

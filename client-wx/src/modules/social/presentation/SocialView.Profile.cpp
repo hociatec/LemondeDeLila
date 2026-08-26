@@ -37,11 +37,11 @@ void SocialView::BuildProfileSection(wxWindow* parent)
     profileEditorMenuPanel = new wxPanel(editorHost);
     auto* menuPanelSizer = new wxBoxSizer(wxVERTICAL);
     static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 5> ProfileMenuItems = {{
-        {"bio", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditBio), wxEmptyString},
-        {"victory", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditVictory), wxEmptyString},
-        {"defeat", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditDefeat), wxEmptyString},
-        {"visibility", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditVisibility), wxEmptyString},
-        {"storybook", wxString(L"Livre des contes"), wxEmptyString},
+        {"bio", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditBio)},
+        {"victory", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditVictory)},
+        {"defeat", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditDefeat)},
+        {"visibility", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditVisibility)},
+        {"storybook", wxString(L"Livre des contes")},
     }};
     profileMenu = new lila::shared::ui::controls::VerticalMenu(
         profileEditorMenuPanel,

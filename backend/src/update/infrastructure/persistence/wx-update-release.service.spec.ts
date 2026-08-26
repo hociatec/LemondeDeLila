@@ -33,6 +33,38 @@ describe('WxUpdateReleaseService', () => {
     await fs.promises.rm(root, { recursive: true, force: true });
   });
 
+  const publishRelease = async (input: {
+    releaseId: string;
+    version: string;
+    sequence: number;
+    content: Buffer;
+  }) => {
+    const archive = path.join(root, `${input.releaseId}.zip`);
+    await fs.promises.writeFile(archive, input.content);
+    const sha256 = createHash('sha256').update(input.content).digest('hex');
+    const fields = {
+      releaseId: input.releaseId,
+      version: input.version,
+      sequence: input.sequence,
+      publishedAt: '2026-08-24T12:00:00.000Z',
+      mandatoryAt: null,
+      minimumVersion: null,
+      artifactSize: input.content.length,
+      artifactSha256: sha256,
+    };
+    const signature = sign(
+      'RSA-SHA256',
+      Buffer.from(canonicalizeWxUpdateSignature(fields)),
+      privateKey,
+    ).toString('base64');
+    return releases.publish({
+      zipPath: archive,
+      ...fields,
+      expectedSha256: sha256,
+      signature,
+    });
+  };
+
   it('publishes an immutable, signed manifest and enforces the minimum version', async () => {
     const archive = path.join(root, 'client.zip');
     const installer = path.join(root, 'installer.zip');
@@ -122,5 +154,36 @@ describe('WxUpdateReleaseService', () => {
         signature: 'AA==',
       }),
     ).rejects.toThrow('Identifiant de release WX invalide');
+  });
+
+  it('keeps only the active release and resumes cleanup on an idempotent retry', async () => {
+    const releasesDir = path.join(root, 'artifacts', 'releases');
+    await publishRelease({
+      releaseId: '1.4.1-release-old',
+      version: '1.4.1',
+      sequence: 1,
+      content: Buffer.from('PK\x03\x04old-release'),
+    });
+    await fs.promises.writeFile(path.join(releasesDir, 'orphan.tmp'), 'stale');
+
+    const latestInput = {
+      releaseId: '1.4.2-release-latest',
+      version: '1.4.2',
+      sequence: 2,
+      content: Buffer.from('PK\x03\x04latest-release'),
+    };
+    await publishRelease(latestInput);
+
+    expect(await fs.promises.readdir(releasesDir)).toEqual([
+      latestInput.releaseId,
+    ]);
+    await fs.promises.mkdir(path.join(releasesDir, 'interrupted-cleanup'));
+
+    await publishRelease(latestInput);
+
+    expect(await fs.promises.readdir(releasesDir)).toEqual([
+      latestInput.releaseId,
+    ]);
+    expect((await releases.getLatest())?.releaseId).toBe(latestInput.releaseId);
   });
 });

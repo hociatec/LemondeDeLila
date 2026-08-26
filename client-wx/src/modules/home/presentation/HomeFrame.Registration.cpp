@@ -14,7 +14,8 @@
 #include "modules/user/domain/RegistrationResult.h"
 #include "modules/user/domain/RegisterRequest.h"
 #include "shared/accessibility/presentation/ActionButton.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
+#include "modules/user/domain/UserErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/ui/application/BackgroundTask.h"
 
@@ -93,4 +94,3 @@ void HomeFrame::OnRegisterSubmit(wxCommandEvent& event)
         });
 }
 }
-

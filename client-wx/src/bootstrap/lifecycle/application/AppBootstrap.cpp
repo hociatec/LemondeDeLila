@@ -12,6 +12,14 @@ AppBootstrap::AppBootstrap() = default;
 
 AppBootstrap::~AppBootstrap() = default;
 
+void AppBootstrap::FocusCurrentView() const
+{
+    if (runtime_ != nullptr)
+    {
+        runtime_->FocusCurrentView();
+    }
+}
+
 const char* AppBootstrap::CurrentStep() const noexcept
 {
     return currentStep_;

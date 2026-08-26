@@ -1,6 +1,5 @@
 import { buildPublicRoomList } from './room-lobby-list.helpers';
 import { Room } from '../../persistence/typeorm/entities/room.entity';
-import { RoomBot } from '../../persistence/typeorm/entities/room-bot.entity';
 import { RoomParticipant } from '../../persistence/typeorm/entities/room-participant.entity';
 import { User } from '../../../../user/public-api';
 
@@ -27,15 +26,6 @@ function makeParticipant(
     role: 'player',
     joinedAt: new Date(),
     leftAt: leftAt ?? null,
-  };
-}
-
-function makeBot(id: number): RoomBot {
-  return {
-    id,
-    room: {} as Room,
-    name: `bot${id}`,
-    createdAt: new Date(),
   };
 }
 

@@ -19,11 +19,14 @@ export class VaultUserNotifierAdapter implements VaultUserNotifier {
     roomName: string;
     ownerUserId: number;
   }): Promise<void> {
-    await this.notifications.notifyUser(input.userId, WS_EVENTS.room.restoreReady, {
-      roomId: input.roomId,
-      roomName: input.roomName,
-      by: { id: input.ownerUserId },
-    });
+    await this.notifications.notifyUser(
+      input.userId,
+      WS_EVENTS.room.restoreReady,
+      {
+        roomId: input.roomId,
+        roomName: input.roomName,
+        by: { id: input.ownerUserId },
+      },
+    );
   }
 }
-

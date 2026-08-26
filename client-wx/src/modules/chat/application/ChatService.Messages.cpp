@@ -5,7 +5,7 @@
 
 #include "modules/session/application/SessionStore.h"
 #include "modules/chat/infrastructure/ChatProtocol.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/chat/domain/ChatErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "modules/audio/application/IAudioService.h"
 #include <limits>

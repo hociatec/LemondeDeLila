@@ -4,9 +4,7 @@ import type { AdminClientUpdateAnnounceCommand } from './admin-client-updates.ty
 
 @Injectable()
 export class AdminClientUpdateAnnounceService {
-  constructor(
-    private readonly shared: AdminClientUpdatesSharedService,
-  ) {}
+  constructor(private readonly shared: AdminClientUpdatesSharedService) {}
 
   async execute(
     command: AdminClientUpdateAnnounceCommand,

@@ -1,8 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import {
-  ADMIN_SERVICE_RE,
-  type AdminMaintenanceConfig,
-} from '../../application/ports/admin-maintenance-config.port';
+import type { AdminMaintenanceConfig } from '../../application/ports/admin-maintenance-config.port';
 
 export function createAdminMaintenanceConfig(
   config: ConfigService,

@@ -61,10 +61,10 @@ void Log(LogLevel level, std::string_view category, std::string_view message)
     if (file.is_open())
     {
         file << formatted;
-        if (level == LogLevel::Warning || level == LogLevel::Error)
-        {
-            file.flush();
-        }
+        // Startup failures can terminate the process before the standard
+        // stream buffer is written. Keep every diagnostic durable so the
+        // launcher can preserve the exact last completed startup step.
+        file.flush();
     }
 }
 

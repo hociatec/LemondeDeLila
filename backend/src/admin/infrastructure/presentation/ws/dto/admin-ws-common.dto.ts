@@ -55,7 +55,3 @@ export class AdminUserRolesWsDto {
   @IsArray()
   roles!: string[];
 }
-
-
-
-

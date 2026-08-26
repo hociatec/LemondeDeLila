@@ -21,4 +21,3 @@ export class VaultWsRegistrar implements OnModuleInit {
     );
   }
 }
-

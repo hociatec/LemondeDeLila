@@ -4,7 +4,7 @@
 
 #include "modules/session/application/SessionStore.h"
 #include "modules/storybook/infrastructure/StoryBookPayloadCodec.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/storybook/domain/StoryBookErrorMessages.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 
 namespace lila::modules::storybook::infrastructure

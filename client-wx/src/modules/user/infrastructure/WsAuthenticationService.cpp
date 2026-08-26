@@ -4,7 +4,8 @@
 
 #include "modules/user/infrastructure/remote/JwtLoginClaimsParser.h"
 #include "modules/user/infrastructure/remote/UserAuthRemoteDataSource.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/user/domain/UserErrorMessages.h"
+#include "shared/errors/presentation/ErrorFormatting.h"
 
 namespace lila::modules::user::infrastructure
 {

@@ -7,7 +7,7 @@
 #include "modules/leaderboard/infrastructure/LeaderboardPayloadCodec.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/errors/domain/AppError.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/leaderboard/domain/LeaderboardErrorMessages.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 
 namespace lila::modules::leaderboard::infrastructure
@@ -42,7 +42,6 @@ domain::LeaderboardTop LeaderboardApi::LoadTop(
     {
         throw lila::shared::errors::AppException(
             lila::shared::errors::ToAppError(
-                lila::shared::errors::ErrorCode::JsonCorrupted,
                 lila::shared::errors::LeaderboardPayloadInvalid,
                 "Leaderboard response game type does not match the request."));
     }

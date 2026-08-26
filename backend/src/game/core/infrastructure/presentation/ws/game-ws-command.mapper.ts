@@ -1,7 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { GameRulesAdapter } from '../../../application/contracts/game-rules-adapter.interface';
 import type { GameSingleActionDto } from '../../../application/models/game-action.model';
-import type { GameStateEntity } from '../../../application/models/game-state.model';
 
 @Injectable()
 export class GameWsCommandMapper {
@@ -28,19 +26,10 @@ export class GameWsCommandMapper {
     return this.asRecord(payload).clientSentAtMs ?? null;
   }
 
-  resolveActions(
-    payload: unknown,
-    actorId: number,
-    handler: GameRulesAdapter,
-    state: GameStateEntity,
-  ): GameSingleActionDto[] {
-    return this.decodeActions(payload)
-      .map((action) => this.withActor(action, actorId))
-      .map((action) =>
-        handler.validateAction
-          ? handler.validateAction(state, action, actorId)
-          : action,
-      );
+  resolveActions(payload: unknown, actorId: number): GameSingleActionDto[] {
+    return this.decodeActions(payload).map((action) =>
+      this.withActor(action, actorId),
+    );
   }
 
   private decodeActions(payload: unknown): GameSingleActionDto[] {

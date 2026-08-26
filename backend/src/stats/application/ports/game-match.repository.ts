@@ -17,7 +17,10 @@ export interface GameMatchRepository {
   saveMatch(match: GameMatchRecord): Promise<GameMatchRecord>;
   findActiveMatchByRoomId(roomId: number): Promise<GameMatchRecord | null>;
   findPlayersByMatchId(matchId: number): Promise<GameMatchPlayerRecord[]>;
-  findPlayer(matchId: number, userId: number): Promise<GameMatchPlayerRecord | null>;
+  findPlayer(
+    matchId: number,
+    userId: number,
+  ): Promise<GameMatchPlayerRecord | null>;
   createPlayer(data: {
     matchId: number;
     userId: number;

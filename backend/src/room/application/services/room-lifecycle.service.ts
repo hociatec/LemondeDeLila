@@ -20,6 +20,12 @@ import {
 import type { RoomRecord } from '../models/room-record.model';
 import { CatalogService } from '../../../catalog/public-api';
 import { GameStatsService } from '../../../stats/public-api';
+import {
+  buildMinimumParticipantsMessage,
+  hasMinimumParticipants,
+  resolveMinimumParticipants,
+} from './room-start-policy';
+import { buildUniqueActiveRoomPlayers } from './room-participant-roster';
 
 export type RoomLifecycleContext = {
   invalidateRoomPayloadCache: (roomId: number) => Promise<void>;
@@ -86,10 +92,7 @@ export class RoomLifecycleService {
         .startMatch({
           roomId: room.id,
           gameType: room.gameType,
-          humans: activeParticipants.map((participant) => ({
-            id: participant.user.id,
-            username: participant.user.username,
-          })),
+          humans: buildUniqueActiveRoomPlayers(activeParticipants),
           botsCount: bots,
         })
         .catch(() => undefined);
@@ -171,10 +174,14 @@ export class RoomLifecycleService {
     context: RoomLifecycleContext,
     room: RoomRecord,
   ): Promise<number> {
-    const humans = await context.countActiveHumans(room.id);
-    const bots = await context.countBots(room.id);
-    if (humans + bots < 2) {
-      throw new BadRequestException('Au moins deux participants sont requis');
+    const [manifest, humans, bots] = await Promise.all([
+      this.catalog.getGame(room.gameType),
+      context.countActiveHumans(room.id),
+      context.countBots(room.id),
+    ]);
+    const minimum = resolveMinimumParticipants(manifest?.minPlayers);
+    if (!hasMinimumParticipants(humans, bots, minimum)) {
+      throw new BadRequestException(buildMinimumParticipantsMessage(minimum));
     }
     return bots;
   }

@@ -25,6 +25,16 @@ void GamePlayPanel::BuildLayout()
     headerLabel_->SetFont(lila::shared::ui::Theme::TitleFont());
     root->Add(headerLabel_, 0, wxEXPAND | wxALL, 8);
 
+    stateSummaryLabel_ = new wxStaticText(this, wxID_ANY, wxString{});
+    stateSummaryLabel_->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
+    stateSummaryLabel_->SetName(wxString(L"État de la partie"));
+    root->Add(stateSummaryLabel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
+
+    pendingLabel_ = new wxStaticText(this, wxID_ANY, wxString{});
+    pendingLabel_->SetForegroundColour(lila::shared::ui::Theme::TextMuted());
+    pendingLabel_->SetName(wxString(L"Action attendue"));
+    root->Add(pendingLabel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
+
     confirmationPanel_ = new confirmation::GameActionConfirmationPanel(this);
     root->Add(confirmationPanel_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
 
@@ -60,6 +70,16 @@ void GamePlayPanel::BuildLayout()
     linesList_->SetName(wxString(L"Actions de jeu"));
     linesList_->SetMinSize(wxSize(260, 90));
     content->Add(linesList_, 1, wxEXPAND | wxBOTTOM, 8);
+
+    choicesLabel_ = new wxStaticText(contentPanel_, wxID_ANY, wxString(L"Choix proposés"));
+    choicesLabel_->SetForegroundColour(lila::shared::ui::Theme::Accent());
+    content->Add(choicesLabel_, 0, wxEXPAND | wxBOTTOM, 4);
+    choicesList_ = new wxListBox(
+        contentPanel_, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+        0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
+    choicesList_->SetName(wxString(L"Choix de jeu"));
+    choicesList_->SetMinSize(wxSize(260, 90));
+    content->Add(choicesList_, 1, wxEXPAND | wxBOTTOM, 8);
 
     shortcutsLabel_ = new wxStaticText(contentPanel_, wxID_ANY, wxString{});
     shortcutsLabel_->SetForegroundColour(lila::shared::ui::Theme::TextMuted());

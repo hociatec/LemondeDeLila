@@ -1,17 +1,19 @@
-import * as crypto from 'crypto';
-
 export type SeededRngState = {
   seed: number;
   counter: number;
 };
 
-type RngMeta = Record<string, unknown>;
-type RngLike = {
-  seed?: unknown;
-  counter?: unknown;
+export type SeededRngMetadata = {
+  rng?: SeededRngState;
+  roomId?: number;
+  roomStartedAt?: Date | string | null;
+  gameType?: string;
+  roomRunId?: number | null;
 };
 
-function normalizeSeed(value: unknown): number | null {
+function normalizeSeed(
+  value: string | number | null | undefined,
+): number | null {
   const n = typeof value === 'number' ? value : Number(value);
   if (!Number.isFinite(n)) return null;
   return n >>> 0;
@@ -26,7 +28,10 @@ function fnv1a32(input: string): number {
   return hash >>> 0;
 }
 
-function toStablePart(value: unknown): string {
+function toStablePart(
+  value: Date | string | number | null | undefined,
+): string {
+  if (value instanceof Date) return value.toISOString();
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'bigint')
     return String(value);
@@ -34,14 +39,14 @@ function toStablePart(value: unknown): string {
   return '';
 }
 
-function deriveSeedFromContext(meta: RngMeta): number | null {
-  const roomId = meta['roomId'];
-  const startedAt = meta['roomStartedAt'];
-  const gameType = meta['gameType'];
-  const runIdRaw = meta['roomRunId'];
+function deriveSeedFromContext(meta: SeededRngMetadata): number | null {
+  const roomId = meta.roomId;
+  const startedAt = meta.roomStartedAt;
+  const gameType = meta.gameType;
+  const runIdRaw = meta.roomRunId;
   const runId =
     typeof runIdRaw === 'number' ? runIdRaw : Number(runIdRaw ?? NaN);
-  if (roomId == null || startedAt == null) return null;
+  if (roomId == null || (startedAt == null && runIdRaw == null)) return null;
   const input = `${toStablePart(gameType)}|${toStablePart(roomId)}|${toStablePart(
     startedAt,
   )}|${Number.isFinite(runId) ? String(runId) : ''}`;
@@ -59,22 +64,23 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-export function ensureSeededRng(meta: RngMeta): SeededRngState {
-  const current =
-    meta['rng'] && typeof meta['rng'] === 'object'
-      ? (meta['rng'] as RngLike)
-      : null;
-  const seed =
-    normalizeSeed(current?.seed) ??
-    deriveSeedFromContext(meta) ??
-    crypto.randomBytes(4).readUInt32BE(0);
+export function ensureSeededRng(meta: SeededRngMetadata): SeededRngState {
+  const current = meta.rng;
+  const seed = normalizeSeed(current?.seed) ?? deriveSeedFromContext(meta);
+  if (seed == null) {
+    throw new Error(
+      'Contexte RNG déterministe absent: fournir rng ou roomId/roomStartedAt.',
+    );
+  }
   const counter = Math.max(0, normalizeSeed(current?.counter) ?? 0);
   return { seed, counter };
 }
 
-export function nextRngFloat(meta: RngMeta): {
+export function nextRngFloat<T extends SeededRngMetadata>(
+  meta: T,
+): {
   value: number;
-  meta: RngMeta;
+  meta: T & { rng: SeededRngState };
 } {
   const rng = ensureSeededRng(meta);
   const generator = mulberry32((rng.seed + rng.counter) >>> 0);
@@ -83,10 +89,10 @@ export function nextRngFloat(meta: RngMeta): {
   return { value, meta: { ...meta, rng: next } };
 }
 
-export function nextRngInt(
-  meta: RngMeta,
+export function nextRngInt<T extends SeededRngMetadata>(
+  meta: T,
   maxExclusive: number,
-): { value: number; meta: RngMeta } {
+): { value: number; meta: T | (T & { rng: SeededRngState }) } {
   const max = Math.floor(maxExclusive);
   if (!Number.isFinite(max) || max <= 0) {
     return { value: 0, meta };

@@ -10,12 +10,11 @@ export type GameShortcutHint =
       actionType: string;
     };
 
-export type GameShortcutsContext<TMetadata = unknown> = {
-  metadata: TMetadata;
+export type GameShortcutsContext = {
   currentPlayerId: number | null;
   started: boolean;
 };
 
-export type GameShortcutsBuilder<TMetadata = unknown> = (
-  ctx: GameShortcutsContext<TMetadata>,
+export type GameShortcutsBuilder = (
+  ctx: GameShortcutsContext,
 ) => GameShortcutHint[];

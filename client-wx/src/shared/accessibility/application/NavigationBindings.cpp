@@ -58,34 +58,6 @@ void NavigationController::BindEscapeNavigation(
         });
 }
 
-void NavigationController::BindBoundaryTabNavigation(
-    wxWindow& window,
-    ScopeProvider scopeProvider,
-    wxWindow* owner,
-    Predicate enabled)
-{
-    window.Bind(
-        wxEVT_CHAR_HOOK,
-        [scopeProvider = std::move(scopeProvider), owner, enabled = std::move(enabled)](wxKeyEvent& event)
-        {
-            if (!IsTabKey(event.GetKeyCode()))
-            {
-                event.Skip();
-                return;
-            }
-            if (enabled && !enabled())
-            {
-                event.Skip(false);
-                return;
-            }
-            Scope scope = scopeProvider ? scopeProvider() : Scope{};
-            if (!WrapBoundary(scope, event.ShiftDown(), owner))
-            {
-                event.Skip(false);
-            }
-        });
-}
-
 void NavigationController::BindVerticalNavigation(
     wxWindow& window,
     ScopeProvider scopeProvider,
@@ -115,15 +87,4 @@ void NavigationController::BindVerticalNavigation(
         });
 }
 
-bool NavigationController::HandleDirectedTab(
-    wxKeyEvent& event,
-    wxWindow* backwardTarget,
-    wxWindow* forwardTarget)
-{
-    if (!IsTabKey(event.GetKeyCode()))
-    {
-        return false;
-    }
-    return Focus(event.ShiftDown() ? backwardTarget : forwardTarget);
-}
 }

@@ -82,7 +82,6 @@ AboutFrame::AboutFrame(
     BindEvents();
     if (itemsList_ != nullptr)
     {
-        itemsList_->SetTabNavigationEnabled(false);
     }
     pageCoordinator_->InitializeRootPage();
 }

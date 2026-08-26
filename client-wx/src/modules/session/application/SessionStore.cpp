@@ -1,5 +1,5 @@
 #include "modules/session/application/SessionStore.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 
 #include <stdexcept>
@@ -96,23 +96,6 @@ bool SessionStore::PrepareUpdateRestart()
             "SessionStore",
             std::string("Update session handoff failed: ") + exception.what());
         return false;
-    }
-}
-
-void SessionStore::SyncPersistence(bool persist)
-{
-    std::scoped_lock lock(mutex_);
-    persisted_ = persist;
-
-    if (!persist)
-    {
-        repository_->Clear();
-        return;
-    }
-
-    if (HasSessionLocked())
-    {
-        repository_->Save(current_);
     }
 }
 

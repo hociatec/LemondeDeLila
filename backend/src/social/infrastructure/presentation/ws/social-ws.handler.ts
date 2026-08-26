@@ -109,7 +109,10 @@ export class SocialWsHandler {
       dto.defeatMessage,
       dto.visibility,
     );
-    return { type: WS_EVENTS.social.profileUpdate, payload: { profile: result } };
+    return {
+      type: WS_EVENTS.social.profileUpdate,
+      payload: { profile: result },
+    };
   }
 
   async searchUsers(session: WsSession, payload: unknown) {
@@ -119,4 +122,3 @@ export class SocialWsHandler {
     return { type: WS_EVENTS.social.userSearch, payload: { items } };
   }
 }
-

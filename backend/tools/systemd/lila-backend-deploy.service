@@ -5,16 +5,9 @@ After=network.target
 [Service]
 Type=oneshot
 
-# Path to the repo on the server (required).
-Environment=LILA_REPO_DIR=/opt/lemondeDeLila
-
 # systemd unit running the backend.
 Environment=BACKEND_SERVICE=lila-backend.service
-
-# Optional: force the deploy user. If omitted, the script auto-detects the repo owner.
-# Environment=DEPLOY_USER=ubuntu
-
-ExecStart=/usr/local/sbin/lila-backend-deploy.sh
+ExecStart=/usr/local/sbin/updatecmd backend
 
 # Write logs to journald (consumed via journalctl -u lila-backend-deploy.service)
 StandardOutput=journal

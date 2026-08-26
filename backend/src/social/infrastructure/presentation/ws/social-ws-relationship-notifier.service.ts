@@ -7,9 +7,7 @@ import {
 import type { SocialRelationshipNotifier } from '../../../application/ports/social-relationship-notifier.port';
 
 @Injectable()
-export class SocialWsRelationshipNotifierService
-  implements SocialRelationshipNotifier
-{
+export class SocialWsRelationshipNotifierService implements SocialRelationshipNotifier {
   constructor(
     @Inject(NOTIFICATION_DISPATCHER)
     private readonly notifications: NotificationDispatcher,
@@ -48,4 +46,3 @@ export class SocialWsRelationshipNotifierService
     );
   }
 }
-

@@ -41,6 +41,7 @@ public:
         AudioNavigationDependencies audio);
 
     bool Start();
+    void FocusCurrentView();
 
 private:
     void ShowHome();
@@ -55,7 +56,6 @@ private:
     void ShowUserStoryBook(int userId, std::string username, domain::ViewId returnView);
     void ShowLeaderboard();
     void ShowChat(std::size_t selectedIndex);
-    void ShowMessaging(std::size_t selectedIndex);
     void ShowMessagingFromSocial(std::size_t socialMenuIndex);
     void ShowSocial(std::size_t selectedIndex, std::size_t socialMenuIndex = 0);
     void ShowPresence();

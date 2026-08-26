@@ -7,7 +7,8 @@
 
 #include "modules/session/application/SessionStore.h"
 #include "shared/config/domain/AppConfig.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/chat/domain/ChatErrorMessages.h"
+#include "shared/errors/presentation/ErrorFormatting.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 

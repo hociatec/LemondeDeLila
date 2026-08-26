@@ -19,4 +19,3 @@ export class AdminBanUserDto {
   @IsDateString()
   bannedUntil?: string | null;
 }
-

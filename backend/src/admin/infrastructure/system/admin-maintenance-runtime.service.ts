@@ -8,9 +8,7 @@ import type {
 } from '../../application/ports/admin-maintenance-runtime.port';
 
 @Injectable()
-export class AdminMaintenanceRuntimeService
-  implements AdminMaintenanceRuntimePort
-{
+export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePort {
   runCommand(
     argv: string[],
     opts?: { cwd?: string; timeoutMs?: number },

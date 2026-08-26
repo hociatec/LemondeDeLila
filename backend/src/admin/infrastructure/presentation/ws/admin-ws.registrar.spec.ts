@@ -117,8 +117,3 @@ describe('AdminWsRegistrar', () => {
     expect(registry.has(WS_EVENTS.admin.quiz.mnemo.questionDelete)).toBe(true);
   });
 });
-
-
-
-
-

@@ -54,22 +54,15 @@ public:
     void SetSelectionChangedHandler(SelectionChangedHandler handler);
     void SetActivatedHandler(ActivatedHandler handler);
     void SetKeyHandler(KeyHandler handler);
-    void SetSelectedIndex(std::size_t index);
     void SetSelectedIndexSilently(std::size_t index);
     void SetItems(std::span<const VerticalMenuItem> items);
     void SetItemsForNavigation(std::span<const VerticalMenuItem> items, std::size_t selectedIndex);
-    void FocusSelectedItem();
-    void FocusFirstItem();
-    void SetForwardTabTarget(wxWindow* target);
-    void SetBackwardTabTarget(wxWindow* target);
-    void SetTabNavigationEnabled(bool enabled);
     [[nodiscard]] std::size_t GetSelectedIndex() const;
     [[nodiscard]] std::size_t GetItemCount() const;
     [[nodiscard]] std::string_view GetItemId(std::size_t index) const;
     [[nodiscard]] std::optional<std::string_view> GetSelectedItemId() const;
     [[nodiscard]] wxWindow* GetSelectedControl() const;
     [[nodiscard]] wxWindow* GetFirstButton() const;
-    [[nodiscard]] wxWindow* GetLastButton() const;
     void ApplyTheme();
 
 private:
@@ -94,9 +87,6 @@ private:
     std::size_t itemCount_ = 0;
     std::size_t selectedIndex_ = 0;
     std::vector<std::string> itemIds_;
-    wxWindow* forwardTabTarget_ = nullptr;
-    wxWindow* backwardTabTarget_ = nullptr;
-    bool tabNavigationEnabled_ = false;
     VerticalMenuRole role_ = VerticalMenuRole::Menu;
     SelectionChangedHandler onSelectionChanged_;
     ActivatedHandler onActivated_;

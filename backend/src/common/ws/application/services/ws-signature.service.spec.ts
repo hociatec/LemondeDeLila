@@ -1,7 +1,7 @@
 import type { IncomingHttpHeaders } from 'http';
 import { WsSignatureService } from './ws-signature.service';
 import type { WsClientLike } from './ws-signature.service';
-import type { WsRuntimeConfig } from '../../infrastructure/config/ws-runtime.config';
+import type { WsRuntimeConfig } from '../ports/ws-runtime-config.port';
 
 type DummySocket = Partial<WsClientLike> & {
   url?: string;
@@ -13,6 +13,17 @@ const asSocket = (data: DummySocket): WsClientLike => data;
 const config = (sharedSecret: string | null): WsRuntimeConfig => ({
   nodeEnv: 'test',
   sharedSecret,
+  wsTicketSecret: null,
+  wsTicketTtlSeconds: 60,
+  jwtIssuer: 'test',
+  jwtAudience: null,
+  jwtClockToleranceSeconds: 0,
+  jwtAlgorithm: null,
+  jwtSecret: null,
+  jwtPrivateKeyPem: null,
+  jwtPrivateKeyPath: null,
+  jwtPublicKeyPem: null,
+  jwtPublicKeyPath: null,
 });
 
 describe('WsSignatureService', () => {

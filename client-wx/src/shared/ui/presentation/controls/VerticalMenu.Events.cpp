@@ -120,10 +120,6 @@ void VerticalMenu::OnListKeyDown(wxKeyEvent& event)
     }
     if (Navigator::IsTabKey(key))
     {
-        if (tabNavigationEnabled_ && Navigator::HandleDirectedTab(event, backwardTabTarget_, forwardTabTarget_))
-        {
-            return;
-        }
         event.Skip();
         return;
     }

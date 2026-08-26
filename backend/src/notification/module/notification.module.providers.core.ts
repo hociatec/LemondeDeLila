@@ -2,13 +2,14 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { RedisClientFactory } from '../../common/redis/public-api';
-import { PRIVATE_MESSAGE_REPOSITORY } from '../../messaging/application/ports/private-message.repository';
 import { PrivateMessageTypeormRepository } from '../../messaging/infrastructure/persistence/typeorm/repositories/private-message-typeorm.repository';
 import { NOTIFICATION_DISPATCHER } from '../application/ports/notification-dispatcher.port';
 import { NotificationConfigurationError } from '../domain/errors/notification-domain.errors';
 import { NOTIFICATION_FRIENDSHIP_REPOSITORY } from '../application/ports/notification-friendship.repository';
 import { NOTIFICATION_INBOX_REPOSITORY } from '../application/ports/notification-inbox.repository';
+import { NOTIFICATION_UNREAD_MESSAGE_COUNTER } from '../application/ports/notification-unread-message-counter.port';
 import { AdminContactService } from '../application/services/admin-contact.service';
+import { AdminContactDeliveryService } from '../application/services/admin-contact-delivery.service';
 import { NotificationFriendPresenceService } from '../application/services/notification-friend-presence.service';
 import {
   NotificationTransport,
@@ -32,7 +33,7 @@ export const NOTIFICATION_CORE_PROVIDERS = [
   NotificationFriendshipTypeormRepository,
   NotificationInboxTypeormRepository,
   {
-    provide: PRIVATE_MESSAGE_REPOSITORY,
+    provide: NOTIFICATION_UNREAD_MESSAGE_COUNTER,
     useExisting: PrivateMessageTypeormRepository,
   },
   {
@@ -75,6 +76,7 @@ export const NOTIFICATION_CORE_PROVIDERS = [
   },
   NotificationDispatchService,
   UserBadgeCountsService,
+  AdminContactDeliveryService,
   AdminContactService,
   NotificationFriendPresenceService,
 ];

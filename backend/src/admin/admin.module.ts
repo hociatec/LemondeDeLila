@@ -18,5 +18,3 @@ export class AdminModule {
     void this.wsRegistrar;
   }
 }
-
-

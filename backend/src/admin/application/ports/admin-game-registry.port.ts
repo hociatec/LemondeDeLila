@@ -1,7 +1,5 @@
 export interface AdminGameRegistryPort {
-  listGames(options?: {
-    includeDisabledOverrides?: boolean;
-  }): Promise<
+  listGames(options?: { includeDisabledOverrides?: boolean }): Promise<
     Array<{
       id: string;
       name: string;

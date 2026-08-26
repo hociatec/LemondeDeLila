@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SELF_PATH="$(readlink -f -- "${BASH_SOURCE[0]}")"
+UPDATECMD_SOURCE_DIR="$(cd -- "$(dirname -- "$SELF_PATH")" && pwd -P)"
+export UPDATECMD_SOURCE_DIR
+exec "$UPDATECMD_SOURCE_DIR/tools/updatecmd/updatecmd.sh" "$@"

@@ -36,12 +36,12 @@ void SocialView::BuildLayout()
     auto* contentSizer = new wxBoxSizer(wxHORIZONTAL);
 
     static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 6> MenuItems = {{
-        {"messaging", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuMessaging), wxEmptyString},
-        {"friends", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuFriends), wxEmptyString},
-        {"incoming", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuIncomingRequests), wxEmptyString},
-        {"outgoing", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuOutgoingRequests), wxEmptyString},
-        {"blocked", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuBlocked), wxEmptyString},
-        {"profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuProfile), wxEmptyString},
+        {"messaging", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuMessaging)},
+        {"friends", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuFriends)},
+        {"incoming", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuIncomingRequests)},
+        {"outgoing", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuOutgoingRequests)},
+        {"blocked", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuBlocked)},
+        {"profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialMenuProfile)},
     }};
 
     menu = new lila::shared::ui::controls::VerticalMenu(

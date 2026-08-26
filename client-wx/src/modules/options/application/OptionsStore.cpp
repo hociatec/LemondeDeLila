@@ -1,6 +1,6 @@
 #include "modules/options/application/OptionsStore.h"
-#include "shared/errors/catalog/ErrorMessages.h"
-#include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
+#include "shared/text/domain/BrokenAccentRepair.h"
 
 #include <stdexcept>
 #include <mutex>
@@ -21,7 +21,7 @@ void OptionsStore::Load()
 {
     auto loaded = repository_->Load();
     loaded.Normalize();
-    const bool repairBrokenAccents = loaded.repairBrokenAccents;
+    const bool repairBrokenAccents = loaded.general.repairBrokenAccents;
     {
         std::unique_lock lock(mutex_);
         current_ = std::move(loaded);
@@ -45,7 +45,7 @@ void OptionsStore::Apply(const domain::OptionsState& state)
 {
     auto normalized = state;
     normalized.Normalize();
-    const bool repairBrokenAccents = normalized.repairBrokenAccents;
+    const bool repairBrokenAccents = normalized.general.repairBrokenAccents;
     {
         std::unique_lock lock(mutex_);
         current_ = std::move(normalized);
@@ -58,7 +58,7 @@ void OptionsStore::Update(domain::OptionsState state)
 {
     state.Normalize();
     repository_->Save(state);
-    const bool repairBrokenAccents = state.repairBrokenAccents;
+    const bool repairBrokenAccents = state.general.repairBrokenAccents;
     {
         std::unique_lock lock(mutex_);
         current_ = std::move(state);

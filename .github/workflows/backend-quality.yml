@@ -33,8 +33,14 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Transverse tests
-        run: npm run test:transverse
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests
+        run: npm test -- --runInBand
 
       - name: Quality checks
         run: npm run quality:check

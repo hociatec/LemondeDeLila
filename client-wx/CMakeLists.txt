@@ -15,18 +15,32 @@ option(LILA_ENABLE_TSAN "Enable ThreadSanitizer where supported" OFF)
 option(LILA_ENABLE_CLANG_TIDY "Enable clang-tidy during compilation" OFF)
 option(LILA_ENABLE_CPPCHECK "Enable cppcheck during compilation" OFF)
 
+if(LILA_ENABLE_ASAN AND LILA_ENABLE_TSAN)
+    message(FATAL_ERROR "ASan et TSan ne peuvent pas etre actives simultanement.")
+endif()
+
+include(cmake/LilaTargetOptions.cmake)
+
 set(LILA_MAX_IMPLEMENTATION_LINES 250)
 file(GLOB_RECURSE LILA_IMPLEMENTATION_FILES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
-foreach(implementation_file IN LISTS LILA_IMPLEMENTATION_FILES)
+file(GLOB_RECURSE LILA_TEST_IMPLEMENTATION_FILES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.inc"
+)
+set(LILA_SIZE_GUARDED_FILES
+    ${LILA_IMPLEMENTATION_FILES}
+    ${LILA_TEST_IMPLEMENTATION_FILES}
+)
+foreach(implementation_file IN LISTS LILA_SIZE_GUARDED_FILES)
     file(READ "${implementation_file}" implementation_content)
     string(REGEX MATCHALL "\n" implementation_line_breaks "${implementation_content}")
     list(LENGTH implementation_line_breaks implementation_line_count)
     math(EXPR implementation_line_count "${implementation_line_count} + 1")
     if(implementation_line_count GREATER LILA_MAX_IMPLEMENTATION_LINES)
         message(FATAL_ERROR
-            "Unite d'implementation trop volumineuse (${implementation_line_count} lignes): "
+            "Fichier C++ trop volumineux (${implementation_line_count} lignes): "
             "${implementation_file}. Decouper le fichier par responsabilite."
         )
     endif()
@@ -35,6 +49,27 @@ endforeach()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(WIN32)
+    enable_language(RC)
+    # Les en-têtes MinGW n'exposent pas les API CNG/Vista+ sans cible Windows
+    # explicite.
+    add_compile_definitions(_WIN32_WINNT=0x0601 NTDDI_VERSION=0x06010000)
+
+    set(
+        LILA_WINDOWS_MANIFEST
+        "${CMAKE_CURRENT_SOURCE_DIR}/resources/windows/LeMondeDeLila.manifest"
+    )
+    set(
+        LILA_WINDOWS_RESOURCE
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/LeMondeDeLila.rc"
+    )
+    configure_file(
+        resources/windows/LeMondeDeLila.rc.in
+        "${LILA_WINDOWS_RESOURCE}"
+        @ONLY
+    )
+endif()
 
 if(LILA_ENABLE_CLANG_TIDY)
     find_program(LILA_CLANG_TIDY_EXE NAMES clang-tidy)
@@ -56,6 +91,7 @@ endif()
 
 find_package(wxWidgets CONFIG REQUIRED COMPONENTS core base)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(Threads REQUIRED)
 
 configure_file(
     src/shared/config/generated/AppBuildInfo.h.in
@@ -78,8 +114,26 @@ file(COPY resources/sounds DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/resources)
 
 if(WIN32)
     set(LILA_BASS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/bass")
-    configure_file(
+    set(
+        LILA_BASS_RUNTIME_DLL
         "${LILA_BASS_ROOT}/bin/x64/bass.dll"
+        CACHE FILEPATH
+        "DLL BASS x64 incluse avec le client"
+    )
+    set(
+        LILA_BASS_IMPORT_LIBRARY
+        "${LILA_BASS_ROOT}/lib/x64/bass.lib"
+        CACHE FILEPATH
+        "Bibliothèque d'import BASS compatible avec le compilateur cible"
+    )
+    if(NOT EXISTS "${LILA_BASS_RUNTIME_DLL}")
+        message(FATAL_ERROR "DLL BASS absente: ${LILA_BASS_RUNTIME_DLL}")
+    endif()
+    if(NOT EXISTS "${LILA_BASS_IMPORT_LIBRARY}")
+        message(FATAL_ERROR "Bibliothèque BASS absente: ${LILA_BASS_IMPORT_LIBRARY}")
+    endif()
+    configure_file(
+        "${LILA_BASS_RUNTIME_DLL}"
         "${CMAKE_CURRENT_BINARY_DIR}/bass.dll"
         COPYONLY
     )
@@ -102,6 +156,10 @@ endif()
 set(
     LILA_PROTOCOL_CONTRACTS_SCRIPT
     "${CMAKE_CURRENT_SOURCE_DIR}/scripts/GenerateProtocolContracts.ps1"
+)
+set(
+    LILA_PROTOCOL_CONTRACTS_NODE_SCRIPT
+    "${CMAKE_CURRENT_SOURCE_DIR}/scripts/GenerateProtocolContracts.mjs"
 )
 
 set(
@@ -137,22 +195,39 @@ if(EXISTS "${LILA_BACKEND_ROOT}")
             message(FATAL_ERROR "Contrat backend requis absent: ${protocol_dependency}")
         endif()
     endforeach()
-    if(NOT EXISTS "${LILA_PROTOCOL_CONTRACTS_SCRIPT}")
-        message(FATAL_ERROR "Generateur de contrats absent: ${LILA_PROTOCOL_CONTRACTS_SCRIPT}")
+    if(CMAKE_HOST_WIN32)
+        if(NOT EXISTS "${LILA_PROTOCOL_CONTRACTS_SCRIPT}")
+            message(FATAL_ERROR "Generateur de contrats absent: ${LILA_PROTOCOL_CONTRACTS_SCRIPT}")
+        endif()
+        add_custom_command(
+            OUTPUT ${LILA_GENERATED_PROTOCOL_HEADERS}
+            COMMAND powershell
+                -ExecutionPolicy Bypass
+                -File "${LILA_PROTOCOL_CONTRACTS_SCRIPT}"
+                -BackendRoot "${LILA_BACKEND_ROOT}"
+                -OutputRoot "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol"
+            DEPENDS
+                "${LILA_PROTOCOL_CONTRACTS_SCRIPT}"
+                ${LILA_PROTOCOL_GENERATION_DEPENDENCIES}
+            VERBATIM
+        )
+    else()
+        find_program(LILA_NODE_EXECUTABLE node REQUIRED)
+        if(NOT EXISTS "${LILA_PROTOCOL_CONTRACTS_NODE_SCRIPT}")
+            message(FATAL_ERROR "Generateur Node de contrats absent: ${LILA_PROTOCOL_CONTRACTS_NODE_SCRIPT}")
+        endif()
+        add_custom_command(
+            OUTPUT ${LILA_GENERATED_PROTOCOL_HEADERS}
+            COMMAND "${LILA_NODE_EXECUTABLE}"
+                "${LILA_PROTOCOL_CONTRACTS_NODE_SCRIPT}"
+                --backend-root "${LILA_BACKEND_ROOT}"
+                --output-root "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol"
+            DEPENDS
+                "${LILA_PROTOCOL_CONTRACTS_NODE_SCRIPT}"
+                ${LILA_PROTOCOL_GENERATION_DEPENDENCIES}
+            VERBATIM
+        )
     endif()
-
-    add_custom_command(
-        OUTPUT ${LILA_GENERATED_PROTOCOL_HEADERS}
-        COMMAND powershell
-            -ExecutionPolicy Bypass
-            -File "${LILA_PROTOCOL_CONTRACTS_SCRIPT}"
-            -BackendRoot "${LILA_BACKEND_ROOT}"
-            -OutputRoot "${CMAKE_CURRENT_SOURCE_DIR}/src/generated/protocol"
-        DEPENDS
-            "${LILA_PROTOCOL_CONTRACTS_SCRIPT}"
-            ${LILA_PROTOCOL_GENERATION_DEPENDENCIES}
-        VERBATIM
-    )
 
     add_custom_target(generate_protocol_contracts DEPENDS ${LILA_GENERATED_PROTOCOL_HEADERS})
     message(STATUS "Backend local detecte : generation stricte des contrats protocole activee.")
@@ -161,331 +236,31 @@ else()
     message(STATUS "Backend local introuvable : utilisation des contrats protocole versionnes dans le client.")
 endif()
 
+set(LILA_CLIENT_SOURCES ${LILA_IMPLEMENTATION_FILES})
+list(FILTER LILA_CLIENT_SOURCES EXCLUDE REGEX
+    "/modules/update/infrastructure/launcher/"
+)
+list(FILTER LILA_CLIENT_SOURCES EXCLUDE REGEX
+    "/modules/update/domain/Update(Protocol|TrustPolicy)\\.cpp$"
+)
+
 add_executable(lemonde_de_lila_wx WIN32
-    src/app/entrypoint/main.cpp
-    src/app/lifecycle/infrastructure/StartupGuard.cpp
-    src/app/lifecycle/presentation/Application.cpp
-    src/app/navigation/presentation/AppNavigator.cpp
-    src/app/navigation/presentation/AppNavigator.GameViews.cpp
-    src/app/navigation/presentation/AppNavigator.Games.cpp
-    src/app/navigation/presentation/AppNavigator.Session.cpp
-    src/app/navigation/presentation/AppNavigator.Authentication.cpp
-    src/app/navigation/presentation/AppNavigator.Social.cpp
-    src/app/navigation/presentation/AppNavigator.SocialViews.cpp
-    src/app/navigation/presentation/AppNavigator.Transitions.cpp
-    src/app/navigation/presentation/AppNavigator.ViewFactory.cpp
-    src/app/navigation/presentation/HostFrame.cpp
-    src/bootstrap/composition/infrastructure/audio/AudioComposition.cpp
-    src/bootstrap/composition/infrastructure/game/GameComposition.cpp
-    src/bootstrap/composition/infrastructure/network/NetworkComposition.cpp
-    src/bootstrap/composition/infrastructure/social/SocialComposition.cpp
-    src/bootstrap/composition/infrastructure/support/AuthenticatedServiceFactory.cpp
-    src/bootstrap/composition/infrastructure/user/UserComposition.cpp
-    src/bootstrap/lifecycle/application/AppBootstrap.cpp
-    src/bootstrap/runtime/application/AppRuntime.cpp
-
-    src/modules/about/presentation/AboutFrame.cpp
-    src/modules/about/presentation/AboutFrame.Events.cpp
-    src/modules/about/presentation/AboutFrame.Layout.cpp
-    src/modules/about/presentation/AboutPageContentBuilder.cpp
-    src/modules/about/presentation/AboutPageCoordinator.cpp
-
-    src/modules/catalog/application/CatalogService.cpp
-    src/modules/catalog/infrastructure/CatalogApi.cpp
-    src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp
-    src/modules/catalog/presentation/CatalogPanel.cpp
-    src/modules/catalog/presentation/CatalogPanel.Events.cpp
-    src/modules/catalog/presentation/CatalogPanel.Layout.cpp
-    src/modules/catalog/presentation/CatalogPanel.Loading.cpp
-    src/modules/catalog/presentation/CatalogShelfNavigator.cpp
-
-    src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp
-    src/modules/gameplay/cards/application/GameCardActionResolver.cpp
-    src/modules/gameplay/cards/application/GameCardTextBuilder.cpp
-    src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
-    src/modules/gameplay/dice/application/GameDiceActionResolver.cpp
-    src/modules/gameplay/dice/application/GameDiceRollTracker.cpp
-    src/modules/gameplay/dice/application/GameDiceTextBuilder.cpp
-    src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp
-    src/modules/gameplay/dice/presentation/GameDicePanel.cpp
-    src/modules/gameplay/session/application/GameSessionService.cpp
-    src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp
-    src/modules/gameplay/session/infrastructure/GameSessionGateway.cpp
-    src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp
-    src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp
-    src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp
-    src/modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.cpp
-    src/modules/gameplay/shell/presentation/formatting/GamePlayFormatters.cpp
-    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.cpp
-    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Actions.cpp
-    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Events.cpp
-    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Input.cpp
-    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Layout.cpp
-    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Session.cpp
-    src/modules/gameplay/shell/presentation/panel/GamePlayPanel.State.cpp
-    src/modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.cpp
-    src/modules/gameplay/hand/presentation/GameHandPanel.cpp
-    src/modules/gameplay/history/presentation/GameLogCursor.cpp
-    src/modules/gameplay/information/presentation/GameInfoTextBuilder.cpp
-    src/modules/gameplay/prompts/presentation/GamePromptPanel.cpp
-    src/modules/gameplay/shortcuts/presentation/GameShortcutResolver.cpp
-
-    src/modules/rooms/application/RoomLobbyService.cpp
-    src/modules/rooms/application/RoomSessionService.cpp
-    src/modules/rooms/application/RoomSessionService.Realtime.cpp
-    src/modules/rooms/infrastructure/RoomLobbyApi.cpp
-    src/modules/rooms/infrastructure/RoomPayloadCodec.cpp
-    src/modules/rooms/infrastructure/RoomSessionGateway.cpp
-    src/modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp
-    src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.cpp
-    src/modules/rooms/infrastructure/RoomSessionGateway.State.cpp
-    src/modules/rooms/presentation/join/JoinRoomsPanel.cpp
-    src/modules/rooms/presentation/join/JoinRoomsPanel.Events.cpp
-    src/modules/rooms/presentation/join/JoinRoomsPanel.Layout.cpp
-    src/modules/rooms/presentation/join/JoinRoomsPanel.Loading.cpp
-    src/modules/rooms/presentation/join/JoinRoomsPanel.Pages.cpp
-    src/modules/rooms/presentation/history/HistoryAnnouncementQueue.cpp
-    src/modules/rooms/presentation/navigation/RoomLobbyNavigator.cpp
-    src/modules/rooms/presentation/lobby/RoomLobbyPresentationModel.cpp
-    src/modules/rooms/presentation/navigation/RoomOpenRequest.cpp
-    src/modules/rooms/presentation/zone/RoomGameZoneAnchor.cpp
-    src/modules/rooms/presentation/shell/RoomPanel.cpp
-    src/modules/rooms/presentation/actions/RoomPanel.Actions.cpp
-    src/modules/rooms/presentation/actions/RoomPanel.Commands.cpp
-    src/modules/rooms/presentation/actions/RoomPanel.Confirmation.cpp
-    src/modules/rooms/presentation/shell/RoomPanel.Events.cpp
-    src/modules/rooms/presentation/shell/RoomPanel.Layout.cpp
-    src/modules/rooms/presentation/session/RoomPanel.Loading.cpp
-    src/modules/rooms/presentation/actions/RoomPanel.Preparation.cpp
-    src/modules/rooms/presentation/session/RoomPanel.Realtime.cpp
-    src/modules/rooms/presentation/shortcuts/RoomPanel.Shortcuts.cpp
-    src/modules/rooms/presentation/shell/RoomPanel.State.cpp
-    src/modules/rooms/presentation/model/RoomPresentationModel.cpp
-    src/modules/rooms/presentation/shortcuts/RoomShortcutPolicy.cpp
-
-    src/modules/vault/application/VaultService.cpp
-    src/modules/vault/infrastructure/VaultApi.cpp
-    src/modules/vault/infrastructure/VaultPayloadCodec.cpp
-    src/modules/vault/presentation/VaultNavigator.cpp
-    src/modules/vault/presentation/VaultPresentationModel.cpp
-    src/modules/vault/presentation/VaultPanel.cpp
-    src/modules/vault/presentation/VaultPanel.Actions.cpp
-    src/modules/vault/presentation/VaultPanel.Events.cpp
-    src/modules/vault/presentation/VaultPanel.Layout.cpp
-    src/modules/vault/presentation/VaultPanel.Loading.cpp
-    src/modules/vault/presentation/VaultPanel.Pages.cpp
-
-    src/modules/storybook/application/StoryBookService.cpp
-    src/modules/storybook/infrastructure/StoryBookApi.cpp
-    src/modules/storybook/infrastructure/StoryBookPayloadCodec.cpp
-    src/modules/storybook/presentation/StoryBookNavigator.cpp
-    src/modules/storybook/presentation/StoryBookPanel.cpp
-    src/modules/storybook/presentation/StoryBookPanel.Events.cpp
-    src/modules/storybook/presentation/StoryBookPanel.Layout.cpp
-    src/modules/storybook/presentation/StoryBookPanel.Loading.cpp
-    src/modules/storybook/presentation/StoryBookPanel.Pages.cpp
-
-    src/modules/leaderboard/application/LeaderboardService.cpp
-    src/modules/leaderboard/infrastructure/LeaderboardApi.cpp
-    src/modules/leaderboard/infrastructure/LeaderboardPayloadCodec.cpp
-    src/modules/leaderboard/presentation/LeaderboardNavigator.cpp
-    src/modules/leaderboard/presentation/LeaderboardPanel.cpp
-    src/modules/leaderboard/presentation/LeaderboardPanel.Events.cpp
-    src/modules/leaderboard/presentation/LeaderboardPanel.Layout.cpp
-    src/modules/leaderboard/presentation/LeaderboardPanel.Loading.cpp
-    src/modules/leaderboard/presentation/LeaderboardPanel.Pages.cpp
-
-    src/modules/chat/application/ChatService.cpp
-    src/modules/chat/application/ChatService.Connection.cpp
-    src/modules/chat/application/ChatService.Messages.cpp
-    src/modules/chat/application/ChatService.Reconnect.cpp
-    src/modules/chat/application/ChatMessageStore.cpp
-    src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
-    src/modules/chat/infrastructure/ChatEventPayloadParser.cpp
-    src/modules/chat/infrastructure/ChatCommandPayloadCodec.cpp
-    src/modules/chat/infrastructure/ChatProtocol.cpp
-    src/modules/chat/infrastructure/PresenceChatGateway.cpp
-    src/modules/chat/presentation/ChatEventBinder.cpp
-    src/modules/chat/presentation/ChatFrame.cpp
-    src/modules/chat/presentation/ChatFrame.Actions.cpp
-    src/modules/chat/presentation/ChatFrame.NavigationHistory.cpp
-    src/modules/chat/presentation/ChatFrame.Connection.cpp
-    src/modules/chat/presentation/ChatFrame.Layout.cpp
-    src/modules/chat/presentation/ChatFrame.Events.cpp
-    src/modules/chat/presentation/ChatFocusController.cpp
-    src/modules/chat/presentation/ChatFrame.History.cpp
-
-    src/modules/messaging/application/MessagingService.cpp
-    src/modules/messaging/infrastructure/MessagingApi.cpp
-    src/modules/messaging/infrastructure/MessagingPayloadCodec.cpp
-    src/modules/messaging/presentation/MessagingActionController.cpp
-    src/modules/messaging/presentation/MessagingComposeController.cpp
-    src/modules/messaging/presentation/MessagingEventBinder.cpp
-    src/modules/messaging/presentation/MessagingFocusController.cpp
-    src/modules/messaging/presentation/MessagingPresentationModel.cpp
-    src/modules/messaging/presentation/MessagingSelectionMemory.cpp
-    src/modules/messaging/presentation/MessagingMailboxLoader.cpp
-    src/modules/messaging/presentation/MessagingView.cpp
-    src/modules/messaging/presentation/MessagingView.Menu.cpp
-    src/modules/messaging/presentation/MessagingView.Detail.cpp
-    src/modules/messaging/presentation/MessagingView.Compose.cpp
-    src/modules/messaging/presentation/MessagingView.Theme.cpp
-    src/modules/messaging/presentation/MessagingFrame.cpp
-    src/modules/messaging/presentation/MessagingFrame.Mailbox.cpp
-    src/modules/messaging/presentation/MessagingFrame.Actions.cpp
-    src/modules/messaging/presentation/MessagingFrame.Events.cpp
-    src/modules/messaging/presentation/MessagingFrame.State.cpp
-    src/modules/messaging/presentation/MessagingScreenCoordinator.cpp
-
-    src/modules/social/application/SocialService.cpp
-    src/modules/social/infrastructure/SocialApi.cpp
-    src/modules/social/infrastructure/SocialPayloadCodec.cpp
-    src/modules/social/presentation/SocialActionController.cpp
-    src/modules/social/presentation/SocialDataStore.cpp
-    src/modules/social/presentation/SocialEventRouter.cpp
-    src/modules/social/presentation/SocialFrame.Bindings.cpp
-    src/modules/social/presentation/SocialFrame.cpp
-    src/modules/social/presentation/SocialFrame.State.cpp
-    src/modules/social/presentation/SocialFrame.Layout.cpp
-    src/modules/social/presentation/SocialFrame.Events.cpp
-    src/modules/social/presentation/SocialFrame.Menu.cpp
-    src/modules/social/presentation/SocialFrame.Navigation.cpp
-    src/modules/social/presentation/SocialProfileCoordinator.cpp
-    src/modules/social/presentation/SocialScreenCoordinator.cpp
-    src/modules/social/presentation/SocialPresentationModel.cpp
-    src/modules/social/presentation/SocialSectionCoordinator.cpp
-    src/modules/social/presentation/SocialSectionCoordinator.Loading.cpp
-    src/modules/social/presentation/SocialFrame.Profile.cpp
-    src/modules/social/presentation/SocialSelectionMemory.cpp
-    src/modules/social/presentation/SocialSectionPresenter.Core.cpp
-    src/modules/social/presentation/SocialSectionPresenter.Profile.cpp
-    src/modules/social/presentation/SocialSectionPresenter.Selection.cpp
-    src/modules/social/presentation/SocialView.cpp
-    src/modules/social/presentation/SocialView.Layout.cpp
-    src/modules/social/presentation/SocialView.ListSections.cpp
-    src/modules/social/presentation/SocialView.Profile.cpp
-    src/modules/social/presentation/SocialView.Theme.cpp
-
-    src/modules/home/application/HomeAuthValidator.cpp
-    src/modules/home/presentation/HomeFrame.cpp
-    src/modules/home/presentation/HomeFrame.Layout.cpp
-    src/modules/home/presentation/HomeFrame.Theme.cpp
-    src/modules/home/presentation/HomeFrame.Navigation.cpp
-    src/modules/home/presentation/HomeFrame.Events.cpp
-    src/modules/home/presentation/HomeFrame.Submit.cpp
-    src/modules/home/presentation/HomeFrame.Registration.cpp
-
-    src/modules/options/application/OptionsStore.cpp
-    src/modules/options/infrastructure/FileOptionsRepository.cpp
-    src/modules/options/infrastructure/OptionsJsonDocumentCodec.cpp
-    src/modules/options/infrastructure/OptionsJsonSchemaMigrator.cpp
-    src/modules/options/infrastructure/OptionsStateJsonMapper.cpp
-    src/modules/options/presentation/OptionsEventBinder.cpp
-    src/modules/options/presentation/OptionsFrame.cpp
-    src/modules/options/presentation/OptionsFocusController.cpp
-    src/modules/options/presentation/OptionsSectionCoordinator.cpp
-    src/modules/options/presentation/OptionsView.cpp
-    src/modules/options/presentation/OptionsView.Layout.cpp
-    src/modules/options/presentation/OptionsView.State.cpp
-    src/modules/options/presentation/OptionsViewPagesBuilder.cpp
-    src/modules/options/presentation/OptionsViewStateAdapter.cpp
-    src/modules/options/presentation/OptionsView.Pages.cpp
-    src/modules/options/presentation/OptionsView.Theme.cpp
-
-    src/modules/presence/application/PresenceMonitor.cpp
-    src/modules/presence/infrastructure/PresenceConnectionFactory.cpp
-    src/modules/presence/infrastructure/PresencePayloadCodec.cpp
-    src/modules/presence/presentation/PresenceActionController.cpp
-    src/modules/presence/presentation/PresenceFrame.Actions.cpp
-    src/modules/presence/presentation/PresenceFrame.cpp
-    src/modules/presence/presentation/PresenceFrame.Events.cpp
-    src/modules/presence/presentation/PresenceFrame.Layout.cpp
-    src/modules/presence/presentation/PresenceFrame.State.cpp
-    src/modules/presence/presentation/PresencePresentationModel.cpp
-
-    src/modules/user/application/LoginUseCase.cpp
-    src/modules/user/application/RegisterUseCase.cpp
-    src/modules/user/infrastructure/remote/JwtLoginClaimsParser.cpp
-    src/modules/user/infrastructure/remote/UserAuthRemoteDataSource.cpp
-    src/modules/user/infrastructure/WsAuthenticationService.cpp
-    src/modules/user/infrastructure/WsSessionRefresher.cpp
-
-    src/modules/main_menu/presentation/MainMenuFrame.cpp
-    src/modules/main_menu/presentation/MainMenuContent.cpp
-    src/modules/main_menu/presentation/MainMenuFrame.Layout.cpp
-    src/modules/main_menu/presentation/MainMenuFrame.Theme.cpp
-    src/modules/main_menu/presentation/MainMenuFrame.Events.cpp
-
-    src/modules/session/application/SessionStore.cpp
-    src/modules/session/application/SessionStore.Refresh.cpp
-    src/modules/session/application/SessionStore.Revocation.cpp
-    src/modules/session/infrastructure/FileSessionRepository.cpp
-
-    src/shared/accessibility/presentation/ActionButton.cpp
-    src/shared/accessibility/presentation/AccessibilityUtils.cpp
-    src/shared/accessibility/presentation/AccessibleListBox.cpp
-    src/shared/accessibility/presentation/AccessibleListBox.Actions.cpp
-    src/shared/accessibility/infrastructure/NvdaScreenReaderAnnouncer.cpp
-    src/shared/accessibility/application/FocusCoordinator.cpp
-    src/shared/accessibility/application/FocusMemory.cpp
-    src/shared/accessibility/application/FocusManager.cpp
-    src/shared/accessibility/application/FocusTransition.cpp
-    src/shared/accessibility/application/NavigationController.cpp
-    src/shared/accessibility/application/NavigationScope.cpp
-    src/shared/accessibility/application/NavigationBindings.cpp
-
-    src/modules/audio/application/AudioService.cpp
-    src/modules/audio/application/SoundVolumeResolver.cpp
-    src/modules/audio/domain/SoundCatalog.cpp
-    src/modules/audio/infrastructure/AsyncAudioBackend.cpp
-    src/modules/audio/infrastructure/BassAudioBackend.cpp
-    src/modules/audio/infrastructure/BassSampleCache.cpp
-    src/modules/audio/infrastructure/BassStreamCache.cpp
-    src/modules/audio/infrastructure/LocalSoundManifest.cpp
-    src/modules/audio/infrastructure/OptionsAudioSettingsProvider.cpp
-    src/modules/audio/infrastructure/SoundAssetPath.cpp
-    src/modules/audio/presentation/SoundOptionsCatalog.cpp
-
-    src/shared/config/domain/AppConfig.cpp
-    src/shared/config/infrastructure/AppDataPaths.cpp
-
-    src/shared/network/application/realtime/AuthenticatedRealtimeApiClient.cpp
-    src/shared/network/application/realtime/RealtimeApiClient.cpp
-    src/shared/network/application/realtime/RealtimeProtocol.cpp
-    src/shared/network/infrastructure/http/WsTicketProvider.cpp
-    src/shared/network/infrastructure/http/WsTicketTransport.cpp
-    src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.cpp
-    src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Connection.cpp
-    src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Messaging.cpp
-    src/shared/network/infrastructure/websocket/WinHttpWebSocketRequest.cpp
-    src/shared/network/infrastructure/websocket/WinHttpWebSocketInternals.cpp
-
-    src/shared/persistence/infrastructure/JsonFileStorage.cpp
-    src/shared/concurrency/application/BackgroundExecutor.cpp
-    src/shared/concurrency/application/BackgroundTasks.cpp
-    src/shared/text/presentation/encoding/Encoding.cpp
-    src/shared/text/presentation/catalog/UiTextCatalog.cpp
-    src/shared/ui/presentation/controls/VerticalMenu.cpp
-    src/shared/ui/presentation/controls/VerticalMenu.Layout.cpp
-    src/shared/ui/presentation/controls/VerticalMenu.Events.cpp
-    src/shared/ui/presentation/controls/VerticalMenu.Entries.cpp
-    src/shared/ui/presentation/controls/VerticalMenuEntry.cpp
-    src/shared/security/infrastructure/SecurityUtils.cpp
-    src/modules/update/application/UpdateSignals.cpp
-    src/shared/security/domain/JwtPayload.cpp
-    src/shared/logging/infrastructure/Logger.cpp
-    src/shared/ui/presentation/theme/Theme.cpp
+    ${LILA_WINDOWS_RESOURCE}
+    ${LILA_CLIENT_SOURCES}
 )
 
 if(WIN32)
     add_executable(lila_launcher WIN32
+        ${LILA_WINDOWS_RESOURCE}
         src/modules/update/infrastructure/launcher/LauncherMain.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Archive.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Download.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Lifecycle.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Platform.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Prepare.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Process.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Progress.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Runtime.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Security.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.State.cpp
@@ -503,11 +278,17 @@ if(WIN32)
         crypt32
         wintrust
         shell32
+        ole32
+        uuid
         user32
     )
-    if(MSVC)
-        target_compile_options(lila_launcher PRIVATE /W4 /permissive- /utf-8)
+    if(MINGW)
+        # Le lanceur est copié seul à la racine de l'installation et se
+        # remplace lui-même lors des mises à jour. Il doit donc pouvoir
+        # démarrer sans les runtimes MinGW rangés dans app/ ou versions/*.
+        target_link_options(lila_launcher PRIVATE -municode -static)
     endif()
+    lila_configure_cpp_target(lila_launcher)
 endif()
 
 add_dependencies(lemonde_de_lila_wx generate_protocol_contracts)
@@ -528,250 +309,18 @@ if(WIN32)
     target_link_libraries(lemonde_de_lila_wx PRIVATE
         winhttp
         crypt32
-        "${LILA_BASS_ROOT}/lib/x64/bass.lib"
+        "${LILA_BASS_IMPORT_LIBRARY}"
     )
 endif()
 
-if(MSVC)
-    target_compile_options(lemonde_de_lila_wx PRIVATE
-        /W4
-        /permissive-
-        /utf-8
+if(MINGW)
+    target_link_options(lemonde_de_lila_wx PRIVATE
+        "-Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/lemonde_de_lila_wx.map"
     )
-    if(LILA_ENABLE_ASAN)
-        target_compile_options(lemonde_de_lila_wx PRIVATE /fsanitize=address)
-        target_link_options(lemonde_de_lila_wx PRIVATE /INCREMENTAL:NO /fsanitize=address)
-    endif()
-    if(LILA_ENABLE_UBSAN OR LILA_ENABLE_TSAN)
-        message(WARNING "UBSan/TSan non supportes dans cette configuration MSVC. Utiliser Clang ou GCC.")
-    endif()
-else()
-    target_compile_options(lemonde_de_lila_wx PRIVATE
-        -Wall
-        -Wextra
-        -Wpedantic
-    )
-    if(LILA_ENABLE_ASAN)
-        target_compile_options(lemonde_de_lila_wx PRIVATE -fsanitize=address)
-        target_link_options(lemonde_de_lila_wx PRIVATE -fsanitize=address)
-    endif()
-    if(LILA_ENABLE_UBSAN)
-        target_compile_options(lemonde_de_lila_wx PRIVATE -fsanitize=undefined)
-        target_link_options(lemonde_de_lila_wx PRIVATE -fsanitize=undefined)
-    endif()
-    if(LILA_ENABLE_TSAN)
-        target_compile_options(lemonde_de_lila_wx PRIVATE -fsanitize=thread)
-        target_link_options(lemonde_de_lila_wx PRIVATE -fsanitize=thread)
-    endif()
 endif()
+
+lila_configure_cpp_target(lemonde_de_lila_wx)
 
 if(BUILD_TESTING)
-    set(NETWORK_PROTOCOL_TEST
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/NetworkProtocolTests.cpp"
-    )
-
-    if(EXISTS "${NETWORK_PROTOCOL_TEST}")
-        add_executable(lemonde_de_lila_wx_tests
-            tests/NetworkProtocolTests.cpp
-            src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp
-            src/modules/catalog/presentation/CatalogShelfNavigator.cpp
-            src/modules/rooms/infrastructure/RoomPayloadCodec.cpp
-            src/modules/rooms/application/RoomSessionService.cpp
-            src/modules/rooms/application/RoomSessionService.Realtime.cpp
-            src/modules/rooms/infrastructure/RoomSessionGateway.cpp
-            src/modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp
-            src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.cpp
-            src/modules/rooms/infrastructure/RoomSessionGateway.State.cpp
-            src/modules/rooms/presentation/navigation/RoomLobbyNavigator.cpp
-            src/modules/rooms/presentation/navigation/RoomOpenRequest.cpp
-            src/modules/rooms/presentation/model/RoomPresentationModel.cpp
-            src/modules/rooms/presentation/shortcuts/RoomShortcutPolicy.cpp
-            src/modules/vault/infrastructure/VaultPayloadCodec.cpp
-            src/modules/vault/presentation/VaultNavigator.cpp
-            src/modules/vault/presentation/VaultPresentationModel.cpp
-            src/modules/storybook/infrastructure/StoryBookPayloadCodec.cpp
-            src/modules/storybook/presentation/StoryBookNavigator.cpp
-            src/modules/leaderboard/infrastructure/LeaderboardPayloadCodec.cpp
-            src/modules/leaderboard/presentation/LeaderboardNavigator.cpp
-            src/modules/chat/application/ChatService.cpp
-            src/modules/chat/application/ChatService.Connection.cpp
-            src/modules/chat/application/ChatService.Messages.cpp
-            src/modules/chat/application/ChatService.Reconnect.cpp
-            src/modules/chat/application/ChatMessageStore.cpp
-            src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
-            src/modules/chat/infrastructure/ChatEventPayloadParser.cpp
-            src/modules/chat/infrastructure/ChatCommandPayloadCodec.cpp
-            src/modules/chat/infrastructure/ChatProtocol.cpp
-            src/modules/options/application/OptionsStore.cpp
-            src/modules/options/infrastructure/OptionsJsonDocumentCodec.cpp
-            src/modules/options/infrastructure/OptionsJsonSchemaMigrator.cpp
-            src/modules/options/infrastructure/OptionsStateJsonMapper.cpp
-            src/modules/session/application/SessionStore.cpp
-            src/modules/session/application/SessionStore.Refresh.cpp
-            src/modules/session/application/SessionStore.Revocation.cpp
-            src/shared/concurrency/application/BackgroundExecutor.cpp
-            src/shared/concurrency/application/BackgroundTasks.cpp
-            src/shared/accessibility/presentation/ActionButton.cpp
-            src/shared/accessibility/application/NavigationController.cpp
-            src/shared/accessibility/application/NavigationScope.cpp
-            src/shared/accessibility/application/NavigationBindings.cpp
-            src/modules/audio/domain/SoundCatalog.cpp
-            src/modules/audio/application/AudioService.cpp
-            src/modules/audio/application/SoundVolumeResolver.cpp
-            src/modules/audio/infrastructure/LocalSoundManifest.cpp
-            src/modules/audio/presentation/SoundOptionsCatalog.cpp
-            src/shared/config/domain/AppConfig.cpp
-            src/shared/config/infrastructure/AppDataPaths.cpp
-            src/shared/network/infrastructure/http/WsTicketProvider.cpp
-            src/shared/network/infrastructure/http/WsTicketTransport.cpp
-            src/shared/network/application/realtime/RealtimeProtocol.cpp
-            src/shared/security/infrastructure/SecurityUtils.cpp
-            src/shared/security/domain/JwtPayload.cpp
-            src/shared/text/presentation/encoding/Encoding.cpp
-            src/shared/text/presentation/catalog/UiTextCatalog.cpp
-            src/shared/logging/infrastructure/Logger.cpp
-            src/shared/persistence/infrastructure/JsonFileStorage.cpp
-        )
-
-        target_include_directories(lemonde_de_lila_wx_tests PRIVATE
-            src
-            ${CMAKE_CURRENT_BINARY_DIR}/generated
-        )
-
-        target_link_libraries(lemonde_de_lila_wx_tests PRIVATE
-            nlohmann_json::nlohmann_json
-            wx::core
-            wx::base
-            crypt32
-        )
-
-        if(WIN32)
-            target_link_libraries(lemonde_de_lila_wx_tests PRIVATE
-                winhttp
-            )
-        endif()
-
-        if(MSVC)
-            target_compile_options(lemonde_de_lila_wx_tests PRIVATE
-                /W4
-                /permissive-
-                /utf-8
-            )
-            if(LILA_ENABLE_ASAN)
-                target_compile_options(lemonde_de_lila_wx_tests PRIVATE /fsanitize=address)
-                target_link_options(lemonde_de_lila_wx_tests PRIVATE /INCREMENTAL:NO /fsanitize=address)
-            endif()
-        else()
-            target_compile_options(lemonde_de_lila_wx_tests PRIVATE
-                -Wall
-                -Wextra
-                -Wpedantic
-            )
-            if(LILA_ENABLE_ASAN)
-                target_compile_options(lemonde_de_lila_wx_tests PRIVATE -fsanitize=address)
-                target_link_options(lemonde_de_lila_wx_tests PRIVATE -fsanitize=address)
-            endif()
-            if(LILA_ENABLE_UBSAN)
-                target_compile_options(lemonde_de_lila_wx_tests PRIVATE -fsanitize=undefined)
-                target_link_options(lemonde_de_lila_wx_tests PRIVATE -fsanitize=undefined)
-            endif()
-            if(LILA_ENABLE_TSAN)
-                target_compile_options(lemonde_de_lila_wx_tests PRIVATE -fsanitize=thread)
-                target_link_options(lemonde_de_lila_wx_tests PRIVATE -fsanitize=thread)
-            endif()
-        endif()
-
-        add_test(
-            NAME lemonde_de_lila_wx_tests
-            COMMAND lemonde_de_lila_wx_tests
-        )
-
-        add_executable(lemonde_de_lila_wx_update_tests
-            tests/UpdateProtocolTests.cpp
-            src/modules/update/domain/UpdateProtocol.cpp
-        )
-        target_include_directories(lemonde_de_lila_wx_update_tests PRIVATE src)
-        target_link_libraries(lemonde_de_lila_wx_update_tests PRIVATE nlohmann_json::nlohmann_json)
-        if(MSVC)
-            target_compile_options(lemonde_de_lila_wx_update_tests PRIVATE /W4 /permissive- /utf-8)
-        else()
-            target_compile_options(lemonde_de_lila_wx_update_tests PRIVATE -Wall -Wextra -Wpedantic)
-        endif()
-        add_test(
-            NAME lemonde_de_lila_wx_update_tests
-            COMMAND lemonde_de_lila_wx_update_tests
-        )
-
-        add_executable(lemonde_de_lila_wx_update_trust_tests
-            tests/UpdateTrustPolicyTests.cpp
-            src/modules/update/domain/UpdateTrustPolicy.cpp
-        )
-        target_include_directories(lemonde_de_lila_wx_update_trust_tests PRIVATE src)
-        if(MSVC)
-            target_compile_options(lemonde_de_lila_wx_update_trust_tests PRIVATE /W4 /permissive- /utf-8)
-        else()
-            target_compile_options(lemonde_de_lila_wx_update_trust_tests PRIVATE -Wall -Wextra -Wpedantic)
-        endif()
-        add_test(
-            NAME lemonde_de_lila_wx_update_trust_tests
-            COMMAND lemonde_de_lila_wx_update_trust_tests
-        )
-
-        add_executable(lemonde_de_lila_wx_gameplay_tests
-            tests/GameplayContractTests.cpp
-            src/modules/gameplay/cards/application/GameCardActionResolver.cpp
-            src/modules/gameplay/cards/application/GameCardTextBuilder.cpp
-            src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
-            src/modules/gameplay/dice/application/GameDiceActionResolver.cpp
-            src/modules/gameplay/dice/application/GameDiceRollTracker.cpp
-            src/modules/gameplay/dice/application/GameDiceTextBuilder.cpp
-            src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp
-            src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp
-            src/modules/gameplay/history/presentation/GameLogCursor.cpp
-            src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp
-            src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp
-            src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp
-            src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp
-        )
-        target_include_directories(lemonde_de_lila_wx_gameplay_tests PRIVATE src)
-        target_link_libraries(lemonde_de_lila_wx_gameplay_tests PRIVATE nlohmann_json::nlohmann_json)
-        if(MSVC)
-            target_compile_options(lemonde_de_lila_wx_gameplay_tests PRIVATE /W4 /permissive- /utf-8)
-        else()
-            target_compile_options(lemonde_de_lila_wx_gameplay_tests PRIVATE -Wall -Wextra -Wpedantic)
-        endif()
-        add_test(
-            NAME lemonde_de_lila_wx_gameplay_tests
-            COMMAND lemonde_de_lila_wx_gameplay_tests
-        )
-
-        add_executable(lemonde_de_lila_wx_parser_fuzz
-            tests/ParserFuzzHarness.cpp
-            src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
-            src/modules/chat/infrastructure/ChatEventPayloadParser.cpp
-            src/modules/chat/infrastructure/ChatCommandPayloadCodec.cpp
-            src/modules/chat/infrastructure/ChatProtocol.cpp
-            src/shared/config/domain/AppConfig.cpp
-            src/shared/network/application/realtime/RealtimeProtocol.cpp
-            src/shared/text/presentation/encoding/Encoding.cpp
-            src/shared/text/presentation/catalog/UiTextCatalog.cpp
-            src/shared/logging/infrastructure/Logger.cpp
-        )
-
-        target_include_directories(lemonde_de_lila_wx_parser_fuzz PRIVATE
-            src
-            ${CMAKE_CURRENT_BINARY_DIR}/generated
-        )
-
-        target_link_libraries(lemonde_de_lila_wx_parser_fuzz PRIVATE
-            nlohmann_json::nlohmann_json
-            wx::core
-            wx::base
-        )
-    else()
-        message(WARNING
-            "BUILD_TESTING est actif, mais tests/NetworkProtocolTests.cpp "
-            "est absent. La cible de tests ne sera pas generee."
-        )
-    endif()
+    include(cmake/LilaTests.cmake)
 endif()

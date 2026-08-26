@@ -5,10 +5,7 @@ import {
   type AuthRuntimeConfig,
 } from '../ports/auth-runtime-config.port';
 
-import {
-  getJwtAlgorithm,
-  requireJwtVerifyKey,
-} from './jwt-config.service';
+import { getJwtAlgorithm, requireJwtVerifyKey } from './jwt-config.service';
 
 @Injectable()
 export class JwksDocumentService {

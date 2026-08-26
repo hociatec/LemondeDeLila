@@ -102,16 +102,21 @@ npm run migration:run         # exécute les migrations sur la base distante
 NODE_ENV=production node dist/main
 ```
 
-### Script helper
+### Déploiement de production
 
-`deploy-prod.sh` (à la racine du dépôt) automatise les étapes suivantes :
+Le déploiement normal est local au serveur Linux et ne passe ni par Git ni par
+GitHub Actions. Depuis la racine du projet :
 
-1. `git pull --ff-only`
-2. `npm ci && npm run build`
-3. `npm run migration:run`
-4. `sudo npm run service:restart -- lila-backend` (ou `sudo systemctl restart lila-backend.service`)
+```bash
+sudo updatecmd backend
+```
 
-Personnalisez ce script selon votre stack (pm2, Docker, etc.) en conservant les étapes build+migrations.
+La commande crée un instantané cohérent des fichiers locaux, installe les
+dépendances dans une release isolée, compile, teste, exécute les migrations,
+bascule atomiquement la release puis contrôle `/health/info`. En cas d'échec du
+redémarrage ou du contrôle de santé, elle restaure automatiquement la release
+précédente. Voir `tools/updatecmd/README.md` pour l'installation et les autres
+commandes.
 
 ## Maintenance (admin)
 

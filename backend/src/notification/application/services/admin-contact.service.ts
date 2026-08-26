@@ -13,10 +13,7 @@ import {
   USER_BADGE_COUNTS_NOTIFIER,
   type UserBadgeCountsNotifier,
 } from '../ports/user-badge-counts-notifier.port';
-import {
-  USER_REPOSITORY,
-  type UserRepository,
-} from '../../../user/public-api';
+import { USER_REPOSITORY, type UserRepository } from '../../../user/public-api';
 import {
   NotificationAccessDeniedError,
   NotificationContactIdRequiredError,
@@ -26,58 +23,25 @@ import {
   NotificationRecipientInvalidError,
 } from '../../domain/errors/notification-domain.errors';
 import type {
-  NotificationInboxPayload,
-} from '../models/notification-inbox-item.model';
-import { stringOrEmpty } from '@common/utils/public-api';
-
-export type AdminContactItem = {
-  kind: 'admin_contact';
-  contactId: string;
-  message: string;
-  fromUserId: number;
-  fromUsername: string;
-  // When staff replies, the target user id is included.
-  toUserId?: number;
-  id: string;
-  createdAt: string;
-  readAt?: string | null;
-  status?: AdminContactStatus;
-  handled?: boolean;
-  statusAt?: string | null;
-  statusByUserId?: number | null;
-  statusByUsername?: string | null;
-  handledAt?: string | null;
-  handledByUserId?: number | null;
-  handledByUsername?: string | null;
-};
-
-export type AdminContactThreadSummary = {
-  kind: 'admin_contact';
-  contactId: string;
-  latestId: string;
-  latestCreatedAt: string;
-  latestReadAt?: string | null;
-  latestMessage: string;
-  fromUserId: number;
-  fromUsername: string;
-  toUserId?: number | null;
-  unreadCount: number;
-  status: AdminContactStatus;
-  handled: boolean;
-  statusAt?: string | null;
-  statusByUserId?: number | null;
-  statusByUsername?: string | null;
-  handledAt?: string | null;
-  handledByUserId?: number | null;
-  handledByUsername?: string | null;
-};
-
-export type AdminContactStatus = 'open' | 'in_progress' | 'handled';
+  AdminContactItem,
+  AdminContactStatus,
+  AdminContactThreadSummary,
+} from '../models/admin-contact.model';
+export type {
+  AdminContactItem,
+  AdminContactStatus,
+  AdminContactThreadSummary,
+} from '../models/admin-contact.model';
+import {
+  ADMIN_CONTACT_KIND,
+  normalizeAdminContactPayload,
+  normalizeAdminContactStatus,
+} from './admin-contact-normalization';
+import { AdminContactDeliveryService } from './admin-contact-delivery.service';
 
 @Injectable()
 export class AdminContactService {
   private readonly logger = new Logger(AdminContactService.name);
-  private static readonly ADMIN_CONTACT_KIND = 'admin_contact';
 
   constructor(
     @Inject(NOTIFICATION_INBOX_REPOSITORY)
@@ -88,6 +52,7 @@ export class AdminContactService {
     private readonly counts: UserBadgeCountsNotifier,
     @Inject(USER_REPOSITORY)
     private readonly users: UserRepository,
+    private readonly delivery: AdminContactDeliveryService,
   ) {}
 
   private isStaffRoles(roles: unknown): boolean {
@@ -105,47 +70,6 @@ export class AdminContactService {
     return all
       .map((user) => user.id)
       .filter((id) => typeof id === 'number' && id > 0);
-  }
-
-  private static normalizeContactStatus(value: unknown): AdminContactStatus {
-    const v = stringOrEmpty(value).trim().toLowerCase();
-    if (v === 'handled' || v === 'done' || v === 'resolved') return 'handled';
-    if (v === 'in_progress' || v === 'in progress' || v === 'progress')
-      return 'in_progress';
-    return 'open';
-  }
-
-  private static normalizeContactPayload(payload: NotificationInboxPayload): {
-    status: AdminContactStatus;
-    handled: boolean;
-    statusAt: string | null;
-    statusByUserId: number | null;
-    statusByUsername: string | null;
-    handledAt: string | null;
-    handledByUserId: number | null;
-    handledByUsername: string | null;
-  } {
-    const obj = payload ?? {};
-    const normalizedStatus = AdminContactService.normalizeContactStatus(
-      obj.status,
-    );
-    const handled = normalizedStatus === 'handled' || Boolean(obj.handled);
-    return {
-      status: handled ? 'handled' : normalizedStatus,
-      handled,
-      statusAt: typeof obj.statusAt === 'string' ? obj.statusAt : null,
-      statusByUserId:
-        typeof obj.statusByUserId === 'number' ? obj.statusByUserId : null,
-      statusByUsername:
-        typeof obj.statusByUsername === 'string' ? obj.statusByUsername : null,
-      handledAt: typeof obj.handledAt === 'string' ? obj.handledAt : null,
-      handledByUserId:
-        typeof obj.handledByUserId === 'number' ? obj.handledByUserId : null,
-      handledByUsername:
-        typeof obj.handledByUsername === 'string'
-          ? obj.handledByUsername
-          : null,
-    };
   }
 
   async listInbox(
@@ -167,11 +91,9 @@ export class AdminContactService {
         ...(it.payload ?? {}),
       };
 
-      if (it.kind !== AdminContactService.ADMIN_CONTACT_KIND) return base;
+      if (it.kind !== ADMIN_CONTACT_KIND) return base;
 
-      const normalized = AdminContactService.normalizeContactPayload(
-        it.payload,
-      );
+      const normalized = normalizeAdminContactPayload(it.payload);
       return {
         ...base,
         status: normalized.status,
@@ -197,7 +119,7 @@ export class AdminContactService {
     const threads = new Map<string, AdminContactThreadSummary>();
 
     for (const it of items) {
-      if (it.kind !== AdminContactService.ADMIN_CONTACT_KIND) continue;
+      if (it.kind !== ADMIN_CONTACT_KIND) continue;
       const contactId = it.contactId ?? '';
       if (!contactId) continue;
 
@@ -205,9 +127,7 @@ export class AdminContactService {
       const unreadInc = it.readAt ? 0 : 1;
 
       if (!existing) {
-        const normalized = AdminContactService.normalizeContactPayload(
-          it.payload,
-        );
+        const normalized = normalizeAdminContactPayload(it.payload);
         threads.set(contactId, {
           kind: 'admin_contact',
           contactId,
@@ -249,15 +169,10 @@ export class AdminContactService {
     const cid = String(contactId || '').trim();
     if (!cid) throw new NotificationContactIdRequiredError();
 
-    const rows = await this.inbox.listByContactId(
-      AdminContactService.ADMIN_CONTACT_KIND,
-      cid,
-    );
+    const rows = await this.inbox.listByContactId(ADMIN_CONTACT_KIND, cid);
     if (rows.length === 0) return { status: 'open' };
 
-    const current = AdminContactService.normalizeContactPayload(
-      rows[0].payload,
-    );
+    const current = normalizeAdminContactPayload(rows[0].payload);
     const next =
       current.status === 'open'
         ? 'in_progress'
@@ -278,10 +193,7 @@ export class AdminContactService {
       throw new NotificationAccessDeniedError();
     }
     const item = await this.inbox.getByIdForUser(userId, inboxItemId);
-    const cid =
-      item?.kind === AdminContactService.ADMIN_CONTACT_KIND
-        ? (item.contactId ?? '')
-        : '';
+    const cid = item?.kind === ADMIN_CONTACT_KIND ? (item.contactId ?? '') : '';
     if (!cid) throw new NotificationContactNotFoundError();
     return this.cycleStatusForContact(from, cid);
   }
@@ -296,10 +208,7 @@ export class AdminContactService {
       throw new NotificationAccessDeniedError();
     }
     const item = await this.inbox.getByIdForUser(userId, inboxItemId);
-    const cid =
-      item?.kind === AdminContactService.ADMIN_CONTACT_KIND
-        ? (item.contactId ?? '')
-        : '';
+    const cid = item?.kind === ADMIN_CONTACT_KIND ? (item.contactId ?? '') : '';
     if (!cid) throw new NotificationContactNotFoundError();
     await this.setStatusForContact(from, cid, status);
   }
@@ -349,52 +258,7 @@ export class AdminContactService {
     };
 
     const recipients = new Set<number>([from.id, ...staffIds]);
-
-    const firstRowId = randomUUID();
-    const rowIds = Array.from(recipients).map((uid, i) => ({
-      uid,
-      rowId: i === 0 ? firstRowId : randomUUID(),
-    }));
-
-    await Promise.all(
-      rowIds.map(async ({ uid, rowId }) => {
-        const item: AdminContactItem = { ...baseItem, id: rowId };
-        await this.inbox.create({
-          id: rowId,
-          userId: uid,
-          kind: AdminContactService.ADMIN_CONTACT_KIND,
-          createdAt,
-          contactId: cid,
-          fromUserId: from.id,
-          fromUsername: from.username,
-          toUserId: null,
-          message: clean,
-          payload: {
-            status: 'open',
-            handled: false,
-            statusAt: null,
-            statusByUserId: null,
-            statusByUsername: null,
-          },
-        });
-        try {
-          await this.inboxNotifier.notifyInboxItem(uid, item);
-        } catch (err) {
-          this.logger.warn(
-            `notify.inbox.item failed for user ${uid}: ${(err as Error).message}`,
-          );
-        }
-        try {
-          await this.counts.notifyCounts(uid);
-        } catch (err) {
-          this.logger.warn(
-            `notifyCounts failed for user ${uid}: ${(err as Error).message}`,
-          );
-        }
-      }),
-    );
-
-    return { ...baseItem, id: firstRowId };
+    return this.delivery.deliver(baseItem, recipients, createdAt);
   }
 
   async replyFromStaffToUser(
@@ -437,52 +301,7 @@ export class AdminContactService {
     };
 
     const recipients = new Set<number>([toUserId, ...staffIds]);
-
-    const firstRowId = randomUUID();
-    const rowIds = Array.from(recipients).map((uid, i) => ({
-      uid,
-      rowId: i === 0 ? firstRowId : randomUUID(),
-    }));
-
-    await Promise.all(
-      rowIds.map(async ({ uid, rowId }) => {
-        const item: AdminContactItem = { ...baseItem, id: rowId };
-        await this.inbox.create({
-          id: rowId,
-          userId: uid,
-          kind: AdminContactService.ADMIN_CONTACT_KIND,
-          createdAt,
-          contactId: cid,
-          fromUserId: from.id,
-          fromUsername: from.username,
-          toUserId,
-          message: clean,
-          payload: {
-            status: 'open',
-            handled: false,
-            statusAt: null,
-            statusByUserId: null,
-            statusByUsername: null,
-          },
-        });
-        try {
-          await this.inboxNotifier.notifyInboxItem(uid, item);
-        } catch (err) {
-          this.logger.warn(
-            `notify.inbox.item failed for user ${uid}: ${(err as Error).message}`,
-          );
-        }
-        try {
-          await this.counts.notifyCounts(uid);
-        } catch (err) {
-          this.logger.warn(
-            `notifyCounts failed for user ${uid}: ${(err as Error).message}`,
-          );
-        }
-      }),
-    );
-
-    return { ...baseItem, id: firstRowId };
+    return this.delivery.deliver(baseItem, recipients, createdAt);
   }
 
   async setHandledForContact(
@@ -511,11 +330,8 @@ export class AdminContactService {
       throw new NotificationContactIdRequiredError();
     }
 
-    const normalizedStatus = AdminContactService.normalizeContactStatus(status);
-    const rows = await this.inbox.listByContactId(
-      AdminContactService.ADMIN_CONTACT_KIND,
-      cid,
-    );
+    const normalizedStatus = normalizeAdminContactStatus(status);
+    const rows = await this.inbox.listByContactId(ADMIN_CONTACT_KIND, cid);
     if (rows.length === 0) {
       return;
     }
@@ -622,4 +438,3 @@ export class AdminContactService {
     );
   }
 }
-

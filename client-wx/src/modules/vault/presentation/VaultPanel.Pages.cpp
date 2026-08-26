@@ -5,10 +5,8 @@
 #include <wx/stattext.h>
 
 #include "modules/vault/presentation/VaultPresentationModel.h"
-#include "shared/accessibility/presentation/AccessibilityUtils.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
-#include "shared/ui/presentation/theme/Theme.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "shared/ui/presentation/layout/ListPagePresentation.h"
 
 namespace lila::modules::vault::presentation
 {
@@ -28,8 +26,7 @@ void VaultPanel::ShowCurrentPage()
         navigator_, state_ == State::InitialError);
     menu_->SetItems(items);
     menu_->SetSelectedIndexSilently(std::min(navigator_.SelectedIndex(), items.size() - 1));
-    statusLabel_->Hide();
-    Layout();
+    lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, wxString{}, false);
     FocusMenuIfVisible();
 }
 
@@ -43,16 +40,11 @@ void VaultPanel::ShowInitialError(const wxString& message, PreparedHandler onPre
 
 void VaultPanel::ShowOperationError(const wxString& message)
 {
-    statusLabel_->SetLabel(message);
-    statusLabel_->SetForegroundColour(lila::shared::ui::Theme::Error());
-    statusLabel_->Show();
-    lila::shared::accessibility::AccessibilityUtils::AnnounceStatus(*statusLabel_, message);
-    Layout();
+    lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, message, true);
 }
 
 void VaultPanel::FocusMenuIfVisible()
 {
-    if (IsShownOnScreen())
-        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
+    lila::shared::ui::layout::FocusListPageIfVisible(*this, BuildFocusPlan());
 }
 }

@@ -78,9 +78,9 @@ namespace lila::modules::social::presentation
 void SocialView::BuildFriendsSection(wxWindow* parent)
 {
     const std::vector<lila::shared::ui::navigation::MenuBlueprintItem> actions = {
-        {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView), wxEmptyString},
-        {"remove-friend", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionRemoveFriend), wxEmptyString},
-        {"block-friend", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock), wxEmptyString},
+        {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
+        {"remove-friend", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionRemoveFriend)},
+        {"block-friend", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock)},
     };
     const auto controls = BuildSocialListSection(
         parent,
@@ -97,10 +97,10 @@ void SocialView::BuildFriendsSection(wxWindow* parent)
 void SocialView::BuildIncomingRequestsSection(wxWindow* parent)
 {
     const std::vector<lila::shared::ui::navigation::MenuBlueprintItem> actions = {
-        {"accept-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionAccept), wxEmptyString},
-        {"reject-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionReject), wxEmptyString},
-        {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView), wxEmptyString},
-        {"block-user", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock), wxEmptyString},
+        {"accept-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionAccept)},
+        {"reject-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionReject)},
+        {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
+        {"block-user", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock)},
     };
     const auto controls = BuildSocialListSection(
         parent,
@@ -117,9 +117,9 @@ void SocialView::BuildIncomingRequestsSection(wxWindow* parent)
 void SocialView::BuildOutgoingRequestsSection(wxWindow* parent)
 {
     const std::vector<lila::shared::ui::navigation::MenuBlueprintItem> actions = {
-        {"cancel-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionCancel), wxEmptyString},
-        {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView), wxEmptyString},
-        {"block-user", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock), wxEmptyString},
+        {"cancel-request", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionCancel)},
+        {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
+        {"block-user", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock)},
     };
     const auto controls = BuildSocialListSection(
         parent,
@@ -136,7 +136,7 @@ void SocialView::BuildOutgoingRequestsSection(wxWindow* parent)
 void SocialView::BuildBlockedSection(wxWindow* parent)
 {
     const std::vector<lila::shared::ui::navigation::MenuBlueprintItem> actions = {
-        {"unblock-user", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionUnblock), wxEmptyString},
+        {"unblock-user", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionUnblock)},
     };
     const auto controls = BuildSocialListSection(
         parent,

@@ -9,7 +9,7 @@
 
 #include "modules/rooms/application/RoomLobbyService.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/rooms/domain/RoomErrorMessages.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation

@@ -106,14 +106,14 @@ ProfileViewState BuildProfileViewState(
 void SyncProfileMenuItems(SocialView& view, bool isOwner)
 {
     static const lila::shared::ui::navigation::MenuBlueprintItem OwnerItems[] = {
-        {"bio", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditBio), wxEmptyString},
-        {"victory", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditVictory), wxEmptyString},
-        {"defeat", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditDefeat), wxEmptyString},
-        {"visibility", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditVisibility), wxEmptyString},
-        {"storybook", wxString(L"Livre des contes"), wxEmptyString},
+        {"bio", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditBio)},
+        {"victory", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditVictory)},
+        {"defeat", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditDefeat)},
+        {"visibility", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileEditVisibility)},
+        {"storybook", wxString(L"Livre des contes")},
     };
     static const lila::shared::ui::navigation::MenuBlueprintItem VisitorItems[] = {
-        {"storybook", wxString(L"Livre des contes"), wxEmptyString},
+        {"storybook", wxString(L"Livre des contes")},
     };
 
     view.profileMenu->SetItems(

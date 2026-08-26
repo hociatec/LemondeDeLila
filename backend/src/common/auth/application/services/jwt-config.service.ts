@@ -71,9 +71,7 @@ export function requireJwtVerifyKey(config: AuthRuntimeConfig): string {
 
   const pem =
     config.jwtPublicKeyPem ||
-    (config.jwtPublicKeyPath
-      ? readKeyFromPath(config.jwtPublicKeyPath)
-      : null);
+    (config.jwtPublicKeyPath ? readKeyFromPath(config.jwtPublicKeyPath) : null);
   if (!pem || !pem.trim()) {
     throw new UnauthorizedException('Configuration JWT manquante');
   }

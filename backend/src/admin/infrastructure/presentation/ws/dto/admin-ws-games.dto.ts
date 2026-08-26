@@ -1,4 +1,13 @@
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, MaxLength, Min, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class AdminGameSetEnabledWsDto {
   @IsString()
@@ -119,7 +128,3 @@ export class AdminGameCategoryDeleteWsDto {
   @MaxLength(200)
   id!: string;
 }
-
-
-
-

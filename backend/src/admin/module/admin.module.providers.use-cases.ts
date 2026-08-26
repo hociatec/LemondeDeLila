@@ -35,6 +35,8 @@ import { AdminRoleDefinitionsCatalogService } from '../application/use-cases/adm
 import { AdminRolesService } from '../application/use-cases/admin-roles/admin-roles.service';
 import { AdminRoomsService } from '../application/use-cases/admin-rooms/admin-rooms.service';
 import { AdminStatsService } from '../application/use-cases/admin-stats/admin-stats.service';
+import { MnemoQuizStoreService } from '../infrastructure/storage/mnemo-quiz-store.service';
+import { ADMIN_MNEMO_QUIZ_STORE_PORT } from '../application/ports/admin-mnemo-quiz-store.port';
 import { AdminUserBanPolicyService } from '../application/use-cases/admin-users/admin-user-ban-policy.service';
 import { AdminUserPasswordService } from '../application/use-cases/admin-users/admin-user-password.service';
 import { AdminUserRolesUpdateService } from '../application/use-cases/admin-users/admin-user-roles-update.service';
@@ -42,6 +44,11 @@ import { AdminUsersCommandService } from '../application/use-cases/admin-users/a
 import { AdminUsersQueryService } from '../application/use-cases/admin-users/admin-users-query.service';
 
 export const ADMIN_USE_CASE_PROVIDERS = [
+  MnemoQuizStoreService,
+  {
+    provide: ADMIN_MNEMO_QUIZ_STORE_PORT,
+    useExisting: MnemoQuizStoreService,
+  },
   AdminUsersQueryService,
   AdminUserPasswordService,
   AdminUserBanPolicyService,

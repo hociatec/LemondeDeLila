@@ -14,7 +14,8 @@ describe('ApiCapabilitiesWsRegistrar', () => {
     const res = await handler!({ user: null, connectionId: 'c1' }, {});
 
     expect(res?.type).toBe(WS_EVENTS.api.capabilities);
-    expect(res?.payload?.isAdmin).toBe(false);
+    const payload = res?.payload as { isAdmin?: boolean } | undefined;
+    expect(payload?.isAdmin).toBe(false);
   });
 
   it('includes isAdmin=true when user has admin role', async () => {
@@ -35,8 +36,10 @@ describe('ApiCapabilitiesWsRegistrar', () => {
     );
 
     expect(res?.type).toBe(WS_EVENTS.api.capabilities);
-    expect(res?.payload?.isAdmin).toBe(true);
-    expect(res?.payload?.features?.[WS_EVENTS.admin.rooms.list]).toBe(true);
+    const payload = res?.payload as
+      | { isAdmin?: boolean; features?: Record<string, boolean> }
+      | undefined;
+    expect(payload?.isAdmin).toBe(true);
+    expect(payload?.features?.[WS_EVENTS.admin.rooms.list]).toBe(true);
   });
 });
-

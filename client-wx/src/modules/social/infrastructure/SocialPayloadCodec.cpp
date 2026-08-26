@@ -3,7 +3,7 @@
 #include "modules/social/infrastructure/SocialProtocolFields.h"
 #include "shared/data/json/JsonApiHelpers.h"
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/social/domain/SocialErrorMessages.h"
 #include "shared/network/application/realtime/RealtimePayloadReaders.h"
 
 namespace lila::modules::social::infrastructure::codec

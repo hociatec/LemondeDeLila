@@ -1,5 +1,5 @@
 #include "modules/session/application/SessionStore.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/security/infrastructure/SecurityUtils.h"
 
@@ -194,4 +194,3 @@ std::string SessionStore::RefreshAccessToken(std::stop_token stopToken)
             : postRefreshError);
 }
 }
-

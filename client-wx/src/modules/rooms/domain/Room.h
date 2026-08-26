@@ -29,6 +29,7 @@ struct RoomMember
 struct RoomState
 {
     int id = 0;
+    int runId = 0;
     std::string name;
     std::string gameType;
     std::string gameName;
@@ -86,6 +87,8 @@ enum class RoomEventType
     ChatHistory,
     PrivacyChanged,
     RoleChanged,
+    BotAdded,
+    BotRemoved,
     ConnectionStatus,
     Closed,
     Error,
@@ -98,5 +101,6 @@ struct RoomEvent final
     std::vector<RoomChatMessage> chatMessages;
     std::string message;
     bool value = false;
+    std::optional<RoomMember> member;
 };
 }

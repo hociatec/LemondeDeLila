@@ -22,9 +22,3 @@ export class AdminRoomsListWsDto {
   @IsOptional()
   joinableOnly?: boolean;
 }
-
-
-
-
-
-

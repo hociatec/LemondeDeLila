@@ -1,6 +1,8 @@
-import type { AdminContactItem } from '../services/admin-contact.service';
+import type { AdminContactItem } from '../models/admin-contact.model';
 
-export const NOTIFICATION_INBOX_NOTIFIER = Symbol('NOTIFICATION_INBOX_NOTIFIER');
+export const NOTIFICATION_INBOX_NOTIFIER = Symbol(
+  'NOTIFICATION_INBOX_NOTIFIER',
+);
 
 export interface NotificationInboxNotifier {
   notifyInboxItem(userId: number, item: AdminContactItem): Promise<void>;

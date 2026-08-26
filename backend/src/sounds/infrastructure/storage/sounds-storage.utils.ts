@@ -6,6 +6,7 @@ import type {
   TableAmbienceDefinition,
   TableAmbienceSoundKey,
 } from '../../application/models/sound-manifest.record';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 export type SoundErrorLike = {
   code?: unknown;
@@ -53,9 +54,7 @@ export function resolveSoundsDataRoot(options: {
     return persistentRoot;
   } catch (err) {
     warn(
-      `Persistent sounds dir not writable (${persistentRoot}); falling back to legacy (${legacyRoot}): ${String(
-        toSoundErrorLike(err).message ?? err,
-      )}`,
+      `Persistent sounds dir not writable (${persistentRoot}); falling back to legacy (${legacyRoot}): ${toSoundErrorMessage(err)}`,
     );
     return legacyRoot;
   }
@@ -67,10 +66,15 @@ export function buildStorageIoError(
   logError: (message: string, stack?: string) => void,
 ): InternalServerErrorException {
   const errorLike = toSoundErrorLike(err);
-  const code = errorLike.code ? ` (${String(errorLike.code)})` : '';
-  const details = errorLike.message ? `: ${String(errorLike.message)}` : '';
+  const errorCode = stringOrEmpty(errorLike.code);
+  const errorMessage = stringOrEmpty(errorLike.message);
+  const code = errorCode ? ` (${errorCode})` : '';
+  const details = errorMessage ? `: ${errorMessage}` : '';
 
-  logError(`Sound storage error during ${action}${code}${details}`, errorLike.stack);
+  logError(
+    `Sound storage error during ${action}${code}${details}`,
+    errorLike.stack,
+  );
 
   return new InternalServerErrorException(
     `Erreur stockage sons pendant ${action}${code}${details}. Vérifiez les permissions du dossier de données.`.trim(),
@@ -108,8 +112,8 @@ export function toTableAmbienceDefinition(
   }
 
   const record = value as Record<string, unknown>;
-  const soundId = normalizeKey(String(record.soundId ?? ''));
-  const name = String(record.name ?? '').trim();
+  const soundId = normalizeKey(stringOrEmpty(record.soundId));
+  const name = stringOrEmpty(record.name).trim();
 
   if (!soundId || !name) {
     return null;

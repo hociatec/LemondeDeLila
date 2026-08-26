@@ -11,7 +11,11 @@ describe('AdminUsersCommandService', () => {
       findById: jest.fn(),
       findByEmail: jest.fn(),
       findByUsername: jest.fn(),
-      create: jest.fn(async (data: any) => ({ id: 1, createdAt: null, ...data })),
+      create: jest.fn(async (data: any) => ({
+        id: 1,
+        createdAt: null,
+        ...data,
+      })),
       save: jest.fn(async (data: any) => data),
       delete: jest.fn(async () => undefined),
     } as any;

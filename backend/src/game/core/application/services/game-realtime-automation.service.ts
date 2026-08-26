@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import type { GameRulesAdapter } from '../contracts/game-rules-adapter.interface';
+import type { GameRuntime } from '../contracts/game-runtime.interface';
 import type { GameSingleActionDto } from '../models/game-action.model';
 import type { GameStateEntity } from '../models/game-state.model';
 import { BotRunnerService } from './bot-runner.service';
 import { BotSchedulerService } from './bot-scheduler.service';
 import { BotSettingsService } from './bot-settings.service';
 import { GameEngineService } from './game-engine.service';
+import { GameCommandExecutorService } from './game-command-executor.service';
+import { gameNowMs } from './game-execution-scope.service';
 
 type AutomationCommit = (
   previous: GameStateEntity,
@@ -28,12 +30,13 @@ export class GameRealtimeAutomationService {
     private readonly botRunner: BotRunnerService,
     private readonly botScheduler: BotSchedulerService,
     private readonly botSettings: BotSettingsService,
+    private readonly executor: GameCommandExecutorService,
   ) {}
 
   schedule(input: {
     roomId: number;
     gameType: string;
-    handler: GameRulesAdapter;
+    handler: GameRuntime;
     state: GameStateEntity;
     commit: AutomationCommit;
   }): void {
@@ -76,7 +79,12 @@ export class GameRealtimeAutomationService {
           this.schedule({ ...input, state: current });
           return;
         }
-        const next = input.handler.applyActions(current, currentPlan.actions);
+        const next = this.executor.execute({
+          handler: input.handler,
+          state: current,
+          actions: currentPlan.actions,
+          actorId: null,
+        });
         if ((this.generations.get(timerKey) ?? 0) !== generation) return;
         await input.commit(current, next);
         if ((this.generations.get(timerKey) ?? 0) !== generation) {
@@ -112,15 +120,15 @@ export class GameRealtimeAutomationService {
   }
 
   private resolvePlan(
-    handler: GameRulesAdapter,
+    handler: GameRuntime,
     state: GameStateEntity,
   ): AutomationPlan | null {
-    const automatic = handler.getAutomaticActions?.(state) ?? null;
+    const automatic = handler.getAutomaticActions(state);
     if (automatic?.actions?.length) {
-      const executeAtMs = Number(automatic.executeAtMs ?? Date.now());
+      const executeAtMs = Number(automatic.executeAtMs ?? gameNowMs());
       return {
-        signature: `automatic:${automatic.key}:${Number(state.turnIndex ?? 0)}`,
-        delayMs: Math.max(0, executeAtMs - Date.now()),
+        signature: `automatic:${automatic.key}:${Number(state.turn?.turnNumber ?? 0)}`,
+        delayMs: Math.max(0, executeAtMs - gameNowMs()),
         actions: automatic.actions,
       };
     }
@@ -138,7 +146,7 @@ export class GameRealtimeAutomationService {
       meta: { ...(action.meta ?? {}), actorId: currentPlayerId },
     }));
     return {
-      signature: `bot:${currentPlayerId}:${Number(state.turnIndex ?? 0)}`,
+      signature: `bot:${currentPlayerId}:${Number(state.turn?.turnNumber ?? 0)}`,
       delayMs: this.botSettings.getBotTurnDelayMs(),
       actions,
     };

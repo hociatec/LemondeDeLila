@@ -23,29 +23,35 @@ void RoomPanel::BindEvents()
                 StartRequest();
                 return;
             }
-            if (gamePlayPanel_->IsOpen() && gamePlayPanel_->ActivateFromZone()) return;
+            if (gamePlayPanel_->IsOpen())
+            {
+                auto* target = gamePlayPanel_->PreferredNavigationTarget();
+                if (target != nullptr &&
+                    lila::shared::accessibility::NavigationController::Focus(target))
+                    return;
+                if (gamePlayPanel_->HandleZoneActivation()) return;
+            }
             const auto actions = RoomPresentationModel::BuildItems(room_);
             if (!actions.empty()) HandleAction(actions.front().id);
         });
     gameZoneAnchor_->SetKeyHandler(
         [this](wxKeyEvent& event)
         {
-            const int key = event.GetKeyCode();
-            const bool tableShortcutHasPriority =
-                event.ControlDown() || event.AltDown() || event.MetaDown() ||
-                key == 'Q' || key == 'q' || key == 'X' || key == 'x';
-            if (tableShortcutHasPriority && TryHandleShortcut(event))
-                return true;
-            if (gamePlayPanel_->IsOpen() && gamePlayPanel_->HandleZoneKey(event))
-                return true;
-            if (tableShortcutHasPriority) return false;
+            if (gamePlayPanel_->HandleKey(event)) return true;
             return TryHandleShortcut(event);
         });
     gamePlayPanel_->SetZoneFocusRequestedHandler(
         [this]()
         {
+            auto* focused = wxWindow::FindFocus();
+            const bool focusInsideGame = focused == nullptr || focused == gameZoneAnchor_ ||
+                lila::shared::accessibility::NavigationController::IsDescendantOf(
+                    focused, gamePlayPanel_);
+            if (!focusInsideGame) return;
+            auto* target = gamePlayPanel_->PreferredNavigationTarget();
             static_cast<void>(
-                lila::shared::accessibility::NavigationController::Focus(gameZoneAnchor_));
+                lila::shared::accessibility::NavigationController::Focus(
+                    target != nullptr ? target : static_cast<wxWindow*>(gameZoneAnchor_)));
         });
     gamePlayPanel_->SetHistoryMessageHandler(
         [this](const wxString& message)
@@ -57,16 +63,21 @@ void RoomPanel::BindEvents()
         {
             return TryHandleShortcut(event);
         });
+    gamePlayPanel_->SetRoomStartRequestedHandler(
+        [this]()
+        {
+            ExecuteCommand({domain::RoomCommand::Start, false, {}});
+        });
     chatInput_->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent&) { SendChat(); });
     lila::shared::accessibility::NavigationController::BindTabNavigation(
         *this,
         [this]()
         {
             lila::shared::accessibility::NavigationController::Scope scope;
-            if (auto* gameTarget = gamePlayPanel_->ActiveNavigationTarget())
-                scope.Add(gameTarget);
-            else
-                scope.Add(gameZoneAnchor_);
+            auto* gameTarget = gamePlayPanel_->PreferredNavigationTarget();
+            scope.Add(gameTarget != nullptr
+                ? gameTarget
+                : static_cast<wxWindow*>(gameZoneAnchor_));
             if (chatInput_->IsShown()) scope.Add(chatInput_);
             scope.Add(history_);
             return scope;

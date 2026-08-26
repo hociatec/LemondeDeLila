@@ -8,7 +8,7 @@
 
 #include "shared/data/json/JsonReaders.h"
 #include "shared/errors/domain/AppError.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/catalog/domain/CatalogErrorMessages.h"
 
 namespace lila::modules::catalog::infrastructure::codec
 {
@@ -20,7 +20,6 @@ constexpr std::size_t MaximumShelfDepth = 16;
 {
     throw lila::shared::errors::AppException(
         lila::shared::errors::ToAppError(
-            lila::shared::errors::ErrorCode::JsonCorrupted,
             lila::shared::errors::CatalogPayloadInvalid,
             details));
 }

@@ -38,4 +38,3 @@ export class AdminProfileWsHandler {
     return { type: WS_EVENTS.admin.profile.settingsUpdate, payload: updated };
   }
 }
-
