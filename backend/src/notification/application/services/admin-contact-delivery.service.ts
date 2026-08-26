@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { getErrorMessage } from '@common/utils/public-api';
 import type { AdminContactItem } from '../models/admin-contact.model';
 import {
   NOTIFICATION_INBOX_REPOSITORY,
@@ -82,14 +83,14 @@ export class AdminContactDeliveryService {
       await this.notifier.notifyInboxItem(userId, item);
     } catch (error) {
       this.logger.warn(
-        `notify.inbox.item failed for user ${userId}: ${(error as Error).message}`,
+        `notify.inbox.item failed for user ${userId}: ${getErrorMessage(error)}`,
       );
     }
     try {
       await this.counts.notifyCounts(userId);
     } catch (error) {
       this.logger.warn(
-        `notifyCounts failed for user ${userId}: ${(error as Error).message}`,
+        `notifyCounts failed for user ${userId}: ${getErrorMessage(error)}`,
       );
     }
   }

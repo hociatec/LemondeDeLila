@@ -19,7 +19,7 @@ export class VaultGameAdapter implements VaultGamePort {
     gameType: string,
   ): Promise<VaultGameState | null> {
     const state = await this.engine.exportInternalState(roomId, gameType);
-    return state as unknown as VaultGameState | null;
+    return state ? toVaultGameState(state) : null;
   }
 
   restoreState(
@@ -27,11 +27,10 @@ export class VaultGameAdapter implements VaultGamePort {
     gameType: string,
     state: VaultGameState,
   ): Promise<void> {
-    return this.engine.restoreInternalState(
-      roomId,
-      gameType,
-      state as unknown as GameStateEntity,
-    );
+    if (!isGameStateEntity(state)) {
+      throw new Error('État de jeu Vault invalide');
+    }
+    return this.engine.restoreInternalState(roomId, gameType, state);
   }
 
   getDisplayName(gameType: string): string | null {
@@ -40,4 +39,27 @@ export class VaultGameAdapter implements VaultGamePort {
     ).trim();
     return name || null;
   }
+}
+
+function toVaultGameState(state: GameStateEntity): VaultGameState {
+  return {
+    ...structuredClone(state),
+    status: state.status,
+    metadata: state.metadata ? { ...state.metadata } : null,
+    players: state.players?.map((player) => ({ ...player })),
+    turn: state.turn ? { ...state.turn } : null,
+  };
+}
+
+function isGameStateEntity(value: unknown): value is GameStateEntity {
+  return (
+    value != null &&
+    typeof value === 'object' &&
+    'status' in value &&
+    typeof value.status === 'string' &&
+    'phase' in value &&
+    typeof value.phase === 'string' &&
+    'log' in value &&
+    Array.isArray(value.log)
+  );
 }

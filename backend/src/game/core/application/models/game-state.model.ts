@@ -1,4 +1,8 @@
-export type GameLogEntry = { message: string; timestamp?: string };
+export type GameLogEntry = {
+  key: string;
+  params: Record<string, unknown>;
+  timestamp?: string;
+};
 
 export type TurnStateEntity = {
   currentPlayerId: number | null;
@@ -7,6 +11,9 @@ export type TurnStateEntity = {
   turnNumber?: number;
   actionPointsRemaining?: number;
   extraTurns?: number;
+  scheduledTurnReplacements?: Record<string, number>;
+  replacedSlotOwnerId?: number | null;
+  simultaneousSessionId?: string | null;
   /**
    * Libellé prêt à afficher pour le tour courant (serveur source de vérité).
    */
@@ -27,11 +34,14 @@ export type PendingState = {
    */
   label?: string | null;
   playerId?: number | null;
+  playerIds?: number[];
+  resolvedPlayerIds?: number[];
   targetPlayerId?: number | null;
   blocking?: boolean;
   question?: string | null;
   choices?: string[];
-  data?: Record<string, unknown>;
+  data?: { options?: unknown[]; [key: string]: unknown };
+  queue?: PendingState[];
 };
 
 export type GameStateMetadata = {

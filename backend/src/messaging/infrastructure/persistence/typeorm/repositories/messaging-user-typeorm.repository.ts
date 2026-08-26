@@ -15,7 +15,7 @@ export class MessagingUserTypeormRepository implements MessagingUserReader {
   async findById(id: number): Promise<MessageUser | null> {
     const user = await this.users.findOne({
       where: { id },
-      select: ['id', 'username'],
+      select: { id: true, username: true },
     });
     if (!user) {
       return null;

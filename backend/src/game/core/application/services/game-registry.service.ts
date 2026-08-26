@@ -2,6 +2,7 @@ import { Inject, Injectable, Optional } from '@nestjs/common';
 import type {
   GameCatalogDefinition,
   GameRuntime,
+  GameRuntimeDescriptor,
 } from '../contracts/game-runtime.interface';
 import {
   GAME_CATALOG_READER,
@@ -32,6 +33,16 @@ export class GameRegistryService {
 
   getHandler(gameType: string): GameRuntime | undefined {
     return this.handlers.get(gameType);
+  }
+
+  describe(gameType: string): GameRuntimeDescriptor | null {
+    return this.handlers.get(gameType)?.getDescriptor() ?? null;
+  }
+
+  listDescriptors(): GameRuntimeDescriptor[] {
+    return [...this.handlers.values()]
+      .map((handler) => handler.getDescriptor())
+      .sort((left, right) => left.name.localeCompare(right.name, 'fr'));
   }
 
   invalidateCache(): void {
@@ -84,7 +95,7 @@ export class GameRegistryService {
             : typeof manifest?.chatSoundsEnabled === 'boolean'
               ? manifest.chatSoundsEnabled
               : true,
-        status: override?.status as GameCatalogDefinition['status'] | undefined,
+        status: override?.status,
         manifestPath: entry?.manifestPath,
         rulesPath: entry?.rulesPath,
       };

@@ -22,7 +22,7 @@ export class CatalogGameRegistrySource implements CatalogGameSourcePort {
       subcategory: definition.subcategory,
       manifestPath: definition.manifestPath,
       rulesPath: definition.rulesPath,
-      status: (definition as { status?: unknown }).status,
+      status: definition.status,
     }));
   }
 }

@@ -49,7 +49,7 @@ export class RoomLobbyTypeormRepository implements RoomLobbyRepository {
     return toRoomRecord(
       await this.rooms.findOne({
         where: { id: roomId },
-        relations: ['owner'],
+        relations: { owner: true },
       }),
     );
   }
@@ -61,7 +61,7 @@ export class RoomLobbyTypeormRepository implements RoomLobbyRepository {
         user: { id: userId },
         leftAt: IsNull(),
       },
-      select: ['id'],
+      select: { id: true },
     });
     return Boolean(participant);
   }

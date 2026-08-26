@@ -241,7 +241,10 @@ describe('Mojibake utilities', () => {
       };
       fs.writeFileSync(testFile, JSON.stringify(data), 'utf8');
 
-      const result = readJsonFileWithFallback<typeof data>(testFile);
+      const result = readJsonFileWithFallback(
+        testFile,
+        (value) => value as typeof data,
+      );
       expect(result.name).not.toBe('\u00c3\u00a9cole');
       expect(result.description).not.toBe('for\u00c3\u00aat');
     });
@@ -257,7 +260,10 @@ describe('Mojibake utilities', () => {
       };
       fs.writeFileSync(testFile, JSON.stringify(data), 'utf8');
 
-      const result = readJsonFileWithFallback<typeof data>(testFile);
+      const result = readJsonFileWithFallback(
+        testFile,
+        (value) => value as typeof data,
+      );
       expect(Array.isArray(result.items)).toBe(true);
       expect(result.items.length).toBe(3);
     });
@@ -286,7 +292,10 @@ describe('Mojibake utilities', () => {
       };
       fs.writeFileSync(testFile, JSON.stringify(data), 'utf8');
 
-      const result = readJsonFileWithFallback<typeof data>(testFile);
+      const result = readJsonFileWithFallback(
+        testFile,
+        (value) => value as typeof data,
+      );
       expect(result.string).toBe('text');
       expect(result.number).toBe(42);
       expect(result.boolean).toBe(true);

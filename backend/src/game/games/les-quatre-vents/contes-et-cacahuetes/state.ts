@@ -1,4 +1,4 @@
-import type { ContesCard, ContesCardType } from './content';
+import type { PlayerMap } from '../../../core/application/public-api';
 
 export type ContesTargetEffect =
   | 'move-other-two'
@@ -16,12 +16,6 @@ export type ContesOptionEffect = 'song' | 'wish' | 'gold-key-type';
 export type ContesPendingEffect =
   | { kind: 'reroll'; actorId: number; roll: number }
   | {
-      kind: 'target';
-      actorId: number;
-      effect: ContesTargetEffect;
-      cardId?: number;
-    }
-  | {
       kind: 'option';
       actorId: number;
       effect: ContesOptionEffect;
@@ -31,44 +25,35 @@ export type ContesPendingEffect =
       kind: 'laughter';
       actorId: number;
       order: number[];
-      picks: Record<number, number>;
+      picks: PlayerMap<number>;
     }
-  | { kind: 'abundance'; actorId: number; cards: ContesCard[] }
+  | { kind: 'abundance'; actorId: number; cardIds: number[] }
   | { kind: 'token'; actorId: number; targetId: number; tokens: string[] };
 
-export interface ContesState {
-  pawnByPlayerId: Record<number, string>;
-  setupComplete: boolean;
-  starterId: number;
-  skipTurns: Record<number, number>;
-  rerollTokens: Record<number, number>;
-  shieldMalus: Record<number, number>;
-  protectNextMalus: Record<number, boolean>;
-  cape: Record<number, boolean>;
-  replaceOne: Record<number, boolean>;
-  noBonusTurns: Record<number, number>;
-  forcedOneTurns: Record<number, number>;
-  reverseNextTurn: Record<number, boolean>;
-  blockedAt: Record<number, number | null>;
-  turnReplacement: Record<number, number | null>;
-  activeSlotOwnerId: number | null;
-  keyOfGold: Record<number, boolean>;
-  pendingEffect: ContesPendingEffect | null;
-  queuedDraws: ContesCardType[];
-  resolvingPlayerId: number | null;
+export type ContesState = Record<string, never>;
+
+export type ContesPlayerView = {
+  rerollTokens: PlayerMap<number>;
+  shieldMalus: PlayerMap<number>;
+  protectNextMalus: PlayerMap<boolean>;
+  cape: PlayerMap<boolean>;
+  replaceOne: PlayerMap<boolean>;
+  noBonusTurns: PlayerMap<number>;
+  forcedOneTurns: PlayerMap<number>;
+  reverseNextTurn: PlayerMap<boolean>;
+  blockedAt: PlayerMap<number | null>;
+  keyOfGold: PlayerMap<boolean>;
+  pawnByPlayerId: PlayerMap<string>;
   lastConte: {
     playerId: number;
     title: string;
     text: string;
     timestamp: string;
   } | null;
+  starterId: number;
+  turnReplacement: PlayerMap<number | null>;
+  positions: PlayerMap<number>;
   winnerId: number | null;
-}
-
-export type ContesPlayerView = Omit<
-  ContesState,
-  'pendingEffect' | 'queuedDraws' | 'resolvingPlayerId' | 'activeSlotOwnerId'
-> & {
-  positions: Record<number, number>;
-  deckCounts: Record<ContesCardType, number>;
+  skipTurns: PlayerMap<number>;
+  setupComplete: boolean;
 };

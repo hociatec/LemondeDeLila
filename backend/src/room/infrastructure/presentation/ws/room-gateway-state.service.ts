@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
+import { getErrorMessage } from '@common/utils/public-api';
 import { RoomClientPolicyService } from '../../../application/services/room-client-policy.service';
 import type { RoomPayload } from '../../../application/models/room-payload.model';
 import { RoomStateService } from '../../../application/services/room-state.service';
@@ -277,7 +278,7 @@ export class RoomGatewayStateService {
       ctx.lastRoomSnapshotByRoomId.set(roomId, buildRoomSnapshot(payload));
       ctx.lastRoomStatusByRoomId.set(roomId, nextStatus);
     } catch (err) {
-      await ctx.sendError(client, (err as Error).message || 'Erreur table');
+      await ctx.sendError(client, getErrorMessage(err, 'Erreur table'));
       try {
         client.close(4003, 'room not found');
       } catch {

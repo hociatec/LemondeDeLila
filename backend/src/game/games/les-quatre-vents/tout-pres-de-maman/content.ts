@@ -1,8 +1,14 @@
+import {
+  freezeGameContent,
+  gameEffects,
+  rejectContent,
+} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { MamanCard, MamanTile } from './state';
 
-export const MAMAN_CONTENT = loadContent();
+type RawMamanCard = Omit<MamanCard, 'effects'>;
 
 function loadContent(): { tiles: MamanTile[]; cards: MamanCard[] } {
   const directory = contentDirectory();
@@ -20,9 +26,15 @@ function loadContent(): { tiles: MamanTile[]; cards: MamanCard[] } {
     !Array.isArray(cards.cards) ||
     !cards.cards.every(isCard)
   ) {
-    throw new Error('Contenu de Tout près de Maman invalide');
+    rejectContent('Contenu de Tout près de Maman invalide');
   }
-  return { tiles: board.tiles, cards: cards.cards };
+  return {
+    tiles: board.tiles,
+    cards: cards.cards.map((card) => ({
+      ...card,
+      effects: MAMAN_CARD_EFFECTS[card.id] ?? [],
+    })),
+  };
 }
 
 function contentDirectory(): string {
@@ -40,7 +52,7 @@ function contentDirectory(): string {
   const found = candidates.find((directory) =>
     existsSync(resolve(directory, 'board.json')),
   );
-  if (!found) throw new Error('Contenu de Tout près de Maman introuvable');
+  if (!found) rejectContent('Contenu de Tout près de Maman introuvable');
   return found;
 }
 
@@ -53,7 +65,7 @@ function isTile(value: unknown): value is MamanTile {
   );
 }
 
-function isCard(value: unknown): value is MamanCard {
+function isCard(value: unknown): value is RawMamanCard {
   return (
     isRecord(value) &&
     typeof value.id === 'number' &&
@@ -61,6 +73,87 @@ function isCard(value: unknown): value is MamanCard {
   );
 }
 
+const move = (delta: number): readonly GameEffectInstruction[] => [
+  gameEffects.custom(
+    'maman.move',
+    { delta },
+    gameEffects.target.self(),
+  ),
+];
+const moveTo = (
+  type: 'card' | 'token' | 'bonds',
+  direction: 'forward' | 'backward',
+): readonly GameEffectInstruction[] => [
+  gameEffects.custom('maman.move-to-type', { type, direction }),
+];
+const target = (effectId: string): readonly GameEffectInstruction[] => [
+  gameEffects.custom(
+    effectId,
+    {},
+    gameEffects.target.chosenOpponent(effectId),
+  ),
+  gameEffects.completeTurn(),
+];
+const allMove = (delta: number): readonly GameEffectInstruction[] => [
+  gameEffects.custom(
+    'maman.move',
+    { delta },
+    gameEffects.target.self(),
+  ),
+  gameEffects.custom(
+    'maman.move',
+    { delta },
+    gameEffects.target.allOpponents(),
+  ),
+];
+
+const MAMAN_CARD_EFFECTS: Readonly<
+  Record<number, readonly GameEffectInstruction[]>
+> = {
+  1: move(1),
+  2: move(-1),
+  3: [gameEffects.gainResource('eucalyptus', 1)],
+  4: move(2),
+  5: [gameEffects.skipTurn(1)],
+  6: move(-2),
+  7: moveTo('card', 'forward'),
+  8: target('maman.transfer-token'),
+  9: moveTo('token', 'backward'),
+  10: allMove(-1),
+  11: [
+    gameEffects.addStatus({
+      status: 'maman.bonus-reroll',
+      scope: 'until-used',
+    }),
+  ],
+  12: [gameEffects.gainResource('eucalyptus', 1)],
+  13: [gameEffects.skipTurn(1)],
+  14: move(3),
+  15: moveTo('bonds', 'backward'),
+  16: [gameEffects.custom('maman.roll-move')],
+  17: move(-1),
+  18: move(2),
+  19: move(-2),
+  20: [gameEffects.gainResource('eucalyptus', 1)],
+  21: allMove(1),
+  22: [gameEffects.skipTurn(1)],
+  23: [gameEffects.custom('maman.roll-threshold-move')],
+  24: moveTo('bonds', 'forward'),
+  25: [
+    gameEffects.loseResource('eucalyptus', 1, undefined, {
+      allowPartial: true,
+    }),
+  ],
+  26: [...move(1), ...target('maman.share-advance')],
+  28: [gameEffects.skipTurn(1)],
+  29: [...move(2), gameEffects.gainResource('eucalyptus', 1)],
+  30: move(1),
+};
+
+export const MAMAN_CONTENT = loadContent();
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
+
+freezeGameContent(MAMAN_CONTENT);

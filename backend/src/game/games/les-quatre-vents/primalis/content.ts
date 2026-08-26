@@ -1,3 +1,7 @@
+import {
+  freezeGameContent,
+  rejectContent,
+} from '../../../core/application/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -23,12 +27,32 @@ function loadTiles(): PrimalisTile[] {
     ),
   ];
   const path = candidates.find(existsSync);
-  if (!path) throw new Error('Plateau Primalis introuvable');
-  const parsed = JSON.parse(readFileSync(path, 'utf8')) as {
-    tiles?: PrimalisTile[];
-  };
-  if (!Array.isArray(parsed.tiles) || parsed.tiles.length === 0) {
-    throw new Error('Plateau Primalis invalide');
+  if (!path) rejectContent('Plateau Primalis introuvable');
+  const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'));
+  if (
+    !isRecord(parsed) ||
+    !Array.isArray(parsed.tiles) ||
+    parsed.tiles.length === 0 ||
+    !parsed.tiles.every(isPrimalisTile)
+  ) {
+    rejectContent('Plateau Primalis invalide');
   }
   return parsed.tiles;
 }
+
+function isPrimalisTile(value: unknown): value is PrimalisTile {
+  return (
+    isRecord(value) &&
+    typeof value.n === 'number' &&
+    Number.isSafeInteger(value.n) &&
+    typeof value.title === 'string' &&
+    typeof value.description === 'string' &&
+    value.type === 'comet'
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+freezeGameContent(PRIMALIS_TILES);

@@ -92,7 +92,7 @@ export class WxUpdateReleaseService {
     }
     try {
       const raw = await fs.promises.readFile(this.metaPath, 'utf-8');
-      const value = JSON.parse(raw.replace(/^\uFEFF/, '')) as unknown;
+      const value: unknown = JSON.parse(raw.replace(/^\uFEFF/, ''));
       if (
         this.validator.verifyManifest(
           value as WxUpdateManifest,
@@ -172,11 +172,12 @@ export class WxUpdateReleaseService {
       input.version,
       'Version WX invalide.',
     );
+    const minimumVersionInput = input.minimumVersion?.trim() ?? '';
     const minimumVersion =
-      (input.minimumVersion || '').trim() === ''
+      minimumVersionInput === ''
         ? null
         : this.validator.requireVersion(
-            input.minimumVersion!,
+            minimumVersionInput,
             'Version minimale WX invalide.',
           );
     if (

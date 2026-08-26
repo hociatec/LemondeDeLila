@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Server, WebSocket } from 'ws';
+import { getErrorPayload } from '@common/utils/public-api';
 import { SoundsService } from '../../../../sounds/public-api';
 import { RoomGatewayActionsService } from './room-gateway-actions.service';
 import { RoomGatewayCommandService } from './room-gateway-command.service';
@@ -19,7 +20,7 @@ export class RoomGatewayDispatcherService {
     private readonly connection: RoomGatewayConnectionService,
   ) {}
 
-  initialize(server: Server<WebSocket>): void {
+  initialize(server: Server<typeof WebSocket>): void {
     this.runtime.initialize(server);
     this.contexts.initialize();
   }
@@ -66,7 +67,7 @@ export class RoomGatewayDispatcherService {
       } catch (error) {
         await this.runtime.sendError(
           client,
-          (error as Error).message || 'Erreur temps réel',
+          getErrorPayload(error, 'Erreur temps réel'),
         );
       }
     });

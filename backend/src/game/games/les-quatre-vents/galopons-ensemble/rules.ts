@@ -1,125 +1,75 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
 import {
-  GALOPONS_PAWNS,
+  rollDice,
+  sequentialPawnSelection,
+  setupPlayingPhases,
+} from '../../../core/application/public-api';
+import type {
+  GameContext,
+  PlayerMap,
+} from '../../../core/application/public-api';
+import {
   GALOPONS_TILES,
   type GaloponsCard,
-  type GaloponsCardEffect,
   type GaloponsRegion,
 } from './content';
-import type { GaloponsState, GaloponsTargetKind } from './state';
+import type { GaloponsState } from './state';
 
-type RuleContext = GameRuleContext<GaloponsState>;
+type RuleContext = GameContext<GaloponsState>;
+export const GALOPONS_PHASES = setupPlayingPhases<GaloponsState>();
 const TRACK = 'galopons';
 const DECK = 'adventure';
 const FINISH = GALOPONS_TILES.length - 1;
 const APPLES_TO_WIN = 3;
 const MAX_DEPTH = 12;
+const APPLE = 'apple';
+const RETURNING = 'galopons.returning';
 
-export const roll = defineAction<GaloponsState, Record<string, never>>({
-  input: gameInput.object({}),
+export const roll = rollDice<GaloponsState>({
   documentation: 'Paie les dettes, lance le dé et résout la case équestre.',
-  available: ({ state }) => state.setupComplete,
-  execute: ({ state, actor, ctx }) => {
-    payIou(state, actor.id);
-    const value = ctx.dice.roll('main').total;
-    ctx.history.add(`${actor.username} lance le dé : ${value}.`);
-    moveAndLand(state, actor.id, value, 0, ctx);
-    completeTurn(state, actor.id, ctx);
+  available: ({ ctx }) => GALOPONS_PHASES.is(ctx, 'playing'),
+  execute: ({ state, playerId, total, ctx }) => {
+    payIou(state, playerId, ctx);
+    moveAndLand(state, playerId, total, 0, ctx);
+    ctx.turn.complete({ waiting: ctx.choice.current() != null });
   },
 });
 
 export const GALOPONS_ACTIONS = { roll };
 
-export function resolvePawn(
+const pawnSelection = sequentialPawnSelection<GaloponsState>({
+  setId: 'galopons',
+  choiceId: 'galopons.pawn',
+  complete: ({ ctx }) => {
+    GALOPONS_PHASES.transition(ctx, 'playing');
+    const starterId = ctx.round.starter();
+    if (starterId != null) ctx.turn.to(starterId);
+  },
+});
+
+export const requestPawn = pawnSelection.request;
+export const resolvePawn = pawnSelection.resolve;
+
+export function pairAdvance(
   state: GaloponsState,
   actorId: number,
-  pawnId: string,
-  ctx: RuleContext,
-): void {
-  if (!GALOPONS_PAWNS.some((pawn) => pawn.id === pawnId)) {
-    throw new Error('Pion Galopons invalide');
-  }
-  if (Object.values(state.pawnByPlayerId).includes(pawnId)) {
-    throw new Error('Pion déjà attribué');
-  }
-  state.pawnByPlayerId[actorId] = pawnId;
-  const next = ctx.players
-    .all()
-    .find((player) => state.pawnByPlayerId[player.id] == null);
-  if (next) {
-    ctx.turn.to(next.id);
-    requestPawn(state, next.id, ctx);
-  } else {
-    state.setupComplete = true;
-    ctx.transitionTo('playing');
-    ctx.turn.to(state.starterId);
-  }
-}
-
-export function requestPawn(
-  state: GaloponsState,
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  const used = new Set(Object.values(state.pawnByPlayerId));
-  const available = GALOPONS_PAWNS.filter((pawn) => !used.has(pawn.id));
-  ctx.choice.one({
-    id: 'galopons.pawn',
-    player: playerId,
-    options: available.map((pawn) => pawn.id),
-    label: (id) => available.find((pawn) => pawn.id === id)?.name ?? id,
-  });
-}
-
-export function resolveTarget(
-  state: GaloponsState,
-  kind: GaloponsTargetKind,
   targetId: number,
+  delta: number,
   ctx: RuleContext,
 ): void {
-  if (state.targetKind !== kind || state.targetActorId == null) {
-    throw new Error('Choix Galopons inattendu');
+  moveAndLand(state, actorId, delta, 0, ctx);
+  if (ctx.match.lifecycle() !== 'finished') {
+    moveAndLand(state, targetId, delta, 0, ctx);
   }
-  const actorId = state.targetActorId;
-  if (targetId === actorId || !ctx.players.get(targetId)) {
-    throw new Error('Cible Galopons invalide');
-  }
-  state.targetKind = null;
-  state.targetActorId = null;
-  if (kind === 'give-apple') giveAppleWithIou(state, actorId, targetId);
-  else if (kind === 'help-advance') {
-    moveAndLand(state, targetId, 2, 0, ctx);
-    if (state.apples[targetId] > 0) {
-      state.apples[targetId] -= 1;
-      state.apples[actorId] += 1;
-    }
-  } else {
-    moveAndLand(state, actorId, 1, 0, ctx);
-    if (state.targetKind == null) moveAndLand(state, targetId, 1, 0, ctx);
-  }
-  completeTurn(state, actorId, ctx);
 }
 
-export function skipGaloponsPlayer(
-  state: GaloponsState,
-  ctx: RuleContext,
-): void {
-  const player = ctx.players.current();
-  if (!player) return;
-  state.skipTurns[player.id] = Math.max(0, state.skipTurns[player.id] - 1);
-  ctx.history.add(`${player.username} passe son tour.`);
-  ctx.turn.end();
-}
-
-function moveAndLand(
+export function moveAndLand(
   state: GaloponsState,
   playerId: number,
   delta: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_DEPTH || state.winnerId != null) return;
+  if (depth > MAX_DEPTH || ctx.match.lifecycle() === 'finished') return;
   moveHorse(state, playerId, delta, ctx);
   resolveLanding(state, playerId, depth + 1, ctx);
 }
@@ -131,7 +81,7 @@ function moveHorse(
   ctx: RuleContext,
 ): void {
   const current = position(playerId, ctx);
-  const direction = state.movementDirection[playerId];
+  const direction = movementDirection(playerId, ctx);
   const signed = delta < 0 ? -direction : direction;
   let target = current;
   let nextDirection = direction;
@@ -146,8 +96,12 @@ function moveHorse(
     }
   }
   if (direction === -1 && target === 0) nextDirection = 1;
-  moveTo(playerId, target, ctx);
-  state.movementDirection[playerId] = nextDirection;
+  ctx.movement.moveTo(TRACK, playerId, target);
+  if (nextDirection === -1) {
+    ctx.status.add(playerId, RETURNING, { scope: 'until-used' });
+  } else {
+    ctx.status.remove(playerId, RETURNING);
+  }
 }
 
 function resolveLanding(
@@ -158,13 +112,15 @@ function resolveLanding(
 ): void {
   const current = position(playerId, ctx);
   const tile = GALOPONS_TILES[current];
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username} atteint ${tile.title}.`,
-  );
+  ctx.events.message('game.pawn.landed', { playerId, tileId: current });
   if (tile.type === 'finish') {
-    state.apples[playerId] += 1;
-    if (state.apples[playerId] >= APPLES_TO_WIN) state.winnerId = playerId;
-    else state.movementDirection[playerId] = -1;
+    const apples = ctx.resources.add(playerId, APPLE, 1);
+    if (apples >= APPLES_TO_WIN) {
+      ctx.match.finish({
+        winners: [playerId],
+        reason: 'three-apples-at-finish',
+      });
+    } else ctx.status.add(playerId, RETURNING, { scope: 'until-used' });
     return;
   }
   const occupant = ctx.players
@@ -174,8 +130,8 @@ function resolveLanding(
         player.id !== playerId && position(player.id, ctx) === current,
     );
   if (occupant) moveHorse(state, occupant.id, -5, ctx);
-  if (tile.type === 'bonus') state.apples[playerId] += tile.apples;
-  else if (tile.type === 'skip') state.skipTurns[playerId] += tile.skipTurns;
+  if (tile.type === 'bonus') ctx.resources.add(playerId, APPLE, tile.apples);
+  else if (tile.type === 'skip') ctx.turn.skip(playerId, tile.skipTurns);
   else if (tile.type === 'card') drawAndApply(state, playerId, depth, ctx);
 }
 
@@ -185,48 +141,22 @@ function drawAndApply(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_DEPTH || state.targetKind != null) return;
-  const card = ctx.cards.drawOrRecycle<GaloponsCard>(DECK);
-  if (!card) return;
-  ctx.cards.discard(DECK, card);
-  ctx.history.add(card.text);
-  applyEffect(state, playerId, card.effect, depth + 1, ctx);
+  if (depth > MAX_DEPTH || ctx.choice.current() != null) return;
+  ctx.cards.drawThenResolve<GaloponsCard, void>(
+    DECK,
+    (card) => {
+      ctx.events.message('game.card.drawn', {
+        playerId,
+        deckId: DECK,
+        cardId: card.id,
+      });
+      ctx.effects.schedule(...card.effects);
+    },
+    {},
+  );
 }
 
-function applyEffect(
-  state: GaloponsState,
-  playerId: number,
-  effect: GaloponsCardEffect,
-  depth: number,
-  ctx: RuleContext,
-): void {
-  if (effect.kind === 'move') {
-    moveAndLand(state, playerId, effect.delta, depth, ctx);
-  } else if (effect.kind === 'move_to_next_region') {
-    moveToNextRegion(state, playerId, effect.region, depth, ctx);
-  } else if (effect.kind === 'replay') state.replay = true;
-  else if (effect.kind === 'gain_apples')
-    state.apples[playerId] += effect.count;
-  else if (effect.kind === 'skip_turn')
-    state.skipTurns[playerId] += effect.count;
-  else if (effect.kind === 'global_skip_turn') {
-    for (const player of ctx.players.all())
-      state.skipTurns[player.id] += effect.count;
-  } else if (effect.kind === 'discard_apple_and_replay') {
-    state.apples[playerId] = Math.max(0, state.apples[playerId] - 1);
-    state.replay = true;
-  } else if (effect.kind === 'discard_apple') {
-    state.apples[playerId] = Math.max(0, state.apples[playerId] - 1);
-  } else if (effect.kind === 'give_apple_with_iou') {
-    requestTarget(state, playerId, 'give-apple', ctx);
-  } else if (effect.kind === 'help_advance_for_apple') {
-    requestTarget(state, playerId, 'help-advance', ctx);
-  } else if (effect.kind === 'pair_advance') {
-    requestTarget(state, playerId, 'pair-advance', ctx);
-  }
-}
-
-function moveToNextRegion(
+export function moveToNextRegion(
   state: GaloponsState,
   playerId: number,
   region: GaloponsRegion,
@@ -234,74 +164,80 @@ function moveToNextRegion(
   ctx: RuleContext,
 ): void {
   const current = position(playerId, ctx);
-  const direction = state.movementDirection[playerId];
+  const direction = movementDirection(playerId, ctx);
   const target = GALOPONS_TILES.findIndex(
     (tile, index) =>
       tile.region === region &&
       (direction === 1 ? index > current : index < current),
   );
   if (target >= 0) {
-    moveTo(playerId, target, ctx);
+    ctx.movement.moveTo(TRACK, playerId, target);
     resolveLanding(state, playerId, depth + 1, ctx);
   }
 }
 
-function requestTarget(
-  state: GaloponsState,
+export function giveAppleWithIou(
   actorId: number,
-  kind: GaloponsTargetKind,
+  targetId: number,
   ctx: RuleContext,
 ): void {
-  state.targetKind = kind;
-  state.targetActorId = actorId;
-  const players = ctx.players.all().filter((player) => player.id !== actorId);
-  ctx.choice.one({
-    id: `galopons.${kind}`,
-    player: actorId,
-    options: players.map((player) => player.id),
-    label: (id) => ctx.players.get(id)?.username ?? `Joueur ${id}`,
-  });
+  if (!ctx.resources.has(actorId, APPLE, 1)) return;
+  ctx.resources.transfer(actorId, targetId, APPLE, 1);
+  ctx.resources.add(targetId, iouResource(actorId), 1);
 }
 
-function giveAppleWithIou(
+export function helpAdvanceForApple(
   state: GaloponsState,
   actorId: number,
   targetId: number,
-): void {
-  if (state.apples[actorId] <= 0) return;
-  state.apples[actorId] -= 1;
-  state.apples[targetId] += 1;
-  const debts = (state.ious[targetId] ??= {});
-  debts[actorId] = (debts[actorId] ?? 0) + 1;
-}
-
-function payIou(state: GaloponsState, playerId: number): void {
-  const debts = state.ious[playerId] ?? {};
-  const creditor = Object.keys(debts)
-    .map(Number)
-    .find((id) => debts[id] > 0);
-  if (creditor == null || state.apples[playerId] <= 0) return;
-  state.apples[playerId] -= 1;
-  state.apples[creditor] += 1;
-  debts[creditor] -= 1;
-}
-
-function completeTurn(
-  state: GaloponsState,
-  actorId: number,
+  delta: number,
   ctx: RuleContext,
 ): void {
-  if (state.winnerId != null || state.targetKind != null) return;
-  if (state.replay) {
-    state.replay = false;
-    ctx.turn.to(actorId);
-  } else ctx.turn.end();
+  moveAndLand(state, targetId, delta, 0, ctx);
+  if (ctx.resources.has(targetId, APPLE, 1)) {
+    ctx.resources.transfer(targetId, actorId, APPLE, 1);
+  }
+}
+
+function payIou(
+  state: GaloponsState,
+  playerId: number,
+  ctx: RuleContext,
+): void {
+  const creditor = ctx.players
+    .all()
+    .map((player) => player.id)
+    .find((id) => ctx.resources.get(playerId, iouResource(id)) > 0);
+  if (creditor == null || !ctx.resources.has(playerId, APPLE, 1)) return;
+  ctx.resources.transfer(playerId, creditor, APPLE, 1);
+  ctx.resources.remove(playerId, iouResource(creditor), 1);
+}
+
+export function galoponsIous(
+  ctx: RuleContext,
+): PlayerMap<PlayerMap<number>> {
+  const playerIds = ctx.players.all().map((player) => player.id);
+  return Object.fromEntries(
+    playerIds.map((debtorId) => [
+      debtorId,
+      Object.fromEntries(
+        playerIds.flatMap((creditorId) => {
+          const count = ctx.resources.get(debtorId, iouResource(creditorId));
+          return count > 0 ? [[creditorId, count]] : [];
+        }),
+      ),
+    ]),
+  );
+}
+
+function iouResource(creditorId: number): string {
+  return `galopons.iou.${creditorId}`;
+}
+
+function movementDirection(playerId: number, ctx: RuleContext): 1 | -1 {
+  return ctx.status.has(playerId, RETURNING) ? -1 : 1;
 }
 
 function position(playerId: number, ctx: RuleContext): number {
   return ctx.movement.position(TRACK, playerId);
-}
-
-function moveTo(playerId: number, target: number, ctx: RuleContext): void {
-  ctx.movement.move(TRACK, playerId, target - position(playerId, ctx));
 }

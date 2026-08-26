@@ -1,3 +1,5 @@
+import { freezeGameContent } from '../../../core/application/public-api';
+
 export type MorpionPawn = {
   id: string;
   label: string;
@@ -61,3 +63,5 @@ export const MORPION_PAWNS: readonly MorpionPawn[] = Object.freeze([
     glyph: 'L',
   },
 ]);
+
+freezeGameContent(MORPION_PAWNS);

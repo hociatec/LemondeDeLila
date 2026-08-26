@@ -1,9 +1,7 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export type PrimalisFace =
-  | 'herbivore'
-  | 'carnivore'
-  | 'egg'
-  | 'leaf'
-  | 'danger';
+  'herbivore' | 'carnivore' | 'egg' | 'leaf' | 'danger';
 
 export interface PrimalisResources {
   herbivores: number;
@@ -12,13 +10,12 @@ export interface PrimalisResources {
   leaves: number;
 }
 
-export interface PrimalisState {
-  collections: Record<number, PrimalisResources>;
-  dangerAmplified: boolean;
-  lastRoll: number | null;
-  lastFace: PrimalisFace | null;
-}
+export type PrimalisState = Record<string, never>;
 
-export type PrimalisPlayerView = PrimalisState & {
-  positions: Record<number, number>;
+export type PrimalisPlayerView = {
+  dangerAmplified: boolean;
+  collections: PlayerMap<PrimalisResources>;
+  lastFace: PrimalisFace | null;
+  positions: PlayerMap<number>;
+  lastRoll: number | null;
 };

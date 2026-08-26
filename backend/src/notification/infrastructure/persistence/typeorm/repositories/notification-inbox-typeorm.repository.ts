@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
+import { getErrorMessage } from '@common/utils/public-api';
 import type { NotificationInboxRepository } from '../../../../application/ports/notification-inbox.repository';
 import type {
   CreateNotificationInboxItemInput,
@@ -11,6 +12,20 @@ import type {
 import { NotificationInboxItemNotFoundError } from '../../../../domain/errors/notification-domain.errors';
 import { User } from '../../../../../user/public-api';
 import { NotificationInboxItemEntity } from '../entities/notification-inbox-item.entity';
+
+type NotificationInboxContactRawRow = {
+  id: unknown;
+  userId: unknown;
+  kind: unknown;
+  contactId: unknown;
+  fromUserId: unknown;
+  fromUsername: unknown;
+  toUserId: unknown;
+  message: unknown;
+  payload: unknown;
+  createdAt: unknown;
+  readAt: unknown;
+};
 
 @Injectable()
 export class NotificationInboxTypeormRepository implements NotificationInboxRepository {
@@ -53,7 +68,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
       },
       order: { createdAt: 'DESC' },
       take: limit,
-      relations: ['user'],
+      relations: { user: true },
     });
     return items.filter((it) => !it.deletedAt).map((it) => this.toModel(it));
   }
@@ -72,7 +87,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
         user: { id: userId },
         deletedAt: IsNull(),
       },
-      relations: ['user'],
+      relations: { user: true },
     });
     return item ? this.toModel(item) : null;
   }
@@ -106,7 +121,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
     const found = await this.repo.findOne({
       where: { id },
       select: { id: true, user: { id: true } },
-      relations: ['user'],
+      relations: { user: true },
       withDeleted: true,
     });
     if (!found) {
@@ -163,26 +178,26 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
         .where('it.kind = :kind', { kind: cleanKind })
         .andWhere('it.contactId = :contactId', { contactId: cid })
         .andWhere('it.deletedAt IS NULL')
-        .getRawMany();
+        .getRawMany<NotificationInboxContactRawRow>();
 
       return rows
         .map((row) => ({
-          id: String(row?.id ?? ''),
+          id: toText(row.id),
           userId: Number(row?.userId ?? 0),
-          kind: String(row?.kind ?? ''),
-          contactId: row?.contactId ? String(row.contactId) : null,
+          kind: toText(row.kind),
+          contactId: toNullableText(row.contactId),
           fromUserId: row?.fromUserId == null ? null : Number(row.fromUserId),
-          fromUsername: row?.fromUsername ? String(row.fromUsername) : null,
+          fromUsername: toNullableText(row.fromUsername),
           toUserId: row?.toUserId == null ? null : Number(row.toUserId),
-          message: row?.message ? String(row.message) : null,
+          message: toNullableText(row.message),
           payload: this.normalizePayload(row?.payload),
-          createdAt: row?.createdAt ? new Date(row.createdAt) : new Date(),
-          readAt: row?.readAt ? new Date(row.readAt) : null,
+          createdAt: toDate(row.createdAt) ?? new Date(),
+          readAt: toDate(row.readAt),
         }))
         .filter((row) => row.id && row.userId > 0);
     } catch (err) {
       this.logger.warn(
-        `listByContactId failed kind=${kind} contactId=${contactId}: ${(err as Error).message}`,
+        `listByContactId failed kind=${kind} contactId=${contactId}: ${getErrorMessage(err)}`,
       );
       return [];
     }
@@ -196,13 +211,16 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
     if (!clean) {
       return false;
     }
-    const res = await this.repo
-      .createQueryBuilder()
-      .update(NotificationInboxItemEntity)
-      .set({ payload: payload ?? null } as never)
-      .where('id = :id', { id: clean })
-      .execute();
-    return (res.affected ?? 0) > 0;
+    const item = await this.repo.findOne({
+      where: { id: clean },
+      withDeleted: true,
+    });
+    if (!item) {
+      return false;
+    }
+    item.payload = payload ?? null;
+    await this.repo.save(item);
+    return true;
   }
 
   async deleteManyByIds(ids: string[]): Promise<number> {
@@ -226,7 +244,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
   ): Promise<NotificationInboxItemRecord> {
     const item = await this.repo.findOne({
       where: { id },
-      relations: ['user'],
+      relations: { user: true },
     });
     if (!item) {
       throw new NotificationInboxItemNotFoundError(
@@ -260,4 +278,22 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
       ? (value as Record<string, unknown>)
       : null;
   }
+}
+
+function toText(value: unknown): string {
+  return typeof value === 'string' || typeof value === 'number'
+    ? String(value)
+    : '';
+}
+
+function toNullableText(value: unknown): string | null {
+  const text = toText(value);
+  return text || null;
+}
+
+function toDate(value: unknown): Date | null {
+  if (value instanceof Date) return value;
+  if (typeof value !== 'string' && typeof value !== 'number') return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }

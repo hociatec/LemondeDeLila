@@ -1,139 +1,152 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
-import { GOOSE_PAWNS, GOOSE_TILES } from './content';
+import {
+  rejectRule,
+  defineAction,
+  gameInput,
+  setupPlayingPhases,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
+import { GOOSE_TILES } from './content';
 import type { JeuOieState } from './state';
 
 const TRACK = 'goose-board';
 const FINISH = 63;
-type RuleContext = GameRuleContext<JeuOieState>;
+export const GOOSE_IN_WELL = 'goose.in-well';
+type RuleContext = GameContext<JeuOieState>;
+export const JEU_OIE_PHASES = setupPlayingPhases<JeuOieState>();
 
 export const roll = defineAction<JeuOieState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Lance le dé et résout toutes les cases spéciales.',
-  available: ({ state }) => state.setupComplete,
-  execute: ({ state, actor, ctx }) => {
+  available: ({ ctx }) => JEU_OIE_PHASES.is(ctx, 'playing'),
+  execute: ({ actor, ctx }) => {
     const value = ctx.dice.roll('main').total;
-    state.lastRoll = value;
-    ctx.history.add(`${actor.username} lance le dé : « ${value} ».`);
-    if (state.inWell[actor.id]) {
+    ctx.events.message('game.dice.rolled', {
+      playerId: actor.id,
+      diceId: 'main',
+      value,
+    });
+    if (ctx.status.has(actor.id, GOOSE_IN_WELL)) {
       if (value !== 1) {
-        ctx.history.add(`${actor.username} reste bloqué dans le puits.`);
+        ctx.events.message('goose.well.blocked', { playerId: actor.id });
         ctx.turn.end();
         return;
       }
-      state.inWell[actor.id] = false;
+      ctx.status.remove(actor.id, GOOSE_IN_WELL);
     }
-    const position = bounce(ctx.movement.position(TRACK, actor.id) + value);
-    land(state, actor.id, position, value, 0, ctx);
-    if (state.winnerId == null) ctx.turn.end();
+    const position = ctx.movement.preview(TRACK, actor.id, value);
+    land(actor.id, position, value, 0, ctx);
+    if (ctx.match.lifecycle() !== 'finished') ctx.turn.end();
   },
 });
 
 export const JEU_OIE_ACTIONS = { roll };
 
-export function initializeGoose(state: JeuOieState, ctx: RuleContext): void {
+export function initializeGoose(
+  selectionOrder: number[],
+  ctx: RuleContext,
+): void {
   for (const player of ctx.players.all())
     ctx.movement.move(TRACK, player.id, 1);
-  queuePawnChoice(state, ctx);
+  queuePawnChoice(selectionOrder, 0, ctx);
 }
 
 export function assignPawn(
-  state: JeuOieState,
+  actorId: number,
   pawnId: string,
   ctx: RuleContext,
 ): void {
-  const playerId = state.selectionOrder[state.selectionIndex];
-  if (playerId == null) throw new Error('Joueur de sélection introuvable');
-  state.pawnByPlayerId[playerId] = pawnId;
-  state.selectionIndex += 1;
-  if (state.selectionIndex >= state.selectionOrder.length) {
-    state.setupComplete = true;
-    ctx.turn.to(state.selectionOrder[0]);
-    ctx.history.add(
-      `Début de partie : ${ctx.players.get(state.selectionOrder[0])?.username ?? 'le premier joueur'} commence.`,
-    );
+  const pending = ctx.choice.consumeData<{
+    selectionOrder: number[];
+    selectionIndex: number;
+  }>();
+  if (!pending) rejectRule('Ordre de sélection introuvable');
+  const playerId = pending.selectionOrder[pending.selectionIndex];
+  if (playerId == null || playerId !== actorId) {
+    rejectRule('Joueur de sélection introuvable');
+  }
+  ctx.pawns.assign('goose', actorId, pawnId);
+  const selectionIndex = pending.selectionIndex + 1;
+  if (selectionIndex >= pending.selectionOrder.length) {
+    JEU_OIE_PHASES.transition(ctx, 'playing');
+    ctx.turn.to(pending.selectionOrder[0]);
+    ctx.events.message('game.started', {
+      startingPlayerId: pending.selectionOrder[0],
+    });
     return;
   }
-  queuePawnChoice(state, ctx);
+  queuePawnChoice(pending.selectionOrder, selectionIndex, ctx);
 }
 
-export function skipGoosePlayer(state: JeuOieState, ctx: RuleContext): void {
-  const current = ctx.players.current();
-  if (!current) return;
-  state.skipTurns[current.id] = Math.max(0, state.skipTurns[current.id] - 1);
-  ctx.history.add(`${current.username} saute son tour.`);
-  ctx.turn.end();
-}
-
-function queuePawnChoice(state: JeuOieState, ctx: RuleContext): void {
-  const playerId = state.selectionOrder[state.selectionIndex];
+function queuePawnChoice(
+  selectionOrder: number[],
+  selectionIndex: number,
+  ctx: RuleContext,
+): void {
+  const playerId = selectionOrder[selectionIndex];
   if (playerId == null) return;
-  const used = new Set(Object.values(state.pawnByPlayerId));
-  const options = GOOSE_PAWNS.filter((pawn) => !used.has(pawn.id)).map(
-    (pawn) => pawn.id,
-  );
-  ctx.choice.one({
+  const available = ctx.pawns.available('goose');
+  const options = available.map((pawn) => pawn.id);
+  ctx.choice.pawn({
     id: 'goose.pawn',
     player: playerId,
     options,
+    data: { selectionOrder, selectionIndex },
     label: (pawnId) =>
-      GOOSE_PAWNS.find((pawn) => pawn.id === pawnId)?.label ?? pawnId,
+      available.find((pawn) => pawn.id === pawnId)?.label ?? pawnId,
   });
 }
 
 function land(
-  state: JeuOieState,
   playerId: number,
   position: number,
   rollValue: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > 20)
-    throw new Error('Chaîne de cases du Jeu de l’Oie trop longue');
-  setPosition(playerId, position, ctx);
+  if (depth > 20) rejectRule('Chaîne de cases du Jeu de l’Oie trop longue');
+  position = ctx.movement.moveTo(TRACK, playerId, position);
   const tile = GOOSE_TILES[position];
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username ?? 'Le joueur'} atteint la case ${position} (${tile.label}).`,
-  );
-  if (tile.description) ctx.history.add(tile.description);
-  if (tile.type === 'finish') state.winnerId = playerId;
+  ctx.events.message('game.pawn.landed', {
+    playerId,
+    tileId: tile.id,
+    position,
+  });
+  if (tile.description) {
+    ctx.events.message('goose.tile.effect', {
+      playerId,
+      tileId: tile.id,
+      tileType: tile.type,
+    });
+  }
+  if (tile.type === 'finish') {
+    ctx.match.finish({ winners: [playerId], reason: 'case-63' });
+  }
   else if (tile.type === 'bridge')
-    land(state, playerId, 12, rollValue, depth + 1, ctx);
+    land(playerId, 12, rollValue, depth + 1, ctx);
   else if (tile.type === 'death' || tile.type === 'labyrinth') {
-    land(state, playerId, tile.backTo ?? 1, rollValue, depth + 1, ctx);
+    land(playerId, tile.backTo ?? 1, rollValue, depth + 1, ctx);
   } else if (tile.type === 'inn' || tile.type === 'prison') {
-    state.skipTurns[playerId] += tile.skipTurns ?? 1;
+    ctx.turn.skip(playerId, tile.skipTurns ?? 1);
   } else if (tile.type === 'magic-die') {
     const magic = ctx.dice.roll('main').total;
-    state.lastRoll = magic;
     const delta = magic <= 3 ? magic : -magic;
-    land(state, playerId, bounce(position + delta), magic, depth + 1, ctx);
-  } else if (tile.type === 'well') state.inWell[playerId] = true;
+    land(
+      playerId,
+      ctx.movement.preview(TRACK, playerId, delta),
+      magic,
+      depth + 1,
+      ctx,
+    );
+  } else if (tile.type === 'well') {
+    ctx.status.add(playerId, GOOSE_IN_WELL, { scope: 'match' });
+  }
   else if (tile.type === 'goose') {
     land(
-      state,
       playerId,
-      bounce(position + rollValue),
+      ctx.movement.preview(TRACK, playerId, rollValue),
       rollValue,
       depth + 1,
       ctx,
     );
   }
-}
-
-function bounce(position: number): number {
-  if (position < 0) return 0;
-  return position <= FINISH
-    ? position
-    : Math.max(0, FINISH - (position - FINISH));
-}
-
-function setPosition(
-  playerId: number,
-  position: number,
-  ctx: RuleContext,
-): void {
-  const current = ctx.movement.position(TRACK, playerId);
-  ctx.movement.move(TRACK, playerId, position - current);
 }

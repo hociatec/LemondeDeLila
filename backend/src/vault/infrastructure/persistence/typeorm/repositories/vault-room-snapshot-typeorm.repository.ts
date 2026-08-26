@@ -35,7 +35,7 @@ export class VaultRoomSnapshotTypeormRepository implements VaultRoomSnapshotRepo
   async existsByIdForOwner(id: string, ownerUserId: number): Promise<boolean> {
     const found = await this.snapshots.findOne({
       where: { id, ownerUserId },
-      select: ['id'],
+      select: { id: true },
     });
     return Boolean(found);
   }

@@ -2,7 +2,10 @@
 import { WebSocket } from 'ws';
 import { UpdatePolicyService } from '../../../../update/public-api';
 import { WsJwtAuthService } from '../../../../realtime/public-api';
-import { isVersionLower } from '../../../../common/utils/public-api';
+import {
+  getErrorMessage,
+  isVersionLower,
+} from '../../../../common/utils/public-api';
 import { WsTicketAuthService } from '../../../../realtime/public-api';
 import { RoomClientPolicyService } from '../../../application/services/room-client-policy.service';
 import { RoomJoinPolicyService } from '../../../application/services/room-join-policy.service';
@@ -254,7 +257,7 @@ export class RoomGatewayConnectionService {
       await this.membership.joinRoom(targetRoomId, userId);
       return role;
     } catch (err) {
-      const reason = (err as Error).message;
+      const reason = getErrorMessage(err);
       try {
         const state = await this.roomState.getRoomPayload(targetRoomId);
         if (

@@ -1,20 +1,20 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export type GaloponsTargetKind = 'give-apple' | 'help-advance' | 'pair-advance';
 
-export interface GaloponsState {
-  pawnByPlayerId: Record<number, string>;
-  setupComplete: boolean;
-  starterId: number;
-  apples: Record<number, number>;
-  movementDirection: Record<number, 1 | -1>;
-  ious: Record<number, Record<number, number>>;
-  skipTurns: Record<number, number>;
-  replay: boolean;
+export type GaloponsState = Record<string, never>;
+
+export type GaloponsPlayerView = {
+  ious: PlayerMap<PlayerMap<number>>;
+  apples: PlayerMap<number>;
+  movementDirection: PlayerMap<1 | -1>;
   targetKind: GaloponsTargetKind | null;
   targetActorId: number | null;
+  pawnByPlayerId: PlayerMap<string>;
+  starterId: number;
+  replay: boolean;
+  positions: PlayerMap<number>;
   winnerId: number | null;
-}
-
-export type GaloponsPlayerView = GaloponsState & {
-  positions: Record<number, number>;
-  deckCount: number;
+  skipTurns: PlayerMap<number>;
+  setupComplete: boolean;
 };

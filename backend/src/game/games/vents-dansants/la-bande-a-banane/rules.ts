@@ -1,14 +1,25 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
+import {
+  rejectRule,
+  defineAction,
+  defineEffect,
+  drawCardsAtTurnStart,
+  gameEffects,
+  gameInput,
+} from '../../../core/application/public-api';
 import {
   BANDE_A_BANANE_CARD_BY_ID,
   type BandeABananeCardDefinition,
   type BandeABananeMonkeySpecies,
 } from './content';
 import type { BandeABananeState } from './state';
+import type { PlayerMap } from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
 
 const DECK = 'banana';
 const HANDS = 'players';
 const HAND_LIMIT = 7;
+const DRAWN_PLAYER_FLAG = 'la-bande-a-banane.drawn-player-id';
+const TROOPS = 'banana-troops';
 export const BANANA_SPECIES = [
   'capucin',
   'mandrill',
@@ -20,7 +31,6 @@ export const BANANA_SPECIES = [
 type PlayCardInput = {
   cardId: string;
   targetPlayerId?: number;
-  cardToGiveId?: string;
   species?: BandeABananeMonkeySpecies;
 };
 
@@ -28,35 +38,47 @@ export const playCard = defineAction<BandeABananeState, PlayCardInput>({
   input: gameInput.object({
     cardId: gameInput.cardId(),
     targetPlayerId: gameInput.optional(gameInput.playerId()),
-    cardToGiveId: gameInput.optional(gameInput.cardId()),
     species: gameInput.optional(gameInput.enum(BANANA_SPECIES)),
   }),
   documentation: 'Joue une carte Singe, Joker, Action ou Piège de la main.',
-  availableInputs: ({ state, actor, ctx }) =>
+  validate: ({ state, actor, input, ctx }) =>
+    enumeratePlays(state, actor.id, ctx).some((candidate) =>
+      samePlayInput(candidate, input),
+    ),
+  enumerate: ({ state, actor, ctx }) =>
     enumeratePlays(state, actor.id, ctx),
   execute: ({ state, actor, input, ctx }) => {
     const card = BANDE_A_BANANE_CARD_BY_ID[input.cardId];
     ctx.cards.take(HANDS, actor.id, input.cardId);
     if (card.type === 'monkey' || card.type === 'joker') {
       const species = card.species ?? input.species;
-      if (!species) throw new Error('Espèce de joker absente');
-      state.troops[actor.id].push({
+      if (!species) rejectRule('Espèce de joker absente');
+      ctx.inventory.add(TROOPS, actor.id, troopItemId(card.id, species));
+      ctx.events.message('game.card.played', {
+        playerId: actor.id,
         cardId: card.id,
-        species,
-        isJoker: card.type === 'joker',
       });
-      ctx.history.add(`${actor.username} accueille ${card.name}.`);
-      if (speciesCount(state, actor.id) === BANANA_SPECIES.length) {
-        state.winnerId = actor.id;
-        ctx.history.add(`${actor.username} crie « BANAAAANE ! ».`);
+      if (speciesCount(actor.id, ctx) === BANANA_SPECIES.length) {
+        ctx.match.finish({ winners: [actor.id], reason: 'five-species' });
+        ctx.events.message('bande-a-banane.victory-declared', {
+          playerId: actor.id,
+        });
         return;
       }
     } else {
       ctx.cards.discard(DECK, card.id);
-      resolveEffect(state, actor.id, card, input, ctx);
+      ctx.events.message('game.card.played', {
+        playerId: actor.id,
+        cardId: card.id,
+      });
+      ctx.effects.schedule(...effectsForPlay(card, input));
     }
     enforceHandLimit(actor.id, ctx);
-    endTurn(state, ctx);
+    if (card.type === 'monkey' || card.type === 'joker') {
+      ctx.turn.complete();
+    } else {
+      ctx.effects.schedule(gameEffects.completeTurn());
+    }
   },
 });
 
@@ -64,8 +86,8 @@ export const pass = defineAction<BandeABananeState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Termine le tour sans jouer de carte.',
   execute: ({ state, actor, ctx }) => {
-    ctx.history.add(`${actor.username} passe son tour.`);
-    endTurn(state, ctx);
+    ctx.events.message('game.player.passed', { playerId: actor.id });
+    ctx.turn.complete();
   },
 });
 
@@ -85,7 +107,7 @@ export function enumeratePlays(
     );
   const missing = BANANA_SPECIES.filter(
     (species) =>
-      !state.troops[playerId].some((entry) => entry.species === species),
+      !troops(playerId, ctx).some((entry) => entry.species === species),
   );
   return hand.flatMap((cardId) => {
     const card = BANDE_A_BANANE_CARD_BY_ID[cardId];
@@ -103,81 +125,64 @@ export function enumeratePlays(
       }));
     }
     if (card.action === 'cris-de-la-jungle') {
-      return opponents.flatMap((target) =>
-        hand
-          .filter((cardToGiveId) => cardToGiveId !== cardId)
-          .map((cardToGiveId) => ({
+      return hand.length > 1
+        ? opponents.map((target) => ({
             cardId,
             targetPlayerId: target.id,
-            cardToGiveId,
-          })),
-      );
+          }))
+        : [];
     }
     return [{ cardId }];
   });
 }
 
-export function drawAtTurnStart(
-  state: BandeABananeState,
-  ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): void {
-  const current = ctx.players.current();
-  if (!current) return;
-  drawTo(current.id, ctx);
-  state.drawnPlayerId = current.id;
-  ctx.history.add(`${current.username} pioche une carte.`);
-}
-
-export function skipPenalizedPlayer(
-  state: BandeABananeState,
-  ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): void {
-  const current = ctx.players.current();
-  if (!current) return;
-  state.skipTurns[current.id] = Math.max(0, state.skipTurns[current.id] - 1);
-  state.drawnPlayerId = null;
-  ctx.history.add(`${current.username} perd son tour.`);
-  ctx.turn.end();
-}
-
-function resolveEffect(
-  state: BandeABananeState,
-  playerId: number,
-  card: BandeABananeCardDefinition,
-  input: PlayCardInput,
-  ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): void {
-  if (card.action === 'vol-de-banane' && input.targetPlayerId != null) {
-    stealRandom(input.targetPlayerId, playerId, ctx);
-  } else if (
-    card.action === 'cris-de-la-jungle' &&
-    input.targetPlayerId != null &&
-    input.cardToGiveId
-  ) {
-    exchangeRandom(playerId, input.targetPlayerId, input.cardToGiveId, ctx);
-  } else if (card.action === 'grimpeur-fou') {
-    drawTo(playerId, ctx);
-    drawTo(playerId, ctx);
-  } else if (card.trap === 'piege-a-noix-de-coco') {
-    state.skipTurns[playerId] += 1;
-  } else if (card.trap === 'tigre-rodeur') {
-    discardRandom(playerId, ctx);
-  }
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username ?? 'Le joueur'} joue ${card.name}.`,
+function samePlayInput(left: PlayCardInput, right: PlayCardInput): boolean {
+  return (
+    left.cardId === right.cardId &&
+    left.targetPlayerId === right.targetPlayerId &&
+    left.species === right.species
   );
 }
 
-function stealRandom(
-  sourceId: number,
-  destinationId: number,
-  ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): void {
-  const source = ctx.cards.hand<string>(HANDS, sourceId);
-  const card = ctx.random.pick(source);
-  if (!card) return;
-  ctx.cards.take(HANDS, sourceId, card);
-  ctx.cards.give(HANDS, destinationId, card);
+export const drawAtTurnStart = drawCardsAtTurnStart<
+  BandeABananeState,
+  string
+>({
+  deckId: DECK,
+  handId: HANDS,
+  afterAttempt: ({ player, ctx }) => {
+    if (!player) return;
+    ctx.turn.flags.set(DRAWN_PLAYER_FLAG, player.id);
+    ctx.events.message('game.card.drawn', {
+      playerId: player.id,
+      deckId: DECK,
+    });
+  },
+});
+
+function effectsForPlay(
+  card: BandeABananeCardDefinition,
+  input: PlayCardInput,
+): readonly GameEffectInstruction[] {
+  return card.effects.map((effect) => {
+    if (effect.kind === 'steal-card' && input.targetPlayerId != null) {
+      return {
+        ...effect,
+        from: gameEffects.target.player(input.targetPlayerId),
+      };
+    }
+    if (
+      effect.kind === 'custom' &&
+      effect.effectId === 'banana.exchange-random' &&
+      input.targetPlayerId != null
+    ) {
+      return {
+        ...effect,
+        target: gameEffects.target.player(input.targetPlayerId),
+      };
+    }
+    return effect;
+  });
 }
 
 function exchangeRandom(
@@ -187,11 +192,8 @@ function exchangeRandom(
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
 ): void {
   const received = ctx.random.pick(ctx.cards.hand<string>(HANDS, targetId));
-  ctx.cards.take(HANDS, playerId, cardToGive);
-  ctx.cards.give(HANDS, targetId, cardToGive);
   if (!received) return;
-  ctx.cards.take(HANDS, targetId, received);
-  ctx.cards.give(HANDS, playerId, received);
+  ctx.cards.exchange(HANDS, playerId, cardToGive, targetId, received);
 }
 
 function enforceHandLimit(
@@ -206,27 +208,99 @@ function discardRandom(
   playerId: number,
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
 ): void {
-  const card = ctx.random.pick(ctx.cards.hand<string>(HANDS, playerId));
-  if (!card) return;
-  ctx.cards.play(HANDS, DECK, playerId, card);
+  ctx.cards.discardRandom(HANDS, DECK, playerId);
 }
 
-function drawTo(
+function speciesCount(
   playerId: number,
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): void {
-  const card = ctx.cards.drawOrRecycle<string>(DECK);
-  if (card) ctx.cards.give(HANDS, playerId, card);
+): number {
+  return new Set(troops(playerId, ctx).map((entry) => entry.species)).size;
 }
 
-function speciesCount(state: BandeABananeState, playerId: number): number {
-  return new Set(state.troops[playerId].map((entry) => entry.species)).size;
-}
-
-function endTurn(
-  state: BandeABananeState,
+export function bananaTroops(
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): void {
-  state.drawnPlayerId = null;
-  ctx.turn.end();
+): PlayerMap<import('./state').BandeABananeTroopEntry[]> {
+  return Object.fromEntries(
+    ctx.players.all().map((player) => [player.id, troops(player.id, ctx)]),
+  );
 }
+
+function troops(
+  playerId: number,
+  ctx: Parameters<typeof pass.execute>[0]['ctx'],
+): import('./state').BandeABananeTroopEntry[] {
+  return ctx.inventory.items(TROOPS, playerId).flatMap((itemId) => {
+    const separator = itemId.lastIndexOf(':');
+    const cardId = itemId.slice(0, separator);
+    const species = itemId.slice(separator + 1);
+    const card = BANDE_A_BANANE_CARD_BY_ID[cardId];
+    return separator < 0 || !card || !isBananaSpecies(species)
+      ? []
+      : [{ cardId, species, isJoker: card.type === 'joker' }];
+  });
+}
+
+function isBananaSpecies(value: string): value is BandeABananeMonkeySpecies {
+  return BANANA_SPECIES.some((species) => species === value);
+}
+
+function troopItemId(
+  cardId: string,
+  species: BandeABananeMonkeySpecies,
+): string {
+  return `${cardId}:${species}`;
+}
+
+export function drawnPlayerId(
+  ctx: Parameters<typeof pass.execute>[0]['ctx'],
+): number | null {
+  return ctx.turn.flags.get<number>(DRAWN_PLAYER_FLAG);
+}
+
+export const BANDE_A_BANANE_EFFECTS = {
+  'banana.exchange-random': defineEffect<
+    BandeABananeState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (actorPlayerId == null || targetId == null) return;
+      const cardIds = ctx.cards.hand<string>(HANDS, actorPlayerId);
+      ctx.effects.schedule(
+        gameEffects.chooseCard({
+          handId: HANDS,
+          cardIds,
+          owner: gameEffects.target.player(actorPlayerId),
+          chooser: gameEffects.target.player(actorPlayerId),
+          choiceId: 'banana.exchange-card',
+          effects: Object.fromEntries(
+            cardIds.map((cardToGiveId) => [
+              cardToGiveId,
+              [
+                gameEffects.custom(
+                  'banana.finish-exchange',
+                  { cardToGiveId },
+                  gameEffects.target.player(targetId),
+                ),
+              ],
+            ]),
+          ),
+        }),
+      );
+    },
+  }),
+  'banana.finish-exchange': defineEffect<
+    BandeABananeState,
+    { cardToGiveId: string }
+  >({
+    input: gameInput.object({ cardToGiveId: gameInput.cardId() }),
+    apply: ({ actorPlayerId, targetPlayerIds, data, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (actorPlayerId != null && targetId != null) {
+        exchangeRandom(actorPlayerId, targetId, data.cardToGiveId, ctx);
+      }
+    },
+  }),
+} as const;

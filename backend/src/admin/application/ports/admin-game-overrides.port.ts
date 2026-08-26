@@ -5,7 +5,7 @@ export interface AdminGameCatalogOverride {
   name?: string;
   description?: string;
   rules?: string;
-  status?: string;
+  status?: 'construction' | 'beta' | 'finished';
   chatEnabled?: boolean;
   chatSoundsEnabled?: boolean;
 }

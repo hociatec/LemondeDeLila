@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GAME_CATALOG_READER } from '../../application/ports/game-catalog.reader';
-import { GameContentLoaderService } from '../../application/services/game-content-loader.service';
 import { GameContentService } from '../../application/services/game-content.service';
 import { GameEngineService } from '../../application/services/game-engine.service';
 import { GAME_CATALOG_OVERRIDES_REPOSITORY } from '../../../engine/application/ports/game-catalog-overrides.repository';
@@ -14,6 +13,11 @@ import { GameCategoriesTypeormRepository } from '../../../engine/infrastructure/
 import { GameCategoryEntity } from '../../../engine/infrastructure/persistence/typeorm/entities/game-category.entity';
 import { GameCatalogOverrideEntity } from '../../../engine/infrastructure/persistence/typeorm/entities/game-catalog-override.entity';
 import { FilesystemGameCatalogReader } from '../system/filesystem-game-catalog.reader';
+import { GameSessionTypeormStore } from '../persistence/typeorm/repositories/game-session-typeorm.store';
+import { GameSessionEntity } from '../persistence/typeorm/entities/game-session.entity';
+import { GAME_STATE_STORE } from '../../application/ports/game-state-store.port';
+import { GAME_EVENT_STORE } from '../../application/ports/game-event-store.port';
+import { GameEngineMetricsService } from '../../application/services/game-engine-metrics.service';
 
 @Module({
   imports: [
@@ -21,6 +25,7 @@ import { FilesystemGameCatalogReader } from '../system/filesystem-game-catalog.r
       GameCategoryEntity,
       GameCategoryAssignmentEntity,
       GameCatalogOverrideEntity,
+      GameSessionEntity,
     ]),
   ],
   providers: [
@@ -29,9 +34,18 @@ import { FilesystemGameCatalogReader } from '../system/filesystem-game-catalog.r
       provide: GAME_CATALOG_READER,
       useExisting: FilesystemGameCatalogReader,
     },
-    GameContentLoaderService,
     GameContentService,
+    GameSessionTypeormStore,
+    {
+      provide: GAME_STATE_STORE,
+      useExisting: GameSessionTypeormStore,
+    },
+    {
+      provide: GAME_EVENT_STORE,
+      useExisting: GameSessionTypeormStore,
+    },
     GameEngineService,
+    GameEngineMetricsService,
     GameCatalogOverridesTypeormRepository,
     GameCategoriesTypeormRepository,
     {
@@ -47,9 +61,9 @@ import { FilesystemGameCatalogReader } from '../system/filesystem-game-catalog.r
   ],
   exports: [
     GAME_CATALOG_READER,
-    GameContentLoaderService,
     GameContentService,
     GameEngineService,
+    GameEngineMetricsService,
     GameCatalogOverridesService,
     GameCategoriesService,
   ],

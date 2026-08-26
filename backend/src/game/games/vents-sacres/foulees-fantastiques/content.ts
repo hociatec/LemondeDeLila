@@ -1,3 +1,7 @@
+import {
+  freezeGameContent,
+  rejectContent,
+} from '../../../core/application/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { FouleesFamily } from './state';
@@ -36,6 +40,13 @@ export const FOULEES_FAMILIES: readonly FouleesFamily[] = [
   },
 ];
 
+export const FOULEES_PAWNS = FOULEES_FAMILIES.flatMap((family) =>
+  family.pawns.map((label, pawnIndex) => ({
+    id: `${family.id}:${pawnIndex}`,
+    label,
+  })),
+);
+
 export const FOULEES_BOARD = loadBoard();
 
 function loadBoard(): Board {
@@ -53,13 +64,11 @@ function loadBoard(): Board {
     Number(raw.trackLength) < 1 ||
     !Number.isInteger(raw.homeLength) ||
     Number(raw.homeLength) < 1 ||
-    !Array.isArray(raw.tiles) ||
+    !isArrayOf(raw.tiles, isTile) ||
     raw.tiles.length !== raw.trackLength ||
-    !raw.tiles.every(isTile) ||
-    !Array.isArray(raw.safeTiles) ||
-    !raw.safeTiles.every((value) => Number.isInteger(value))
+    !isArrayOf(raw.safeTiles, isInteger)
   ) {
-    throw new Error('Plateau Foulées Fantastiques invalide');
+    rejectContent('Plateau Foulées Fantastiques invalide');
   }
   return {
     trackLength: Number(raw.trackLength),
@@ -87,7 +96,7 @@ function contentDirectory(): string {
   const found = candidates.find((directory) =>
     existsSync(resolve(directory, 'board.json')),
   );
-  if (!found) throw new Error('Contenu Foulées Fantastiques introuvable');
+  if (!found) rejectContent('Contenu Foulées Fantastiques introuvable');
   return found;
 }
 
@@ -102,3 +111,18 @@ function isTile(value: unknown): value is { id?: string; label?: string } {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
+
+function isArrayOf<T>(
+  value: unknown,
+  guard: (item: unknown) => item is T,
+): value is T[] {
+  return Array.isArray(value) && value.every(guard);
+}
+
+function isInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value);
+}
+
+freezeGameContent(FOULEES_FAMILIES);
+freezeGameContent(FOULEES_PAWNS);
+freezeGameContent(FOULEES_BOARD);

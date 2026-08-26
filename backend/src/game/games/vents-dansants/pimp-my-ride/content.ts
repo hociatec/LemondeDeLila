@@ -1,3 +1,7 @@
+import {
+  freezeGameContent,
+  rejectContent,
+} from '../../../core/application/public-api';
 import data from './content-data.json';
 
 export type PimpMyRideCategory =
@@ -44,6 +48,11 @@ function category(value: string): PimpMyRideCategory {
   const found = PIMP_MY_RIDE_CATEGORY_ORDER.find(
     (candidate) => candidate === value,
   );
-  if (!found) throw new Error(`Catégorie Pimp My Ride inconnue: ${value}`);
+  if (!found) rejectContent(`Catégorie Pimp My Ride inconnue: ${value}`);
   return found;
 }
+
+freezeGameContent(PIMP_MY_RIDE_CATEGORY_ORDER);
+freezeGameContent(PIMP_MY_RIDE_DECK);
+freezeGameContent(PIMP_MY_RIDE_CARD_BY_ID);
+freezeGameContent(PIMP_MY_RIDE_CAR_NAMES);

@@ -2,12 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import bcryptImport from 'bcrypt';
 import { randomBytes } from 'crypto';
 
-type BcryptApi = {
-  hash(input: string, rounds: number): Promise<string>;
-};
-
-const bcrypt = bcryptImport as unknown as BcryptApi;
-
 @Injectable()
 export class AdminUserPasswordService {
   async hashPassword(password: string): Promise<string> {
@@ -15,7 +9,7 @@ export class AdminUserPasswordService {
       throw new BadRequestException('Mot de passe vide');
     }
 
-    return bcrypt.hash(password, 10);
+    return bcryptImport.hash(password, 10);
   }
 
   generateTemporaryPassword(): string {

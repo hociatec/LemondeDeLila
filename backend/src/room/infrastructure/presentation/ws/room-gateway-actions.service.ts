@@ -19,16 +19,12 @@ import {
 } from '../../../domain/errors/room-ws.errors';
 import { resolveSpectatorIntent } from './room-role.helpers';
 import { RoomGatewayPresenter } from './room-gateway.presenter';
-import type {
-  AuthedClient,
-  ClientMeta,
-  RoomWithOptionalRuntimeFields,
-} from './room-gateway.types';
+import type { AuthedClient, ClientMeta } from './room-gateway.types';
 import type { Server } from 'ws';
 import { RoomGatewayBotActionsService } from './room-gateway-bot-actions.service';
 
 export type ActionsContext = {
-  server: Server<WebSocket>;
+  server: Server<typeof WebSocket>;
   rooms: Map<number, Set<WebSocket>>;
   silentRooms: Map<number, Set<WebSocket>>;
   clients: Map<WebSocket, ClientMeta>;
@@ -298,17 +294,13 @@ export class RoomGatewayActionsService {
           meta.roomId,
           meta.userId,
         );
-        const roomWithRuntime =
-          room as unknown as RoomWithOptionalRuntimeFields;
-        roomWithRuntime.tableAmbienceSoundId = soundId;
+        room.tableAmbienceSoundId = soundId;
         await this.roomAccess.saveRoom(room);
 
         const updated = await ctx.tryUpdateRoomPayload(
           meta.roomId,
           (roomState) => {
-            (
-              roomState.room as RoomWithOptionalRuntimeFields
-            ).tableAmbienceSoundId = soundId;
+            roomState.room.tableAmbienceSoundId = soundId;
             roomState.generatedAt = new Date().toISOString();
             return roomState;
           },

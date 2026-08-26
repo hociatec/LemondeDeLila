@@ -16,8 +16,6 @@ import { toRoomEntity, toRoomRecord } from './room-typeorm.mappers';
 export class RoomTypeormRepository implements RoomRepository {
   constructor(
     @InjectRepository(Room) private readonly rooms: Repository<Room>,
-    @InjectRepository(RoomParticipant)
-    private readonly participants: Repository<RoomParticipant>,
   ) {}
 
   create(data: Partial<RoomRecord>): RoomRecord {
@@ -46,16 +44,19 @@ export class RoomTypeormRepository implements RoomRepository {
       toRoomRecord(
         await this.rooms.findOne({
           where: { id: saved.id },
-          relations: ['owner', 'participants', 'participants.user', 'bots'],
+          relations: {
+            owner: true,
+            participants: { user: true },
+            bots: true,
+          },
         }),
       ) ?? room
     );
   }
 
   async update(id: number, patch: Partial<RoomRecord>): Promise<void> {
-    await this.rooms.update(
-      { id },
-      toRoomEntity(this.create({ ...patch, id })) as never,
+    await this.rooms.save(
+      this.rooms.create(toRoomEntity(this.create({ ...patch, id }))),
     );
   }
 
@@ -66,7 +67,7 @@ export class RoomTypeormRepository implements RoomRepository {
   async exists(id: number): Promise<boolean> {
     const existing = await this.rooms.findOne({
       where: { id },
-      select: ['id'],
+      select: { id: true },
     });
     return Boolean(existing);
   }
@@ -79,7 +80,7 @@ export class RoomTypeormRepository implements RoomRepository {
     return toRoomRecord(
       await this.rooms.findOne({
         where: { id },
-        relations: ['owner'],
+        relations: { owner: true },
       }),
     );
   }
@@ -88,7 +89,11 @@ export class RoomTypeormRepository implements RoomRepository {
     return toRoomRecord(
       await this.rooms.findOne({
         where: { id },
-        relations: ['owner', 'participants', 'participants.user', 'bots'],
+        relations: {
+          owner: true,
+          participants: { user: true },
+          bots: true,
+        },
       }),
     );
   }
@@ -193,7 +198,11 @@ export class RoomTypeormRepository implements RoomRepository {
       toRoomRecord(
         await this.rooms.findOne({
           where: { id: room.id },
-          relations: ['owner', 'participants', 'participants.user', 'bots'],
+          relations: {
+            owner: true,
+            participants: { user: true },
+            bots: true,
+          },
         }),
       ) ?? {
         id: room.id,

@@ -26,6 +26,7 @@ export class RedisNotificationTransport extends NotificationTransport {
     this.transport = new RedisPubSubTransport<NotificationEvent>(
       url,
       'notifications',
+      decodeNotificationEvent,
       redisFactory
         ? (u, name) =>
             redisFactory.create(u, name, {
@@ -54,4 +55,28 @@ export class RedisNotificationTransport extends NotificationTransport {
   disconnect(): Promise<void> {
     return this.transport.disconnect();
   }
+}
+
+function decodeNotificationEvent(value: unknown): NotificationEvent | null {
+  if (
+    !isRecord(value) ||
+    typeof value.userId !== 'number' ||
+    !Number.isSafeInteger(value.userId) ||
+    typeof value.type !== 'string' ||
+    (value.origin !== null && typeof value.origin !== 'string') ||
+    (value.disconnect !== undefined && typeof value.disconnect !== 'boolean')
+  ) {
+    return null;
+  }
+  return {
+    userId: value.userId,
+    type: value.type,
+    payload: value.payload,
+    origin: value.origin,
+    ...(value.disconnect === undefined ? {} : { disconnect: value.disconnect }),
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }

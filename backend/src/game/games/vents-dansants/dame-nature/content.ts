@@ -1,4 +1,5 @@
 import data from './content-data.json';
+import { freezeGameContent } from '../../../core/application/public-api';
 
 export interface DameNatureFamilyCardDefinition {
   id: string;
@@ -48,3 +49,11 @@ export const DAME_NATURE_QUIZ_CARD_IDS = DAME_NATURE_QUIZ_CARDS.map(
 export const DAME_NATURE_NATURE_CARD_IDS = DAME_NATURE_NATURE_CARDS.map(
   (card) => card.id,
 );
+
+freezeGameContent(DAME_NATURE_FAMILY_CARD_DEFINITIONS);
+freezeGameContent(DAME_NATURE_QUIZ_CARDS);
+freezeGameContent(DAME_NATURE_NATURE_CARDS);
+freezeGameContent(DAME_NATURE_CARD_BY_ID);
+freezeGameContent(DAME_NATURE_FAMILY_CARD_IDS);
+freezeGameContent(DAME_NATURE_QUIZ_CARD_IDS);
+freezeGameContent(DAME_NATURE_NATURE_CARD_IDS);

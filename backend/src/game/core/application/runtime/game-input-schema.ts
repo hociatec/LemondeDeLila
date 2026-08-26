@@ -1,4 +1,14 @@
 import { GamePayloadValidationError } from '../../domain/errors/game-domain.errors';
+import {
+  cardId as toCardId,
+  pawnId as toPawnId,
+  playerId as toPlayerId,
+  tileId as toTileId,
+  type CardId,
+  type PawnId,
+  type PlayerId,
+  type TileId,
+} from './game-identifiers';
 
 export interface GameInputSchema<T> {
   parse(value: unknown, path?: string): T;
@@ -11,6 +21,8 @@ type InferShape<TShape extends Shape> = {
     ? TValue
     : never;
 };
+type InferSchema<TSchema> =
+  TSchema extends GameInputSchema<infer TValue> ? TValue : never;
 
 export const gameInput = {
   string(
@@ -52,6 +64,21 @@ export const gameInput = {
     );
   },
 
+  numberEnum<const TValue extends number>(values: readonly TValue[]) {
+    return schema<TValue>(
+      (candidate, path) => {
+        const parsed =
+          typeof candidate === 'number' ? candidate : Number(candidate);
+        const matched = values.find((value) => value === parsed);
+        if (!Number.isFinite(parsed) || matched == null) {
+          invalid(path, `valeur attendue parmi ${values.join(', ')}`);
+        }
+        return matched;
+      },
+      { type: 'number', enum: [...values] },
+    );
+  },
+
   boolean(): GameInputSchema<boolean> {
     return schema(
       (value, path) => {
@@ -75,13 +102,14 @@ export const gameInput = {
   enum<const TValue extends string>(values: readonly TValue[]) {
     return schema<TValue>(
       (candidate, path) => {
-        if (
-          typeof candidate !== 'string' ||
-          !values.includes(candidate as TValue)
-        ) {
+        const matched =
+          typeof candidate === 'string'
+            ? values.find((value) => value === candidate)
+            : undefined;
+        if (matched == null) {
           invalid(path, `valeur attendue parmi ${values.join(', ')}`);
         }
-        return candidate as TValue;
+        return matched;
       },
       { type: 'enum', values },
     );
@@ -121,12 +149,12 @@ export const gameInput = {
           invalid(path, 'objet attendu');
         }
         const source = value as Record<string, unknown>;
-        return Object.fromEntries(
-          Object.entries(shape).map(([key, field]) => [
-            key,
-            field.parse(source[key], `${path}.${key}`),
-          ]),
-        ) as InferShape<TShape>;
+        const parsed: Record<string, unknown> = {};
+        for (const [key, field] of Object.entries(shape)) {
+          const fieldValue = field.parse(source[key], `${path}.${key}`);
+          if (fieldValue !== undefined) parsed[key] = fieldValue;
+        }
+        return parsed as InferShape<TShape>;
       },
       {
         type: 'object',
@@ -147,14 +175,57 @@ export const gameInput = {
     );
   },
 
-  playerId(): GameInputSchema<number> {
-    return this.number({ integer: true, min: 1 });
+  union<const TSchemas extends readonly GameInputSchema<unknown>[]>(
+    schemas: TSchemas,
+  ): GameInputSchema<InferSchema<TSchemas[number]>> {
+    return schema(
+      (value, path) => {
+        for (const candidate of schemas) {
+          try {
+            return candidate.parse(value, path) as InferSchema<
+              TSchemas[number]
+            >;
+          } catch (error) {
+            if (!(error instanceof GamePayloadValidationError)) throw error;
+          }
+        }
+        return invalid(path, 'aucune variante valide');
+      },
+      { oneOf: schemas.map((candidate) => candidate.describe()) },
+    );
   },
 
-  cardId(): GameInputSchema<string> {
-    return this.string({ min: 1, max: 128 });
+  playerId(): GameInputSchema<PlayerId> {
+    const input = this.number({ integer: true, min: 1 });
+    return taggedMap(input, 'player-id', toPlayerId);
+  },
+
+  cardId(): GameInputSchema<CardId> {
+    const input = this.string({ min: 1, max: 128 });
+    return taggedMap(input, 'card-id', toCardId);
+  },
+
+  pawnId(): GameInputSchema<PawnId> {
+    const input = this.string({ min: 1, max: 128 });
+    return taggedMap(input, 'pawn-id', toPawnId);
+  },
+
+  tileId(): GameInputSchema<TileId> {
+    const input = this.string({ min: 1, max: 128 });
+    return taggedMap(input, 'tile-id', toTileId);
   },
 };
+
+function taggedMap<TValue, TMapped>(
+  input: GameInputSchema<TValue>,
+  format: string,
+  map: (value: TValue) => TMapped,
+): GameInputSchema<TMapped> {
+  return schema(
+    (value, path) => map(input.parse(value, path)),
+    { ...input.describe(), format },
+  );
+}
 
 function schema<T>(
   parse: (value: unknown, path: string) => T,

@@ -1,3 +1,9 @@
+import {
+  freezeGameContent,
+  gameEffects,
+  rejectContent,
+} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
 import boardContent from './model/content/board.json';
 import cardsContent from './model/content/cards.json';
 import pawnsContent from './model/content/pawns.json';
@@ -30,7 +36,7 @@ export type FrousseCard = {
   localNumber: number;
   category: FrousseCategory;
   text: string;
-  effect: FrousseCardEffect;
+  effects: readonly GameEffectInstruction[];
 };
 
 const EFFECTS: Record<number, FrousseCardEffect> = {
@@ -99,7 +105,7 @@ const EFFECTS: Record<number, FrousseCardEffect> = {
 export const FROUSSE_CARDS: FrousseCard[] = cardsContent.cards.map((card) => ({
   ...card,
   category: categoryOf(card.category),
-  effect: effectOf(card.id),
+  effects: effectInstructions(effectOf(card.id)),
 }));
 
 export const FROUSSE_TILES = boardContent.tiles.map((tile) => ({
@@ -111,8 +117,107 @@ export const FROUSSE_PAWNS = pawnsContent.pawns.map((pawn) => ({ ...pawn }));
 
 function effectOf(id: number): FrousseCardEffect {
   const effect = EFFECTS[id];
-  if (!effect) throw new Error(`Effet Frousse manquant pour la carte ${id}`);
+  if (!effect) rejectContent(`Effet Frousse manquant pour la carte ${id}`);
   return effect;
+}
+
+function effectInstructions(
+  effect: FrousseCardEffect,
+): readonly GameEffectInstruction[] {
+  if (effect.kind === 'move') {
+    return [gameEffects.custom('frousse.move', { delta: effect.delta })];
+  }
+  if (effect.kind === 'skip') return [gameEffects.skipTurn(effect.turns)];
+  if (effect.kind === 'goto') {
+    return [gameEffects.custom('frousse.goto', { position: effect.position })];
+  }
+  if (effect.kind === 'block') {
+    return [
+      gameEffects.addStatus({
+        status: 'frousse.blocked',
+        scope: 'until-used',
+        data: { rule: effect.rule },
+      }),
+      ...(effect.replay ? [gameEffects.extraTurn()] : []),
+    ];
+  }
+  if (effect.kind === 'cap') {
+    return [
+      gameEffects.addStatus({
+        status: 'frousse.next-move-cap',
+        scope: 'until-used',
+        data: { value: effect.maximum },
+      }),
+    ];
+  }
+  if (effect.kind === 'swap') {
+    return [
+      gameEffects.custom(
+        'frousse.swap',
+        {},
+        gameEffects.target.chosenOpponent(
+          'frousse.swap',
+          effect.canDecline,
+        ),
+      ),
+      gameEffects.completeTurn(),
+    ];
+  }
+  if (effect.kind === 'replay') {
+    const modifierStatus =
+      effect.modifier === 'minus-two'
+        ? gameEffects.addStatus({
+            status: 'frousse.next-roll-malus',
+            scope: 'until-used',
+            data: { value: -2 },
+          })
+        : effect.modifier === 'keep-lowest'
+          ? gameEffects.addStatus({
+              status: 'frousse.next-roll-keep-lowest',
+              scope: 'until-used',
+            })
+          : null;
+    return [
+      gameEffects.extraTurn(),
+      ...(modifierStatus ? [modifierStatus] : []),
+    ];
+  }
+  if (effect.kind === 'shield') {
+    const status =
+      effect.category === 'trap'
+        ? 'frousse.ignore-next-trap'
+        : effect.category === 'prank'
+          ? 'frousse.ignore-next-prank'
+          : effect.category === 'ghost'
+            ? 'frousse.ignore-next-ghost'
+            : 'frousse.ignore-trap-until-next-draw';
+    return [gameEffects.addStatus({ status, scope: 'until-used' })];
+  }
+  if (effect.kind === 'double') {
+    return [
+      gameEffects.addStatus({
+        status: 'frousse.next-roll-double',
+        scope: 'until-used',
+      }),
+    ];
+  }
+  if (effect.kind === 'three-back-two') {
+    return [
+      gameEffects.addStatus({
+        status: 'frousse.next-roll-if-three-back-two',
+        scope: 'until-used',
+      }),
+      gameEffects.extraTurn(),
+    ];
+  }
+  return [
+    gameEffects.custom(
+      'frousse.move-others',
+      { delta: effect.delta },
+      gameEffects.target.allOpponents(),
+    ),
+    gameEffects.skipTurn(effect.turns),
+  ];
 }
 
 function categoryOf(value: string): FrousseCategory {
@@ -120,11 +225,15 @@ function categoryOf(value: string): FrousseCategory {
   if (value === 'Farce') return 'prank';
   if (value === 'Fantôme') return 'ghost';
   if (value === 'Bonus') return 'bonus';
-  throw new Error(`Catégorie Frousse inconnue: ${value}`);
+  rejectContent(`Catégorie Frousse inconnue: ${value}`);
 }
 
 function tileTypeOf(value: string): 'neutral' | 'card' | 'finish' {
   if (value === 'neutral' || value === 'card' || value === 'finish')
     return value;
-  throw new Error(`Case Frousse inconnue: ${value}`);
+  rejectContent(`Case Frousse inconnue: ${value}`);
 }
+
+freezeGameContent(FROUSSE_CARDS);
+freezeGameContent(FROUSSE_TILES);
+freezeGameContent(FROUSSE_PAWNS);

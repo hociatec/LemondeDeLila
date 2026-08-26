@@ -36,6 +36,9 @@ export class GameWsRegistrar implements OnModuleInit {
     this.registry.register('game.action', (session, payload) =>
       this.handler.action(session, payload),
     );
+    this.registry.register('game.action.candidates', (session, payload) =>
+      this.handler.candidates(session, payload),
+    );
     this.registry.register('game.key', (session, payload) =>
       this.handler.key(session, payload),
     );

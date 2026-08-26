@@ -27,9 +27,31 @@ export class GameWsCommandMapper {
   }
 
   resolveActions(payload: unknown, actorId: number): GameSingleActionDto[] {
-    return this.decodeActions(payload).map((action) =>
-      this.withActor(action, actorId),
+    const envelope = this.asRecord(payload);
+    const commandId = this.stringValue(envelope.commandId);
+    const knownVersion = this.integerValue(envelope.knownVersion);
+    return this.decodeActions(payload).map((action, index, actions) =>
+      this.withActor(action, actorId, {
+        commandId:
+          commandId && actions.length > 1 ? `${commandId}:${index}` : commandId,
+        knownVersion,
+      }),
     );
+  }
+
+  resolveCandidateQuery(payload: unknown): {
+    actionType: string;
+    query: Record<string, unknown>;
+    offset: number;
+    limit: number;
+  } {
+    const record = this.asRecord(payload);
+    return {
+      actionType: this.stringValue(record.actionType) ?? '',
+      query: this.asRecord(record.query),
+      offset: Math.max(0, this.integerValue(record.offset) ?? 0),
+      limit: Math.max(1, Math.min(200, this.integerValue(record.limit) ?? 50)),
+    };
   }
 
   private decodeActions(payload: unknown): GameSingleActionDto[] {
@@ -42,7 +64,7 @@ export class GameWsCommandMapper {
     const source =
       record.action && typeof record.action === 'object'
         ? record.action
-        : this.hasActionShape(record)
+        : typeof record.type === 'string'
           ? record
           : null;
     const action = this.normalizeAction(source);
@@ -61,24 +83,7 @@ export class GameWsCommandMapper {
   }
 
   private resolveActionType(record: Record<string, unknown>): string {
-    for (const field of [
-      'type',
-      'actionType',
-      'actionId',
-      'intentId',
-      'key',
-      'action',
-    ]) {
-      const value = record[field];
-      if (typeof value === 'string' && value.trim()) return value.trim();
-    }
-    return '';
-  }
-
-  private hasActionShape(record: Record<string, unknown>): boolean {
-    return ['type', 'actionType', 'actionId', 'intentId', 'key', 'action'].some(
-      (field) => typeof record[field] === 'string',
-    );
+    return typeof record.type === 'string' ? record.type.trim() : '';
   }
 
   private resolveActionPayload(
@@ -87,39 +92,37 @@ export class GameWsCommandMapper {
     if (record.payload && typeof record.payload === 'object') {
       return this.asRecord(record.payload);
     }
-    if (record.data && typeof record.data === 'object') {
-      return this.asRecord(record.data);
-    }
-
-    const controlKeys = new Set([
-      'roomId',
-      'id',
-      'type',
-      'action',
-      'actionType',
-      'actionId',
-      'intentId',
-      'key',
-      'meta',
-      '_trace',
-    ]);
-    return Object.fromEntries(
-      Object.entries(record).filter(([key]) => !controlKeys.has(key)),
-    );
+    return {};
   }
 
   private withActor(
     action: GameSingleActionDto,
     actorId: number,
+    envelope: { commandId: string | null; knownVersion: number | null },
   ): GameSingleActionDto {
+    const commandId =
+      this.stringValue(action.meta?.commandId) ?? envelope.commandId;
+    const knownVersion =
+      this.integerValue(action.meta?.knownVersion) ?? envelope.knownVersion;
     return {
       ...action,
       payload: action.payload ?? {},
       meta: {
         ...(action.meta ?? {}),
         actorId,
+        ...(commandId ? { commandId } : {}),
+        ...(knownVersion == null ? {} : { knownVersion }),
       },
     };
+  }
+
+  private stringValue(value: unknown): string | null {
+    return typeof value === 'string' && value.trim() ? value.trim() : null;
+  }
+
+  private integerValue(value: unknown): number | null {
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
   }
 
   private asRecord(value: unknown): Record<string, unknown> {

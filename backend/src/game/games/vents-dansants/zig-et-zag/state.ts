@@ -1,41 +1,44 @@
-import type { ZigEtZagColor, ZigEtZagFamily } from './content';
+import type { PlayerMap } from '../../../core/application/public-api';
 
-export interface ZigEtZagPlay {
+export interface ZigEtZagPlayState {
   playerId: number;
   playedCards: string[];
+}
+
+export interface ZigEtZagPlay extends ZigEtZagPlayState {
   faceDownCard?: string;
   faceUpCard?: string;
   invalidJoker?: boolean;
-  lostByNoCard?: boolean;
 }
 
 export interface ZigEtZagRound {
-  stage: 'selection' | 'battle-face-down' | 'battle-face-up';
-  plays: ZigEtZagPlay[];
-  waitingPlayers: number[];
+  plays: ZigEtZagPlayState[];
   tiedPlayers: number[];
-  triggerColors: Record<number, ZigEtZagColor | undefined>;
-  triggerFamilies: Record<number, ZigEtZagFamily | undefined>;
-  battleLog: string[];
 }
 
 export interface ZigEtZagRoundSummary {
+  roundNumber: number;
   winnerId: number | null;
   cardsWon: number;
-  plays: ZigEtZagPlay[];
-  battleLog: string[];
+  plays: ZigEtZagPlayState[];
 }
 
 export interface ZigEtZagState {
-  initialDeckCounts: Record<number, number>;
-  round: ZigEtZagRound;
+  battle: ZigEtZagRound;
   lastRound: ZigEtZagRoundSummary | null;
-  winnerId: number | null;
 }
 
-export type ZigEtZagPlayerView = Omit<ZigEtZagState, 'round'> & {
-  hand: string[];
-  handCounts: Record<number, number>;
-  stage: ZigEtZagRound['stage'];
+export interface ZigEtZagBattleLogEntry {
+  key: 'zig.battle.started' | 'zig.battle.continues';
+  params: { roundNumber: number };
+}
+
+export type ZigEtZagPlayerView = {
+  initialDeckCounts: PlayerMap<number>;
+  lastRound:
+    | (ZigEtZagRoundSummary & { battleLog: ZigEtZagBattleLogEntry[] })
+    | null;
+  stage: 'selection' | 'battle-face-down' | 'battle-face-up';
   waitingPlayers: number[];
+  winnerId: number | null;
 };

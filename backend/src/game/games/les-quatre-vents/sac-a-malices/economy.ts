@@ -1,14 +1,21 @@
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
+import type { GameContext } from '../../../core/application/public-api';
 import {
   sacVariant,
   type SacGroup,
   type SacTile,
   type SacVariant,
+  type SacVariantId,
 } from './content';
 import type { SacBuilding, SacState } from './state';
+import { normalize } from './text-parser';
 
-type RuleContext = GameRuleContext<SacState>;
+type RuleContext = GameContext<SacState>;
 const TRACK = 'city';
+const PROPERTIES = 'properties';
+export const SAC_JAIL_TURNS = 'sac.jail-turns';
+export const SAC_JAIL_CARDS = 'sac.jail-cards';
+export const SAC_CONSECUTIVE_DOUBLES = 'sac.consecutive-doubles';
+export const SAC_POT = 'sac.pot';
 
 export function changeMoney(
   state: SacState,
@@ -17,28 +24,25 @@ export function changeMoney(
   toPot: boolean,
   ctx: RuleContext,
 ): void {
-  if (state.eliminated[playerId]) return;
-  state.money[playerId] += delta;
-  const rules = sacVariant(state.variantId).rules;
-  if (toPot && delta < 0 && rules.potEnabled) state.pot += -delta;
-  if (state.money[playerId] >= 0) return;
-  state.money[playerId] = 0;
-  state.eliminated[playerId] = true;
-  for (const [tileIndex, ownerId] of Object.entries(state.ownership)) {
-    if (ownerId === playerId) {
-      delete state.ownership[Number(tileIndex)];
-      delete state.buildings[Number(tileIndex)];
-    }
+  if (ctx.match.playerStatus(playerId) === 'eliminated') return;
+  const money = ctx.resources.add(playerId, 'money', delta);
+  const rules = currentSacVariant(ctx).rules;
+  if (toPot && delta < 0 && rules.potEnabled) ctx.counters.add(SAC_POT, -delta);
+  if (money >= 0) return;
+  ctx.resources.set(playerId, 'money', 0);
+  ctx.match.eliminate(playerId, 'bankruptcy');
+  for (const assetId of ctx.ownership.releaseAll(PROPERTIES, playerId)) {
+    delete state.buildings[Number(assetId)];
   }
-  ctx.history.add(`${ctx.players.get(playerId)?.username} est en faillite.`);
+  ctx.events.message('sac.player.bankrupt', { playerId });
   updateWinner(state, ctx);
 }
 
-export function updateWinner(state: SacState, ctx: RuleContext): void {
-  const alive = ctx.players
-    .all()
-    .filter((player) => !state.eliminated[player.id]);
-  if (alive.length === 1) state.winnerId = alive[0].id;
+export function updateWinner(_state: SacState, ctx: RuleContext): void {
+  const alive = ctx.players.active();
+  if (alive.length === 1) {
+    ctx.match.finish({ winners: [alive[0].id], reason: 'last-solvent-player' });
+  }
 }
 
 export function sendToJail(
@@ -46,11 +50,11 @@ export function sendToJail(
   playerId: number,
   ctx: RuleContext,
 ): void {
-  const variant = sacVariant(state.variantId);
+  const variant = currentSacVariant(ctx);
   const jail = variant.tiles.findIndex((tile) => tile.type === 'jail');
   if (jail >= 0) moveTo(playerId, jail, ctx);
-  state.jailTurns[playerId] = variant.rules.jail.maxTurns;
-  state.extraRoll[playerId] = false;
+  ctx.resources.set(playerId, SAC_JAIL_TURNS, variant.rules.jail.maxTurns);
+  ctx.turn.clearExtra(playerId);
 }
 
 export function collectPot(
@@ -59,9 +63,9 @@ export function collectPot(
   variant: SacVariant,
   ctx: RuleContext,
 ): void {
-  if (!variant.rules.potEnabled || state.pot <= 0) return;
-  const amount = state.pot;
-  state.pot = 0;
+  if (!variant.rules.potEnabled || ctx.counters.get(SAC_POT) <= 0) return;
+  const amount = ctx.counters.get(SAC_POT);
+  ctx.counters.set(SAC_POT, 0);
   changeMoney(state, playerId, amount, false, ctx);
 }
 
@@ -85,7 +89,7 @@ export function loseInfrastructure(
   const candidates = Object.entries(state.buildings)
     .filter(
       ([tileIndex, building]) =>
-        state.ownership[Number(tileIndex)] === playerId &&
+        ctx.ownership.isOwner(PROPERTIES, tileIndex, playerId) &&
         (building.hotel || building.houses > 0),
     )
     .map(([tileIndex]) => Number(tileIndex));
@@ -111,27 +115,29 @@ export function rentFor(
   tileIndex: number,
   tile: SacTile,
   ownerId: number,
+  variant: SacVariant,
+  lastRoll: number,
+  ctx: RuleContext,
 ): number {
-  const variant = sacVariant(state.variantId);
   if (tile.type === 'station') {
     const count = variant.tiles.filter(
       (candidate, index) =>
-        candidate.type === 'station' && state.ownership[index] === ownerId,
+        candidate.type === 'station' &&
+        ctx.ownership.isOwner(PROPERTIES, String(index), ownerId),
     ).length;
-    return variant.stations.rents[
-      String(Math.max(1, Math.min(4, count))) as '1' | '2' | '3' | '4'
-    ];
+    return variant.stations.rents[cappedLevel(count)];
   }
   if (tile.type === 'utility') {
     const owned = variant.tiles.filter(
       (candidate, index) =>
-        candidate.type === 'utility' && state.ownership[index] === ownerId,
+        candidate.type === 'utility' &&
+        ctx.ownership.isOwner(PROPERTIES, String(index), ownerId),
     ).length;
     const utility = variant.utilities.find((candidate) =>
       sameName(candidate.name, tile.title),
     );
     return (
-      state.lastRoll *
+      lastRoll *
       (owned >= 2 ? (utility?.multiplier2 ?? 10) : (utility?.multiplier1 ?? 4))
     );
   }
@@ -148,6 +154,10 @@ export function rentFor(
   ][building.houses];
 }
 
+export function currentSacVariant(ctx: RuleContext): SacVariant {
+  return sacVariant(ctx.config.get<SacVariantId>('variantId') ?? 'classic');
+}
+
 export function groupFor(variant: SacVariant, tile: SacTile): SacGroup | null {
   return (
     variant.groups.find(
@@ -157,16 +167,20 @@ export function groupFor(variant: SacVariant, tile: SacTile): SacGroup | null {
 }
 
 export function ownsGroup(
-  state: SacState,
+  _state: SacState,
   playerId: number,
   variant: SacVariant,
   group: SacGroup,
+  ctx: RuleContext,
 ): boolean {
   return group.properties.every((name) => {
     const tileIndex = variant.tiles.findIndex((tile) =>
       sameName(name, tile.title),
     );
-    return tileIndex >= 0 && state.ownership[tileIndex] === playerId;
+    return (
+      tileIndex >= 0 &&
+      ctx.ownership.isOwner(PROPERTIES, String(tileIndex), playerId)
+    );
   });
 }
 
@@ -197,8 +211,15 @@ export function buildCost(group: SacGroup, building: SacBuilding): number {
 }
 
 export function houseCost(group: SacGroup, level: number): number {
-  const key = String(Math.max(1, Math.min(4, level))) as '1' | '2' | '3' | '4';
+  const key = cappedLevel(level);
   return group.housePrices?.[key] ?? group.housePrice;
+}
+
+function cappedLevel(level: number): '1' | '2' | '3' | '4' {
+  if (level <= 1) return '1';
+  if (level === 2) return '2';
+  if (level === 3) return '3';
+  return '4';
 }
 
 export function buildingAt(state: SacState, tileIndex: number): SacBuilding {
@@ -207,43 +228,6 @@ export function buildingAt(state: SacState, tileIndex: number): SacBuilding {
     hotel: false,
     mortgaged: false,
   });
-}
-
-export function movementDelta(text: string): number {
-  const match = text.match(
-    /(avancez|reculez) (?:de |d['’])?(\d+|un|une|deux|trois|quatre|cinq|six) cases?/i,
-  );
-  if (!match) return 0;
-  const values: Record<string, number> = {
-    un: 1,
-    une: 1,
-    deux: 2,
-    trois: 3,
-    quatre: 4,
-    cinq: 5,
-    six: 6,
-  };
-  const amount = Number(match[2]) || values[match[2]] || 0;
-  return match[1].startsWith('recule') ? -amount : amount;
-}
-
-export function moneyDelta(text: string): number {
-  const gain = text.match(/(?:recevez|recois|gagnez|gagne|empochez) (\d+)/i);
-  if (gain) return Number(gain[1]);
-  const loss = text.match(/(?:payez|paie|paye|perdez) (\d+)/i);
-  return loss ? -Number(loss[1]) : 0;
-}
-
-export function skipTurns(text: string): number {
-  if (
-    !text.includes('passez') &&
-    !text.includes('passe ton') &&
-    !text.includes('passe votre')
-  )
-    return 0;
-  if (text.includes('trois tour')) return 3;
-  if (text.includes('deux tour')) return 2;
-  return 1;
 }
 
 export function nextTileOfType(
@@ -303,7 +287,7 @@ export function moveTo(
   target: number,
   ctx: RuleContext,
 ): void {
-  ctx.movement.move(TRACK, playerId, target - position(playerId, ctx));
+  ctx.movement.moveTo(TRACK, playerId, target);
 }
 
 export function modulo(value: number, divisor: number): number {
@@ -319,14 +303,4 @@ function sameName(left: string, right: string): boolean {
     normalizedLeft === normalizedRight ||
     normalizedRight.includes(normalizedLeft)
   );
-}
-
-export function normalize(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[’'`]/g, "'")
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
 }

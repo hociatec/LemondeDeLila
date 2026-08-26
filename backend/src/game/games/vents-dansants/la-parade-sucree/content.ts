@@ -1,3 +1,4 @@
+import { freezeGameContent } from '../../../core/application/public-api';
 import type { CandyCounts, ParadeCandyType } from './state';
 
 export interface ParadeCard {
@@ -98,8 +99,22 @@ export const CANDY_VALUES: CandyCounts = {
   Balisto: 10,
 };
 
+export const CANDY_TYPES: readonly ParadeCandyType[] = [
+  'Chamallow',
+  'Chocobon',
+  'Balisto',
+];
+
 export const INITIAL_CANDIES: CandyCounts = {
   Chamallow: 1,
   Chocobon: 1,
   Balisto: 1,
 };
+
+freezeGameContent(PARADE_SEQUENCE);
+freezeGameContent(PARADE_CARDS);
+freezeGameContent(PARADE_CARD_BY_ID);
+freezeGameContent(SPECIAL_REWARDS);
+freezeGameContent(CANDY_VALUES);
+freezeGameContent(CANDY_TYPES);
+freezeGameContent(INITIAL_CANDIES);

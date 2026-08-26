@@ -9,7 +9,10 @@ import * as os from 'os';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { Inject } from '@nestjs/common';
-import { parseVersion } from '../../../common/utils/public-api';
+import {
+  getErrorMessage,
+  parseVersion,
+} from '../../../common/utils/public-api';
 import {
   CLIENT_UPDATES_UPLOAD_STORE_PORT,
   type ClientUpdatesUploadStorePort,
@@ -20,16 +23,7 @@ import {
   UploadMetaFile,
 } from '../../application/models/client-update-meta.record';
 import { ClientUpdatesService } from '../../application/use-cases/client-updates/client-updates.service';
-
-function getErrorMessage(value: unknown): string {
-  if (value instanceof Error && typeof value.message === 'string') {
-    const message = value.message.trim();
-    if (message) {
-      return message;
-    }
-  }
-  return 'erreur inconnue';
-}
+import { decodeUploadMetaFile } from './client-update-meta.decoder';
 
 @Injectable()
 export class ClientUpdatesUploadService {
@@ -275,7 +269,12 @@ export class ClientUpdatesUploadService {
 
   private async readUploadMeta(metaPath: string): Promise<UploadMetaFile> {
     const raw = await fs.promises.readFile(metaPath, 'utf-8');
-    return JSON.parse(raw.replace(/^\uFEFF/, '')) as UploadMetaFile;
+    const parsed: unknown = JSON.parse(raw.replace(/^\uFEFF/, ''));
+    const meta = decodeUploadMetaFile(parsed);
+    if (!meta) {
+      throw new BadRequestException('Métadonnées d’upload invalides.');
+    }
+    return meta;
   }
 
   private completedResult(

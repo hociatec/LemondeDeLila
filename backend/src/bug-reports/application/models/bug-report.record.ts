@@ -1,10 +1,5 @@
 export type BugReportStatus =
-  | 'pending'
-  | 'in_progress'
-  | 'to_test'
-  | 'done'
-  | 'refused'
-  | 'rejected';
+  'pending' | 'in_progress' | 'to_test' | 'done' | 'refused' | 'rejected';
 
 export type BugReportRecord = {
   id: string;

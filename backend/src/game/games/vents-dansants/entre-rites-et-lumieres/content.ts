@@ -1,3 +1,9 @@
+import {
+  freezeGameContent,
+  gameEffects,
+} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
+
 export type RiteFamilyId =
   | 'symboles-sacres'
   | 'creatures-de-paques'
@@ -20,8 +26,24 @@ export interface RiteSpecialCard {
   type: 'special';
   name: string;
   description: string;
-  effect: string;
+  effect: RiteSpecialEffect;
+  effects: readonly GameEffectInstruction[];
 }
+
+export const RITE_SPECIAL_EFFECTS = [
+  'draw_two_choose_one',
+  'draw_and_trigger',
+  'collect_from_others',
+  'take_from_discard',
+  'mute_specials',
+  'swap_hands',
+  'free_family',
+  'reshuffle_cycle',
+  'peace_turns',
+  'reveal_and_steal',
+] as const;
+export type RiteSpecialEffect = (typeof RITE_SPECIAL_EFFECTS)[number];
+type RawRiteSpecialCard = Omit<RiteSpecialCard, 'effects'>;
 
 export type RiteCardDefinition = RiteFamilyCard | RiteSpecialCard;
 
@@ -97,7 +119,11 @@ const FAMILY_DEFINITIONS: {
   },
 ];
 
-const SPECIALS: RiteSpecialCard[] = [
+export const ENTRE_RITES_FAMILY_IDS = FAMILY_DEFINITIONS.map(
+  (family) => family.id,
+);
+
+const RAW_SPECIALS: RawRiteSpecialCard[] = [
   {
     id: 'lapin-d-or',
     type: 'special',
@@ -178,6 +204,47 @@ const SPECIALS: RiteSpecialCard[] = [
   },
 ];
 
+const self = gameEffects.target.self();
+const SPECIAL_INSTRUCTIONS: Readonly<
+  Record<RiteSpecialEffect, readonly GameEffectInstruction[]>
+> = {
+  draw_two_choose_one: [gameEffects.custom('rites.draw-two', {}, self)],
+  draw_and_trigger: [gameEffects.custom('rites.draw-one', {}, self)],
+  collect_from_others: [gameEffects.custom('rites.collect', {}, self)],
+  take_from_discard: [gameEffects.custom('rites.resurrect', {}, self)],
+  mute_specials: [
+    gameEffects.addStatus({
+      status: 'rites.silence',
+      scope: 'until-used',
+      target: self,
+    }),
+  ],
+  swap_hands: [
+    gameEffects.swapHands(
+      'players',
+      self,
+      gameEffects.target.chosenOpponent('rites.swap-hands'),
+    ),
+    gameEffects.completeTurn(),
+  ],
+  free_family: [gameEffects.custom('rites.free-family', {}, self)],
+  reshuffle_cycle: [gameEffects.custom('rites.dawn-cycle', {}, self)],
+  peace_turns: [
+    gameEffects.addStatus({
+      status: 'rites.peace',
+      turns: 2,
+      scope: 'global-turn',
+      target: self,
+    }),
+  ],
+  reveal_and_steal: [gameEffects.custom('rites.steal-choice', {}, self)],
+};
+
+const SPECIALS: RiteSpecialCard[] = RAW_SPECIALS.map((card) => ({
+  ...card,
+  effects: SPECIAL_INSTRUCTIONS[card.effect],
+}));
+
 const createFamilyCards = (): RiteFamilyCard[] => {
   const cards: RiteFamilyCard[] = [];
   for (const family of FAMILY_DEFINITIONS) {
@@ -200,11 +267,28 @@ export const ENTRE_RITES_DECK: RiteCardDefinition[] = [
   ...ENTRE_RITES_FAMILY_CARDS,
   ...ENTRE_RITES_SPECIAL_CARDS,
 ];
-export const ENTRE_RITES_CUSTOM_FAMILY_SIZE: Record<RiteFamilyId, number> =
-  Object.fromEntries(
-    FAMILY_DEFINITIONS.map((family) => [family.id, family.members.length]),
-  ) as Record<RiteFamilyId, number>;
+export const ENTRE_RITES_CUSTOM_FAMILY_SIZE = FAMILY_DEFINITIONS.reduce<
+  Record<RiteFamilyId, number>
+>(
+  (sizes, family) => {
+    sizes[family.id] = family.members.length;
+    return sizes;
+  },
+  {
+    'symboles-sacres': 0,
+    'creatures-de-paques': 0,
+    'traditions-et-fetes': 0,
+    'gourmandises-objets': 0,
+    'nature-saisons': 0,
+  },
+);
 
 export const ENTRE_RITES_CARD_BY_ID = Object.fromEntries(
   ENTRE_RITES_DECK.map((card) => [card.id, card]),
 );
+
+freezeGameContent(ENTRE_RITES_FAMILY_CARDS);
+freezeGameContent(ENTRE_RITES_SPECIAL_CARDS);
+freezeGameContent(ENTRE_RITES_DECK);
+freezeGameContent(ENTRE_RITES_CUSTOM_FAMILY_SIZE);
+freezeGameContent(ENTRE_RITES_CARD_BY_ID);

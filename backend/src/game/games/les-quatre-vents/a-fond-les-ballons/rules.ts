@@ -1,114 +1,59 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
+import {
+  defineEffect,
+  gameEffects,
+  gameInput,
+  rollDice,
+  sequentialPawnSelection,
+  setupPlayingPhases,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
 import {
   A_FOND_LES_BALLONS_CARDS,
-  A_FOND_LES_BALLONS_PAWNS,
   A_FOND_LES_BALLONS_TILES,
   type BalloonCard,
-  type BalloonCardEffect,
   type BalloonTileType,
 } from './content';
 import type { AFondLesBallonsState } from './state';
 
-type RuleContext = GameRuleContext<AFondLesBallonsState>;
+type RuleContext = GameContext<AFondLesBallonsState>;
+export const A_FOND_LES_BALLONS_PHASES =
+  setupPlayingPhases<AFondLesBallonsState>();
 const TRACK = 'balloons';
 const DECK = 'loufoque';
 const MAX_DEPTH = 12;
+const TRAP_IMMUNITY = 'a-fond-les-ballons.trap-immunity';
 
-export const roll = defineAction<AFondLesBallonsState, Record<string, never>>({
-  input: gameInput.object({}),
+export const roll = rollDice<AFondLesBallonsState>({
   documentation: 'Lance le dé et résout toute la chaîne de cases et cartes.',
-  available: ({ state }) => state.setupComplete,
-  execute: ({ state, actor, ctx }) => {
-    const value = ctx.dice.roll('main').total;
-    state.lastRoll = value;
-    ctx.history.add(`${actor.username} lance le dé : ${value}.`);
-    moveBy(state, actor.id, value, 0, ctx);
-    if (state.winnerId != null || state.swapPlayerId != null) return;
-    if (state.extraTurn) {
-      state.extraTurn = false;
-      return;
-    }
-    finishTurn(state, actor.id, ctx);
+  available: ({ ctx }) => A_FOND_LES_BALLONS_PHASES.is(ctx, 'playing'),
+  execute: ({ state, playerId, total, ctx }) => {
+    moveBy(state, playerId, total, 0, ctx);
+    ctx.turn.complete({ waiting: ctx.choice.current() != null });
   },
 });
 
 export const A_FOND_LES_BALLONS_ACTIONS = { roll };
 
-export function resolvePawn(
-  state: AFondLesBallonsState,
+const pawnSelection = sequentialPawnSelection<AFondLesBallonsState>({
+  setId: 'balloons',
+  choiceId: 'a-fond-les-ballons.pawn',
+  complete: ({ ctx }) => {
+    A_FOND_LES_BALLONS_PHASES.transition(ctx, 'playing');
+    const starterId = ctx.round.starter();
+    if (starterId != null) ctx.turn.to(starterId);
+  },
+});
+
+export const requestPawn = pawnSelection.request;
+export const resolvePawn = pawnSelection.resolve;
+
+function applySwap(
   actorId: number,
-  pawnId: string,
-  ctx: RuleContext,
-): void {
-  if (!A_FOND_LES_BALLONS_PAWNS.some((pawn) => pawn.id === pawnId)) {
-    throw new Error('Pion À fond les ballons invalide');
-  }
-  if (Object.values(state.pawnByPlayerId).includes(pawnId)) {
-    throw new Error('Ce pion est déjà attribué');
-  }
-  state.pawnByPlayerId[actorId] = pawnId;
-  const next = ctx.players
-    .all()
-    .find((player) => state.pawnByPlayerId[player.id] == null);
-  if (next) {
-    ctx.turn.to(next.id);
-    requestPawn(state, next.id, ctx);
-  } else {
-    state.setupComplete = true;
-    ctx.transitionTo('playing');
-    ctx.turn.to(state.starterId);
-  }
-}
-
-export function requestPawn(
-  state: AFondLesBallonsState,
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  const used = new Set(Object.values(state.pawnByPlayerId));
-  const choices = A_FOND_LES_BALLONS_PAWNS.filter((pawn) => !used.has(pawn.id));
-  ctx.choice.one({
-    id: 'a-fond-les-ballons.pawn',
-    player: playerId,
-    options: choices.map((pawn) => pawn.id),
-    label: (pawnId) =>
-      choices.find((pawn) => pawn.id === pawnId)?.label ?? pawnId,
-  });
-}
-
-export function resolveSwap(
-  state: AFondLesBallonsState,
   targetId: number,
   ctx: RuleContext,
 ): void {
-  const actorId = state.swapPlayerId;
-  if (actorId == null) throw new Error('Aucun échange en attente');
-  if (targetId !== 0) {
-    if (targetId === actorId || !ctx.players.get(targetId)) {
-      throw new Error('Cible d’échange invalide');
-    }
-    const actorPosition = position(actorId, ctx);
-    const targetPosition = position(targetId, ctx);
-    moveTo(actorId, targetPosition, ctx);
-    moveTo(targetId, actorPosition, ctx);
-    ctx.history.add(
-      `${ctx.players.get(actorId)?.username} échange sa place avec ${ctx.players.get(targetId)?.username}.`,
-    );
-  }
-  state.swapPlayerId = null;
-  finishTurn(state, actorId, ctx);
-}
-
-export function skipBlockedPlayer(
-  state: AFondLesBallonsState,
-  ctx: RuleContext,
-): void {
-  const player = ctx.players.current();
-  if (!player) return;
-  state.skipTurns[player.id] = Math.max(0, state.skipTurns[player.id] - 1);
-  ctx.history.add(`${player.username} passe son tour.`);
-  ctx.turn.end();
+  ctx.movement.swap(TRACK, actorId, targetId);
+  ctx.events.message('game.positions.swapped', { actorId, targetId });
 }
 
 function moveBy(
@@ -118,9 +63,10 @@ function moveBy(
   depth: number,
   ctx: RuleContext,
 ): void {
-  const current = position(playerId, ctx);
-  const target = bouncedTarget(current + delta);
-  landOn(state, playerId, target, depth + 1, ctx);
+  if (depth > MAX_DEPTH || ctx.match.lifecycle() === 'finished') return;
+  ctx.movement.moveAndLand(TRACK, playerId, delta, (target) =>
+    resolveLandedTile(state, playerId, target, depth + 1, ctx),
+  );
 }
 
 function landOn(
@@ -130,17 +76,28 @@ function landOn(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_DEPTH || state.winnerId != null) return;
-  moveTo(playerId, target, ctx);
-  const tile = A_FOND_LES_BALLONS_TILES[target];
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username} atteint « ${tile.label} ».`,
+  if (depth > MAX_DEPTH || ctx.match.lifecycle() === 'finished') return;
+  ctx.movement.moveToAndLand(TRACK, playerId, target, (position) =>
+    resolveLandedTile(state, playerId, position, depth, ctx),
   );
-  if (tile.type === 'finish') state.winnerId = playerId;
+}
+
+function resolveLandedTile(
+  state: AFondLesBallonsState,
+  playerId: number,
+  target: number,
+  depth: number,
+  ctx: RuleContext,
+): void {
+  const tile = A_FOND_LES_BALLONS_TILES[target];
+  ctx.events.message('game.pawn.landed', { playerId, tileId: target });
+  if (tile.type === 'finish') {
+    ctx.match.finish({ winners: [playerId], reason: 'golden-nut' });
+  }
   else if (tile.type === 'bonus') moveBy(state, playerId, 2, depth, ctx);
   else if (tile.type === 'piege') {
-    if (state.trapImmunityTurns[playerId] > 0) {
-      ctx.history.add('Le piège est ignoré.');
+    if (ctx.status.has(playerId, TRAP_IMMUNITY)) {
+      ctx.events.message('a-fond-les-ballons.trap.ignored', { playerId });
     } else {
       moveBy(state, playerId, -2, depth, ctx);
     }
@@ -148,7 +105,16 @@ function landOn(
     const magnitude = ctx.random.int(3) + 1;
     const direction = ctx.random.int(2) === 0 ? 1 : -1;
     moveBy(state, playerId, magnitude * direction, depth, ctx);
-  } else if (tile.type === 'tornade') requestSwap(state, playerId, ctx);
+  } else if (tile.type === 'tornade') {
+    ctx.effects.schedule(
+      gameEffects.custom(
+        'a-fond-les-ballons.swap',
+        {},
+        gameEffects.target.chosenOpponent('a-fond-les-ballons.swap', true),
+      ),
+      gameEffects.completeTurn(),
+    );
+  }
   else if (tile.type === 'chaton') landOn(state, playerId, 0, depth + 1, ctx);
   else if (tile.type === 'folie') drawAndApply(state, playerId, depth, ctx);
 }
@@ -159,67 +125,18 @@ function drawAndApply(
   depth: number,
   ctx: RuleContext,
 ): void {
-  const card = drawCard(ctx);
-  if (!card) return;
-  ctx.history.add(`Carte Loufoque : ${card.text}`);
-  applyEffect(state, playerId, card.effect, depth + 1, ctx);
-}
-
-function applyEffect(
-  state: AFondLesBallonsState,
-  playerId: number,
-  effect: BalloonCardEffect,
-  depth: number,
-  ctx: RuleContext,
-): void {
-  if (depth > MAX_DEPTH || state.winnerId != null) return;
-  if (effect.type === 'move') moveBy(state, playerId, effect.value, depth, ctx);
-  else if (effect.type === 'skip') state.skipTurns[playerId] += effect.turns;
-  else if (effect.type === 'move-all') {
-    for (const player of ctx.players.all()) {
-      moveBy(state, player.id, effect.value, depth, ctx);
-    }
-  } else if (effect.type === 'next') {
-    moveToNextTile(state, playerId, effect.tile, depth, ctx);
-  } else if (effect.type === 'freeze-all') {
-    for (const player of ctx.players.all()) state.skipTurns[player.id] += 1;
-  } else if (effect.type === 'extra-turn') state.extraTurn = true;
-  else if (effect.type === 'repeat-roll-all') {
-    for (const player of ctx.players.all()) {
-      moveBy(state, player.id, state.lastRoll ?? 0, depth, ctx);
-    }
-  } else if (effect.type === 'swap') requestSwap(state, playerId, ctx);
-  else if (effect.type === 'go-to') {
-    landOn(state, playerId, effect.position, depth + 1, ctx);
-  } else if (effect.type === 'boutique') {
-    const cards = [drawCard(ctx), drawCard(ctx)].filter(
-      (card): card is BalloonCard => card != null,
-    );
-    const selected = cards.sort(
-      (left, right) => retreatScore(left) - retreatScore(right),
-    )[0];
-    if (selected) {
-      ctx.history.add(`Boutique : ${selected.text}`);
-      applyEffect(state, playerId, selected.effect, depth + 1, ctx);
-    }
-  } else if (effect.type === 'trap-immunity') {
-    state.trapImmunityTurns[playerId] += effect.turns;
-  } else if (effect.type === 'random-all') {
-    for (const player of ctx.players.all()) {
-      moveBy(state, player.id, ctx.random.int(2) === 0 ? -1 : 1, depth, ctx);
-    }
-  } else if (
-    effect.type === 'finish-if-slide' &&
-    A_FOND_LES_BALLONS_TILES[position(playerId, ctx)].type === 'glissade'
-  ) {
-    landOn(
-      state,
-      playerId,
-      A_FOND_LES_BALLONS_TILES.length - 1,
-      depth + 1,
-      ctx,
-    );
-  }
+  ctx.cards.drawThenResolve<BalloonCard, void>(
+    DECK,
+    (card) => {
+      ctx.events.message('game.card.drawn', {
+        playerId,
+        deckId: DECK,
+        cardId: card.id,
+      });
+      ctx.effects.schedule(...card.effects);
+    },
+    {},
+  );
 }
 
 function moveToNextTile(
@@ -236,65 +153,131 @@ function moveToNextTile(
   if (next >= 0) landOn(state, playerId, next, depth + 1, ctx);
 }
 
-function requestSwap(
-  state: AFondLesBallonsState,
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  if (state.swapPlayerId != null) return;
-  state.swapPlayerId = playerId;
-  const targets = ctx.players.all().filter((player) => player.id !== playerId);
-  ctx.choice.one({
-    id: 'a-fond-les-ballons.swap',
-    player: playerId,
-    options: [...targets.map((player) => player.id), 0],
-    label: (targetId) =>
-      targetId === 0
-        ? 'Ne pas échanger'
-        : (ctx.players.get(targetId)?.username ?? `Joueur ${targetId}`),
-  });
-}
-
-function finishTurn(
-  state: AFondLesBallonsState,
-  actorId: number,
-  ctx: RuleContext,
-): void {
-  state.trapImmunityTurns[actorId] = Math.max(
-    0,
-    state.trapImmunityTurns[actorId] - 1,
-  );
-  ctx.turn.end();
-}
-
-function drawCard(ctx: RuleContext): BalloonCard | null {
-  const card = ctx.cards.drawOrRecycle<BalloonCard>(DECK);
-  if (card) ctx.cards.discard(DECK, card);
-  return card;
-}
-
 function position(playerId: number, ctx: RuleContext): number {
   return ctx.movement.position(TRACK, playerId);
 }
 
-function moveTo(playerId: number, target: number, ctx: RuleContext): void {
-  ctx.movement.move(TRACK, playerId, target - position(playerId, ctx));
+function applyBoutique(
+  playerId: number,
+  ctx: RuleContext,
+): void {
+  const cards = [drawCard(ctx), drawCard(ctx)].filter(
+    (card): card is BalloonCard => card != null,
+  );
+  const selected = cards.sort(
+    (left, right) => left.retreatScore - right.retreatScore,
+  )[0];
+  if (!selected) return;
+  ctx.events.message('a-fond-les-ballons.shop.card-selected', {
+    playerId,
+    cardId: selected.id,
+  });
+  ctx.effects.schedule(...selected.effects);
 }
 
-function bouncedTarget(raw: number): number {
-  const finish = A_FOND_LES_BALLONS_TILES.length - 1;
-  let target = Math.max(0, raw);
-  while (target > finish) target = finish - (target - finish);
-  return Math.max(0, target);
-}
-
-function retreatScore(card: BalloonCard): number {
-  const effect = card.effect;
-  if (effect.type === 'go-to' && effect.position === 0) return -200;
-  if (effect.type === 'go-to') return -100;
-  if (effect.type === 'move' && effect.value < 0) return effect.value;
-  if (effect.type === 'move-all' && effect.value < 0) return effect.value;
-  return 0;
-}
+export const A_FOND_LES_BALLONS_EFFECTS = {
+  'a-fond-les-ballons.move': defineEffect<
+    AFondLesBallonsState,
+    { delta: number }
+  >({
+    input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
+    apply: ({ state, targetPlayerIds, data, ctx }) => {
+      for (const playerId of targetPlayerIds) {
+        moveBy(state, playerId, data.delta, 0, ctx);
+      }
+    },
+  }),
+  'a-fond-les-ballons.next-tile': defineEffect<
+    AFondLesBallonsState,
+    { tile: 'bonus' | 'folie' }
+  >({
+    input: gameInput.object({
+      tile: gameInput.enum(['bonus', 'folie'] as const),
+    }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId != null) {
+        moveToNextTile(state, actorPlayerId, data.tile, 0, ctx);
+      }
+    },
+  }),
+  'a-fond-les-ballons.repeat-roll': defineEffect<
+    AFondLesBallonsState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ state, targetPlayerIds, ctx }) => {
+      const delta = ctx.dice.last('main')?.total ?? 0;
+      for (const playerId of targetPlayerIds) {
+        moveBy(state, playerId, delta, 0, ctx);
+      }
+    },
+  }),
+  'a-fond-les-ballons.swap': defineEffect<
+    AFondLesBallonsState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (actorPlayerId != null && targetId != null) {
+        applySwap(actorPlayerId, targetId, ctx);
+      }
+    },
+  }),
+  'a-fond-les-ballons.go-to': defineEffect<
+    AFondLesBallonsState,
+    { position: number }
+  >({
+    input: gameInput.object({
+      position: gameInput.number({ integer: true, min: 0 }),
+    }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId != null) {
+        landOn(state, actorPlayerId, data.position, 0, ctx);
+      }
+    },
+  }),
+  'a-fond-les-ballons.boutique': defineEffect<
+    AFondLesBallonsState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ actorPlayerId, ctx }) => {
+      if (actorPlayerId != null) applyBoutique(actorPlayerId, ctx);
+    },
+  }),
+  'a-fond-les-ballons.random-move': defineEffect<
+    AFondLesBallonsState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ state, targetPlayerIds, ctx }) => {
+      for (const playerId of targetPlayerIds) {
+        moveBy(state, playerId, ctx.random.int(2) === 0 ? -1 : 1, 0, ctx);
+      }
+    },
+  }),
+  'a-fond-les-ballons.finish-if-slide': defineEffect<
+    AFondLesBallonsState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ state, actorPlayerId, ctx }) => {
+      if (
+        actorPlayerId != null &&
+        A_FOND_LES_BALLONS_TILES[position(actorPlayerId, ctx)].type ===
+          'glissade'
+      ) {
+        landOn(
+          state,
+          actorPlayerId,
+          A_FOND_LES_BALLONS_TILES.length - 1,
+          0,
+          ctx,
+        );
+      }
+    },
+  }),
+} as const;
 
 export const A_FOND_CARD_COUNT = A_FOND_LES_BALLONS_CARDS.length;

@@ -1,3 +1,7 @@
+import {
+  freezeGameContent,
+  rejectContent,
+} from '../../../core/application/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { VillageCard, VillageTile } from './state';
@@ -25,7 +29,7 @@ function loadContent(): VillageContent {
     readFileSync(resolve(directory, 'cards.json'), 'utf8'),
   );
   if (!isBoard(board) || !isCards(cards)) {
-    throw new Error('Contenu de Mon Village, Mon Histoire invalide');
+    rejectContent('Contenu de Mon Village, Mon Histoire invalide');
   }
   return {
     tiles: board.tiles.map((tile) => ({ ...tile })),
@@ -52,7 +56,7 @@ function contentDirectory(): string {
   const directory = candidates.find((candidate) =>
     existsSync(resolve(candidate, 'board.json')),
   );
-  if (!directory) throw new Error('Contenu de Mon Village introuvable');
+  if (!directory) rejectContent('Contenu de Mon Village introuvable');
   return directory;
 }
 
@@ -101,3 +105,6 @@ function isCard(value: unknown): value is Omit<VillageCard, 'zoneId'> {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
+
+freezeGameContent(content);
+freezeGameContent(VILLAGE_ZONE_LABELS);

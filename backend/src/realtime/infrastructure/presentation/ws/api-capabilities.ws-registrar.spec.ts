@@ -37,8 +37,7 @@ describe('ApiCapabilitiesWsRegistrar', () => {
 
     expect(res?.type).toBe(WS_EVENTS.api.capabilities);
     const payload = res?.payload as
-      | { isAdmin?: boolean; features?: Record<string, boolean> }
-      | undefined;
+      { isAdmin?: boolean; features?: Record<string, boolean> } | undefined;
     expect(payload?.isAdmin).toBe(true);
     expect(payload?.features?.[WS_EVENTS.admin.rooms.list]).toBe(true);
   });

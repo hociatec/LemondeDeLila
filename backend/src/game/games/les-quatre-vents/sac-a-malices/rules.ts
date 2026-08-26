@@ -1,159 +1,56 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
 import {
-  SAC_VARIANTS,
-  sacVariant,
-  type SacCard,
-  type SacTile,
-  type SacVariantId,
-} from './content';
+  defineEffect,
+  gameInput,
+  rejectRule,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
+import type { SacCard, SacMovement, SacTile } from './content';
 import {
   buildCost,
   buildingAt,
   changeMoney,
   collectPot,
+  currentSacVariant,
   findTile,
   groupFor,
   houseCost,
   isOwnable,
   loseInfrastructure,
   modulo,
-  moneyDelta,
   mortgageValue,
   moveTo,
-  movementDelta,
   nextGroupTile,
   nextTileOfType,
-  normalize,
   ownsGroup,
   payTax,
   position,
   purchasePrice,
   rentFor,
+  SAC_JAIL_TURNS,
   sendToJail,
-  skipTurns,
   unmortgageCost,
-  updateWinner,
 } from './economy';
 import type { SacManagementKind, SacState } from './state';
 
-type RuleContext = GameRuleContext<SacState>;
+type RuleContext = GameContext<SacState>;
 const MAX_CHAIN_DEPTH = 24;
-const VARIANT_IDS = SAC_VARIANTS.map((variant) => variant.id);
-
-export const selectVariant = defineAction<
-  SacState,
-  { variantId: SacVariantId }
->({
-  input: gameInput.object({ variantId: gameInput.enum(VARIANT_IDS) }),
-  documentation: 'Choisit le plateau et les règles économiques de la partie.',
-  available: ({ state, ctx }) => !state.configured && ctx.phase() === 'setup',
-  availableInputs: () =>
-    SAC_VARIANTS.map((variant) => ({ variantId: variant.id })),
-  execute: ({ state, input, ctx }) => {
-    const selected = sacVariant(input.variantId);
-    state.variantId = selected.id;
-    state.configured = true;
-    for (const player of ctx.players.all())
-      state.money[player.id] = selected.rules.startMoney;
-    ctx.transitionTo('playing');
-    ctx.history.add(`Variante choisie : ${selected.label}.`);
-  },
-});
-
-export const roll = defineAction<SacState, Record<string, never>>({
-  input: gameInput.object({}),
-  documentation: 'Lance deux dés, déplace le pion et résout la case.',
-  available: ({ state, actor }) =>
-    state.configured && !state.eliminated[actor.id],
-  execute: ({ state, actor, ctx }) => {
-    if (state.jailTurns[actor.id] > 0) {
-      resolveJailTurn(state, actor.id, ctx);
-      return;
-    }
-    const [first, second] = rollPair(ctx);
-    state.lastRoll = first + second;
-    const isDouble = first === second;
-    state.consecutiveDoubles[actor.id] = isDouble
-      ? state.consecutiveDoubles[actor.id] + 1
-      : 0;
-    ctx.history.add(
-      `${actor.username} lance ${first} + ${second} = ${state.lastRoll}.`,
-    );
-    if (state.consecutiveDoubles[actor.id] >= 3) {
-      state.consecutiveDoubles[actor.id] = 0;
-      sendToJail(state, actor.id, ctx);
-      completeTurn(state, actor.id, ctx);
-      return;
-    }
-    state.extraRoll[actor.id] = isDouble;
-    moveForward(state, actor.id, state.lastRoll, 0, ctx);
-    completeTurn(state, actor.id, ctx);
-  },
-});
-
-export const build = managementAction('build');
-export const sellBuilding = managementAction('sell');
-export const mortgage = managementAction('mortgage');
-export const unmortgage = managementAction('unmortgage');
-
-export const payFine = defineAction<SacState, Record<string, never>>({
-  input: gameInput.object({}),
-  documentation: 'Paie l’amende de prison lorsque la variante le permet.',
-  available: ({ state, actor }) => {
-    const rules = sacVariant(state.variantId).rules;
-    return (
-      state.configured &&
-      state.jailTurns[actor.id] > 0 &&
-      rules.jail.allowPayFine &&
-      state.money[actor.id] >= rules.jail.autoFine
-    );
-  },
-  execute: ({ state, actor, ctx }) => {
-    const fine = sacVariant(state.variantId).rules.jail.autoFine;
-    changeMoney(state, actor.id, -fine, true, ctx);
-    state.jailTurns[actor.id] = 0;
-    ctx.history.add(`${actor.username} paie ${fine} pour sortir de prison.`);
-  },
-});
-
-export const useJailCard = defineAction<SacState, Record<string, never>>({
-  input: gameInput.object({}),
-  documentation: 'Utilise une carte de sortie de prison conservée.',
-  available: ({ state, actor }) =>
-    state.configured &&
-    state.jailTurns[actor.id] > 0 &&
-    state.jailCards[actor.id] > 0,
-  execute: ({ state, actor, ctx }) => {
-    state.jailCards[actor.id] -= 1;
-    state.jailTurns[actor.id] = 0;
-    ctx.history.add(`${actor.username} utilise une carte de sortie de prison.`);
-  },
-});
-
-export const SAC_ACTIONS = {
-  selectVariant,
-  roll,
-  build,
-  sell_building: sellBuilding,
-  mortgage,
-  unmortgage,
-  pay_fine: payFine,
-  use_jail_card: useJailCard,
-};
+const PROPERTIES = 'properties';
 
 export function resolvePurchase(
   state: SacState,
   decision: string,
   ctx: RuleContext,
 ): void {
-  const pending = state.pendingPurchase;
-  if (!pending) throw new Error('Achat Sac à Malices absent');
-  state.pendingPurchase = null;
+  const pending = ctx.choice.consumeData<{
+    flow: 'purchase';
+    playerId: number;
+    tileIndex: number;
+  }>();
+  if (pending?.flow !== 'purchase') rejectRule('Achat Sac à Malices absent');
   if (decision === 'buy')
     buyTile(state, pending.playerId, pending.tileIndex, ctx);
-  else if (decision !== 'skip') throw new Error('Décision d’achat invalide');
-  completeTurn(state, pending.playerId, ctx);
+  else if (decision !== 'skip') rejectRule('Décision d’achat invalide');
+  ctx.turn.complete({ waiting: ctx.choice.current() != null });
 }
 
 export function resolveManagement(
@@ -161,90 +58,68 @@ export function resolveManagement(
   tileIndex: number,
   ctx: RuleContext,
 ): void {
-  const pending = state.pendingManagement;
-  if (!pending) throw new Error('Gestion Sac à Malices absente');
+  const pending = ctx.choice.consumeData<{
+    flow: 'management';
+    playerId: number;
+    kind: SacManagementKind;
+  }>();
+  if (pending?.flow !== 'management')
+    rejectRule('Gestion Sac à Malices absente');
   if (
-    !managementOptions(state, pending.playerId, pending.kind).includes(
+    !managementOptions(state, pending.playerId, pending.kind, ctx).includes(
       tileIndex,
     )
   )
-    throw new Error('Propriété Sac à Malices invalide');
-  state.pendingManagement = null;
+    rejectRule('Propriété Sac à Malices invalide');
   applyManagement(state, pending.playerId, pending.kind, tileIndex, ctx);
 }
 
-export function skipEliminatedOrBlocked(
-  state: SacState,
-  ctx: RuleContext,
-): void {
-  const player = ctx.players.current();
-  if (!player) return;
-  if (state.skipTurns[player.id] > 0) {
-    state.skipTurns[player.id] -= 1;
-    ctx.history.add(`${player.username} passe son tour.`);
-  }
-  ctx.turn.end();
-}
-
-function managementAction(kind: SacManagementKind) {
-  return defineAction<SacState, Record<string, never>>({
-    input: gameInput.object({}),
-    documentation: `Ouvre le choix de propriété pour l’opération ${kind}.`,
-    available: ({ state, actor }) =>
-      state.configured && managementOptions(state, actor.id, kind).length > 0,
-    execute: ({ state, actor, ctx }) => {
-      const options = managementOptions(state, actor.id, kind);
-      state.pendingManagement = { playerId: actor.id, kind };
-      ctx.choice.one({
-        id: 'sac.management',
-        player: actor.id,
-        options,
-        label: (tileIndex) =>
-          sacVariant(state.variantId).tiles[tileIndex]?.title ??
-          String(tileIndex),
-      });
-    },
-  });
-}
-
-function resolveJailTurn(
+export function resolveJailTurn(
   state: SacState,
   playerId: number,
   ctx: RuleContext,
 ): void {
-  const rules = sacVariant(state.variantId).rules;
+  const rules = currentSacVariant(ctx).rules;
   if (rules.jail.allowDoubleEscape) {
     const [first, second] = rollPair(ctx);
-    state.lastRoll = first + second;
+    const total = first + second;
     if (first === second) {
-      state.jailTurns[playerId] = 0;
-      state.extraRoll[playerId] = true;
-      moveForward(state, playerId, state.lastRoll, 0, ctx);
-      completeTurn(state, playerId, ctx);
+      ctx.resources.set(playerId, SAC_JAIL_TURNS, 0);
+      ctx.turn.extra();
+      moveForward(state, playerId, total, 0, ctx);
+      ctx.turn.complete({ waiting: ctx.choice.current() != null });
       return;
     }
   }
-  state.jailTurns[playerId] = Math.max(0, state.jailTurns[playerId] - 1);
-  if (state.jailTurns[playerId] === 0 && rules.jail.autoFine > 0)
+  const jailTurns = Math.max(
+    0,
+    ctx.resources.get(playerId, SAC_JAIL_TURNS) - 1,
+  );
+  ctx.resources.set(playerId, SAC_JAIL_TURNS, jailTurns);
+  if (jailTurns === 0 && rules.jail.autoFine > 0)
     changeMoney(state, playerId, -rules.jail.autoFine, true, ctx);
-  state.extraRoll[playerId] = false;
-  completeTurn(state, playerId, ctx);
+  ctx.turn.clearExtra(playerId);
+  ctx.turn.complete({ waiting: ctx.choice.current() != null });
 }
 
-function rollPair(ctx: RuleContext): [number, number] {
+export function rollPair(ctx: RuleContext): [number, number] {
   const result = ctx.dice.roll('pair').values;
   return [result[0], result[1]];
 }
 
-function moveForward(
+export function moveForward(
   state: SacState,
   playerId: number,
   delta: number,
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_CHAIN_DEPTH || state.eliminated[playerId]) return;
-  const variant = sacVariant(state.variantId);
+  if (
+    depth > MAX_CHAIN_DEPTH ||
+    ctx.match.playerStatus(playerId) === 'eliminated'
+  )
+    return;
+  const variant = currentSacVariant(ctx);
   const current = position(playerId, ctx);
   const raw = current + delta;
   if (delta > 0 && raw >= variant.tiles.length) {
@@ -267,18 +142,20 @@ function resolveLanding(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_CHAIN_DEPTH || state.eliminated[playerId]) return;
-  const variant = sacVariant(state.variantId);
+  if (
+    depth > MAX_CHAIN_DEPTH ||
+    ctx.match.playerStatus(playerId) === 'eliminated'
+  )
+    return;
+  const variant = currentSacVariant(ctx);
   const tileIndex = position(playerId, ctx);
   const tile = variant.tiles[tileIndex];
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username} arrive sur « ${tile.title} ».`,
-  );
+  ctx.events.message('game.pawn.landed', { playerId, tileId: tileIndex });
   if (tile.type === 'go_to_jail') sendToJail(state, playerId, ctx);
   else if (tile.type === 'free') collectPot(state, playerId, variant, ctx);
   else if (tile.type === 'tax') payTax(state, playerId, tile, ctx);
   else if (tile.type === 'chance' || tile.type === 'community')
-    drawAndApply(state, playerId, tile.type, depth, ctx);
+    drawAndApply(playerId, tile.type, ctx);
   else if (isOwnable(tile))
     resolveOwnable(state, playerId, tileIndex, tile, ctx);
 }
@@ -290,151 +167,183 @@ function resolveOwnable(
   tile: SacTile,
   ctx: RuleContext,
 ): void {
-  const ownerId = state.ownership[tileIndex];
+  const ownerId = ctx.ownership.ownerOf(PROPERTIES, String(tileIndex));
   if (ownerId == null) {
-    const price = purchasePrice(sacVariant(state.variantId), tile);
-    state.pendingPurchase = { playerId, tileIndex };
+    const price = purchasePrice(currentSacVariant(ctx), tile);
     ctx.choice.one({
       id: 'sac.purchase',
       player: playerId,
-      options: state.money[playerId] >= price ? ['buy', 'skip'] : ['skip'],
+      options: ctx.resources.has(playerId, 'money', price)
+        ? ['buy', 'skip']
+        : ['skip'],
+      data: { flow: 'purchase', playerId, tileIndex },
       label: (choice) =>
         choice === 'buy' ? `Acheter pour ${price}` : 'Passer',
     });
     return;
   }
   if (ownerId === playerId || state.buildings[tileIndex]?.mortgaged) return;
-  const rules = sacVariant(state.variantId).rules;
-  if (rules.rentBlockedInJail && state.jailTurns[ownerId] > 0) return;
-  const rent = rentFor(state, tileIndex, tile, ownerId);
-  changeMoney(state, playerId, -rent, false, ctx);
-  if (!state.eliminated[ownerId]) changeMoney(state, ownerId, rent, false, ctx);
-  ctx.history.add(
-    `Loyer de ${rent} payé à ${ctx.players.get(ownerId)?.username}.`,
+  const rules = currentSacVariant(ctx).rules;
+  if (rules.rentBlockedInJail && ctx.resources.get(ownerId, SAC_JAIL_TURNS) > 0)
+    return;
+  const rent = rentFor(
+    state,
+    tileIndex,
+    tile,
+    ownerId,
+    currentSacVariant(ctx),
+    ctx.dice.last('pair')?.total ?? 0,
+    ctx,
   );
+  changeMoney(state, playerId, -rent, false, ctx);
+  if (ctx.match.playerStatus(ownerId) === 'active')
+    changeMoney(state, ownerId, rent, false, ctx);
+  ctx.events.message('sac.rent.paid', {
+    playerId,
+    ownerId,
+    amount: rent,
+    tileId: tileIndex,
+  });
 }
 
 function drawAndApply(
-  state: SacState,
   playerId: number,
   deck: 'chance' | 'community',
-  depth: number,
   ctx: RuleContext,
 ): void {
-  const deckId = `${deck}:${state.variantId}`;
-  const card = ctx.cards.drawOrRecycle<SacCard>(deckId);
-  if (!card) return;
-  ctx.history.add(
-    `${deck === 'chance' ? 'Chance' : 'Communauté'} : ${card.text}`,
+  const deckId = `${deck}:${currentSacVariant(ctx).id}`;
+  ctx.cards.drawThenResolve<SacCard, boolean>(
+    deckId,
+    (card) => {
+      ctx.events.message('game.card.drawn', {
+        playerId,
+        deckId,
+        cardId: card.id,
+      });
+      ctx.effects.schedule(...card.effects);
+      return card.retained;
+    },
+    {
+      discard: ({ result: retained }) => !retained,
+    },
   );
-  const retained = applyCard(state, playerId, card, depth + 1, ctx);
-  if (!retained) ctx.cards.discard(deckId, card);
-}
-
-function applyCard(
-  state: SacState,
-  playerId: number,
-  card: SacCard,
-  depth: number,
-  ctx: RuleContext,
-): boolean {
-  const text = normalize(card.text);
-  if (
-    text.includes('sortie de prison') ||
-    (text.includes('gardez cette carte') && text.includes('prison'))
-  ) {
-    state.jailCards[playerId] += 1;
-    return true;
-  }
-  if (text.includes('perd') && text.includes('infrastructure'))
-    loseInfrastructure(state, playerId, ctx);
-  applyEveryoneMoney(state, text, ctx);
-  applyCardMovement(state, playerId, card.text, depth, ctx);
-  const skip = skipTurns(text);
-  if (skip > 0) state.skipTurns[playerId] += skip;
-  const money = moneyDelta(text);
-  if (money !== 0 && !text.includes('tous les joueurs'))
-    changeMoney(state, playerId, money, money < 0, ctx);
-  if (text.includes('rejou')) state.extraRoll[playerId] = true;
-  return false;
-}
-
-function applyEveryoneMoney(
-  state: SacState,
-  text: string,
-  ctx: RuleContext,
-): void {
-  const match = text.match(
-    /tous les joueurs (?:paient|payent|recoivent) (\d+)/i,
-  );
-  if (!match) return;
-  const amount = Number(match[1]);
-  const delta = /recoivent/i.test(match[0]) ? amount : -amount;
-  for (const player of ctx.players.all())
-    if (!state.eliminated[player.id])
-      changeMoney(state, player.id, delta, delta < 0, ctx);
 }
 
 function applyCardMovement(
   state: SacState,
   playerId: number,
-  rawText: string,
-  depth: number,
+  movement: SacMovement,
   ctx: RuleContext,
 ): void {
-  const text = normalize(rawText);
-  const delta = movementDelta(text);
-  if (delta !== 0) {
-    moveForward(state, playerId, delta, depth, ctx);
+  if (movement.kind === 'delta') {
+    moveForward(state, playerId, movement.delta, 0, ctx);
     return;
   }
-  const target = movementTarget(state, playerId, text, ctx);
+  const target = movementTarget(playerId, movement, ctx);
   if (target == null) return;
   const current = position(playerId, ctx);
-  const collectStart =
-    (target === 0 && text.includes('empoche')) || target < current;
-  if (collectStart)
+  if (target < current || (movement.kind === 'start' && movement.collect)) {
     changeMoney(
       state,
       playerId,
-      sacVariant(state.variantId).rules.passStartBonus,
+      currentSacVariant(ctx).rules.passStartBonus,
       false,
       ctx,
     );
+  }
   moveTo(playerId, target, ctx);
-  resolveLanding(state, playerId, depth + 1, ctx);
+  resolveLanding(state, playerId, 1, ctx);
 }
 
 function movementTarget(
-  state: SacState,
   playerId: number,
-  text: string,
+  movement: Exclude<SacMovement, { kind: 'delta' }>,
   ctx: RuleContext,
 ): number | null {
-  if (
-    !text.includes('avance') &&
-    !text.includes('recule') &&
-    !text.includes('retour')
-  )
-    return null;
-  const variant = sacVariant(state.variantId);
-  if (text.includes('derniere case')) return variant.tiles.length - 1;
-  if (text.includes('case depart') || text.includes('case depare')) return 0;
-  const direction = text.includes('recule') ? -1 : 1;
-  if (text.includes('prochaine gare'))
+  const variant = currentSacVariant(ctx);
+  if (movement.kind === 'last') return variant.tiles.length - 1;
+  if (movement.kind === 'start') return 0;
+  if (movement.kind === 'next-station')
     return nextTileOfType(variant, position(playerId, ctx), 'station', 1);
-  if (text.includes('prochaine caisse'))
+  if (movement.kind === 'next-community')
     return nextTileOfType(variant, position(playerId, ctx), 'community', 1);
-  if (text.includes('precedente chance'))
+  if (movement.kind === 'previous-chance')
     return nextTileOfType(variant, position(playerId, ctx), 'chance', -1);
-  const color = text.match(/prochaine case ([a-z]+)/)?.[1];
-  if (color) return nextGroupTile(variant, position(playerId, ctx), color);
-  const named = text.match(
-    /(?:jusqu['’]?a|directement a|avancez a) (?:la |le |l['’])?([^.,:]+)/,
-  )?.[1];
-  if (!named || named.includes('cette case')) return null;
-  return findTile(variant, named, direction);
+  if (movement.kind === 'next-group') {
+    return nextGroupTile(variant, position(playerId, ctx), movement.group);
+  }
+  return findTile(
+    variant,
+    movement.name,
+    movement.direction === 'forward' ? 1 : -1,
+  );
 }
+
+const movementInput = gameInput.union([
+  gameInput.object({
+    kind: gameInput.literal('delta'),
+    delta: gameInput.number({ integer: true }),
+  }),
+  gameInput.object({
+    kind: gameInput.enum([
+      'last',
+      'next-station',
+      'next-community',
+      'previous-chance',
+    ] as const),
+  }),
+  gameInput.object({
+    kind: gameInput.literal('start'),
+    collect: gameInput.boolean(),
+  }),
+  gameInput.object({
+    kind: gameInput.literal('next-group'),
+    group: gameInput.string({ min: 1, max: 128 }),
+  }),
+  gameInput.object({
+    kind: gameInput.literal('named'),
+    name: gameInput.string({ min: 1, max: 256 }),
+    direction: gameInput.enum(['forward', 'backward'] as const),
+  }),
+]);
+
+export const SAC_EFFECTS = {
+  'sac.lose-infrastructure': defineEffect<
+    SacState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ state, actorPlayerId, ctx }) => {
+      if (actorPlayerId != null) {
+        loseInfrastructure(state, actorPlayerId, ctx);
+      }
+    },
+  }),
+  'sac.everyone-money': defineEffect<SacState, { delta: number }>({
+    input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
+    apply: ({ state, data, ctx }) => {
+      for (const player of ctx.players.active()) {
+        changeMoney(state, player.id, data.delta, data.delta < 0, ctx);
+      }
+    },
+  }),
+  'sac.movement': defineEffect<SacState, { movement: SacMovement }>({
+    input: gameInput.object({ movement: movementInput }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId != null) {
+        applyCardMovement(state, actorPlayerId, data.movement, ctx);
+      }
+    },
+  }),
+  'sac.money': defineEffect<SacState, { delta: number }>({
+    input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId != null) {
+        changeMoney(state, actorPlayerId, data.delta, data.delta < 0, ctx);
+      }
+    },
+  }),
+} as const;
 
 function buyTile(
   state: SacState,
@@ -442,31 +351,36 @@ function buyTile(
   tileIndex: number,
   ctx: RuleContext,
 ): void {
-  const variant = sacVariant(state.variantId);
+  const variant = currentSacVariant(ctx);
   const tile = variant.tiles[tileIndex];
   const price = purchasePrice(variant, tile);
   if (
-    state.ownership[tileIndex] != null ||
+    ctx.ownership.isOwned(PROPERTIES, String(tileIndex)) ||
     price <= 0 ||
-    state.money[playerId] < price
+    !ctx.resources.has(playerId, 'money', price)
   )
     return;
   changeMoney(state, playerId, -price, false, ctx);
-  state.ownership[tileIndex] = playerId;
+  ctx.ownership.claim(PROPERTIES, String(tileIndex), playerId);
   state.buildings[tileIndex] = { houses: 0, hotel: false, mortgaged: false };
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username} achète « ${tile.title} » pour ${price}.`,
-  );
+  ctx.events.message('sac.property.bought', {
+    playerId,
+    tileId: tileIndex,
+    amount: price,
+  });
 }
 
-function managementOptions(
+export function managementOptions(
   state: SacState,
   playerId: number,
   kind: SacManagementKind,
+  ctx: RuleContext,
 ): number[] {
-  const variant = sacVariant(state.variantId);
+  const variant = currentSacVariant(ctx);
   return variant.tiles.flatMap((tile, tileIndex) => {
-    if (state.ownership[tileIndex] !== playerId) return [];
+    if (!ctx.ownership.isOwner(PROPERTIES, String(tileIndex), playerId)) {
+      return [];
+    }
     const building = buildingAt(state, tileIndex);
     if (kind === 'build') {
       const group = groupFor(variant, tile);
@@ -474,11 +388,13 @@ function managementOptions(
         !group ||
         building.mortgaged ||
         building.hotel ||
-        !ownsGroup(state, playerId, variant, group)
+        !ownsGroup(state, playerId, variant, group, ctx)
       )
         return [];
       const cost = buildCost(group, building);
-      return cost > 0 && state.money[playerId] >= cost ? [tileIndex] : [];
+      return cost > 0 && ctx.resources.has(playerId, 'money', cost)
+        ? [tileIndex]
+        : [];
     }
     if (kind === 'sell')
       return building.hotel || building.houses > 0 ? [tileIndex] : [];
@@ -487,7 +403,7 @@ function managementOptions(
         ? [tileIndex]
         : [];
     const cost = unmortgageCost(variant, tile);
-    return building.mortgaged && state.money[playerId] >= cost
+    return building.mortgaged && ctx.resources.has(playerId, 'money', cost)
       ? [tileIndex]
       : [];
   });
@@ -500,7 +416,7 @@ function applyManagement(
   tileIndex: number,
   ctx: RuleContext,
 ): void {
-  const variant = sacVariant(state.variantId);
+  const variant = currentSacVariant(ctx);
   const tile = variant.tiles[tileIndex];
   const building = buildingAt(state, tileIndex);
   if (kind === 'build') {
@@ -526,21 +442,4 @@ function applyManagement(
     building.mortgaged = false;
     changeMoney(state, playerId, -unmortgageCost(variant, tile), false, ctx);
   }
-}
-
-function completeTurn(
-  state: SacState,
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  updateWinner(state, ctx);
-  if (
-    state.winnerId != null ||
-    state.pendingPurchase ||
-    state.pendingManagement
-  )
-    return;
-  if (state.extraRoll[playerId] && !state.eliminated[playerId])
-    state.extraRoll[playerId] = false;
-  else ctx.turn.end();
 }

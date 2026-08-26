@@ -1,4 +1,4 @@
-import type { SacVariantId } from './content';
+import type { PlayerMap } from '../../../core/application/public-api';
 
 export type SacBuilding = {
   houses: number;
@@ -9,27 +9,19 @@ export type SacBuilding = {
 export type SacManagementKind = 'build' | 'sell' | 'mortgage' | 'unmortgage';
 
 export interface SacState {
-  variantId: SacVariantId;
-  configured: boolean;
-  money: Record<number, number>;
-  ownership: Record<number, number>;
   buildings: Record<number, SacBuilding>;
-  skipTurns: Record<number, number>;
-  jailTurns: Record<number, number>;
-  eliminated: Record<number, boolean>;
-  jailCards: Record<number, number>;
-  extraRoll: Record<number, boolean>;
-  consecutiveDoubles: Record<number, number>;
-  pot: number;
-  lastRoll: number;
-  pendingPurchase: { playerId: number; tileIndex: number } | null;
-  pendingManagement: { playerId: number; kind: SacManagementKind } | null;
-  winnerId: number | null;
 }
 
-export type SacPlayerView = Omit<
-  SacState,
-  'pendingPurchase' | 'pendingManagement'
-> & {
-  positions: Record<number, number>;
+export type SacPlayerView = {
+  buildings: Record<number, SacBuilding>;
+  jailTurns: PlayerMap<number>;
+  jailCards: PlayerMap<number>;
+  consecutiveDoubles: PlayerMap<number>;
+  pot: number;
+  lastRoll: number;
+  extraRoll: PlayerMap<boolean>;
+  eliminated: PlayerMap<boolean>;
+  positions: PlayerMap<number>;
+  winnerId: number | null;
+  skipTurns: PlayerMap<number>;
 };

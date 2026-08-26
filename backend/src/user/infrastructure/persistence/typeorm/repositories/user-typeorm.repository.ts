@@ -1,12 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, type FindOptionsSelect } from 'typeorm';
 import type { UserModel } from '../../../../domain/models/user.model';
 import type {
   CreateUserRecord,
   UserRepository,
 } from '../../../../application/ports/user.repository';
 import { User } from '../entities/user.entity';
+
+const PUBLIC_USER_SELECT = {
+  id: true,
+  email: true,
+  username: true,
+  avatar: true,
+  preferences: true,
+  roles: true,
+  emailVerified: true,
+  bannedUntil: true,
+  banReason: true,
+  chatBannedUntil: true,
+  chatBanReason: true,
+  createdAt: true,
+} satisfies FindOptionsSelect<User>;
 
 @Injectable()
 export class UserTypeormRepository implements UserRepository {
@@ -16,20 +31,7 @@ export class UserTypeormRepository implements UserRepository {
 
   async listPublic(): Promise<UserModel[]> {
     const items = await this.users.find({
-      select: [
-        'id',
-        'email',
-        'username',
-        'avatar',
-        'preferences',
-        'roles',
-        'emailVerified',
-        'bannedUntil',
-        'banReason',
-        'chatBannedUntil',
-        'chatBanReason',
-        'createdAt',
-      ],
+      select: PUBLIC_USER_SELECT,
       order: { id: 'ASC' },
     });
     return items.map((item) => this.toPublicModel(item));
@@ -37,20 +39,7 @@ export class UserTypeormRepository implements UserRepository {
 
   async listStaff(): Promise<UserModel[]> {
     const items = await this.users.find({
-      select: [
-        'id',
-        'email',
-        'username',
-        'avatar',
-        'preferences',
-        'roles',
-        'emailVerified',
-        'bannedUntil',
-        'banReason',
-        'chatBannedUntil',
-        'chatBanReason',
-        'createdAt',
-      ],
+      select: PUBLIC_USER_SELECT,
       order: { id: 'ASC' },
     });
     return items
@@ -69,20 +58,7 @@ export class UserTypeormRepository implements UserRepository {
   async findPublicById(id: number): Promise<UserModel | null> {
     const user = await this.users.findOne({
       where: { id },
-      select: [
-        'id',
-        'email',
-        'username',
-        'avatar',
-        'preferences',
-        'roles',
-        'emailVerified',
-        'bannedUntil',
-        'banReason',
-        'chatBannedUntil',
-        'chatBanReason',
-        'createdAt',
-      ],
+      select: PUBLIC_USER_SELECT,
     });
     return user ? this.toPublicModel(user) : null;
   }

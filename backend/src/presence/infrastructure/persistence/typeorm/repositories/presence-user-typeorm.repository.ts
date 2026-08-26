@@ -17,7 +17,7 @@ export class PresenceUserTypeormRepository implements PresenceUserRepository {
   ): Promise<PresenceUserChatBan | null> {
     const user = await this.users.findOne({
       where: { id: userId },
-      select: ['id', 'chatBannedUntil', 'chatBanReason'] as const,
+      select: { id: true, chatBannedUntil: true, chatBanReason: true },
     });
     if (!user) {
       return null;

@@ -9,11 +9,11 @@ const readline = require('node:readline/promises');
 const KEBAB_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const GENERATED_FILES = [
   'game.ts',
-  'state.ts',
   'rules.ts',
   'content.ts',
   'game.spec.ts',
 ];
+const GAME_TEMPLATES = ['empty', 'card', 'race', 'quiz', 'party', 'board'];
 
 function kebabToPascal(value) {
   return value
@@ -44,7 +44,7 @@ function parseArguments(argv) {
 }
 
 function validateConfiguration(configuration) {
-  const { code, world, minPlayers, maxPlayers } = configuration;
+  const { code, world, minPlayers, maxPlayers, template = 'empty' } = configuration;
   if (!KEBAB_RE.test(code)) throw new Error(`Code invalide: ${quote(code)}`);
   if (!KEBAB_RE.test(world)) throw new Error(`Monde invalide: ${quote(world)}`);
   if (
@@ -55,46 +55,50 @@ function validateConfiguration(configuration) {
   ) {
     throw new Error('Limites de joueurs invalides.');
   }
+  if (!GAME_TEMPLATES.includes(template)) {
+    throw new Error(`Template inconnu: ${quote(template)}`);
+  }
 }
 
 function templates(configuration) {
-  const { code, name, category, world, minPlayers, maxPlayers } = configuration;
+  const {
+    code,
+    name,
+    category,
+    world,
+    minPlayers,
+    maxPlayers,
+    template = 'empty',
+  } = configuration;
   const typeName = kebabToPascal(code);
+  const family = familyTemplate(template, typeName);
   return {
-    'state.ts': `export interface ${typeName}State {
-  scoresByPlayerId: Record<number, number>;
-}
-`,
-    'content.ts': `export const ${typeName}Content = {
-  summary: ${quote(`Règles de ${name} à compléter.`)},
-} as const;
-`,
-    'rules.ts': `import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { ${typeName}State } from './state';
+    'content.ts': `import { defineGameContent${family.contentImports} } from '../../../core/application/public-api';
 
-export const pass = defineAction<${typeName}State, Record<string, never>>({
-  input: gameInput.object({}),
-  execute: ({ ctx }) => ctx.turn.end(),
-  documentation: 'Termine le tour courant.',
-});
+export const ${typeName}Content = defineGameContent(${quote(code)}, ${family.content});
 `,
-    'game.ts': `import { clockwise, defineGame } from '../../../core/application/public-api';
+    'rules.ts': `import { passTurn } from '../../../core/application/public-api';
+
+export type ${typeName}State = Record<string, never>;
+export const ${typeName}Actions = { pass: passTurn<${typeName}State>() };
+`,
+    'game.ts': `import { clockwise, defineGame${family.gameImports} } from '../../../core/application/public-api';
 import { ${typeName}Content } from './content';
-import { pass } from './rules';
+import { ${typeName}Actions, type ${typeName}State } from './rules';
 
-export default defineGame({
+${family.declaration}
+
+export default defineGame<${typeName}State, typeof ${typeName}Actions>({
   id: ${quote(code)},
   displayName: ${quote(name)},
   category: ${quote(category)},
   subcategory: ${quote(world)},
-  description: ${typeName}Content.summary,
+  description: ${quote(`Règles de ${name} à compléter.`)},
+  content: ${typeName}Content,
   players: { min: ${minPlayers}, max: ${maxPlayers} },
-  setup: ({ players }) => ({
-    scoresByPlayerId: Object.fromEntries(players.map((player) => [player.id, 0])),
-  }),
-  turn: clockwise(),
-  actions: { pass },
-  view: ({ state }) => structuredClone(state),
+  ${family.definition}
+  turn: ${family.turn},
+  actions: ${typeName}Actions,
 });
 `,
     'game.spec.ts': `import { testGame } from '../../../core/application/public-api';
@@ -108,10 +112,75 @@ describe(${quote(name)}, () => {
     game.as(1).expectAction('pass');
     await game.as(1).do('pass', {});
 
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });
 `,
+  };
+}
+
+function familyTemplate(template, typeName) {
+  if (template === 'card') {
+    return {
+      contentImports: '',
+      gameImports: ', cardGame',
+      content: "{ cards: [{ id: 'example-card' }] }",
+      declaration: `const pattern = cardGame<${typeName}State, { id: string }>({
+  cards: ${typeName}Content.data.cards,
+  initialHandSize: 1,
+});`,
+      definition: 'components: pattern.components,\n  lifecycle: pattern.lifecycle,',
+      turn: 'pattern.turn ?? clockwise()',
+    };
+  }
+  if (template === 'race') {
+    return {
+      contentImports: '',
+      gameImports: ', raceGame',
+      content: '{ trackLength: 32 }',
+      declaration: `const pattern = raceGame<${typeName}State>({ spaces: ${typeName}Content.data.trackLength });`,
+      definition: 'components: pattern.components,',
+      turn: 'pattern.turn ?? clockwise()',
+    };
+  }
+  if (template === 'quiz') {
+    return {
+      contentImports: ', quizContent',
+      gameImports: ', quiz',
+      content:
+        "{ questions: quizContent([{ id: 'example', prompt: 'À compléter', choices: ['A', 'B'], answerIndex: 0 }]) }",
+      declaration: '',
+      definition: `components: [quiz.bank({ id: 'main', questions: ${typeName}Content.data.questions })],`,
+      turn: 'clockwise()',
+    };
+  }
+  if (template === 'party') {
+    return {
+      contentImports: '',
+      gameImports: ', simultaneousAnswers',
+      content: '{ prompts: [] as string[] }',
+      declaration: `const pattern = simultaneousAnswers<${typeName}State>();`,
+      definition: '',
+      turn: 'pattern.turn ?? clockwise()',
+    };
+  }
+  if (template === 'board') {
+    return {
+      contentImports: '',
+      gameImports: ', grid',
+      content: '{ width: 8, height: 8 }',
+      declaration: '',
+      definition: `components: [grid.board({ id: 'main', width: ${typeName}Content.data.width, height: ${typeName}Content.data.height })],`,
+      turn: 'clockwise()',
+    };
+  }
+  return {
+    contentImports: '',
+    gameImports: '',
+    content: '{}',
+    declaration: '',
+    definition: '',
+    turn: 'clockwise()',
   };
 }
 
@@ -147,6 +216,7 @@ async function resolveConfiguration(argv) {
     category: parsed.options.category ?? 'JeuxDePlateaux',
     minPlayers: Number(parsed.options.min ?? 2),
     maxPlayers: Number(parsed.options.max ?? 4),
+    template: parsed.options.template ?? 'empty',
   };
   if (parsed.options['games-root']) {
     defaults.gamesRoot = path.resolve(parsed.options['games-root']);
@@ -188,7 +258,7 @@ async function resolveConfiguration(argv) {
 async function main() {
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
     console.log(
-      'Usage: npm run create:game -- <code> --world <monde> [--name <nom>] [--min 2] [--max 4]',
+      'Usage: npm run game:create -- <code> --world <monde> [--template empty|card|race|quiz|party|board] [--name <nom>] [--min 2] [--max 4]',
     );
     return;
   }
@@ -205,4 +275,10 @@ if (require.main === module) {
   });
 }
 
-module.exports = { GENERATED_FILES, createGame, parseArguments, templates };
+module.exports = {
+  GAME_TEMPLATES,
+  GENERATED_FILES,
+  createGame,
+  parseArguments,
+  templates,
+};

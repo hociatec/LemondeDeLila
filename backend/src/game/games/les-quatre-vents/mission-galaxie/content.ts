@@ -1,3 +1,8 @@
+import {
+  freezeGameContent,
+  gameEffects,
+  rejectContent,
+} from '../../../core/application/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type {
@@ -10,8 +15,18 @@ import type {
 
 export const MISSION_GALAXIE_CONTENT = loadContent();
 
-function loadContent() {
+type RawEventCard = Omit<MissionGalaxieEventCard, 'effects' | 'moveDeltas'> & {
+  effect: MissionGalaxieEventEffect;
+};
+
+function loadContent(): {
+  tiles: MissionGalaxieTile[];
+  questions: MissionGalaxieChoiceCard[];
+  challenges: MissionGalaxieChoiceCard[];
+  events: MissionGalaxieEventCard[];
+} {
   const directory = contentDirectory();
+  const events = readArray(directory, 'events.json', 'events', isEventCard);
   return {
     tiles: readArray(directory, 'board.json', 'tiles', isTile),
     questions: readArray(
@@ -26,7 +41,15 @@ function loadContent() {
       'challenges',
       isChoiceCard,
     ),
-    events: readArray(directory, 'events.json', 'events', isEventCard),
+    events: events.map((card) => ({
+      id: card.id,
+      title: card.title,
+      description: card.description,
+      effects: eventInstructions(card),
+      ...(card.effect.kind === 'choosePlayerMove'
+        ? { moveDeltas: card.effect.deltas }
+        : {}),
+    })),
   };
 }
 
@@ -40,11 +63,11 @@ function readArray<T>(
     readFileSync(resolve(directory, filename), 'utf8').replace(/^\uFEFF/, ''),
   );
   if (!isRecord(raw) || raw.version !== 1 || !Array.isArray(raw[field])) {
-    throw new Error(`Contenu Mission Galaxie invalide: ${filename}`);
+    rejectContent(`Contenu Mission Galaxie invalide: ${filename}`);
   }
   const values = raw[field];
   if (values.length === 0 || !values.every(guard)) {
-    throw new Error(`Entrées Mission Galaxie invalides: ${filename}`);
+    rejectContent(`Entrées Mission Galaxie invalides: ${filename}`);
   }
   return values;
 }
@@ -64,7 +87,7 @@ function contentDirectory(): string {
   const found = candidates.find((directory) =>
     existsSync(resolve(directory, 'board.json')),
   );
-  if (!found) throw new Error('Contenu Mission Galaxie introuvable');
+  if (!found) rejectContent('Contenu Mission Galaxie introuvable');
   return found;
 }
 
@@ -85,12 +108,19 @@ function isTile(value: unknown): value is MissionGalaxieTile {
     isRecord(value) &&
     typeof value.n === 'number' &&
     typeof value.title === 'string' &&
-    types.includes(value.type as MissionGalaxieTileType) &&
+    isTileType(value.type, types) &&
     optionalNumber(value.delta) &&
     optionalNumber(value.skipTurns) &&
     optionalNumber(value.target) &&
     (value.keepTurn == null || typeof value.keepTurn === 'boolean')
   );
+}
+
+function isTileType(
+  value: unknown,
+  types: readonly MissionGalaxieTileType[],
+): value is MissionGalaxieTileType {
+  return typeof value === 'string' && types.some((type) => type === value);
 }
 
 function isChoiceCard(value: unknown): value is MissionGalaxieChoiceCard {
@@ -110,7 +140,7 @@ function isChoiceCard(value: unknown): value is MissionGalaxieChoiceCard {
   );
 }
 
-function isEventCard(value: unknown): value is MissionGalaxieEventCard {
+function isEventCard(value: unknown): value is RawEventCard {
   return (
     isRecord(value) &&
     typeof value.id === 'number' &&
@@ -118,6 +148,37 @@ function isEventCard(value: unknown): value is MissionGalaxieEventCard {
     typeof value.description === 'string' &&
     isEffect(value.effect)
   );
+}
+
+function eventInstructions(
+  card: RawEventCard,
+): MissionGalaxieEventCard['effects'] {
+  const effect = card.effect;
+  if (effect.kind === 'none') return [];
+  if (effect.kind === 'move') {
+    return [gameEffects.custom('mission-galaxie.move', { delta: effect.delta })];
+  }
+  if (effect.kind === 'skip') return [gameEffects.skipTurn(effect.turns)];
+  if (effect.kind === 'reroll' || effect.kind === 'keepTurn') {
+    return [gameEffects.extraTurn()];
+  }
+  if (effect.kind === 'goto') {
+    return [gameEffects.custom('mission-galaxie.goto', { target: effect.target })];
+  }
+  if (effect.kind === 'skipOthers') {
+    return [
+      gameEffects.skipTurn(
+        effect.turns,
+        gameEffects.target.allOpponents(),
+      ),
+    ];
+  }
+  return [
+    gameEffects.custom('mission-galaxie.choose-player-move', {
+      cardId: card.id,
+      deltas: effect.deltas,
+    }),
+  ];
 }
 
 function isEffect(value: unknown): value is MissionGalaxieEventEffect {
@@ -148,3 +209,5 @@ function optionalNumber(value: unknown): boolean {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
+
+freezeGameContent(MISSION_GALAXIE_CONTENT);

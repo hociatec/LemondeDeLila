@@ -1,4 +1,5 @@
 ﻿import { Injectable, Logger } from '@nestjs/common';
+import { getErrorMessage } from '@common/utils/public-api';
 import { WS_EVENTS } from '../../../../realtime/public-api';
 import { UserBadgeCountsService } from '../../../application/services/user-badge-counts.service';
 import { NotificationDispatchService } from '../../system/notification-dispatch.service';
@@ -26,7 +27,7 @@ export class NotificationWsBadgeCountsService {
       await this.notifyCounts(userId);
     } catch (err) {
       this.logger.warn(
-        `notifyCounts failed for user ${userId}: ${(err as Error).message}`,
+        `notifyCounts failed for user ${userId}: ${getErrorMessage(err)}`,
       );
     }
   }

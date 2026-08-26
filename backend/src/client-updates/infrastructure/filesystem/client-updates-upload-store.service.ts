@@ -7,6 +7,7 @@ import {
   CompletedUploadMarker,
 } from '../../application/models/client-update-meta.record';
 import { ClientUpdatesPathsService } from './client-updates-paths.service';
+import { decodeCompletedUploadMarker } from './client-update-meta.decoder';
 
 @Injectable()
 export class ClientUpdatesUploadStoreService {
@@ -32,27 +33,10 @@ export class ClientUpdatesUploadStoreService {
         this.getCompletedMarkerPath(uploadId),
         'utf-8',
       );
-      const parsed = JSON.parse(
-        raw.replace(/^\uFEFF/, ''),
-      ) as Partial<CompletedUploadMarker>;
-      if (!parsed || typeof parsed !== 'object') return null;
-      if ((parsed.uploadId || '').trim() !== uploadId) return null;
-      const meta = parsed.meta;
-      if (!meta || typeof meta !== 'object') return null;
-      if (
-        typeof meta.version !== 'string' ||
-        typeof meta.publishedAt !== 'string'
-      ) {
-        return null;
-      }
-      return {
+      return decodeCompletedUploadMarker(
+        JSON.parse(raw.replace(/^\uFEFF/, '')),
         uploadId,
-        completedAt:
-          typeof parsed.completedAt === 'string'
-            ? parsed.completedAt
-            : new Date().toISOString(),
-        meta: meta,
-      };
+      );
     } catch {
       return null;
     }

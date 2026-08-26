@@ -1,3 +1,4 @@
+import { freezeGameContent } from '../../../core/application/public-api';
 import type { WonderGood, WonderInventory, WonderPrices } from './state';
 
 export const WONDER_GOODS: readonly WonderGood[] = [
@@ -34,3 +35,9 @@ export const MARKET_RULES = {
   protectCost: 2,
   rumorCost: 1,
 } as const;
+
+freezeGameContent(WONDER_GOODS);
+freezeGameContent(GOOD_LABELS);
+freezeGameContent(INITIAL_PRICES);
+freezeGameContent(EMPTY_INVENTORY);
+freezeGameContent(MARKET_RULES);

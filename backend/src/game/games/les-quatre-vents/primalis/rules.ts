@@ -1,27 +1,46 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
+import {
+  defineEvent,
+  gameInput,
+  rollDice,
+  type GameContext,
+  type PlayerMap,
+} from '../../../core/application/public-api';
 import type { PrimalisFace, PrimalisResources, PrimalisState } from './state';
 
 const TRACK = 'comet';
+export const PRIMALIS_DANGER_AMPLIFIED = 'primalis.danger-amplified';
+type RuleContext = GameContext<PrimalisState>;
+const PRIMALIS_FACES: readonly PrimalisFace[] = [
+  'herbivore',
+  'carnivore',
+  'egg',
+  'leaf',
+  'danger',
+  'herbivore',
+];
+const ROLL_RESOLVED = defineEvent({
+  type: 'primalis.roll.resolved',
+  data: gameInput.object({
+    playerId: gameInput.playerId(),
+    value: gameInput.number({ integer: true }),
+    face: gameInput.enum(PRIMALIS_FACES),
+  }),
+});
 
-export const roll = defineAction<PrimalisState, Record<string, never>>({
-  input: gameInput.object({}),
-  execute: ({ state, actor, ctx }) => {
-    let value = ctx.dice.roll('main').total;
-    if (value === 6) value = ctx.dice.roll('main').total;
-    const face = faceFromRoll(value);
-    state.lastRoll = value;
-    state.lastFace = face;
-    ctx.history.add(`${actor.username} lance le dé : « ${value} ».`);
-    applyFace(state, actor.id, face);
-    const position = ctx.movement.move(TRACK, actor.id, 1);
-    applyTile(state, actor.id, position, face, ctx.history.add);
+export const roll = rollDice<PrimalisState>({
+  policy: { reroll: { while: ({ total }) => total === 6, max: 1 } },
+  execute: ({ state, playerId, total, ctx }) => {
+    const face = faceFromRoll(total);
+    applyFace(playerId, face, ctx);
+    const position = ctx.movement.move(TRACK, playerId, 1);
+    applyTile(state, playerId, position, face, ctx);
     if (face === 'danger') applyDanger(state, position, ctx);
-    ctx.events.emit('primalis.roll.resolved', {
-      playerId: actor.id,
-      value,
+    ROLL_RESOLVED.emit(ctx, {
+      playerId,
+      value: total,
       face,
     });
-    ctx.turn.end();
+    ctx.turn.complete();
   },
 });
 
@@ -32,7 +51,7 @@ export function score(resources: PrimalisResources): number {
 }
 
 export function winnerByResources(
-  collections: Readonly<Record<number, PrimalisResources>>,
+  collections: Readonly<PlayerMap<PrimalisResources>>,
 ): number | null {
   return (
     Object.entries(collections)
@@ -49,25 +68,28 @@ export function winnerByResources(
   );
 }
 
-function faceFromRoll(value: number): PrimalisFace {
-  return ['herbivore', 'carnivore', 'egg', 'leaf', 'danger', 'herbivore'][
-    Math.max(0, Math.min(5, value - 1))
-  ] as PrimalisFace;
+export function faceFromRoll(value: number): PrimalisFace {
+  return PRIMALIS_FACES[Math.max(0, Math.min(5, value - 1))] ?? 'herbivore';
 }
 
 function applyFace(
-  state: PrimalisState,
   playerId: number,
   face: PrimalisFace,
+  ctx: RuleContext,
 ): void {
   if (face === 'danger') return;
-  const resources = state.collections[playerId];
   if (face === 'egg') {
-    if (resources.herbivores >= resources.carnivores) resources.herbivores += 1;
-    else resources.carnivores += 1;
-  } else if (face === 'herbivore') resources.herbivores += 1;
-  else if (face === 'carnivore') resources.carnivores += 1;
-  else if (face === 'leaf') resources.leaves += 1;
+    const resource =
+      ctx.resources.get(playerId, 'herbivores') >=
+      ctx.resources.get(playerId, 'carnivores')
+        ? 'herbivores'
+        : 'carnivores';
+    ctx.resources.add(playerId, resource, 1);
+  } else if (face === 'herbivore')
+    ctx.resources.add(playerId, 'herbivores', 1);
+  else if (face === 'carnivore')
+    ctx.resources.add(playerId, 'carnivores', 1);
+  else if (face === 'leaf') ctx.resources.add(playerId, 'leaves', 1);
 }
 
 function applyTile(
@@ -75,38 +97,57 @@ function applyTile(
   playerId: number,
   tile: number,
   face: PrimalisFace,
-  log: (message: string) => void,
+  ctx: RuleContext,
 ): void {
-  const resources = state.collections[playerId];
   if (tile === 1 && (face === 'egg' || face === 'leaf')) {
-    if (face === 'egg') resources.eggs += 1;
-    else resources.leaves += 1;
-    log('La case 1 double la récolte.');
-  } else if (tile === 2 && resources.carnivores > resources.herbivores) {
-    resources.herbivores = Math.max(0, resources.herbivores - 1);
-  } else if (tile === 3 && face === 'leaf') resources.leaves += 1;
-  else if (tile === 4 && face === 'carnivore') resources.eggs += 1;
-  else if (tile === 6) state.dangerAmplified = true;
-  else if (tile === 7) resources.leaves += 1;
+    ctx.resources.add(playerId, face === 'egg' ? 'eggs' : 'leaves', 1);
+    ctx.events.message('primalis.harvest.doubled', { playerId, face });
+  } else if (
+    tile === 2 &&
+    ctx.resources.get(playerId, 'carnivores') >
+      ctx.resources.get(playerId, 'herbivores')
+  ) {
+    if (ctx.resources.has(playerId, 'herbivores', 1)) {
+      ctx.resources.remove(playerId, 'herbivores', 1);
+    }
+  } else if (tile === 3 && face === 'leaf')
+    ctx.resources.add(playerId, 'leaves', 1);
+  else if (tile === 4 && face === 'carnivore')
+    ctx.resources.add(playerId, 'eggs', 1);
+  else if (tile === 6) ctx.counters.set(PRIMALIS_DANGER_AMPLIFIED, 1);
+  else if (tile === 7) ctx.resources.add(playerId, 'leaves', 1);
   else if (tile === 8 && (face === 'herbivore' || face === 'carnivore')) {
-    resources.leaves += 1;
+    ctx.resources.add(playerId, 'leaves', 1);
   }
 }
 
 function applyDanger(
   state: PrimalisState,
   tile: number,
-  ctx: {
-    players: { all(): Array<{ id: number }> };
-    movement: {
-      move(trackId: string, playerId: number, distance: number): number;
-    };
-    history: { add(message: string): void };
-  },
+  ctx: RuleContext,
 ): void {
-  ctx.history.add('Danger : la comète avance pour toutes les tribus.');
-  const distance = 1 + (state.dangerAmplified ? 1 : 0) + (tile === 9 ? 1 : 0);
+  ctx.events.message('primalis.danger.triggered', { tileId: tile });
+  const distance =
+    1 +
+    (ctx.counters.get(PRIMALIS_DANGER_AMPLIFIED) > 0 ? 1 : 0) +
+    (tile === 9 ? 1 : 0);
   for (const player of ctx.players.all())
     ctx.movement.move(TRACK, player.id, distance);
-  state.dangerAmplified = false;
+  ctx.counters.set(PRIMALIS_DANGER_AMPLIFIED, 0);
+}
+
+export function primalisCollections(
+  ctx: RuleContext,
+): PlayerMap<PrimalisResources> {
+  return Object.fromEntries(
+    ctx.players.all().map((player) => [
+      player.id,
+      {
+        herbivores: ctx.resources.get(player.id, 'herbivores'),
+        carnivores: ctx.resources.get(player.id, 'carnivores'),
+        eggs: ctx.resources.get(player.id, 'eggs'),
+        leaves: ctx.resources.get(player.id, 'leaves'),
+      },
+    ]),
+  );
 }

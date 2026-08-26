@@ -43,9 +43,15 @@ export interface GameRuntime {
     state: GameStateEntity,
     playerId: number,
   ): GameSingleActionDto[];
+  getActionCandidates(
+    state: GameStateEntity,
+    playerId: number,
+    actionType: string,
+    options?: GameActionCandidateQuery,
+  ): GameActionCandidatePage;
   exposeStateForUser(
     state: GameStateEntity,
-    userId: number,
+    userId: number | null,
   ): GameStateWithActions;
   getBotActions(
     state: GameStateEntity,
@@ -53,7 +59,80 @@ export interface GameRuntime {
   ): GameSingleActionDto[] | null;
   getAutomaticActions(state: GameStateEntity): GameAutomaticActionPlan | null;
   getShortcuts(context: GameShortcutsContext): GameShortcutHint[];
+  getDescriptor(): GameRuntimeDescriptor;
 }
+
+export type GameActionCandidateQuery = {
+  query?: Readonly<Record<string, unknown>>;
+  offset?: number;
+  limit?: number;
+};
+
+export type GameActionCandidatePage = {
+  actionType: string;
+  items: GameSingleActionDto[];
+  offset: number;
+  limit: number;
+  nextOffset: number | null;
+};
+
+export type GameRuntimeDescriptor = {
+  id: string;
+  name: string;
+  category: string;
+  subcategory?: string;
+  stateVersion: number;
+  rulesVersion: string;
+  players: { min: number; max: number };
+  actions: Array<{
+    type: string;
+    input: Record<string, unknown>;
+    documentation?: string;
+    paginatedCandidates?: boolean;
+    ui?: {
+      label?: string;
+      icon?: string;
+      intent?: 'primary' | 'secondary' | 'danger' | 'success';
+      control?: 'button' | 'card' | 'player' | 'pawn' | 'number' | 'form';
+      shortcut?: string;
+    };
+  }>;
+  choices: Array<{
+    id: string;
+    input: Record<string, unknown>;
+    documentation?: string;
+    ui: {
+      label: string;
+      icon?: string;
+      control: 'button' | 'card' | 'player' | 'pawn' | 'number' | 'form';
+    };
+  }>;
+  phases: Array<{
+    id: string;
+    actions: string[];
+    next?: string;
+    visibility: 'public' | 'hidden';
+    timeoutMs?: number;
+  }>;
+  components: Array<{ component: string; id?: string }>;
+  patterns: Array<{ id: string; mechanics: string[] }>;
+  configuration?: {
+    actionType: string;
+    input: Record<string, unknown>;
+    defaults: Record<string, unknown>;
+    permission: 'owner' | 'any-player';
+    phase?: string;
+    ui?: {
+      title?: string;
+      description?: string;
+      submitLabel?: string;
+    };
+  };
+  content?: {
+    gameId: string;
+    sections: string[];
+  };
+};
 
 export type GameCatalogDefinition = {
   id: string;

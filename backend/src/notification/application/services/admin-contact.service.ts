@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { getErrorMessage } from '@common/utils/public-api';
 import type { WsAuthPayload } from '../../../common/interfaces/public-api';
 import {
   NOTIFICATION_INBOX_REPOSITORY,
@@ -381,7 +382,7 @@ export class AdminContactService {
           await this.inboxNotifier.notifyInboxItem(row.userId, item);
         } catch (err) {
           this.logger.warn(
-            `notify.inbox.item failed for user ${row.userId}: ${(err as Error).message}`,
+            `notify.inbox.item failed for user ${row.userId}: ${getErrorMessage(err)}`,
           );
         }
       }),
@@ -424,14 +425,14 @@ export class AdminContactService {
           });
         } catch (err) {
           this.logger.warn(
-            `notify.inbox.removed failed for user ${userId}: ${(err as Error).message}`,
+            `notify.inbox.removed failed for user ${userId}: ${getErrorMessage(err)}`,
           );
         }
         try {
           await this.counts.notifyCounts(userId);
         } catch (err) {
           this.logger.warn(
-            `notifyCounts failed for user ${userId}: ${(err as Error).message}`,
+            `notifyCounts failed for user ${userId}: ${getErrorMessage(err)}`,
           );
         }
       }),

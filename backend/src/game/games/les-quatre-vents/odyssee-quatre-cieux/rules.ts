@@ -1,6 +1,13 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
+import {
+  rejectRule,
+  defineAction,
+  gameInput,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
 import { ODYSSEE_CONTENT } from './content';
 import type { OdysseeState } from './state';
+
+type RuleContext = GameContext<OdysseeState>;
 
 export type OdysseeMove = {
   pawnIndex: number;
@@ -12,17 +19,20 @@ export const roll = defineAction<OdysseeState, Record<string, never>>({
   input: gameInput.object({}),
   execute: ({ state, actor, ctx }) => {
     const value = ctx.dice.roll('main').total;
-    state.lastRoll = value;
-    ctx.history.add(`${actor.username} lance le dé : « ${value} ».`);
-    const moves = computeMoves(state, actor.id, value);
+    ctx.events.message('game.dice.rolled', {
+      playerId: actor.id,
+      diceId: 'main',
+      total: value,
+    });
+    const moves = computeMoves(actor.id, value, ctx);
     if (moves.length === 0) {
-      ctx.history.add(`${actor.username} ne peut jouer aucun pion.`);
+      ctx.events.message('game.pawn.no-legal-move', { playerId: actor.id });
       endMove(ctx, value);
       return;
     }
     if (moves.length === 1) {
-      applyMove(state, actor.id, moves[0], ctx.history.add);
-      endMove(ctx, value);
+      applyMove(state, actor.id, moves[0], ctx);
+      if (ctx.match.lifecycle() !== 'finished') endMove(ctx, value);
       return;
     }
     ctx.choice.one({
@@ -38,44 +48,56 @@ export const roll = defineAction<OdysseeState, Record<string, never>>({
 export const ODYSSEE_ACTIONS = { roll };
 
 export function computeMoves(
-  state: OdysseeState,
   playerId: number,
   rollValue: number,
+  ctx: RuleContext,
 ): OdysseeMove[] {
-  const arrival = state.trackLength + state.homeLength - 1;
-  return (state.pawnsByPlayer[playerId] ?? []).flatMap((pawn) => {
-    if (pawn.progress < 0 && rollValue !== 6) return [];
-    const targetProgress = pawn.progress < 0 ? 0 : pawn.progress + rollValue;
-    return targetProgress <= arrival
-      ? [{ pawnIndex: pawn.pawnIndex, targetProgress, roll: rollValue }]
-      : [];
-  });
+  return ctx.pawns
+    .legalMoves('odyssee', playerId, rollValue, {
+      enterOn: 6,
+      entryPosition: 0,
+      exactFinish: true,
+    })
+    .map((move) => ({
+      pawnIndex: Number(move.pawnId.split(':')[1]),
+      targetProgress: move.to,
+      roll: rollValue,
+    }));
 }
 
 export function applyMove(
-  state: OdysseeState,
+  _state: OdysseeState,
   playerId: number,
   move: OdysseeMove,
-  log: (message: string) => void,
+  ctx: RuleContext,
 ): void {
-  const pawn = state.pawnsByPlayer[playerId]?.find(
+  const pawn = pawnsFor(playerId, ctx).find(
     (candidate) => candidate.pawnIndex === move.pawnIndex,
   );
-  if (!pawn) throw new Error('Pion inconnu');
-  pawn.progress = move.targetProgress;
-  log(`Le joueur avance ${pawnName(move.pawnIndex)}.`);
-  const arrival = state.trackLength + state.homeLength - 1;
+  if (!pawn) rejectRule('Pion inconnu');
+  ctx.pawns.applyMove('odyssee', {
+    pawnId: pawn.pawnId,
+    from: pawn.progress,
+    to: move.targetProgress,
+    distance: move.targetProgress - pawn.progress,
+  });
+  ctx.events.message('game.pawn.moved', {
+    playerId,
+    pawnId: pawn.pawnId,
+    target: move.targetProgress,
+  });
+  const arrival = ODYSSEE_CONTENT.trackLength + ODYSSEE_CONTENT.homeLength - 1;
   if (
-    (state.pawnsByPlayer[playerId] ?? []).every(
+    pawnsFor(playerId, ctx).every(
       (candidate) => candidate.progress >= arrival,
     )
   ) {
-    state.winnerId = playerId;
+    ctx.match.finish({ winners: [playerId], reason: 'all-pawns-arrived' });
   }
 }
 
 export function endMove(
-  ctx: { turn: { extra(): void; end(): void } },
+  ctx: Pick<RuleContext, 'turn'>,
   rollValue: number,
 ): void {
   if (rollValue === 6) ctx.turn.extra();
@@ -84,4 +106,12 @@ export function endMove(
 
 function pawnName(index: number): string {
   return ODYSSEE_CONTENT.pawnNames[index] ?? `Pion ${index + 1}`;
+}
+
+function pawnsFor(playerId: number, ctx: RuleContext) {
+  return ctx.pawns.assigned('odyssee', playerId).map((pawnId) => ({
+    pawnId,
+    pawnIndex: Number(pawnId.split(':')[1]),
+    progress: ctx.pawns.position('odyssee', pawnId),
+  }));
 }

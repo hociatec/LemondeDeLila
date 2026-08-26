@@ -59,7 +59,7 @@ export class ClientUpdatesStaticService implements OnModuleInit {
 
   onModuleInit(): void {
     const httpAdapter = this.adapterHost?.httpAdapter;
-    const instance = httpAdapter?.getInstance?.();
+    const instance = httpAdapter?.getInstance<express.Application>();
     if (!instance || typeof instance.use !== 'function') {
       this.logger.warn('HTTP adapter does not support express middlewares');
       return;

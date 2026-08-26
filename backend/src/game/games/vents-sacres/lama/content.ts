@@ -1,3 +1,5 @@
+import { freezeGameContent } from '../../../core/application/public-api';
+
 export type LamaCard = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export const LAMA_VALUE: LamaCard = 7;
@@ -17,7 +19,11 @@ export function lamaPenalty(value: LamaCard): number {
 export function nextLamaValue(value: LamaCard): LamaCard {
   if (value === 6) return LAMA_VALUE;
   if (value === LAMA_VALUE) return 1;
-  return (value + 1) as LamaCard;
+  if (value === 1) return 2;
+  if (value === 2) return 3;
+  if (value === 3) return 4;
+  if (value === 4) return 5;
+  return 6;
 }
 
 export function buildLamaDeck(copiesPerValue: number): LamaCard[] {
@@ -25,3 +31,6 @@ export function buildLamaDeck(copiesPerValue: number): LamaCard[] {
     Array.from({ length: copiesPerValue }, () => value),
   );
 }
+
+freezeGameContent(LAMA_CARD_VALUES);
+freezeGameContent(LAMA_MAX_DECK);

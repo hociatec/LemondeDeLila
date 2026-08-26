@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import type { Redis } from 'ioredis';
 import { RedisClientFactory } from '../../../common/redis/public-api';
 import { RoomPayload } from '../../application/models/room-payload.model';
+import { decodeRoomPayload } from './room-payload.decoder';
 
 @Injectable()
 export class RoomPayloadCacheService {
@@ -74,7 +75,7 @@ export class RoomPayloadCacheService {
     try {
       const raw = await redis.get(this.key(roomId));
       if (!raw) return null;
-      return JSON.parse(raw) as RoomPayload;
+      return decodeRoomPayload(JSON.parse(raw));
     } catch (error) {
       this.disableRedis(
         'lecture cache room Redis impossible (fallback memoire)',

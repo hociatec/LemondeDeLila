@@ -1,12 +1,12 @@
 import {
   cards,
-  clockwise,
+  defineChoice,
   defineGame,
-  diceKit,
-  movement,
+  gameInput,
+  inventory,
+  pawns,
   playerView,
-  quiz,
-  victoryWhen,
+  quizRace,
   when,
 } from '../../../core/application/public-api';
 import {
@@ -19,16 +19,18 @@ import {
 } from './content';
 import {
   PANIER_ACTIONS,
+  PANIER_PHASES,
   requestPawn,
   resolveDirection,
   resolveGive,
   resolvePawn,
   resolveQuiz,
   resolveTake,
-  resolveTarget,
   restoreMovement,
-  skipPanierPlayer,
+  PANIER_REVEAL,
+  PANIER_REVERSED,
 } from './rules';
+import { PANIER_EFFECTS } from './effects';
 import type { PanierPlayerView, PanierState } from './state';
 
 export default defineGame<PanierState, typeof PANIER_ACTIONS, PanierPlayerView>(
@@ -39,116 +41,102 @@ export default defineGame<PanierState, typeof PANIER_ACTIONS, PanierPlayerView>(
     subcategory: 'LesQuatreVents',
     description: 'Complétez votre liste de courses puis revenez à l’entrée.',
     players: { min: 2, max: 10 },
+    patterns: [
+      quizRace({
+        trackId: 'market',
+        spaces: PANIER_TILES.length,
+        overshoot: 'wrap',
+        quizId: 'market-quiz',
+        questions: PANIER_QUIZZES,
+      }),
+    ],
     components: [
-      movement.track({ id: 'market', spaces: PANIER_TILES.length, wrap: true }),
-      diceKit({ id: 'main', count: 1, sides: 6 }),
+      pawns.set({ id: 'panier', pawns: PANIER_PAWNS }),
       cards.deck({ id: 'events', cards: PANIER_EVENTS, shuffle: true }),
       cards.deck({ id: 'exchanges', cards: PANIER_EXCHANGES, shuffle: true }),
-      quiz.bank({
-        id: 'market-quiz',
-        questions: PANIER_QUIZZES,
-        shuffle: true,
-      }),
+      inventory.set({ id: 'market-items', visibility: 'owner' }),
+      inventory.set({ id: 'shopping-lists', visibility: 'owner' }),
+      inventory.set({ id: 'shopping-baskets', visibility: 'owner' }),
     ],
     shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
     setup: ({ players, ctx }) => {
-      const zeros = () =>
-        Object.fromEntries(players.map((player) => [player.id, 0]));
       const selectedLists = ctx.random.shuffle(PANIER_LISTS);
-      const state: PanierState = {
-        pawnByPlayerId: {},
-        setupComplete: false,
-        starterId: (ctx.random.pick(players) ?? players[0]).id,
-        shoppingLists: Object.fromEntries(
-          players.map((player, index) => [
-            player.id,
-            [...selectedLists[index % selectedLists.length]],
-          ]),
-        ),
-        baskets: Object.fromEntries(players.map((player) => [player.id, []])),
-        inventories: Object.fromEntries(
-          players.map((player) => [player.id, []]),
-        ),
-        laps: zeros(),
-        skipTurns: zeros(),
-        keepTurns: zeros(),
-        revealTurns: zeros(),
-        movementDirection: 1,
-        reverseOwnerId: null,
-        pending: null,
-        resolvingPlayerId: null,
-        lastEventId: null,
-        lastExchangeId: null,
-        winnerId: null,
-      };
-      requestPawn(state, players[0].id, ctx);
-      return state;
+      const starter = ctx.random.pick(players) ?? players[0];
+      ctx.round.start(starter.id);
+      for (const [index, player] of players.entries()) {
+        for (const item of selectedLists[index % selectedLists.length]) {
+          ctx.inventory.add('shopping-lists', player.id, item);
+        }
+      }
+      requestPawn(players[0].id, ctx);
+      return {};
     },
-    initialPhase: 'setup',
-    turn: clockwise(),
+    initialPhase: PANIER_PHASES.initialPhase,
+    phases: PANIER_PHASES.phases,
     actions: PANIER_ACTIONS,
+    effects: PANIER_EFFECTS,
     choices: {
-      'panier.pawn': {
+      'panier.pawn': defineChoice<PanierState, string>({
+        input: gameInput.string({ min: 1, max: 128 }),
+        resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+      }),
+      'panier.direction': defineChoice<PanierState, string>({
+        input: gameInput.string({ min: 1, max: 128 }),
         resolve: ({ state, actor, value, ctx }) =>
-          resolvePawn(state, actor.id, String(value), ctx),
-      },
-      'panier.direction': {
+          resolveDirection(state, actor.id, value, ctx),
+      }),
+      'panier.quiz': defineChoice<PanierState, number>({
+        input: gameInput.number({ integer: true }),
         resolve: ({ state, actor, value, ctx }) =>
-          resolveDirection(state, actor.id, String(value), ctx),
-      },
-      'panier.quiz': {
-        resolve: ({ state, actor, value, ctx }) =>
-          resolveQuiz(state, actor.id, Number(value), ctx),
-      },
-      'panier.target': {
-        resolve: ({ state, actor, value, ctx }) =>
-          resolveTarget(state, actor.id, Number(value), ctx),
-      },
-      'panier.take': {
-        resolve: ({ state, actor, value, ctx }) =>
-          resolveTake(state, actor.id, String(value), ctx),
-      },
-      'panier.give': {
-        resolve: ({ state, actor, value, ctx }) =>
-          resolveGive(state, actor.id, String(value), ctx),
-      },
+          resolveQuiz(state, actor.id, value, ctx),
+      }),
+      'panier.take': defineChoice<PanierState, string>({
+        input: gameInput.string({ min: 1, max: 128 }),
+        resolve: ({ actor, value, ctx }) =>
+          resolveTake(actor.id, value, ctx),
+      }),
+      'panier.give': defineChoice<PanierState, string>({
+        input: gameInput.string({ min: 1, max: 128 }),
+        resolve: ({ actor, value, ctx }) =>
+          resolveGive(actor.id, value, ctx),
+      }),
     },
     automatic: [
       when(
         'restore-market-direction',
-        ({ state, ctx }) =>
-          state.setupComplete &&
-          state.reverseOwnerId != null &&
-          ctx.players.current()?.id === state.reverseOwnerId,
-        ({ state, ctx }) => restoreMovement(state, ctx),
-      ),
-      when(
-        'skip-market-turn',
-        ({ state, ctx }) => {
-          const playerId = ctx.players.current()?.id;
+        ({ ctx }) => {
+          const current = ctx.players.current();
           return (
-            state.setupComplete &&
-            playerId != null &&
-            state.skipTurns[playerId] > 0
+            PANIER_PHASES.is(ctx, 'playing') &&
+            current != null &&
+            ctx.status.has(current.id, PANIER_REVERSED)
           );
         },
-        ({ state, ctx }) => skipPanierPlayer(state, ctx),
+        ({ ctx }) => {
+          const playerId = ctx.players.current()?.id;
+          if (playerId != null) restoreMovement(playerId, ctx);
+        },
       ),
     ],
-    victory: victoryWhen(({ state }) =>
-      state.winnerId == null
-        ? null
-        : { winnerPlayerIds: [state.winnerId], reason: 'shopping-complete' },
-    ),
-    view: ({ state, actor, ctx }) => {
-      const {
-        shoppingLists: _shoppingLists,
-        baskets: _baskets,
-        inventories: _inventories,
-        pending: _pending,
-        resolvingPlayerId: _resolvingPlayerId,
-        ...publicState
-      } = state;
+    view: ({ actor, ctx }) => {
+      const pawnByPlayerId = Object.fromEntries(
+        ctx.players.all().flatMap((player) => {
+          const pawnId = ctx.pawns.assigned('panier', player.id)[0];
+          return pawnId == null ? [] : [[player.id, pawnId]];
+        }),
+      );
+      const lastEventId =
+        ctx.cards.discardPile<(typeof PANIER_EVENTS)[number]>('events').at(-1)
+          ?.id ?? null;
+      const lastExchangeId =
+        ctx.cards
+          .discardPile<(typeof PANIER_EXCHANGES)[number]>('exchanges')
+          .at(-1)?.id ?? null;
+      const reverseOwnerId =
+        ctx.players
+          .all()
+          .find((player) => ctx.status.has(player.id, PANIER_REVERSED))?.id ??
+        null;
       const positions = Object.fromEntries(
         ctx.players
           .all()
@@ -160,27 +148,55 @@ export default defineGame<PanierState, typeof PANIER_ACTIONS, PanierPlayerView>(
       const basketCounts = Object.fromEntries(
         ctx.players
           .all()
-          .map((player) => [player.id, state.baskets[player.id].length]),
+          .map((player) => [
+            player.id,
+            ctx.inventory.count('shopping-baskets', player.id),
+          ]),
       );
-      const inventoryCounts = Object.fromEntries(
-        ctx.players
-          .all()
-          .map((player) => [player.id, state.inventories[player.id].length]),
+      const laps = Object.fromEntries(
+        ctx.players.all().map((player) => [player.id, ctx.score.get(player.id)]),
+      );
+      const revealTurns = Object.fromEntries(
+        ctx.players.all().map((player) => [
+          player.id,
+          ctx.status.get(player.id, PANIER_REVEAL)?.remaining ?? 0,
+        ]),
       );
       return playerView({
         game: {
-          ...structuredClone(publicState),
+          laps,
+          revealTurns,
+          reverseOwnerId,
+          lastEventId,
+          lastExchangeId,
+          pawnByPlayerId,
+          starterId: ctx.round.starter() ?? 0,
+          keepTurns: Object.fromEntries(
+            ctx.players
+              .all()
+              .map((player) => [player.id, ctx.turn.extraCount(player.id)]),
+          ),
+          movementDirection: ctx.turn.direction(),
           positions,
           basketCounts,
-          inventoryCounts,
-          shoppingList: actor ? [...state.shoppingLists[actor.id]] : [],
-          basket: actor ? [...state.baskets[actor.id]] : [],
-          inventory: actor ? [...state.inventories[actor.id]] : [],
+          shoppingList: actor
+            ? ctx.inventory.items('shopping-lists', actor.id)
+            : [],
+          basket: actor
+            ? ctx.inventory.items('shopping-baskets', actor.id)
+            : [],
+          winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+          skipTurns: Object.fromEntries(
+            ctx.players
+              .all()
+              .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+          ),
+          setupComplete: PANIER_PHASES.is(ctx, 'playing'),
         },
         extras: {
           pawn: actor
             ? (PANIER_PAWNS.find(
-                (pawn) => pawn.id === state.pawnByPlayerId[actor.id],
+                (pawn) => pawn.id === pawnByPlayerId[actor.id],
               ) ?? null)
             : null,
         },

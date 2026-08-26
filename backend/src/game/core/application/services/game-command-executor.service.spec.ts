@@ -59,7 +59,7 @@ describe('GameCommandExecutorService', () => {
     const handler = {
       validateActor: () => true,
       validateAction: (
-        current: GameStateEntity,
+        _current: GameStateEntity,
         action: GameSingleActionDto,
       ) => {
         if (action.type === 'reject') throw new Error('rejected');

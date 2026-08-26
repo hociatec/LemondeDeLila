@@ -95,7 +95,7 @@ type CommandContext = {
 @Injectable()
 export class RoomGatewayCommandService {
   decode(raw: unknown): IncomingPayload | null {
-    let text = '';
+    let text: string;
     if (typeof raw === 'string') {
       text = raw;
     } else if (Buffer.isBuffer(raw)) {
@@ -109,7 +109,14 @@ export class RoomGatewayCommandService {
       return null;
     }
     try {
-      return JSON.parse(text) as IncomingPayload;
+      const parsed: unknown = JSON.parse(text);
+      if (!isRecord(parsed)) {
+        return null;
+      }
+      if (parsed.type !== undefined && typeof parsed.type !== 'string') {
+        return null;
+      }
+      return { type: parsed.type, payload: parsed.payload };
     } catch {
       return null;
     }
@@ -262,21 +269,21 @@ export class RoomGatewayCommandService {
       case 'room.info':
         await ctx.handleRoomInfo(client, meta);
         break;
-      case 'room.ping':
+      case 'room.ping': {
+        const record = ctx.asRecord(data);
+        const trace = ctx.asRecord(record._trace);
         ctx.safeSend(client, {
           type: 'room.pong',
           roomId: meta.roomId,
           payload: {
             serverTimeMs: Date.now(),
             clientSentAtMs:
-              typeof ctx.asRecord(data).clientSentAtMs === 'number'
-                ? Number(ctx.asRecord(data).clientSentAtMs)
-                : ((ctx.asRecord(ctx.asRecord(data)._trace).sentAtMs as
-                    | number
-                    | undefined) ?? null),
+              finiteNumberOrNull(record.clientSentAtMs) ??
+              finiteNumberOrNull(trace.sentAtMs),
           },
         });
         break;
+      }
       case 'bot.add':
         await ctx.handleBotAdd(meta, data, receivedAtMs);
         break;
@@ -293,4 +300,12 @@ export class RoomGatewayCommandService {
         break;
     }
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function finiteNumberOrNull(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }

@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { getErrorMessage } from '@common/utils/public-api';
 import {
   NOTIFICATION_INBOX_REPOSITORY,
   type NotificationInboxRepository,
@@ -31,7 +32,7 @@ export class UserBadgeCountsService {
       return { unreadNotifications, unreadMessages };
     } catch (err) {
       this.logger.warn(
-        `getCounts failed for user ${userId}: ${(err as Error).message}`,
+        `getCounts failed for user ${userId}: ${getErrorMessage(err)}`,
       );
       throw err;
     }

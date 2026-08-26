@@ -6,8 +6,7 @@ describe('Cat Pattes declarative game', () => {
   it('uses a generic configuration choice and private six-card hands', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(71);
     await game.start();
-    await game.choose(1, 2);
-    expect(game.view(1).configComplete).toBe(true);
+    await game.as(1).do('game.configure', { roundsToPlay: 2 });
     expect(game.view(1).hand).toHaveLength(6);
     expect(game.view(2).hand).toHaveLength(6);
     expect(game.view(1).hand).not.toEqual(game.view(2).hand);
@@ -17,7 +16,7 @@ describe('Cat Pattes declarative game', () => {
   it('draws once, discards, advances and replays exactly', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(72);
     await game.start();
-    await game.choose(1, 1);
+    await game.as(1).do('game.configure', { roundsToPlay: 1 });
     await game.as(1).do('draw', {});
     expect(game.view(1).hand).toHaveLength(7);
     await game.as(1).do('discard_card', { cardId: game.view(1).hand[0] });

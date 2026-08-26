@@ -2,6 +2,7 @@
 import { randomUUID } from 'crypto';
 import { WebSocket } from 'ws';
 import type { WsAuthPayload } from '../../../../common/interfaces/public-api';
+import { getErrorMessage } from '../../../../common/utils/public-api';
 import {
   WsApiHubService,
   WsJwtAuthService,
@@ -106,7 +107,7 @@ export class RealtimeApiConnectionService {
       return this.auth.verify(token);
     } catch (err) {
       this.logger.warn(
-        `Connexion WS sans auth valide: ${(err as Error).message}`,
+        `Connexion WS sans auth valide: ${getErrorMessage(err)}`,
       );
       return null;
     }
@@ -130,7 +131,7 @@ export class RealtimeApiConnectionService {
       );
     } catch (err) {
       this.logger.warn(
-        `Initial game.state impossible connectionId=${session.connectionId}: ${(err as Error).message}`,
+        `Initial game.state impossible connectionId=${session.connectionId}: ${getErrorMessage(err)}`,
       );
     }
   }
@@ -164,7 +165,7 @@ export class RealtimeApiConnectionService {
         return url;
       }
     }
-    const clientUrl = (client as unknown as { url?: unknown }).url;
+    const clientUrl = 'url' in client ? client.url : undefined;
     return typeof clientUrl === 'string' && clientUrl.trim() ? clientUrl : null;
   }
 }

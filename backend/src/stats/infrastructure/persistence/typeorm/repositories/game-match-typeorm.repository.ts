@@ -13,10 +13,6 @@ import { GameMatchEntity } from '../entities/game-match.entity';
 import { GameMatchPlayerEntity } from '../entities/game-match-player.entity';
 import { stringOrEmpty } from '@common/utils/public-api';
 
-type StatsUserReference = {
-  id: number;
-};
-
 type Top10RawRow = {
   userId: unknown;
   username: unknown;
@@ -70,9 +66,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
         endedAt: match.endedAt,
         endedReason: match.endedReason,
         winnerUser:
-          match.winnerUserId != null
-            ? ({ id: match.winnerUserId } as StatsUserReference)
-            : null,
+          match.winnerUserId != null ? { id: match.winnerUserId } : null,
       }),
     );
     return this.toMatchModel(saved);
@@ -84,7 +78,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     const match = await this.matches.findOne({
       where: { roomId, endedAt: IsNull() },
       order: { startedAt: 'DESC' },
-      relations: ['winnerUser'],
+      relations: { winnerUser: true },
     });
     return match ? this.toMatchModel(match) : null;
   }
@@ -94,7 +88,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
   ): Promise<GameMatchPlayerRecord[]> {
     const rows = await this.players.find({
       where: { match: { id: matchId } },
-      relations: ['match'],
+      relations: { match: true },
     });
     return rows.map((row) => this.toPlayerModel(row));
   }
@@ -105,7 +99,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
   ): Promise<GameMatchPlayerRecord | null> {
     const row = await this.players.findOne({
       where: { match: { id: matchId }, user: { id: userId } },
-      relations: ['match'],
+      relations: { match: true },
     });
     return row ? this.toPlayerModel(row) : null;
   }
@@ -120,7 +114,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     const row = await this.players.save(
       this.players.create({
         match: { id: data.matchId } as GameMatchEntity,
-        user: { id: data.userId } as StatsUserReference,
+        user: { id: data.userId },
         username: data.username,
         outcome: data.outcome,
         leftAt: data.leftAt,
@@ -128,7 +122,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     );
     const hydrated = await this.players.findOne({
       where: { id: row.id },
-      relations: ['match'],
+      relations: { match: true },
     });
     if (!hydrated)
       throw new GameStatsDomainError(
@@ -145,7 +139,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
       this.players.create({
         id: player.id,
         match: { id: player.matchId } as GameMatchEntity,
-        user: { id: player.userId } as StatsUserReference,
+        user: { id: player.userId },
         username: player.username,
         outcome: player.outcome,
         leftAt: player.leftAt,
@@ -153,7 +147,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     );
     const hydrated = await this.players.findOne({
       where: { id: row.id },
-      relations: ['match'],
+      relations: { match: true },
     });
     if (!hydrated)
       throw new GameStatsDomainError(
@@ -166,7 +160,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
   async findPlayersByUserId(userId: number): Promise<GameMatchPlayerRecord[]> {
     const rows = await this.players.find({
       where: { user: { id: userId } },
-      relations: ['match'],
+      relations: { match: true },
     });
     return rows.map((row) => this.toPlayerModel(row));
   }
@@ -264,7 +258,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
       matchId: player.match?.id ?? 0,
       userId: player.user.id,
       username: player.username,
-      outcome: player.outcome as GameMatchOutcome,
+      outcome: player.outcome,
       leftAt: player.leftAt ?? null,
       match: player.match ? this.toMatchSummary(player.match) : null,
     };

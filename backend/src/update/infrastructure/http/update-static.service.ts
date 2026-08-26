@@ -15,7 +15,8 @@ export class UpdateStaticService implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    const instance = this.adapterHost.httpAdapter?.getInstance?.();
+    const instance =
+      this.adapterHost.httpAdapter?.getInstance<express.Application>();
     if (!instance || typeof instance.use !== 'function') {
       this.logger.warn('HTTP adapter does not support update middleware');
       return;

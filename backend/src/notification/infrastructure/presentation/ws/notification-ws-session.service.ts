@@ -1,4 +1,5 @@
 ﻿import { Injectable, Logger } from '@nestjs/common';
+import { getErrorMessage } from '@common/utils/public-api';
 import { WebSocket } from 'ws';
 import { NotificationFriendPresenceService } from '../../../application/services/notification-friend-presence.service';
 import { UserBadgeCountsService } from '../../../application/services/user-badge-counts.service';
@@ -95,7 +96,7 @@ export class NotificationWsSessionService {
           ? (payload as { type: string }).type
           : 'unknown';
       this.logger.warn(
-        `Echec envoi WS notify (type=${type}) : ${(err as Error).message}`,
+        `Echec envoi WS notify (type=${type}) : ${getErrorMessage(err)}`,
       );
       try {
         client.close();

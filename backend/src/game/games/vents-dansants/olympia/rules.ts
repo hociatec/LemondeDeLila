@@ -1,17 +1,26 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
+import {
+  defineAction,
+  defineEffect,
+  gameInput,
+  gameEffects,
+  rejectRule,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
 import {
   OLYMPIA_CARD_BY_ID,
+  OLYMPIA_CATEGORIES,
+  OLYMPIA_DECK_TYPES,
   type OlympiaCardDefinition,
   type OlympiaCategory,
   type OlympiaDeckType,
-  type OlympiaEffect,
+  type OlympiaStatusKey,
 } from './content';
-import type { OlympiaState, OlympiaStatus } from './state';
+import type { OlympiaState } from './state';
 
 const HANDS = 'players';
 const PRESTIGE_TO_WIN = 30;
-type RuleContext = GameRuleContext<OlympiaState>;
+const DRAWN_PLAYER_FLAG = 'olympia.drawn-player-id';
+type RuleContext = GameContext<OlympiaState>;
 
 const DECKS: OlympiaDeckType[] = [
   'heros',
@@ -23,88 +32,71 @@ const DECKS: OlympiaDeckType[] = [
 ];
 
 type DrawInput = { deck: OlympiaDeckType };
-type PlayInput = { cardId: string; targetPlayerId?: number };
+type PlayInput = { cardId: string };
 
 export const drawCard = defineAction<OlympiaState, DrawInput>({
   input: gameInput.object({ deck: gameInput.enum(DECKS) }),
   documentation: 'Pioche une carte dans un paquet non vide, une fois par tour.',
-  available: ({ state, actor }) =>
-    state.drawnPlayerId !== actor.id &&
-    !hasStatus(state, actor.id, 'block_actions'),
-  availableInputs: ({ state, actor, ctx }) =>
-    state.drawnPlayerId === actor.id ||
-    hasStatus(state, actor.id, 'block_actions')
+  available: ({ actor, ctx }) =>
+    drawnPlayerId(ctx) !== actor.id &&
+    !hasStatus(ctx, actor.id, 'block_actions'),
+  validate: ({ input, ctx }) => ctx.cards.deckCount(input.deck) > 0,
+  enumerate: ({ actor, ctx }) =>
+    drawnPlayerId(ctx) === actor.id ||
+    hasStatus(ctx, actor.id, 'block_actions')
       ? []
       : DECKS.filter((deck) => ctx.cards.deckCount(deck) > 0).map((deck) => ({
           deck,
         })),
-  execute: ({ state, actor, input, ctx }) => {
-    if (state.drawnPlayerId === actor.id)
-      throw new Error('Pioche déjà effectuée');
+  execute: ({ actor, input, ctx }) => {
+    if (drawnPlayerId(ctx) === actor.id) rejectRule('Pioche déjà effectuée');
     const cardId = ctx.cards.draw<string>(input.deck);
-    if (!cardId) throw new Error(`Le paquet ${input.deck} est vide`);
+    if (!cardId) rejectRule(`Le paquet ${input.deck} est vide`);
     ctx.cards.give(HANDS, actor.id, cardId);
-    state.drawnPlayerId = actor.id;
-    ctx.history.add(`${actor.username} pioche une carte ${input.deck}.`);
+    ctx.turn.flags.set(DRAWN_PLAYER_FLAG, actor.id);
+    ctx.events.message('game.card.drawn', {
+      playerId: actor.id,
+      cardId,
+      deckId: input.deck,
+    });
   },
 });
 
 export const playCard = defineAction<OlympiaState, PlayInput>({
   input: gameInput.object({
     cardId: gameInput.cardId(),
-    targetPlayerId: gameInput.optional(gameInput.playerId()),
   }),
   documentation:
     'Joue une carte, applique ses effets dans l’ordre puis termine le tour.',
-  available: ({ state, actor }) => !hasStatus(state, actor.id, 'block_play'),
-  availableInputs: ({ state, actor, ctx }) =>
-    hasStatus(state, actor.id, 'block_play')
+  available: ({ actor, ctx }) => !hasStatus(ctx, actor.id, 'block_play'),
+  validate: ({ actor, input, ctx }) => isLegalPlay(actor.id, input, ctx),
+  enumerate: ({ actor, ctx }) =>
+    hasStatus(ctx, actor.id, 'block_play')
       ? []
       : ctx.cards.hand<string>(HANDS, actor.id).flatMap((cardId) => {
           const card = OLYMPIA_CARD_BY_ID[cardId];
-          if (!card || isCardBlocked(state, actor.id, card)) return [];
-          const targets = requiresTarget(card)
-            ? ctx.players
-                .all()
-                .filter((player) => player.id !== actor.id)
-                .map((player) => player.id)
-            : [undefined];
-          return targets.map((targetPlayerId) => ({ cardId, targetPlayerId }));
+          if (!card || isCardBlocked(ctx, actor.id, card)) return [];
+          return [{ cardId }];
         }),
-  execute: ({ state, actor, input, ctx }) => {
+  execute: ({ actor, input, ctx }) => {
     const card = requireOwnedCard(actor.id, input.cardId, ctx);
-    if (isCardBlocked(state, actor.id, card)) {
-      throw new Error('Cette catégorie de carte est bloquée');
-    }
-    if (requiresTarget(card) && input.targetPlayerId == null) {
-      throw new Error('Cette carte exige une cible');
-    }
-    if (
-      input.targetPlayerId != null &&
-      (input.targetPlayerId === actor.id ||
-        !ctx.players.get(input.targetPlayerId))
-    ) {
-      throw new Error('Cible Olympia invalide');
+    if (isCardBlocked(ctx, actor.id, card)) {
+      rejectRule('Cette catégorie de carte est bloquée');
     }
     ctx.cards.play(HANDS, card.deck, actor.id, card.id);
-    addCardPrestige(state, actor.id, card, ctx);
-    const effects = card.effect
-      ? Array.isArray(card.effect)
-        ? card.effect
-        : [card.effect]
-      : [];
-    for (const effect of effects) {
-      applyEffect(state, actor.id, input.targetPlayerId ?? null, effect, ctx);
-    }
-    chooseWinner(state, ctx);
-    if (state.winnerIds.length === 0) endTurn(state, ctx);
+    addCardPrestige(actor.id, card, ctx);
+    ctx.effects.schedule(
+      ...card.effects,
+      gameEffects.custom('olympia.finish-card'),
+      gameEffects.completeTurn(),
+    );
   },
 });
 
 export const pass = defineAction<OlympiaState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Termine le tour sans jouer de carte.',
-  execute: ({ state, ctx }) => endTurn(state, ctx),
+  execute: ({ ctx }) => ctx.turn.complete(),
 });
 
 export const OLYMPIA_ACTIONS = {
@@ -113,82 +105,46 @@ export const OLYMPIA_ACTIONS = {
   pass,
 };
 
-export function skipOlympiaPlayer(state: OlympiaState, ctx: RuleContext): void {
-  const current = ctx.players.current();
-  if (!current) return;
-  state.skipTurns[current.id] = Math.max(0, state.skipTurns[current.id] - 1);
-  ctx.history.add(`${current.username} passe son tour.`);
-  endTurn(state, ctx);
-}
-
-function applyEffect(
-  state: OlympiaState,
+function isLegalPlay(
   actorId: number,
-  targetId: number | null,
-  effect: OlympiaEffect,
+  input: PlayInput,
   ctx: RuleContext,
-): void {
-  if (effect.type === 'prestige') {
-    for (const playerId of targets(effect.target, actorId, targetId, ctx)) {
-      addPrestige(state, playerId, effect.value);
-    }
-  } else if (effect.type === 'steal') {
-    const victim = targetId ?? otherPlayerIds(actorId, ctx)[0];
-    if (victim != null) {
-      const amount = Math.min(effect.value, state.prestige[victim]);
-      addPrestige(state, victim, -amount);
-      addPrestige(state, actorId, amount);
-    }
-  } else if (effect.type === 'draw') {
-    for (const playerId of targets(effect.target, actorId, targetId, ctx)) {
-      drawForPlayer(playerId, effect.amount, effect.decks, ctx);
-    }
-  } else if (effect.type === 'status') {
-    for (const playerId of targets(effect.target, actorId, targetId, ctx)) {
-      state.statuses[playerId].push({
-        key: effect.key,
-        turns: effect.turns,
-        ...(effect.value == null ? {} : { value: effect.value }),
-      });
-    }
-  } else if (effect.type === 'discard') {
-    for (const playerId of targets(effect.target, actorId, targetId, ctx)) {
-      discardCards(playerId, effect.amount, effect.categories, ctx);
-    }
-  } else if (effect.type === 'exchange' && targetId != null) {
-    exchangeCards(actorId, targetId, effect.categories, ctx);
-  } else if (effect.type === 'skip' && targetId != null) {
-    state.skipTurns[targetId] += effect.turns;
+): boolean {
+  const card = OLYMPIA_CARD_BY_ID[input.cardId];
+  if (
+    !card ||
+    !ctx.cards.hand<string>(HANDS, actorId).includes(input.cardId) ||
+    isCardBlocked(ctx, actorId, card)
+  ) {
+    return false;
   }
+  return true;
 }
 
 function addCardPrestige(
-  state: OlympiaState,
   playerId: number,
   card: OlympiaCardDefinition,
   ctx: RuleContext,
 ): void {
   let points = card.points ?? 0;
   if (card.category === 'exploit') {
-    const double = statusValue(state, playerId, 'double_exploit');
+    const double = statusValue(ctx, playerId, 'double_exploit');
     if (double > 0) points *= double;
-    points += statusValue(state, playerId, 'exploit_bonus');
-    points -= statusValue(state, playerId, 'exploit_penalty');
+    points += statusValue(ctx, playerId, 'exploit_bonus');
+    points -= statusValue(ctx, playerId, 'exploit_penalty');
   }
-  if (points > 0 && hasStatus(state, playerId, 'halved_gains')) {
+  if (points > 0 && hasStatus(ctx, playerId, 'halved_gains')) {
     points = Math.floor(points / 2);
   }
-  addPrestige(state, playerId, points);
-  if (points !== 0) ctx.history.add(`Gain de prestige : ${points}.`);
+  addPrestige(ctx, playerId, points);
+  if (points !== 0) {
+    ctx.events.message('olympia.prestige.changed', { playerId, points });
+  }
 }
 
-function addPrestige(
-  state: OlympiaState,
-  playerId: number,
-  amount: number,
-): void {
-  if (amount < 0 && hasStatus(state, playerId, 'shield')) return;
-  state.prestige[playerId] = Math.max(0, state.prestige[playerId] + amount);
+function addPrestige(ctx: RuleContext, playerId: number, amount: number): void {
+  if (amount < 0 && hasStatus(ctx, playerId, 'shield')) return;
+  ctx.score.set(playerId, Math.max(0, ctx.score.get(playerId) + amount));
 }
 
 function drawForPlayer(
@@ -238,54 +194,26 @@ function exchangeCards(
       categories.includes(OLYMPIA_CARD_BY_ID[cardId]?.category),
     );
   if (!actorCard || !targetCard) return;
-  ctx.cards.take(HANDS, actorId, actorCard);
-  ctx.cards.take(HANDS, targetId, targetCard);
-  ctx.cards.give(HANDS, actorId, targetCard);
-  ctx.cards.give(HANDS, targetId, actorCard);
-}
-
-function targets(
-  descriptor: 'self' | 'target' | 'all' | 'others',
-  actorId: number,
-  targetId: number | null,
-  ctx: RuleContext,
-): number[] {
-  if (descriptor === 'self') return [actorId];
-  if (descriptor === 'target') return targetId == null ? [] : [targetId];
-  if (descriptor === 'all') return ctx.players.all().map((player) => player.id);
-  return otherPlayerIds(actorId, ctx);
-}
-
-function requiresTarget(card: OlympiaCardDefinition): boolean {
-  const effects = card.effect
-    ? Array.isArray(card.effect)
-      ? card.effect
-      : [card.effect]
-    : [];
-  return effects.some(
-    (effect) =>
-      ('target' in effect && effect.target === 'target') ||
-      effect.type === 'exchange',
-  );
+  ctx.cards.exchange(HANDS, actorId, actorCard, targetId, targetCard);
 }
 
 function isCardBlocked(
-  state: OlympiaState,
+  ctx: RuleContext,
   playerId: number,
   card: OlympiaCardDefinition,
 ): boolean {
   if (card.category === 'heros') {
     return (
-      hasStatus(state, playerId, 'block_hero') ||
-      hasStatus(state, playerId, 'block_hero_exploit') ||
-      hasGlobalStatus(state, 'global_block_hero')
+      hasStatus(ctx, playerId, 'block_hero') ||
+      hasStatus(ctx, playerId, 'block_hero_exploit') ||
+      hasGlobalStatus(ctx, 'global_block_hero')
     );
   }
   if (card.category === 'exploit') {
     return (
-      hasStatus(state, playerId, 'block_exploit') ||
-      hasStatus(state, playerId, 'block_hero_exploit') ||
-      hasGlobalStatus(state, 'global_block_exploit')
+      hasStatus(ctx, playerId, 'block_exploit') ||
+      hasStatus(ctx, playerId, 'block_hero_exploit') ||
+      hasGlobalStatus(ctx, 'global_block_exploit')
     );
   }
   return false;
@@ -297,63 +225,128 @@ function requireOwnedCard(
   ctx: RuleContext,
 ): OlympiaCardDefinition {
   if (!ctx.cards.hand<string>(HANDS, playerId).includes(cardId)) {
-    throw new Error('Carte Olympia absente de la main');
+    rejectRule('Carte Olympia absente de la main');
   }
   const card = OLYMPIA_CARD_BY_ID[cardId];
-  if (!card) throw new Error('Carte Olympia inconnue');
+  if (!card) rejectRule('Carte Olympia inconnue');
   return card;
 }
 
-function endTurn(state: OlympiaState, ctx: RuleContext): void {
-  for (const player of ctx.players.all()) {
-    state.statuses[player.id] = state.statuses[player.id]
-      .map((status) => ({ ...status, turns: status.turns - 1 }))
-      .filter((status) => status.turns > 0);
-  }
-  state.drawnPlayerId = null;
-  ctx.turn.end();
+export function drawnPlayerId(ctx: RuleContext): number | null {
+  return ctx.turn.flags.get<number>(DRAWN_PLAYER_FLAG);
 }
 
-function chooseWinner(state: OlympiaState, ctx: RuleContext): void {
+function chooseWinner(ctx: RuleContext): void {
   const reached = ctx.players
     .all()
-    .filter((player) => state.prestige[player.id] >= PRESTIGE_TO_WIN)
-    .sort((a, b) => state.prestige[b.id] - state.prestige[a.id] || a.id - b.id);
-  if (reached.length > 0) state.winnerIds = [reached[0].id];
+    .filter((player) => ctx.score.get(player.id) >= PRESTIGE_TO_WIN)
+    .sort(
+      (a, b) =>
+        ctx.score.get(b.id) - ctx.score.get(a.id) || a.id - b.id,
+    );
+  if (reached.length > 0) {
+    ctx.match.finish({ winners: [reached[0].id], reason: 'prestige-30' });
+  }
 }
 
 function hasStatus(
-  state: OlympiaState,
+  ctx: RuleContext,
   playerId: number,
-  key: OlympiaStatus['key'],
+  key: OlympiaStatusKey,
 ): boolean {
-  return state.statuses[playerId].some(
-    (status) => status.key === key && status.turns > 0,
-  );
+  return ctx.status.has(playerId, key);
 }
 
 function hasGlobalStatus(
-  state: OlympiaState,
-  key: OlympiaStatus['key'],
+  ctx: RuleContext,
+  key: OlympiaStatusKey,
 ): boolean {
-  return Object.values(state.statuses).some((statuses) =>
-    statuses.some((status) => status.key === key && status.turns > 0),
-  );
+  return ctx.players.all().some((player) => ctx.status.has(player.id, key));
 }
 
 function statusValue(
-  state: OlympiaState,
+  ctx: RuleContext,
   playerId: number,
-  key: OlympiaStatus['key'],
+  key: OlympiaStatusKey,
 ): number {
-  return state.statuses[playerId]
-    .filter((status) => status.key === key && status.turns > 0)
-    .reduce((maximum, status) => Math.max(maximum, status.value ?? 1), 0);
+  const status = ctx.status.get(playerId, key);
+  if (!status) return 0;
+  const value = status.data.value;
+  return typeof value === 'number' ? Math.max(1, value) : 1;
 }
 
-function otherPlayerIds(actorId: number, ctx: RuleContext): number[] {
-  return ctx.players
-    .all()
-    .filter((player) => player.id !== actorId)
-    .map((player) => player.id);
-}
+export const OLYMPIA_EFFECTS = {
+  'olympia.prestige': defineEffect<OlympiaState, { value: number }>({
+    input: gameInput.object({ value: gameInput.number() }),
+    apply: ({ targetPlayerIds, data, ctx }) => {
+      for (const playerId of targetPlayerIds) {
+        addPrestige(ctx, playerId, data.value);
+      }
+    },
+  }),
+  'olympia.steal': defineEffect<OlympiaState, { value: number }>({
+    input: gameInput.object({
+      value: gameInput.number({ min: 0 }),
+    }),
+    apply: ({ actorPlayerId, targetPlayerIds, data, ctx }) => {
+      const victimId = targetPlayerIds[0];
+      if (actorPlayerId == null || victimId == null) return;
+      const amount = Math.min(data.value, ctx.score.get(victimId));
+      addPrestige(ctx, victimId, -amount);
+      addPrestige(ctx, actorPlayerId, amount);
+    },
+  }),
+  'olympia.draw': defineEffect<
+    OlympiaState,
+    { amount: number; decks: OlympiaDeckType[] }
+  >({
+    input: gameInput.object({
+      amount: gameInput.number({ integer: true, min: 1 }),
+      decks: gameInput.array(gameInput.enum(OLYMPIA_DECK_TYPES), { min: 1 }),
+    }),
+    apply: ({ targetPlayerIds, data, ctx }) => {
+      for (const playerId of targetPlayerIds) {
+        drawForPlayer(playerId, data.amount, data.decks, ctx);
+      }
+    },
+  }),
+  'olympia.discard': defineEffect<
+    OlympiaState,
+    { amount: number; categories: OlympiaCategory[] }
+  >({
+    input: gameInput.object({
+      amount: gameInput.number({ integer: true, min: 1 }),
+      categories: gameInput.array(gameInput.enum(OLYMPIA_CATEGORIES), {
+        min: 1,
+      }),
+    }),
+    apply: ({ targetPlayerIds, data, ctx }) => {
+      for (const playerId of targetPlayerIds) {
+        discardCards(playerId, data.amount, data.categories, ctx);
+      }
+    },
+  }),
+  'olympia.exchange': defineEffect<
+    OlympiaState,
+    { categories: OlympiaCategory[] }
+  >({
+    input: gameInput.object({
+      categories: gameInput.array(gameInput.enum(OLYMPIA_CATEGORIES), {
+        min: 1,
+      }),
+    }),
+    apply: ({ actorPlayerId, targetPlayerIds, data, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (actorPlayerId != null && targetId != null) {
+        exchangeCards(actorPlayerId, targetId, data.categories, ctx);
+      }
+    },
+  }),
+  'olympia.finish-card': defineEffect<
+    OlympiaState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ ctx }) => chooseWinner(ctx),
+  }),
+} as const;

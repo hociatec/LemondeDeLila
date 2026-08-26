@@ -1,5 +1,12 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
+import {
+  gameEffects,
+  rejectRule,
+  raceTurn,
+} from '../../../core/application/public-api';
+import type {
+  GameContext,
+  PlayerMap,
+} from '../../../core/application/public-api';
 import { VOYAGE_CONTENT } from './content';
 import type {
   VoyageCard,
@@ -10,52 +17,41 @@ import type {
   VoyageTileType,
 } from './state';
 
-type RuleContext = GameRuleContext<VoyageState>;
-const TRACK = 'ireland';
-const COLLECTION_KINDS: VoyageCollectionKind[] = [
+type RuleContext = GameContext<VoyageState>;
+export const TRACK = 'ireland';
+export const COLLECTION_KINDS: VoyageCollectionKind[] = [
   'legend',
   'farce',
   'treasure',
   'landscape',
 ];
+const VOYAGE_LAST_TARGET = 'voyage.last-target';
+export type VoyageTargetEffect = 'swap-position' | 'skip-turn' | 'swap-card';
+export const VOYAGE_FINISH_COUNTDOWN = 'voyage.finish-countdown';
+export const VOYAGE_FINISH_STARTED = 'voyage.finish-started';
 
-export const roll = defineAction<VoyageState, Record<string, never>>({
-  input: gameInput.object({}),
+export const roll = raceTurn<VoyageState>({
+  trackId: TRACK,
   documentation: 'Lance le dé, avance avec rebond et résout la case atteinte.',
-  execute: ({ state, actor, ctx }) => {
-    const value = ctx.dice.roll('main').total;
-    state.lastRoll = value;
-    setPosition(actor.id, bounce(position(actor.id, ctx) + value), ctx);
-    ctx.history.add(`${actor.username} lance le dé : « ${value} ».`);
-    resolveLanding(state, actor.id, false, ctx);
-    completeTurn(state, ctx);
+  resolveLanding: ({ state, playerId, ctx }) => {
+    resolveLanding(state, playerId, false, ctx);
   },
 });
 
 export const VOYAGE_ACTIONS = { roll };
 
-export function resolveVoyageChoice(
+export function resolveVoyageQuiz(
   state: VoyageState,
-  value: unknown,
+  value: string,
   ctx: RuleContext,
 ): void {
-  const pending = state.pendingChoice;
-  if (!pending) throw new Error('Choix Voyage introuvable');
-  state.pendingChoice = null;
-  if (pending.kind === 'quiz') resolveQuiz(state, pending, String(value), ctx);
-  else resolveTarget(state, pending, Number(value), ctx);
-  completeTurn(state, ctx);
+  const pending = ctx.choice.consumeData<VoyagePendingChoice>();
+  if (!pending) rejectRule('Choix Voyage introuvable');
+  resolveQuiz(state, pending, value, ctx);
+  ctx.turn.complete({ waiting: ctx.choice.current() != null });
 }
 
-export function skipVoyagePlayer(state: VoyageState, ctx: RuleContext): void {
-  const current = ctx.players.current();
-  if (!current) return;
-  state.skipTurns[current.id] = Math.max(0, state.skipTurns[current.id] - 1);
-  ctx.history.add(`${current.username} passe son tour.`);
-  completeTurn(state, ctx);
-}
-
-function resolveLanding(
+export function resolveLanding(
   state: VoyageState,
   playerId: number,
   fromPassage: boolean,
@@ -63,115 +59,63 @@ function resolveLanding(
 ): void {
   const tile = VOYAGE_CONTENT.tiles[position(playerId, ctx)];
   if (!tile) return;
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username ?? 'Le joueur'} atteint « ${tile.title} ».`,
-  );
+  ctx.events.message('game.pawn.landed', {
+    playerId,
+    tileId: position(playerId, ctx),
+  });
   if (tile.type === 'finish') {
-    state.finishCountdown ??= ctx.players.all().length;
+    if (ctx.counters.get(VOYAGE_FINISH_STARTED) === 0) {
+      ctx.counters.set(VOYAGE_FINISH_STARTED, 1);
+      ctx.counters.set(VOYAGE_FINISH_COUNTDOWN, ctx.players.all().length);
+    }
   } else if (tile.type === 'rest') {
-    state.skipTurns[playerId] += 1;
+    ctx.turn.skip(playerId, 1);
   } else if (tile.type === 'passage' && !fromPassage) {
-    if (/\béchange\b/i.test(tile.description ?? '')) {
-      requestTarget(state, playerId, 'swap-position', 1, ctx);
-    } else {
-      const delta = extractMoveDelta(tile.description ?? '');
-      if (delta !== 0) {
-        setPosition(playerId, bounce(position(playerId, ctx) + delta), ctx);
-        resolveLanding(state, playerId, true, ctx);
-      }
+    if (tile.passageEffect?.kind === 'swap-position') {
+      scheduleTargetEffect(playerId, 'swap-position', 1, ctx);
+    } else if (tile.passageEffect?.kind === 'move') {
+      ctx.movement.move(TRACK, playerId, tile.passageEffect.delta);
+      resolveLanding(state, playerId, true, ctx);
     }
   } else if (isDeckTile(tile.type)) {
-    drawAndApply(state, playerId, tile.type, ctx);
+    drawAndApply(playerId, tile.type, ctx);
   }
 }
 
 function drawAndApply(
-  state: VoyageState,
   playerId: number,
   deck: VoyageCollectionKind,
   ctx: RuleContext,
 ): void {
-  const card = ctx.cards.drawOrRecycle<VoyageCard>(deck);
-  if (!card) return;
-  ctx.history.add(`Carte « ${card.title} ».`);
-  if (deck === 'legend') {
-    const quiz = parseQuiz(card);
-    if (quiz) {
-      state.pendingChoice = {
-        kind: 'quiz',
-        actorId: playerId,
-        card,
-        answer: quiz.answer,
-        successDelta: quiz.successDelta,
-      };
-      ctx.choice.one({
-        id: 'voyage.choice',
-        player: playerId,
-        options: quiz.choices,
+  ctx.cards.drawThenResolve<VoyageCard, boolean>(
+    deck,
+    (card) => {
+      ctx.events.message('game.card.drawn', {
+        playerId,
+        deckId: deck,
+        cardId: card.id,
       });
-      return;
-    }
-    gain(state, playerId, deck);
-  } else if (deck === 'treasure') {
-    gain(state, playerId, deck);
-  } else {
-    const keep =
-      deck === 'landscape'
-        ? !/défauss/i.test(card.effect)
-        : /gardez|conservez/i.test(card.effect);
-    if (keep) gain(state, playerId, deck);
-    else ctx.cards.discard(deck, card);
-  }
-  applyEffect(state, playerId, card.effect, ctx);
-}
-
-function applyEffect(
-  state: VoyageState,
-  playerId: number,
-  text: string,
-  ctx: RuleContext,
-): void {
-  if (
-    /choisissez\s+un\s+joueur/i.test(text) &&
-    /perd\s+son\s+prochain\s+tour/i.test(text)
-  ) {
-    requestTarget(state, playerId, 'skip-turn', 1, ctx);
-    return;
-  }
-  if (/tirez\s+au\s+hasard\s+une\s+carte/i.test(text) && /perdez/i.test(text)) {
-    const allowed = COLLECTION_KINDS.filter(
-      (kind) =>
-        !/l[ée]gende|paysage|tr[ée]sor|farce/i.test(text) ||
-        new RegExp(kind === 'landscape' ? 'paysage' : kind, 'i').test(text),
-    );
-    loseRandomCard(state, playerId, allowed, ctx);
-    return;
-  }
-  const delta = extractMoveDelta(text);
-  if (delta !== 0) {
-    setPosition(playerId, bounce(position(playerId, ctx) + delta), ctx);
-    resolveLanding(state, playerId, false, ctx);
-    return;
-  }
-  const skip = extractSkipTurns(text);
-  if (skip > 0) {
-    state.skipTurns[playerId] += skip;
-    return;
-  }
-  if (/échange/i.test(text) && /carte/i.test(text)) {
-    requestTarget(state, playerId, 'swap-card', extractCardCount(text), ctx);
-    return;
-  }
-  if (/échange/i.test(text) && /position|place/i.test(text)) {
-    if (/dernier\s+joueur/i.test(text)) {
-      const target = otherPlayerIds(playerId, ctx).sort(
-        (a, b) => position(a, ctx) - position(b, ctx),
-      )[0];
-      if (target != null) swapPositions(playerId, target, ctx);
-      return;
-    }
-    requestTarget(state, playerId, 'swap-position', 1, ctx);
-  }
+      if (card.quiz) {
+        const quiz = card.quiz;
+        const pending: VoyagePendingChoice = {
+          kind: 'quiz',
+          actorId: playerId,
+          cardId: card.id,
+        };
+        ctx.choice.one({
+          id: 'voyage.choice',
+          player: playerId,
+          options: quiz.choices,
+          data: pending,
+        });
+        return false;
+      }
+      if (card.collectionGain) gain(playerId, card.collectionGain, ctx);
+      ctx.effects.schedule(...card.effects);
+      return card.discardAfterResolve;
+    },
+    { discard: ({ result }) => result },
+  );
 }
 
 function resolveQuiz(
@@ -180,189 +124,205 @@ function resolveQuiz(
   answer: string,
   ctx: RuleContext,
 ): void {
-  if (normalize(answer) !== normalize(pending.answer)) {
-    ctx.cards.discard('legend', pending.card);
-    ctx.history.add('Mauvaise réponse.');
+  const card = VOYAGE_CONTENT.legend.find(
+    (candidate) => candidate.id === pending.cardId,
+  );
+  const quiz = card?.quiz ?? null;
+  if (!card || !quiz) rejectRule('Question Voyage inconnue');
+  if (normalize(answer) !== normalize(quiz.answer)) {
+    ctx.cards.discard('legend', card);
+    ctx.events.message('game.quiz.answered', {
+      playerId: pending.actorId,
+      correct: false,
+      cardId: card.id,
+    });
     return;
   }
-  ctx.history.add('Bonne réponse !');
-  gain(state, pending.actorId, 'legend');
-  if (pending.successDelta !== 0) {
-    setPosition(
-      pending.actorId,
-      bounce(position(pending.actorId, ctx) + pending.successDelta),
-      ctx,
-    );
+  ctx.events.message('game.quiz.answered', {
+    playerId: pending.actorId,
+    correct: true,
+    cardId: card.id,
+  });
+  gain(pending.actorId, 'legend', ctx);
+  if (quiz.successDelta !== 0) {
+    ctx.movement.move(TRACK, pending.actorId, quiz.successDelta);
     resolveLanding(state, pending.actorId, false, ctx);
   }
 }
 
-function resolveTarget(
-  state: VoyageState,
-  pending: Extract<VoyagePendingChoice, { kind: 'target' }>,
-  targetId: number,
-  ctx: RuleContext,
-): void {
-  const allowed = targetOptions(state, pending.actorId, ctx);
-  if (!allowed.includes(targetId)) throw new Error('Cible Voyage invalide');
-  if (pending.effect === 'swap-position') {
-    swapPositions(pending.actorId, targetId, ctx);
-  } else if (pending.effect === 'skip-turn') {
-    state.skipTurns[targetId] += 1;
-  } else {
-    exchangeRandomCards(state, pending.actorId, targetId, pending.count, ctx);
-  }
-  state.lastTargetByActor[pending.actorId] = targetId;
-}
-
-function requestTarget(
-  state: VoyageState,
+export function applyVoyageTarget(
   actorId: number,
-  effect: Extract<VoyagePendingChoice, { kind: 'target' }>['effect'],
+  targetId: number,
+  effect: VoyageTargetEffect,
   count: number,
   ctx: RuleContext,
 ): void {
-  const options = targetOptions(state, actorId, ctx);
-  if (options.length === 0) return;
-  state.pendingChoice = { kind: 'target', actorId, effect, count };
-  ctx.choice.one({
-    id: 'voyage.choice',
-    player: actorId,
-    options,
-    label: (targetId) =>
-      ctx.players.get(targetId)?.username ?? String(targetId),
+  if (effect === 'swap-position') {
+    swapPositions(actorId, targetId, ctx);
+  } else if (effect === 'skip-turn') {
+    ctx.turn.skip(targetId, 1);
+  } else {
+    exchangeRandomCards(actorId, targetId, count, ctx);
+  }
+  ctx.status.add(actorId, VOYAGE_LAST_TARGET, {
+    scope: 'match',
+    data: { targetPlayerId: targetId },
   });
 }
 
+export function scheduleTargetEffect(
+  actorId: number,
+  effect: VoyageTargetEffect,
+  count: number,
+  ctx: RuleContext,
+): void {
+  const options = targetOptions(actorId, ctx);
+  if (options.length === 0) return;
+  ctx.effects.schedule(
+    gameEffects.custom(
+      'voyage.target',
+      { effect, count },
+      gameEffects.target.chosenFrom(options, `voyage.${effect}`),
+    ),
+    gameEffects.completeTurn(),
+  );
+}
+
 function targetOptions(
-  state: VoyageState,
   actorId: number,
   ctx: RuleContext,
 ): number[] {
-  const last = state.lastTargetByActor[actorId];
-  return otherPlayerIds(actorId, ctx).filter((id) => id !== last);
+  const last = lastTarget(actorId, ctx);
+  return ctx.players.otherIds(actorId).filter((id) => id !== last);
 }
 
 function exchangeRandomCards(
-  state: VoyageState,
   firstId: number,
   secondId: number,
   count: number,
   ctx: RuleContext,
 ): void {
   for (let index = 0; index < count; index += 1) {
-    const first = takeRandomKind(state.collections[firstId], ctx);
-    const second = takeRandomKind(state.collections[secondId], ctx);
-    if (first) state.collections[secondId][first] += 1;
-    if (second) state.collections[firstId][second] += 1;
+    const first = takeRandomKind(firstId, ctx);
+    const second = takeRandomKind(secondId, ctx);
+    if (first) ctx.resources.add(secondId, collectionResource(first), 1);
+    if (second) ctx.resources.add(firstId, collectionResource(second), 1);
   }
 }
 
-function loseRandomCard(
-  state: VoyageState,
+export function loseRandomCard(
   playerId: number,
   allowed: VoyageCollectionKind[],
   ctx: RuleContext,
 ): void {
   const choices = allowed.filter(
-    (kind) => state.collections[playerId][kind] > 0,
+    (kind) => ctx.resources.get(playerId, collectionResource(kind)) > 0,
   );
   const picked = ctx.random.pick(choices);
-  if (picked) state.collections[playerId][picked] -= 1;
+  if (picked) ctx.resources.remove(playerId, collectionResource(picked), 1);
 }
 
 function takeRandomKind(
-  collection: VoyageCollection,
+  playerId: number,
   ctx: RuleContext,
 ): VoyageCollectionKind | null {
   const kind = ctx.random.pick(
-    COLLECTION_KINDS.filter((candidate) => collection[candidate] > 0),
+    COLLECTION_KINDS.filter(
+      (candidate) =>
+        ctx.resources.get(playerId, collectionResource(candidate)) > 0,
+    ),
   );
-  if (kind) collection[kind] -= 1;
+  if (kind) ctx.resources.remove(playerId, collectionResource(kind), 1);
   return kind;
 }
 
-function completeTurn(state: VoyageState, ctx: RuleContext): void {
-  if (state.pendingChoice != null || state.winnerId != null) return;
-  if (state.finishCountdown != null) {
-    state.finishCountdown = Math.max(0, state.finishCountdown - 1);
-    if (state.finishCountdown === 0) {
-      const ranked = ctx.players
-        .all()
-        .map((player) => ({
-          id: player.id,
-          total: total(state.collections[player.id]),
-          legends: state.collections[player.id].legend,
-        }))
-        .sort(
-          (a, b) => b.total - a.total || b.legends - a.legends || a.id - b.id,
-        );
-      state.winnerId = ranked[0]?.id ?? null;
-      return;
+export function advanceFinishCountdown(
+  state: VoyageState,
+  ctx: RuleContext,
+): void {
+  if (ctx.counters.get(VOYAGE_FINISH_STARTED) === 0) return;
+  const finishCountdown = Math.max(
+    0,
+    ctx.counters.get(VOYAGE_FINISH_COUNTDOWN) - 1,
+  );
+  ctx.counters.set(VOYAGE_FINISH_COUNTDOWN, finishCountdown);
+  if (finishCountdown === 0) {
+    const ranked = ctx.players
+      .all()
+      .map((player) => ({
+        id: player.id,
+        total: total(voyageCollection(player.id, ctx)),
+        legends: voyageCollection(player.id, ctx).legend,
+      }))
+      .sort(
+        (a, b) => b.total - a.total || b.legends - a.legends || a.id - b.id,
+      );
+    const winnerId = ranked[0]?.id;
+    if (winnerId != null) {
+      ctx.match.finish({ winners: [winnerId], reason: 'irish-collection' });
     }
   }
-  ctx.turn.end();
-}
-
-function parseQuiz(
-  card: VoyageCard,
-): { choices: string[]; answer: string; successDelta: number } | null {
-  const lines = card.effect
-    .split(/\s*(?=[*]?[ABC]\))/i)
-    .map((line) => line.trim())
-    .filter((line) => /^[*]?[ABC]\)/i.test(line));
-  const answerLine = lines.find((line) => line.startsWith('*'));
-  if (lines.length < 2 || !answerLine) return null;
-  const clean = (line: string) => line.replace(/^[*]?[ABC]\)\s*/i, '').trim();
-  return {
-    choices: lines.map(clean),
-    answer: clean(answerLine),
-    successDelta: extractMoveDelta(card.effect),
-  };
 }
 
 function gain(
-  state: VoyageState,
   playerId: number,
   kind: VoyageCollectionKind,
+  ctx: RuleContext,
 ): void {
-  state.collections[playerId][kind] += 1;
+  ctx.resources.add(playerId, collectionResource(kind), 1);
 }
 
 function total(collection: VoyageCollection): number {
   return COLLECTION_KINDS.reduce((sum, kind) => sum + collection[kind], 0);
 }
 
-function position(playerId: number, ctx: RuleContext): number {
+export function voyageCollections(
+  ctx: RuleContext,
+): PlayerMap<VoyageCollection> {
+  return Object.fromEntries(
+    ctx.players
+      .all()
+      .map((player) => [player.id, voyageCollection(player.id, ctx)]),
+  );
+}
+
+export function voyageLastTargets(ctx: RuleContext): PlayerMap<number> {
+  return Object.fromEntries(
+    ctx.players.all().flatMap((player) => {
+      const target = lastTarget(player.id, ctx);
+      return target == null ? [] : [[player.id, target]];
+    }),
+  );
+}
+
+function voyageCollection(playerId: number, ctx: RuleContext): VoyageCollection {
+  return {
+    legend: ctx.resources.get(playerId, collectionResource('legend')),
+    farce: ctx.resources.get(playerId, collectionResource('farce')),
+    treasure: ctx.resources.get(playerId, collectionResource('treasure')),
+    landscape: ctx.resources.get(playerId, collectionResource('landscape')),
+  };
+}
+
+function collectionResource(kind: VoyageCollectionKind): string {
+  return `voyage.collection.${kind}`;
+}
+
+function lastTarget(playerId: number, ctx: RuleContext): number | null {
+  const value = ctx.status.get(playerId, VOYAGE_LAST_TARGET)?.data.targetPlayerId;
+  return typeof value === 'number' ? value : null;
+}
+
+export function position(playerId: number, ctx: RuleContext): number {
   return ctx.movement.position(TRACK, playerId);
 }
 
-function setPosition(playerId: number, next: number, ctx: RuleContext): void {
-  ctx.movement.move(TRACK, playerId, next - position(playerId, ctx));
-}
-
-function swapPositions(
+export function swapPositions(
   firstId: number,
   secondId: number,
   ctx: RuleContext,
 ): void {
-  const first = position(firstId, ctx);
-  const second = position(secondId, ctx);
-  setPosition(firstId, second, ctx);
-  setPosition(secondId, first, ctx);
-}
-
-function bounce(target: number): number {
-  const last = VOYAGE_CONTENT.tiles.length - 1;
-  if (target <= last) return Math.max(0, target);
-  return Math.max(0, last - (target - last));
-}
-
-function otherPlayerIds(actorId: number, ctx: RuleContext): number[] {
-  return ctx.players
-    .all()
-    .filter((player) => player.id !== actorId)
-    .map((player) => player.id);
+  ctx.movement.swap(TRACK, firstId, secondId);
 }
 
 function normalize(value: string): string {
@@ -370,38 +330,5 @@ function normalize(value: string): string {
 }
 
 function isDeckTile(type: VoyageTileType): type is VoyageCollectionKind {
-  return COLLECTION_KINDS.includes(type as VoyageCollectionKind);
-}
-
-function extractMoveDelta(text: string): number {
-  const words: Record<string, number> = {
-    un: 1,
-    une: 1,
-    deux: 2,
-    trois: 3,
-    quatre: 4,
-    cinq: 5,
-    six: 6,
-  };
-  const match = text.match(
-    /(avance(?:z)?|recule(?:z)?)\s+de\s+([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
-  );
-  if (!match) return 0;
-  const amount = Number(match[2]) || words[match[2].toLowerCase()] || 0;
-  return /^recule/i.test(match[1]) ? -amount : amount;
-}
-
-function extractSkipTurns(text: string): number {
-  if (/passez trois tours/i.test(text)) return 3;
-  if (/passez deux tours/i.test(text)) return 2;
-  return /perdez votre prochain tour|passez votre tour|passe ton prochain tour/i.test(
-    text,
-  )
-    ? 1
-    : 0;
-}
-
-function extractCardCount(text: string): number {
-  if (/\b3\b|\btrois\b/i.test(text)) return 3;
-  return /\b2\b|\bdeux\b/i.test(text) ? 2 : 1;
+  return COLLECTION_KINDS.some((kind) => kind === type);
 }

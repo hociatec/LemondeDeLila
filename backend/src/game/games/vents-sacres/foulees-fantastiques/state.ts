@@ -1,3 +1,5 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export type FouleesColor = 'Rouge' | 'Bleu' | 'Vert' | 'Jaune';
 
 export interface FouleesPawn {
@@ -15,24 +17,21 @@ export interface FouleesFamily {
 export interface FouleesPendingMove {
   actorId: number;
   roll: number;
-  moves: Array<{ pawnIndex: number; targetProgress: number }>;
 }
 
-export interface FouleesState {
+export type FouleesState = Record<string, never>;
+
+export type FouleesPlayerView = {
+  pawnsByPlayer: PlayerMap<FouleesPawn[]>;
+  colorsByPlayer: PlayerMap<FouleesColor>;
+  familyIdByPlayer: PlayerMap<string>;
+  offsets: PlayerMap<number>;
   trackLength: number;
   homeLength: number;
-  pawnsByPlayer: Record<number, FouleesPawn[]>;
-  colorsByPlayer: Record<number, FouleesColor>;
-  familyIdByPlayer: Record<number, string>;
-  offsets: Record<number, number>;
   safeTiles: number[];
+  positions: PlayerMap<number>;
+  arrived: PlayerMap<number>;
+  winnerId: number | null;
   setupComplete: boolean;
   lastRoll: number | null;
-  winnerId: number | null;
-  pendingMove: FouleesPendingMove | null;
-}
-
-export type FouleesPlayerView = Omit<FouleesState, 'pendingMove'> & {
-  positions: Record<number, number>;
-  arrived: Record<number, number>;
 };

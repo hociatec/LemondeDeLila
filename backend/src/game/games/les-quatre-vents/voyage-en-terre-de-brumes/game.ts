@@ -1,15 +1,22 @@
 import {
   cards,
-  clockwise,
+  defineChoice,
   defineGame,
-  diceKit,
-  movement,
+  gameInput,
   playerView,
-  victoryWhen,
-  when,
+  raceGame,
 } from '../../../core/application/public-api';
 import { VOYAGE_CONTENT } from './content';
-import { resolveVoyageChoice, skipVoyagePlayer, VOYAGE_ACTIONS } from './rules';
+import {
+  advanceFinishCountdown,
+  resolveVoyageQuiz,
+  VOYAGE_ACTIONS,
+  VOYAGE_FINISH_COUNTDOWN,
+  VOYAGE_FINISH_STARTED,
+  voyageCollections,
+  voyageLastTargets,
+} from './rules';
+import { VOYAGE_EFFECTS } from './effects';
 import type {
   VoyageCollection,
   VoyageCollectionKind,
@@ -32,51 +39,55 @@ export default defineGame<VoyageState, typeof VOYAGE_ACTIONS, VoyagePlayerView>(
     subcategory: 'LesQuatreVents',
     description: 'Parcourez l’Irlande et réunissez légendes et trésors.',
     players: { min: 2, max: 10 },
+    patterns: [
+      raceGame({
+        trackId: 'ireland',
+        spaces: VOYAGE_CONTENT.tiles.length,
+        overshoot: 'bounce',
+      }),
+    ],
     components: [
-      movement.track({ id: 'ireland', spaces: VOYAGE_CONTENT.tiles.length }),
-      diceKit({ id: 'main', count: 1, sides: 6 }),
       ...deckNames.map((id) =>
-        cards.deck({ id, cards: VOYAGE_CONTENT[id], shuffle: true }),
+        cards.deck({
+          id,
+          cards: VOYAGE_CONTENT[id],
+          shuffle: true,
+          empty: 'recycle',
+        }),
       ),
     ],
+    initialization: {
+      counters: {
+        [VOYAGE_FINISH_STARTED]: 0,
+        [VOYAGE_FINISH_COUNTDOWN]: 0,
+      },
+      startRound: false,
+    },
     shortcuts: [
       { key: 'D', type: 'action', actionType: 'roll' },
       { key: 'P', type: 'interface', id: 'position' },
       { key: 'C', type: 'interface', id: 'cards' },
     ],
-    setup: ({ players }) => ({
-      collections: Object.fromEntries(
-        players.map((player) => [player.id, emptyCollection()]),
-      ),
-      skipTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-      lastTargetByActor: {},
-      lastRoll: null,
-      finishCountdown: null,
-      winnerId: null,
-      pendingChoice: null,
-    }),
-    turn: clockwise(),
-    actions: VOYAGE_ACTIONS,
-    choices: {
-      'voyage.choice': {
-        resolve: ({ state, value, ctx }) =>
-          resolveVoyageChoice(state, value, ctx),
-      },
+    setup: () => ({}),
+    lifecycle: {
+      afterTurn: ({ state, ctx }) => advanceFinishCountdown(state, ctx),
     },
-    automatic: [
-      when(
-        'skip-voyage-player',
-        ({ state, ctx }) =>
-          (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-        ({ state, ctx }) => skipVoyagePlayer(state, ctx),
-      ),
-    ],
-    victory: victoryWhen(({ state }) =>
-      state.winnerId == null
-        ? null
-        : { winnerPlayerIds: [state.winnerId], reason: 'irish-collection' },
-    ),
+    actions: VOYAGE_ACTIONS,
+    effects: VOYAGE_EFFECTS,
+    choices: {
+      'voyage.choice': defineChoice<VoyageState, string>({
+        input: gameInput.string({ min: 1, max: 256 }),
+        resolve: ({ state, value, ctx }) =>
+          resolveVoyageQuiz(state, value, ctx),
+      }),
+    },
     view: ({ state, actor, ctx }) => {
+      const collections = voyageCollections(ctx);
+      const lastTargetByActor = voyageLastTargets(ctx);
+      const finishCountdown =
+        ctx.counters.get(VOYAGE_FINISH_STARTED) > 0
+          ? ctx.counters.get(VOYAGE_FINISH_COUNTDOWN)
+          : null;
       const positions = Object.fromEntries(
         ctx.players
           .all()
@@ -85,26 +96,29 @@ export default defineGame<VoyageState, typeof VOYAGE_ACTIONS, VoyagePlayerView>(
             ctx.movement.position('ireland', player.id),
           ]),
       );
-      const deckCounts = Object.fromEntries(
-        deckNames.map((id) => [
-          id,
-          ctx.cards.deckCount(id) + ctx.cards.discardCount(id),
-        ]),
-      ) as Record<VoyageCollectionKind, number>;
-      const { pendingChoice: _pendingChoice, ...publicState } = state;
       return playerView({
-        game: { ...structuredClone(publicState), positions, deckCounts },
+        game: {
+          collections,
+          lastTargetByActor,
+          finishCountdown,
+          lastRoll: ctx.dice.last('main')?.total ?? null,
+          positions,
+          winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+          skipTurns: Object.fromEntries(
+            ctx.players.all().map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+          ),
+        },
         extras: {
           currentPlayerView: actor
             ? { id: actor.id, username: actor.username }
             : null,
-          collections: structuredClone(state.collections),
+          collections: structuredClone(collections),
           ui: {
             panels: [
               {
                 title: 'Cartes',
                 lines: ctx.players.all().map((player) => {
-                  const collection = state.collections[player.id];
+                  const collection = collections[player.id];
                   return `${player.username} : ${collectionTotal(collection)} carte(s)`;
                 }),
               },
@@ -117,10 +131,6 @@ export default defineGame<VoyageState, typeof VOYAGE_ACTIONS, VoyagePlayerView>(
     bot: { choose: () => ({ type: 'roll', payload: {} }) },
   },
 );
-
-function emptyCollection(): VoyageCollection {
-  return { legend: 0, farce: 0, treasure: 0, landscape: 0 };
-}
 
 function collectionTotal(collection: VoyageCollection): number {
   return Object.values(collection).reduce((sum, count) => sum + count, 0);

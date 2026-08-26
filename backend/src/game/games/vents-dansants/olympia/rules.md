@@ -22,5 +22,5 @@ Les statuts (`block_play`, `block_actions`, `skip`, etc.) sont appliqués dès q
 
 ## Notes techniques
 - Les effets sont résolus dans l’ordre défini sur chaque carte (prestige, steal, draw, status, discard, exchange, skip).
-- Les effets ciblés réclament un `targetPlayerId` dans l’action `play_card`.
+- Les effets ciblés suspendent automatiquement la résolution pour demander la cible au joueur.
 *** End Patch**=""

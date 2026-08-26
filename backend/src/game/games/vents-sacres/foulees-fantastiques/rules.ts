@@ -1,35 +1,42 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
-import { FOULEES_FAMILIES } from './content';
-import type { FouleesPawn, FouleesState } from './state';
+import {
+  rejectRule,
+  defineGamePhases,
+  rollDice,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
+import { FOULEES_BOARD, FOULEES_FAMILIES } from './content';
+import type { FouleesPendingMove, FouleesState } from './state';
 
-type RuleContext = GameRuleContext<FouleesState>;
+type RuleContext = GameContext<FouleesState>;
+export const FOULEES_PHASES = defineGamePhases<FouleesState>()({
+  initialPhase: 'setup',
+  phases: { setup: {}, turn: {} },
+});
+const PAWN_SET = 'foulees';
 
-export const roll = defineAction<FouleesState, Record<string, never>>({
-  input: gameInput.object({}),
+export const roll = rollDice<FouleesState>({
   documentation:
     'Lance le dé puis déplace un animal selon les règles de course.',
-  available: ({ state }) => state.setupComplete,
-  execute: ({ state, actor, ctx }) => {
-    const value = ctx.dice.roll('main').total;
-    state.lastRoll = value;
-    const moves = computeMoves(state, actor.id, value, ctx);
-    ctx.history.add(`${actor.username} lance le dé : « ${value} ».`);
+  available: ({ ctx }) => FOULEES_PHASES.is(ctx, 'turn'),
+  execute: ({ state, playerId, total, ctx }) => {
+    const moves = computeMoves(state, playerId, total, ctx);
     if (moves.length === 0) {
-      endTurn(value, ctx);
+      if (total === 6) ctx.turn.extra();
+      ctx.turn.complete();
       return;
     }
     if (moves.length === 1) {
-      applyMove(state, actor.id, moves[0], ctx);
-      if (state.winnerId == null) endTurn(value, ctx);
+      applyMove(state, playerId, moves[0], ctx);
+      if (total === 6) ctx.turn.extra();
+      ctx.turn.complete();
       return;
     }
-    state.pendingMove = { actorId: actor.id, roll: value, moves };
     ctx.choice.one({
       id: 'foulees.move',
-      player: actor.id,
+      player: playerId,
       options: moves.map(encodeMove),
-      label: (encoded) => describeMove(state, actor.id, encoded),
+      data: { actorId: playerId, roll: total },
+      label: (encoded) => describeMove(playerId, encoded, ctx),
     });
   },
 });
@@ -37,7 +44,7 @@ export const roll = defineAction<FouleesState, Record<string, never>>({
 export const FOULEES_ACTIONS = { roll };
 
 export function resolveFamilyChoice(
-  state: FouleesState,
+  _state: FouleesState,
   familyId: string,
   actorId: number,
   ctx: RuleContext,
@@ -45,20 +52,25 @@ export function resolveFamilyChoice(
   const family = FOULEES_FAMILIES.find(
     (candidate) => candidate.id === familyId,
   );
-  if (!family) throw new Error('Famille Foulées invalide');
-  if (Object.values(state.familyIdByPlayer).includes(familyId)) {
-    throw new Error('Cette famille est déjà choisie');
+  if (!family) rejectRule('Famille Foulées invalide');
+  if (
+    ctx.players
+      .all()
+      .some((player) => selectedFamilyId(player.id, ctx) === familyId)
+  ) {
+    rejectRule('Cette famille est déjà choisie');
   }
-  state.familyIdByPlayer[actorId] = familyId;
+  for (const pawnIndex of family.pawns.keys()) {
+    ctx.pawns.assign(PAWN_SET, actorId, `${familyId}:${pawnIndex}`);
+  }
   const next = ctx.players
     .all()
-    .find((player) => state.familyIdByPlayer[player.id] == null);
+    .find((player) => ctx.pawns.assigned(PAWN_SET, player.id).length === 0);
   if (next) {
     ctx.turn.to(next.id);
-    requestFamily(state, next.id, ctx);
+    requestFamily(_state, next.id, ctx);
   } else {
-    state.setupComplete = true;
-    ctx.transitionTo('turn');
+    FOULEES_PHASES.transition(ctx, 'turn');
     const first = ctx.players.all()[0];
     if (first) ctx.turn.to(first.id);
   }
@@ -69,23 +81,28 @@ export function resolvePawnChoice(
   value: string,
   ctx: RuleContext,
 ): void {
-  const pending = state.pendingMove;
-  if (!pending) throw new Error('Déplacement Foulées introuvable');
-  const move = pending.moves.find(
+  const pending = ctx.choice.consumeData<FouleesPendingMove>();
+  if (!pending) rejectRule('Déplacement Foulées introuvable');
+  const move = computeMoves(state, pending.actorId, pending.roll, ctx).find(
     (candidate) => encodeMove(candidate) === value,
   );
-  if (!move) throw new Error('Déplacement Foulées invalide');
-  state.pendingMove = null;
+  if (!move) rejectRule('Déplacement Foulées invalide');
   applyMove(state, pending.actorId, move, ctx);
-  if (state.winnerId == null) endTurn(pending.roll, ctx);
+  if (pending.roll === 6) ctx.turn.extra();
+  ctx.turn.complete();
 }
 
 export function requestFamily(
-  state: FouleesState,
+  _state: FouleesState,
   playerId: number,
   ctx: RuleContext,
 ): void {
-  const taken = new Set(Object.values(state.familyIdByPlayer));
+  const taken = new Set(
+    ctx.players
+      .all()
+      .map((player) => selectedFamilyId(player.id, ctx))
+      .filter((familyId): familyId is string => familyId != null),
+  );
   const options = FOULEES_FAMILIES.filter((family) => !taken.has(family.id));
   ctx.choice.one({
     id: 'foulees.family',
@@ -99,60 +116,60 @@ export function requestFamily(
 }
 
 function computeMoves(
-  state: FouleesState,
+  _state: FouleesState,
   playerId: number,
   roll: number,
   ctx: RuleContext,
 ): Array<{ pawnIndex: number; targetProgress: number }> {
-  const offset = state.offsets[playerId];
-  const arrival = state.trackLength + state.homeLength - 1;
-  const opponents = opponentPositions(state, playerId, ctx);
+  const offset = playerOffset(playerId, ctx);
+  const arrival = FOULEES_BOARD.trackLength + FOULEES_BOARD.homeLength - 1;
+  const opponents = opponentPositions(playerId, ctx);
+  const playerPawns = pawnsFor(playerId, ctx);
   const occupiedBySelf = new Set(
-    state.pawnsByPlayer[playerId]
-      .filter((pawn) => pawn.progress >= 0 && pawn.progress < state.trackLength)
-      .map((pawn) => (offset + pawn.progress) % state.trackLength),
+    playerPawns
+      .filter(
+        (pawn) => pawn.progress >= 0 && pawn.progress < FOULEES_BOARD.trackLength,
+      )
+      .map((pawn) => (offset + pawn.progress) % FOULEES_BOARD.trackLength),
   );
-  return state.pawnsByPlayer[playerId].flatMap((pawn) => {
-    const target = targetProgress(state, pawn, roll, arrival);
-    if (target == null) return [];
-    if (
-      pawn.progress >= 0 &&
-      blockedOnPath(state, offset, pawn.progress, target, roll, opponents)
-    ) {
-      return [];
-    }
-    if (target >= 0 && target < state.trackLength) {
-      const destination = (offset + target) % state.trackLength;
-      if (occupiedBySelf.has(destination)) return [];
-      if (opponents.has(destination) && state.safeTiles.includes(destination)) {
-        return [];
-      }
-    }
-    return [{ pawnIndex: pawn.pawnIndex, targetProgress: target }];
-  });
+  return ctx.pawns
+    .legalMoves(PAWN_SET, playerId, roll, {
+      target: ({ from }) => targetProgress(from, roll, arrival),
+      canLand: ({ from, to }) => {
+        if (from >= 0 && blockedOnPath(offset, from, to, roll, opponents)) {
+          return false;
+        }
+        if (to < 0 || to >= FOULEES_BOARD.trackLength) return true;
+        const destination = (offset + to) % FOULEES_BOARD.trackLength;
+        if (occupiedBySelf.has(destination)) return false;
+        return !(opponents.has(destination) && safeTiles(ctx).has(destination));
+      },
+    })
+    .map((move) => ({
+      pawnIndex: Number(move.pawnId.split(':')[1]),
+      targetProgress: move.to,
+    }));
 }
 
 function targetProgress(
-  state: FouleesState,
-  pawn: FouleesPawn,
+  progress: number,
   roll: number,
   arrival: number,
 ): number | null {
-  if (pawn.progress >= arrival) return null;
-  if (pawn.progress < 0) return roll === 6 ? 0 : null;
-  if (pawn.progress >= state.trackLength) {
-    const homeIndex = pawn.progress - state.trackLength + 1;
-    return homeIndex < state.homeLength && roll === homeIndex + 1
-      ? pawn.progress + 1
+  if (progress >= arrival) return null;
+  if (progress < 0) return roll === 6 ? 0 : null;
+  if (progress >= FOULEES_BOARD.trackLength) {
+    const homeIndex = progress - FOULEES_BOARD.trackLength + 1;
+    return homeIndex < FOULEES_BOARD.homeLength && roll === homeIndex + 1
+      ? progress + 1
       : null;
   }
-  const next = pawn.progress + roll;
-  if (next > arrival || next > state.trackLength) return null;
+  const next = progress + roll;
+  if (next > arrival || next > FOULEES_BOARD.trackLength) return null;
   return next;
 }
 
 function blockedOnPath(
-  state: FouleesState,
   offset: number,
   from: number,
   target: number,
@@ -161,71 +178,78 @@ function blockedOnPath(
 ): boolean {
   for (let step = 1; step <= roll; step += 1) {
     const progress = from + step;
-    if (progress >= state.trackLength) break;
-    const position = (offset + progress) % state.trackLength;
+    if (progress >= FOULEES_BOARD.trackLength) break;
+    const position = (offset + progress) % FOULEES_BOARD.trackLength;
     if (opponents.has(position) && progress !== target) return true;
   }
   return false;
 }
 
 function applyMove(
-  state: FouleesState,
+  _state: FouleesState,
   playerId: number,
   move: { pawnIndex: number; targetProgress: number },
   ctx: RuleContext,
 ): void {
-  const pawn = state.pawnsByPlayer[playerId].find(
+  const pawn = pawnsFor(playerId, ctx).find(
     (candidate) => candidate.pawnIndex === move.pawnIndex,
   );
-  if (!pawn) throw new Error('Animal Foulées introuvable');
-  pawn.progress = move.targetProgress;
-  capture(state, playerId, move.targetProgress, ctx);
-  const arrival = state.trackLength + state.homeLength - 1;
+  if (!pawn) rejectRule('Animal Foulées introuvable');
+  ctx.pawns.applyMove(PAWN_SET, {
+    pawnId: pawn.pawnId,
+    from: pawn.progress,
+    to: move.targetProgress,
+    distance: move.targetProgress - pawn.progress,
+  });
+  capture(playerId, move.targetProgress, ctx);
+  const arrival = FOULEES_BOARD.trackLength + FOULEES_BOARD.homeLength - 1;
   if (
-    state.pawnsByPlayer[playerId].every(
+    pawnsFor(playerId, ctx).every(
       (candidate) => candidate.progress >= arrival,
     )
   ) {
-    state.winnerId = playerId;
+    ctx.match.finish({ winners: [playerId], reason: 'four-pawns-home' });
   }
 }
 
 function capture(
-  state: FouleesState,
   playerId: number,
   progress: number,
   ctx: RuleContext,
 ): void {
-  if (progress < 0 || progress >= state.trackLength) return;
-  const destination = (state.offsets[playerId] + progress) % state.trackLength;
-  if (state.safeTiles.includes(destination)) return;
+  if (progress < 0 || progress >= FOULEES_BOARD.trackLength) return;
+  const destination =
+    (playerOffset(playerId, ctx) + progress) % FOULEES_BOARD.trackLength;
+  if (safeTiles(ctx).has(destination)) return;
   for (const player of ctx.players.all()) {
     if (player.id === playerId) continue;
-    const offset = state.offsets[player.id];
-    for (const pawn of state.pawnsByPlayer[player.id]) {
+    const offset = playerOffset(player.id, ctx);
+    for (const pawn of pawnsFor(player.id, ctx)) {
       if (
         pawn.progress >= 0 &&
-        pawn.progress < state.trackLength &&
-        (offset + pawn.progress) % state.trackLength === destination
+        pawn.progress < FOULEES_BOARD.trackLength &&
+        (offset + pawn.progress) % FOULEES_BOARD.trackLength === destination
       ) {
-        pawn.progress = -1;
+        ctx.pawns.moveTo(PAWN_SET, pawn.pawnId, -1);
       }
     }
   }
 }
 
 function opponentPositions(
-  state: FouleesState,
   playerId: number,
   ctx: RuleContext,
 ): Set<number> {
   const occupied = new Set<number>();
   for (const player of ctx.players.all()) {
     if (player.id === playerId) continue;
-    for (const pawn of state.pawnsByPlayer[player.id]) {
-      if (pawn.progress >= 0 && pawn.progress < state.trackLength) {
+    for (const pawn of pawnsFor(player.id, ctx)) {
+      if (
+        pawn.progress >= 0 &&
+        pawn.progress < FOULEES_BOARD.trackLength
+      ) {
         occupied.add(
-          (state.offsets[player.id] + pawn.progress) % state.trackLength,
+          (playerOffset(player.id, ctx) + pawn.progress) % FOULEES_BOARD.trackLength,
         );
       }
     }
@@ -233,9 +257,11 @@ function opponentPositions(
   return occupied;
 }
 
-function endTurn(roll: number, ctx: RuleContext): void {
-  if (roll === 6) ctx.turn.extra();
-  ctx.turn.end();
+function safeTiles(ctx: RuleContext): Set<number> {
+  return new Set([
+    ...FOULEES_BOARD.safeTiles,
+    ...ctx.players.all().map((player) => playerOffset(player.id, ctx)),
+  ]);
 }
 
 function encodeMove(move: {
@@ -246,13 +272,38 @@ function encodeMove(move: {
 }
 
 function describeMove(
-  state: FouleesState,
   playerId: number,
   value: string,
+  ctx: RuleContext,
 ): string {
   const [pawnIndex, progress] = value.split(':').map(Number);
   const family = FOULEES_FAMILIES.find(
-    (entry) => entry.id === state.familyIdByPlayer[playerId],
+    (entry) => entry.id === selectedFamilyId(playerId, ctx),
   );
   return `${family?.pawns[pawnIndex] ?? `Animal ${pawnIndex + 1}`} vers ${progress}`;
+}
+
+function pawnsFor(
+  playerId: number,
+  ctx: RuleContext,
+): Array<FouleesPawn & { pawnId: string }> {
+  return ctx.pawns.assigned(PAWN_SET, playerId).map((pawnId) => ({
+    pawnId,
+    pawnIndex: Number(pawnId.split(':')[1]),
+    progress: ctx.pawns.position(PAWN_SET, pawnId),
+  }));
+}
+
+function selectedFamilyId(playerId: number, ctx: RuleContext): string | null {
+  return ctx.pawns.assigned(PAWN_SET, playerId)[0]?.split(':')[0] ?? null;
+}
+
+function playerOffset(playerId: number, ctx: RuleContext): number {
+  const index = ctx.players.all().findIndex((player) => player.id === playerId);
+  return [
+    0,
+    Math.floor(FOULEES_BOARD.trackLength / 2),
+    Math.floor(FOULEES_BOARD.trackLength / 4),
+    Math.floor((FOULEES_BOARD.trackLength * 3) / 4),
+  ][Math.max(0, index)];
 }

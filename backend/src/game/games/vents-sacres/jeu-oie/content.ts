@@ -1,3 +1,7 @@
+import {
+  freezeGameContent,
+  rejectContent,
+} from '../../../core/application/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { GoosePawn, GooseTile } from './state';
@@ -26,12 +30,12 @@ function loadTexts(): Map<number, { title: string; description: string }> {
     ),
   ];
   const path = candidates.find(existsSync);
-  if (!path) throw new Error('Descriptions du Jeu de l’Oie introuvables');
+  if (!path) rejectContent('Descriptions du Jeu de l’Oie introuvables');
   const parsed: unknown = JSON.parse(
     readFileSync(path, 'utf8').replace(/^\uFEFF/, ''),
   );
   if (!isRecord(parsed) || !Array.isArray(parsed.cases)) {
-    throw new Error('Descriptions du Jeu de l’Oie invalides');
+    rejectContent('Descriptions du Jeu de l’Oie invalides');
   }
   const texts = new Map<number, { title: string; description: string }>();
   for (const value of parsed.cases) {
@@ -76,3 +80,6 @@ function buildTiles(
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
+
+freezeGameContent(GOOSE_PAWNS);
+freezeGameContent(GOOSE_TILES);

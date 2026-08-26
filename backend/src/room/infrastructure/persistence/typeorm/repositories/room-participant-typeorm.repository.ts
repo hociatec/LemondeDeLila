@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
-import type { RoomParticipantRepository } from '../../../../application/ports/room-participant.repository';
+import type {
+  RoomParticipantCreateRecord,
+  RoomParticipantRepository,
+} from '../../../../application/ports/room-participant.repository';
 import type { RoomParticipantRecord } from '../../../../application/models/room-participant.model';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import {
@@ -16,11 +19,11 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
     private readonly participants: Repository<RoomParticipant>,
   ) {}
 
-  create(data: Partial<RoomParticipantRecord>): RoomParticipantRecord {
+  create(data: RoomParticipantCreateRecord): RoomParticipantRecord {
     return {
       id: data.id ?? 0,
       room: data.room ?? null,
-      user: data.user!,
+      user: data.user,
       role: data.role ?? 'player',
       joinedAt: data.joinedAt ?? null,
       leftAt: data.leftAt ?? null,
@@ -37,7 +40,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
       toRoomParticipantRecord(
         await this.participants.findOne({
           where: { id: saved.id },
-          relations: ['room', 'user'],
+          relations: { room: true, user: true },
         }),
       ) ?? participant
     );
@@ -64,7 +67,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
     return toRoomParticipantRecord(
       await this.participants.findOne({
         where: { room: { id: roomId }, user: { id: userId }, leftAt: IsNull() },
-        relations: ['room', 'user'],
+        relations: { room: true, user: true },
       }),
     );
   }
@@ -75,7 +78,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
     return (
       await this.participants.find({
         where: { room: { id: roomId }, leftAt: IsNull() },
-        relations: ['room', 'user'],
+        relations: { room: true, user: true },
       })
     )
       .map((participant) => toRoomParticipantRecord(participant))
@@ -91,7 +94,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
     return toRoomParticipantRecord(
       await this.participants.findOne({
         where: { room: { id: roomId }, leftAt: IsNull() },
-        relations: ['room', 'user'],
+        relations: { room: true, user: true },
         order: { joinedAt: 'ASC' },
       }),
     );
@@ -103,7 +106,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
     return (
       await this.participants.find({
         where: { user: { id: userId }, leftAt: IsNull() },
-        relations: ['room', 'user'],
+        relations: { room: true, user: true },
       })
     )
       .map((participant) => toRoomParticipantRecord(participant))
@@ -131,7 +134,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
       startedParticipation ??
       (await this.participants.findOne({
         where: { user: { id: userId }, leftAt: IsNull() },
-        relations: ['room'],
+        relations: { room: true },
         order: { joinedAt: 'DESC' },
       }));
 

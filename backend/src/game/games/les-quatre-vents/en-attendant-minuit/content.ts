@@ -1,10 +1,11 @@
+import {
+  freezeGameContent,
+  gameEffects,
+} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
+
 export type MinuitTileType =
-  | 'start'
-  | 'neutral'
-  | 'card'
-  | 'move'
-  | 'skip'
-  | 'finish';
+  'start' | 'neutral' | 'card' | 'move' | 'skip' | 'finish';
 
 export type MinuitTile = {
   n: number;
@@ -95,10 +96,19 @@ export type MinuitQuiz = {
 export type MinuitCard = {
   id: number;
   title: string;
-  effect: MinuitCardEffect | { kind: 'quiz'; quiz: MinuitQuiz };
+  effects: readonly GameEffectInstruction[];
+  quiz?: MinuitQuiz;
 };
 
-const STANDARD_CARDS: MinuitCard[] = [
+type StandardCardDefinition = Omit<MinuitCard, 'effects' | 'quiz'> & {
+  effect: MinuitCardEffect;
+};
+
+type QuizCardDefinition = Omit<MinuitCard, 'effects' | 'quiz'> & {
+  quiz: MinuitQuiz;
+};
+
+const STANDARD_CARDS: StandardCardDefinition[] = [
   { id: 1, title: 'Traîneau miniature', effect: { kind: 'move', delta: 3 } },
   { id: 2, title: 'Bonnet du Père Noël', effect: { kind: 'roll' } },
   { id: 3, title: 'Chocolat magique', effect: { kind: 'move', delta: 2 } },
@@ -158,23 +168,20 @@ const quiz = (
   successDelta: number,
   failureDelta: number,
   anyCorrect = false,
-): MinuitCard => ({
+): QuizCardDefinition => ({
   id,
   title,
-  effect: {
-    kind: 'quiz',
-    quiz: {
-      prompt,
-      choices,
-      correctIndex,
-      successDelta,
-      failureDelta,
-      ...(anyCorrect ? { anyCorrect: true } : {}),
-    },
+  quiz: {
+    prompt,
+    choices,
+    correctIndex,
+    successDelta,
+    failureDelta,
+    ...(anyCorrect ? { anyCorrect: true } : {}),
   },
 });
 
-const QUIZ_CARDS: MinuitCard[] = [
+const QUIZ_CARDS: QuizCardDefinition[] = [
   quiz(
     37,
     'Petit Papa Noël',
@@ -394,7 +401,108 @@ const QUIZ_CARDS: MinuitCard[] = [
   ),
 ];
 
-export const MINUIT_CARDS: MinuitCard[] = [...STANDARD_CARDS, ...QUIZ_CARDS];
+export const MINUIT_CARDS: MinuitCard[] = [
+  ...STANDARD_CARDS.map((card) => ({
+    id: card.id,
+    title: card.title,
+    effects: standardInstructions(card.effect),
+  })),
+  ...QUIZ_CARDS.map((card) => ({
+    id: card.id,
+    title: card.title,
+    effects: [],
+    quiz: card.quiz,
+  })),
+];
+
+function standardInstructions(
+  effect: MinuitCardEffect,
+): readonly GameEffectInstruction[] {
+  if (effect.kind === 'move') {
+    return [gameEffects.custom('minuit.move', { delta: effect.delta })];
+  }
+  if (effect.kind === 'roll') return [gameEffects.custom('minuit.roll')];
+  if (effect.kind === 'shield-malus') {
+    return [
+      gameEffects.addStatus({
+        status: 'minuit.ignore-next-malus',
+        scope: 'until-used',
+      }),
+    ];
+  }
+  if (effect.kind === 'next-card') {
+    return [
+      gameEffects.custom('minuit.move-to-type', {
+        type: 'card',
+        direction: 'forward',
+      }),
+    ];
+  }
+  if (effect.kind === 'replay') return [gameEffects.extraTurn()];
+  if (effect.kind === 'gift') {
+    return [
+      gameEffects.custom(
+        'minuit.gift',
+        {},
+        gameEffects.target.chosenOpponent('minuit.gift'),
+      ),
+      gameEffects.completeTurn(),
+    ];
+  }
+  if (effect.kind === 'shield-skip') {
+    return [
+      gameEffects.addStatus({
+        status: 'minuit.ignore-next-skip',
+        scope: 'until-used',
+      }),
+    ];
+  }
+  if (effect.kind === 'swap') {
+    return [
+      gameEffects.custom(
+        'minuit.swap',
+        {},
+        gameEffects.target.chosenOpponent('minuit.swap', true),
+      ),
+      gameEffects.completeTurn(),
+    ];
+  }
+  if (effect.kind === 'skip') return [gameEffects.skipTurn(effect.turns)];
+  if (effect.kind === 'previous-card') {
+    return [
+      gameEffects.custom('minuit.move-to-type', {
+        type: 'card',
+        direction: 'backward',
+      }),
+    ];
+  }
+  if (effect.kind === 'force-draw') {
+    return [
+      gameEffects.addStatus({
+        status: 'minuit.force-draw-next-turn',
+        scope: 'until-used',
+      }),
+    ];
+  }
+  if (effect.kind === 'swap-behind') {
+    return [gameEffects.custom('minuit.swap-behind')];
+  }
+  if (effect.kind === 'move-others') {
+    return [
+      gameEffects.move(
+        'minuit',
+        effect.delta,
+        gameEffects.target.allOpponents(),
+      ),
+    ];
+  }
+  return [
+    gameEffects.custom('minuit.move-to-type', {
+      type: 'neutral',
+      direction: 'backward',
+    }),
+  ];
+}
 
 export const MINUIT_PAWNS = [
   { id: 'lutin', name: 'Le Lutin' },
@@ -404,3 +512,7 @@ export const MINUIT_PAWNS = [
   { id: 'renne', name: 'Le Renne' },
   { id: 'bonhomme-pain-epices', name: 'Le Petit Bonhomme en Pain d’Épices' },
 ] as const;
+
+freezeGameContent(MINUIT_TILES);
+freezeGameContent(MINUIT_CARDS);
+freezeGameContent(MINUIT_PAWNS);

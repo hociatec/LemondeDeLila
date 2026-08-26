@@ -1,31 +1,19 @@
 import {
-  cards,
-  clockwise,
+  cardGame,
   defineGame,
+  inventory,
   playerView,
-  victoryWhen,
-  when,
 } from '../../../core/application/public-api';
 import { BANDE_A_BANANE_CARD_BY_ID, BANDE_A_BANANE_DECK } from './content';
 import {
   BANDE_A_BANANE_ACTIONS,
+  BANDE_A_BANANE_EFFECTS,
+  bananaTroops,
   drawAtTurnStart,
+  drawnPlayerId,
   enumeratePlays,
-  skipPenalizedPlayer,
 } from './rules';
 import type { BandeABananePlayerView, BandeABananeState } from './state';
-
-const deck = cards.deck({
-  id: 'banana',
-  cards: BANDE_A_BANANE_DECK.map((card) => card.id),
-  shuffle: true,
-});
-const hands = cards.hands({
-  id: 'players',
-  deck: 'banana',
-  initial: 5,
-  visibility: 'owner',
-});
 
 export default defineGame<
   BandeABananeState,
@@ -38,54 +26,41 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Réunissez les cinq espèces pour crier BANAAAANE.',
   players: { min: 2, max: 6 },
-  components: [deck, hands],
+  patterns: [
+    cardGame({
+      deckId: 'banana',
+      handId: 'players',
+      cards: BANDE_A_BANANE_DECK.map((card) => card.id),
+      initialHandSize: 5,
+      empty: 'recycle',
+      drawAtTurnStart,
+    }),
+  ],
+  components: [inventory.set({ id: 'banana-troops', visibility: 'public' })],
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
   ],
-  setup: ({ players }) => ({
-    troops: Object.fromEntries(players.map((player) => [player.id, []])),
-    skipTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-    drawnPlayerId: null,
-    winnerId: null,
-  }),
-  turn: clockwise(),
+  setup: () => ({}),
   actions: BANDE_A_BANANE_ACTIONS,
-  automatic: [
-    when(
-      'skip-penalized-player',
-      ({ state, ctx }) =>
-        (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-      ({ state, ctx }) => skipPenalizedPlayer(state, ctx),
-    ),
-    when(
-      'draw-at-turn-start',
-      ({ state, ctx }) =>
-        state.drawnPlayerId !== (ctx.players.current()?.id ?? null),
-      ({ state, ctx }) => drawAtTurnStart(state, ctx),
-    ),
-  ],
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'five-species' },
-  ),
+  effects: BANDE_A_BANANE_EFFECTS,
   view: ({ state, actor, ctx }) => {
+    const troops = bananaTroops(ctx);
     const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
-    const handCounts = ctx.cards.handCounts('players');
+    const skipTurns = Object.fromEntries(
+      ctx.players.all().map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+    );
     return playerView({
       game: {
-        ...structuredClone(state),
-        hand: structuredClone(hand),
-        handCounts,
-        deckCount: ctx.cards.deckCount('banana'),
-        discardCount: ctx.cards.discardCount('banana'),
+        troops,
+        drawnPlayerId: drawnPlayerId(ctx),
+        skipTurns,
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
       },
       extras: {
-        hand: structuredClone(hand),
-        handCounts,
-        troops: structuredClone(state.troops),
-        statuses: { skipTurn: structuredClone(state.skipTurns) },
+        cardCatalog: BANDE_A_BANANE_CARD_BY_ID,
+        troops: structuredClone(troops),
+        statuses: { skipTurn: skipTurns },
         ui: {
           panels: [
             {
@@ -100,7 +75,7 @@ export default defineGame<
                 .all()
                 .map(
                   (player) =>
-                    `${player.username} : ${state.troops[player.id].length}/5`,
+                    `${player.username} : ${troops[player.id].length}/5`,
                 ),
             },
           ],

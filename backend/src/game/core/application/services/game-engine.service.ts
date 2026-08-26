@@ -1,32 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import type { GameStateEntity } from '../models/game-state.model';
 import type {
   GameEvent,
   GameSnapshot,
-  GameTimeline,
+  ProjectedGameEvent,
 } from '../models/game-event.model';
 import { SystemGameClock } from '../models/game-execution-context.model';
+import { drainPendingGameEvents } from './game-event-log.helper';
 import {
-  createStatePatch,
-  drainPendingGameEvents,
-  replayTimeline,
-  sequenceEvents,
-} from './game-event-log.helper';
-
-const SNAPSHOT_INTERVAL = 25;
+  GAME_STATE_STORE,
+  type GameStateStore,
+} from '../ports/game-state-store.port';
+import {
+  GAME_EVENT_STORE,
+  type GameEventStore,
+} from '../ports/game-event-store.port';
+import { projectGameEvent } from './game-event-visibility';
+import { GameEngineMetricsService } from './game-engine-metrics.service';
 
 @Injectable()
 export class GameEngineService {
-  private readonly states = new Map<string, GameStateEntity>();
-  private readonly timelines = new Map<string, GameTimeline>();
   private readonly clock = new SystemGameClock();
+  private readonly logger = new Logger(GameEngineService.name);
+
+  constructor(
+    @Inject(GAME_STATE_STORE)
+    private readonly states: GameStateStore,
+    @Inject(GAME_EVENT_STORE)
+    private readonly events: GameEventStore,
+    @Optional() private readonly metrics?: GameEngineMetricsService,
+  ) {}
 
   async exportInternalState(
     roomId: number,
     gameType: string,
   ): Promise<GameStateEntity | null> {
-    const state = this.states.get(this.key(roomId, gameType));
-    return state ? this.clone(state) : null;
+    return this.states.load(roomId, gameType);
   }
 
   async restoreInternalState(
@@ -35,16 +44,9 @@ export class GameEngineService {
     state: GameStateEntity,
   ): Promise<void> {
     this.ensureVersion(state);
-    const key = this.key(roomId, gameType);
     const restored = this.clone(state);
     drainPendingGameEvents(restored);
-    this.states.set(key, restored);
-    const initial = this.snapshot(restored, 0);
-    this.timelines.set(key, {
-      initial,
-      events: [],
-      snapshots: [initial],
-    });
+    await this.states.restore(roomId, gameType, restored);
   }
 
   async compareAndSetInternalState(
@@ -53,43 +55,44 @@ export class GameEngineService {
     expectedVersion: number,
     next: GameStateEntity,
   ): Promise<{ committed: boolean; version: number; state: GameStateEntity }> {
-    const key = this.key(roomId, gameType);
-    const current = this.states.get(key);
-    const currentVersion = current ? this.ensureVersion(current) : 0;
-    if (!current || currentVersion !== expectedVersion) {
-      return {
-        committed: false,
-        version: currentVersion,
-        state: current ? this.clone(current) : this.clone(next),
-      };
-    }
-
-    const committedVersion = expectedVersion + 1;
-    next.version = committedVersion;
     const committed = this.clone(next);
-    const pending = drainPendingGameEvents(committed);
-    const timeline = this.ensureTimeline(key, current);
-    const events = sequenceEvents({
-      pending,
-      patch: createStatePatch(current, committed),
-      previousSequence: timeline.events.at(-1)?.seq ?? 0,
-      version: committedVersion,
-      fallbackTimeMs: this.clock.nowMs(),
+    committed.version = expectedVersion + 1;
+    const pendingEvents = drainPendingGameEvents(committed);
+    const result = await this.states.compareAndSet({
+      roomId,
+      gameType,
+      expectedVersion,
+      next: committed,
+      pendingEvents,
+      occurredAtMs: this.clock.nowMs(),
     });
-    timeline.events.push(...events);
-    this.capturePeriodicSnapshot(timeline, committed);
-    this.states.set(key, committed);
-    return {
-      committed: true,
-      version: committed.version ?? expectedVersion + 1,
-      state: this.clone(committed),
-    };
+    this.metrics?.recordCommit(
+      gameType,
+      result.committed,
+      Buffer.byteLength(JSON.stringify(result.state), 'utf8'),
+    );
+    this.logger.log(
+      JSON.stringify({
+        event: result.committed
+          ? 'game.state.committed'
+          : 'game.state.conflict',
+        roomId,
+        gameType,
+        commandId:
+          [...pendingEvents]
+            .reverse()
+            .map((event) => event.data.commandId)
+            .find((value) => typeof value === 'string') ?? null,
+        expectedVersion,
+        resultVersion: result.version,
+        stateBytes: Buffer.byteLength(JSON.stringify(result.state), 'utf8'),
+      }),
+    );
+    return result;
   }
 
   async clearInternalState(roomId: number, gameType: string): Promise<void> {
-    const key = this.key(roomId, gameType);
-    this.states.delete(key);
-    this.timelines.delete(key);
+    await this.states.clear(roomId, gameType);
   }
 
   async clearInternalStateIf(
@@ -97,52 +100,51 @@ export class GameEngineService {
     gameType: string,
     expected: GameStateEntity,
   ): Promise<void> {
-    const key = this.key(roomId, gameType);
-    const current = this.states.get(key);
-    if (
-      current &&
-      this.ensureVersion(current) === this.ensureVersion(expected)
-    ) {
-      this.states.delete(key);
-      this.timelines.delete(key);
-    }
-  }
-
-  async clearRoom(roomId: number): Promise<void> {
-    const prefix = `${roomId}:`;
-    for (const key of this.states.keys()) {
-      if (!key.startsWith(prefix)) continue;
-      this.states.delete(key);
-      this.timelines.delete(key);
-    }
-  }
-
-  listEvents(roomId: number, gameType: string, afterSequence = 0): GameEvent[] {
-    return structuredClone(
-      (this.timelines.get(this.key(roomId, gameType))?.events ?? []).filter(
-        (event) => event.seq > afterSequence,
-      ),
+    await this.states.clearIfVersion(
+      roomId,
+      gameType,
+      this.ensureVersion(expected),
     );
   }
 
-  exportLatestSnapshot(roomId: number, gameType: string): GameSnapshot | null {
-    const timeline = this.timelines.get(this.key(roomId, gameType));
-    return timeline ? structuredClone(timeline.snapshots.at(-1) ?? null) : null;
+  async clearRoom(roomId: number): Promise<void> {
+    await this.states.clearRoom(roomId);
   }
 
-  replay(
+  async listEvents(
+    roomId: number,
+    gameType: string,
+    afterSequence = 0,
+  ): Promise<GameEvent[]> {
+    return this.events.listEvents(roomId, gameType, afterSequence);
+  }
+
+  async listEventsForPlayer(
+    roomId: number,
+    gameType: string,
+    viewerPlayerId: number | null,
+    afterSequence = 0,
+  ): Promise<ProjectedGameEvent[]> {
+    const events = await this.listEvents(roomId, gameType, afterSequence);
+    return events.flatMap((event) => {
+      const projected = projectGameEvent(event, viewerPlayerId);
+      return projected ? [projected] : [];
+    });
+  }
+
+  async exportLatestSnapshot(
+    roomId: number,
+    gameType: string,
+  ): Promise<GameSnapshot | null> {
+    return this.events.latestSnapshot(roomId, gameType);
+  }
+
+  async replay(
     roomId: number,
     gameType: string,
     untilSequence?: number,
-  ): GameStateEntity | null {
-    const timeline = this.timelines.get(this.key(roomId, gameType));
-    return timeline
-      ? replayTimeline(structuredClone(timeline), untilSequence)
-      : null;
-  }
-
-  private key(roomId: number, gameType: string): string {
-    return `${roomId}:${gameType}`;
+  ): Promise<GameStateEntity | null> {
+    return this.events.replay(roomId, gameType, untilSequence);
   }
 
   private ensureVersion(state: GameStateEntity): number {
@@ -154,32 +156,5 @@ export class GameEngineService {
 
   private clone(state: GameStateEntity): GameStateEntity {
     return structuredClone(state);
-  }
-
-  private snapshot(state: GameStateEntity, seq: number): GameSnapshot {
-    return {
-      seq,
-      version: this.ensureVersion(state),
-      state: this.clone(state),
-    };
-  }
-
-  private ensureTimeline(key: string, state: GameStateEntity): GameTimeline {
-    const existing = this.timelines.get(key);
-    if (existing) return existing;
-    const initial = this.snapshot(state, 0);
-    const created = { initial, events: [], snapshots: [initial] };
-    this.timelines.set(key, created);
-    return created;
-  }
-
-  private capturePeriodicSnapshot(
-    timeline: GameTimeline,
-    state: GameStateEntity,
-  ): void {
-    const sequence = timeline.events.at(-1)?.seq ?? 0;
-    const previous = timeline.snapshots.at(-1)?.seq ?? 0;
-    if (sequence - previous < SNAPSHOT_INTERVAL) return;
-    timeline.snapshots.push(this.snapshot(state, sequence));
   }
 }

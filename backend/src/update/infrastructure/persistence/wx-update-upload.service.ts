@@ -189,14 +189,15 @@ export class WxUpdateUploadService {
         overflowMessage: 'Upload WX plus grand que prévu.',
         sizeMessage: 'Taille WX invalide',
       });
+      const installerTotalBytes = meta.installerTotalBytes;
       const hasInstaller =
-        meta.installerSha256 != null && meta.installerTotalBytes != null;
-      if (hasInstaller) {
+        meta.installerSha256 != null && installerTotalBytes != null;
+      if (installerTotalBytes != null && meta.installerSha256 != null) {
         await this.combineParts({
           dir,
           kind: 'installer',
           destination: installerPath,
-          expectedBytes: meta.installerTotalBytes!,
+          expectedBytes: installerTotalBytes,
           missingMessage: 'Aucun chunk installateur WX reçu.',
           overflowMessage: 'Installateur WX plus grand que prévu.',
           sizeMessage: 'Taille installateur WX invalide',

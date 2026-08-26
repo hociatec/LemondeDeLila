@@ -1,3 +1,5 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export type GooseTile = {
   id: string;
   label: string;
@@ -20,18 +22,13 @@ export type GooseTile = {
 
 export type GoosePawn = { id: string; label: string; feminine: boolean };
 
-export interface JeuOieState {
-  pawnByPlayerId: Record<number, string>;
-  selectionOrder: number[];
-  selectionIndex: number;
-  setupComplete: boolean;
-  skipTurns: Record<number, number>;
-  inWell: Record<number, boolean>;
-  lastRoll: number | null;
-  winnerId: number | null;
-}
+export type JeuOieState = Record<string, never>;
 
-export type JeuOiePlayerView = Omit<
-  JeuOieState,
-  'selectionOrder' | 'selectionIndex'
-> & { positions: Record<number, number> };
+export type JeuOiePlayerView = {
+  inWell: PlayerMap<boolean>;
+  pawnByPlayerId: PlayerMap<string>;
+  positions: PlayerMap<number>;
+  skipTurns: PlayerMap<number>;
+  setupComplete: boolean;
+  lastRoll: number | null;
+};

@@ -1,3 +1,8 @@
+import type {
+  GameEffectInstruction,
+  PlayerMap,
+} from '../../../core/application/public-api';
+
 export type MissionGalaxieTileType =
   | 'start'
   | 'neutral'
@@ -44,32 +49,28 @@ export interface MissionGalaxieEventCard {
   id: number;
   title: string;
   description: string;
-  effect: MissionGalaxieEventEffect;
+  effects: readonly GameEffectInstruction[];
+  moveDeltas?: readonly number[];
 }
 
 export type MissionGalaxiePending =
   | {
       kind: 'answer';
       actorId: number;
-      card: MissionGalaxieChoiceCard;
+      deck: 'questions' | 'challenges';
+      cardId: number;
     }
   | {
       kind: 'event-move';
       actorId: number;
-      options: Array<{ targetId: number; delta: number }>;
+      cardId: number;
     };
 
-export interface MissionGalaxieState {
-  skipTurns: Record<number, number>;
-  lastRoll: number | null;
-  winnerId: number | null;
-  pendingChoice: MissionGalaxiePending | null;
-}
+export interface MissionGalaxieState {}
 
-export type MissionGalaxiePlayerView = Omit<
-  MissionGalaxieState,
-  'pendingChoice'
-> & {
-  positions: Record<number, number>;
-  deckCounts: Record<'questions' | 'challenges' | 'events', number>;
+export type MissionGalaxiePlayerView = {
+  lastRoll: number | null;
+  positions: PlayerMap<number>;
+  winnerId: number | null;
+  skipTurns: PlayerMap<number>;
 };

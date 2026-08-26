@@ -66,7 +66,7 @@ export class ChatMessageTypeormRepository implements ChatMessageRepository {
   async findByMessageId(messageId: string): Promise<ChatMessageRecord | null> {
     const row = await this.messages.findOne({
       where: { messageId },
-      relations: ['user'],
+      relations: { user: true },
     });
     return row ? this.toRecord(row) : null;
   }
@@ -98,7 +98,7 @@ export class ChatMessageTypeormRepository implements ChatMessageRepository {
   private async findByIdOrFail(id: number): Promise<ChatMessageRecord> {
     const row = await this.messages.findOne({
       where: { id },
-      relations: ['user'],
+      relations: { user: true },
     });
     if (!row) {
       throw new ChatMessageNotFoundError(`Message introuvable (id=${id}).`);

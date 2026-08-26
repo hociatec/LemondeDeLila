@@ -1,3 +1,15 @@
+import {
+  freezeGameContent,
+  gameEffects,
+  rejectContent,
+} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
+import {
+  moneyDelta,
+  movementDelta,
+  normalize,
+  skipTurns,
+} from './text-parser';
 import classicBoard from './model/content/board.json';
 import classicChance from './model/content/chance-cards.json';
 import classicCommunity from './model/content/community-cards.json';
@@ -70,7 +82,19 @@ export type SacTile = {
   type: SacTileType;
   group?: string;
 };
-export type SacCard = { id: number; text: string };
+export type SacMovement =
+  | { kind: 'delta'; delta: number }
+  | { kind: 'last' | 'next-station' | 'next-community' | 'previous-chance' }
+  | { kind: 'start'; collect: boolean }
+  | { kind: 'next-group'; group: string }
+  | { kind: 'named'; name: string; direction: 'forward' | 'backward' };
+export type SacCard = {
+  id: number;
+  text: string;
+  effects: readonly GameEffectInstruction[];
+  retained: boolean;
+};
+type RawSacCard = Omit<SacCard, 'effects' | 'retained'>;
 export type SacGroup = {
   color: string;
   properties: string[];
@@ -143,8 +167,8 @@ const standardRules: SacRules = {
 
 type RawBundle = {
   board: { tiles: Array<Omit<SacTile, 'type'> & { type: string }> };
-  chance: { cards: SacCard[] };
-  community: { cards: SacCard[] };
+  chance: { cards: RawSacCard[] };
+  community: { cards: RawSacCard[] };
   groups: { groups: SacGroup[] };
   stations: { stations: SacStationRules };
   utilities: { utilities: SacUtility[] };
@@ -221,7 +245,7 @@ export const SAC_VARIANTS: SacVariant[] = [
 
 export function sacVariant(id: SacVariantId): SacVariant {
   const selected = SAC_VARIANTS.find((candidate) => candidate.id === id);
-  if (!selected) throw new Error(`Variante Sac à Malices inconnue: ${id}`);
+  if (!selected) rejectContent(`Variante Sac à Malices inconnue: ${id}`);
   return selected;
 }
 
@@ -238,12 +262,84 @@ function variant(
       ...tile,
       type: tileType(tile.type),
     })),
-    chance: source.chance.cards.map((card) => ({ ...card })),
-    community: source.community.cards.map((card) => ({ ...card })),
+    chance: source.chance.cards.map(decorateCard),
+    community: source.community.cards.map(decorateCard),
     groups: structuredClone(source.groups.groups),
     stations: structuredClone(source.stations.stations),
     utilities: structuredClone(source.utilities.utilities),
     rules: structuredClone(rules),
+  };
+}
+
+function decorateCard(card: RawSacCard): SacCard {
+  const text = normalize(card.text);
+  const retained =
+    text.includes('sortie de prison') ||
+    (text.includes('gardez cette carte') && text.includes('prison'));
+  return {
+    ...card,
+    retained,
+    effects: retained
+      ? [gameEffects.gainResource('sac.jail-cards', 1)]
+      : cardInstructions(text),
+  };
+}
+
+function cardInstructions(text: string): readonly GameEffectInstruction[] {
+  const effects: GameEffectInstruction[] = [];
+  if (text.includes('perd') && text.includes('infrastructure')) {
+    effects.push(gameEffects.custom('sac.lose-infrastructure'));
+  }
+  const everyone = text.match(
+    /tous les joueurs (?:paient|payent|recoivent) (\d+)/i,
+  );
+  if (everyone) {
+    const amount = Number(everyone[1]);
+    effects.push(
+      gameEffects.custom('sac.everyone-money', {
+        delta: /recoivent/i.test(everyone[0]) ? amount : -amount,
+      }),
+    );
+  }
+  const movement = parseMovement(text);
+  if (movement) effects.push(gameEffects.custom('sac.movement', { movement }));
+  const skippedTurns = skipTurns(text);
+  if (skippedTurns > 0) effects.push(gameEffects.skipTurn(skippedTurns));
+  const money = moneyDelta(text);
+  if (money !== 0 && !text.includes('tous les joueurs')) {
+    effects.push(gameEffects.custom('sac.money', { delta: money }));
+  }
+  if (text.includes('rejou')) effects.push(gameEffects.extraTurn());
+  return effects;
+}
+
+function parseMovement(text: string): SacMovement | null {
+  const delta = movementDelta(text);
+  if (delta !== 0) return { kind: 'delta', delta };
+  if (
+    !text.includes('avance') &&
+    !text.includes('recule') &&
+    !text.includes('retour')
+  ) {
+    return null;
+  }
+  if (text.includes('derniere case')) return { kind: 'last' };
+  if (text.includes('case depart') || text.includes('case depare')) {
+    return { kind: 'start', collect: text.includes('empoche') };
+  }
+  if (text.includes('prochaine gare')) return { kind: 'next-station' };
+  if (text.includes('prochaine caisse')) return { kind: 'next-community' };
+  if (text.includes('precedente chance')) return { kind: 'previous-chance' };
+  const group = text.match(/prochaine case ([a-z]+)/)?.[1];
+  if (group) return { kind: 'next-group', group };
+  const name = text.match(
+    /(?:jusqu['’]?a|directement a|avancez a) (?:la |le |l['’])?([^.,:]+)/,
+  )?.[1];
+  if (!name || name.includes('cette case')) return null;
+  return {
+    kind: 'named',
+    name,
+    direction: text.includes('recule') ? 'backward' : 'forward',
   };
 }
 
@@ -283,6 +379,8 @@ function tileType(value: string): SacTileType {
     'neutral',
   ];
   const found = values.find((candidate) => candidate === value);
-  if (!found) throw new Error(`Type de case Sac à Malices invalide: ${value}`);
+  if (!found) rejectContent(`Type de case Sac à Malices invalide: ${value}`);
   return found;
 }
+
+freezeGameContent(SAC_VARIANTS);

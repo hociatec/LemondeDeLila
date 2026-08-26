@@ -1,9 +1,7 @@
 import type { GameStateEntity } from '../models/game-state.model';
 
 type PlayerLike =
-  | { id?: number | string; username?: string | null }
-  | null
-  | undefined;
+  { id?: number | string; username?: string | null } | null | undefined;
 
 export interface ResolvePlayerNameOptions {
   coerceNumericIds?: boolean;

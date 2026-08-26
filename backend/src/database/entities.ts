@@ -21,6 +21,7 @@ import { BugReportEntity } from '../bug-reports/infrastructure/persistence/typeo
 import { BugReportCommentEntity } from '../bug-reports/infrastructure/persistence/typeorm/entities/bug-report-comment.entity';
 import { NotificationInboxItemEntity } from '../notification/infrastructure/persistence/typeorm/entities/notification-inbox-item.entity';
 import { VaultRoomSnapshotEntity } from '../vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity';
+import { GameSessionEntity } from '../game/core/infrastructure/persistence/typeorm/entities/game-session.entity';
 
 export const ORM_ENTITIES = [
   User,
@@ -46,4 +47,5 @@ export const ORM_ENTITIES = [
   BugReportCommentEntity,
   NotificationInboxItemEntity,
   VaultRoomSnapshotEntity,
+  GameSessionEntity,
 ];

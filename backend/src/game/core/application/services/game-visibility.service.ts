@@ -19,14 +19,26 @@ export class GameVisibilityService {
     pending: GameStateEntity['pending'],
     viewerPlayerId: number | null,
   ): GameStateEntity['pending'] {
-    if (!pending || pending.playerId == null) return pending;
-    if (pending.playerId === viewerPlayerId) return pending;
+    if (!pending) return pending;
+    const canAnswer =
+      viewerPlayerId != null &&
+      (pending.playerIds?.length
+        ? pending.playerIds.includes(viewerPlayerId) &&
+          !(pending.resolvedPlayerIds ?? []).includes(viewerPlayerId)
+        : pending.playerId == null || pending.playerId === viewerPlayerId);
     const {
       choices: _choices,
       data: _data,
       question: _question,
+      queue: _queue,
       ...publicPending
     } = pending;
-    return publicPending;
+    if (!canAnswer) return publicPending;
+    return {
+      ...publicPending,
+      question: pending.question,
+      choices: pending.choices,
+      data: pending.data,
+    };
   }
 }

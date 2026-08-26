@@ -9,7 +9,7 @@ import type {
 import { victoryWhen, when } from './automatic-kit';
 import { cards } from './cards-kit';
 import { DeclarativeGameRuntime } from './declarative-game.runtime';
-import { defineAction, defineGame } from './game-definition';
+import { defineAction, defineChoice, defineGame } from './game-definition';
 import { gameInput } from './game-input-schema';
 import { movement } from './movement-kit';
 import { phase } from './phase-kit';
@@ -74,7 +74,7 @@ const sampleGame = defineGame({
         ctx.choice.confirm({
           id: 'confirm-score',
           player: actor.id,
-          timeoutMs: 100,
+          timeout: { afterMs: 100, strategy: 'first' },
         }),
     }),
     selectPlayers: defineAction<SampleState, Record<string, never>>({
@@ -90,16 +90,18 @@ const sampleGame = defineGame({
     }),
   },
   choices: {
-    'confirm-score': {
+    'confirm-score': defineChoice<SampleState, boolean>({
+      input: gameInput.boolean(),
       resolve: ({ state, value }) => {
         if (value === true) state.confirmations += 1;
       },
-    },
-    'select-players': {
+    }),
+    'select-players': defineChoice<SampleState, number[]>({
+      input: gameInput.array(gameInput.playerId(), { min: 1, max: 2 }),
       resolve: ({ state, value }) => {
-        state.selectedPlayers = value as number[];
+        state.selectedPlayers = value;
       },
-    },
+    }),
   },
   automatic: [
     when<SampleState>(

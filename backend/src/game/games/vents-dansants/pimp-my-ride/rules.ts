@@ -1,5 +1,9 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
+import {
+  defineAction,
+  discardCard as discardCardAction,
+  gameInput,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
 import {
   PIMP_MY_RIDE_CARD_BY_ID,
   PIMP_MY_RIDE_CAR_NAMES,
@@ -9,46 +13,54 @@ import type { PimpMyRideState } from './state';
 
 const DECK = 'car-parts';
 const HANDS = 'players';
-type RuleContext = GameRuleContext<PimpMyRideState>;
+const DRAWN_PLAYER_FLAG = 'pimp-my-ride.drawn-player-id';
+const DRAWN_CARD_FLAG = 'pimp-my-ride.drawn-card-id';
+const CAR_PARTS = 'pimp-my-ride.car-parts';
+export const PIMP_CAR_NAME_INDEX = 'pimp-my-ride.car-name-index';
+type RuleContext = GameContext<PimpMyRideState>;
 
 export const playCard = defineAction<PimpMyRideState, { cardId: string }>({
   input: gameInput.object({ cardId: gameInput.cardId() }),
   documentation: 'Pose la pièce correspondant à l’étape actuelle.',
-  availableInputs: ({ state, actor, ctx }) =>
+  validate: ({ actor, input, ctx }) =>
+    ctx.cards.hand<string>(HANDS, actor.id).includes(input.cardId) &&
+    PIMP_MY_RIDE_CARD_BY_ID[input.cardId]?.category ===
+      requiredCategory(actor.id, ctx),
+  enumerate: ({ actor, ctx }) =>
     ctx.cards
       .hand<string>(HANDS, actor.id)
       .filter(
         (cardId) =>
           PIMP_MY_RIDE_CARD_BY_ID[cardId]?.category ===
-          requiredCategory(state, actor.id),
+          requiredCategory(actor.id, ctx),
       )
       .map((cardId) => ({ cardId })),
   execute: ({ state, actor, input, ctx }) => {
     ctx.cards.take(HANDS, actor.id, input.cardId);
-    const progress = state.progress[actor.id];
-    progress.carParts.push(input.cardId);
-    progress.stageIndex += 1;
-    ctx.history.add(
-      `${actor.username} pose ${PIMP_MY_RIDE_CARD_BY_ID[input.cardId].name}.`,
-    );
-    if (progress.stageIndex >= PIMP_MY_RIDE_CATEGORY_ORDER.length) {
+    ctx.inventory.add(CAR_PARTS, actor.id, input.cardId);
+    ctx.events.message('game.card.played', {
+      playerId: actor.id,
+      cardId: input.cardId,
+    });
+    if (ctx.inventory.count(CAR_PARTS, actor.id) >= PIMP_MY_RIDE_CATEGORY_ORDER.length) {
       completeCar(state, actor.id, ctx);
     }
-    if (state.winnerId == null) endTurn(state, ctx);
+    ctx.turn.complete();
   },
 });
 
-export const discardCard = defineAction<PimpMyRideState, { cardId: string }>({
-  input: gameInput.object({ cardId: gameInput.cardId() }),
-  documentation: 'Défausse uniquement la carte piochée ce tour.',
-  available: ({ state, actor }) =>
-    state.drawnPlayerId === actor.id && state.drawnCardId != null,
-  availableInputs: ({ state }) =>
-    state.drawnCardId ? [{ cardId: state.drawnCardId }] : [],
-  execute: ({ state, actor, input, ctx }) => {
-    ctx.cards.play(HANDS, DECK, actor.id, input.cardId);
-    ctx.history.add(`${actor.username} défausse cette pièce.`);
-    endTurn(state, ctx);
+export const discardCard = discardCardAction<PimpMyRideState>({
+  deckId: DECK,
+  handId: HANDS,
+  available: ({ actor, ctx }) =>
+    drawnPlayerId(ctx) === actor.id && drawnCardId(ctx) != null,
+  validate: ({ input, ctx }) => drawnCardId(ctx) === input.cardId,
+  enumerate: ({ ctx }) => {
+    const cardId = drawnCardId(ctx);
+    return cardId ? [{ cardId }] : [];
+  },
+  afterDiscard: ({ playerId, ctx }) => {
+    ctx.events.message('game.card.discarded', { playerId });
   },
 });
 
@@ -56,8 +68,8 @@ export const pass = defineAction<PimpMyRideState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Garde la carte piochée et termine le tour.',
   execute: ({ state, actor, ctx }) => {
-    ctx.history.add(`${actor.username} garde ses pièces.`);
-    endTurn(state, ctx);
+    ctx.events.message('pimp-my-ride.parts.kept', { playerId: actor.id });
+    ctx.turn.complete();
   },
 });
 
@@ -67,23 +79,25 @@ export const PIMP_MY_RIDE_ACTIONS = {
   pass,
 };
 
-export function drawCarPart(state: PimpMyRideState, ctx: RuleContext): void {
+export function drawCarPart(_state: PimpMyRideState, ctx: RuleContext): void {
   const current = ctx.players.current();
   if (!current) return;
   const cardId = ctx.cards.drawOrRecycle<string>(DECK);
-  state.drawnPlayerId = current.id;
-  state.drawnCardId = cardId;
+  ctx.turn.flags.set(DRAWN_PLAYER_FLAG, current.id);
+  if (cardId) ctx.turn.flags.set(DRAWN_CARD_FLAG, cardId);
   if (cardId) {
     ctx.cards.give(HANDS, current.id, cardId);
-    ctx.history.add(
-      `${current.username} pioche ${PIMP_MY_RIDE_CARD_BY_ID[cardId].name}.`,
-    );
+    ctx.events.message('game.card.drawn', {
+      playerId: current.id,
+      cardId,
+      deckId: DECK,
+    });
   }
 }
 
-function requiredCategory(state: PimpMyRideState, playerId: number) {
+function requiredCategory(playerId: number, ctx: RuleContext) {
   return PIMP_MY_RIDE_CATEGORY_ORDER[
-    state.progress[playerId].stageIndex % PIMP_MY_RIDE_CATEGORY_ORDER.length
+    ctx.inventory.count(CAR_PARTS, playerId) % PIMP_MY_RIDE_CATEGORY_ORDER.length
   ];
 }
 
@@ -92,25 +106,38 @@ function completeCar(
   playerId: number,
   ctx: RuleContext,
 ): void {
-  const progress = state.progress[playerId];
-  const name =
-    PIMP_MY_RIDE_CAR_NAMES[state.carNameIndex % PIMP_MY_RIDE_CAR_NAMES.length];
-  progress.completedCars.push({
-    name: name.name,
-    description: name.description,
-    parts: [...progress.carParts],
+  const parts = [...ctx.inventory.items(CAR_PARTS, playerId)];
+  const nameIndex =
+    ctx.counters.get(PIMP_CAR_NAME_INDEX) % PIMP_MY_RIDE_CAR_NAMES.length;
+  state.completedCars[playerId].push({
+    nameIndex,
+    parts,
   });
-  progress.stageIndex = 0;
-  progress.carParts = [];
-  state.carNameIndex = (state.carNameIndex + 1) % PIMP_MY_RIDE_CAR_NAMES.length;
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username ?? 'Le joueur'} termine ${name.name}.`,
+  for (const cardId of parts) ctx.inventory.remove(CAR_PARTS, playerId, cardId);
+  ctx.counters.set(
+    PIMP_CAR_NAME_INDEX,
+    (nameIndex + 1) % PIMP_MY_RIDE_CAR_NAMES.length,
   );
-  if (progress.completedCars.length >= 3) state.winnerId = playerId;
+  ctx.events.message('pimp-my-ride.car.completed', {
+    playerId,
+    carNameIndex: nameIndex,
+  });
+  if (state.completedCars[playerId].length >= 3) {
+    ctx.match.finish({ winners: [playerId], reason: 'three-cars' });
+  }
 }
 
-function endTurn(state: PimpMyRideState, ctx: RuleContext): void {
-  state.drawnPlayerId = null;
-  state.drawnCardId = null;
-  ctx.turn.end();
+export function drawnPlayerId(ctx: RuleContext): number | null {
+  return ctx.turn.flags.get<number>(DRAWN_PLAYER_FLAG);
+}
+
+export function drawnCardId(ctx: RuleContext): string | null {
+  return ctx.turn.flags.get<string>(DRAWN_CARD_FLAG);
+}
+
+export function currentCarParts(
+  playerId: number,
+  ctx: RuleContext,
+): string[] {
+  return [...ctx.inventory.items(CAR_PARTS, playerId)];
 }

@@ -9,6 +9,7 @@ export class RedisPubSubTransport<TEvent> {
   constructor(
     private readonly url: string,
     private readonly channel: string,
+    private readonly decodeEvent: (value: unknown) => TEvent | null,
     private readonly createClient: (url: string, name: string) => Redis = (
       url,
       name,
@@ -57,8 +58,11 @@ export class RedisPubSubTransport<TEvent> {
     this.subscriber.on('message', (channel, message) => {
       if (channel !== this.channel) return;
       try {
-        const parsed = JSON.parse(message) as TEvent;
-        handler(parsed);
+        const parsed: unknown = JSON.parse(message);
+        const event = this.decodeEvent(parsed);
+        if (event) {
+          handler(event);
+        }
       } catch {
         /* ignore malformed payloads */
       }

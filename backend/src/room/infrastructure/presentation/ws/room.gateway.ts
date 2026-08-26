@@ -17,7 +17,7 @@ export class RoomGateway
     OnGatewayDisconnect<WebSocket>
 {
   @WebSocketServer()
-  server!: Server<WebSocket>;
+  server!: Server<typeof WebSocket>;
 
   constructor(private readonly dispatcher: RoomGatewayDispatcherService) {}
 

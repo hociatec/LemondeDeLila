@@ -2,7 +2,11 @@ import { InternalServerErrorException } from '@nestjs/common';
 import * as fs from 'fs';
 import { homedir } from 'os';
 import * as path from 'path';
-import type {
+import {
+  SOUND_KEYS,
+  type SoundKey,
+  type SoundManifest,
+  type SoundManifestEntry,
   TableAmbienceDefinition,
   TableAmbienceSoundKey,
 } from '../../application/models/sound-manifest.record';
@@ -13,6 +17,47 @@ export type SoundErrorLike = {
   message?: unknown;
   stack?: string;
 };
+
+const SOUND_KEY_SET = new Set<string>(SOUND_KEYS);
+
+export function decodeSoundManifest(value: unknown): SoundManifest | null {
+  if (
+    !isRecord(value) ||
+    typeof value.updatedAt !== 'string' ||
+    !isRecord(value.sounds)
+  ) {
+    return null;
+  }
+  const sounds: Partial<Record<SoundKey, SoundManifestEntry>> = {};
+  for (const [key, entry] of Object.entries(value.sounds)) {
+    if (!SOUND_KEY_SET.has(key) || !isSoundManifestEntry(entry, key)) {
+      return null;
+    }
+    sounds[entry.soundId] = entry;
+  }
+  return { updatedAt: value.updatedAt, sounds };
+}
+
+function isSoundManifestEntry(
+  value: unknown,
+  expectedKey: string,
+): value is SoundManifestEntry {
+  return (
+    isRecord(value) &&
+    value.soundId === expectedKey &&
+    SOUND_KEY_SET.has(expectedKey) &&
+    typeof value.sha256 === 'string' &&
+    typeof value.bytes === 'number' &&
+    Number.isFinite(value.bytes) &&
+    value.bytes >= 0 &&
+    typeof value.uploadedAt === 'string' &&
+    typeof value.url === 'string'
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
 
 export function resolveSoundsDataRoot(options: {
   legacyRoot: string;

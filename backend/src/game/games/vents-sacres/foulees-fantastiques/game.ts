@@ -1,13 +1,14 @@
 import {
+  defineChoice,
   defineGame,
-  diceKit,
+  gameInput,
+  pawnRace,
   playerView,
-  standardTurn,
-  victoryWhen,
 } from '../../../core/application/public-api';
-import { FOULEES_BOARD, FOULEES_FAMILIES } from './content';
+import { FOULEES_BOARD, FOULEES_FAMILIES, FOULEES_PAWNS } from './content';
 import {
   FOULEES_ACTIONS,
+  FOULEES_PHASES,
   requestFamily,
   resolveFamilyChoice,
   resolvePawnChoice,
@@ -27,96 +28,121 @@ export default defineGame<
   subcategory: 'VentsSacres',
   description: 'Une course de quatre familles animales vers leur abri.',
   players: { min: 2, max: 4 },
-  components: [diceKit({ id: 'main', count: 1, sides: 6 })],
+  patterns: [
+    pawnRace({
+      pawnSetId: 'foulees',
+      pawns: FOULEES_PAWNS,
+      perPlayer: 4,
+      spaces: FOULEES_BOARD.trackLength + FOULEES_BOARD.homeLength,
+      initialPosition: -1,
+    }),
+  ],
   shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   setup: ({ players, ctx }) => {
-    const offsets = [
-      0,
-      Math.floor(FOULEES_BOARD.trackLength / 2),
-      Math.floor(FOULEES_BOARD.trackLength / 4),
-      Math.floor((FOULEES_BOARD.trackLength * 3) / 4),
-    ];
-    const state: FouleesState = {
-      trackLength: FOULEES_BOARD.trackLength,
-      homeLength: FOULEES_BOARD.homeLength,
-      pawnsByPlayer: Object.fromEntries(
-        players.map((player) => [
-          player.id,
-          Array.from({ length: 4 }, (_entry, pawnIndex) => ({
-            pawnIndex,
-            progress: -1,
-          })),
-        ]),
-      ),
-      colorsByPlayer: Object.fromEntries(
-        players.map((player, index) => [player.id, COLORS[index]]),
-      ),
-      familyIdByPlayer: {},
-      offsets: Object.fromEntries(
-        players.map((player, index) => [player.id, offsets[index]]),
-      ),
-      safeTiles: [...new Set([...FOULEES_BOARD.safeTiles, ...offsets])],
-      setupComplete: false,
-      lastRoll: null,
-      winnerId: null,
-      pendingMove: null,
-    };
+    const state: FouleesState = {};
     const first = players[0];
     if (first) requestFamily(state, first.id, ctx);
     return state;
   },
-  turn: standardTurn(),
-  initialPhase: 'setup',
+  initialPhase: FOULEES_PHASES.initialPhase,
+  phases: FOULEES_PHASES.phases,
   actions: FOULEES_ACTIONS,
   choices: {
-    'foulees.family': {
+    'foulees.family': defineChoice<FouleesState, string>({
+      input: gameInput.string({ min: 1, max: 128 }),
       resolve: ({ state, actor, value, ctx }) =>
-        resolveFamilyChoice(state, String(value), actor.id, ctx),
-    },
-    'foulees.move': {
+        resolveFamilyChoice(state, value, actor.id, ctx),
+    }),
+    'foulees.move': defineChoice<FouleesState, string>({
+      input: gameInput.string({ min: 1, max: 128 }),
       resolve: ({ state, value, ctx }) =>
-        resolvePawnChoice(state, String(value), ctx),
-    },
+        resolvePawnChoice(state, value, ctx),
+    }),
   },
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'four-pawns-home' },
-  ),
-  view: ({ state, actor, ctx }) => {
+  view: ({ actor, ctx }) => {
+    const offsets = Object.fromEntries(
+      ctx.players.all().map((player, index) => [
+        player.id,
+        [
+          0,
+          Math.floor(FOULEES_BOARD.trackLength / 2),
+          Math.floor(FOULEES_BOARD.trackLength / 4),
+          Math.floor((FOULEES_BOARD.trackLength * 3) / 4),
+        ][index],
+      ]),
+    );
+    const colorsByPlayer = Object.fromEntries(
+      ctx.players
+        .all()
+        .map((player, index) => [player.id, COLORS[index]]),
+    );
+    const familyIdByPlayer = Object.fromEntries(
+      ctx.players.all().flatMap((player) => {
+        const pawnId = ctx.pawns.assigned('foulees', player.id)[0];
+        return pawnId == null ? [] : [[player.id, pawnId.split(':')[0]]];
+      }),
+    );
+    const pawnsByPlayer = Object.fromEntries(
+      ctx.players.all().map((player) => [
+        player.id,
+        ctx.pawns.assigned('foulees', player.id).map((pawnId) => ({
+          pawnIndex: Number(pawnId.split(':')[1]),
+          progress: ctx.pawns.position('foulees', pawnId),
+        })),
+      ]),
+    );
+    const result = ctx.match.result();
     const positions = Object.fromEntries(
       ctx.players.all().map((player) => {
-        const onTrack = state.pawnsByPlayer[player.id].filter(
-          (pawn) => pawn.progress >= 0 && pawn.progress < state.trackLength,
+        const onTrack = pawnsByPlayer[player.id].filter(
+          (pawn) =>
+            pawn.progress >= 0 && pawn.progress < FOULEES_BOARD.trackLength,
         );
         const best = onTrack.length
           ? Math.max(...onTrack.map((pawn) => pawn.progress))
           : 0;
         return [
           player.id,
-          (state.offsets[player.id] + best) % state.trackLength,
+          (offsets[player.id] + best) % FOULEES_BOARD.trackLength,
         ];
       }),
     );
-    const arrival = state.trackLength + state.homeLength - 1;
+    const arrival = FOULEES_BOARD.trackLength + FOULEES_BOARD.homeLength - 1;
     const arrived = Object.fromEntries(
       ctx.players
         .all()
         .map((player) => [
           player.id,
-          state.pawnsByPlayer[player.id].filter(
+          pawnsByPlayer[player.id].filter(
             (pawn) => pawn.progress >= arrival,
           ).length,
         ]),
     );
-    const { pendingMove: _pendingMove, ...publicState } = state;
     const family = actor
       ? FOULEES_FAMILIES.find(
-          (entry) => entry.id === state.familyIdByPlayer[actor.id],
+          (entry) => entry.id === familyIdByPlayer[actor.id],
         )
       : null;
     return playerView({
-      game: { ...structuredClone(publicState), positions, arrived },
+      game: {
+        pawnsByPlayer,
+        colorsByPlayer,
+        familyIdByPlayer,
+        offsets,
+        trackLength: FOULEES_BOARD.trackLength,
+        homeLength: FOULEES_BOARD.homeLength,
+        safeTiles: [
+          ...new Set([
+            ...FOULEES_BOARD.safeTiles,
+            ...Object.values(offsets),
+          ]),
+        ],
+        positions,
+        arrived,
+        winnerId: result?.winnerPlayerIds[0] ?? null,
+        setupComplete: FOULEES_PHASES.is(ctx, 'turn'),
+        lastRoll: ctx.dice.last('main')?.total ?? null,
+      },
       extras: {
         currentPlayerView: actor
           ? { id: actor.id, username: actor.username }

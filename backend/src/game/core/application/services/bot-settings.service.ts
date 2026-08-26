@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { getErrorMessage } from '@common/utils/public-api';
 import {
   BOT_SETTINGS_REPOSITORY,
   type BotSettingsRepository,
@@ -147,7 +148,7 @@ export class BotSettingsService implements OnModuleInit {
       };
     } catch (error) {
       this.logger.warn(
-        `Impossible de charger/initialiser bot_settings: ${(error as Error).message}`,
+        `Impossible de charger/initialiser bot_settings: ${getErrorMessage(error)}`,
       );
       BotSettingsService.sharedCache = {
         botTurnDelayMs: BotSettingsService.DEFAULT_TURN_DELAY_MS,

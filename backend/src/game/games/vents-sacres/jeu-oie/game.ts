@@ -1,22 +1,20 @@
 import {
-  clockwise,
+  defineChoice,
   defineGame,
-  diceKit,
-  movement,
+  gameInput,
+  pawns,
   playerView,
-  victoryWhen,
-  when,
+  raceGame,
 } from '../../../core/application/public-api';
 import { GOOSE_PAWNS, GOOSE_TILES } from './content';
 import {
   assignPawn,
+  GOOSE_IN_WELL,
   initializeGoose,
   JEU_OIE_ACTIONS,
-  skipGoosePlayer,
+  JEU_OIE_PHASES,
 } from './rules';
 import type { JeuOiePlayerView, JeuOieState } from './state';
-
-const track = movement.track({ id: 'goose-board', spaces: GOOSE_TILES.length });
 
 export default defineGame<
   JeuOieState,
@@ -29,7 +27,14 @@ export default defineGame<
   subcategory: 'VentsSacres',
   description: 'Course classique sur 63 cases et ses pièges.',
   players: { min: 2, max: 6 },
-  components: [track, diceKit({ id: 'main', count: 1, sides: 6 })],
+  patterns: [
+    raceGame({
+      trackId: 'goose-board',
+      spaces: GOOSE_TILES.length,
+      overshoot: 'bounce',
+    }),
+  ],
+  components: [pawns.set({ id: 'goose', pawns: GOOSE_PAWNS })],
   shortcuts: [
     { key: 'D', type: 'action', actionType: 'roll' },
     { key: 'P', type: 'interface', id: 'position' },
@@ -38,42 +43,27 @@ export default defineGame<
     const selectionOrder = ctx.random.shuffle(
       players.map((player) => player.id),
     );
+    ctx.round.start(selectionOrder[0], selectionOrder);
     ctx.turn.to(selectionOrder[0]);
-    const state: JeuOieState = {
-      pawnByPlayerId: {},
-      selectionOrder,
-      selectionIndex: 0,
-      setupComplete: false,
-      skipTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-      inWell: Object.fromEntries(players.map((player) => [player.id, false])),
-      lastRoll: null,
-      winnerId: null,
-    };
-    initializeGoose(state, ctx);
-    return state;
+    initializeGoose(selectionOrder, ctx);
+    return {};
   },
-  turn: clockwise(),
+  initialPhase: JEU_OIE_PHASES.initialPhase,
+  phases: JEU_OIE_PHASES.phases,
   actions: JEU_OIE_ACTIONS,
   choices: {
-    'goose.pawn': {
-      resolve: ({ state, value, ctx }) => assignPawn(state, String(value), ctx),
-    },
+    'goose.pawn': defineChoice<JeuOieState, string>({
+      input: gameInput.string({ min: 1, max: 128 }),
+      resolve: ({ actor, value, ctx }) => assignPawn(actor.id, value, ctx),
+    }),
   },
-  automatic: [
-    when(
-      'skip-goose-player',
-      ({ state, ctx }) =>
-        state.setupComplete &&
-        (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-      ({ state, ctx }) => skipGoosePlayer(state, ctx),
-    ),
-  ],
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'case-63' },
-  ),
   view: ({ state, actor, ctx }) => {
+    const pawnByPlayerId = Object.fromEntries(
+      ctx.players.all().flatMap((player) => {
+        const pawnId = ctx.pawns.assigned('goose', player.id)[0];
+        return pawnId == null ? [] : [[player.id, pawnId]];
+      }),
+    );
     const positions = Object.fromEntries(
       ctx.players
         .all()
@@ -82,19 +72,27 @@ export default defineGame<
           ctx.movement.position('goose-board', player.id),
         ]),
     );
-    const {
-      selectionOrder: _selectionOrder,
-      selectionIndex: _selectionIndex,
-      ...publicGame
-    } = state;
     return playerView({
-      game: { ...structuredClone(publicGame), positions },
+      game: {
+        inWell: Object.fromEntries(
+          ctx.players
+            .all()
+            .map((player) => [player.id, ctx.status.has(player.id, GOOSE_IN_WELL)]),
+        ),
+        pawnByPlayerId,
+        positions,
+        setupComplete: JEU_OIE_PHASES.is(ctx, 'playing'),
+        lastRoll: ctx.dice.last('main')?.total ?? null,
+        skipTurns: Object.fromEntries(
+          ctx.players.all().map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+        ),
+      },
       extras: {
         currentPlayerView: actor
           ? { id: actor.id, username: actor.username }
           : null,
         pawns: GOOSE_PAWNS,
-        pawnByPlayerId: structuredClone(state.pawnByPlayerId),
+        pawnByPlayerId,
       },
       board: { tiles: structuredClone(GOOSE_TILES), positions },
     });

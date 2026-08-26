@@ -1,11 +1,12 @@
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import type { Response } from 'express';
 import { MulterError } from 'multer';
 
 @Catch(MulterError)
 export class MulterErrorFilter implements ExceptionFilter {
   catch(exception: MulterError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
+    const response = ctx.getResponse<Response>();
 
     const code = String(exception.code ?? '').trim();
     const status = code === 'LIMIT_FILE_SIZE' ? 413 : 400;

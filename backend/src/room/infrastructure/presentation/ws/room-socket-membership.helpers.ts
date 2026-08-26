@@ -11,10 +11,12 @@ export function addSocketToRoomMembership(
   silent: boolean,
 ): void {
   const targetMap = silent ? silentRooms : rooms;
-  if (!targetMap.has(roomId)) {
-    targetMap.set(roomId, new Set());
+  let sockets = targetMap.get(roomId);
+  if (!sockets) {
+    sockets = new Set();
+    targetMap.set(roomId, sockets);
   }
-  targetMap.get(roomId)!.add(client);
+  sockets.add(client);
 }
 
 export function removeSocketFromRoomMembership(

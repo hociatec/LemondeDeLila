@@ -10,12 +10,16 @@ import type {
   GameActionDefinition,
   GameActionMap,
 } from '../application/runtime/game-definition';
+import type { MatchResult } from '../application/runtime/match-kit';
 import { GameCommandExecutorService } from '../application/services/game-command-executor.service';
 import { GameEngineService } from '../application/services/game-engine.service';
 import { GameExecutionScopeService } from '../application/services/game-execution-scope.service';
+import { InMemoryGameSessionStore } from '../infrastructure/persistence/memory/in-memory-game-session.store';
 
 type ActionInput<TAction> =
-  TAction extends GameActionDefinition<object, infer TInput> ? TInput : never;
+  TAction extends GameActionDefinition<infer _TState, infer TInput>
+    ? TInput
+    : never;
 
 const DEFAULT_NAMES = ['alice', 'bob', 'charlie', 'diana', 'eve', 'frank'];
 
@@ -31,7 +35,11 @@ export class GameTestKit<
   >;
   private readonly execution = new GameExecutionScopeService();
   private readonly executor = new GameCommandExecutorService(this.execution);
-  private readonly engine = new GameEngineService();
+  private readonly sessionStore = new InMemoryGameSessionStore();
+  private readonly engine = new GameEngineService(
+    this.sessionStore,
+    this.sessionStore,
+  );
   private readonly clock = new FixedGameClock(1_700_000_000_000);
   private playerNames = DEFAULT_NAMES.slice(0, 2);
   private randomSeed = 1;
@@ -106,10 +114,17 @@ export class GameTestKit<
     };
   }
 
-  replay(): GameStateEntity {
-    const replayed = this.engine.replay(1, this.definition.id);
+  async replay(): Promise<GameStateEntity> {
+    const replayed = await this.engine.replay(1, this.definition.id);
     if (!replayed) throw new Error('Aucune timeline à rejouer');
     return replayed;
+  }
+
+  result(): MatchResult | null {
+    const state = this.requireState() as GameStateEntity & {
+      engine?: { match?: { result?: MatchResult | null } };
+    };
+    return structuredClone(state.engine?.match?.result ?? null);
   }
 
   advanceTime(milliseconds: number): this {

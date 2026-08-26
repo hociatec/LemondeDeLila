@@ -282,8 +282,17 @@ export function fixMojibakeDeep<T>(value: T): T {
   return fixMojibakeDeepInternal(value, new WeakMap()) as T;
 }
 
-export function readJsonFileWithFallback<T>(filePath: string): T {
+export function readJsonFileWithFallback(filePath: string): unknown;
+export function readJsonFileWithFallback<T>(
+  filePath: string,
+  decode: (value: unknown) => T,
+): T;
+export function readJsonFileWithFallback(
+  filePath: string,
+  decode?: (value: unknown) => unknown,
+): unknown {
   const raw = readTextFileWithFallback(filePath);
-  const parsed = JSON.parse(raw) as T;
-  return fixMojibakeDeep(parsed);
+  const parsed: unknown = JSON.parse(raw);
+  const repaired = fixMojibakeDeep(parsed);
+  return decode ? decode(repaired) : repaired;
 }

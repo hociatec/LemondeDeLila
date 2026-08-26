@@ -1,3 +1,5 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export type VillageTile = {
   n: number;
   title: string;
@@ -17,13 +19,12 @@ export type VillageCollection = {
   byZone: Record<number, number>;
 };
 
-export interface MonVillageState {
-  collections: Record<number, VillageCollection>;
-  lastRoll: number | null;
-  winnerId: number | null;
-}
+export type MonVillageState = Record<string, never>;
 
-export type MonVillagePlayerView = MonVillageState & {
-  positions: Record<number, number>;
+export type MonVillagePlayerView = {
+  collections: PlayerMap<VillageCollection>;
+  lastRoll: number | null;
+  positions: PlayerMap<number>;
   availableCards: Record<number, number>;
+  winnerId: number | null;
 };

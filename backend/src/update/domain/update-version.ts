@@ -6,11 +6,16 @@ export type UpdateVersion = readonly [number, number, number, number];
 export function parseUpdateVersion(value: string): UpdateVersion | null {
   const match = VERSION_PATTERN.exec((value || '').trim());
   if (!match) return null;
-  const parts = match.slice(1, 5).map((part) => Number(part ?? 0));
+  const parts: UpdateVersion = [
+    Number(match[1]),
+    Number(match[2]),
+    Number(match[3]),
+    Number(match[4] ?? 0),
+  ];
   if (parts.some((part) => !Number.isSafeInteger(part) || part > 999_999)) {
     return null;
   }
-  return parts as unknown as UpdateVersion;
+  return parts;
 }
 
 export function compareUpdateVersions(

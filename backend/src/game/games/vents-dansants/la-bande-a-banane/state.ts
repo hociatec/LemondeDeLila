@@ -1,4 +1,5 @@
 import type { BandeABananeMonkeySpecies } from './content';
+import type { PlayerMap } from '../../../core/application/public-api';
 
 export interface BandeABananeTroopEntry {
   cardId: string;
@@ -6,16 +7,11 @@ export interface BandeABananeTroopEntry {
   isJoker: boolean;
 }
 
-export interface BandeABananeState {
-  troops: Record<number, BandeABananeTroopEntry[]>;
-  skipTurns: Record<number, number>;
-  drawnPlayerId: number | null;
-  winnerId: number | null;
-}
+export type BandeABananeState = Record<string, never>;
 
-export type BandeABananePlayerView = BandeABananeState & {
-  hand: string[];
-  handCounts: Record<number, number>;
-  deckCount: number;
-  discardCount: number;
+export type BandeABananePlayerView = {
+  troops: PlayerMap<BandeABananeTroopEntry[]>;
+  drawnPlayerId: number | null;
+  skipTurns: PlayerMap<number>;
+  winnerId: number | null;
 };

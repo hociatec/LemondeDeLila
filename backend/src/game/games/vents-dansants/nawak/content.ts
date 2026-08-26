@@ -1,3 +1,7 @@
+import {
+  freezeGameContent,
+  rejectContent,
+} from '../../../core/application/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { NawakChallenge } from './state';
@@ -17,7 +21,7 @@ function loadChallenges(): NawakChallenge[] {
     ),
   ];
   const path = candidates.find(existsSync);
-  if (!path) throw new Error('Contenu Nawak introuvable');
+  if (!path) rejectContent('Contenu Nawak introuvable');
   return parseChallenges(readFileSync(path, 'utf8'));
 }
 
@@ -57,6 +61,8 @@ function parseChallenges(content: string): NawakChallenge[] {
       });
     }
   }
-  if (challenges.length === 0) throw new Error('Aucun défi Nawak valide');
+  if (challenges.length === 0) rejectContent('Aucun défi Nawak valide');
   return challenges;
 }
+
+freezeGameContent(NAWAK_CHALLENGES);

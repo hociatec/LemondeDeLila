@@ -1,245 +1,174 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
+import { raceTurn } from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
 import { PIRATES_CONTENT } from './content';
 import type {
   PirateCard,
-  PirateCollection,
-  PiratePendingEffect,
   PiratesState,
 } from './state';
 
 type DeckName = 'bonus' | 'treasure' | 'obstacle';
-type PirateEffect =
-  | { kind: 'move'; delta: number }
-  | { kind: 'skip'; turns: number }
-  | { kind: 'immunity'; turns: number }
-  | { kind: 'gain-gold'; amount: number }
-  | { kind: 'lose-gold'; amount: number }
-  | { kind: 'reroll' }
-  | { kind: 'target-move'; delta: number }
-  | { kind: 'steal-treasure' };
+type RuleContext = GameContext<PiratesState>;
 
 const TRACK = 'island';
-const BONUS_EFFECTS: Record<number, PirateEffect> = {
-  1: { kind: 'move', delta: 2 },
-  2: { kind: 'immunity', turns: 1 },
-  3: { kind: 'reroll' },
-  4: { kind: 'move', delta: 2 },
-  5: { kind: 'immunity', turns: 1 },
-  6: { kind: 'move', delta: 3 },
-  7: { kind: 'target-move', delta: -1 },
-  8: { kind: 'gain-gold', amount: 1 },
-  9: { kind: 'steal-treasure' },
-  10: { kind: 'immunity', turns: 2 },
-};
-const OBSTACLE_EFFECTS: Record<number, PirateEffect> = {
-  1: { kind: 'move', delta: -2 },
-  2: { kind: 'skip', turns: 1 },
-  3: { kind: 'skip', turns: 1 },
-  4: { kind: 'move', delta: -1 },
-  5: { kind: 'skip', turns: 1 },
-  6: { kind: 'skip', turns: 1 },
-  7: { kind: 'lose-gold', amount: 1 },
-  8: { kind: 'skip', turns: 2 },
-  9: { kind: 'move', delta: -1 },
-  10: { kind: 'lose-gold', amount: 1 },
-};
-
-export const roll = defineAction<PiratesState, Record<string, never>>({
-  input: gameInput.object({}),
+const GOLD = 'pirate-gold';
+const OBSTACLE_IMMUNITY = 'pirates.obstacle-immunity';
+const PIRATE_INVENTORIES = {
+  treasure: 'pirates-treasure',
+  obstacle: 'pirates-obstacle',
+  bonus: 'pirates-bonus',
+} as const;
+export const roll = raceTurn<PiratesState>({
+  trackId: TRACK,
   documentation: 'Lance le dé, avance et résout la case atteinte.',
-  execute: ({ state, actor, ctx }) => {
-    const value = ctx.dice.roll('main').total;
-    state.lastRoll = value;
-    const position = ctx.movement.move(TRACK, actor.id, value);
-    ctx.history.add(`${actor.username} lance le dé : « ${value} ».`);
-    resolveLanding(state, actor.id, position, ctx);
-    if (state.winnerId != null || state.pendingEffect != null) return;
-    ctx.turn.end();
+  resolveLanding: ({ playerId, position, ctx }) => {
+    resolveLanding(playerId, position, ctx);
   },
 });
 
 export const PIRATES_ACTIONS = { roll };
 
-export function resolveTargetChoice(
-  state: PiratesState,
-  targetId: number,
-  ctx: Parameters<typeof roll.execute>[0]['ctx'],
-): void {
-  const pending = state.pendingEffect;
-  if (!pending) throw new Error('Effet pirate en attente introuvable');
-  if (pending.kind === 'target-move') {
-    ctx.movement.move(TRACK, targetId, pending.delta);
-    ctx.history.add(
-      `${ctx.players.get(targetId)?.username ?? 'La cible'} recule d’une case.`,
-    );
-  } else {
-    stealTreasure(state, pending.actorId, targetId, ctx);
-  }
-  state.pendingEffect = null;
-  ctx.turn.end();
-}
-
-export function skipPenalizedPlayer(
-  state: PiratesState,
-  ctx: Parameters<typeof roll.execute>[0]['ctx'],
-): void {
-  const current = ctx.players.current();
-  if (!current) return;
-  state.skipTurns[current.id] = Math.max(0, state.skipTurns[current.id] - 1);
-  ctx.history.add(`${current.username} saute son tour.`);
-  ctx.turn.end();
-}
-
 function resolveLanding(
-  state: PiratesState,
   playerId: number,
   position: number,
-  ctx: Parameters<typeof roll.execute>[0]['ctx'],
+  ctx: RuleContext,
 ): void {
   const tile = PIRATES_CONTENT.tiles[position];
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username ?? 'Le pirate'} atteint ${tile.title}.`,
-  );
+  ctx.events.message('game.pawn.landed', { playerId, tileId: position });
   if (
     tile.type === 'bonus' ||
     tile.type === 'treasure' ||
     tile.type === 'obstacle'
   ) {
-    drawCard(state, playerId, tile.type, ctx);
+    drawCard(playerId, tile.type, ctx);
   } else if (tile.type === 'gold') {
-    state.collections[playerId].goldPieces += 1;
+    ctx.resources.add(playerId, GOLD, 1);
   } else if (tile.type === 'finish') {
-    finishOrRetreat(state, playerId, ctx);
+    finishOrRetreat(playerId, ctx);
   }
 }
 
 function drawCard(
-  state: PiratesState,
   playerId: number,
   deck: DeckName,
-  ctx: Parameters<typeof roll.execute>[0]['ctx'],
+  ctx: RuleContext,
 ): void {
   const card = ctx.cards.drawOrRecycle<PirateCard>(deck);
   if (!card) return;
   ctx.cards.discard(deck, card);
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username ?? 'Le pirate'} pioche « ${card.title} ».`,
-  );
-  addToCollection(state.collections[playerId], deck, card);
-  if (deck === 'bonus')
-    applyEffect(state, playerId, BONUS_EFFECTS[card.id], ctx);
-  if (deck === 'obstacle') applyObstacle(state, playerId, card, ctx);
+  ctx.events.message('game.card.drawn', {
+    playerId,
+    deckId: deck,
+    cardId: card.id,
+  });
+  addToCollection(playerId, deck, card, ctx);
+  if (deck === 'bonus') ctx.effects.schedule(...card.effects);
+  if (deck === 'obstacle') applyObstacle(playerId, card, ctx);
 }
 
 function applyObstacle(
-  state: PiratesState,
   playerId: number,
   card: PirateCard,
-  ctx: Parameters<typeof roll.execute>[0]['ctx'],
+  ctx: RuleContext,
 ): void {
-  if (state.obstacleImmunity[playerId] > 0) {
-    state.obstacleImmunity[playerId] -= 1;
-    ctx.history.add('La protection pirate neutralise cet obstacle.');
+  if (consumeObstacleImmunity(playerId, ctx)) {
+    ctx.events.message('pirates.obstacle.ignored', {
+      playerId,
+      cardId: card.id,
+    });
     return;
   }
-  applyEffect(state, playerId, OBSTACLE_EFFECTS[card.id], ctx);
+  ctx.effects.schedule(...card.effects);
 }
 
-function applyEffect(
-  state: PiratesState,
-  playerId: number,
-  effect: PirateEffect | undefined,
-  ctx: Parameters<typeof roll.execute>[0]['ctx'],
-): void {
-  if (!effect) return;
-  if (effect.kind === 'move') ctx.movement.move(TRACK, playerId, effect.delta);
-  else if (effect.kind === 'skip') state.skipTurns[playerId] += effect.turns;
-  else if (effect.kind === 'immunity') {
-    state.obstacleImmunity[playerId] += effect.turns;
-  } else if (effect.kind === 'gain-gold') {
-    state.collections[playerId].goldPieces += effect.amount;
-  } else if (effect.kind === 'lose-gold') {
-    state.collections[playerId].goldPieces = Math.max(
-      0,
-      state.collections[playerId].goldPieces - effect.amount,
-    );
-  } else if (effect.kind === 'reroll') {
-    ctx.turn.extra();
-  } else if (effect.kind === 'target-move') {
-    requestTarget(state, playerId, effect, ctx);
-  } else if (effect.kind === 'steal-treasure') {
-    requestTarget(state, playerId, effect, ctx);
-  }
-}
-
-function requestTarget(
-  state: PiratesState,
-  playerId: number,
-  effect: Extract<PirateEffect, { kind: 'target-move' | 'steal-treasure' }>,
-  ctx: Parameters<typeof roll.execute>[0]['ctx'],
-): void {
-  const options = ctx.players
-    .all()
-    .filter((player) => player.id !== playerId)
-    .map((player) => player.id);
-  if (options.length === 0) return;
-  const pending: PiratePendingEffect =
-    effect.kind === 'target-move'
-      ? { kind: 'target-move', actorId: playerId, delta: effect.delta }
-      : { kind: 'steal-treasure', actorId: playerId };
-  state.pendingEffect = pending;
-  ctx.choice.one({
-    id: 'pirates.target',
-    player: playerId,
-    options,
-    label: (targetId) =>
-      ctx.players.get(targetId)?.username ?? String(targetId),
-  });
-}
-
-function stealTreasure(
-  state: PiratesState,
+export function stealTreasure(
   actorId: number,
   targetId: number,
-  ctx: Parameters<typeof roll.execute>[0]['ctx'],
+  ctx: RuleContext,
 ): void {
-  const treasures = state.collections[targetId].treasures;
-  const card = treasures.pop();
-  if (!card) {
-    ctx.history.add('Le pirate ciblé ne possède aucun trésor.');
+  const cardId = ctx.inventory.items(PIRATE_INVENTORIES.treasure, targetId).at(-1);
+  if (cardId == null) {
+    ctx.events.message('pirates.treasure.none-to-steal', {
+      actorId,
+      targetId,
+    });
     return;
   }
-  state.collections[actorId].treasures.push(card);
+  ctx.inventory.transfer(
+    PIRATE_INVENTORIES.treasure,
+    targetId,
+    actorId,
+    cardId,
+  );
 }
 
 function addToCollection(
-  collection: PirateCollection,
+  playerId: number,
   deck: DeckName,
   card: PirateCard,
+  ctx: RuleContext,
 ): void {
-  const total =
-    collection.treasures.length +
-    collection.obstacles.length +
-    collection.bonus.length;
+  const collection = pirateCollectionIds(playerId, ctx);
+  const total = collection.treasureIds.length +
+    collection.obstacleIds.length + collection.bonusIds.length;
   if (total >= 5) return;
-  if (deck === 'treasure') collection.treasures.push(card);
-  else if (deck === 'obstacle') collection.obstacles.push(card);
-  else collection.bonus.push(card);
+  ctx.inventory.add(PIRATE_INVENTORIES[deck], playerId, String(card.id));
 }
 
 function finishOrRetreat(
-  state: PiratesState,
   playerId: number,
-  ctx: Parameters<typeof roll.execute>[0]['ctx'],
+  ctx: RuleContext,
 ): void {
-  const collection = state.collections[playerId];
-  if (collection.treasures.length >= 3 || collection.goldPieces >= 3) {
-    state.winnerId = playerId;
-    ctx.history.add(
-      `${ctx.players.get(playerId)?.username ?? 'Le pirate'} ouvre le coffre légendaire.`,
-    );
+  const collection = pirateCollectionIds(playerId, ctx);
+  if (
+    collection.treasureIds.length >= 3 ||
+    ctx.resources.get(playerId, GOLD) >= 3
+  ) {
+    ctx.match.finish({ winners: [playerId], reason: 'legendary-chest' });
+    ctx.events.message('pirates.chest.opened', { playerId });
   } else {
     ctx.movement.move(TRACK, playerId, -2);
-    ctx.history.add('Le coffre reste fermé : le pirate recule de deux cases.');
+    ctx.events.message('pirates.chest.closed', {
+      playerId,
+      retreat: 2,
+    });
   }
+}
+
+export function pirateCollectionIds(
+  playerId: number,
+  ctx: RuleContext,
+): import('./state').PirateCollectionState {
+  const ids = (kind: DeckName) =>
+    ctx.inventory
+      .items(PIRATE_INVENTORIES[kind], playerId)
+      .map(Number)
+      .filter(Number.isInteger);
+  return {
+    treasureIds: ids('treasure'),
+    obstacleIds: ids('obstacle'),
+    bonusIds: ids('bonus'),
+  };
+}
+
+export function obstacleImmunity(
+  playerId: number,
+  ctx: RuleContext,
+): number {
+  return ctx.status.get(playerId, OBSTACLE_IMMUNITY)?.remaining ?? 0;
+}
+
+function consumeObstacleImmunity(
+  playerId: number,
+  ctx: RuleContext,
+): boolean {
+  const remaining = obstacleImmunity(playerId, ctx);
+  if (remaining <= 0) return false;
+  if (remaining === 1) ctx.status.remove(playerId, OBSTACLE_IMMUNITY);
+  else {
+    ctx.status.add(playerId, OBSTACLE_IMMUNITY, {
+      turns: remaining - 1,
+      scope: 'until-used',
+    });
+  }
+  return true;
 }

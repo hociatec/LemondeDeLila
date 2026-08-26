@@ -1,25 +1,37 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
+import {
+  defineAction,
+  discardCard as discardCardAction,
+  drawCardsAtTurnStart,
+  gameInput,
+} from '../../../core/application/public-api';
 import { CERCLES_SACRES_CARD_BY_ID, type CerclesSacresTheme } from './content';
 import type { CerclesSacresCircle, CerclesSacresState } from './state';
+import type { PlayerMap } from '../../../core/application/public-api';
 
 export const CERCLES_SACRES_GOAL = 3;
 export const CERCLES_SACRES_HAND_MIN = 6;
 export const CERCLES_SACRES_HAND_LIMIT = 8;
 const DECK = 'sacred-circles';
 const HANDS = 'players';
+const CIRCLES = 'sacred-circles-completed';
+const DRAWN_PLAYER_FLAG = 'cercles-sacres.drawn-player-id';
+const CERCLES_THEMES: readonly CerclesSacresTheme[] = [
+  'totem',
+  'nature',
+  'plante',
+  'esprit',
+  'parole',
+  'nation',
+];
 
-export const discardCard = defineAction<CerclesSacresState, { cardId: string }>(
-  {
-    input: gameInput.object({ cardId: gameInput.cardId() }),
-    documentation: 'Défausse une carte de sa main, sans terminer le tour.',
-    availableInputs: ({ actor, ctx }) =>
-      ctx.cards.hand<string>(HANDS, actor.id).map((cardId) => ({ cardId })),
-    execute: ({ actor, input, ctx }) => {
-      ctx.cards.play(HANDS, DECK, actor.id, input.cardId);
-      ctx.history.add(`${actor.username} défausse ${cardName(input.cardId)}.`);
-    },
+export const discardCard = discardCardAction<CerclesSacresState>({
+  deckId: DECK,
+  handId: HANDS,
+  endTurn: false,
+  afterDiscard: ({ playerId, cardId, ctx }) => {
+    ctx.events.message('game.card.discarded', { playerId, cardId });
   },
-);
+});
 
 export const formCircle = defineAction<
   CerclesSacresState,
@@ -32,34 +44,30 @@ export const formCircle = defineAction<
   available: ({ actor, ctx }) =>
     ctx.cards.hand(HANDS, actor.id).length <= CERCLES_SACRES_HAND_LIMIT &&
     completeCircles(ctx.cards.hand<string>(HANDS, actor.id)).length > 0,
-  availableInputs: ({ actor, ctx }) =>
+  validate: ({ actor, input, ctx }) =>
+    completeCircles(ctx.cards.hand<string>(HANDS, actor.id)).some(
+      (circle) =>
+        circle.length === input.cardIds.length &&
+        circle.every((cardId) => input.cardIds.includes(cardId)),
+    ),
+  enumerate: ({ actor, ctx }) =>
     completeCircles(ctx.cards.hand<string>(HANDS, actor.id)).map((cardIds) => ({
       cardIds,
     })),
-  execute: ({ state, actor, input, ctx }) => {
+  execute: ({ actor, input, ctx }) => {
     for (const cardId of input.cardIds) ctx.cards.take(HANDS, actor.id, cardId);
-    const playerCircles = state.circles[actor.id];
-    const themes = Object.fromEntries(
-      input.cardIds.map((cardId) => [
-        CERCLES_SACRES_CARD_BY_ID[cardId].theme,
-        cardId,
-      ]),
-    ) as Record<CerclesSacresTheme, string>;
-    const circle: CerclesSacresCircle = {
-      id: `circle-${actor.id}-${playerCircles.length + 1}`,
-      cards: [...input.cardIds],
-      themes,
-    };
-    playerCircles.push(circle);
+    ctx.inventory.add(CIRCLES, actor.id, JSON.stringify(input.cardIds));
+    const circleCount = ctx.inventory.count(CIRCLES, actor.id);
     fillHand(actor.id, ctx);
-    ctx.history.add(
-      `${actor.username} pose son cercle sacré n°${playerCircles.length}.`,
-    );
-    if (playerCircles.length >= CERCLES_SACRES_GOAL) {
-      state.winnerId = actor.id;
+    ctx.events.message('cercles.circle.completed', {
+      playerId: actor.id,
+      circleNumber: circleCount,
+    });
+    if (circleCount >= CERCLES_SACRES_GOAL) {
+      ctx.match.finish({ winners: [actor.id], reason: 'three-circles' });
       return;
     }
-    endTurn(state, ctx);
+    ctx.turn.complete();
   },
 });
 
@@ -69,8 +77,8 @@ export const pass = defineAction<CerclesSacresState, Record<string, never>>({
   available: ({ actor, ctx }) =>
     ctx.cards.hand(HANDS, actor.id).length <= CERCLES_SACRES_HAND_LIMIT,
   execute: ({ state, actor, ctx }) => {
-    ctx.history.add(`${actor.username} passe son tour.`);
-    endTurn(state, ctx);
+    ctx.events.message('game.player.passed', { playerId: actor.id });
+    ctx.turn.complete();
   },
 });
 
@@ -89,16 +97,8 @@ export function completeCircles(hand: readonly string[]): string[][] {
     cards.push(cardId);
     byTheme.set(card.theme, cards);
   }
-  const themes: CerclesSacresTheme[] = [
-    'totem',
-    'nature',
-    'plante',
-    'esprit',
-    'parole',
-    'nation',
-  ];
-  if (themes.some((theme) => !byTheme.get(theme)?.length)) return [];
-  return themes.reduce<string[][]>(
+  if (CERCLES_THEMES.some((theme) => !byTheme.get(theme)?.length)) return [];
+  return CERCLES_THEMES.reduce<string[][]>(
     (combinations, theme) =>
       combinations.flatMap((combination) =>
         (byTheme.get(theme) ?? []).map((cardId) => [...combination, cardId]),
@@ -107,19 +107,23 @@ export function completeCircles(hand: readonly string[]): string[][] {
   );
 }
 
-export function drawAtTurnStart(
-  state: CerclesSacresState,
-  ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): void {
-  const current = ctx.players.current();
-  if (!current) return;
-  const card = ctx.cards.drawOrRecycle<string>(DECK);
-  if (card) {
-    ctx.cards.give(HANDS, current.id, card);
-    ctx.history.add(`${current.username} pioche une carte.`);
-  }
-  state.drawnPlayerId = current.id;
-}
+export const drawAtTurnStart = drawCardsAtTurnStart<
+  CerclesSacresState,
+  string
+>({
+  deckId: DECK,
+  handId: HANDS,
+  afterDraw: ({ player, ctx }) => {
+    if (player)
+      ctx.events.message('game.card.drawn', {
+        playerId: player.id,
+        deckId: DECK,
+      });
+  },
+  afterAttempt: ({ player, ctx }) => {
+    if (player) ctx.turn.flags.set(DRAWN_PLAYER_FLAG, player.id);
+  },
+});
 
 function fillHand(
   playerId: number,
@@ -132,14 +136,57 @@ function fillHand(
   }
 }
 
-function endTurn(
-  state: CerclesSacresState,
+export function drawnPlayerId(
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): void {
-  state.drawnPlayerId = null;
-  ctx.turn.end();
+): number | null {
+  return ctx.turn.flags.get<number>(DRAWN_PLAYER_FLAG);
 }
 
-function cardName(cardId: string): string {
-  return CERCLES_SACRES_CARD_BY_ID[cardId]?.name ?? cardId;
+export function sacredCircles(
+  ctx: Parameters<typeof pass.execute>[0]['ctx'],
+): PlayerMap<CerclesSacresCircle[]> {
+  return Object.fromEntries(
+    ctx.players.all().map((player) => [
+      player.id,
+      ctx.inventory.items(CIRCLES, player.id).flatMap((itemId, index) => {
+        const cards = parseCardIds(itemId);
+        if (!cards) return [];
+        const themes = circleThemes(cards);
+        if (!themes) return [];
+        return [{
+          id: `circle-${player.id}-${index + 1}`,
+          cards,
+          themes,
+        }];
+      }),
+    ]),
+  );
+}
+
+function parseCardIds(value: string): string[] | null {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) &&
+      parsed.every((cardId): cardId is string => typeof cardId === 'string')
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function circleThemes(
+  cards: readonly string[],
+): Record<CerclesSacresTheme, string> | null {
+  const byTheme = new Map<CerclesSacresTheme, string>();
+  for (const cardId of cards) {
+    const card = CERCLES_SACRES_CARD_BY_ID[cardId];
+    if (card) byTheme.set(card.theme, cardId);
+  }
+  const [totem, nature, plante, esprit, parole, nation] =
+    CERCLES_THEMES.map((theme) => byTheme.get(theme));
+  if (!totem || !nature || !plante || !esprit || !parole || !nation) {
+    return null;
+  }
+  return { totem, nature, plante, esprit, parole, nation };
 }

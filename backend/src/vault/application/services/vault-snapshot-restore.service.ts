@@ -20,6 +20,7 @@ import {
   type VaultUserNotifier,
 } from '../ports/vault-user-notifier.port';
 import { remapVaultGameState } from './vault-game-state-remapper';
+import { decodeVaultRoomSnapshot } from './vault-snapshot.decoder';
 
 type RosterUser = { id: number; username: string };
 type RestoredBots = {
@@ -34,15 +35,11 @@ function parseSnapshot(raw: string): VaultRoomSnapshot {
   } catch {
     throw new BadRequestException('Sauvegarde corrompue (JSON invalide).');
   }
-  if (
-    !parsed ||
-    typeof parsed !== 'object' ||
-    Array.isArray(parsed) ||
-    (parsed as { version?: unknown }).version !== 1
-  ) {
+  const snapshot = decodeVaultRoomSnapshot(parsed);
+  if (!snapshot) {
     throw new BadRequestException('Sauvegarde incompatible.');
   }
-  return parsed as VaultRoomSnapshot;
+  return snapshot;
 }
 
 function uniqueUsers(

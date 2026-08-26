@@ -1,29 +1,38 @@
 import {
   cards,
-  clockwise,
+  cardGame,
+  defineChoice,
   defineGame,
+  gameInput,
+  inventory,
   playerView,
-  victoryWhen,
 } from '../../../core/application/public-api';
 import { ENTRE_RITES_CARD_BY_ID, ENTRE_RITES_DECK } from './content';
 import {
   dealFamilyHands,
   ENTRE_RITES_ACTIONS,
   enumerateRequests,
-  resolveRitesChoice,
+  peaceTurnsRemaining,
+  RITES_SILENCE,
+  RITES_SPECIALS,
+  resolveRitesCardChoice,
+  resolveRitesFamilyChoice,
+  resolveRitesStealChoice,
+  statusOwner,
+  type RitesStealChoice,
 } from './rules';
+import { ENTRE_RITES_EFFECTS } from './effects';
 import type { EntreRitesPlayerView, EntreRitesState } from './state';
 
-const deck = cards.deck({
-  id: 'rites',
-  cards: ENTRE_RITES_DECK.map((card) => card.id),
-  shuffle: true,
-});
-const hands = cards.hands({
-  id: 'players',
+const familySets = cards.sets({
+  id: 'rite-families',
+  hand: 'players',
   deck: 'rites',
-  initial: 0,
-  visibility: 'owner',
+  visibility: 'public',
+  sets: ENTRE_RITES_DECK.reduce<Record<string, string[]>>((sets, card) => {
+    if (card.type === 'family') (sets[card.familyId] ??= []).push(card.id);
+    return sets;
+  }, {}),
 });
 
 export default defineGame<
@@ -37,7 +46,17 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Rassemblez les cinq familles pascales.',
   players: { min: 2, max: 6 },
-  components: [deck, hands],
+  patterns: [
+    cardGame({
+      deckId: 'rites',
+      handId: 'players',
+      cards: ENTRE_RITES_DECK.map((card) => card.id),
+    }),
+  ],
+  components: [
+    familySets,
+    inventory.set({ id: RITES_SPECIALS, visibility: 'public' }),
+  ],
   shortcuts: [
     { key: 'D', type: 'action', actionType: 'ask_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
@@ -47,48 +66,55 @@ export default defineGame<
       players.map((player) => player.id),
       ctx,
     );
-    return {
-      completedFamilies: Object.fromEntries(
-        players.map((player) => [player.id, []]),
-      ),
-      specialsPlayed: Object.fromEntries(
-        players.map((player) => [player.id, []]),
-      ),
-      peaceTurnsRemaining: 0,
-      silenceOwnerId: null,
-      pendingChoice: null,
-      winnerId: null,
-    };
+    return {};
   },
-  turn: clockwise(),
-  actions: ENTRE_RITES_ACTIONS,
-  choices: {
-    'rites.special': {
-      resolve: ({ state, value, ctx }) => resolveRitesChoice(state, value, ctx),
+  lifecycle: {
+    beforeTurn: ({ ctx, player }) => {
+      if (player) ctx.status.remove(player.id, RITES_SILENCE);
     },
   },
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'five-families' },
-  ),
-  view: ({ state, actor, ctx }) => {
-    const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
-    const { pendingChoice: _pendingChoice, ...publicGame } = state;
+  actions: ENTRE_RITES_ACTIONS,
+  effects: ENTRE_RITES_EFFECTS,
+  choices: {
+    'rites.card': defineChoice<EntreRitesState, string>({
+      input: gameInput.cardId(),
+      resolve: ({ state, value, ctx }) =>
+        resolveRitesCardChoice(state, value, ctx),
+    }),
+    'rites.family': defineChoice<EntreRitesState, string[]>({
+      input: gameInput.array(gameInput.cardId(), { min: 1 }),
+      resolve: ({ state, value, ctx }) =>
+        resolveRitesFamilyChoice(state, value, ctx),
+    }),
+    'rites.steal': defineChoice<EntreRitesState, RitesStealChoice>({
+      input: gameInput.object({
+        targetPlayerId: gameInput.playerId(),
+        cardId: gameInput.cardId(),
+      }),
+      resolve: ({ state, value, ctx }) =>
+        resolveRitesStealChoice(state, value, ctx),
+    }),
+  },
+  view: ({ ctx }) => {
+    const specialsPlayed = Object.fromEntries(
+      ctx.players
+        .all()
+        .map((player) => [
+          player.id,
+          ctx.inventory.items(RITES_SPECIALS, player.id),
+        ]),
+    );
     return playerView({
       game: {
-        ...structuredClone(publicGame),
-        hand: structuredClone(hand),
-        handCounts: ctx.cards.handCounts('players'),
-        deckCount: ctx.cards.deckCount('rites'),
-        discardCount: ctx.cards.discardCount('rites'),
+        specialsPlayed,
+        peaceTurnsRemaining: peaceTurnsRemaining(ctx),
+        silenceOwnerId: statusOwner(RITES_SILENCE, ctx),
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
       },
       extras: {
-        hand: hand.map((cardId) => ENTRE_RITES_CARD_BY_ID[cardId]),
-        handCounts: ctx.cards.handCounts('players'),
-        completedFamilies: structuredClone(state.completedFamilies),
+        cardCatalog: ENTRE_RITES_CARD_BY_ID,
         specialsPlayedCount: Object.fromEntries(
-          Object.entries(state.specialsPlayed).map(([playerId, cards]) => [
+          Object.entries(specialsPlayed).map(([playerId, cards]) => [
             playerId,
             cards.length,
           ]),
@@ -97,11 +123,9 @@ export default defineGame<
     });
   },
   bot: {
-    choose: ({ state, actor, ctx }) => {
+    choose: ({ actor, ctx }) => {
       const request =
-        state.peaceTurnsRemaining === 0
-          ? enumerateRequests(actor.id, ctx)[0]
-          : null;
+        peaceTurnsRemaining(ctx) === 0 ? enumerateRequests(actor.id, ctx)[0] : null;
       return request
         ? { type: 'ask_card', payload: request }
         : { type: 'pass', payload: {} };

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
+import { getErrorDetails, getErrorMessage } from '@common/utils/public-api';
 import { WS_EVENTS } from '../../../../realtime/public-api';
 import { UpdatePolicyService } from '../../../../update/public-api';
 import type { NotificationClientMeta } from './notification-ws.types';
@@ -75,7 +76,10 @@ export class NotificationWsHandler {
         });
       }
     } catch (error) {
-      this.logger.debug('Echec vérification version client', error as Error);
+      this.logger.debug(
+        'Echec vérification version client',
+        getErrorDetails(error),
+      );
     }
   }
 
@@ -107,7 +111,7 @@ export class NotificationWsHandler {
       const type =
         record && typeof record.type === 'string' ? record.type : 'unknown';
       this.logger.warn(
-        `Echec envoi WS notify (type=${type}) : ${(error as Error).message}`,
+        `Echec envoi WS notify (type=${type}) : ${getErrorMessage(error)}`,
       );
       try {
         client.close();

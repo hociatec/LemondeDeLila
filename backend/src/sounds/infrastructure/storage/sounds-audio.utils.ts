@@ -160,7 +160,7 @@ export async function transcodeSoundToStableWav(
 }
 
 function getFfmpegPath(): string {
-  const candidate = (ffmpegStatic as unknown as string) || '';
+  const candidate = ffmpegStatic ?? '';
   if (!candidate) {
     throw new InternalServerErrorException(
       'ffmpeg indisponible (validation audio requise).',
@@ -202,8 +202,12 @@ async function runSoundProcess(
       reject(new Error(`Process timeout after ${timeoutMs}ms: ${command}`));
     }, timeoutMs);
 
-    child.stdout?.on('data', (d) => stdout.push(d));
-    child.stderr?.on('data', (d) => stderr.push(d));
+    child.stdout?.on('data', (data: Buffer | Uint8Array) =>
+      stdout.push(Buffer.from(data)),
+    );
+    child.stderr?.on('data', (data: Buffer | Uint8Array) =>
+      stderr.push(Buffer.from(data)),
+    );
     child.on('error', (err) => {
       if (finished) return;
       finished = true;

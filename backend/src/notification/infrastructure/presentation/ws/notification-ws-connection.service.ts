@@ -108,9 +108,9 @@ export class NotificationWsConnectionService {
           : '';
     if (!raw) return;
 
-    let parsed: Record<string, unknown> | null = null;
+    let parsed: Record<string, unknown> | null;
     try {
-      const value = JSON.parse(raw);
+      const value: unknown = JSON.parse(raw);
       parsed =
         value && typeof value === 'object' && !Array.isArray(value)
           ? (value as Record<string, unknown>)

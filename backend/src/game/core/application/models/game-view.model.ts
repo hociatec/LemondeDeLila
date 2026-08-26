@@ -1,21 +1,27 @@
 import type { GameStateEntity, PlayerStateEntity } from './game-state.model';
 
-export type GameInternalState<TGameState = Record<string, unknown>> =
+export type GameInternalState<TGameState extends object = object> =
   GameStateEntity & {
     game?: TGameState;
   };
 
-export type PublicPlayerState = Pick<
+export type PublicPlayerState<TPlayerExtras extends object = object> = Pick<
   PlayerStateEntity,
   'id' | 'username' | 'isBot' | 'alive'
 > &
-  Record<string, unknown>;
+  TPlayerExtras;
 
-export type GamePlayerView<TGameView = Record<string, unknown>> = Omit<
+export type GamePlayerView<
+  TGameView extends object = object,
+  TExtras extends object = object,
+  TBoard extends object = object,
+> = Omit<
   GameStateEntity,
-  'metadata' | 'players'
+  'metadata' | 'players' | 'game' | 'extras' | 'board'
 > & {
   players?: PublicPlayerState[];
   game?: TGameView;
+  extras?: TExtras;
+  board?: TBoard;
   metadata?: Record<string, unknown>;
 };

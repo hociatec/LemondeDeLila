@@ -1,19 +1,31 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
+import {
+  rejectRule,
+  defineAction,
+  gameEffects,
+  gameInput,
+} from '../../../core/application/public-api';
+import type {
+  GameContext,
+  GameEffectInstruction,
+} from '../../../core/application/public-api';
 import {
   ENTRE_RITES_CARD_BY_ID,
   ENTRE_RITES_CUSTOM_FAMILY_SIZE,
   ENTRE_RITES_FAMILY_CARDS,
+  ENTRE_RITES_FAMILY_IDS,
   type RiteFamilyCard,
-  type RiteFamilyId,
-  type RiteSpecialCard,
 } from './content';
 import type { EntreRitesState, RitesPendingChoice } from './state';
 
 const DECK = 'rites';
 const HANDS = 'players';
+const FAMILIES = 'rite-families';
 const TOTAL_FAMILIES = 5;
-type RuleContext = GameRuleContext<EntreRitesState>;
+export const RITES_SPECIALS = 'rites-specials-played';
+export const RITES_PEACE = 'rites.peace';
+export const RITES_SILENCE = 'rites.silence';
+type RuleContext = GameContext<EntreRitesState>;
+export type RitesStealChoice = { targetPlayerId: number; cardId: string };
 
 export const askCard = defineAction<
   EntreRitesState,
@@ -24,8 +36,14 @@ export const askCard = defineAction<
     targetPlayerId: gameInput.playerId(),
   }),
   documentation: 'Demande une carte précise dans une famille déjà représentée.',
-  available: ({ state }) => state.peaceTurnsRemaining === 0,
-  availableInputs: ({ actor, ctx }) => enumerateRequests(actor.id, ctx),
+  available: ({ ctx }) => peaceTurnsRemaining(ctx) === 0,
+  validate: ({ actor, input, ctx }) =>
+    enumerateRequests(actor.id, ctx).some(
+      (request) =>
+        request.cardId === input.cardId &&
+        request.targetPlayerId === input.targetPlayerId,
+    ),
+  enumerate: ({ actor, ctx }) => enumerateRequests(actor.id, ctx),
   execute: ({ state, actor, input, ctx }) => {
     const targetHand = ctx.cards.hand<string>(HANDS, input.targetPlayerId);
     if (targetHand.includes(input.cardId)) {
@@ -36,8 +54,8 @@ export const askCard = defineAction<
     }
     drawForPlayer(state, actor.id, ctx);
     determineVictory(state, ctx);
-    if (state.winnerId == null && state.pendingChoice == null)
-      endTurn(state, ctx);
+    if (ctx.match.lifecycle() !== 'finished' && ctx.choice.current() == null)
+      ctx.turn.complete();
   },
 });
 
@@ -45,8 +63,8 @@ export const pass = defineAction<EntreRitesState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Passe volontairement le tour.',
   execute: ({ state, actor, ctx }) => {
-    ctx.history.add(`${actor.username} passe son tour.`);
-    endTurn(state, ctx);
+    ctx.events.message('game.player.passed', { playerId: actor.id });
+    ctx.turn.complete();
   },
 });
 
@@ -95,35 +113,61 @@ export function dealFamilyHands(
   ctx.cards.putOnTop(DECK, specialBuffer);
 }
 
-export function resolveRitesChoice(
+export function resolveRitesCardChoice(
   state: EntreRitesState,
-  value: unknown,
+  cardId: string,
   ctx: RuleContext,
 ): void {
-  const pending = state.pendingChoice;
-  if (!pending) throw new Error('Choix rituel introuvable');
-  state.pendingChoice = null;
-  if (pending.kind === 'draw-one')
-    resolveDrawOne(state, pending, String(value), ctx);
-  else if (pending.kind === 'resurrection') {
-    const cardId = String(value);
+  const pending = ctx.choice.consumeData<RitesPendingChoice>();
+  if (!pending) rejectRule('Choix rituel introuvable');
+  if (pending.kind === 'draw-one') {
+    resolveDrawOne(state, pending, cardId, ctx);
+  } else if (pending.kind === 'resurrection') {
     ctx.cards.takeDiscard(DECK, cardId);
     handleDrawnCard(state, pending.playerId, cardId, ctx);
-  } else if (pending.kind === 'swap-hands') {
-    swapHands(pending.playerId, Number(value), ctx);
-  } else if (pending.kind === 'free-family') {
-    resolveFreeFamily(state, pending.playerId, value, ctx);
   } else {
-    const selection = value as { targetPlayerId: number; cardId: string };
-    transfer(selection.targetPlayerId, pending.playerId, selection.cardId, ctx);
-    completeFamilies(state, pending.playerId, ctx);
+    rejectRule('Type de choix de carte rituel invalide');
   }
-  determineVictory(state, ctx);
-  if (state.winnerId == null && state.pendingChoice == null)
-    endTurn(state, ctx);
+  finishChoiceResolution(state, ctx);
 }
 
-function drawForPlayer(
+export function resolveRitesFamilyChoice(
+  state: EntreRitesState,
+  cardIds: string[],
+  ctx: RuleContext,
+): void {
+  const pending = ctx.choice.consumeData<RitesPendingChoice>();
+  if (!pending || pending.kind !== 'free-family') {
+    rejectRule('Choix de famille rituel invalide');
+  }
+  resolveFreeFamily(pending.playerId, cardIds, ctx);
+  finishChoiceResolution(state, ctx);
+}
+
+export function resolveRitesStealChoice(
+  state: EntreRitesState,
+  selection: RitesStealChoice,
+  ctx: RuleContext,
+): void {
+  const pending = ctx.choice.consumeData<RitesPendingChoice>();
+  if (!pending || pending.kind !== 'reveal-and-steal') {
+    rejectRule('Choix de vol rituel invalide');
+  }
+  transfer(selection.targetPlayerId, pending.playerId, selection.cardId, ctx);
+  completeFamilies(state, pending.playerId, ctx);
+  finishChoiceResolution(state, ctx);
+}
+
+function finishChoiceResolution(
+  state: EntreRitesState,
+  ctx: RuleContext,
+): void {
+  determineVictory(state, ctx);
+  if (ctx.match.lifecycle() !== 'finished' && ctx.choice.current() == null)
+    ctx.turn.complete();
+}
+
+export function drawForPlayer(
   state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
@@ -146,37 +190,47 @@ function handleDrawnCard(
     return;
   }
   ctx.cards.discard(DECK, cardId);
-  state.specialsPlayed[playerId].push(cardId);
-  if (state.silenceOwnerId != null && state.silenceOwnerId !== playerId) return;
-  applySpecial(state, playerId, card, ctx);
+  ctx.inventory.add(RITES_SPECIALS, playerId, cardId);
+  const silenceOwnerId = statusOwner(RITES_SILENCE, ctx);
+  if (silenceOwnerId != null && silenceOwnerId !== playerId) return;
+  ctx.effects.schedule(
+    ...card.effects.map((effect) => retargetRiteEffect(effect, playerId)),
+  );
 }
 
-function applySpecial(
-  state: EntreRitesState,
+function retargetRiteEffect(
+  effect: GameEffectInstruction,
   playerId: number,
-  card: RiteSpecialCard,
-  ctx: RuleContext,
-): void {
-  if (card.effect === 'draw_two_choose_one')
-    drawTwoChoice(state, playerId, ctx);
-  else if (card.effect === 'draw_and_trigger')
-    drawForPlayer(state, playerId, ctx);
-  else if (card.effect === 'collect_from_others')
-    collectFromOthers(state, playerId, ctx);
-  else if (card.effect === 'take_from_discard')
-    resurrectionChoice(state, playerId, ctx);
-  else if (card.effect === 'mute_specials') state.silenceOwnerId = playerId;
-  else if (card.effect === 'swap_hands')
-    targetPlayerChoice(state, playerId, 'swap-hands', ctx);
-  else if (card.effect === 'free_family')
-    freeFamilyChoice(state, playerId, ctx);
-  else if (card.effect === 'reshuffle_cycle') dawnCycle(state, ctx);
-  else if (card.effect === 'peace_turns') state.peaceTurnsRemaining = 2;
-  else if (card.effect === 'reveal_and_steal')
-    stealChoice(state, playerId, ctx);
+): GameEffectInstruction {
+  if (effect.kind === 'swap-hands') {
+    return {
+      ...effect,
+      left:
+        effect.left.kind === 'self'
+          ? gameEffects.target.player(playerId)
+          : effect.left,
+      right:
+        effect.right.kind === 'chosen-opponent'
+          ? { ...effect.right, chooserPlayerId: playerId }
+          : effect.right,
+    };
+  }
+  if (
+    effect.kind === 'custom' ||
+    effect.kind === 'add-status' ||
+    effect.kind === 'remove-status' ||
+    effect.kind === 'gain-resource' ||
+    effect.kind === 'lose-resource' ||
+    effect.kind === 'skip-turn'
+  ) {
+    return effect.target?.kind === 'self'
+      ? { ...effect, target: gameEffects.target.player(playerId) }
+      : effect;
+  }
+  return effect;
 }
 
-function drawTwoChoice(
+export function drawTwoChoice(
   state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
@@ -190,11 +244,16 @@ function drawTwoChoice(
     handleDrawnCard(state, playerId, cardIds[0], ctx);
     return;
   }
-  state.pendingChoice = { kind: 'draw-one', playerId, cardIds };
+  const pending: RitesPendingChoice = {
+    kind: 'draw-one',
+    playerId,
+    cardIds,
+  };
   ctx.choice.one({
-    id: 'rites.special',
+    id: 'rites.card',
     player: playerId,
     options: cardIds,
+    data: pending,
     label: cardName,
   });
 }
@@ -212,7 +271,7 @@ function resolveDrawOne(
   }
 }
 
-function resurrectionChoice(
+export function resurrectionChoice(
   state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
@@ -221,37 +280,17 @@ function resurrectionChoice(
     .discardPile<string>(DECK)
     .filter((cardId) => ENTRE_RITES_CARD_BY_ID[cardId]?.type === 'family');
   if (options.length === 0) return;
-  state.pendingChoice = { kind: 'resurrection', playerId };
+  const pending: RitesPendingChoice = { kind: 'resurrection', playerId };
   ctx.choice.one({
-    id: 'rites.special',
+    id: 'rites.card',
     player: playerId,
     options,
+    data: pending,
     label: cardName,
   });
 }
 
-function targetPlayerChoice(
-  state: EntreRitesState,
-  playerId: number,
-  kind: 'swap-hands',
-  ctx: RuleContext,
-): void {
-  const options = ctx.players
-    .all()
-    .filter((player) => player.id !== playerId)
-    .map((player) => player.id);
-  if (options.length === 0) return;
-  state.pendingChoice = { kind, playerId };
-  ctx.choice.one({
-    id: 'rites.special',
-    player: playerId,
-    options,
-    label: (targetId) =>
-      ctx.players.get(targetId)?.username ?? String(targetId),
-  });
-}
-
-function freeFamilyChoice(
+export function freeFamilyChoice(
   state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
@@ -273,31 +312,35 @@ function freeFamilyChoice(
     }
   }
   if (choices.length === 0) return;
-  state.pendingChoice = { kind: 'free-family', playerId };
+  const pending: RitesPendingChoice = { kind: 'free-family', playerId };
   ctx.choice.one({
-    id: 'rites.special',
+    id: 'rites.family',
     player: playerId,
     options: choices,
+    data: pending,
     label: (ids) => ids.map(cardName).join(', '),
   });
 }
 
 function resolveFreeFamily(
-  state: EntreRitesState,
   playerId: number,
-  value: unknown,
+  cardIds: string[],
   ctx: RuleContext,
 ): void {
-  if (!Array.isArray(value)) return;
-  for (const cardId of value.map(String))
-    ctx.cards.take(HANDS, playerId, cardId);
-  const family = (
-    Object.keys(ENTRE_RITES_CUSTOM_FAMILY_SIZE) as RiteFamilyId[]
-  ).find((candidate) => !state.completedFamilies[playerId].includes(candidate));
-  if (family) state.completedFamilies[playerId].push(family);
+  for (const cardId of cardIds) ctx.cards.take(HANDS, playerId, cardId);
+  const family = ENTRE_RITES_FAMILY_IDS.find(
+    (candidate) =>
+      !ctx.cards.playerCompletedSets(FAMILIES, playerId).includes(candidate),
+  );
+  if (family) {
+    ctx.cards.completeSet(FAMILIES, playerId, family, {
+      allowIncomplete: true,
+      consume: false,
+    });
+  }
 }
 
-function collectFromOthers(
+export function collectFromOthers(
   state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
@@ -310,20 +353,20 @@ function collectFromOthers(
   completeFamilies(state, playerId, ctx);
 }
 
-function dawnCycle(state: EntreRitesState, ctx: RuleContext): void {
+export function dawnCycle(state: EntreRitesState, ctx: RuleContext): void {
   for (const player of ctx.players.all()) {
     const cardId = ctx.cards.hand<string>(HANDS, player.id)[0];
     if (cardId) ctx.cards.play(HANDS, DECK, player.id, cardId);
   }
   for (const player of ctx.players.all()) {
     drawForPlayer(state, player.id, ctx);
-    if (state.pendingChoice) return;
+    if (ctx.choice.current()) return;
     drawForPlayer(state, player.id, ctx);
-    if (state.pendingChoice) return;
+    if (ctx.choice.current()) return;
   }
 }
 
-function stealChoice(
+export function stealChoice(
   state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
@@ -338,46 +381,33 @@ function stealChoice(
       })),
     );
   if (options.length === 0) return;
-  state.pendingChoice = { kind: 'reveal-and-steal', playerId };
+  const pending: RitesPendingChoice = {
+    kind: 'reveal-and-steal',
+    playerId,
+  };
   ctx.choice.one({
-    id: 'rites.special',
+    id: 'rites.steal',
     player: playerId,
     options,
+    data: pending,
     label: (choice) => cardName(choice.cardId),
   });
 }
 
-function swapHands(playerId: number, targetId: number, ctx: RuleContext): void {
-  const own = ctx.cards.hand<string>(HANDS, playerId);
-  const target = ctx.cards.hand<string>(HANDS, targetId);
-  const copy = [...own];
-  own.splice(0, own.length, ...target);
-  target.splice(0, target.length, ...copy);
-}
-
 function completeFamilies(
-  state: EntreRitesState,
+  _state: EntreRitesState,
   playerId: number,
   ctx: RuleContext,
 ): void {
-  const hand = ctx.cards.hand<string>(HANDS, playerId);
-  for (const familyId of Object.keys(
-    ENTRE_RITES_CUSTOM_FAMILY_SIZE,
-  ) as RiteFamilyId[]) {
-    if (state.completedFamilies[playerId].includes(familyId)) continue;
-    const familyCards = hand.filter((cardId) => {
-      const card = ENTRE_RITES_CARD_BY_ID[cardId];
-      return card?.type === 'family' && card.familyId === familyId;
-    });
-    if (familyCards.length < ENTRE_RITES_CUSTOM_FAMILY_SIZE[familyId]) continue;
-    for (const cardId of familyCards) ctx.cards.take(HANDS, playerId, cardId);
-    state.completedFamilies[playerId].push(familyId);
+  for (const familyId of ENTRE_RITES_FAMILY_IDS) {
+    ctx.cards.completeSet(FAMILIES, playerId, familyId, { discard: false });
   }
 }
 
-function determineVictory(state: EntreRitesState, ctx: RuleContext): void {
-  const total = Object.values(state.completedFamilies).reduce(
-    (sum, families) => sum + families.length,
+function determineVictory(_state: EntreRitesState, ctx: RuleContext): void {
+  const completedCounts = ctx.cards.completedSetCounts(FAMILIES);
+  const total = Object.values(completedCounts).reduce(
+    (sum, count) => sum + count,
     0,
   );
   if (total < TOTAL_FAMILIES) return;
@@ -385,8 +415,8 @@ function determineVictory(state: EntreRitesState, ctx: RuleContext): void {
     .all()
     .map((player) => ({
       playerId: player.id,
-      families: state.completedFamilies[player.id].length,
-      specials: state.specialsPlayed[player.id].length,
+      families: completedCounts[player.id] ?? 0,
+      specials: ctx.inventory.count(RITES_SPECIALS, player.id),
     }))
     .sort(
       (left, right) =>
@@ -394,14 +424,10 @@ function determineVictory(state: EntreRitesState, ctx: RuleContext): void {
         right.specials - left.specials ||
         left.playerId - right.playerId,
     );
-  state.winnerId = ranked[0]?.playerId ?? null;
-}
-
-function endTurn(state: EntreRitesState, ctx: RuleContext): void {
-  state.peaceTurnsRemaining = Math.max(0, state.peaceTurnsRemaining - 1);
-  ctx.turn.end();
-  if (state.silenceOwnerId === ctx.players.current()?.id)
-    state.silenceOwnerId = null;
+  const winnerId = ranked[0]?.playerId;
+  if (winnerId != null) {
+    ctx.match.finish({ winners: [winnerId], reason: 'five-families' });
+  }
 }
 
 function transfer(
@@ -410,10 +436,30 @@ function transfer(
   cardId: string,
   ctx: RuleContext,
 ): void {
-  ctx.cards.take(HANDS, fromId, cardId);
-  ctx.cards.give(HANDS, toId, cardId);
+  ctx.cards.transfer(HANDS, fromId, toId, cardId);
 }
 
 function cardName(cardId: string): string {
   return ENTRE_RITES_CARD_BY_ID[cardId]?.name ?? cardId;
+}
+
+export function peaceTurnsRemaining(ctx: RuleContext): number {
+  return ctx.players.all().reduce(
+    (remaining, player) =>
+      Math.max(
+        remaining,
+        ctx.status.get(player.id, RITES_PEACE)?.remaining ?? 0,
+      ),
+    0,
+  );
+}
+
+export function statusOwner(
+  statusId: string,
+  ctx: RuleContext,
+): number | null {
+  return (
+    ctx.players.all().find((player) => ctx.status.has(player.id, statusId))
+      ?.id ?? null
+  );
 }

@@ -1,25 +1,18 @@
 import type { CatPattesBotType, CatPattesObstacleType } from './content';
+import type { PlayerMap } from '../../../core/application/public-api';
 
-export interface CatPattesState {
-  ownerPlayerId: number;
-  configComplete: boolean;
-  roundsToPlay: number;
+export type CatPattesState = Record<string, never>;
+
+export type CatPattesPlayerView = {
+  obstacles: PlayerMap<CatPattesObstacleType | null>;
+  powers: PlayerMap<CatPattesBotType[]>;
+  turboPlayed: PlayerMap<number>;
+  hasSun: PlayerMap<boolean>;
+  sunReady: PlayerMap<boolean>;
+  obstacleLock: PlayerMap<boolean>;
+  positions: PlayerMap<number>;
+  points: PlayerMap<number>;
   completedRounds: number;
-  positions: Record<number, number>;
-  points: Record<number, number>;
-  obstacles: Record<number, CatPattesObstacleType | null>;
-  powers: Record<number, CatPattesBotType[]>;
-  turboPlayed: Record<number, number>;
-  hasSun: Record<number, boolean>;
-  sunReady: Record<number, boolean>;
-  obstacleLock: Record<number, boolean>;
   drawnPlayerId: number | null;
   winnerId: number | null;
-}
-
-export type CatPattesPlayerView = CatPattesState & {
-  hand: string[];
-  handCounts: Record<number, number>;
-  deckCount: number;
-  discardCount: number;
 };

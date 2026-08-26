@@ -1,4 +1,11 @@
-export interface CompletedCar {
+import type { PlayerMap } from '../../../core/application/public-api';
+
+export interface CompletedCarState {
+  nameIndex: number;
+  parts: string[];
+}
+
+export interface CompletedCarView {
   name: string;
   description: string;
   parts: string[];
@@ -7,20 +14,20 @@ export interface CompletedCar {
 export interface CarProgress {
   stageIndex: number;
   carParts: string[];
-  completedCars: CompletedCar[];
+  completedCars: CompletedCarState[];
 }
 
 export interface PimpMyRideState {
-  progress: Record<number, CarProgress>;
-  drawnPlayerId: number | null;
-  drawnCardId: string | null;
-  carNameIndex: number;
-  winnerId: number | null;
+  completedCars: PlayerMap<CompletedCarState[]>;
 }
 
-export type PimpMyRidePlayerView = PimpMyRideState & {
-  hand: string[];
-  handCounts: Record<number, number>;
-  deckCount: number;
-  discardCount: number;
+export type PimpMyRidePlayerView = {
+  carNameIndex: number;
+  progress: Record<
+    number,
+    Omit<CarProgress, 'completedCars'> & { completedCars: CompletedCarView[] }
+  >;
+  drawnPlayerId: number | null;
+  drawnCardId: string | null;
+  winnerId: number | null;
 };

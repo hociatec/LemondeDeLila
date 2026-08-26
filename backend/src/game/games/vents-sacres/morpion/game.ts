@@ -1,11 +1,14 @@
 import {
   clockwise,
+  defineChoice,
   defineGame,
+  gameInput,
+  grid,
+  pawns,
   playerView,
-  victoryWhen,
 } from '../../../core/application/public-api';
 import { MORPION_PAWNS } from './content';
-import { chooseBotMove, MORPION_ACTIONS } from './rules';
+import { boardState, chooseBotMove, MORPION_ACTIONS } from './rules';
 import type { MorpionPlayerView, MorpionState } from './state';
 
 const PAWN_CHOICE = 'morpion.pawn';
@@ -21,6 +24,11 @@ export default defineGame<
   subcategory: 'Les Vents Sacrés',
   description: 'Alignez 3 symboles sur une grille 3×3.',
   players: { min: 2, max: 2 },
+  components: [
+    grid.board({ id: 'morpion', width: 3, height: 3 }),
+    pawns.set({ id: 'morpion', pawns: MORPION_PAWNS }),
+  ],
+  initialization: { firstPlayer: 'first', startRound: true },
   shortcuts: [
     { key: 'P', type: 'interface', id: 'position' },
     { key: 'A', type: 'interface', id: 'play' },
@@ -29,10 +37,9 @@ export default defineGame<
     const availablePawns = ctx.random.shuffle(
       MORPION_PAWNS.map((pawn) => pawn.id),
     );
-    const glyphByPlayerId: Record<string, string> = {};
     for (const bot of players.filter((player) => player.isBot)) {
       const pawnId = availablePawns.shift();
-      if (pawnId) glyphByPlayerId[String(bot.id)] = pawnId;
+      if (pawnId) ctx.pawns.assign('morpion', bot.id, pawnId);
     }
     const chooser = ctx.random.pick(players.filter((player) => !player.isBot));
     if (chooser) {
@@ -43,58 +50,50 @@ export default defineGame<
         options: availablePawns,
       });
     }
-    return {
-      size: 3,
-      board: Array.from({ length: 9 }, () => 0),
-      glyphByPlayerId,
-      startingPlayerId: players[0]?.id ?? 0,
-      winnerId: null,
-      draw: false,
-    };
+    return {};
   },
   turn: clockwise(),
   actions: MORPION_ACTIONS,
   choices: {
-    [PAWN_CHOICE]: {
-      resolve: ({ state, actor, value, ctx }) => {
-        const pawnId = String(value);
-        state.glyphByPlayerId[String(actor.id)] = pawnId;
-        const pawn = MORPION_PAWNS.find((candidate) => candidate.id === pawnId);
-        ctx.history.add(
-          `${actor.username} a choisi le pion: ${pawn?.label ?? pawnId}.`,
-        );
+    [PAWN_CHOICE]: defineChoice<MorpionState, string>({
+      input: gameInput.string({ min: 1, max: 128 }),
+      resolve: ({ actor, value, ctx }) => {
+        const pawnId = value;
+        ctx.pawns.assign('morpion', actor.id, pawnId);
+        ctx.events.message('game.pawn.selected', {
+          playerId: actor.id,
+          pawnId,
+        });
         const next = ctx.players
           .all()
-          .find((player) => !state.glyphByPlayerId[String(player.id)]);
+          .find((player) => ctx.pawns.assigned('morpion', player.id).length === 0);
         if (next) {
           ctx.turn.to(next.id);
           ctx.choice.one({
             id: PAWN_CHOICE,
             player: next.id,
-            options: MORPION_PAWNS.map((candidate) => candidate.id).filter(
-              (id) => !Object.values(state.glyphByPlayerId).includes(id),
-            ),
+            options: ctx.pawns.available('morpion').map((pawn) => pawn.id),
           });
         } else {
-          ctx.turn.to(state.startingPlayerId);
+          const starterId = ctx.round.starter();
+          if (starterId != null) ctx.turn.to(starterId);
         }
       },
-    },
+    }),
   },
-  victory: victoryWhen(({ state }) =>
-    state.winnerId != null || state.draw
-      ? {
-          winnerPlayerIds: state.winnerId == null ? [] : [state.winnerId],
-          reason: state.draw ? 'draw' : 'line-3',
-        }
-      : null,
-  ),
-  view: ({ state, actor, ctx }) => {
+  view: ({ actor, ctx }) => {
     const players = ctx.players.all();
+    const glyphByPlayerId = Object.fromEntries(
+      players.flatMap((player) => {
+        const pawnId = ctx.pawns.assigned('morpion', player.id)[0];
+        return pawnId == null ? [] : [[String(player.id), pawnId]];
+      }),
+    );
+    const board = boardState(ctx);
     const canPlay =
       actor != null && ctx.turn.is(actor.id) && !ctx.choice.current();
     const cellActions = Object.fromEntries(
-      state.board.flatMap((ownerId, index) => {
+      board.flatMap((ownerId, index) => {
         if (ownerId !== 0 || !canPlay) return [];
         const x = index % 3;
         const y = Math.floor(index / 3);
@@ -106,9 +105,9 @@ export default defineGame<
         ];
       }),
     );
-    const entities = state.board.flatMap((ownerId, index) => {
+    const entities = board.flatMap((ownerId, index) => {
       if (ownerId === 0) return [];
-      const pawnId = state.glyphByPlayerId[String(ownerId)];
+      const pawnId = glyphByPlayerId[String(ownerId)];
       return [
         {
           id: `mark:${index}`,
@@ -120,11 +119,14 @@ export default defineGame<
         },
       ];
     });
-    const winner = players.find((player) => player.id === state.winnerId);
+    const result = ctx.match.result();
+    const winnerId = result?.winnerPlayerIds[0] ?? null;
+    const draw = result?.reason === 'draw';
+    const winner = players.find((player) => player.id === winnerId);
     const statusLines = [
       winner
         ? `Gagnant : ${winner.username}`
-        : state.draw
+        : draw
           ? 'Match nul.'
           : canPlay
             ? 'À vous de jouer.'
@@ -132,7 +134,12 @@ export default defineGame<
     ];
     return playerView({
       game: {
-        ...structuredClone(state),
+        glyphByPlayerId,
+        size: 3,
+        board,
+        startingPlayerId: ctx.round.starter() ?? 0,
+        winnerId,
+        draw,
         pawns: structuredClone(MORPION_PAWNS),
       },
       extras: {
@@ -141,7 +148,7 @@ export default defineGame<
           panels: {
             play: {
               title: 'Coups',
-              message: `Cases libres: ${state.board.filter((owner) => owner === 0).length}. Entrée: jouer sur la case focus.`,
+              message: `Cases libres: ${board.filter((owner) => owner === 0).length}. Entrée: jouer sur la case focus.`,
             },
           },
         },
@@ -158,7 +165,7 @@ export default defineGame<
     choose: ({ state, actor, ctx }) => {
       const opponentId =
         ctx.players.all().find((player) => player.id !== actor.id)?.id ?? null;
-      const move = chooseBotMove(state, actor.id, opponentId);
+      const move = chooseBotMove(ctx, actor.id, opponentId);
       return move ? { type: 'morpion_play', payload: move } : null;
     },
   },

@@ -17,7 +17,6 @@ import type {
   AuthedClient,
   ClientMeta,
   ClientRole,
-  RoomWithOptionalRuntimeFields,
 } from './room-gateway.types';
 import {
   addSocketToRoomMembership,
@@ -29,7 +28,7 @@ import {
 } from './room-request.helpers';
 
 type LifecycleContext = {
-  server: Server<WebSocket>;
+  server: Server<typeof WebSocket>;
   rooms: Map<number, Set<WebSocket>>;
   silentRooms: Map<number, Set<WebSocket>>;
   clients: Map<WebSocket, ClientMeta>;
@@ -169,12 +168,7 @@ export class RoomGatewayLifecycleService {
           state.room.startedAt = room.startedAt
             ? room.startedAt.toISOString()
             : null;
-          const roomWithRuntime =
-            room as unknown as RoomWithOptionalRuntimeFields;
-          state.room.runId =
-            typeof roomWithRuntime.runId === 'number'
-              ? roomWithRuntime.runId
-              : null;
+          state.room.runId = room.runId;
           state.generatedAt = new Date().toISOString();
           return state;
         });
@@ -465,7 +459,7 @@ export class RoomGatewayLifecycleService {
       return;
     }
 
-    let isPrivate = false;
+    let isPrivate: boolean;
     try {
       const state = await this.roomState.getRoomPayload(roomId);
       isPrivate = Boolean(state?.room?.isPrivate);

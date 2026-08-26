@@ -14,7 +14,7 @@ export class PresenceGateway
   implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
 {
   @WebSocketServer()
-  server!: Server<WebSocket>;
+  server!: Server<typeof WebSocket>;
 
   constructor(private readonly connection: PresenceWsConnectionService) {}
 

@@ -1,10 +1,7 @@
+import { freezeGameContent } from '../../../core/application/public-api';
+
 export type CerclesSacresTheme =
-  | 'totem'
-  | 'nature'
-  | 'plante'
-  | 'esprit'
-  | 'parole'
-  | 'nation';
+  'totem' | 'nature' | 'plante' | 'esprit' | 'parole' | 'nation';
 
 export interface CerclesSacresCardDefinition {
   id: string;
@@ -143,3 +140,6 @@ export const CERCLES_SACRES_DECK = deck;
 export const CERCLES_SACRES_CARD_BY_ID = Object.fromEntries(
   deck.map((card) => [card.id, card]),
 );
+
+freezeGameContent(CERCLES_SACRES_DECK);
+freezeGameContent(CERCLES_SACRES_CARD_BY_ID);

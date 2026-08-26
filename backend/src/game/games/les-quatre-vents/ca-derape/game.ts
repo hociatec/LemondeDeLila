@@ -1,16 +1,33 @@
 import {
   cards,
-  clockwise,
+  commonStatuses,
+  defineChoice,
+  defineGamePhases,
   defineGame,
-  diceKit,
-  movement,
+  gameInput,
   playerView,
-  victoryWhen,
-  when,
+  raceGame,
+  type PlayerMap,
+  type GameContext,
 } from '../../../core/application/public-api';
 import { CA_DERAPE_CARDS, CA_DERAPE_TILES } from './content';
-import { CA_DERAPE_ACTIONS, resolveChoice, skipCaPlayer } from './rules';
+import {
+  CA_DERAPE_ACTIONS,
+  CA_IDLE_TURNS,
+  CA_LAST_MOVE,
+  CA_LAST_ROLL,
+  CA_NEXT_PLAYER_DELTA,
+  caResourceMap,
+  mirrorSourceMap,
+  resolveDeltaChoice,
+} from './rules';
+import { CA_DERAPE_EFFECTS } from './effects';
 import type { CaDerapePlayerView, CaDerapeState } from './state';
+
+const CA_DERAPE_PHASES = defineGamePhases<CaDerapeState>()({
+  initialPhase: 'playing',
+  phases: { playing: {} },
+});
 
 export default defineGame<
   CaDerapeState,
@@ -23,72 +40,41 @@ export default defineGame<
   subcategory: 'LesQuatreVents',
   description: 'Course chaotique sur 30 cases avec cartes Situation.',
   players: { min: 2, max: 10 },
+  patterns: [
+    raceGame({ trackId: 'derape', spaces: CA_DERAPE_TILES.length }),
+  ],
   components: [
-    movement.track({ id: 'derape', spaces: CA_DERAPE_TILES.length }),
-    diceKit({ id: 'main', count: 1, sides: 6 }),
     cards.deck({ id: 'situations', cards: CA_DERAPE_CARDS, shuffle: true }),
   ],
+  initialization: {
+    counters: { [CA_NEXT_PLAYER_DELTA]: 0 },
+    startRound: false,
+  },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
-  setup: ({ players }) => ({
-    lastRollByPlayer: Object.fromEntries(
-      players.map((player) => [player.id, 0]),
-    ),
-    lastMoveDelta: Object.fromEntries(players.map((player) => [player.id, 0])),
-    turnsSinceMoved: Object.fromEntries(
-      players.map((player) => [player.id, 0]),
-    ),
-    skipTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-    ignoreNextPenalty: Object.fromEntries(
-      players.map((player) => [player.id, false]),
-    ),
-    doubleNextMove: Object.fromEntries(
-      players.map((player) => [player.id, false]),
-    ),
-    doubleNextRoll: Object.fromEntries(
-      players.map((player) => [player.id, false]),
-    ),
-    mirrorNextRollFrom: Object.fromEntries(
-      players.map((player) => [player.id, null]),
-    ),
-    nextPlayerDelta: null,
-    pendingKind: null,
-    pendingActorId: null,
-    extraTurn: false,
-    winnerId: null,
-  }),
-  initialPhase: 'playing',
-  turn: clockwise(),
+  initialPhase: CA_DERAPE_PHASES.initialPhase,
+  phases: CA_DERAPE_PHASES.phases,
   actions: CA_DERAPE_ACTIONS,
-  choices: Object.fromEntries(
-    (['swap', 'next-player', 'next-delta', 'mirror'] as const).map((kind) => [
-      `ca-derape.${kind}`,
-      {
-        resolve: ({
-          state,
-          value,
-          ctx,
-        }: {
-          state: CaDerapeState;
-          value: unknown;
-          ctx: Parameters<typeof resolveChoice>[3];
-        }) => resolveChoice(state, kind, Number(value), ctx),
-      },
-    ]),
-  ),
-  automatic: [
-    when(
-      'skip-ca-player',
-      ({ state, ctx }) =>
-        (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-      ({ state, ctx }) => skipCaPlayer(state, ctx),
-    ),
-  ],
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'finish-line' },
-  ),
-  view: ({ state, ctx }) => {
+  effects: CA_DERAPE_EFFECTS,
+  choices: {
+    'ca-derape.next-delta': defineChoice<CaDerapeState, number>({
+      input: gameInput.number({ integer: true }),
+      resolve: ({ value, ctx }) => resolveDeltaChoice(value, ctx),
+    }),
+  },
+  view: ({ ctx }) => {
+    const pending = ctx.choice.current();
+    const choiceId = pending?.data.choiceId;
+    const local = ctx.choice.data<{ kind?: string; actorId?: number }>();
+    const pendingKind: import('./state').CaPendingKind | null =
+      choiceId === 'ca-derape.swap'
+        ? 'swap'
+        : choiceId === 'ca-derape.next-player'
+          ? 'next-player'
+          : choiceId === 'ca-derape.mirror'
+            ? 'mirror'
+            : local?.kind === 'next-delta'
+              ? 'next-delta'
+              : null;
     const positions = Object.fromEntries(
       ctx.players
         .all()
@@ -99,14 +85,36 @@ export default defineGame<
     );
     return playerView({
       game: {
-        ...structuredClone(state),
+        lastRollByPlayer: caResourceMap(ctx, CA_LAST_ROLL),
+        lastMoveDelta: caResourceMap(ctx, CA_LAST_MOVE),
+        turnsSinceMoved: caResourceMap(ctx, CA_IDLE_TURNS),
+        mirrorNextRollFrom: mirrorSourceMap(ctx),
+        nextPlayerDelta: ctx.counters.get(CA_NEXT_PLAYER_DELTA) || null,
+        pendingKind,
+        pendingActorId: pendingKind ? pending?.playerId ?? null : null,
+        ignoreNextPenalty: statusMap(ctx, commonStatuses.shield),
+        doubleNextMove: statusMap(ctx, commonStatuses.doubleMove),
+        doubleNextRoll: statusMap(ctx, commonStatuses.doubleRoll),
+        extraTurn: ctx.turn.extraCount() > 0,
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+        skipTurns: Object.fromEntries(
+          ctx.players.all().map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+        ),
         positions,
-        deckCount:
-          ctx.cards.deckCount('situations') +
-          ctx.cards.discardCount('situations'),
       },
       board: { tiles: CA_DERAPE_TILES, positions },
     });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });
+
+function statusMap(
+  ctx: GameContext<CaDerapeState>,
+  statusId: string,
+): PlayerMap<boolean> {
+  return Object.fromEntries(
+    ctx.players
+      .all()
+      .map((player) => [player.id, ctx.status.has(player.id, statusId)]),
+  );
+}

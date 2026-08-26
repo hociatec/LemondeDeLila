@@ -16,18 +16,19 @@ export class ListRecentNormalizedChatMessagesService {
   async execute(
     limit = ListRecentChatMessagesService.DEFAULT_HISTORY_LIMIT,
   ): Promise<ChatNormalizedMessage[]> {
-    const cached = this.cache.getAll();
-    if (cached === null) {
+    let messages = this.cache.getAll();
+    if (messages === null) {
       const rows = await this.listRecentMessages.execute(
         ChatMessageCacheService.CACHE_LIMIT,
       );
-      this.cache.setAll(this.presenter.normalizeMany(rows));
+      messages = this.presenter.normalizeMany(rows);
+      this.cache.setAll(messages);
     }
 
     const safeLimit = Math.min(
       Math.max(limit, 1),
       ChatMessageCacheService.CACHE_LIMIT,
     );
-    return this.cache.getAll()!.slice(-safeLimit);
+    return messages.slice(-safeLimit);
   }
 }

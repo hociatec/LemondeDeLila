@@ -1,3 +1,7 @@
+import {
+  freezeGameContent,
+  rejectContent,
+} from '../../../core/application/public-api';
 import boardContent from './content/board.json';
 import clientsContent from './content/clients.json';
 import eventsContent from './content/events.json';
@@ -29,10 +33,14 @@ export const TAXI_EVENTS: TaxiEvent[] = eventsContent.cards.map((card) => ({
 export const TAXI_TARGET_TRIPS = rulesContent.victory.target;
 
 if (TAXI_TILES.length !== TAXI_EVENTS.length)
-  throw new Error('Chaque rue Taxi doit posséder un événement');
+  rejectContent('Chaque rue Taxi doit posséder un événement');
 if (
   TAXI_CLIENTS.some(
     (client) => !TAXI_TILES.some((tile) => tile.id === client.destinationId),
   )
 )
-  throw new Error('Une destination Taxi est absente du plateau');
+  rejectContent('Une destination Taxi est absente du plateau');
+
+freezeGameContent(TAXI_TILES);
+freezeGameContent(TAXI_CLIENTS);
+freezeGameContent(TAXI_EVENTS);

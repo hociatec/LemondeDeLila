@@ -1,11 +1,10 @@
+import type {
+  GameEffectInstruction,
+  PlayerMap,
+} from '../../../core/application/public-api';
+
 export type PirateTileType =
-  | 'start'
-  | 'neutral'
-  | 'bonus'
-  | 'treasure'
-  | 'obstacle'
-  | 'gold'
-  | 'finish';
+  'start' | 'neutral' | 'bonus' | 'treasure' | 'obstacle' | 'gold' | 'finish';
 
 export interface PirateTile {
   n: number;
@@ -18,6 +17,7 @@ export interface PirateCard {
   id: number;
   title: string;
   description: string;
+  effects: readonly GameEffectInstruction[];
 }
 
 export interface PirateCollection {
@@ -27,20 +27,19 @@ export interface PirateCollection {
   goldPieces: number;
 }
 
-export type PiratePendingEffect =
-  | { kind: 'target-move'; actorId: number; delta: number }
-  | { kind: 'steal-treasure'; actorId: number };
-
-export interface PiratesState {
-  collections: Record<number, PirateCollection>;
-  skipTurns: Record<number, number>;
-  obstacleImmunity: Record<number, number>;
-  lastRoll: number | null;
-  winnerId: number | null;
-  pendingEffect: PiratePendingEffect | null;
+export interface PirateCollectionState {
+  treasureIds: number[];
+  obstacleIds: number[];
+  bonusIds: number[];
 }
 
-export type PiratesPlayerView = Omit<PiratesState, 'pendingEffect'> & {
-  positions: Record<number, number>;
-  deckCounts: Record<'treasure' | 'obstacle' | 'bonus', number>;
+export type PiratesState = Record<string, never>;
+
+export type PiratesPlayerView = {
+  obstacleImmunity: PlayerMap<number>;
+  collections: PlayerMap<PirateCollection>;
+  lastRoll: number | null;
+  positions: PlayerMap<number>;
+  winnerId: number | null;
+  skipTurns: PlayerMap<number>;
 };
