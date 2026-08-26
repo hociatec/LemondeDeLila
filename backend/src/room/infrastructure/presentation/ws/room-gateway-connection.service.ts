@@ -61,16 +61,8 @@ export class RoomGatewayConnectionService {
       return null;
     }
 
-    const clientVersion = this.auth.extractClientVersion(client, args);
-    const clientProduct = this.auth.extractClientProduct(client, args);
-    const minRequired = await this.updates.getMinimumVersion(clientProduct);
-    if (minRequired) {
-      const outdated =
-        !clientVersion || isVersionLower(clientVersion, minRequired) === true;
-      if (outdated) {
-        client.close(4406, 'update required');
-        return null;
-      }
+    if (!(await this.acceptsClientVersion(client, args))) {
+      return null;
     }
 
     const { token, roomId, spectator, silent } = extractRoomWsParams(
@@ -117,29 +109,47 @@ export class RoomGatewayConnectionService {
       ctx.clients.set(client, meta);
     }
 
-    ctx.addSocketMembership(targetRoomId, client, meta.silent);
+    await this.finalizeConnection(ctx, client, meta, targetRoomId);
+    return meta;
+  }
+
+  private async acceptsClientVersion(
+    client: WebSocket,
+    args: unknown[],
+  ): Promise<boolean> {
+    const version = this.auth.extractClientVersion(client, args);
+    const product = this.auth.extractClientProduct(client, args);
+    const minimum = await this.updates.getMinimumVersion(product);
+    if (minimum && (!version || isVersionLower(version, minimum) === true)) {
+      client.close(4406, 'update required');
+      return false;
+    }
+    return true;
+  }
+
+  private async finalizeConnection(
+    ctx: ConnectionContext,
+    client: WebSocket,
+    meta: ClientMeta,
+    roomId: number,
+  ): Promise<void> {
+    ctx.addSocketMembership(roomId, client, meta.silent);
     ctx.setSocketParticipantRoom(
       client,
       meta.role === 'participant' && meta.silent !== true ? meta.roomId : null,
     );
-
-    if (targetRoomId > 0) {
-      if (meta.silent) {
-        await ctx.sendRoomStateToClient(client, targetRoomId, {
-          includeRealtimePlayers: true,
-          includeHiddenSelf: {
-            userId: meta.userId,
-            username: meta.username,
-          },
-        });
-      } else {
-        await ctx.sendRoomState(targetRoomId);
-      }
-
-      await ctx.sendChatHistoryToClient(client, targetRoomId);
+    if (roomId <= 0) {
+      return;
     }
-
-    return meta;
+    if (meta.silent) {
+      await ctx.sendRoomStateToClient(client, roomId, {
+        includeRealtimePlayers: true,
+        includeHiddenSelf: { userId: meta.userId, username: meta.username },
+      });
+    } else {
+      await ctx.sendRoomState(roomId);
+    }
+    await ctx.sendChatHistoryToClient(client, roomId);
   }
 
   private async attachClientToRequestedRoom(

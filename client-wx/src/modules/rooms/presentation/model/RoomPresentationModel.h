@@ -16,6 +16,7 @@ public:
     enum class Action
     {
         None,
+        ShowGameStatus,
         Start,
         AddBot,
         RemoveBot,

@@ -8,7 +8,9 @@
 #include <wx/textctrl.h>
 
 #include "modules/chat/application/ChatService.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
+#include "modules/chat/domain/ChatErrorMessages.h"
+#include "shared/errors/presentation/ErrorFormatting.h"
 #include "shared/text/domain/StringUtils.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/ui/application/BackgroundTask.h"
@@ -27,29 +29,15 @@ void ChatFrame::RunChatAction(
     }
 
     SetBusyState(true, busyMessage);
-    wxWeakRef<ChatFrame> weakSelf(this);
-    lila::shared::ui::RunBackgroundTask(
-        this,
+    lila::shared::ui::RunManagedBackgroundTask(
+        *this,
         action,
-        [weakSelf, onSuccess](std::string errorMessage) mutable
+        [](ChatFrame& frame) { frame.SetBusyState(false); },
+        [](ChatFrame& frame, std::string errorMessage)
         {
-            if (!weakSelf)
-            {
-                return;
-            }
-
-            weakSelf->SetBusyState(false);
-            if (!errorMessage.empty())
-            {
-                weakSelf->UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
-                return;
-            }
-
-            if (onSuccess)
-            {
-                onSuccess();
-            }
-        });
+            frame.UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
+        },
+        [onSuccess](ChatFrame&) { if (onSuccess) onSuccess(); });
 }
 
 void ChatFrame::SetBusyState(bool isBusy, const wxString& statusMessage)

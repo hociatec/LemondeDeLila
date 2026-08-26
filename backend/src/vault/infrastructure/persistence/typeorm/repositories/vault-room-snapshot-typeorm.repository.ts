@@ -6,9 +6,7 @@ import type { VaultRoomSnapshotRepository } from '../../../../application/ports/
 import { VaultRoomSnapshotEntity } from '../entities/vault-room-snapshot.entity';
 
 @Injectable()
-export class VaultRoomSnapshotTypeormRepository
-  implements VaultRoomSnapshotRepository
-{
+export class VaultRoomSnapshotTypeormRepository implements VaultRoomSnapshotRepository {
   constructor(
     @InjectRepository(VaultRoomSnapshotEntity)
     private readonly snapshots: Repository<VaultRoomSnapshotEntity>,
@@ -46,7 +44,9 @@ export class VaultRoomSnapshotTypeormRepository
     return this.toModel(this.snapshots.create(data));
   }
 
-  async save(entity: VaultRoomSnapshotRecord): Promise<VaultRoomSnapshotRecord> {
+  async save(
+    entity: VaultRoomSnapshotRecord,
+  ): Promise<VaultRoomSnapshotRecord> {
     const saved = await this.snapshots.save(this.snapshots.create(entity));
     return this.toModel(saved);
   }

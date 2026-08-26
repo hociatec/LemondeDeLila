@@ -17,6 +17,8 @@ import { ROOM_ADMIN_PORT } from '../application/ports/room-admin.port';
 import { RoomMaintenanceSettingsService } from '../application/services/room-maintenance-settings.service';
 import { RoomMembershipFacadeService } from '../application/services/room-membership-facade.service';
 import { RoomMembershipService } from '../application/services/room-membership.service';
+import { RoomLeaveService } from '../application/services/room-leave.service';
+import { RoomEmptyCleanupService } from '../application/services/room-empty-cleanup.service';
 import { RoomPayloadBuilderService } from '../application/services/room-payload-builder.service';
 import { RoomPayloadService } from '../application/services/room-payload.service';
 import { RoomStateService } from '../application/services/room-state.service';
@@ -51,6 +53,10 @@ import {
 import { RoomEventPublisherAdapter } from '../infrastructure/system/room-event-publisher.adapter';
 import { RoomEventsBusService } from '../infrastructure/system/room-events-bus.service';
 import { createRoomMaintenanceDefaults } from '../infrastructure/config/room-maintenance-defaults.config';
+import {
+  GAME_ROOM_CONTEXT_PORT,
+  GAME_ROOM_EVENTS_PORT,
+} from '../../game/public-api';
 
 export const ROOM_CORE_PROVIDERS = [
   {
@@ -83,6 +89,14 @@ export const ROOM_CORE_PROVIDERS = [
   {
     provide: ROOM_GAME_PORT,
     useExisting: RoomGameAdapter,
+  },
+  {
+    provide: GAME_ROOM_CONTEXT_PORT,
+    useExisting: RoomGameAdapter,
+  },
+  {
+    provide: GAME_ROOM_EVENTS_PORT,
+    useExisting: RoomEventsBusService,
   },
   {
     provide: ROOM_VAULT_PORT,
@@ -135,6 +149,8 @@ export const ROOM_CORE_PROVIDERS = [
   RoomLifecycleService,
   RoomMembershipFacadeService,
   RoomMembershipService,
+  RoomLeaveService,
+  RoomEmptyCleanupService,
   RoomPayloadBuilderService,
   RoomPayloadService,
   RoomStateService,

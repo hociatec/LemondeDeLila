@@ -13,7 +13,7 @@ namespace lila::app::lifecycle
 {
 namespace
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 struct SehDetails final
 {
     DWORD code = 0;
@@ -80,7 +80,7 @@ bool StartBootstrapSafely(
     lila::bootstrap::AppBootstrap& bootstrap,
     std::string& failureMessage)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
     SehDetails seh;
     const bool started = StartWithSeh(bootstrap, seh);
     if (!started && seh.code != 0)

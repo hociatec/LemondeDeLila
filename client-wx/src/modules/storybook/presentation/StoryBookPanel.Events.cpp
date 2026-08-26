@@ -1,29 +1,20 @@
 #include "modules/storybook/presentation/StoryBookPanel.h"
 
-#include "shared/accessibility/application/NavigationController.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "shared/ui/presentation/layout/ListPagePresentation.h"
 
 namespace lila::modules::storybook::presentation
 {
 void StoryBookPanel::BindEvents()
 {
-    menu_->SetSelectionChangedHandler(
-        [this](std::size_t index)
-        {
-            if (state_ == State::Ready)
-            {
-                navigator_.Select(index);
-            }
-        });
-    menu_->SetActivatedHandler([this](std::size_t index) { HandleActivation(index); });
-    lila::shared::accessibility::NavigationController::BindEscapeNavigation(
+    lila::shared::ui::layout::BindNavigatedListPageMenu(
         *this,
-        [this]()
-        {
-            HandleEscape();
-            return true;
-        });
+        *menu_,
+        navigator_,
+        [this] { return state_ == State::Ready; },
+        [this](std::size_t index) { HandleActivation(index); },
+        [this] { HandleEscape(); });
 }
 
 void StoryBookPanel::HandleActivation(std::size_t index)

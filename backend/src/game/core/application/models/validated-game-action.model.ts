@@ -221,4 +221,3 @@ function sanitizePayload(
 
   return sanitized;
 }
-

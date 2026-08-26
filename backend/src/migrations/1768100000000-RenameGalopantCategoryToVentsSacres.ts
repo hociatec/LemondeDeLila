@@ -10,7 +10,8 @@ type CategoryRow = {
 
 function pickId(row: CategoryRow | undefined, key: keyof CategoryRow): string {
   const v = row?.[key];
-  return typeof v === 'string' ? v : String(v ?? '');
+  if (typeof v === 'string') return v;
+  return typeof v === 'number' || typeof v === 'boolean' ? String(v) : '';
 }
 
 export class RenameGalopantCategoryToVentsSacres1768100000000 implements MigrationInterface {

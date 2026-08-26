@@ -3,6 +3,23 @@
 
 namespace lila::modules::update::launcher
 {
+namespace
+{
+void ClearReleaseDiagnostics(const fs::path& versions) noexcept
+{
+    try {
+        if (!fs::is_directory(versions)) return;
+        for (const auto& entry : fs::directory_iterator(versions)) {
+            if (!entry.is_directory()) continue;
+            std::error_code ignored;
+            fs::remove(entry.path() / L"client.log", ignored);
+            fs::remove(entry.path() / L"client-crash.log", ignored);
+        }
+    } catch (...) {
+    }
+}
+}
+
 Process::~Process() { if (handle) CloseHandle(handle); }
 
 Process::Process(Process&& other) noexcept : handle(other.handle), id(other.id)
@@ -26,6 +43,10 @@ Process& Process::operator=(Process&& other) noexcept
 
 Process LaunchClient(const fs::path& directory)
 {
+    // Keep diagnostics for one launch only, including across retained and
+    // rolled-back releases. The launcher has stopped the previous client
+    // before reaching this point.
+    ClearReleaseDiagnostics(directory.parent_path());
     const fs::path executable = directory / AppExecutable;
     std::wstring command = L"\"" + executable.wstring() + L"\"";
     STARTUPINFOW startup{};
@@ -35,6 +56,10 @@ Process LaunchClient(const fs::path& directory)
             FALSE, 0, nullptr, directory.c_str(), &startup, &information)) {
         throw std::runtime_error("Unable to launch client.");
     }
+    // Le client est un enfant du lanceur démarré explicitement par
+    // l'utilisateur. Autoriser cet enfant à restaurer sa fenêtre évite que
+    // Windows la laisse derrière les autres applications.
+    static_cast<void>(AllowSetForegroundWindow(information.dwProcessId));
     CloseHandle(information.hThread);
     Process result;
     result.handle = information.hProcess;

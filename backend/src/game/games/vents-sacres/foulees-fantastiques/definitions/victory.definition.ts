@@ -1,1 +1,0 @@
-export const FOULEES_FANTASTIQUES_VICTORY = null;

@@ -10,7 +10,6 @@
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/ui/presentation/theme/Theme.h"
-#include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 
 namespace lila::modules::chat::presentation

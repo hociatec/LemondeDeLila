@@ -1,8 +1,5 @@
-import { isRollActionType } from '../../core/application/helpers/action-service.helper';
-
 type StateWithDice = {
-  lastRoll?: unknown;
-  turnIndex?: unknown;
+  turn?: { turnNumber?: number };
   actions?: unknown;
   extras?: unknown;
 };
@@ -23,9 +20,9 @@ export function withDicePresentation<T extends StateWithDice>(state: T): T {
   const current = asRecord(extras.dice);
   const actions = Array.isArray(state.actions) ? state.actions : [];
   const rollActionIndex = actions.findIndex((action) =>
-    isRollActionType(asRecord(action).type),
+    isRollAction(asRecord(action).type),
   );
-  const total = positiveInteger(current.total ?? state.lastRoll);
+  const total = positiveInteger(current.total);
   const existingDice = Array.isArray(current.dice) ? current.dice : [];
 
   if (rollActionIndex < 0 && total == null && existingDice.length === 0) {
@@ -45,9 +42,7 @@ export function withDicePresentation<T extends StateWithDice>(state: T): T {
             },
           ]
         : [];
-  const turnIndex = Number.isFinite(Number(state.turnIndex))
-    ? Math.trunc(Number(state.turnIndex))
-    : 0;
+  const turnIndex = state.turn?.turnNumber ?? 0;
 
   return {
     ...state,
@@ -71,4 +66,8 @@ export function withDicePresentation<T extends StateWithDice>(state: T): T {
       },
     },
   };
+}
+
+function isRollAction(value: unknown): boolean {
+  return value === 'roll';
 }

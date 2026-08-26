@@ -95,12 +95,20 @@ void RoomGameZoneAnchor::OnKeyDown(wxKeyEvent& event)
         event.Skip();
         return;
     }
-    if (onKey_ && onKey_(event)) return;
+    if (key != WXK_LEFT && key != WXK_RIGHT && key != WXK_UP && key != WXK_DOWN &&
+        key != WXK_NUMPAD_LEFT && key != WXK_NUMPAD_RIGHT &&
+        key != WXK_NUMPAD_UP && key != WXK_NUMPAD_DOWN &&
+        onKey_ && onKey_(event))
+        return;
     if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
     {
         Activate();
         return;
     }
+    if (key == WXK_LEFT || key == WXK_RIGHT || key == WXK_UP || key == WXK_DOWN ||
+        key == WXK_NUMPAD_LEFT || key == WXK_NUMPAD_RIGHT ||
+        key == WXK_NUMPAD_UP || key == WXK_NUMPAD_DOWN)
+        return;
     event.Skip();
 }
 

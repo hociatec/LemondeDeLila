@@ -1,8 +1,6 @@
 import type { PrivateMessageRecord } from '../models/private-message.model';
 
-export const PRIVATE_MESSAGE_REPOSITORY = Symbol(
-  'PRIVATE_MESSAGE_REPOSITORY',
-);
+export const PRIVATE_MESSAGE_REPOSITORY = Symbol('PRIVATE_MESSAGE_REPOSITORY');
 
 export type CreatePrivateMessageInput = {
   senderId: number;
@@ -21,18 +19,9 @@ export interface PrivateMessageRepository {
     otherUserId: number,
     limit: number,
   ): Promise<PrivateMessageRecord[]>;
-  findInbox(
-    userId: number,
-    limit: number,
-  ): Promise<PrivateMessageRecord[]>;
-  findOutbox(
-    userId: number,
-    limit: number,
-  ): Promise<PrivateMessageRecord[]>;
-  findDeleted(
-    userId: number,
-    limit: number,
-  ): Promise<PrivateMessageRecord[]>;
+  findInbox(userId: number, limit: number): Promise<PrivateMessageRecord[]>;
+  findOutbox(userId: number, limit: number): Promise<PrivateMessageRecord[]>;
+  findDeleted(userId: number, limit: number): Promise<PrivateMessageRecord[]>;
   remove(messageId: string): Promise<void>;
   countUnreadForRecipient(userId: number): Promise<number>;
 }

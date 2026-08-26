@@ -8,15 +8,15 @@ import type {
 import { RoomMaintenanceSettingsEntity } from '../entities/room-maintenance-settings.entity';
 
 @Injectable()
-export class RoomMaintenanceSettingsTypeormRepository
-  implements RoomMaintenanceSettingsRepository
-{
+export class RoomMaintenanceSettingsTypeormRepository implements RoomMaintenanceSettingsRepository {
   constructor(
     @InjectRepository(RoomMaintenanceSettingsEntity)
     private readonly settings: Repository<RoomMaintenanceSettingsEntity>,
   ) {}
 
-  async findSingleton(id: number): Promise<RoomMaintenanceSettingsRecord | null> {
+  async findSingleton(
+    id: number,
+  ): Promise<RoomMaintenanceSettingsRecord | null> {
     const row = await this.settings.findOne({ where: { id } });
     if (!row) {
       return null;

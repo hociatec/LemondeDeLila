@@ -28,13 +28,6 @@ void AppNavigator::ShowMessagingFromSocial(std::size_t socialMenuIndex)
     ReplaceView(ViewId::Messaging, GetOrCreateView(ViewId::Messaging));
 }
 
-void AppNavigator::ShowMessaging(std::size_t selectedIndex)
-{
-    lastMainMenuSelection_ = selectedIndex;
-    messagingOpenedFromSocial_ = false;
-    ReplaceView(ViewId::Messaging, GetOrCreateView(ViewId::Messaging));
-}
-
 void AppNavigator::ShowSocial(std::size_t selectedIndex, std::size_t socialMenuIndex)
 {
     lastMainMenuSelection_ = selectedIndex;

@@ -5,7 +5,7 @@
 
 #include "modules/options/presentation/OptionsEditorController.h"
 #include "modules/options/presentation/OptionsView.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 

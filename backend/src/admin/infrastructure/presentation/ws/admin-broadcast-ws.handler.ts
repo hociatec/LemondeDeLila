@@ -26,9 +26,3 @@ export class AdminBroadcastWsHandler {
     return { type: WS_EVENTS.admin.broadcast, payload: result };
   }
 }
-
-
-
-
-
-

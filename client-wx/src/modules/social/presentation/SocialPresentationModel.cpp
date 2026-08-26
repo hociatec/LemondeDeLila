@@ -1,7 +1,6 @@
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/social/presentation/SocialPresentationModel.h"
 
-#include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/text/presentation/status/CountStatusText.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 

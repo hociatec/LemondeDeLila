@@ -7,6 +7,9 @@
 
 int main()
 {
+    lila::shared::concurrency::BackgroundExecutor executor({1, 16});
+    lila::shared::concurrency::InstallBackgroundExecutor(executor);
+
     std::atomic<bool> completed = false;
     auto handle = lila::shared::concurrency::RunAsync(
         [&completed](std::stop_token)
@@ -21,5 +24,7 @@ int main()
 
     assert(handle != nullptr);
     assert(completed);
-    lila::shared::concurrency::ShutdownBackgroundExecutor();
+
+    lila::shared::concurrency::UninstallBackgroundExecutor();
+    executor.Shutdown();
 }

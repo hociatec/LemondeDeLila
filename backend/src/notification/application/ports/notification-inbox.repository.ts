@@ -25,6 +25,9 @@ export interface NotificationInboxRepository {
     kind: string,
     contactId: string,
   ): Promise<NotificationInboxContactRow[]>;
-  updatePayload(id: string, payload: NotificationInboxPayload): Promise<boolean>;
+  updatePayload(
+    id: string,
+    payload: NotificationInboxPayload,
+  ): Promise<boolean>;
   deleteManyByIds(ids: string[]): Promise<number>;
 }

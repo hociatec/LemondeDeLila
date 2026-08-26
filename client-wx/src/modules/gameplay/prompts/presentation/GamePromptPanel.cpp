@@ -1,6 +1,5 @@
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 
-#include <algorithm>
 #include <cctype>
 #include <sstream>
 #include <utility>
@@ -15,6 +14,7 @@
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/ModalNavigation.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::gameplay::presentation::prompt
@@ -186,39 +186,13 @@ void GamePromptPanel::FocusFirst()
         if (lila::shared::accessibility::NavigationController::Focus(control)) return;
 }
 
-void GamePromptPanel::CycleFocus(bool backwards)
-{
-    const auto controls = TabTargets();
-    if (controls.empty()) return;
-    const auto current = std::find(controls.begin(), controls.end(), wxWindow::FindFocus());
-    std::size_t index = current == controls.end()
-        ? (backwards ? controls.size() - 1 : 0)
-        : static_cast<std::size_t>(std::distance(controls.begin(), current));
-    if (current != controls.end())
-        index = backwards ? (index == 0 ? controls.size() - 1 : index - 1)
-                          : (index + 1) % controls.size();
-    lila::shared::accessibility::NavigationController::Focus(controls[index]);
-}
-
 bool GamePromptPanel::HandleKey(wxKeyEvent& event)
 {
-    if (!IsActive()) return false;
-    const int key = event.GetKeyCode();
-    if (key == WXK_TAB || key == WXK_NUMPAD_TAB)
-    {
-        CycleFocus(event.ShiftDown());
-        return true;
-    }
-    if (key == WXK_ESCAPE)
-    {
-        Cancel();
-        return true;
-    }
-    if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
-    {
-        Submit();
-        return true;
-    }
-    return false;
+    return lila::shared::accessibility::HandleModalKey(
+        event,
+        IsActive(),
+        TabTargets(),
+        [this] { Cancel(); },
+        [this] { Submit(); });
 }
 }

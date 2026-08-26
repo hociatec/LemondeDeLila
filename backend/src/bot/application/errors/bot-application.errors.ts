@@ -52,7 +52,10 @@ export class BotRoomFullError extends BotApplicationError {
 
 export class BotRoomOwnerRequiredError extends BotApplicationError {
   constructor() {
-    super('BOT_ROOM_OWNER_REQUIRED', 'Seul le proprietaire peut gerer les bots');
+    super(
+      'BOT_ROOM_OWNER_REQUIRED',
+      'Seul le proprietaire peut gerer les bots',
+    );
   }
 }
 

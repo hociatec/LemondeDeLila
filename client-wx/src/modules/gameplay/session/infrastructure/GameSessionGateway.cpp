@@ -5,25 +5,18 @@
 
 #include <nlohmann/json.hpp>
 
+#include "modules/gameplay/session/infrastructure/GameEventPayloadCodec.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
+#include "modules/session/application/SessionConnectionRetry.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/config/domain/AppConfig.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
+#include "shared/network/application/websocket/AuthenticatedWebSocketHeaders.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
 #include "shared/network/domain/WebSocketConstants.h"
 #include "shared/logging/application/Logger.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
-namespace
-{
-std::string ReadString(const nlohmann::json& value, const char* field)
-{
-    const auto found = value.find(field);
-    return found != value.end() && found->is_string() ? found->get<std::string>() : std::string{};
-}
-}
-
 GameSessionGateway::GameSessionGateway(
     std::string endpoint,
     lila::shared::network::websocket::IWebSocketClient& client,
@@ -43,32 +36,14 @@ void GameSessionGateway::Connect(std::stop_token stopToken)
     client_.Close();
     const auto connect = [this, stopToken](const std::string& token)
     {
-        const auto ticket = ticketProvider_.GetTicket(
-            std::string(lila::shared::network::ws::WsTicketScopeGame),
-            token);
-        lila::shared::network::websocket::WebSocketHeaders headers{
-            {std::string(lila::shared::network::ws::ClientProductHeader),
-             std::string(lila::shared::network::ws::ClientProduct)},
-            {std::string(lila::shared::network::ws::AuthorizationHeader),
-             std::string(lila::shared::network::ws::AuthorizationScheme) + token},
-            {std::string(lila::shared::network::ws::WsTicketHeader), ticket},
-            {std::string(lila::shared::network::ws::ClientVersionHeader),
-             lila::shared::config::AppConfig::ResolveClientVersion()}};
-        client_.Connect(endpoint_, headers, stopToken);
+        client_.Connect(
+            endpoint_,
+            lila::shared::network::websocket::BuildAuthenticatedHeaders(
+                ticketProvider_, lila::shared::network::ws::WsTicketScopeGame, token),
+            stopToken);
     };
-    try
-    {
-        connect(sessionStore_.AccessToken());
-    }
-    catch (const lila::shared::network::http::WsTicketRequestError& exception)
-    {
-        if (exception.StatusCode() != 401 && exception.StatusCode() != 403)
-        {
-            throw;
-        }
-        client_.Close();
-        connect(sessionStore_.RefreshAccessToken());
-    }
+    lila::modules::session::application::ConnectWithSessionRefresh(
+        sessionStore_, stopToken, [this] { client_.Close(); }, connect);
 }
 
 void GameSessionGateway::SendJson(const nlohmann::json& message)
@@ -103,23 +78,15 @@ void GameSessionGateway::RequestState(std::stop_token)
         {"payload", {{"roomId", roomId}, {"gameType", gameType_}}}});
 }
 
-void GameSessionGateway::RequestTurn(std::stop_token)
-{
-    const auto roomId = roomId_.load();
-    if (roomId <= 0 || gameType_.empty()) throw std::runtime_error("Aucune partie active.");
-    SendJson(nlohmann::json{
-        {"type", "game.turn"},
-        {"payload", {{"roomId", roomId}, {"gameType", gameType_}}}});
-}
-
 void GameSessionGateway::SendKey(std::string_view key, std::stop_token)
 {
     const auto roomId = roomId_.load();
     if (roomId <= 0 || gameType_.empty()) throw std::runtime_error("Aucune partie active.");
-    if (key.empty()) throw std::invalid_argument("Touche de jeu requise.");
+    const auto normalized = GameStatePayloadCodec::NormalizeShortcutKey(std::string(key));
+    if (normalized.empty()) throw std::invalid_argument("Touche de jeu invalide.");
     SendJson(nlohmann::json{
         {"type", "game.key"},
-        {"payload", {{"roomId", roomId}, {"gameType", gameType_}, {"key", key}}}});
+        {"payload", {{"roomId", roomId}, {"gameType", gameType_}, {"key", normalized}}}});
 }
 
 void GameSessionGateway::ExecuteAction(const domain::GameAction& action, std::stop_token)
@@ -155,36 +122,7 @@ domain::GameEvent GameSessionGateway::ReceiveEvent(std::stop_token)
 {
     const auto raw = client_.Receive();
     const auto message = nlohmann::json::parse(raw);
-    return DecodeEvent(message);
-}
-
-domain::GameEvent GameSessionGateway::DecodeEvent(const nlohmann::json& message)
-{
-    if (!message.is_object()) return {domain::GameEventType::Ignored};
-    const auto type = ReadString(message, "type");
-    const auto payload = message.value("payload", nlohmann::json::object());
-    if (type == "game.state")
-    {
-        return {domain::GameEventType::StateUpdated, GameStatePayloadCodec::DecodeState(payload)};
-    }
-    if (type == "game.ack")
-    {
-        const auto action = ReadString(payload, "action");
-        const auto acknowledgement = action == "game.key" ? ReadString(payload, "roomOp") : action;
-        return {domain::GameEventType::Acknowledged, std::nullopt, acknowledgement, false};
-    }
-    if (type == "game.turn")
-    {
-        return {domain::GameEventType::TurnUpdated, std::nullopt, ReadString(payload, "currentPlayerUsername"), false};
-    }
-    if (type == "error")
-    {
-        auto messageText = ReadString(payload, "message");
-        if (messageText.empty()) messageText = ReadString(payload, "error");
-        return {domain::GameEventType::Error, std::nullopt,
-            messageText.empty() ? std::string("Action de jeu impossible.") : messageText, true};
-    }
-    return {domain::GameEventType::Ignored};
+    return GameEventPayloadCodec::Decode(message);
 }
 
 void GameSessionGateway::Interrupt()

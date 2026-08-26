@@ -6,9 +6,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <bass.h>
-
 #include "modules/audio/domain/SoundCue.h"
+#include "modules/audio/infrastructure/BassApi.h"
 
 namespace lila::modules::audio::infrastructure
 {

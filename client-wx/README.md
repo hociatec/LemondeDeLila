@@ -1,97 +1,86 @@
-# client-wx
+# Client WX — Le Monde de Lila
 
-Prototype de client natif `wxWidgets` pour `Le Monde de Lila`.
+Client de bureau Windows en C++20 et wxWidgets. Il couvre l’authentification,
+les salons, le jeu, le chat, la messagerie, le social, le catalogue, le livre
+des contes, le classement, le coffre, les options, l’audio et les mises à jour
+automatiques.
+
+## Architecture
+
+- `src/app` : cycle de vie et navigation globale ;
+- `src/bootstrap` : composition et injection des services ;
+- `src/modules/<module>` : couches `domain`, `application`, `infrastructure`
+  et `presentation` propres à chaque fonctionnalité ;
+- `src/shared` : briques transverses sans logique métier de module ;
+- `src/generated/protocol` : contrats C++ générés depuis les contrats backend ;
+- `cmake` : règles communes de compilation et déclaration des tests ;
+- `tests` : tests de contrat, robustesse, concurrence et présentation.
+
+Les catalogues d’erreurs et les décodeurs JSON sont propriétaires de leur
+module. Les contrôles et layouts réutilisables restent dans `src/shared`.
+
+## Prérequis Windows
+
+- CMake 3.28 ou plus récent ;
+- Ninja et un environnement MSVC x64 ;
+- Git ;
+- vcpkg, exposé par la variable d’environnement `VCPKG_ROOT` ;
+- `third_party/bass/bin/x64/bass.dll` pour le backend audio BASS.
+
+Le manifeste `vcpkg.json` épingle la baseline et déclare wxWidgets ainsi que
+nlohmann-json. Il n’est pas nécessaire d’installer ces bibliothèques à la
+main.
+
+## Compiler et tester
+
+Depuis `client-wx` dans un shell MSVC :
+
+```powershell
+cmake --preset windows-vcpkg-debug
+cmake --build --preset windows-vcpkg-debug
+ctest --preset windows-vcpkg-debug
+```
+
+Pour une version optimisée, remplacer `debug` par `release`. Tous les tests
+CTest sont construits par défaut. Les tests portables, également exécutés par
+la CI Linux, peuvent être lancés sans wxWidgets :
+
+```bash
+bash tests/run_portable_checks.sh
+```
+
+Les options CMake `LILA_ENABLE_ASAN`, `LILA_ENABLE_UBSAN`,
+`LILA_ENABLE_TSAN`, `LILA_ENABLE_CLANG_TIDY` et `LILA_ENABLE_CPPCHECK`
+permettent d’activer les contrôles supplémentaires compatibles avec le
+compilateur. ASan et TSan sont volontairement exclusifs.
+
+Le build limite chaque fichier d’implémentation ou segment de test à 250
+lignes afin d’empêcher le retour des unités monolithiques.
+
+## Contrats protocole
+
+Quand le dépôt backend voisin est présent, le build régénère strictement les
+en-têtes de `src/generated/protocol` à partir de
+`../backend/contracts/client-wx-fields.json` et des événements WebSocket. Sous
+Windows, cette étape utilise PowerShell ; ailleurs, Node.js. Sans backend
+local, les contrats versionnés dans le client sont utilisés.
 
 ## Mise à jour automatique
 
-Les distributions de production sont démarrées par `lila_launcher.exe`, jamais
-directement par `lemonde_de_lila_wx.exe`. Le lanceur vérifie le manifeste public
-au démarrage puis toutes les deux minutes, télécharge les versions dans un
-dossier de staging, vérifie les limites ZIP, l'espace disque, SHA-256, la
-signature RSA du manifeste complet et les signatures Authenticode, bascule
-atomiquement de version et revient à la version précédente si le signal de
-santé du client n'arrive pas sous trente secondes. Les erreurs sont consignées
-dans `state/update.log` avec rotation automatique.
+En production, l’application est démarrée par `lila_launcher.exe`. Le lanceur
+vérifie le manifeste public, télécharge dans un dossier de staging, contrôle
+les limites ZIP, l’espace disque, SHA-256, la signature RSA du manifeste et
+les signatures Authenticode, puis effectue une bascule atomique avec retour à
+la version précédente en l’absence de signal de santé.
 
-Le certificat Authenticode est épinglé par son empreinte SHA-256 dans le
-lanceur au moment du build. En production, la signature n'est acceptée que si
-son certificat correspond exactement à cette empreinte, y compris lorsque sa
-racine auto-signée n'est pas approuvée par Windows. Les téléchargements réseau
-sont retentés trois fois et une archive complète déjà validée est réutilisée
-après une interruption.
+La construction, la signature et la publication sont réalisées directement
+sur le serveur avec `sudo updatecmd wx --force`, ou avec
+`sudo updatecmd all --force` pour déployer aussi le backend. Les secrets de
+signature et de publication restent dans la configuration locale du serveur.
 
-Toute la responsabilité de distribution native est contenue dans
-`src/modules/update` : contrat de manifeste, comparaison des versions, signaux
-de cycle de vie, configuration et launcher. Le client métier ne remplace aucun
-fichier de son installation.
+`LILA_ALLOW_UNSIGNED_UPDATES=1` est réservé au développement local. Un
+lanceur de production sans clé publique refuse toute nouvelle version.
 
-La première migration s'effectue avec l'archive `bootstrap` produite par le
-workflow `client-wx-auto-update.yml`. Exécuter `Installer.cmd`; les mises à
-jour suivantes sont automatiques.
-
-Secrets CI requis :
-
-- `LILA_UPDATE_PUBLIC_KEY_DER_BASE64` : clé publique RSA au format DER/base64 ;
-- `LILA_UPDATE_PRIVATE_KEY_PEM_BASE64` : clé privée PEM/base64 réservée à la CI ;
-- `CODESIGN_PFX_BASE64` et `CODESIGN_PFX_PASSWORD` : signature Authenticode ;
-- `LILA_API_BASE` et `LILA_UPLOAD_TOKEN` : publication backend.
-
-`LILA_ALLOW_UNSIGNED_UPDATES=1` est réservé au développement local. Un lanceur
-de production sans clé publique refuse toute nouvelle version.
-
-Le manifeste public principal est
-`GET /api/client/releases/latest?platform=windows&arch=x64&current=<version>`.
-La route historique `/api/client-wx/manifest` reste disponible pendant la
-migration. Les releases utilisent le schéma signé `lila-client-wx-manifest-v2`.
-
-## Objectifs
-
-- architecture modulaire claire
-- UI native Windows
-- base propre pour l'accessibilité et la fluidité
-- backend branche via services injectes, pas via logique UI
-
-## Structure
-
-- `src/app` : point d'entrée `wxWidgets` et navigation applicative
-- `src/bootstrap` : assemblage des services et des modules
-- `src/shared` : accessibilité, configuration, réseau et theming transverse
-- `src/modules/home` : accueil natif `Accueil / Connexion / Inscription`
-- `src/modules/user` : module utilisateur
-- `src/modules/session` : session authentifiée et écrans post-login
-- `src/modules/update` : mise à jour native, launcher et protocole signé
-  - `domain` : contrats metier
-  - `application` : cas d'usage
-  - `infrastructure` : implementation technique
-  - `presentation` : vues wxWidgets
-
-## Build
-
-Exemple avec `CMake` :
-
-```powershell
-& "C:\Program Files\CMake\bin\cmake.exe" --preset windows-vcpkg-debug
-& "C:\Program Files\CMake\bin\cmake.exe" --build --preset windows-vcpkg-debug
-```
-
-## Etat actuel
-
-- module `user` initialise
-- module `session` initialise
-- écran d'accueil `Accueil / Connexion / Inscription` implémenté
-- authentification branchee sur `auth.login` via `/ws/api`
-- inscription branchee sur `auth.register` via `/ws/api`
-- navigation centralisée entre connexion et session
-- persistance locale de la session dans le profil utilisateur Windows
-- la navigation d'entrée ne dépend plus de l'ancienne frame de connexion
-- transport WebSocket long-vivant cote client
-- contrats JSON typés et valides dès la couche temps réel
-- reste a ajouter : tickets WS authentifies et modules post-login
-
-## Environnement installe
-
-- `CMake 3.31.6` : `C:\Program Files\CMake\bin\cmake.exe`
-- `Visual Studio Build Tools` : `C:\BuildTools`
-- `vcpkg` : `C:\vcpkg`
-- `wxWidgets` via `vcpkg` : triplet `x64-windows`
-- `nlohmann-json` via `vcpkg`
+Le manifeste principal est servi par
+`GET /api/client/releases/latest?platform=windows&arch=x64&current=<version>`
+avec le schéma signé `lila-client-wx-manifest-v2`.

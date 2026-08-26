@@ -36,10 +36,9 @@ describe('seeded-rng', () => {
     expect(a).not.toBe(b);
   });
 
-  it('falls back to a valid cryptographic seed when context is missing', () => {
-    const seed = ensureSeededRng({}).seed;
-    expect(Number.isInteger(seed)).toBe(true);
-    expect(seed).toBeGreaterThanOrEqual(0);
-    expect(seed).toBeLessThanOrEqual(0xffffffff);
+  it('refuses to invent a non-replayable seed when context is missing', () => {
+    expect(() => ensureSeededRng({})).toThrow(
+      'Contexte RNG déterministe absent',
+    );
   });
 });

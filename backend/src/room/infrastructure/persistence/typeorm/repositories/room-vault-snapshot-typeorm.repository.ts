@@ -12,9 +12,7 @@ type VaultRoomSnapshotRow = {
 };
 
 @Injectable()
-export class RoomVaultSnapshotTypeormRepository
-  implements RoomVaultSnapshotRepository
-{
+export class RoomVaultSnapshotTypeormRepository implements RoomVaultSnapshotRepository {
   constructor(
     @Inject(ROOM_VAULT_SNAPSHOTS_TYPEORM_REPOSITORY)
     private readonly snapshots: Repository<VaultRoomSnapshotRow>,

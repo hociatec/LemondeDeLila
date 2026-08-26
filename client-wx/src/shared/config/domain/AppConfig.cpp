@@ -68,18 +68,6 @@ BackendProfile AppConfig::ResolveBackendProfile()
     return ParseBackendProfile(ReadEnvironmentVariable(BackendProfileEnvVar.data()));
 }
 
-std::string AppConfig::ResolveBackendProfileName()
-{
-    switch (ResolveBackendProfile())
-    {
-    case BackendProfile::Local:
-        return "local";
-    case BackendProfile::Production:
-    default:
-        return "production";
-    }
-}
-
 std::string AppConfig::ResolveBackendApiWs()
 {
     const std::string endpoint = lila::shared::text::TrimCopy(ReadEnvironmentVariable(BackendApiWsEnvVar.data()));

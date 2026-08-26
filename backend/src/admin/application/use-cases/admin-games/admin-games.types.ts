@@ -1,7 +1,4 @@
-export type AdminGameCatalogStatus =
-  | 'construction'
-  | 'beta'
-  | 'finished';
+export type AdminGameCatalogStatus = 'construction' | 'beta' | 'finished';
 
 export interface UpdateAdminGameCommand {
   gameType: string;

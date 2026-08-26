@@ -1,0 +1,47 @@
+function(lila_configure_cpp_target target)
+    target_link_libraries(${target} PRIVATE Threads::Threads)
+
+    if(MSVC)
+        target_compile_options(${target} PRIVATE /W4 /permissive- /utf-8)
+    else()
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+
+    if(LILA_ENABLE_ASAN)
+        if(MSVC)
+            target_compile_options(${target} PRIVATE /fsanitize=address)
+            target_link_options(${target} PRIVATE /INCREMENTAL:NO /fsanitize=address)
+        else()
+            target_compile_options(${target} PRIVATE -fsanitize=address)
+            target_link_options(${target} PRIVATE -fsanitize=address)
+        endif()
+    endif()
+
+    if(LILA_ENABLE_UBSAN)
+        if(MSVC)
+            message(WARNING "UBSan non supporte par MSVC pour la cible ${target}.")
+        else()
+            target_compile_options(${target} PRIVATE -fsanitize=undefined)
+            target_link_options(${target} PRIVATE -fsanitize=undefined)
+        endif()
+    endif()
+
+    if(LILA_ENABLE_TSAN)
+        if(MSVC)
+            message(WARNING "TSan non supporte par MSVC pour la cible ${target}.")
+        else()
+            target_compile_options(${target} PRIVATE -fsanitize=thread)
+            target_link_options(${target} PRIVATE -fsanitize=thread)
+        endif()
+    endif()
+endfunction()
+
+function(lila_add_test_executable target test_source)
+    add_executable(${target} ${test_source} ${ARGN})
+    target_include_directories(${target} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated"
+    )
+    lila_configure_cpp_target(${target})
+    add_test(NAME ${target} COMMAND ${target})
+endfunction()

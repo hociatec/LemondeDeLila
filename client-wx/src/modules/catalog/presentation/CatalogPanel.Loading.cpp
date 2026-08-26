@@ -12,12 +12,11 @@
 
 #include "modules/catalog/application/CatalogService.h"
 #include "modules/options/application/OptionsStore.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/catalog/domain/CatalogErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/encoding/Encoding.h"
-#include "shared/ui/presentation/theme/Theme.h"
+#include "shared/ui/presentation/layout/ListPagePresentation.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::catalog::presentation
@@ -128,7 +127,7 @@ void CatalogPanel::ApplyShelves(std::vector<domain::CatalogShelf> shelves)
 
 void CatalogPanel::RebuildFilteredShelves()
 {
-    const bool betaEnabled = optionsStore_.Current().enableBetaGames;
+    const bool betaEnabled = optionsStore_.Current().general.enableBetaGames;
     if (appliedBetaSetting_ == betaEnabled)
     {
         shelfNavigator_.ResetToRoot();
@@ -207,18 +206,11 @@ void CatalogPanel::ShowCurrentShelves()
 
 void CatalogPanel::FocusMenuIfVisible()
 {
-    if (IsShownOnScreen())
-    {
-        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
-    }
+    lila::shared::ui::layout::FocusListPageIfVisible(*this, BuildFocusPlan());
 }
 
 void CatalogPanel::UpdateStatus(const wxString& message, bool isError)
 {
-    statusLabel_->SetLabel(message);
-    statusLabel_->SetForegroundColour(
-        isError ? lila::shared::ui::Theme::Error() : lila::shared::ui::Theme::Accent());
-    statusLabel_->Show(!message.empty());
-    Layout();
+    lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, message, isError);
 }
 }

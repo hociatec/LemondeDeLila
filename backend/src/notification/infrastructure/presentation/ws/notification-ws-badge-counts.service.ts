@@ -14,7 +14,11 @@ export class NotificationWsBadgeCountsService {
 
   async notifyCounts(userId: number): Promise<void> {
     const counts = await this.counts.getCounts(userId);
-    await this.notifications.notifyUser(userId, WS_EVENTS.notify.counts, counts);
+    await this.notifications.notifyUser(
+      userId,
+      WS_EVENTS.notify.counts,
+      counts,
+    );
   }
 
   async notifyCountsBestEffort(userId: number): Promise<void> {
@@ -27,4 +31,3 @@ export class NotificationWsBadgeCountsService {
     }
   }
 }
-

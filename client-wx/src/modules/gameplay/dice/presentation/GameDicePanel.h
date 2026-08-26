@@ -1,13 +1,11 @@
 #pragma once
 
-#include <cstddef>
-
 #include <wx/panel.h>
-#include <wx/string.h>
 
 #include "modules/gameplay/dice/domain/GameDiceState.h"
 
 class wxListBox;
+class wxWindow;
 
 namespace lila::modules::gameplay::presentation::dice
 {
@@ -20,7 +18,7 @@ public:
     void Clear();
     bool MoveSelection(bool backwards);
     [[nodiscard]] int SelectedIndex() const noexcept;
-    [[nodiscard]] wxString SelectedLabel() const;
+    [[nodiscard]] wxWindow* NavigationTarget() const noexcept;
 
 private:
     wxListBox* list_ = nullptr;

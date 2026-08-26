@@ -62,6 +62,12 @@ export class GameStateViolationError extends GameDomainError {
   }
 }
 
+export class GameStateConflictError extends GameDomainError {
+  constructor(message = 'État modifié par une commande concurrente') {
+    super('GAME_STATE_CONFLICT', message);
+  }
+}
+
 export class GameNotFoundError extends GameDomainError {
   constructor(message = 'Élément de jeu introuvable') {
     super('GAME_NOT_FOUND', message);

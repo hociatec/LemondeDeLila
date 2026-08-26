@@ -1,14 +1,5 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import { BotApplicationError } from '../../../../bot/public-api';
-import { AddBotToRoomService } from '../../../../bot/public-api';
-import { GetLastRoomBotService } from '../../../../bot/public-api';
-import { RemoveBotFromRoomService } from '../../../../bot/public-api';
 import { PerfMetricsService } from '../../../../common/observability/public-api';
 import type { RoomIntent } from './dto/room-intent.ws.dto';
 import type { RoomPayload } from '../../../application/models/room-payload.model';
@@ -22,7 +13,6 @@ import {
   RoomWsCurrentRoomMismatchError,
   RoomWsGameAlreadyStartedError,
   RoomWsInvalidRoomIdError,
-  RoomWsNoBotToRemoveError,
   RoomWsOwnerTargetForbiddenError,
   RoomWsPrivateInvitationRequiredError,
   RoomWsSelfTargetForbiddenError,
@@ -35,24 +25,9 @@ import type {
   RoomWithOptionalRuntimeFields,
 } from './room-gateway.types';
 import type { Server } from 'ws';
+import { RoomGatewayBotActionsService } from './room-gateway-bot-actions.service';
 
-function mapBotApplicationError(error: unknown): unknown {
-  if (!(error instanceof BotApplicationError)) {
-    return error;
-  }
-
-  switch (error.code) {
-    case 'BOT_ROOM_NOT_FOUND':
-    case 'BOT_NOT_FOUND':
-      return new NotFoundException(error.message);
-    case 'BOT_ROOM_OWNER_REQUIRED':
-      return new UnauthorizedException(error.message);
-    default:
-      return new BadRequestException(error.message);
-  }
-}
-
-type ActionsContext = {
+export type ActionsContext = {
   server: Server<WebSocket>;
   rooms: Map<number, Set<WebSocket>>;
   silentRooms: Map<number, Set<WebSocket>>;
@@ -63,7 +38,7 @@ type ActionsContext = {
   tryUpdateRoomPayload: (
     roomId: number,
     updater: (payload: RoomPayload) => RoomPayload | null,
-  ) => Promise<RoomPayload | null>;
+  ) => Promise<boolean>;
   sendError: (client: WebSocket, message: string) => Promise<void>;
   safeSend: (client: WebSocket, payload: unknown) => void;
   sendRoomError: (client: WebSocket, roomId: number, message: string) => void;
@@ -80,12 +55,10 @@ export class RoomGatewayActionsService {
     private readonly roomAccess: RoomAccessService,
     private readonly roomState: RoomStateService,
     private readonly policy: RoomAdminPolicyService,
-    private readonly addBotToRoom: AddBotToRoomService,
-    private readonly getLastRoomBot: GetLastRoomBotService,
-    private readonly removeBotFromRoom: RemoveBotFromRoomService,
     private readonly perf: PerfMetricsService,
     private readonly realtimeTracker: RoomRealtimeTrackerService,
     private readonly presenter: RoomGatewayPresenter,
+    private readonly botActions: RoomGatewayBotActionsService,
   ) {}
 
   async handleBotAdd(
@@ -94,31 +67,7 @@ export class RoomGatewayActionsService {
     payload: unknown,
     receivedAtMs: number,
   ): Promise<void> {
-    const trace = extractTraceMeta(payload, receivedAtMs);
-    await this.perf.measure(
-      'ws.room.bot.add.total',
-      async () => {
-        let bot;
-        try {
-          bot = await this.addBotToRoom.execute(meta.roomId, meta.userId);
-        } catch (error) {
-          throw mapBotApplicationError(error);
-        }
-        await ctx.broadcast(
-          meta.roomId,
-          'bot.added',
-          this.presenter.presentBotAdded(meta.roomId, bot),
-        );
-        const updated = await ctx.tryUpdateRoomPayload(meta.roomId, (room) =>
-          this.presenter.updateRoomPayloadWithAddedBot(room, bot),
-        );
-        if (!updated) {
-          await this.roomState.invalidateRoomPayloadCache(meta.roomId);
-          await ctx.sendRoomState(meta.roomId);
-        }
-      },
-      { roomId: meta.roomId, userId: meta.userId, ...trace },
-    );
+    return this.botActions.add(ctx, meta, payload, receivedAtMs);
   }
 
   async handleBotRemove(
@@ -127,44 +76,7 @@ export class RoomGatewayActionsService {
     payload: unknown,
     receivedAtMs: number,
   ): Promise<void> {
-    const trace = extractTraceMeta(payload, receivedAtMs);
-    await this.perf.measure(
-      'ws.room.bot.remove.total',
-      async () => {
-        const row = ctx.asRecord(payload);
-        let botId = Number(row.botId ?? row.id ?? -1);
-        if (!Number.isFinite(botId) || botId <= 0) {
-          const last = await this.getLastRoomBot.execute(meta.roomId);
-          if (!last?.id) {
-            throw new RoomWsNoBotToRemoveError();
-          }
-          botId = Number(last.id);
-        }
-        let bot;
-        try {
-          bot = await this.removeBotFromRoom.execute(
-            meta.roomId,
-            meta.userId,
-            botId,
-          );
-        } catch (error) {
-          throw mapBotApplicationError(error);
-        }
-        await ctx.broadcast(
-          meta.roomId,
-          'bot.removed',
-          this.presenter.presentBotRemoved(meta.roomId, bot, botId),
-        );
-        const updated = await ctx.tryUpdateRoomPayload(meta.roomId, (room) =>
-          this.presenter.updateRoomPayloadWithRemovedBot(room, bot.id),
-        );
-        if (!updated) {
-          await this.roomState.invalidateRoomPayloadCache(meta.roomId);
-          await ctx.sendRoomState(meta.roomId);
-        }
-      },
-      { roomId: meta.roomId, userId: meta.userId, ...trace },
-    );
+    return this.botActions.remove(ctx, meta, payload, receivedAtMs);
   }
 
   async handleSetRole(
@@ -232,7 +144,10 @@ export class RoomGatewayActionsService {
       meta.role === 'participant' ? meta.roomId : null,
     );
 
-    ctx.safeSend(client, this.presenter.presentRoleEvent(meta.roomId, spectator));
+    ctx.safeSend(
+      client,
+      this.presenter.presentRoleEvent(meta.roomId, spectator),
+    );
     await ctx.broadcastRoomIntent(
       meta.roomId,
       this.presenter.presentRoleAnnouncement(spectator),
@@ -248,11 +163,10 @@ export class RoomGatewayActionsService {
     ban: boolean,
   ): Promise<void> {
     const roomId = this.policy.requireValidRoomId(meta.roomId);
-    const targetUserId = this.policy.requireTargetUserId(ctx.asRecord(payload), [
-      'userId',
-      'id',
-      'targetUserId',
-    ]);
+    const targetUserId = this.policy.requireTargetUserId(
+      ctx.asRecord(payload),
+      ['userId', 'id', 'targetUserId'],
+    );
     if (targetUserId === meta.userId) {
       throw new RoomWsSelfTargetForbiddenError();
     }
@@ -384,16 +298,21 @@ export class RoomGatewayActionsService {
           meta.roomId,
           meta.userId,
         );
-        const roomWithRuntime = room as unknown as RoomWithOptionalRuntimeFields;
+        const roomWithRuntime =
+          room as unknown as RoomWithOptionalRuntimeFields;
         roomWithRuntime.tableAmbienceSoundId = soundId;
         await this.roomAccess.saveRoom(room);
 
-        const updated = await ctx.tryUpdateRoomPayload(meta.roomId, (roomState) => {
-          (roomState.room as RoomWithOptionalRuntimeFields).tableAmbienceSoundId =
-            soundId;
-          roomState.generatedAt = new Date().toISOString();
-          return roomState;
-        });
+        const updated = await ctx.tryUpdateRoomPayload(
+          meta.roomId,
+          (roomState) => {
+            (
+              roomState.room as RoomWithOptionalRuntimeFields
+            ).tableAmbienceSoundId = soundId;
+            roomState.generatedAt = new Date().toISOString();
+            return roomState;
+          },
+        );
         if (!updated) {
           await this.roomState.invalidateRoomPayloadCache(meta.roomId);
           await ctx.sendRoomState(meta.roomId);

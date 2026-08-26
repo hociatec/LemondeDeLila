@@ -84,6 +84,11 @@ void AppNavigator::ApplyViewFocus(wxWindow* view)
         });
 }
 
+void AppNavigator::FocusCurrentView()
+{
+    ApplyViewFocus(currentView_);
+}
+
 wxWindow* AppNavigator::GetOrCreateView(ViewId viewId)
 {
     auto* view = views_.Get(viewId);

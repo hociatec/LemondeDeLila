@@ -24,7 +24,9 @@ export class AdminBroadcastService {
     private readonly notifications: AdminNotificationPort,
   ) {}
 
-  async broadcast(command: AdminBroadcastCommand): Promise<{ delivered: number }> {
+  async broadcast(
+    command: AdminBroadcastCommand,
+  ): Promise<{ delivered: number }> {
     const userIds = await this.users.listIds();
     const payload = {
       message: command.message,

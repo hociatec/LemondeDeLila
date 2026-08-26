@@ -39,7 +39,9 @@ export class RoomAdminPolicyService {
     hasUserConnections: boolean;
   }): void {
     const isOnTable =
-      (input.state?.room?.players?.some((player) => player?.id === input.userId) ??
+      (input.state?.room?.players?.some(
+        (player) => player?.id === input.userId,
+      ) ??
         false) ||
       input.spectatorIds.includes(input.userId) ||
       input.hasUserConnections;

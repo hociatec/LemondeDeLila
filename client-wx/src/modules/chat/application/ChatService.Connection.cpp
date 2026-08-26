@@ -8,7 +8,9 @@
 #include "modules/options/application/OptionsStore.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/config/domain/AppConfig.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/chat/domain/ChatErrorMessages.h"
+#include "shared/errors/catalog/NetworkErrorMessages.h"
+#include "shared/errors/presentation/ErrorFormatting.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "modules/audio/application/IAudioService.h"
@@ -31,7 +33,7 @@ bool ChatService::Open()
 {
     Close();
 
-    if (!optionsStore_.Current().chatEnabled)
+    if (!optionsStore_.Current().chat.chatEnabled)
     {
         SetStatus(lila::shared::errors::ChatDisabled, true);
         return false;

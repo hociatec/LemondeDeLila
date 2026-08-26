@@ -62,12 +62,13 @@ function resolveContentFilePath(params: LoadGameJsonFileParams): string {
   return candidates[0];
 }
 
-function buildContentFileCandidates(
-  params: LoadGameJsonFileParams,
-): string[] {
+function buildContentFileCandidates(params: LoadGameJsonFileParams): string[] {
   const bases = uniquePaths([
     params.baseDir,
-    params.baseDir.replace(`${path.sep}dist${path.sep}`, `${path.sep}src${path.sep}`),
+    params.baseDir.replace(
+      `${path.sep}dist${path.sep}`,
+      `${path.sep}src${path.sep}`,
+    ),
   ]);
   const candidates: string[] = [];
 
@@ -76,7 +77,9 @@ function buildContentFileCandidates(
 
     let current = base;
     for (let depth = 0; depth < 8; depth += 1) {
-      candidates.push(path.join(current, params.contentDir ?? '', params.filename));
+      candidates.push(
+        path.join(current, params.contentDir ?? '', params.filename),
+      );
       candidates.push(path.join(current, 'model', 'content', params.filename));
       candidates.push(path.join(current, 'content', params.filename));
       candidates.push(path.join(current, 'model', params.filename));
@@ -115,7 +118,9 @@ function walkGameRoots(dir: string, roots: string[]): void {
     return;
   }
 
-  if (entries.some((entry) => entry.isFile() && entry.name === 'manifest.json')) {
+  if (
+    entries.some((entry) => entry.isFile() && entry.name === 'manifest.json')
+  ) {
     roots.push(dir);
     return;
   }

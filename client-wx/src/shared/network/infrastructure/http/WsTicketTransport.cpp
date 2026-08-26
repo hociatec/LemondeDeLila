@@ -1,7 +1,7 @@
 #include "shared/network/infrastructure/http/WsTicketTransport.h"
 
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/NetworkErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/domain/NetworkPolicy.h"
 #include "shared/network/domain/WebSocketConstants.h"

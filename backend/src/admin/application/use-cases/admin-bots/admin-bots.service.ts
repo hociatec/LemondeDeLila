@@ -72,10 +72,7 @@ export class AdminBotsService {
     return this.listNames();
   }
 
-  async updateName(
-    id: number,
-    update: { name?: string; enabled?: boolean },
-  ) {
+  async updateName(id: number, update: { name?: string; enabled?: boolean }) {
     try {
       await this.updateBotNameUseCase.execute(id, update);
     } catch (error) {

@@ -99,6 +99,7 @@ export function getBuildInfo(): BuildInfo {
   }
 
   const envSha =
+    (process.env.LEMONDEDELILA_BUILD_ID ?? '').trim() ||
     (process.env.LEMONDEDELILA_GIT_SHA ?? '').trim() ||
     (process.env.GITHUB_SHA ?? '').trim() ||
     (process.env.COMMIT_SHA ?? '').trim() ||

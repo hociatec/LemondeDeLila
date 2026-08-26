@@ -23,7 +23,10 @@ export class AdminBugReportCommentsWsHandler {
       payload,
     );
     const items = await this.comments.list(dto.reportId);
-    return { type: WS_EVENTS.admin.bugReports.commentsList, payload: { items } };
+    return {
+      type: WS_EVENTS.admin.bugReports.commentsList,
+      payload: { items },
+    };
   }
 
   async add(session: WsSession, payload: unknown) {
@@ -41,9 +44,3 @@ export class AdminBugReportCommentsWsHandler {
     };
   }
 }
-
-
-
-
-
-

@@ -4,6 +4,8 @@ import { VAULT_PRESENCE_PORT } from '../application/ports/vault-presence.port';
 import { VAULT_ROOM_SNAPSHOT_REPOSITORY } from '../application/ports/vault-room-snapshot.repository';
 import { VAULT_USER_NOTIFIER } from '../application/ports/vault-user-notifier.port';
 import { VaultRoomSnapshotsService } from '../application/services/vault-room-snapshots.service';
+import { VaultSnapshotRestoreService } from '../application/services/vault-snapshot-restore.service';
+import { VaultSnapshotWriterService } from '../application/services/vault-snapshot-writer.service';
 import { VaultRoomSnapshotTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/vault-room-snapshot-typeorm.repository';
 import { VaultBotAdapter } from '../infrastructure/system/vault-bot.adapter';
 import { VaultGameAdapter } from '../infrastructure/system/vault-game.adapter';
@@ -37,4 +39,6 @@ export const VAULT_CORE_PROVIDERS = [
     useExisting: VaultUserNotifierAdapter,
   },
   VaultRoomSnapshotsService,
+  VaultSnapshotRestoreService,
+  VaultSnapshotWriterService,
 ];

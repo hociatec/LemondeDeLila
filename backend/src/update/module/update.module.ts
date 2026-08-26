@@ -9,6 +9,7 @@ import { UpdateUploadTokenGuard } from '../infrastructure/http/update-upload-tok
 import { WxUpdateManifestController } from '../infrastructure/http/wx-update-manifest.controller';
 import { WxUpdateLatestController } from '../infrastructure/http/wx-update-latest.controller';
 import { WxUpdateReleaseService } from '../infrastructure/persistence/wx-update-release.service';
+import { WxUpdateArtifactValidatorService } from '../infrastructure/persistence/wx-update-artifact-validator.service';
 import { WxUpdateUploadService } from '../infrastructure/persistence/wx-update-upload.service';
 
 @Module({
@@ -19,6 +20,7 @@ import { WxUpdateUploadService } from '../infrastructure/persistence/wx-update-u
     CiWxUpdateController,
   ],
   providers: [
+    WxUpdateArtifactValidatorService,
     WxUpdateReleaseService,
     {
       provide: WX_UPDATE_RELEASE_READER,

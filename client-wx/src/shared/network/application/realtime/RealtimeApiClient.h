@@ -38,8 +38,6 @@ struct RealtimeApiResponse
     unsigned long statusCode = 0;
     std::string errorMessage;
     RealtimeErrorKind errorKind = RealtimeErrorKind::None;
-
-    [[nodiscard]] bool IsType(const std::string& expectedType) const;
 };
 
 class RealtimeApiClient final

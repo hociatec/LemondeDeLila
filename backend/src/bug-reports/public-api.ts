@@ -8,4 +8,3 @@ export { GetBugReportService } from './application/use-cases/bug-reports/get-bug
 export { ListBugReportsService } from './application/use-cases/bug-reports/list-bug-reports.service';
 export { UpdateBugReportService } from './application/use-cases/bug-reports/update-bug-report.service';
 export { UpdateBugReportStatusService } from './application/use-cases/bug-reports/update-bug-report-status.service';
-

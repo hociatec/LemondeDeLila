@@ -22,7 +22,6 @@
 #include <wx/weakref.h>
 
 #include "modules/social/application/SocialService.h"
-#include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/accessibility/application/FocusManager.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/logging/application/Logger.h"
@@ -173,7 +172,6 @@ SocialFrame::SocialFrame(
 
     if (shell.menu != nullptr && shell.menu->GetItemCount() > 0)
     {
-        shell.menu->SetTabNavigationEnabled(false);
         if (navigationState_.lastMenuIndex >= shell.menu->GetItemCount())
         {
             navigationState_.lastMenuIndex = 0;
@@ -184,27 +182,22 @@ SocialFrame::SocialFrame(
 
     if (profile.profileMenu != nullptr)
     {
-        profile.profileMenu->SetTabNavigationEnabled(false);
     }
 
     if (friends.actionsMenu != nullptr)
     {
-        friends.actionsMenu->SetTabNavigationEnabled(false);
     }
 
     if (incoming.actionsMenu != nullptr)
     {
-        incoming.actionsMenu->SetTabNavigationEnabled(false);
     }
 
     if (outgoing.actionsMenu != nullptr)
     {
-        outgoing.actionsMenu->SetTabNavigationEnabled(false);
     }
 
     if (blocked.actionsMenu != nullptr)
     {
-        blocked.actionsMenu->SetTabNavigationEnabled(false);
     }
 
     SyncPanels();

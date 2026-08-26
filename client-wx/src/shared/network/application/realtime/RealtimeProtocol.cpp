@@ -2,7 +2,7 @@
 #include "shared/network/application/realtime/RealtimeProtocolFields.h"
 #include "shared/config/domain/AppConfig.h"
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 
 #include <random>
 #include <stdexcept>

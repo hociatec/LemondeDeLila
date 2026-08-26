@@ -1,5 +1,8 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
-import type { GameDefinition, GameRulesAdapter } from '../contracts/game-rules-adapter.interface';
+import type {
+  GameCatalogDefinition,
+  GameRuntime,
+} from '../contracts/game-runtime.interface';
 import {
   GAME_CATALOG_READER,
   type GameCatalogReader,
@@ -13,7 +16,7 @@ type ListGamesOptions = {
 
 @Injectable()
 export class GameRegistryService {
-  private readonly handlers = new Map<string, GameRulesAdapter>();
+  private readonly handlers = new Map<string, GameRuntime>();
   private manifestCache: Map<string, GameCatalogEntryRecord> | null = null;
 
   constructor(
@@ -23,11 +26,11 @@ export class GameRegistryService {
     private readonly overrides?: GameCatalogOverridesService,
   ) {}
 
-  register(handler: GameRulesAdapter): void {
+  register(handler: GameRuntime): void {
     this.handlers.set(handler.gameType, handler);
   }
 
-  getHandler(gameType: string): GameRulesAdapter | undefined {
+  getHandler(gameType: string): GameRuntime | undefined {
     return this.handlers.get(gameType);
   }
 
@@ -35,23 +38,29 @@ export class GameRegistryService {
     this.manifestCache = null;
   }
 
-  async listGames(options: ListGamesOptions = {}): Promise<GameDefinition[]> {
+  async listGames(
+    options: ListGamesOptions = {},
+  ): Promise<GameCatalogDefinition[]> {
     const manifests = this.getManifestCache();
     const defs = Array.from(this.handlers.values()).map((handler) => {
       const entry = manifests.get(handler.gameType);
       const manifest = entry?.manifest;
       const override = this.overrides?.getGameOverride(handler.gameType);
 
-      const base: GameDefinition = {
+      const base: GameCatalogDefinition = {
         id: handler.gameType,
         name:
-          String(override?.name ?? manifest?.name ?? handler.displayName ?? '').trim() ||
-          handler.gameType,
+          String(
+            override?.name ?? manifest?.name ?? handler.displayName ?? '',
+          ).trim() || handler.gameType,
         category: handler.category,
         subcategory: handler.subcategory,
         description:
           String(
-            override?.description ?? manifest?.summary ?? handler.description ?? '',
+            override?.description ??
+              manifest?.summary ??
+              handler.description ??
+              '',
           ).trim() || undefined,
         minPlayers:
           toFiniteNumber(override?.minPlayers) ??
@@ -75,7 +84,7 @@ export class GameRegistryService {
             : typeof manifest?.chatSoundsEnabled === 'boolean'
               ? manifest.chatSoundsEnabled
               : true,
-        status: override?.status as GameDefinition['status'] | undefined,
+        status: override?.status as GameCatalogDefinition['status'] | undefined,
         manifestPath: entry?.manifestPath,
         rulesPath: entry?.rulesPath,
       };
@@ -115,5 +124,7 @@ export class GameRegistryService {
 }
 
 function toFiniteNumber(value: unknown): number | undefined {
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : undefined;
 }

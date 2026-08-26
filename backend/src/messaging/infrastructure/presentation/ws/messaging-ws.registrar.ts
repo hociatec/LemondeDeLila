@@ -11,8 +11,9 @@ export class MessagingWsRegistrar implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.registry.register(WS_EVENTS.messaging.conversation, (session, payload) =>
-      this.handler.conversation(session, payload),
+    this.registry.register(
+      WS_EVENTS.messaging.conversation,
+      (session, payload) => this.handler.conversation(session, payload),
     );
     this.registry.register(WS_EVENTS.messaging.messages, (session, payload) =>
       this.handler.messages(session, payload),
@@ -37,4 +38,3 @@ export class MessagingWsRegistrar implements OnModuleInit {
     );
   }
 }
-

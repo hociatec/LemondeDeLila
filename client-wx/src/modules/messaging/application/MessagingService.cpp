@@ -17,11 +17,6 @@ std::vector<domain::MessagingMessage> MessagingService::LoadBox(domain::Messagin
     return api_.GetBox(box, limit);
 }
 
-std::vector<domain::MessagingMessage> MessagingService::LoadConversation(int userId, int limit) const
-{
-    return api_.GetConversation(userId, limit);
-}
-
 std::optional<domain::MessagingMessage> MessagingService::Send(
     int recipientId,
     const std::string& text,

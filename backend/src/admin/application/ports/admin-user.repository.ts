@@ -1,4 +1,7 @@
-import type { AdminSafeUser, AdminUser } from '../../domain/models/admin-user.model';
+import type {
+  AdminSafeUser,
+  AdminUser,
+} from '../../domain/models/admin-user.model';
 
 export const ADMIN_USER_REPOSITORY = Symbol('ADMIN_USER_REPOSITORY');
 

@@ -20,9 +20,3 @@ export class AdminPerfWsHandler {
     return { type: WS_EVENTS.admin.perf.snapshot, payload: snapshot };
   }
 }
-
-
-
-
-
-

@@ -30,7 +30,7 @@ public:
     void Leave() override;
     void Close() override;
 private:
-    void Connect();
+    void Connect(std::stop_token stopToken);
     void SendJson(const nlohmann::json& message);
     [[nodiscard]] domain::RoomState AwaitState(std::stop_token stopToken);
     [[nodiscard]] domain::RoomEvent DecodeEvent(const nlohmann::json& message);

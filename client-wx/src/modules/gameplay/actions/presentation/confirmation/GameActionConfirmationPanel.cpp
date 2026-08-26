@@ -1,6 +1,5 @@
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 
-#include <algorithm>
 #include <utility>
 
 #include <wx/button.h>
@@ -10,6 +9,7 @@
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/ModalNavigation.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::gameplay::presentation::confirmation
@@ -97,38 +97,13 @@ void GameActionConfirmationPanel::Cancel()
     HideConfirmation();
 }
 
-void GameActionConfirmationPanel::CycleFocus(bool backwards)
-{
-    const auto controls = TabTargets();
-    const auto current = std::find(controls.begin(), controls.end(), wxWindow::FindFocus());
-    std::size_t index = current == controls.end()
-        ? (backwards ? controls.size() - 1 : 0)
-        : static_cast<std::size_t>(std::distance(controls.begin(), current));
-    if (current != controls.end())
-        index = backwards ? (index == 0 ? controls.size() - 1 : index - 1)
-                          : (index + 1) % controls.size();
-    lila::shared::accessibility::NavigationController::Focus(controls[index]);
-}
-
 bool GameActionConfirmationPanel::HandleKey(wxKeyEvent& event)
 {
-    if (!IsActive()) return false;
-    const int key = event.GetKeyCode();
-    if (key == WXK_TAB || key == WXK_NUMPAD_TAB)
-    {
-        CycleFocus(event.ShiftDown());
-        return true;
-    }
-    if (key == WXK_ESCAPE)
-    {
-        Cancel();
-        return true;
-    }
-    if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
-    {
-        Confirm();
-        return true;
-    }
-    return false;
+    return lila::shared::accessibility::HandleModalKey(
+        event,
+        IsActive(),
+        TabTargets(),
+        [this] { Cancel(); },
+        [this] { Confirm(); });
 }
 }

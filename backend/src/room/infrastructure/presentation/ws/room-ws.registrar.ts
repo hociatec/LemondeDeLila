@@ -68,4 +68,3 @@ export class RoomWsRegistrar implements OnModuleInit {
     );
   }
 }
-

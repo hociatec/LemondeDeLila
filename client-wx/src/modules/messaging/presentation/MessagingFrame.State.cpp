@@ -6,7 +6,7 @@
 #include "modules/messaging/presentation/MessagingView.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/accessibility/application/FocusCoordinator.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/ui/application/BackgroundTask.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -17,7 +17,6 @@
 #include <wx/simplebook.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
-#include <wx/weakref.h>
 
 namespace lila::modules::messaging::presentation
 {
@@ -43,29 +42,15 @@ void MessagingFrame::RunBackgroundTask(
     }
 
     SetBusyState(true, busyMessage);
-    wxWeakRef<MessagingFrame> weakSelf(this);
-    lila::shared::ui::RunBackgroundTask(
-        this,
+    lila::shared::ui::RunManagedBackgroundTask(
+        *this,
         worker,
-        [weakSelf, onSuccess](std::string errorMessage) mutable
+        [](MessagingFrame& frame) { frame.SetBusyState(false); },
+        [](MessagingFrame& frame, std::string errorMessage)
         {
-            if (!weakSelf)
-            {
-                return;
-            }
-
-            weakSelf->SetBusyState(false);
-            if (!errorMessage.empty())
-            {
-                weakSelf->UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
-                return;
-            }
-
-            if (onSuccess)
-            {
-                onSuccess();
-            }
-        });
+            frame.UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
+        },
+        [onSuccess](MessagingFrame&) { if (onSuccess) onSuccess(); });
 }
 
 void MessagingFrame::SetBusyState(bool busy, const wxString& message)

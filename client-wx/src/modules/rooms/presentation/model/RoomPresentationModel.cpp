@@ -36,16 +36,13 @@ std::vector<lila::shared::ui::controls::VerticalMenuItem> RoomPresentationModel:
     const domain::RoomState& room)
 {
     using Item = lila::shared::ui::controls::VerticalMenuItem;
-    const bool started = IsStarted(room);
-    const auto playerCount = room.players.size() + room.bots.size();
-    const bool canStart = !started && Allows(room, "room.start");
+    const bool canStart = Allows(room, "room.start");
     std::vector<Item> items{{
         canStart ? "room:start" : "room:game",
         lila::shared::text::FromUtf8(room.gameName)}};
-    if (!started && Allows(room, "bot.add") &&
-        playerCount < static_cast<std::size_t>(room.maxPlayers))
+    if (Allows(room, "bot.add"))
         items.push_back({"room:add-bot", wxString(L"Ajouter un bot")});
-    if (!started && Allows(room, "bot.remove") && !room.bots.empty())
+    if (Allows(room, "bot.remove"))
         items.push_back({"room:remove-bot", wxString(L"Retirer un bot")});
     if (Allows(room, "room.players"))
         items.push_back({"room:players", wxString(L"Lister les joueurs")});
@@ -55,7 +52,7 @@ std::vector<lila::shared::ui::controls::VerticalMenuItem> RoomPresentationModel:
         items.push_back({"room:privacy", room.isPrivate
             ? wxString(L"Rendre la table publique")
             : wxString(L"Rendre la table privée")});
-    if (!started && Allows(room, "room.set-role"))
+    if (Allows(room, "room.set-role"))
         items.push_back({"room:role", room.selfSpectator
             ? wxString(L"Devenir joueur")
             : wxString(L"Devenir spectateur")});
@@ -70,7 +67,16 @@ std::vector<lila::shared::ui::controls::VerticalMenuItem> RoomPresentationModel:
 
 wxString RoomPresentationModel::BuildStatus(const domain::RoomState& room)
 {
-    return IsStarted(room) ? wxString(L"Partie en cours.") : wxString(L"Table prête.");
+    if (IsStarted(room)) return wxString(L"Partie en cours.");
+    const auto participants = room.players.size() + room.bots.size();
+    const auto minimum = static_cast<std::size_t>(std::max(1, room.minPlayers));
+    if (participants >= minimum)
+        return wxString::Format(
+            wxString(L"Table prête. %zu participant(s)."), participants);
+    return wxString::Format(
+        wxString(L"En attente de participants : %zu sur %zu requis."),
+        participants,
+        minimum);
 }
 
 wxString RoomPresentationModel::BuildDetails(const domain::RoomState& room)
@@ -86,6 +92,7 @@ wxString RoomPresentationModel::BuildDetails(const domain::RoomState& room)
         details = lila::shared::text::FromUtf8(room.gameSummary) + wxString(L"\n") + details;
     if (!room.gameEngine.empty())
         details += wxString(L" Moteur : ") + lila::shared::text::FromUtf8(room.gameEngine) + wxString(L".");
+    details += wxString(L"\n") + BuildPlayers(room);
     return details;
 }
 
@@ -98,6 +105,7 @@ wxString RoomPresentationModel::BuildPlayers(const domain::RoomState& room)
 
 RoomPresentationModel::Action RoomPresentationModel::ActionForId(std::string_view id) noexcept
 {
+    if (id == "room:game") return Action::ShowGameStatus;
     if (id == "room:start") return Action::Start;
     if (id == "room:add-bot") return Action::AddBot;
     if (id == "room:remove-bot") return Action::RemoveBot;

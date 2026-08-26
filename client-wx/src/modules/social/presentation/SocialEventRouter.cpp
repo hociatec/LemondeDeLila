@@ -8,7 +8,7 @@
 
 #include "modules/social/presentation/SocialNavigationState.h"
 #include "shared/accessibility/application/NavigationController.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
@@ -17,12 +17,6 @@ namespace lila::modules::social::presentation
 namespace
 {
 using Navigator = lila::shared::accessibility::NavigationController;
-
-bool IsSameWindow(wxWindow* left, wxWindow* right)
-{
-    return left != nullptr && right != nullptr && left == right;
-}
-
 }
 
 void SocialEventRouter::BindRootEvents(

@@ -1,10 +1,8 @@
 #pragma once
 
-#include <cstddef>
 #include <vector>
 
 #include <wx/panel.h>
-#include <wx/string.h>
 
 #include "modules/gameplay/cards/domain/GameCard.h"
 
@@ -22,8 +20,7 @@ public:
     void ClearHand();
     bool MoveSelection(bool backwards);
     [[nodiscard]] int SelectedIndex() const noexcept;
-    [[nodiscard]] std::size_t Count() const noexcept;
-    [[nodiscard]] wxString SelectedLabel() const;
+    [[nodiscard]] wxWindow* NavigationTarget() const noexcept;
 
 private:
     wxListBox* list_ = nullptr;

@@ -27,7 +27,7 @@ wxString ResolveStatusMessage(
         return wxString();
     }
 
-    if (!optionsStore.Current().showNavigationStatus)
+    if (!optionsStore.Current().general.showNavigationStatus)
     {
         return wxString(L"Flèches haut/bas : naviguer. Entrée : sélectionner.");
     }

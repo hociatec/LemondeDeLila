@@ -13,6 +13,7 @@ public:
     ~AppBootstrap();
 
     bool Start();
+    void FocusCurrentView() const;
     [[nodiscard]] const char* CurrentStep() const noexcept;
 
 private:

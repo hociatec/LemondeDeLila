@@ -3,6 +3,7 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <utility>
 
 #include <wx/app.h>
 #include <wx/weakref.h>
@@ -14,6 +15,24 @@
 namespace lila::shared::ui
 {
 inline constexpr const char* UnexpectedErrorMessage = lila::shared::errors::UnexpectedError;
+
+inline void LogBackgroundTaskError(
+    const std::optional<lila::shared::errors::AppError>& error)
+{
+    if (error.has_value() && !error->DiagnosticDetails().empty())
+        lila::shared::logging::LogError("BackgroundTask", error->DiagnosticDetails());
+}
+
+template <typename Completion>
+inline void ScheduleOwnedUiCompletion(wxWeakRef<wxWindow> owner, Completion&& completion)
+{
+    if (wxTheApp == nullptr) return;
+    wxTheApp->CallAfter(
+        [owner, completion = std::forward<Completion>(completion)]() mutable
+        {
+            if (owner) completion();
+        });
+}
 
 inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunBackgroundTask(
     wxWindow* owner,
@@ -27,30 +46,46 @@ inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunBackg
         [owner = wxWeakRef<wxWindow>(owner), completion = std::move(completion)](
             std::optional<lila::shared::errors::AppError> error) mutable
         {
-            if (error.has_value() && !error->DiagnosticDetails().empty())
-            {
-                lila::shared::logging::LogError("BackgroundTask", error->DiagnosticDetails());
-            }
-
-            if (wxTheApp == nullptr)
-            {
-                return;
-            }
-
-            wxTheApp->CallAfter(
-                [owner,
-                 completion = std::move(completion),
+            LogBackgroundTaskError(error);
+            ScheduleOwnedUiCompletion(
+                owner,
+                [completion = std::move(completion),
                  userMessage = error.has_value() ? error->UserMessage() : std::string()]() mutable
                 {
-                    if (!owner || !completion)
-                    {
-                        return;
-                    }
-
-                    completion(std::move(userMessage));
+                    if (completion) completion(std::move(userMessage));
                 });
         },
         priority,
+        failureMessage);
+}
+
+template <typename Owner, typename Finished, typename Failed, typename Succeeded>
+inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunManagedBackgroundTask(
+    Owner& owner,
+    std::function<void()> worker,
+    Finished&& finished,
+    Failed&& failed,
+    Succeeded&& succeeded,
+    const char* failureMessage = UnexpectedErrorMessage)
+{
+    return RunBackgroundTask(
+        &owner,
+        std::move(worker),
+        [weakOwner = wxWeakRef<Owner>(&owner),
+         finished = std::forward<Finished>(finished),
+         failed = std::forward<Failed>(failed),
+         succeeded = std::forward<Succeeded>(succeeded)](std::string errorMessage) mutable
+        {
+            auto* liveOwner = weakOwner.get();
+            if (liveOwner == nullptr) return;
+            finished(*liveOwner);
+            if (!errorMessage.empty())
+            {
+                failed(*liveOwner, std::move(errorMessage));
+                return;
+            }
+            succeeded(*liveOwner);
+        },
         failureMessage);
 }
 
@@ -71,28 +106,14 @@ inline std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> RunBackg
             std::optional<lila::shared::errors::AppError> error,
             std::optional<TResult> result) mutable
         {
-            if (error.has_value() && !error->DiagnosticDetails().empty())
-            {
-                lila::shared::logging::LogError("BackgroundTask", error->DiagnosticDetails());
-            }
-
-            if (wxTheApp == nullptr)
-            {
-                return;
-            }
-
-            wxTheApp->CallAfter(
-                [owner,
-                 completion = std::move(completion),
+            LogBackgroundTaskError(error);
+            ScheduleOwnedUiCompletion(
+                owner,
+                [completion = std::move(completion),
                  userMessage = error.has_value() ? error->UserMessage() : std::string(),
                  result = std::move(result)]() mutable
                 {
-                    if (!owner || !completion)
-                    {
-                        return;
-                    }
-
-                    completion(std::move(userMessage), std::move(result));
+                    if (completion) completion(std::move(userMessage), std::move(result));
                 });
         },
         priority,

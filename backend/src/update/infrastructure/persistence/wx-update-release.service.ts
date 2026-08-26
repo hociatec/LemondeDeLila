@@ -3,12 +3,7 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import {
-  createHash,
-  createPublicKey,
-  randomUUID,
-  verify as verifyCryptoSignature,
-} from 'crypto';
+import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -28,19 +23,22 @@ import {
   type WxUpdateManifestResponse,
 } from '../../domain/wx-update-manifest';
 
-export type PublishWxUpdateInput = {
-  zipPath: string;
-  installerZipPath?: string | null;
+import type { PublishWxUpdateInput } from './wx-update-publication.model';
+export type { PublishWxUpdateInput } from './wx-update-publication.model';
+import { WxUpdateArtifactValidatorService } from './wx-update-artifact-validator.service';
+
+type CommitWxPublication = {
+  input: PublishWxUpdateInput;
   releaseId: string;
   version: string;
   sequence: number;
   publishedAt: string;
-  message?: string | null;
-  minimumVersion?: string | null;
-  mandatoryAt?: string | null;
-  expectedSha256: string;
-  expectedInstallerSha256?: string | null;
+  mandatoryAt: string | null;
+  minimumVersion: string | null;
   signature: string;
+  sha256: string;
+  artifactSize: number;
+  installer: { size: number; sha256: string } | null;
 };
 
 @Injectable()
@@ -56,7 +54,9 @@ export class WxUpdateReleaseService {
   private manifestCacheInitialized = false;
   private manifestCacheExpiresAt = 0;
 
-  constructor() {
+  constructor(
+    private readonly validator: WxUpdateArtifactValidatorService = new WxUpdateArtifactValidatorService(),
+  ) {
     const backendRoot = path.resolve(__dirname, '..', '..', '..', '..');
     const dataRoot = path.join(backendRoot, 'data', 'client-updates');
     this.updatesDir =
@@ -93,9 +93,15 @@ export class WxUpdateReleaseService {
     try {
       const raw = await fs.promises.readFile(this.metaPath, 'utf-8');
       const value = JSON.parse(raw.replace(/^\uFEFF/, '')) as unknown;
-      if (this.isManifest(value) && this.verifyManifestSignature(value)) {
-        this.updateManifestCache(value);
-        return value;
+      if (
+        this.validator.verifyManifest(
+          value as WxUpdateManifest,
+          this.maxArtifactBytes,
+        )
+      ) {
+        const manifest = value as WxUpdateManifest;
+        this.updateManifestCache(manifest);
+        return manifest;
       }
     } catch {
       // A transient filesystem failure must not erase the last known policy.
@@ -161,12 +167,15 @@ export class WxUpdateReleaseService {
   }
 
   async publish(input: PublishWxUpdateInput): Promise<WxUpdateManifest> {
-    const releaseId = this.requireReleaseId(input.releaseId);
-    const version = this.requireVersion(input.version, 'Version WX invalide.');
+    const releaseId = this.validator.requireReleaseId(input.releaseId);
+    const version = this.validator.requireVersion(
+      input.version,
+      'Version WX invalide.',
+    );
     const minimumVersion =
       (input.minimumVersion || '').trim() === ''
         ? null
-        : this.requireVersion(
+        : this.validator.requireVersion(
             input.minimumVersion!,
             'Version minimale WX invalide.',
           );
@@ -182,40 +191,33 @@ export class WxUpdateReleaseService {
     if (!Number.isSafeInteger(sequence) || sequence <= 0) {
       throw new BadRequestException('Séquence de publication WX invalide.');
     }
-    const publishedAt = this.requireDate(
+    const publishedAt = this.validator.requireDate(
       input.publishedAt,
       'Date de publication WX invalide.',
     );
     const mandatoryAt = input.mandatoryAt
-      ? this.requireDate(input.mandatoryAt, 'Date obligatoire WX invalide.')
+      ? this.validator.requireDate(
+          input.mandatoryAt,
+          'Date obligatoire WX invalide.',
+        )
       : null;
     const expectedSha256 = (input.expectedSha256 || '').trim().toLowerCase();
     if (!/^[a-f0-9]{64}$/.test(expectedSha256)) {
       throw new BadRequestException('SHA-256 WX invalide.');
     }
     const signature = (input.signature || '').trim();
-    if (!signature || !this.isBase64(signature)) {
+    if (!signature || !this.validator.isBase64(signature)) {
       throw new BadRequestException('Signature WX invalide ou absente.');
     }
 
-    const stat = await fs.promises.stat(input.zipPath).catch(() => null);
-    if (
-      !stat?.isFile() ||
-      stat.size <= 0 ||
-      stat.size > this.maxArtifactBytes
-    ) {
-      throw new BadRequestException(
-        'Archive WX absente, vide ou trop volumineuse.',
-      );
-    }
-    await this.assertZipHeader(input.zipPath);
-    const sha256 = await this.sha256(input.zipPath);
-    if (expectedSha256 !== sha256) {
-      throw new BadRequestException(
-        "Empreinte SHA-256 de l'archive WX invalide.",
-      );
-    }
-    const installer = await this.validateInstaller(input);
+    const artifact = await this.validator.validateArtifact(
+      { ...input, expectedSha256 },
+      this.maxArtifactBytes,
+    );
+    const installer = await this.validator.validateInstaller(
+      input,
+      this.maxArtifactBytes,
+    );
 
     return this.commitPublication({
       input,
@@ -226,53 +228,15 @@ export class WxUpdateReleaseService {
       mandatoryAt,
       minimumVersion,
       signature,
-      sha256,
-      artifactSize: stat.size,
+      sha256: artifact.sha256,
+      artifactSize: artifact.size,
       installer,
     });
   }
 
-  private async validateInstaller(
-    input: PublishWxUpdateInput,
-  ): Promise<{ size: number; sha256: string } | null> {
-    const installerPath = (input.installerZipPath || '').trim();
-    if (!installerPath) return null;
-    const stat = await fs.promises.stat(installerPath).catch(() => null);
-    if (
-      !stat?.isFile() ||
-      stat.size <= 0 ||
-      stat.size > this.maxArtifactBytes
-    ) {
-      throw new BadRequestException(
-        'Installateur WX absent, vide ou trop volumineux.',
-      );
-    }
-    await this.assertInstallerHeader(installerPath);
-    const sha256 = await this.sha256(installerPath);
-    const expected = (input.expectedInstallerSha256 || '')
-      .trim()
-      .toLowerCase();
-    if (expected && expected !== sha256) {
-      throw new BadRequestException(
-        "Empreinte SHA-256 de l'installateur WX invalide.",
-      );
-    }
-    return { size: stat.size, sha256 };
-  }
-
-  private async commitPublication(params: {
-    input: PublishWxUpdateInput;
-    releaseId: string;
-    version: string;
-    sequence: number;
-    publishedAt: string;
-    mandatoryAt: string | null;
-    minimumVersion: string | null;
-    signature: string;
-    sha256: string;
-    artifactSize: number;
-    installer: { size: number; sha256: string } | null;
-  }): Promise<WxUpdateManifest> {
+  private async commitPublication(
+    params: CommitWxPublication,
+  ): Promise<WxUpdateManifest> {
     const lock = await this.acquirePublicationLock();
     try {
       const previous = await this.readLatestFromDisk();
@@ -282,6 +246,7 @@ export class WxUpdateReleaseService {
         previous.artifact.sha256 === params.sha256
       ) {
         this.updateManifestCache(previous);
+        await this.pruneSupersededReleases(previous.releaseId);
         return previous;
       }
       if (previous && params.sequence <= previous.sequence) {
@@ -299,105 +264,139 @@ export class WxUpdateReleaseService {
         artifactSize: params.artifactSize,
         artifactSha256: params.sha256,
       });
-      if (!this.verifySignature(signaturePayload, params.signature)) {
+      if (!this.validator.verifySignature(signaturePayload, params.signature)) {
         throw new BadRequestException('Signature cryptographique WX invalide.');
       }
 
-      const releasesDir = path.join(this.updatesDir, 'releases');
-      const stagingDir = path.join(
-        this.updatesDir,
-        '.staging',
-        params.releaseId,
-      );
-      const finalDir = path.join(releasesDir, params.releaseId);
-      const fileName = `client-wx-${params.version}-windows-x64.zip`;
-      const installerFileName = `LeMondeDeLilaWX-${params.version}-Setup.exe`;
-      const existingArtifact = path.join(finalDir, fileName);
-      const existingInstaller = path.join(finalDir, installerFileName);
-      if (await this.pathExists(finalDir)) {
-        const existingHash = await this.sha256(existingArtifact).catch(
-          () => '',
-        );
-        if (existingHash !== params.sha256) {
-          throw new ConflictException(
-            'Cet identifiant de release WX existe avec un autre contenu.',
-          );
-        }
-        if (params.installer) {
-          const existingInstallerHash = await this.sha256(existingInstaller).catch(
-            () => '',
-          );
-          if (
-            existingInstallerHash &&
-            existingInstallerHash !== params.installer.sha256
-          ) {
-            throw new ConflictException(
-              'Cet identifiant de release WX existe avec un autre installateur.',
-            );
-          }
-          if (!existingInstallerHash && params.input.installerZipPath) {
-            await fs.promises.copyFile(
-              params.input.installerZipPath,
-              existingInstaller,
-            );
-          }
-        }
-      } else {
-        await fs.promises.mkdir(stagingDir, { recursive: true });
-        try {
-          await fs.promises.copyFile(
-            params.input.zipPath,
-            path.join(stagingDir, fileName),
-          );
-          if (params.installer && params.input.installerZipPath) {
-            await fs.promises.copyFile(
-              params.input.installerZipPath,
-              path.join(stagingDir, installerFileName),
-            );
-          }
-          await fs.promises.mkdir(releasesDir, { recursive: true });
-          await fs.promises.rename(stagingDir, finalDir);
-        } catch (error) {
-          await fs.promises.rm(stagingDir, { recursive: true, force: true });
-          throw error;
-        }
-      }
-
-      const manifest: WxUpdateManifest = {
-        schemaVersion: WX_UPDATE_SCHEMA_VERSION,
-        product: WX_UPDATE_PRODUCT,
-        platform: WX_UPDATE_PLATFORM,
-        architecture: WX_UPDATE_ARCHITECTURE,
-        channel: WX_UPDATE_CHANNEL,
-        releaseId: params.releaseId,
-        version: params.version,
-        sequence: params.sequence,
-        publishedAt: params.publishedAt,
-        mandatoryAt: params.mandatoryAt,
-        minimumVersion: params.minimumVersion,
-        message: (params.input.message || '').trim() || null,
-        artifact: {
-          url: `${this.publicUrl.replace(/\/$/, '')}/releases/${encodeURIComponent(params.releaseId)}/${encodeURIComponent(fileName)}`,
-          size: params.artifactSize,
-          sha256: params.sha256,
-          signature: params.signature,
-          signatureAlgorithm: WX_UPDATE_SIGNATURE_ALGORITHM,
-        },
-      };
-      if (params.installer) {
-        manifest.installer = {
-          url: `${this.publicUrl.replace(/\/$/, '')}/releases/${encodeURIComponent(params.releaseId)}/${encodeURIComponent(installerFileName)}`,
-          size: params.installer.size,
-          sha256: params.installer.sha256,
-        };
-      }
+      const files = await this.prepareReleaseFiles(params);
+      const manifest = this.buildManifest(params, files);
       await this.saveLatestAtomically(manifest);
       this.updateManifestCache(manifest);
+      await this.pruneSupersededReleases(manifest.releaseId);
       return manifest;
     } finally {
       await lock.close().catch(() => undefined);
       await fs.promises.rm(this.publicationLockPath(), { force: true });
     }
+  }
+
+  private async prepareReleaseFiles(params: CommitWxPublication): Promise<{
+    fileName: string;
+    installerFileName: string;
+  }> {
+    const releasesDir = path.join(this.updatesDir, 'releases');
+    const stagingDir = path.join(this.updatesDir, '.staging', params.releaseId);
+    const finalDir = path.join(releasesDir, params.releaseId);
+    const fileName = `client-wx-${params.version}-windows-x64.zip`;
+    const installerFileName = `LeMondeDeLilaWX-${params.version}-Setup.exe`;
+    if (await this.pathExists(finalDir)) {
+      const artifactHash = await this.validator
+        .sha256(path.join(finalDir, fileName))
+        .catch(() => '');
+      if (artifactHash !== params.sha256) {
+        throw new ConflictException(
+          'Cet identifiant de release WX existe avec un autre contenu.',
+        );
+      }
+      await this.ensureExistingInstaller(params, finalDir, installerFileName);
+      return { fileName, installerFileName };
+    }
+    await fs.promises.mkdir(stagingDir, { recursive: true });
+    try {
+      await fs.promises.copyFile(
+        params.input.zipPath,
+        path.join(stagingDir, fileName),
+      );
+      if (params.installer && params.input.installerZipPath) {
+        await fs.promises.copyFile(
+          params.input.installerZipPath,
+          path.join(stagingDir, installerFileName),
+        );
+      }
+      await fs.promises.mkdir(releasesDir, { recursive: true });
+      await fs.promises.rename(stagingDir, finalDir);
+    } catch (error) {
+      await fs.promises.rm(stagingDir, { recursive: true, force: true });
+      throw error;
+    }
+    return { fileName, installerFileName };
+  }
+
+  private async ensureExistingInstaller(
+    params: CommitWxPublication,
+    finalDir: string,
+    installerFileName: string,
+  ): Promise<void> {
+    if (!params.installer) return;
+    const installerPath = path.join(finalDir, installerFileName);
+    const hash = await this.validator.sha256(installerPath).catch(() => '');
+    if (hash && hash !== params.installer.sha256) {
+      throw new ConflictException(
+        'Cet identifiant de release WX existe avec un autre installateur.',
+      );
+    }
+    if (!hash && params.input.installerZipPath) {
+      await fs.promises.copyFile(params.input.installerZipPath, installerPath);
+    }
+  }
+
+  private buildManifest(
+    params: CommitWxPublication,
+    files: { fileName: string; installerFileName: string },
+  ): WxUpdateManifest {
+    const baseUrl = `${this.publicUrl.replace(/\/$/, '')}/releases/${encodeURIComponent(params.releaseId)}`;
+    const manifest: WxUpdateManifest = {
+      schemaVersion: WX_UPDATE_SCHEMA_VERSION,
+      product: WX_UPDATE_PRODUCT,
+      platform: WX_UPDATE_PLATFORM,
+      architecture: WX_UPDATE_ARCHITECTURE,
+      channel: WX_UPDATE_CHANNEL,
+      releaseId: params.releaseId,
+      version: params.version,
+      sequence: params.sequence,
+      publishedAt: params.publishedAt,
+      mandatoryAt: params.mandatoryAt,
+      minimumVersion: params.minimumVersion,
+      message: (params.input.message || '').trim() || null,
+      artifact: {
+        url: `${baseUrl}/${encodeURIComponent(files.fileName)}`,
+        size: params.artifactSize,
+        sha256: params.sha256,
+        signature: params.signature,
+        signatureAlgorithm: WX_UPDATE_SIGNATURE_ALGORITHM,
+      },
+    };
+    if (params.installer) {
+      manifest.installer = {
+        url: `${baseUrl}/${encodeURIComponent(files.installerFileName)}`,
+        size: params.installer.size,
+        sha256: params.installer.sha256,
+      };
+    }
+    return manifest;
+  }
+
+  private async pruneSupersededReleases(
+    activeReleaseId: string,
+  ): Promise<void> {
+    const releasesDir = path.join(this.updatesDir, 'releases');
+    const entries = await fs.promises.readdir(releasesDir, {
+      withFileTypes: true,
+    });
+    await Promise.all(
+      entries
+        .filter((entry) => entry.name !== activeReleaseId)
+        .map((entry) =>
+          fs.promises.rm(path.join(releasesDir, entry.name), {
+            recursive: true,
+            force: true,
+          }),
+        ),
+    );
+    await fs.promises.rm(path.join(this.updatesDir, '.staging'), {
+      recursive: true,
+      force: true,
+    });
   }
 
   private updateManifestCache(manifest: WxUpdateManifest | null): void {
@@ -436,8 +435,11 @@ export class WxUpdateReleaseService {
       const value = JSON.parse(
         await fs.promises.readFile(this.metaPath, 'utf-8'),
       ) as unknown;
-      return this.isManifest(value) && this.verifyManifestSignature(value)
-        ? value
+      return this.validator.verifyManifest(
+        value as WxUpdateManifest,
+        this.maxArtifactBytes,
+      )
+        ? (value as WxUpdateManifest)
         : null;
     } catch {
       return null;
@@ -472,176 +474,10 @@ export class WxUpdateReleaseService {
     }
   }
 
-  private verifyManifestSignature(manifest: WxUpdateManifest): boolean {
-    return this.verifySignature(
-      canonicalizeWxUpdateSignature({
-        releaseId: manifest.releaseId,
-        version: manifest.version,
-        sequence: manifest.sequence,
-        publishedAt: manifest.publishedAt,
-        mandatoryAt: manifest.mandatoryAt,
-        minimumVersion: manifest.minimumVersion,
-        artifactSize: manifest.artifact.size,
-        artifactSha256: manifest.artifact.sha256,
-      }),
-      manifest.artifact.signature,
-    );
-  }
-
-  private verifySignature(payload: string, signature: string): boolean {
-    if ((process.env.CLIENT_WX_ALLOW_UNSIGNED || '').trim() === '1')
-      return true;
-    try {
-      const base64 = (
-        process.env.CLIENT_WX_SIGNATURE_PUBLIC_KEY_DER_BASE64 || ''
-      ).trim();
-      const pem = (process.env.CLIENT_WX_SIGNATURE_PUBLIC_KEY_PEM || '').trim();
-      const pemPath = (
-        process.env.CLIENT_WX_SIGNATURE_PUBLIC_KEY_PATH || ''
-      ).trim();
-      const key = base64
-        ? createPublicKey({
-            key: Buffer.from(base64, 'base64'),
-            format: 'der',
-            type: 'spki',
-          })
-        : createPublicKey(
-            pem || (pemPath ? fs.readFileSync(pemPath, 'utf-8') : ''),
-          );
-      return verifyCryptoSignature(
-        'RSA-SHA256',
-        Buffer.from(payload, 'utf-8'),
-        key,
-        Buffer.from(signature, 'base64'),
-      );
-    } catch {
-      return false;
-    }
-  }
-
-  private requireReleaseId(value: string): string {
-    const releaseId = (value || '').trim();
-    if (
-      !/^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/.test(releaseId) ||
-      releaseId.includes('..')
-    ) {
-      throw new BadRequestException('Identifiant de release WX invalide.');
-    }
-    return releaseId;
-  }
-
-  private requireVersion(value: string, message: string): string {
-    const version = (value || '').trim();
-    if (!parseUpdateVersion(version)) throw new BadRequestException(message);
-    return version;
-  }
-
-  private requireDate(value: string, message: string): string {
-    const date = (value || '').trim();
-    if (!date || !Number.isFinite(Date.parse(date))) {
-      throw new BadRequestException(message);
-    }
-    return new Date(date).toISOString();
-  }
-
-  private isBase64(value: string): boolean {
-    return value.length <= 16_384 && /^[A-Za-z0-9+/]+={0,2}$/.test(value);
-  }
-
-  private async sha256(filePath: string): Promise<string> {
-    const hash = createHash('sha256');
-    const stream = fs.createReadStream(filePath);
-    for await (const chunk of stream) hash.update(chunk as Buffer);
-    return hash.digest('hex');
-  }
-
-  private async assertZipHeader(filePath: string): Promise<void> {
-    const handle = await fs.promises.open(filePath, 'r');
-    try {
-      const header = Buffer.alloc(4);
-      await handle.read(header, 0, header.length, 0);
-      if (header[0] !== 0x50 || header[1] !== 0x4b) {
-        throw new BadRequestException('Archive WX invalide.');
-      }
-    } finally {
-      await handle.close();
-    }
-  }
-
-  private async assertInstallerHeader(filePath: string): Promise<void> {
-    const handle = await fs.promises.open(filePath, 'r');
-    try {
-      const header = Buffer.alloc(2);
-      await handle.read(header, 0, header.length, 0);
-      if (header[0] !== 0x4d || header[1] !== 0x5a) {
-        throw new BadRequestException('Installateur WX invalide.');
-      }
-    } finally {
-      await handle.close();
-    }
-  }
-
   private async pathExists(target: string): Promise<boolean> {
     return fs.promises
       .access(target)
       .then(() => true)
       .catch(() => false);
-  }
-
-  private isManifest(value: unknown): value is WxUpdateManifest {
-    if (!value || typeof value !== 'object') return false;
-    const item = value as Partial<WxUpdateManifest>;
-    return (
-      item.schemaVersion === WX_UPDATE_SCHEMA_VERSION &&
-      item.product === WX_UPDATE_PRODUCT &&
-      item.platform === WX_UPDATE_PLATFORM &&
-      item.architecture === WX_UPDATE_ARCHITECTURE &&
-      item.channel === WX_UPDATE_CHANNEL &&
-      typeof item.releaseId === 'string' &&
-      /^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/.test(item.releaseId) &&
-      !item.releaseId.includes('..') &&
-      typeof item.version === 'string' &&
-      parseUpdateVersion(item.version) != null &&
-      typeof item.sequence === 'number' &&
-      Number.isSafeInteger(item.sequence) &&
-      item.sequence > 0 &&
-      typeof item.publishedAt === 'string' &&
-      Number.isFinite(Date.parse(item.publishedAt)) &&
-      (item.mandatoryAt == null ||
-        (typeof item.mandatoryAt === 'string' &&
-          Number.isFinite(Date.parse(item.mandatoryAt)))) &&
-      (item.minimumVersion == null ||
-        (typeof item.minimumVersion === 'string' &&
-          parseUpdateVersion(item.minimumVersion) != null)) &&
-      typeof item.artifact?.url === 'string' &&
-      (/^https:\/\//i.test(item.artifact.url) ||
-        item.artifact.url.startsWith('/')) &&
-      typeof item.artifact?.size === 'number' &&
-      Number.isSafeInteger(item.artifact.size) &&
-      item.artifact.size > 0 &&
-      item.artifact.size <= this.maxArtifactBytes &&
-      typeof item.artifact?.sha256 === 'string' &&
-      /^[a-f0-9]{64}$/i.test(item.artifact.sha256) &&
-      typeof item.artifact?.signature === 'string' &&
-      this.isBase64(item.artifact.signature) &&
-      item.artifact.signatureAlgorithm === WX_UPDATE_SIGNATURE_ALGORITHM &&
-      this.isInstallerMetadataValid(item.installer)
-    );
-  }
-
-  private isInstallerMetadataValid(
-    value: WxUpdateManifest['installer'] | undefined,
-  ): boolean {
-    if (value == null) return true;
-    return (
-      typeof value.url === 'string' &&
-      (/^https:\/\//i.test(value.url) || value.url.startsWith('/')) &&
-      typeof value.size === 'number' &&
-      Number.isSafeInteger(value.size) &&
-      value.size > 0 &&
-      value.size <= this.maxArtifactBytes &&
-      typeof value.sha256 === 'string' &&
-      /^[a-f0-9]{64}$/i.test(value.sha256)
-    );
   }
 }

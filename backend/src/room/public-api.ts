@@ -21,3 +21,4 @@ export {
 } from './application/ports/room-vault.port';
 export type { RoomPayload } from './application/models/room-payload.model';
 export { RoomMaintenanceSettingsService } from './application/services/room-maintenance-settings.service';
+export { buildUniqueActiveRoomPlayers } from './application/services/room-participant-roster';

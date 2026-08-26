@@ -2,7 +2,7 @@
 #include <nlohmann/json.hpp>
 #include "modules/rooms/infrastructure/RoomPayloadCodec.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/rooms/domain/RoomErrorMessages.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 
 namespace lila::modules::rooms::infrastructure

@@ -55,11 +55,6 @@ void GameSessionService::RequestState(std::stop_token stopToken)
     gateway_.RequestState(stopToken);
 }
 
-void GameSessionService::RequestTurn(std::stop_token stopToken)
-{
-    gateway_.RequestTurn(stopToken);
-}
-
 void GameSessionService::SendKey(std::string_view key, std::stop_token stopToken)
 {
     gateway_.SendKey(key, stopToken);
@@ -105,7 +100,8 @@ void GameSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t gene
                         domain::GameEventType::Error,
                         std::nullopt,
                         exception.what(),
-                        true},
+                        true,
+                        std::nullopt},
                     generation);
             }
             return;
@@ -119,7 +115,8 @@ void GameSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t gene
                         domain::GameEventType::Error,
                         std::nullopt,
                         "Connexion au jeu interrompue.",
-                        true},
+                        true,
+                        std::nullopt},
                     generation);
             }
             return;

@@ -20,9 +20,7 @@ type PresenceRoomParticipantRow = {
 };
 
 @Injectable()
-export class PresenceRoomParticipantTypeormRepository
-  implements PresenceRoomParticipantRepository
-{
+export class PresenceRoomParticipantTypeormRepository implements PresenceRoomParticipantRepository {
   constructor(
     @Inject(PRESENCE_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY)
     private readonly participants: Repository<PresenceRoomParticipantRow>,

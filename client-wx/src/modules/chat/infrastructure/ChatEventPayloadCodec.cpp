@@ -3,7 +3,7 @@
 
 #include "modules/chat/infrastructure/ChatProtocolFields.h"
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/chat/domain/ChatErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/domain/WsMessageTypes.h"
 

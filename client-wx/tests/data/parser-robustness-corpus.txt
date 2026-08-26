@@ -1,0 +1,13 @@
+
+{}
+[]
+null
+not-json
+{"type":"chat-message"}
+{"type":"chat-history","messages":[]}
+{"requestId":"wrong","type":"robustness.type","payload":{}}
+{"requestId":"robustness-request-id","type":"robustness.type","payload":null}
+{"requestId":"robustness-request-id","type":"robustness.type","payload":{"nested":[1,true,null,"text"]}}
+{"unterminated":
+\u0000
+émoji-😀-texte

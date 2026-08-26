@@ -26,7 +26,6 @@
 #include "modules/messaging/application/MessagingService.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
-#include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/config/domain/AppConfig.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -155,7 +154,6 @@ MessagingFrame::MessagingFrame(
     const auto shell = view_->Shell();
     if (shell.menu != nullptr)
     {
-        shell.menu->SetTabNavigationEnabled(false);
         shell.menu->SetSelectedIndexSilently(navigationState_.lastMenuIndex);
     }
 
@@ -172,4 +170,3 @@ lila::shared::accessibility::FocusManager::Plan MessagingFrame::BuildFocusPlan()
     return {};
 }
 }
-

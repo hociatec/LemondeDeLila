@@ -1,7 +1,8 @@
 #include "shared/persistence/infrastructure/JsonFileStorage.h"
 
 #include "shared/config/infrastructure/AppDataPaths.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
+#include "shared/errors/presentation/ErrorFormatting.h"
 #include "shared/persistence/infrastructure/AtomicFileWriter.h"
 
 #include <filesystem>
@@ -62,33 +63,8 @@ bool JsonFileStorage::ReadIfExists(const std::filesystem::path& path, nlohmann::
     return true;
 }
 
-nlohmann::json JsonFileStorage::ReadRequired(const std::filesystem::path& path, const char* parseErrorMessage)
-{
-    nlohmann::json content;
-    if (!ReadIfExists(path, content))
-    {
-        throw std::runtime_error(parseErrorMessage);
-    }
-
-    return content;
-}
-
 void JsonFileStorage::Write(const std::filesystem::path& path, const nlohmann::json& content, const char* errorMessage)
 {
     WriteTextAtomically(path, content.dump(2), errorMessage);
-}
-
-void JsonFileStorage::Remove(const std::filesystem::path& path, const char* errorMessage)
-{
-    std::error_code errorCode;
-    if (!std::filesystem::exists(path, errorCode))
-    {
-        return;
-    }
-
-    if (!std::filesystem::remove(path, errorCode))
-    {
-        throw std::runtime_error(errorMessage);
-    }
 }
 }

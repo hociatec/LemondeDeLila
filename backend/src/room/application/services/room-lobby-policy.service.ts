@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { RoomPayload } from '../models/room-payload.model';
 import type { RoomRecord } from '../models/room-record.model';
 import type { RoomInvite } from './room-invite.service';

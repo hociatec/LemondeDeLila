@@ -2,7 +2,15 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
 import { Inject } from '@nestjs/common';
-import { WsAuthPayload } from '../../../common/interfaces/public-api';
+import type { WsAuthPayload } from '../../../common/interfaces/public-api';
+import type {
+  PresenceClient,
+  PresenceListItem,
+} from '../models/presence-client.model';
+export type {
+  PresenceClientCommand,
+  PresenceListItem,
+} from '../models/presence-client.model';
 import {
   PresenceEvent,
   PresenceTransport,
@@ -11,86 +19,18 @@ import {
   PRESENCE_ROOM_PARTICIPANT_REPOSITORY,
   type PresenceRoomParticipantRepository,
 } from '../ports/presence-room-participant.repository';
+import { PresenceClientMessageService } from './presence-client-message.service';
+import { PresenceHeartbeat } from './presence-heartbeat';
 import {
-  PresenceChatCommandResult,
-  PresenceChatService,
-} from './presence-chat.service';
-import {
-  type PresenceAvailability,
   type PresenceBroadcastPlayer,
   type PresenceConnectionContext,
   type PresencePublicPlayer,
   enrichPresencePlayers,
   mergePresencePlayersFromOrigins,
-  normalizePresenceContext,
-  parsePresenceRoomId,
   scorePresenceActivity,
 } from './presence-state.utils';
 
 type PresenceActivity = PresenceConnectionContext;
-
-export type PresenceClientCommand =
-  | { kind: 'chat-send'; text: string }
-  | { kind: 'chat-edit'; messageId: string; text: string }
-  | { kind: 'chat-delete'; messageId: string }
-  | {
-      kind: 'presence-context';
-      context: PresenceConnectionContext;
-      roomId: number | null;
-      roomName: string | null;
-    }
-  | { kind: 'presence-activity'; at: number };
-
-type PresenceClient = {
-  socket: WebSocket;
-  user: WsAuthPayload;
-  context: PresenceConnectionContext;
-  contextLocked: boolean;
-  roomHint: { id: number; name?: string | null } | null;
-  lastInteractionAt: number;
-};
-
-export type PresenceListItem = {
-  id: number;
-  username: string;
-  activity: PresenceConnectionContext;
-  currentRoom: { id: number; name: string } | null;
-  lastInteractionAt: number;
-  roomStarted: boolean | null;
-  availability?: PresenceAvailability;
-  location?: string;
-};
-
-type PresenceIncomingPayload =
-  | {
-      type: 'chat-send';
-      text?: unknown;
-    }
-  | {
-      type: 'chat-edit';
-      messageId?: unknown;
-      text?: unknown;
-    }
-  | {
-      type: 'chat-delete';
-      messageId?: unknown;
-    }
-  | {
-      type: 'presence-context';
-      context?: unknown;
-      roomId?: unknown;
-      roomName?: unknown;
-    }
-  | {
-      type: 'presence-activity';
-      at?: unknown;
-    };
-
-type BinaryPayloadLike =
-  | Buffer
-  | ArrayBuffer
-  | ArrayBufferView
-  | { byteLength: number };
 
 @Injectable()
 export class PresenceService implements OnModuleDestroy {
@@ -100,15 +40,17 @@ export class PresenceService implements OnModuleDestroy {
     string,
     { at: number; players: PresencePublicPlayer[] }
   >();
-  private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-  private readonly pingIntervalMs = 30_000;
-  private readonly pingTimeoutMs = 10_000;
+  private readonly heartbeat = new PresenceHeartbeat({
+    listSockets: () => Array.from(this.clients.keys()),
+    unregister: (socket) => this.unregister(socket),
+    refreshPresence: () => this.broadcastPresence(),
+  });
   private readonly instanceId = randomUUID();
   private readonly originTtlMs = 120_000;
   private readonly absentAfterMs = 3 * 60_000;
 
   constructor(
-    private readonly chat: PresenceChatService,
+    private readonly messages: PresenceClientMessageService,
     @Inject(PRESENCE_ROOM_PARTICIPANT_REPOSITORY)
     private readonly participants: PresenceRoomParticipantRepository,
     private readonly transport: PresenceTransport,
@@ -121,6 +63,7 @@ export class PresenceService implements OnModuleDestroy {
   }
 
   async onModuleDestroy(): Promise<void> {
+    this.heartbeat.stop();
     await this.transport.disconnect();
   }
 
@@ -137,212 +80,35 @@ export class PresenceService implements OnModuleDestroy {
       roomHint: null,
       lastInteractionAt: Date.now(),
     });
-    this.ensureHeartbeat();
+    this.heartbeat.ensureStarted();
   }
 
   unregister(socket: WebSocket) {
     this.clients.delete(socket);
     if (this.clients.size === 0) {
-      this.stopHeartbeat();
+      this.heartbeat.stop();
     }
   }
 
-  async handleClientPayload(from: PresenceClient, raw: unknown) {
-    let textPayload: string;
-    if (typeof raw === 'string') {
-      textPayload = raw;
-    } else if (Buffer.isBuffer(raw)) {
-      textPayload = raw.toString('utf-8');
-    } else if (this.isBinaryPayload(raw)) {
-      textPayload = Buffer.from(raw as ArrayBuffer).toString('utf-8');
-    } else {
-      return;
-    }
-    if (textPayload.length > 16_384) {
-      this.logger.warn('Message WS trop volumineux, rejeté');
-      return;
-    }
-    let payload: PresenceIncomingPayload | null = null;
-    try {
-      payload = this.parseIncomingPayload(JSON.parse(textPayload));
-    } catch {
-      return;
-    }
-    if (!payload) {
-      return;
-    }
-    if (payload.type === 'chat-send') {
-      from.lastInteractionAt = Date.now();
-      await this.handleChatSend(from, payload);
-      return;
-    }
-    if (payload.type === 'chat-edit') {
-      from.lastInteractionAt = Date.now();
-      await this.handleChatEdit(from, payload);
-      return;
-    }
-    if (payload.type === 'chat-delete') {
-      from.lastInteractionAt = Date.now();
-      await this.handleChatDelete(from, payload);
-      return;
-    }
-    if (payload.type === 'presence-context') {
-      from.lastInteractionAt = Date.now();
-      this.handlePresenceContext(from, payload);
-      this.broadcastPresence();
-      return;
-    }
-    if (payload.type === 'presence-activity') {
-      // Client-side interaction heartbeat (keyboard/mouse/touch), used for "absent" detection.
-      const at =
-        typeof payload.at === 'number' && Number.isFinite(payload.at)
-          ? payload.at
-          : Date.now();
-      from.lastInteractionAt = at;
-      // No immediate broadcast; heartbeat will refresh periodically, and other events can rebroadcast.
-    }
-  }
-
-  private async handleChatSend(
-    from: PresenceClient,
-    payload: Extract<PresenceIncomingPayload, { type: 'chat-send' }>,
-  ) {
-    const text = typeof payload.text === 'string' ? payload.text : '';
-    const result = await this.chat.sendMessage(from.user, text);
-    this.handleChatCommandResult(from.socket, result, (event) =>
-      this.broadcastChat(event),
-    );
-  }
-
-  private async handleChatEdit(
-    from: PresenceClient,
-    payload: Extract<PresenceIncomingPayload, { type: 'chat-edit' }>,
-  ) {
-    const text = typeof payload.text === 'string' ? payload.text : '';
-    const messageId =
-      typeof payload.messageId === 'string' ? payload.messageId.trim() : '';
-    if (!messageId) {
-      return;
-    }
-    const result = await this.chat.editMessage(from.user, messageId, text);
-    this.handleChatCommandResult(from.socket, result, (event) =>
-      this.broadcastChat(event),
-    );
-  }
-
-  private async handleChatDelete(
-    from: PresenceClient,
-    payload: Extract<PresenceIncomingPayload, { type: 'chat-delete' }>,
-  ) {
-    const messageId =
-      typeof payload.messageId === 'string' ? payload.messageId.trim() : '';
-    if (!messageId) {
-      return;
-    }
-    const result = await this.chat.deleteMessage(from.user, messageId);
-    this.handleChatCommandResult(from.socket, result, (event) =>
-      this.broadcastChat(event),
-    );
+  handleClientPayload(from: PresenceClient, raw: unknown): Promise<void> {
+    return this.messages.handle(from, raw, {
+      broadcastChat: (event) => this.broadcast(event, 'chat'),
+      presenceChanged: () => this.broadcastPresence(),
+    });
   }
 
   async isChatBannedNow(userId: number): Promise<boolean> {
-    return this.chat.isChatBannedNow(userId);
+    return this.messages.isChatBannedNow(userId);
   }
 
   async getChatBanInfo(
     userId: number,
   ): Promise<{ until: Date | null; reason: string | null } | null> {
-    return this.chat.getChatBanInfo(userId);
+    return this.messages.getChatBanInfo(userId);
   }
 
-  private handleChatCommandResult(
-    socket: WebSocket,
-    result: PresenceChatCommandResult,
-    onOk: (event: Record<string, unknown>) => void,
-  ) {
-    if (result.kind === 'message-posted') {
-      onOk({ type: 'chat-message', payload: result.message });
-      return;
-    }
-    if (result.kind === 'message-updated') {
-      onOk({ type: 'chat-message.updated', payload: result.message });
-      return;
-    }
-    if (result.kind === 'message-deleted') {
-      onOk({ type: 'chat-message.deleted', payload: { id: result.messageId } });
-      return;
-    }
-    if (result.kind === 'denied') {
-      this.safeSend(socket, {
-        type: 'error',
-        payload: result.payload,
-      });
-      try {
-        socket.close(4403, 'chat banned');
-      } catch {
-        /* ignore */
-      }
-      return;
-    }
-    if (result.kind === 'error') {
-      this.safeSend(socket, {
-        type: 'error',
-        payload: {
-          message: result.message,
-        },
-      });
-    }
-  }
-
-  private safeSend(client: WebSocket, payload: unknown) {
-    if (client.readyState !== WebSocket.OPEN) return;
-    try {
-      client.send(JSON.stringify(payload));
-    } catch {
-      // ignore
-    }
-  }
-
-  private handlePresenceContext(
-    client: PresenceClient,
-    payload: Extract<PresenceIncomingPayload, { type: 'presence-context' }>,
-  ) {
-    const raw =
-      typeof payload.context === 'string' ? payload.context.toLowerCase() : '';
-    const context = normalizePresenceContext(raw);
-    client.context = context;
-    client.contextLocked = true;
-    if (context === 'table') {
-      const roomId = parsePresenceRoomId(payload.roomId);
-      if (roomId !== null) {
-        let name: string | null = null;
-        if (typeof payload.roomName === 'string') {
-          const trimmed = payload.roomName.trim();
-          name = trimmed.length > 0 ? trimmed : null;
-        }
-        client.roomHint = { id: roomId, name };
-      } else {
-        client.roomHint = null;
-      }
-    } else {
-      client.roomHint = null;
-    }
-  }
-
-  async sendHistory(to: WebSocket) {
-    try {
-      const history = await this.chat.buildChatHistory();
-      to.send(
-        JSON.stringify({
-          type: 'chat-history',
-          editWindowSeconds: history.editWindowSeconds,
-          messages: history.messages,
-        }),
-      );
-    } catch (err) {
-      this.logger.error('Echec envoi historique chat', err as Error);
-      to.close();
-    }
+  sendHistory(to: WebSocket): Promise<void> {
+    return this.messages.sendHistory(to);
   }
 
   broadcastPresence() {
@@ -443,27 +209,13 @@ export class PresenceService implements OnModuleDestroy {
     }
   }
 
-  private broadcast(payload: Record<string, unknown>) {
-    const encoded = JSON.stringify(payload);
-    for (const { socket } of this.clients.values()) {
-      try {
-        socket.send(encoded);
-      } catch (err) {
-        this.logger.warn('Envoi WS échoué', err as Error);
-        this.unregister(socket);
-        try {
-          socket.close();
-        } catch {
-          /* ignore */
-        }
-      }
-    }
-  }
-
-  private broadcastChat(payload: Record<string, unknown>) {
+  private broadcast(
+    payload: Record<string, unknown>,
+    requiredContext?: PresenceConnectionContext,
+  ): void {
     const encoded = JSON.stringify(payload);
     for (const { socket, context } of this.clients.values()) {
-      if (context !== 'chat') {
+      if (requiredContext && context !== requiredContext) {
         continue;
       }
       try {
@@ -565,73 +317,6 @@ export class PresenceService implements OnModuleDestroy {
       ) {
         this.playersByOrigin.delete(origin);
       }
-    }
-  }
-
-  private isBinaryPayload(raw: unknown): raw is BinaryPayloadLike {
-    return Boolean(raw && typeof raw === 'object' && 'byteLength' in raw);
-  }
-
-  private parseIncomingPayload(value: unknown): PresenceIncomingPayload | null {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
-      return null;
-    }
-    const record = value as Record<string, unknown>;
-    return typeof record.type === 'string'
-      ? (record as PresenceIncomingPayload)
-      : null;
-  }
-
-  private ensureHeartbeat() {
-    if (this.heartbeatTimer) {
-      return;
-    }
-    this.heartbeatTimer = setInterval(
-      () => this.runHeartbeat(),
-      this.pingIntervalMs,
-    );
-  }
-
-  private stopHeartbeat() {
-    if (this.heartbeatTimer) {
-      clearInterval(this.heartbeatTimer);
-      this.heartbeatTimer = null;
-    }
-  }
-
-  private runHeartbeat() {
-    for (const socket of Array.from(this.clients.keys())) {
-      if (socket.readyState !== WebSocket.OPEN) {
-        this.unregister(socket);
-        continue;
-      }
-      const pongTimeout = setTimeout(() => {
-        this.unregister(socket);
-        try {
-          socket.terminate?.();
-        } catch {
-          socket.close();
-        }
-      }, this.pingTimeoutMs);
-      try {
-        socket.ping();
-        socket.once('pong', () => clearTimeout(pongTimeout));
-      } catch {
-        clearTimeout(pongTimeout);
-        this.unregister(socket);
-        try {
-          socket.terminate?.();
-        } catch {
-          socket.close();
-        }
-      }
-    }
-    // Periodic refresh so "absent" status propagates even without explicit events.
-    if (this.clients.size > 0) {
-      this.broadcastPresence();
-    }
-    if (this.clients.size === 0) {
-      this.stopHeartbeat();
     }
   }
 }

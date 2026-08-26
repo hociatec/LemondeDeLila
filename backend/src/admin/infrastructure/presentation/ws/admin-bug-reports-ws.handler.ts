@@ -82,4 +82,3 @@ export class AdminBugReportsWsHandler {
     return { type: WS_EVENTS.admin.bugReports.delete, payload: result };
   }
 }
-

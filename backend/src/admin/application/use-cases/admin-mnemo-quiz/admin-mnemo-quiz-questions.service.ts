@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { MnemoQuizStoreService } from '../../../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  ADMIN_MNEMO_QUIZ_STORE_PORT,
+  type AdminMnemoQuizStorePort,
+} from '../../ports/admin-mnemo-quiz-store.port';
 import type {
   MnemoQuestionStatus,
   MnemoQuizQuestion,
-} from '../../../../game/games/vents-infinis/arche-de-mnemosyne/public-api';
+} from '../../../domain/models/mnemo-quiz.model';
 import type {
   CreateAdminMnemoQuestionCommand,
   ListAdminMnemoQuestionsQuery,
@@ -14,7 +17,10 @@ import { AdminMnemoQuestionNotFoundError } from '../../../domain/errors/admin-do
 
 @Injectable()
 export class AdminMnemoQuizQuestionsService {
-  constructor(private readonly store: MnemoQuizStoreService) {}
+  constructor(
+    @Inject(ADMIN_MNEMO_QUIZ_STORE_PORT)
+    private readonly store: AdminMnemoQuizStorePort,
+  ) {}
 
   normalizeStatus(value: unknown): MnemoQuestionStatus | undefined {
     if (typeof value !== 'string') {
@@ -53,10 +59,9 @@ export class AdminMnemoQuizQuestionsService {
 
   update(command: UpdateAdminMnemoQuestionCommand) {
     if (command.categoryId) {
-      const existing = this.requireQuestion(command.id);
-      existing.categoryId = String(command.categoryId).trim();
-      existing.updatedAt = new Date().toISOString();
-      this.store.updateQuestion(command.id, {});
+      this.store.updateQuestion(command.id, {
+        categoryId: String(command.categoryId).trim(),
+      });
     }
 
     const patch: MnemoQuestionPatch = {};
@@ -95,7 +100,9 @@ export class AdminMnemoQuizQuestionsService {
   }
 
   private requireQuestion(id: string): MnemoQuizQuestion {
-    const existing = this.store.listQuestions().find((question) => question.id === id);
+    const existing = this.store
+      .listQuestions()
+      .find((question) => question.id === id);
     if (!existing) {
       throw new AdminMnemoQuestionNotFoundError();
     }

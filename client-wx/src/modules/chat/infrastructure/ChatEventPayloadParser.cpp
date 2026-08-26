@@ -3,7 +3,7 @@
 #include "modules/chat/infrastructure/ChatProtocolFields.h"
 #include "shared/data/time/DateTime.h"
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/chat/domain/ChatErrorMessages.h"
 #include "shared/network/domain/WsMessageTypes.h"
 #include "shared/network/application/realtime/RealtimeProtocolFields.h"
 
@@ -231,4 +231,3 @@ ChatEvent ParseErrorEvent(const nlohmann::json& root)
     return event;
 }
 }
-

@@ -24,4 +24,3 @@ export class UserWsHandler {
     return { type: WS_EVENTS.users.get, payload: { user } };
   }
 }
-

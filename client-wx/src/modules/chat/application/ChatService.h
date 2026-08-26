@@ -13,7 +13,7 @@
 #include "modules/chat/domain/ChatState.h"
 #include "modules/chat/application/IChatGateway.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/chat/domain/ChatErrorMessages.h"
 
 namespace lila::modules::options::application
 {

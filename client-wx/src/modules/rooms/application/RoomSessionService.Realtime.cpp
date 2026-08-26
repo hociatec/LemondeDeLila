@@ -84,7 +84,7 @@ void RoomSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t gene
             reconnecting_.store(true);
             NotifyEvent(
                 {domain::RoomEventType::ConnectionStatus, {}, {},
-                 std::string("Reconnexion " "\xC3\xA0" " la table...")},
+                 std::string("Reconnexion " "\xC3\xA0" " la table..."), false, {}},
                 generation);
 
             while (!stopToken.stop_requested() && sessionGeneration_.load() == generation)
@@ -95,10 +95,14 @@ void RoomSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t gene
                     auto room = gateway_.Reconnect(stopToken);
                     reconnecting_.store(false);
                     reconnectAttempt = 0;
-                    NotifyEvent({domain::RoomEventType::StateUpdated, std::move(room)}, generation);
+                    NotifyEvent(
+                        {domain::RoomEventType::StateUpdated,
+                         std::move(room), {}, {}, false, {}},
+                        generation);
                     NotifyEvent(
                         {domain::RoomEventType::ConnectionStatus, {}, {},
-                         std::string("Connexion " "\xC3\xA0" " la table r" "\xC3\xA9" "tablie.")},
+                         std::string("Connexion " "\xC3\xA0" " la table r" "\xC3\xA9" "tablie."),
+                         false, {}},
                         generation);
                     break;
                 }
@@ -122,7 +126,7 @@ void RoomSessionService::KeepAliveLoop(std::stop_token stopToken, std::size_t ge
         if (reconnecting_.load()) continue;
         try
         {
-            gateway_.Execute({domain::RoomCommand::Ping}, stopToken);
+            gateway_.Execute({domain::RoomCommand::Ping, false, {}}, stopToken);
         }
         catch (...)
         {

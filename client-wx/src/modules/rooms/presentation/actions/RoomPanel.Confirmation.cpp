@@ -38,7 +38,7 @@ void RoomPanel::RequestResetConfirmation()
         this);
     if (answer == wxYES)
     {
-        ExecuteCommand({domain::RoomCommand::Reset});
+        ExecuteCommand({domain::RoomCommand::Reset, false, {}});
         return;
     }
     UpdateStatus(wxString(L"R\u00E9initialisation annul\u00E9e."), false, true);

@@ -8,4 +8,3 @@ import { EngineServicesModule } from '../../../core/infrastructure/module/engine
   exports: [GameRegistryService],
 })
 export class GameRegistryModule {}
-

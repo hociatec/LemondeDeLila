@@ -6,9 +6,9 @@
 #include <wx/event.h>
 #include <wx/listbox.h>
 
-#include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/dice/application/GameDiceActionResolver.h"
+#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
@@ -17,47 +17,16 @@
 
 namespace lila::modules::gameplay::presentation
 {
-void GamePlayPanel::HandleEvent(domain::GameEvent event)
-{
-    switch (event.type)
-    {
-    case domain::GameEventType::StateUpdated:
-        if (event.state)
-        {
-            lila::shared::logging::LogInfo(
-                "GameInput",
-                "State received: version=" + std::to_string(event.state->version) +
-                    ", status=" + event.state->status +
-                    ", phase=" + event.state->phase +
-                    ", hand=" + std::to_string(event.state->hand.size()) +
-                    ", actions=" + std::to_string(event.state->actions.size()));
-        }
-        if (event.state) ApplyState(std::move(*event.state));
-        return;
-    case domain::GameEventType::Acknowledged:
-        lila::shared::logging::LogInfo(
-            "GameInput", "Acknowledgement received: " + event.message);
-        if (event.message == "start") RequestRefresh();
-        return;
-    case domain::GameEventType::TurnUpdated:
-    {
-        const auto message = event.message.empty()
-            ? wxString(L"Tour inconnu.")
-            : wxString(L"C'est au tour de ") + FromUtf8(event.message) + wxString(L".");
-        if (onHistoryMessage_) onHistoryMessage_(message);
-        return;
-    }
-    case domain::GameEventType::Error:
-        lila::shared::logging::LogError("GameInput", "Server error: " + event.message);
-        UpdateStatus(FromUtf8(event.message), true, true);
-        return;
-    case domain::GameEventType::Ignored:
-        return;
-    }
-}
-
 bool GamePlayPanel::HandleKey(wxKeyEvent& event)
 {
+    const int keyCode = event.GetKeyCode();
+
+    // A CHAR_HOOK is delivered before the top-level window sees the key. Never
+    // consume the operating-system close shortcut, including while a modal game
+    // control or a room-start transition owns the gameplay focus.
+    if (event.AltDown() && keyCode == WXK_F4) return false;
+    if (!IsOpen()) return false;
+
     if (IsConfirmationVisible())
     {
         return confirmationPanel_->HandleKey(event);
@@ -71,7 +40,10 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         return pawnSelectionPanel_->HandleKey(event);
     }
 
-    const int keyCode = event.GetKeyCode();
+    // Tab belongs to RoomPanel's two-zone navigation. Handling it here would
+    // trap the keyboard inside the hand because this panel uses CHAR_HOOK.
+    if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB) return false;
+
     const bool tableShortcutHasPriority =
         event.ControlDown() || event.AltDown() || event.MetaDown() ||
         keyCode == 'Q' || keyCode == 'q' || keyCode == 'X' || keyCode == 'x';
@@ -83,33 +55,45 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         return false;
     }
 
+    // Before the room starts, Enter must reach the room activation path so it
+    // can either start or announce the server-provided participant constraint.
+    if (!roomStarted_) return false;
+
+    if (event.IsAutoRepeat() && key != "F5") return true;
+
     if (key == "ENTER")
     {
         if (IsFinished())
         {
-            SendKey(key);
+            SendKey("ENTER");
             return true;
         }
-        if (handPanel_->Count() > 0)
+        // Match WPF: the visible hand/choice owns Enter even when focus still
+        // sits on the stable game-zone anchor.
+        if (handPanel_->IsShown() && !state_.hand.empty())
         {
             static_cast<void>(ActivateSelectedHandCard());
             return true;
         }
-        if (HasDiceAction())
+        if (choicesList_->IsShown() && choicesList_->GetCount() > 0)
+        {
+            static_cast<void>(ActivateSelectedPendingChoice());
+            return true;
+        }
+        auto* focused = wxWindow::FindFocus();
+        if (focused == dicePanel_->NavigationTarget())
         {
             static_cast<void>(ActivateSelectedDie());
             return true;
         }
-        if (auto roll = ResolveRollAction())
+        if (focused == linesList_ && linesList_->IsShown())
         {
-            lila::shared::logging::LogInfo(
-                "GameInput", "Enter roll action resolved: " + roll->type);
-            PrepareAndExecuteAction(std::move(*roll));
+            ActivateSelectedLine();
             return true;
         }
         if (state_.prompt && submittedPromptActionType_ == state_.prompt->actionType)
             return true;
-        ActivateSelectedLine();
+        SendKey(key);
         return true;
     }
     if (key == "F5")
@@ -117,7 +101,9 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         RequestRefresh();
         return true;
     }
-    return HandleShortcut(key);
+    if (HandleShortcut(key)) return true;
+    SendKey(key);
+    return true;
 }
 
 void GamePlayPanel::ActivateSelectedLine()
@@ -125,7 +111,7 @@ void GamePlayPanel::ActivateSelectedLine()
     const int selection = linesList_->GetSelection();
     if (selection == wxNOT_FOUND || selection < 0 || static_cast<std::size_t>(selection) >= state_.lines.size())
     {
-        UpdateStatus(wxString(L"Aucune ligne sÃ©lectionnÃ©e."), true, true);
+        UpdateStatus(wxString(L"Aucune ligne sélectionnée."), true, true);
         return;
     }
     const auto& line = state_.lines[static_cast<std::size_t>(selection)];

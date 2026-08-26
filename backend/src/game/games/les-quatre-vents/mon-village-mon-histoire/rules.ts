@@ -1,0 +1,106 @@
+import { defineAction, gameInput } from '../../../core/application/public-api';
+import { VILLAGE_TILES } from './content';
+import type { MonVillageState, VillageCard, VillageCollection } from './state';
+
+const TRACK = 'village';
+const ZONE_RANGES = [
+  { min: 1, max: 6, id: 1 },
+  { min: 7, max: 13, id: 2 },
+  { min: 14, max: 20, id: 3 },
+  { min: 21, max: 25, id: 4 },
+  { min: 26, max: 31, id: 5 },
+  { min: 32, max: 36, id: 6 },
+  { min: 37, max: 41, id: 7 },
+  { min: 42, max: 42, id: 8 },
+] as const;
+
+export const roll = defineAction<MonVillageState, Record<string, never>>({
+  input: gameInput.object({}),
+  documentation: 'Lance le dé, déplace le pion et collecte le métier atteint.',
+  execute: ({ state, actor, ctx }) => {
+    const value = ctx.dice.roll('main').total;
+    state.lastRoll = value;
+    const position = ctx.movement.move(TRACK, actor.id, value);
+    const tile = VILLAGE_TILES[position];
+    ctx.history.add(`${actor.username} lance le dé : « ${value} ».`);
+    ctx.history.add(`${actor.username} atteint ${tile.title}.`);
+    if (tile.type === 'finish') {
+      state.winnerId = collectionWinner(state.collections);
+      ctx.history.add(
+        `${ctx.players.get(state.winnerId)?.username ?? 'Un joueur'} remporte la partie avec ${state.collections[state.winnerId]?.total ?? 0} cartes.`,
+      );
+      return;
+    }
+    const zoneId = zoneForTile(tile.n);
+    if (zoneId != null) collectCard(state, actor.id, zoneId, ctx);
+    ctx.turn.end();
+  },
+});
+
+export const MON_VILLAGE_ACTIONS = { roll };
+
+export function collectionWinner(
+  collections: Readonly<Record<number, VillageCollection>>,
+): number {
+  const ranked = Object.entries(collections)
+    .map(([playerId, collection]) => ({
+      playerId: Number(playerId),
+      collection,
+    }))
+    .sort(
+      (left, right) =>
+        right.collection.total - left.collection.total ||
+        compareZones(right.collection, left.collection) ||
+        left.playerId - right.playerId,
+    );
+  return ranked[0]?.playerId ?? 0;
+}
+
+function compareZones(
+  left: VillageCollection,
+  right: VillageCollection,
+): number {
+  for (const zone of ZONE_RANGES) {
+    const difference =
+      (left.byZone[zone.id] ?? 0) - (right.byZone[zone.id] ?? 0);
+    if (difference !== 0) return difference;
+  }
+  return 0;
+}
+
+function collectCard(
+  state: MonVillageState,
+  playerId: number,
+  zoneId: number,
+  ctx: Parameters<typeof roll.execute>[0]['ctx'],
+): void {
+  const deckId = deckForZone(zoneId);
+  const card = ctx.cards.drawOrRecycle<VillageCard>(deckId);
+  if (!card) {
+    ctx.history.add(`La zone ${zoneId} ne contient plus de carte.`);
+    return;
+  }
+  ctx.cards.discard(deckId, card);
+  const collection = state.collections[playerId];
+  collection.total += 1;
+  collection.byZone[zoneId] = (collection.byZone[zoneId] ?? 0) + 1;
+  ctx.history.add(
+    `${ctx.players.get(playerId)?.username ?? 'Le joueur'} collecte « ${card.title} ».`,
+  );
+  ctx.events.emit('mon-village.card.collected', {
+    playerId,
+    zoneId,
+    cardId: card.id,
+  });
+}
+
+export function zoneForTile(tile: number): number | null {
+  return (
+    ZONE_RANGES.find((range) => tile >= range.min && tile <= range.max)?.id ??
+    null
+  );
+}
+
+export function deckForZone(zoneId: number): string {
+  return `zone-${zoneId}`;
+}

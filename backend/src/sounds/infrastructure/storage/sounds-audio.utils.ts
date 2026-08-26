@@ -9,6 +9,7 @@ import * as path from 'path';
 import ffmpegStatic from 'ffmpeg-static';
 import ffprobeStatic from 'ffprobe-static';
 import { toSoundErrorLike } from './sounds-storage.utils';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 type ProcessResult = {
   code: number;
@@ -223,7 +224,7 @@ async function runSoundProcess(
 }
 
 export function isSoundSpawnExecutionError(err: unknown): boolean {
-  const code = String(toSoundErrorLike(err).code ?? '').toUpperCase();
+  const code = stringOrEmpty(toSoundErrorLike(err).code).toUpperCase();
   return code === 'ENOENT' || code === 'EACCES' || code === 'EPERM';
 }
 
@@ -233,12 +234,26 @@ export function createAudioToolExecutionError(
   hint?: string,
 ): InternalServerErrorException {
   const errorLike = toSoundErrorLike(err);
-  const code = errorLike.code ? ` (${String(errorLike.code)})` : '';
-  const details = errorLike.message ? `: ${String(errorLike.message)}` : '';
+  const errorCode = stringOrEmpty(errorLike.code);
+  const errorMessage = stringOrEmpty(errorLike.message);
+  const code = errorCode ? ` (${errorCode})` : '';
+  const details = errorMessage ? `: ${errorMessage}` : '';
   const extra = hint ? ` ${hint}` : '';
   return new InternalServerErrorException(
     `Impossible d'exécuter ${tool}${code}${details}.${extra}`.trim(),
   );
+}
+
+function assertWavHeader(buffer: Buffer): void {
+  if (buffer.length < 44) {
+    throw new BadRequestException('Fichier WAV invalide (entête).');
+  }
+  if (
+    buffer.toString('ascii', 0, 4) !== 'RIFF' ||
+    buffer.toString('ascii', 8, 12) !== 'WAVE'
+  ) {
+    throw new BadRequestException('Fichier WAV invalide (RIFF/WAVE).');
+  }
 }
 
 async function readWavMeta(filePath: string): Promise<{
@@ -255,16 +270,7 @@ async function readWavMeta(filePath: string): Promise<{
     const buf = Buffer.allocUnsafe(headerSize);
     const { bytesRead } = await fh.read(buf, 0, headerSize, 0);
     const b = buf.subarray(0, bytesRead);
-
-    if (b.length < 44) {
-      throw new BadRequestException('Fichier WAV invalide (entête).');
-    }
-    if (
-      b.toString('ascii', 0, 4) !== 'RIFF' ||
-      b.toString('ascii', 8, 12) !== 'WAVE'
-    ) {
-      throw new BadRequestException('Fichier WAV invalide (RIFF/WAVE).');
-    }
+    assertWavHeader(b);
 
     let pos = 12;
     let audioFormat = 0;

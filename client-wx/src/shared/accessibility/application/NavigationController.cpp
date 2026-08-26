@@ -122,11 +122,6 @@ bool NavigationController::FocusFirst(const Scope& scope)
     return Focus(First(scope));
 }
 
-bool NavigationController::FocusLast(const Scope& scope)
-{
-    return Focus(Last(scope));
-}
-
 bool NavigationController::Move(
     const Scope& scope,
     Direction direction,
@@ -150,61 +145,6 @@ bool NavigationController::Move(
     return Focus(controls[target]);
 }
 
-bool NavigationController::MoveCyclic(const Scope& scope, bool reverse, wxWindow* focused)
-{
-    return Move(scope, reverse ? Direction::Backward : Direction::Forward, Boundary::Wrap, focused);
-}
-
-bool NavigationController::MoveLinear(const Scope& scope, bool reverse, wxWindow* focused)
-{
-    return Move(scope, reverse ? Direction::Backward : Direction::Forward, Boundary::Clamp, focused);
-}
-
-bool NavigationController::WrapBoundary(const Scope& scope, bool reverse, wxWindow* owner)
-{
-    wxWindow* first = First(scope);
-    wxWindow* last = Last(scope);
-    wxWindow* focused = wxWindow::FindFocus();
-    if (first == nullptr || last == nullptr)
-    {
-        return false;
-    }
-    if (focused == nullptr)
-    {
-        return reverse ? Focus(last) : Focus(first);
-    }
-    if (!reverse && focused == last)
-    {
-        return Focus(first);
-    }
-    if (reverse && focused == first)
-    {
-        return Focus(last);
-    }
-    if (owner != nullptr)
-    {
-        wxWindow* ancestor = focused;
-        while (ancestor != nullptr && ancestor != owner)
-        {
-            ancestor = ancestor->GetParent();
-        }
-        if (ancestor == nullptr)
-        {
-            return reverse ? Focus(last) : Focus(first);
-        }
-    }
-    return false;
-}
-
-bool NavigationController::HandleTab(wxKeyEvent& event, const Scope& scope, Boundary boundary)
-{
-    if (!IsTabKey(event.GetKeyCode()))
-    {
-        return false;
-    }
-    return Move(scope, event.ShiftDown() ? Direction::Backward : Direction::Forward, boundary);
-}
-
 bool NavigationController::HandleVertical(wxKeyEvent& event, const Scope& scope, Boundary boundary)
 {
     const int key = event.GetKeyCode();
@@ -217,19 +157,6 @@ bool NavigationController::HandleVertical(wxKeyEvent& event, const Scope& scope,
         return Move(scope, Direction::Forward, boundary);
     }
     return false;
-}
-
-bool NavigationController::HandleEscapeBacktrack(
-    wxWindow* currentContainer,
-    wxWindow* fallbackTarget,
-    wxWindow* focused)
-{
-    if (!IsDescendantOf(focused, currentContainer))
-    {
-        return false;
-    }
-
-    return Focus(fallbackTarget);
 }
 
 }

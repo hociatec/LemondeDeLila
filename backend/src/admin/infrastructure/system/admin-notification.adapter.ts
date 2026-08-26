@@ -58,4 +58,3 @@ export class AdminNotificationAdapter implements AdminNotificationPort {
     this.notifications.disconnectAll(reason, WS_EVENTS.system.serverDisconnect);
   }
 }
-

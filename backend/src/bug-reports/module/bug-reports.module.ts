@@ -45,8 +45,7 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
       useFactory: (
         repo: BugReportRepository,
         normalizer: BugReportStatusNormalizerService,
-      ) =>
-        new ListBugReportsService(repo, normalizer),
+      ) => new ListBugReportsService(repo, normalizer),
       inject: [BUG_REPORT_REPOSITORY, BugReportStatusNormalizerService],
     },
     {
@@ -54,8 +53,7 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
       useFactory: (
         repo: BugReportRepository,
         normalizer: BugReportStatusNormalizerService,
-      ) =>
-        new GetBugReportService(repo, normalizer),
+      ) => new GetBugReportService(repo, normalizer),
       inject: [BUG_REPORT_REPOSITORY, BugReportStatusNormalizerService],
     },
     {
@@ -69,8 +67,7 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
       useFactory: (
         repo: BugReportRepository,
         getBugReport: GetBugReportService,
-      ) =>
-        new UpdateBugReportService(repo, getBugReport),
+      ) => new UpdateBugReportService(repo, getBugReport),
       inject: [BUG_REPORT_REPOSITORY, GetBugReportService],
     },
     {
@@ -109,8 +106,7 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
       useFactory: (
         repo: BugReportCommentRepository,
         reports: BugReportRepository,
-      ) =>
-        new AddBugReportCommentService(repo, reports),
+      ) => new AddBugReportCommentService(repo, reports),
       inject: [BUG_REPORT_COMMENT_REPOSITORY, BUG_REPORT_REPOSITORY],
     },
   ],

@@ -1,0 +1,10 @@
+[Unit]
+Description=Le Monde de Lila - déploiement backend local
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/updatecmd backend
+StandardOutput=journal
+StandardError=journal

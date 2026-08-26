@@ -2,7 +2,6 @@
 #include <vector>
 
 #include "modules/messaging/presentation/MessagingSelectionMemory.h"
-#include "modules/messaging/presentation/MessagingSelectionMemory.inl"
 
 using namespace lila::modules::messaging;
 
@@ -10,18 +9,18 @@ int main()
 {
     presentation::MessagingSelectionMemory memory;
     std::vector<domain::MessagingMessage> messages(3);
-    messages[0].id = "a";
-    messages[1].id = "b";
-    messages[2].id = "c";
+    messages[0].id = lila::shared::domain::MessageId{"a"};
+    messages[1].id = lila::shared::domain::MessageId{"b"};
+    messages[2].id = lila::shared::domain::MessageId{"c"};
 
     assert(memory.ResolveIndex(domain::MessagingBox::Inbox, messages) == 0);
-    memory.Store(domain::MessagingBox::Inbox, std::string("b"));
+    memory.Store(domain::MessagingBox::Inbox, lila::shared::domain::MessageId{"b"});
     assert(memory.ResolveIndex(domain::MessagingBox::Inbox, messages) == 1);
 
-    memory.Store(domain::MessagingBox::Inbox, std::string("missing"));
+    memory.Store(domain::MessagingBox::Inbox, lila::shared::domain::MessageId{"missing"});
     assert(memory.ResolveIndex(domain::MessagingBox::Inbox, messages) == 0);
 
-    memory.Store(domain::MessagingBox::Outbox, std::string("c"));
+    memory.Store(domain::MessagingBox::Outbox, lila::shared::domain::MessageId{"c"});
     assert(memory.ResolveIndex(domain::MessagingBox::Outbox, messages) == 2);
     assert(memory.ResolveIndex(domain::MessagingBox::Deleted, messages) == 0);
 

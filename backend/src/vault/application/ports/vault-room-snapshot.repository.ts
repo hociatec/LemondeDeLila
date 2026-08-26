@@ -5,7 +5,10 @@ export const VAULT_ROOM_SNAPSHOT_REPOSITORY = Symbol(
 );
 
 export interface VaultRoomSnapshotRepository {
-  listByOwner(ownerUserId: number, limit: number): Promise<VaultRoomSnapshotRecord[]>;
+  listByOwner(
+    ownerUserId: number,
+    limit: number,
+  ): Promise<VaultRoomSnapshotRecord[]>;
   findByIdForOwner(
     id: string,
     ownerUserId: number,
@@ -13,8 +16,5 @@ export interface VaultRoomSnapshotRepository {
   existsByIdForOwner(id: string, ownerUserId: number): Promise<boolean>;
   create(data: Partial<VaultRoomSnapshotRecord>): VaultRoomSnapshotRecord;
   save(entity: VaultRoomSnapshotRecord): Promise<VaultRoomSnapshotRecord>;
-  deleteByIdForOwner(
-    id: string,
-    ownerUserId: number,
-  ): Promise<boolean>;
+  deleteByIdForOwner(id: string, ownerUserId: number): Promise<boolean>;
 }

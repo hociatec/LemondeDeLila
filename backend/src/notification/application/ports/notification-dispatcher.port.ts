@@ -6,9 +6,6 @@ export type NotificationDispatcher = {
     eventType: string,
     payload: Record<string, unknown>,
   ): Promise<void>;
-  notifyAll(
-    eventType: string,
-    payload: Record<string, unknown>,
-  ): Promise<void>;
+  notifyAll(eventType: string, payload: Record<string, unknown>): Promise<void>;
   disconnectAll(reason?: string, eventType?: string): void;
 };

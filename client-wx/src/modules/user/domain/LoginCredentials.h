@@ -9,9 +9,5 @@ struct LoginCredentials
     std::string username;
     std::string password;
 
-    [[nodiscard]] bool IsComplete() const
-    {
-        return !username.empty() && !password.empty();
-    }
 };
 }

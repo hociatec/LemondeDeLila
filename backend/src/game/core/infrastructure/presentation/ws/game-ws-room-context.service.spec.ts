@@ -11,43 +11,48 @@ describe('GameWsRoomContextService transitions', () => {
   };
 
   it('delegates reset to the authorized room lifecycle', async () => {
-    const rooms = {
-      findOne: jest.fn().mockResolvedValue({ ...room }),
-      save: jest.fn(),
-    };
     const roomGame = {
+      getRoomPayload: jest.fn().mockResolvedValue({ room }),
       resetRoom: jest.fn().mockResolvedValue(undefined),
       startRoom: jest.fn().mockResolvedValue(undefined),
     };
-    const service = new GameWsRoomContextService(
-      rooms as never,
-      roomGame as never,
-    );
+    const service = new GameWsRoomContextService(roomGame as never);
 
     await expect(service.transition(4, 'reset', 23)).resolves.toBe('lama');
     expect(roomGame.resetRoom).toHaveBeenCalledWith(4, 23);
-    expect(rooms.save).not.toHaveBeenCalled();
   });
 
   it('propagates the owner authorization failure', async () => {
-    const rooms = {
-      findOne: jest.fn().mockResolvedValue({ ...room }),
-      save: jest.fn(),
-    };
     const roomGame = {
+      getRoomPayload: jest.fn().mockResolvedValue({ room }),
       resetRoom: jest
         .fn()
         .mockRejectedValue(new ForbiddenException('Propriétaire requis')),
       startRoom: jest.fn(),
     };
-    const service = new GameWsRoomContextService(
-      rooms as never,
-      roomGame as never,
-    );
+    const service = new GameWsRoomContextService(roomGame as never);
 
     await expect(service.transition(4, 'reset', 99)).rejects.toBeInstanceOf(
       ForbiddenException,
     );
-    expect(rooms.save).not.toHaveBeenCalled();
+  });
+
+  it('allows writes only for the owner or an active participant', async () => {
+    const roomGame = {
+      getRoomPayload: jest.fn().mockResolvedValue({
+        room: {
+          ...room,
+          owner: { id: 1 },
+          players: [{ id: 2 }],
+        },
+      }),
+    };
+    const service = new GameWsRoomContextService(roomGame as never);
+
+    await expect(service.ensureWritable(4, 1)).resolves.toBeUndefined();
+    await expect(service.ensureWritable(4, 2)).resolves.toBeUndefined();
+    await expect(service.ensureWritable(4, 3)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 });

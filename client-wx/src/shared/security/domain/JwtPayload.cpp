@@ -9,7 +9,7 @@
 #include <nlohmann/json.hpp>
 
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/security/domain/SecurityErrorMessages.h"
 
 namespace lila::shared::security
 {

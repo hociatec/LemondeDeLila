@@ -17,7 +17,10 @@ export type WsApiHubConnectionMeta = {
 export class WsApiHubService {
   private readonly logger = new Logger(WsApiHubService.name);
   private readonly socketsByConnectionId = new Map<string, WsSocketLike>();
-  private readonly metaByConnectionId = new Map<string, WsApiHubConnectionMeta>();
+  private readonly metaByConnectionId = new Map<
+    string,
+    WsApiHubConnectionMeta
+  >();
 
   register(
     connectionId: string,

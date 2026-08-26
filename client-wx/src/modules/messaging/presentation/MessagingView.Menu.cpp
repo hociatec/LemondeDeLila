@@ -21,10 +21,10 @@ void MessagingView::BuildMenuScreen()
     menuPanel = new wxPanel(screenBook);
     auto* sizer = new wxBoxSizer(wxVERTICAL);
     static const std::array<lila::shared::ui::navigation::MenuBlueprintItem, 4> menuItems = {{
-        {"compose", lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingMenuCompose), wxEmptyString},
-        {"inbox", lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingMenuInbox), wxEmptyString},
-        {"outbox", lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingMenuOutbox), wxEmptyString},
-        {"deleted", lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingMenuDeleted), wxEmptyString},
+        {"compose", lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingMenuCompose)},
+        {"inbox", lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingMenuInbox)},
+        {"outbox", lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingMenuOutbox)},
+        {"deleted", lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingMenuDeleted)},
     }};
     menu = new lila::shared::ui::controls::VerticalMenu(
         menuPanel,

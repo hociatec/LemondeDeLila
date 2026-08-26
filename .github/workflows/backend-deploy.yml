@@ -1,8 +1,7 @@
 name: Backend - Build & Deploy
 
 on:
-  push:
-    branches: [ "main" ]
+  # Secours manuel uniquement. Le déploiement normal se fait localement avec updatecmd.
   workflow_dispatch:
 
 concurrency:
@@ -53,27 +52,13 @@ jobs:
           node -v
           npm -v
 
-      - name: Guard stale deploy lock
-        run: |
-          set -euo pipefail
-          LOCK=/var/lock/lemonde-deploy.lock
-          if sudo test -f "$LOCK"; then
-            PID=$(sudo cat "$LOCK" 2>/dev/null || true)
-            if [ -n "$PID" ] && sudo kill -0 "$PID" >/dev/null 2>&1; then
-              echo "Deploy lock already held by running PID $PID"
-              exit 1
-            fi
-            echo "Removing stale deploy lock left by PID ${PID:-unknown}"
-            sudo rm -f "$LOCK"
-          fi
       - name: Deploy on server
         run: |
           set -euo pipefail
-          sudo -n /usr/local/sbin/deploy-lemonde-prod
+          sudo -n /usr/local/sbin/updatecmd backend
 
-      - name: Verify deployed build SHA
+      - name: Verify local deployment health
         env:
-          EXPECTED_SHA: ${{ github.sha }}
           PORT: 3001
         run: |
           set -euo pipefail
@@ -86,28 +71,11 @@ jobs:
           }
           trap cleanup EXIT
 
-          verify_json() {
-            node - "$tmp_json" <<'NODE'
-          const fs = require("fs");
-          const filePath = process.argv[2];
-          const expected = (process.env.EXPECTED_SHA || "").trim();
-          const raw = fs.readFileSync(filePath, "utf8");
-          const parsed = JSON.parse(raw);
-          const sha = String(parsed?.build?.sha ?? "").trim();
-          console.log("deployed_sha=" + (sha || "(missing)"));
-          if (!expected) {
-            console.log("expected_sha=(missing) - skipping strict check");
-            process.exit(0);
-          }
-          console.log("expected_sha=" + expected);
-          if (!sha) process.exit(2);
-          if (sha !== expected) process.exit(3);
-          NODE
-          }
-
           for attempt in $(seq 1 "$attempts"); do
             echo "Checking ${url} (attempt ${attempt}/${attempts})"
-            if curl -fsS "${url}" -o "$tmp_json" && verify_json; then
+            if curl -fsS "${url}" -o "$tmp_json" \
+              && jq -e '.build.source == "env" and (.build.sha | test("^[a-f0-9]{64}$"))' "$tmp_json"; then
+              jq '{build}' "$tmp_json"
               exit 0
             fi
 
@@ -116,7 +84,7 @@ jobs:
             fi
           done
 
-          echo "Backend did not expose expected build SHA after $((attempts * delay))s"
+          echo "Backend local unhealthy after $((attempts * delay))s"
           sudo -n systemctl --no-pager --full status lila-backend.service || true
           sudo -n journalctl -u lila-backend.service --no-pager -n 120 || true
           exit 1

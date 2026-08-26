@@ -52,4 +52,3 @@ export class AdminUpdateUserDto {
   @MaxLength(255)
   banReason?: string | null;
 }
-

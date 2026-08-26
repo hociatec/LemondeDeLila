@@ -22,6 +22,7 @@ struct GamePrompt final
     std::string label;
     std::string actionType;
     std::string cancelActionType;
+    bool submitThenStart = false;
     std::vector<GamePromptField> fields;
 };
 }

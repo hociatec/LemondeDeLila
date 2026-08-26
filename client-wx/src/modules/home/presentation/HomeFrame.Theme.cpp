@@ -69,7 +69,10 @@ void HomeFrame::ApplyTheme()
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*loginPasswordInput_, wxString(L"Mot de passe"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*loginPasswordTextInput_, wxString(L"Mot de passe"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*loginShowPasswordCheck_, wxString(L"Afficher le mot de passe"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*loginRememberMeCheck_, wxString(L"Se souvenir de moi"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *loginRememberMeCheck_,
+        wxString(L"Se souvenir de moi"),
+        wxString(L"Case à cocher pour conserver la session après la fermeture de l'application"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *loginSubmitButton_,
         wxString(L"Connexion"),

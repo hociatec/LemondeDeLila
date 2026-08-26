@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
+#include "shared/data/json/JsonCoercion.h"
 
 namespace lila::modules::gameplay::infrastructure::detail
 {
@@ -30,14 +31,6 @@ std::string CompactPayloadLabel(const nlohmann::json& payload)
         else out << item.value().dump();
     }
     return out.str();
-}
-
-std::optional<int> ReadOptionalInt(const nlohmann::json& value, const char* field)
-{
-    const auto found = value.find(field);
-    return found != value.end() && found->is_number_integer()
-        ? std::optional<int>(found->get<int>())
-        : std::nullopt;
 }
 
 std::string BuildActionLabel(const domain::GameAction& action)
@@ -119,6 +112,7 @@ std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode)
     prompt.label = ReadString(*pending, "label");
     prompt.actionType = ReadString(*data, "actionType");
     prompt.cancelActionType = ReadString(*data, "cancelActionType");
+    prompt.submitThenStart = ReadBool(*data, "submitThenStart");
     if (prompt.actionType.empty() || fields == data->end() || !fields->is_array()) return std::nullopt;
     for (const auto& raw : *fields)
     {
@@ -128,8 +122,8 @@ std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode)
         field.label = ReadString(raw, "label");
         field.kind = ReadString(raw, "kind");
         field.initialText = ReadString(raw, "initialText");
-        field.minimum = ReadOptionalInt(raw, "min");
-        field.maximum = ReadOptionalInt(raw, "max");
+        field.minimum = lila::shared::data::json::ReadOptionalIntegerCoerced(raw, "min");
+        field.maximum = lila::shared::data::json::ReadOptionalIntegerCoerced(raw, "max");
         if (field.label.empty()) field.label = field.key;
         if (!field.key.empty()) prompt.fields.push_back(std::move(field));
     }

@@ -77,7 +77,7 @@ domain::RoomEvent RoomSessionGateway::DecodeEvent(const nlohmann::json& message)
     {
         auto error = payload.value("message", std::string("Action de table impossible."));
         if (FailPendingCommands(error)) return {};
-        return {domain::RoomEventType::Error, {}, {}, std::move(error)};
+        return {domain::RoomEventType::Error, {}, {}, std::move(error), false, {}};
     }
     if (type == protocol::Ack)
     {
@@ -86,36 +86,57 @@ domain::RoomEvent RoomSessionGateway::DecodeEvent(const nlohmann::json& message)
     }
     if (type == protocol::Pong) return {};
     if (type == protocol::Left || type == protocol::Deleted)
-        return {domain::RoomEventType::Closed, {}, {}, "La table n'est plus disponible."};
+        return {domain::RoomEventType::Closed, {}, {},
+            "La table n'est plus disponible.", false, {}};
     if (type == protocol::Created || type == protocol::Joined || type == protocol::Updated)
     {
         auto room = codec::ReadRoomState(payload);
         room.selfSpectator = selfSpectator_.load();
-        return {domain::RoomEventType::StateUpdated, std::move(room)};
+        return {domain::RoomEventType::StateUpdated, std::move(room), {}, {}, false, {}};
     }
     if (type == protocol::InfoResult)
-        return {domain::RoomEventType::Info, {}, {}, payload.value("message", std::string{})};
+        return {domain::RoomEventType::Info, {}, {},
+            payload.value("message", std::string{}), false, {}};
     if (type == protocol::Privacy)
     {
         const auto isPrivate = payload.value("isPrivate", false);
-        return {domain::RoomEventType::PrivacyChanged, {}, {}, {}, isPrivate};
+        return {domain::RoomEventType::PrivacyChanged, {}, {}, {}, isPrivate, {}};
     }
     if (type == protocol::Role)
     {
         const auto spectator = payload.value("spectator", selfSpectator_.load());
         selfSpectator_.store(spectator);
-        return {domain::RoomEventType::RoleChanged, {}, {}, payload.value("message", std::string{}), spectator};
+        return {domain::RoomEventType::RoleChanged, {}, {},
+            payload.value("message", std::string{}), spectator, {}};
+    }
+    if (type == protocol::BotAdded || type == protocol::BotRemoved)
+    {
+        const auto bot = payload.find("bot");
+        if (bot == payload.end() || !bot->is_object()) return {};
+        const auto id = bot->find("id");
+        const auto name = bot->find("name");
+        if (id == bot->end() || !id->is_number_integer() ||
+            name == bot->end() || !name->is_string())
+            return {};
+        domain::RoomEvent event;
+        event.type = type == protocol::BotAdded
+            ? domain::RoomEventType::BotAdded
+            : domain::RoomEventType::BotRemoved;
+        event.member = domain::RoomMember{id->get<int>(), name->get<std::string>()};
+        return event;
     }
     if (type == protocol::Intent && payload.value("type", std::string{}) == "announcement")
     {
         const auto details = payload.value("payload", nlohmann::json::object());
-        return {domain::RoomEventType::Announcement, {}, {}, details.value("message", std::string{})};
+        return {domain::RoomEventType::Announcement, {}, {},
+            details.value("message", std::string{}), false, {}};
     }
     if (type == protocol::ChatMessage)
     {
         auto chat = ReadChatMessage(payload);
         if (!chat) return {};
-        return {domain::RoomEventType::ChatMessage, {}, {std::move(*chat)}};
+        return {domain::RoomEventType::ChatMessage, {},
+            {std::move(*chat)}, {}, false, {}};
     }
     if (type == protocol::ChatHistory)
     {

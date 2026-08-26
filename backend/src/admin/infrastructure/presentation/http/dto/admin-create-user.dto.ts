@@ -40,4 +40,3 @@ export class AdminCreateUserDto {
   @IsBoolean()
   emailVerified?: boolean;
 }
-

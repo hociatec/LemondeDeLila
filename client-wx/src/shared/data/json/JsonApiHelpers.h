@@ -1,7 +1,6 @@
 #pragma once
 
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
 
 #include <nlohmann/json.hpp>
 #include <functional>
@@ -18,37 +17,6 @@ inline const nlohmann::json::array_t& EnsureArrayStrict(const nlohmann::json& do
         throw std::runtime_error(errorMessage);
     }
     return document[fieldName].get_ref<const nlohmann::json::array_t&>();
-}
-
-inline std::int64_t ReadStrictTimestamp(const nlohmann::json& object, const char* key, const char* errorMessage)
-{
-    if (!object.contains(key))
-    {
-        throw std::runtime_error(errorMessage);
-    }
-
-    const auto& value = object[key];
-    if (value.is_number_integer())
-    {
-        return value.get<std::int64_t>();
-    }
-    if (value.is_string())
-    {
-        try
-        {
-            return std::stoll(value.get<std::string>());
-        }
-        catch (const std::invalid_argument&)
-        {
-            throw std::runtime_error(errorMessage);
-        }
-        catch (const std::out_of_range&)
-        {
-            throw std::runtime_error(errorMessage);
-        }
-    }
-
-    throw std::runtime_error(errorMessage);
 }
 
 inline const nlohmann::json* FindOptionalObjectStrict(

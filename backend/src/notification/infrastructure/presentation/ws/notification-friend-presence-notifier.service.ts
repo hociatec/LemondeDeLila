@@ -1,5 +1,5 @@
 ﻿import { Inject, Injectable } from '@nestjs/common';
-import { WS_EVENTS } from '../../../../realtime/infrastructure/presentation/ws/ws-events';
+import { WS_EVENTS } from '../../../../realtime/public-api';
 import {
   NOTIFICATION_DISPATCHER,
   type NotificationDispatcher,
@@ -7,9 +7,7 @@ import {
 import type { FriendPresenceNotifier } from '../../../application/ports/friend-presence-notifier.port';
 
 @Injectable()
-export class NotificationFriendPresenceNotifierService
-  implements FriendPresenceNotifier
-{
+export class NotificationFriendPresenceNotifierService implements FriendPresenceNotifier {
   constructor(
     @Inject(NOTIFICATION_DISPATCHER)
     private readonly notifications: NotificationDispatcher,
@@ -37,4 +35,3 @@ export class NotificationFriendPresenceNotifierService
     );
   }
 }
-

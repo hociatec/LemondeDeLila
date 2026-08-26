@@ -11,6 +11,7 @@ import type {
 } from '../../../../application/models/game-match-player.model';
 import { GameMatchEntity } from '../entities/game-match.entity';
 import { GameMatchPlayerEntity } from '../entities/game-match-player.entity';
+import { stringOrEmpty } from '@common/utils/public-api';
 
 type StatsUserReference = {
   id: number;
@@ -216,7 +217,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
 
     return rows.map((row) => ({
       userId: Number(row.userId),
-      username: String(row.username ?? ''),
+      username: stringOrEmpty(row.username),
       wins: Number(row.wins ?? 0),
       losses: Number(row.losses ?? 0),
       finished: Number(row.finished ?? 0),

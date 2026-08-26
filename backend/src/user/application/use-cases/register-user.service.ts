@@ -8,10 +8,7 @@ import {
   PASSWORD_HASHER,
   type PasswordHasherPort,
 } from '../ports/password-hasher.port';
-import {
-  USER_REPOSITORY,
-  type UserRepository,
-} from '../ports/user.repository';
+import { USER_REPOSITORY, type UserRepository } from '../ports/user.repository';
 
 @Injectable()
 export class RegisterUserService {

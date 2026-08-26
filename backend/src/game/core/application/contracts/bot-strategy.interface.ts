@@ -7,4 +7,3 @@ export interface BotStrategy {
     botPlayerId: number,
   ): GameSingleActionDto[] | null;
 }
-

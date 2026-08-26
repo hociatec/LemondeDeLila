@@ -25,13 +25,17 @@ export class MessagingWsNotificationService {
     const presented = this.presenter.present(message, recipientId);
     const preview = this.buildPreview(presented.text);
     try {
-      await this.notifications.notifyUser(recipientId, WS_EVENTS.messaging.messageSent, {
-        messageId: presented.id,
-        from: presented.sender,
-        subject: presented.subject,
-        preview,
-        createdAt: presented.createdAt,
-      });
+      await this.notifications.notifyUser(
+        recipientId,
+        WS_EVENTS.messaging.messageSent,
+        {
+          messageId: presented.id,
+          from: presented.sender,
+          subject: presented.subject,
+          preview,
+          createdAt: presented.createdAt,
+        },
+      );
     } catch (err) {
       this.logger.warn(
         `Echec notification message pour utilisateur ${recipientId}: ${(err as Error).message}`,
@@ -55,4 +59,3 @@ export class MessagingWsNotificationService {
     return trimmed.length > 0 ? trimmed.slice(0, 200) : '';
   }
 }
-

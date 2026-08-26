@@ -81,7 +81,10 @@ public:
 
     void Interrupt() noexcept
     {
-        backend_->InterruptPlayback();
+        // The wrapped backend belongs exclusively to the worker thread.  In
+        // particular, BASS must not be interrupted from the UI thread while
+        // the worker is preloading or starting another sound.
+        Shutdown();
     }
 
     void Shutdown() noexcept
@@ -96,7 +99,6 @@ public:
             foreground_.clear();
             background_.clear();
         }
-        backend_->InterruptPlayback();
         ready_.notify_all();
         if (worker_.joinable())
         {
@@ -133,6 +135,10 @@ private:
                 // An audio failure must never terminate the application or the worker.
             }
         }
+        // All calls into the concrete backend, including teardown, stay on a
+        // single thread. This avoids racing BASS_Free/BASS_Stop with a call in
+        // progress.
+        backend_->InterruptPlayback();
         backend_->Shutdown();
     }
 
@@ -152,8 +158,10 @@ private:
     std::condition_variable ready_;
     std::deque<Command> foreground_;
     std::deque<Command> background_;
-    std::thread worker_;
+    // This state must be constructed before worker_: a newly-created thread
+    // is allowed to run immediately from worker_'s constructor.
     bool stopping_ = false;
+    std::thread worker_;
 };
 
 AsyncAudioBackend::AsyncAudioBackend(std::unique_ptr<application::IAudioBackend> backend)

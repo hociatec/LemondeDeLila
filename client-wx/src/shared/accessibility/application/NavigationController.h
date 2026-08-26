@@ -75,21 +75,12 @@ public:
 
     static bool Focus(wxWindow* window);
     static bool FocusFirst(const Scope& scope);
-    static bool FocusLast(const Scope& scope);
     static bool Move(
         const Scope& scope,
         Direction direction,
         Boundary boundary = Boundary::Wrap,
         wxWindow* focused = wxWindow::FindFocus());
-    static bool MoveCyclic(const Scope& scope, bool reverse, wxWindow* focused = wxWindow::FindFocus());
-    static bool MoveLinear(const Scope& scope, bool reverse, wxWindow* focused = wxWindow::FindFocus());
-    static bool WrapBoundary(const Scope& scope, bool reverse, wxWindow* owner = nullptr);
-    static bool HandleTab(wxKeyEvent& event, const Scope& scope, Boundary boundary = Boundary::Wrap);
     static bool HandleVertical(wxKeyEvent& event, const Scope& scope, Boundary boundary = Boundary::Clamp);
-    static bool HandleEscapeBacktrack(
-        wxWindow* currentContainer,
-        wxWindow* fallbackTarget,
-        wxWindow* focused = wxWindow::FindFocus());
     static void BindTabNavigation(
         wxWindow& window,
         ScopeProvider scopeProvider,
@@ -99,16 +90,10 @@ public:
         wxWindow& window,
         EscapeHandler handler,
         Predicate enabled = {});
-    static void BindBoundaryTabNavigation(
-        wxWindow& window,
-        ScopeProvider scopeProvider,
-        wxWindow* owner,
-        Predicate enabled = {});
     static void BindVerticalNavigation(
         wxWindow& window,
         ScopeProvider scopeProvider,
         Predicate enabled = {},
         Boundary boundary = Boundary::Clamp);
-    static bool HandleDirectedTab(wxKeyEvent& event, wxWindow* backwardTarget, wxWindow* forwardTarget);
 };
 }

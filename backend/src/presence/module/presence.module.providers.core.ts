@@ -4,17 +4,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { RedisClientFactory } from '../../common/redis/infrastructure/redis-client.factory';
 import { PresenceConfigurationError } from '../domain/errors/presence-domain.errors';
 import { PRESENCE_CHAT_PORT } from '../application/ports/presence-chat.port';
-import {
-  PRESENCE_ROOM_PARTICIPANT_REPOSITORY,
-} from '../application/ports/presence-room-participant.repository';
+import { PRESENCE_ROOM_PARTICIPANT_REPOSITORY } from '../application/ports/presence-room-participant.repository';
 import { PRESENCE_USER_REPOSITORY } from '../application/ports/presence-user.repository';
-import {
-  PresenceTransport,
-} from '../application/ports/presence-transport.port';
-import {
-  RedisPresenceTransport,
-} from '../infrastructure/transport/presence-transport';
+import { PresenceTransport } from '../application/ports/presence-transport.port';
+import { RedisPresenceTransport } from '../infrastructure/transport/presence-transport';
 import { PresenceChatService } from '../application/services/presence-chat.service';
+import { PresenceClientMessageService } from '../application/services/presence-client-message.service';
 import { PresenceService } from '../application/services/presence.service';
 import { RoomParticipant } from '../../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
 import {
@@ -72,4 +67,5 @@ export const PRESENCE_CORE_PROVIDERS = [
   },
   PresenceService,
   PresenceChatService,
+  PresenceClientMessageService,
 ];

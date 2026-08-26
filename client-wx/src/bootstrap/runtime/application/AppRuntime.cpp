@@ -30,6 +30,14 @@ bool AppRuntime::StartNavigator() const
     return navigator_ != nullptr && navigator_->Start();
 }
 
+void AppRuntime::FocusCurrentView() const
+{
+    if (navigator_ != nullptr)
+    {
+        navigator_->FocusCurrentView();
+    }
+}
+
 void AppRuntime::CreateNavigator(const StepLogger& setStep)
 {
     setStep("Creation du navigateur");

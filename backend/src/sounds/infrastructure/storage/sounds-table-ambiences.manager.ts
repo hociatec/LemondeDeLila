@@ -49,7 +49,9 @@ export class SoundsTableAmbiencesManager {
     }
 
     const current = await this.read();
-    const used = new Set(current.items.map((item) => item.soundId.toLowerCase()));
+    const used = new Set(
+      current.items.map((item) => item.soundId.toLowerCase()),
+    );
     const available = (
       SOUND_KEYS.filter((key) =>
         /^TableAmbience\d+$/.test(key),

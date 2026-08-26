@@ -33,7 +33,6 @@ public:
     [[nodiscard]] std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle>
         RevokeTransientSessionAsync(std::function<void()> completion = {});
     [[nodiscard]] bool Restore();
-    void SyncPersistence(bool persist);
     [[nodiscard]] bool PrepareUpdateRestart();
 
     [[nodiscard]] bool HasActiveSession() const;

@@ -64,110 +64,52 @@ void GamePlayPanel::StartJoin()
 void GamePlayPanel::ExecuteAction(domain::GameAction action)
 {
     if (action.type.empty() || action.disabled) return;
-    requestSlot_.Cancel();
-    const auto generation = requestSlot_.CurrentToken();
     auto* service = &service_;
-    wxWeakRef<GamePlayPanel> weakThis(this);
-    requestSlot_.Track(lila::shared::concurrency::RunAsync<bool>(
+    const auto actionType = action.type;
+    SubmitInputCommand(
+        "game.actions",
         [service, action = std::move(action)](std::stop_token stopToken)
         {
             service->ExecuteAction(action, stopToken);
-            return true;
         },
-        [weakThis, generation](
-            std::optional<lila::shared::errors::AppError> error,
-            std::optional<bool>) mutable
-        {
-            if (!weakThis) return;
-            weakThis->CallAfter(
-                [weakThis, generation, error = std::move(error)]() mutable
-                {
-                    if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
-                    if (error)
-                    {
-                        lila::shared::logging::LogError(
-                            "GameInput", "Action task failed: " + error->UserMessage());
-                        weakThis->pawnSelectionPanel_->AllowRetry();
-                        if (!weakThis->submittedPromptActionType_.empty())
-                        {
-                            weakThis->submittedPromptActionType_.clear();
-                            weakThis->SyncInlinePrompt();
-                        }
-                        weakThis->UpdateStatus(FromUtf8(error->UserMessage()), true, true);
-                        return;
-                    }
-                });
-        },
-        lila::shared::concurrency::BackgroundTaskPriority::Normal,
-        "Action de jeu impossible."));
-}
-
-void GamePlayPanel::RequestRefresh()
-{
-    requestSlot_.Cancel();
-    const auto generation = requestSlot_.CurrentToken();
-    auto* service = &service_;
-    wxWeakRef<GamePlayPanel> weakThis(this);
-    requestSlot_.Track(lila::shared::concurrency::RunAsync<bool>(
-        [service](std::stop_token stopToken)
-        {
-            service->RequestState(stopToken);
-            return true;
-        },
-        [weakThis, generation](
-            std::optional<lila::shared::errors::AppError> error,
-            std::optional<bool>) mutable
-        {
-            if (!weakThis) return;
-            weakThis->CallAfter(
-                [weakThis, generation, error = std::move(error)]() mutable
-                {
-                    if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
-                    if (error) weakThis->UpdateStatus(FromUtf8(error->UserMessage()), true, true);
-                });
-        },
-        lila::shared::concurrency::BackgroundTaskPriority::Normal,
-        "Actualisation du jeu impossible."));
-}
-
-void GamePlayPanel::RequestTurn()
-{
-    requestSlot_.Cancel();
-    const auto generation = requestSlot_.CurrentToken();
-    auto* service = &service_;
-    wxWeakRef<GamePlayPanel> weakThis(this);
-    requestSlot_.Track(lila::shared::concurrency::RunAsync<bool>(
-        [service](std::stop_token stopToken)
-        {
-            service->RequestTurn(stopToken);
-            return true;
-        },
-        [weakThis, generation](
-            std::optional<lila::shared::errors::AppError> error,
-            std::optional<bool>) mutable
-        {
-            if (!weakThis) return;
-            weakThis->CallAfter(
-                [weakThis, generation, error = std::move(error)]() mutable
-                {
-                    if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
-                    if (error) weakThis->UpdateStatus(FromUtf8(error->UserMessage()), true, true);
-                });
-        },
-        lila::shared::concurrency::BackgroundTaskPriority::Normal,
-        "Tour de jeu indisponible."));
+        "Action de jeu impossible.");
+    lila::shared::logging::LogInfo("GameInput", "Action submitted: " + actionType);
 }
 
 void GamePlayPanel::SendKey(std::string key)
 {
-    requestSlot_.Cancel();
-    const auto generation = requestSlot_.CurrentToken();
+    if (key.empty()) return;
     auto* service = &service_;
-    wxWeakRef<GamePlayPanel> weakThis(this);
-    requestSlot_.Track(lila::shared::concurrency::RunAsync<bool>(
+    const auto loggedKey = key;
+    SubmitInputCommand(
+        "game.key",
         [service, key = std::move(key)](std::stop_token stopToken)
         {
             service->SendKey(key, stopToken);
+        },
+        "Raccourci de jeu impossible.");
+    lila::shared::logging::LogInfo("GameInput", "Key submitted: " + loggedKey);
+}
+
+void GamePlayPanel::SubmitInputCommand(
+    std::string protocolCommand,
+    std::function<void(std::stop_token)> command,
+    std::string failureMessage)
+{
+    if (!inputSubmissionGuard_.TryBegin(
+            protocolCommand, state_.version, state_.runId))
+    {
+        lila::shared::logging::LogInfo(
+            "GameInput", "Input ignored while a server command is pending.");
+        return;
+    }
+    inputRequestSlot_.Cancel();
+    const auto generation = inputRequestSlot_.CurrentToken();
+    wxWeakRef<GamePlayPanel> weakThis(this);
+    inputRequestSlot_.Track(lila::shared::concurrency::RunAsync<bool>(
+        [command = std::move(command)](std::stop_token stopToken)
+        {
+            command(stopToken);
             return true;
         },
         [weakThis, generation](
@@ -178,11 +120,71 @@ void GamePlayPanel::SendKey(std::string key)
             weakThis->CallAfter(
                 [weakThis, generation, error = std::move(error)]() mutable
                 {
-                    if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
-                    if (error) weakThis->UpdateStatus(FromUtf8(error->UserMessage()), true, true);
+                    if (!weakThis ||
+                        !weakThis->inputRequestSlot_.Complete(generation))
+                        return;
+                    if (!error) return;
+                    weakThis->inputSubmissionGuard_.Reset();
+                    lila::shared::logging::LogError(
+                        "GameInput", "Action task failed: " + error->UserMessage());
+                    weakThis->pawnSelectionPanel_->AllowRetry();
+                    if (!weakThis->submittedPromptActionType_.empty())
+                    {
+                        weakThis->submittedPromptActionType_.clear();
+                        weakThis->SyncInlinePrompt();
+                    }
+                    weakThis->startConfigurationFlow_.Reset();
+                    weakThis->UpdateStatus(
+                        FromUtf8(error->UserMessage()), true, true);
                 });
         },
         lila::shared::concurrency::BackgroundTaskPriority::Normal,
-        "Raccourci de jeu indisponible."));
+        std::move(failureMessage)));
+}
+
+void GamePlayPanel::RequestRefresh()
+{
+    auto* service = &service_;
+    RunCommand(
+        [service](std::stop_token stopToken)
+        {
+            service->RequestState(stopToken);
+        },
+        "Actualisation du jeu impossible.");
+}
+
+void GamePlayPanel::RunCommand(
+    std::function<void(std::stop_token)> command,
+    std::string failureMessage,
+    std::function<void(GamePlayPanel&, const lila::shared::errors::AppError&)> onFailure)
+{
+    requestSlot_.Cancel();
+    const auto generation = requestSlot_.CurrentToken();
+    wxWeakRef<GamePlayPanel> weakThis(this);
+    requestSlot_.Track(lila::shared::concurrency::RunAsync<bool>(
+        [command = std::move(command)](std::stop_token stopToken)
+        {
+            command(stopToken);
+            return true;
+        },
+        [weakThis, generation, onFailure = std::move(onFailure)](
+            std::optional<lila::shared::errors::AppError> error,
+            std::optional<bool>) mutable
+        {
+            if (!weakThis) return;
+            weakThis->CallAfter(
+                [weakThis, generation, error = std::move(error),
+                 onFailure = std::move(onFailure)]() mutable
+                {
+                    if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
+                    if (!error) return;
+                    if (onFailure)
+                        onFailure(*weakThis, *error);
+                    else
+                        weakThis->UpdateStatus(FromUtf8(error->UserMessage()), true, true);
+                });
+        },
+        lila::shared::concurrency::BackgroundTaskPriority::Normal,
+        std::move(failureMessage)));
 }
 }

@@ -4,7 +4,7 @@
 
 #include "shared/data/json/JsonApiHelpers.h"
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 
 #include <string>
 

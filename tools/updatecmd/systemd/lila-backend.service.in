@@ -1,0 +1,25 @@
+[Unit]
+Description=Le Monde de Lila - backend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@BACKEND_RUNTIME_USER@
+Group=@BACKEND_RUNTIME_GROUP@
+WorkingDirectory=@INSTALL_ROOT@/current/backend
+Environment=NODE_ENV=production
+EnvironmentFile=@BACKEND_ENV_FILE@
+EnvironmentFile=-@INSTALL_ROOT@/current/.release.env
+ExecStart=/usr/bin/node dist/main
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=90
+TimeoutStopSec=30
+KillSignal=SIGTERM
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -93,20 +93,25 @@ void HomeFrame::BuildLoginPage()
     loginPasswordInput_ = new wxTextCtrl(loginPage_, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PASSWORD | wxTE_PROCESS_ENTER);
     loginPasswordTextInput_ = new wxTextCtrl(loginPage_, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
     loginShowPasswordCheck_ = new wxCheckBox(loginPage_, wxID_ANY, "Afficher le mot de passe");
-    loginRememberMeCheck_ = new wxCheckBox(loginPage_, wxID_ANY, "Se souvenir de moi");
+    loginRememberMeCheck_ = new wxCheckBox(
+        loginPage_,
+        wxID_ANY,
+        "Se souvenir de moi",
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxCHK_2STATE);
+    loginRememberMeCheck_->SetValue(false);
     loginSubmitButton_ = new lila::shared::accessibility::ActionButton(loginPage_, wxID_ANY, "Connexion");
     loginRegisterButton_ = new lila::shared::accessibility::ActionButton(loginPage_, wxID_ANY, lila::shared::text::FromUtf8("Cr" "\xC3\xA9" "er un compte"));
     loginQuitButton_ = new lila::shared::accessibility::ActionButton(loginPage_, wxID_ANY, "Quitter");
-    auto* checks = new wxBoxSizer(wxHORIZONTAL);
-    checks->Add(loginShowPasswordCheck_, 0);
-    checks->Add(loginRememberMeCheck_, 0, wxLEFT, 16);
     sizer->Add(title, 0, wxBOTTOM, 8);
     sizer->Add(usernameLabel, 0, wxTOP | wxBOTTOM, 4);
     sizer->Add(loginUsernameInput_, 0, wxEXPAND | wxBOTTOM, 8);
     sizer->Add(passwordLabel, 0, wxTOP | wxBOTTOM, 4);
     sizer->Add(loginPasswordInput_, 0, wxEXPAND | wxBOTTOM, 8);
     sizer->Add(loginPasswordTextInput_, 0, wxEXPAND | wxBOTTOM, 8);
-    sizer->Add(checks, 0, wxTOP | wxBOTTOM, 8);
+    sizer->Add(loginShowPasswordCheck_, 0, wxTOP | wxBOTTOM, 4);
+    sizer->Add(loginRememberMeCheck_, 0, wxBOTTOM, 8);
     sizer->Add(loginSubmitButton_, 0, wxBOTTOM, 8);
     sizer->Add(loginRegisterButton_, 0, wxBOTTOM, 8);
     sizer->Add(loginQuitButton_, 0);

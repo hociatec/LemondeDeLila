@@ -67,9 +67,3 @@ export class AdminRoomsWsHandler {
     return { type: WS_EVENTS.admin.rooms.settingsUpdate, payload: updated };
   }
 }
-
-
-
-
-
-

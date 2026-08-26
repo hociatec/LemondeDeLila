@@ -33,7 +33,9 @@ export class ChatMessageCacheService {
     if (!this.historyCache) {
       return;
     }
-    const index = this.historyCache.findIndex((entry) => entry.id === message.id);
+    const index = this.historyCache.findIndex(
+      (entry) => entry.id === message.id,
+    );
     if (index >= 0) {
       this.historyCache[index] = message;
       return;
@@ -45,7 +47,9 @@ export class ChatMessageCacheService {
     if (!this.historyCache) {
       return;
     }
-    const index = this.historyCache.findIndex((entry) => entry.id === messageId);
+    const index = this.historyCache.findIndex(
+      (entry) => entry.id === messageId,
+    );
     if (index >= 0) {
       this.historyCache.splice(index, 1);
     }

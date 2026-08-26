@@ -12,7 +12,7 @@ namespace lila::modules::audio::infrastructure
 class BassAudioBackend final : public application::IAudioBackend
 {
 public:
-    BassAudioBackend() = default;
+    BassAudioBackend();
     ~BassAudioBackend() override;
 
     void Preload(domain::SoundCue cue) override;
@@ -31,5 +31,6 @@ private:
     std::atomic_bool initialized_ = false;
     std::atomic_bool shuttingDown_ = false;
     std::atomic_bool shutdownComplete_ = false;
+    bool modulePinned_ = false;
 };
 }

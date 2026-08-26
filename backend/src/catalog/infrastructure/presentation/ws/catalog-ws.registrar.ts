@@ -38,4 +38,3 @@ export class CatalogWsRegistrar implements OnModuleInit {
       );
   }
 }
-

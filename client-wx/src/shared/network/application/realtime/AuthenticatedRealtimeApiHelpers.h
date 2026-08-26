@@ -7,7 +7,8 @@
 
 #include "modules/session/application/SessionStore.h"
 #include "shared/errors/domain/AppError.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
+#include "shared/errors/presentation/ErrorFormatting.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/application/realtime/RealtimeApiClient.h"
 
@@ -59,7 +60,6 @@ inline void EnsureSuccessOrThrow(
         sessionStore.Clear();
         throw lila::shared::errors::AppException(
             lila::shared::errors::ToAppError(
-                lila::shared::errors::ErrorCode::InvalidSession,
                 lila::shared::errors::SessionExpiredMessage));
     }
 
@@ -67,7 +67,6 @@ inline void EnsureSuccessOrThrow(
     {
         throw lila::shared::errors::AppException(
             lila::shared::errors::ToAppError(
-                lila::shared::errors::ErrorCode::Unexpected,
                 response.errorMessage));
     }
 
@@ -91,4 +90,3 @@ inline RealtimeApiResponse SendAuthenticatedRequest(
 }
 }
 }
-

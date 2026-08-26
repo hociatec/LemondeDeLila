@@ -1,5 +1,4 @@
 ﻿#include "modules/user/application/LoginUseCase.h"
-#include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/text/domain/StringUtils.h"
 

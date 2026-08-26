@@ -1,12 +1,12 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
-  PRIVATE_MESSAGE_REPOSITORY,
-  type PrivateMessageRepository,
-} from '../../../messaging/application/ports/private-message.repository';
-import {
   NOTIFICATION_INBOX_REPOSITORY,
   type NotificationInboxRepository,
 } from '../ports/notification-inbox.repository';
+import {
+  NOTIFICATION_UNREAD_MESSAGE_COUNTER,
+  type NotificationUnreadMessageCounter,
+} from '../ports/notification-unread-message-counter.port';
 
 @Injectable()
 export class UserBadgeCountsService {
@@ -15,8 +15,8 @@ export class UserBadgeCountsService {
   constructor(
     @Inject(NOTIFICATION_INBOX_REPOSITORY)
     private readonly inbox: NotificationInboxRepository,
-    @Inject(PRIVATE_MESSAGE_REPOSITORY)
-    private readonly messages: PrivateMessageRepository,
+    @Inject(NOTIFICATION_UNREAD_MESSAGE_COUNTER)
+    private readonly messages: NotificationUnreadMessageCounter,
   ) {}
 
   async getCounts(userId: number): Promise<{

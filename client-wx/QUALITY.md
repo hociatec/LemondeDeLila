@@ -7,10 +7,12 @@
 - `LILA_ENABLE_ASAN=ON` active AddressSanitizer sur les cibles applicatives et de tests quand le compilateur le supporte.
 - `LILA_ENABLE_UBSAN=ON` et `LILA_ENABLE_TSAN=ON` sont exposés côté CMake. Sous MSVC, la configuration émet un avertissement explicite et il faut utiliser Clang/GCC pour les activer réellement.
 
-## Parser fuzzing
+## Robustesse des parseurs
 
-- La cible `lemonde_de_lila_wx_parser_fuzz` injecte des entrées arbitraires dans `ChatProtocol`, `RealtimeProtocol` et la conversion UTF-8.
-- Elle fournit un point d’entrée visible pour du fuzzing local ou CI corpus-driven.
+- La cible `lemonde_de_lila_wx_parser_robustness_tests` rejoue le corpus
+  `tests/data/parser-robustness-corpus.txt` dans `ChatProtocol`,
+  `RealtimeProtocol` et la conversion UTF-8.
+- Le corpus est obligatoire et non vide ; la cible fait partie de CTest.
 
 ## Automated regression areas
 

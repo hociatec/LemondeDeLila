@@ -30,6 +30,16 @@ void GamePlayPanel::BindEvents()
             if (!HandleKey(event)) event.Skip();
         });
     linesList_->Bind(wxEVT_LISTBOX, [this](wxCommandEvent&) { UpdateInfoPanel(); });
+    linesList_->Bind(wxEVT_LISTBOX_DCLICK, [this](wxCommandEvent&) { ActivateSelectedLine(); });
+    handPanel_->Bind(
+        wxEVT_LISTBOX_DCLICK,
+        [this](wxCommandEvent&) { static_cast<void>(ActivateSelectedHandCard()); });
+    dicePanel_->Bind(
+        wxEVT_LISTBOX_DCLICK,
+        [this](wxCommandEvent&) { static_cast<void>(ActivateSelectedDie()); });
+    choicesList_->Bind(
+        wxEVT_LISTBOX_DCLICK,
+        [this](wxCommandEvent&) { static_cast<void>(ActivateSelectedPendingChoice()); });
     promptPanel_->SetVisibilityChangedHandler(
         [this](bool visible)
         {
@@ -68,28 +78,39 @@ void GamePlayPanel::BindEvents()
         {
             submittedPromptActionType_ = action.type;
             dismissedPromptActionType_.clear();
+            const bool startsRoomAfterSubmission = !roomStarted_ && roomStartFlowRequested_ &&
+                state_.prompt && state_.prompt->submitThenStart &&
+                state_.prompt->actionType == action.type;
+            if (startsRoomAfterSubmission && !startConfigurationFlow_.TryBeginSubmission())
+                return;
             ExecuteAction(std::move(action));
-            if (onZoneFocusRequested_) onZoneFocusRequested_();
+            if (!startsRoomAfterSubmission && onZoneFocusRequested_)
+                onZoneFocusRequested_();
         });
     promptPanel_->SetCancelHandler(
         [this](std::string)
         {
             if (state_.prompt) dismissedPromptActionType_ = state_.prompt->actionType;
+            roomStartFlowRequested_ = false;
+            roomStartPending_ = false;
+            startConfigurationFlow_.Reset();
+            Show(roomStarted_);
+            if (GetParent()) GetParent()->Layout();
             if (onZoneFocusRequested_) onZoneFocusRequested_();
         });
 }
-bool GamePlayPanel::ActivateFromZone()
+bool GamePlayPanel::HandleZoneActivation()
 {
     if (!IsOpen()) return false;
+    if (!roomStarted_)
+        return roomStartFlowRequested_ || roomStartPending_;
     if (IsFinished())
     {
         SendKey("ENTER");
         return true;
     }
     if (IsConfirmationVisible() || IsInlinePromptVisible()) return true;
-    if (pawnSelectionPanel_->IsActive()) return pawnSelectionPanel_->FocusSelection();
-    const bool promptSubmissionPending = state_.prompt &&
-        submittedPromptActionType_ == state_.prompt->actionType;
+    if (pawnSelectionPanel_->IsActive()) return true;
     if (state_.prompt)
     {
         if (submittedPromptActionType_ != state_.prompt->actionType)
@@ -98,78 +119,6 @@ bool GamePlayPanel::ActivateFromZone()
             SyncInlinePrompt();
             return true;
         }
-    }
-    if (handPanel_->Count() > 0) return ActivateSelectedHandCard();
-    if (HasDiceAction()) return ActivateSelectedDie();
-    if (auto roll = ResolveRollAction())
-    {
-        lila::shared::logging::LogInfo(
-            "GameInput", "Zone roll action resolved: " + roll->type);
-        PrepareAndExecuteAction(std::move(*roll));
-        return true;
-    }
-    if (promptSubmissionPending) return true;
-    if (!state_.lines.empty())
-    {
-        ActivateSelectedLine();
-        return true;
-    }
-    return false;
-}
-
-bool GamePlayPanel::HandleZoneKey(wxKeyEvent& event)
-{
-    const auto key = NormalizeKey(event);
-    if (!key.empty())
-    {
-        lila::shared::logging::LogInfo(
-            "GameInput",
-            "Zone key=" + key +
-                ", open=" + (IsOpen() ? std::string("yes") : std::string("no")) +
-                ", confirmation=" + (IsConfirmationVisible() ? std::string("yes") : std::string("no")) +
-                ", prompt=" + (IsInlinePromptVisible() ? std::string("yes") : std::string("no")) +
-                ", pawn=" + (pawnSelectionPanel_->IsActive() ? std::string("yes") : std::string("no")) +
-                ", hand=" + std::to_string(state_.hand.size()) +
-                ", actions=" + std::to_string(state_.actions.size()) +
-                ", shortcuts=" + std::to_string(state_.shortcuts.size()));
-    }
-    if (!IsOpen() || IsConfirmationVisible() || IsInlinePromptVisible() ||
-        pawnSelectionPanel_->IsActive()) return false;
-
-    if (key == "ENTER")
-    {
-        return ActivateFromZone();
-    }
-
-    const int keyCode = event.GetKeyCode();
-    if ((keyCode == WXK_UP || keyCode == WXK_DOWN) && handPanel_->Count() > 0)
-    {
-        if (handPanel_->MoveSelection(keyCode == WXK_UP))
-        {
-            const auto label = handPanel_->SelectedLabel();
-            if (!label.empty()) UpdateStatus(label, false, true);
-        }
-        return true;
-    }
-    if ((keyCode == WXK_UP || keyCode == WXK_DOWN) && state_.dice)
-    {
-        if (dicePanel_->MoveSelection(keyCode == WXK_UP))
-        {
-            const auto label = dicePanel_->SelectedLabel();
-            if (!label.empty()) UpdateStatus(label, false, true);
-        }
-        return true;
-    }
-
-    if (key == "F5")
-    {
-        RequestRefresh();
-        return true;
-    }
-    if (!key.empty() && HandleShortcut(key)) return true;
-    if (key == "T")
-    {
-        RequestTurn();
         return true;
     }
     return false;
@@ -182,6 +131,13 @@ bool GamePlayPanel::ActivateSelectedHandCard()
     {
         lila::shared::logging::LogWarning("GameInput", "Card activation has no selection.");
         return false;
+    }
+    if (static_cast<std::size_t>(selected) >= state_.hand.size()) return false;
+    if (state_.hand[static_cast<std::size_t>(selected)].disabled)
+    {
+        // WPF consumes Enter silently on an unplayable card: it must not fall
+        // through to a global ENTER shortcut or announce a misleading error.
+        return true;
     }
     auto action = application::cards::GameCardActionResolver::Resolve(
         state_.hand, state_.actions, static_cast<std::size_t>(selected));
@@ -205,6 +161,7 @@ bool GamePlayPanel::ActivateSelectedDie()
     const auto index = selected >= 0 ? static_cast<std::size_t>(selected) : std::size_t{0};
     auto action = application::dice::GameDiceActionResolver::Resolve(
         *state_.dice, state_.actions, index);
+    if (!action) action = ResolveRollAction();
     if (!action) return false;
     PrepareAndExecuteAction(std::move(*action));
     return true;

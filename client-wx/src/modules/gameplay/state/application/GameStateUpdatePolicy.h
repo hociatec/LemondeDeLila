@@ -19,6 +19,10 @@ public:
             incoming.gameType != current.gameType)
             return true;
 
+        if (current.runId > 0 && incoming.runId > 0 &&
+            incoming.runId != current.runId)
+            return incoming.runId > current.runId;
+
         // A delayed setup snapshot must not cover an already active round.
         // Keep allowing a real reset when it carries a strictly newer version.
         if (IsActiveRound(current) && IsSetup(incoming) &&

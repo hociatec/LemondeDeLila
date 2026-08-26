@@ -35,9 +35,6 @@ public:
     [[nodiscard]] std::vector<domain::MessagingMessage> GetBox(
         domain::MessagingBox box,
         int limit = lila::modules::messaging::infrastructure::fields::DefaultPageLimit) const override;
-    [[nodiscard]] std::vector<domain::MessagingMessage> GetConversation(
-        int userId,
-        int limit = lila::modules::messaging::infrastructure::fields::DefaultPageLimit) const override;
     [[nodiscard]] std::optional<domain::MessagingMessage> Send(
         int recipientId,
         const std::string& text,

@@ -6,7 +6,10 @@ import type {
   AdminUserRepository,
   ListAdminUsersFilters,
 } from '../../../../application/ports/admin-user.repository';
-import type { AdminSafeUser, AdminUser } from '../../../../domain/models/admin-user.model';
+import type {
+  AdminSafeUser,
+  AdminUser,
+} from '../../../../domain/models/admin-user.model';
 
 @Injectable()
 export class AdminUserTypeormRepository implements AdminUserRepository {

@@ -9,6 +9,12 @@
 
 namespace lila::shared::accessibility
 {
+#ifdef __WXMSW__
+// EVENT_OBJECT_LIVEREGIONCHANGED (Windows 8+) n'est pas déclaré par les
+// anciens en-têtes MinGW lorsque la compatibilité Windows 7 est conservée.
+constexpr DWORD LiveRegionChangedEvent = 0x8019;
+#endif
+
 void AccessibilityUtils::ConfigureLinearTabOrder(std::initializer_list<wxWindow*> controls)
 {
     wxWindow* previous = nullptr;
@@ -60,7 +66,7 @@ void AccessibilityUtils::AnnounceStatus(wxWindow& control, const wxString& messa
     if (control.GetHandle() != nullptr)
     {
         NotifyWinEvent(
-            EVENT_OBJECT_LIVEREGIONCHANGED,
+            LiveRegionChangedEvent,
             reinterpret_cast<HWND>(control.GetHandle()),
             OBJID_CLIENT,
             CHILDID_SELF);
@@ -79,7 +85,7 @@ void AccessibilityUtils::AnnounceLiveRegion(wxWindow& control, const wxString& m
     if (control.GetHandle() != nullptr)
     {
         NotifyWinEvent(
-            EVENT_OBJECT_LIVEREGIONCHANGED,
+            LiveRegionChangedEvent,
             reinterpret_cast<HWND>(control.GetHandle()),
             OBJID_CLIENT,
             CHILDID_SELF);

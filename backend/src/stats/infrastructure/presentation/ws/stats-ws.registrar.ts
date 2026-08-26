@@ -22,4 +22,3 @@ export class StatsWsRegistrar implements OnModuleInit {
     );
   }
 }
-

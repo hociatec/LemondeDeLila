@@ -11,7 +11,7 @@ namespace
 {
 std::string ReadEnvironmentVariable(const char* name)
 {
-#ifdef _WIN32
+#ifdef _MSC_VER
     char* rawValue = nullptr;
     std::size_t valueLength = 0;
     const errno_t result = _dupenv_s(&rawValue, &valueLength, name);

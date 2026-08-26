@@ -5,6 +5,7 @@
 #include <wx/window.h>
 
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
+#include "modules/rooms/application/RoomStateUpdatePolicy.h"
 #include "modules/rooms/presentation/model/RoomPresentationModel.h"
 #include "modules/rooms/presentation/history/HistoryAnnouncementQueue.h"
 #include "modules/audio/application/IAudioService.h"
@@ -19,6 +20,7 @@ namespace lila::modules::rooms::presentation
 {
 void RoomPanel::ApplyRoom(domain::RoomState room)
 {
+    if (!application::RoomStateUpdatePolicy::ShouldApply(room_, room)) return;
     room.gameSummary = room_.gameSummary;
     room.gameEngine = room_.gameEngine;
     room_ = std::move(room);
@@ -30,16 +32,11 @@ void RoomPanel::SyncGamePlayPanel()
 {
     const bool isStarted = room_.started || room_.status == "started";
     gameZoneAnchor_->Show(true);
-    gamePlayPanel_->Show(isStarted && !gamePlayPanel_->IsFinished());
-    if (!isStarted)
-    {
-        gamePlayPanel_->CloseSession();
-        return;
-    }
     if (!gamePlayPanel_->IsOpenFor(room_.id, room_.gameType))
     {
-        gamePlayPanel_->Open(room_.id, room_.gameType, room_.gameName);
+        gamePlayPanel_->Open(room_.id, room_.gameType, room_.gameName, isStarted);
     }
+    gamePlayPanel_->SetRoomStarted(isStarted);
 }
 
 void RoomPanel::ShowConnecting()

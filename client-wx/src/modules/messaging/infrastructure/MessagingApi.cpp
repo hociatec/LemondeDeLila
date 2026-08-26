@@ -6,7 +6,7 @@
 
 #include "modules/messaging/infrastructure/MessagingProtocolFields.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/messaging/domain/MessagingErrorMessages.h"
 #include "shared/network/domain/WsMessageTypes.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
@@ -30,18 +30,6 @@ std::vector<domain::MessagingMessage> MessagingApi::GetBox(domain::MessagingBox 
             {std::string(lila::modules::messaging::infrastructure::fields::Limit), limit},
         },
         lila::shared::errors::MessagingLoadBoxFailed);
-    return codec::ReadMessagesPayload(response);
-}
-
-std::vector<domain::MessagingMessage> MessagingApi::GetConversation(int userId, int limit) const
-{
-    const auto response = SendRequest(
-        std::string(lila::shared::network::ws::types::messaging::Conversation),
-        {
-            {std::string(lila::modules::messaging::infrastructure::fields::ConversationUserId), userId},
-            {std::string(lila::modules::messaging::infrastructure::fields::Limit), limit},
-        },
-        lila::shared::errors::MessagingLoadConversationFailed);
     return codec::ReadMessagesPayload(response);
 }
 

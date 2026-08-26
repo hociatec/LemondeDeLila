@@ -72,7 +72,9 @@ export class ClientUpdatesPublisherService {
         if (!fs.existsSync(file)) continue;
         const raw = await fs.promises.readFile(file, 'utf-8');
         const text = raw.replace(/^\uFEFF/, '');
-        const match = text.match(/assemblyIdentity[^>]*version="(?<v>[0-9.]+)"/i);
+        const match = text.match(
+          /assemblyIdentity[^>]*version="(?<v>[0-9.]+)"/i,
+        );
         const version = (match?.groups?.v || '').trim();
         if (!version || parseVersion(version) == null) {
           continue;
@@ -154,7 +156,11 @@ export class ClientUpdatesPublisherService {
   </body>
 </html>`;
 
-    await fs.promises.writeFile(path.join(targetDir, 'index.html'), html, 'utf-8');
+    await fs.promises.writeFile(
+      path.join(targetDir, 'index.html'),
+      html,
+      'utf-8',
+    );
   }
 
   async getMinRequiredVersion(): Promise<string | null> {
@@ -170,7 +176,8 @@ export class ClientUpdatesPublisherService {
       forceLatestRaw === 'y';
 
     const metaMin = (latest?.minRequiredVersion || '').trim();
-    const publishedClickOnce = await this.getPublishedClickOnceVersionFromDisk();
+    const publishedClickOnce =
+      await this.getPublishedClickOnceVersionFromDisk();
     const hasClickOnce = Boolean(
       publishedClickOnce && parseVersion(publishedClickOnce) != null,
     );
@@ -205,144 +212,159 @@ export class ClientUpdatesPublisherService {
 
   async applyZip(zipPath: string): Promise<void> {
     await this.assertZipSafe(zipPath);
-
     const baseTmp = await fs.promises.mkdtemp(
       path.join(os.tmpdir(), 'lila-client-update-'),
     );
     const stagingDir = path.join(baseTmp, 'staging');
-    await fs.promises.mkdir(stagingDir, { recursive: true });
+    try {
+      await this.extractAndValidate(zipPath, stagingDir);
+      const targetDir = this.paths.getTargetDir();
+      const releasesDir = await this.prepareReleasesDirectory(targetDir);
+      const swapped = releasesDir
+        ? await this.tryDirectorySwap(stagingDir, targetDir, releasesDir)
+        : false;
+      if (!swapped) {
+        await this.replaceDirectoryContents(stagingDir, targetDir);
+      }
+      await this.finalizePublication(zipPath, targetDir);
+      await this.pruneBackups(releasesDir);
+    } finally {
+      fs.promises
+        .rm(baseTmp, { recursive: true, force: true })
+        .catch(() => undefined);
+    }
+  }
 
+  private async extractAndValidate(
+    zipPath: string,
+    stagingDir: string,
+  ): Promise<void> {
+    await fs.promises.mkdir(stagingDir, { recursive: true });
     await execFileAsync('unzip', ['-o', zipPath, '-d', stagingDir], {
       timeout: 10 * 60_000,
       maxBuffer: 50 * 1024 * 1024,
     });
-
-    const stagingEntries = await fs.promises.readdir(stagingDir, {
+    const entries = await fs.promises.readdir(stagingDir, {
       withFileTypes: true,
     });
-    const extractedApplication = stagingEntries
-      .filter((entry) => entry.isFile())
-      .map((entry) => entry.name)
-      .find((name) => name.toLowerCase().endsWith('.application'));
-    if (!extractedApplication) {
+    const hasApplication = entries.some(
+      (entry) =>
+        entry.isFile() && entry.name.toLowerCase().endsWith('.application'),
+    );
+    if (!hasApplication) {
       throw new ClientUpdatesInvalidArchiveError(
         'Archive invalide: manifeste ClickOnce (.application) manquant.',
       );
     }
-
-    const applicationFilesDir = stagingEntries
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name)
-      .find((name) => name === 'Application Files');
-    if (!applicationFilesDir) {
+    const hasApplicationFiles = entries.some(
+      (entry) => entry.isDirectory() && entry.name === 'Application Files',
+    );
+    if (!hasApplicationFiles) {
       throw new ClientUpdatesInvalidArchiveError(
         'Archive invalide: dossier "Application Files" introuvable.',
       );
     }
+  }
 
-    const targetDir = this.paths.getTargetDir();
-    const parent = path.dirname(targetDir);
-    let releasesDir: string | null = path.join(parent, 'client-win.releases');
-    let canUseDirectorySwap = true;
+  private async prepareReleasesDirectory(
+    targetDir: string,
+  ): Promise<string | null> {
+    const releasesDir = path.join(
+      path.dirname(targetDir),
+      'client-win.releases',
+    );
     try {
       await fs.promises.mkdir(releasesDir, { recursive: true });
+      return releasesDir;
     } catch (error) {
-      canUseDirectorySwap = false;
       const message =
         (error as NodeJS.ErrnoException)?.message || 'erreur inconnue';
       this.logger.warn(
         `Impossible de preparer le dossier de backups (${releasesDir}). Fallback publication sans swap de repertoire: ${message}`,
       );
-      releasesDir = null;
-    }
-
-    let published = false;
-    const resolveExistingTarget = async (): Promise<string | null> => {
-      try {
-        const existing = await fs.promises.lstat(targetDir);
-        if (existing.isDirectory()) {
-          return targetDir;
-        }
-        if (existing.isSymbolicLink()) {
-          let resolved: string | null = null;
-          try {
-            const realPath = await fs.promises.realpath(targetDir);
-            const realStats = await fs.promises.lstat(realPath);
-            if (realStats.isDirectory()) {
-              resolved = realPath;
-            }
-          } catch {
-            // ignore
-          }
-          await fs.promises.unlink(targetDir).catch(() => undefined);
-          return resolved;
-        }
-      } catch {
-        // ignore
-      }
       return null;
-    };
+    }
+  }
 
-    if (canUseDirectorySwap && releasesDir) {
+  private async tryDirectorySwap(
+    stagingDir: string,
+    targetDir: string,
+    releasesDir: string,
+  ): Promise<boolean> {
+    try {
+      const existingTarget = await this.resolveExistingTarget(targetDir);
+      if (!existingTarget) {
+        return false;
+      }
       const backupDir = path.join(releasesDir, `backup.${Date.now()}`);
+      await fs.promises.rename(existingTarget, backupDir);
+      await fs.promises.rename(stagingDir, targetDir);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private async resolveExistingTarget(
+    targetDir: string,
+  ): Promise<string | null> {
+    try {
+      const existing = await fs.promises.lstat(targetDir);
+      if (existing.isDirectory()) {
+        return targetDir;
+      }
+      if (!existing.isSymbolicLink()) {
+        return null;
+      }
+      let resolved: string | null = null;
       try {
-        const existingTargetPath = await resolveExistingTarget();
-        if (existingTargetPath) {
-          await fs.promises.rename(existingTargetPath, backupDir);
-          await fs.promises.rename(stagingDir, targetDir);
-          published = true;
+        const realPath = await fs.promises.realpath(targetDir);
+        if ((await fs.promises.lstat(realPath)).isDirectory()) {
+          resolved = realPath;
         }
       } catch {
-        // fallback below
+        // Ignore broken or invalid symbolic link targets.
       }
+      await fs.promises.unlink(targetDir).catch(() => undefined);
+      return resolved;
+    } catch {
+      return null;
     }
+  }
 
-    if (!published) {
-      await this.replaceDirectoryContents(stagingDir, targetDir);
-    }
-
+  private async finalizePublication(
+    zipPath: string,
+    targetDir: string,
+  ): Promise<void> {
     await this.ensureLegacyAliases(targetDir);
-    try {
-      await fs.promises.copyFile(
-        zipPath,
-        path.join(targetDir, this.paths.getLatestZipName()),
-      );
-    } catch {
-      // Best-effort
-    }
-    try {
-      await this.writeLandingPage(targetDir);
-    } catch {
-      // Best-effort
-    }
+    await fs.promises
+      .copyFile(zipPath, path.join(targetDir, this.paths.getLatestZipName()))
+      .catch(() => undefined);
+    await this.writeLandingPage(targetDir).catch(() => undefined);
+  }
 
-    if (releasesDir) {
-      try {
-        const entries = await fs.promises.readdir(releasesDir, {
-          withFileTypes: true,
-        });
-        const dirs = entries
-          .filter((entry) => entry.isDirectory())
-          .map((entry) => entry.name)
-          .filter((name) => name.startsWith('backup.'))
-          .sort()
-          .reverse();
-        const keep = new Set(dirs.slice(0, 3));
-        for (const dir of dirs) {
-          if (keep.has(dir)) continue;
-          fs.promises
-            .rm(path.join(releasesDir, dir), {
-              recursive: true,
-              force: true,
-            })
-            .catch(() => undefined);
-        }
-      } catch {
-        // ignore
+  private async pruneBackups(releasesDir: string | null): Promise<void> {
+    if (!releasesDir) {
+      return;
+    }
+    try {
+      const entries = await fs.promises.readdir(releasesDir, {
+        withFileTypes: true,
+      });
+      const backups = entries
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+        .filter((name) => name.startsWith('backup.'))
+        .sort()
+        .reverse();
+      for (const backup of backups.slice(3)) {
+        fs.promises
+          .rm(path.join(releasesDir, backup), { recursive: true, force: true })
+          .catch(() => undefined);
       }
+    } catch {
+      // Backup pruning is best effort.
     }
-
-    fs.promises.rm(baseTmp, { recursive: true, force: true }).catch(() => undefined);
   }
 
   private async assertZipSafe(zipPath: string): Promise<void> {
@@ -402,9 +424,14 @@ export class ClientUpdatesPublisherService {
       const stats = await fs.promises.stat(from);
       if (stats.isDirectory()) {
         await fs.promises.mkdir(to, { recursive: true });
-        const entries = await fs.promises.readdir(from, { withFileTypes: true });
+        const entries = await fs.promises.readdir(from, {
+          withFileTypes: true,
+        });
         for (const entry of entries) {
-          await copyRecursive(path.join(from, entry.name), path.join(to, entry.name));
+          await copyRecursive(
+            path.join(from, entry.name),
+            path.join(to, entry.name),
+          );
         }
         return;
       }
@@ -417,7 +444,10 @@ export class ClientUpdatesPublisherService {
 
   private async ensureLegacyAliases(targetDir: string): Promise<void> {
     try {
-      const legacyPath = path.join(targetDir, this.paths.getLegacyApplicationName());
+      const legacyPath = path.join(
+        targetDir,
+        this.paths.getLegacyApplicationName(),
+      );
       await fs.promises.rm(legacyPath, { force: true }).catch(() => undefined);
       const entries = await fs.promises.readdir(targetDir, {
         withFileTypes: true,

@@ -9,7 +9,7 @@
 
 #include "modules/storybook/application/StoryBookService.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/storybook/domain/StoryBookErrorMessages.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 

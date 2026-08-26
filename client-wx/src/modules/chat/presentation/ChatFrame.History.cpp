@@ -10,7 +10,6 @@
 
 #include "modules/chat/application/ChatService.h"
 #include "modules/chat/presentation/ChatMessageActions.h"
-#include "shared/errors/catalog/ErrorMessages.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 

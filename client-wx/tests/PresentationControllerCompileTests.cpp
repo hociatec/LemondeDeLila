@@ -1,4 +1,4 @@
-#include "modules/messaging/presentation/MessagingActionController.inl"
+#include "modules/messaging/presentation/MessagingActionController.h"
 #include "modules/messaging/presentation/MessagingMailboxController.h"
 #include "modules/options/presentation/OptionsEditorController.h"
 #include "modules/social/presentation/SocialLoadController.h"

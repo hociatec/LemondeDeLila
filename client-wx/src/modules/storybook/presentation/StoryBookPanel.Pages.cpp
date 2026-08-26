@@ -4,11 +4,9 @@
 
 #include <wx/stattext.h>
 
-#include "shared/accessibility/application/FocusCoordinator.h"
-#include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/text/presentation/encoding/Encoding.h"
-#include "shared/ui/presentation/theme/Theme.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "shared/ui/presentation/layout/ListPagePresentation.h"
 
 namespace lila::modules::storybook::presentation
 {
@@ -29,17 +27,11 @@ void StoryBookPanel::ShowCurrentPage()
         title = targetUserId_.has_value()
             ? wxString(L"Livre des contes de ") + lila::shared::text::FromUtf8(targetUsername_)
             : wxString(L"Mon livre des contes");
-        if (navigator_.Games().empty())
-        {
-            items.push_back({"empty", wxString(L"Aucune information encore disponible")});
-        }
-        else
-        {
-            for (const auto& game : navigator_.Games())
-            {
-                items.push_back({game.gameType, lila::shared::text::FromUtf8(game.gameName)});
-            }
-        }
+        items = lila::shared::ui::layout::BuildNamedMenuItems(
+            navigator_.Games(),
+            [](const auto& game) { return game.gameType; },
+            [](const auto& game) { return lila::shared::text::FromUtf8(game.gameName); },
+            wxString(L"Aucune information encore disponible"));
         break;
     case StoryBookNavigator::Page::Modes:
         if (const auto* game = navigator_.CurrentGame())
@@ -74,22 +66,11 @@ void StoryBookPanel::ShowCurrentPage()
 
 void StoryBookPanel::FocusMenuIfVisible()
 {
-    if (IsShownOnScreen())
-    {
-        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
-    }
+    lila::shared::ui::layout::FocusListPageIfVisible(*this, BuildFocusPlan());
 }
 
 void StoryBookPanel::UpdateStatus(const wxString& message, bool isError)
 {
-    statusLabel_->SetLabel(message);
-    statusLabel_->SetForegroundColour(
-        isError ? lila::shared::ui::Theme::Error() : lila::shared::ui::Theme::Accent());
-    statusLabel_->Show(!message.empty());
-    if (isError && !message.empty())
-        lila::shared::accessibility::AccessibilityUtils::AnnounceStatus(*statusLabel_, message);
-    else
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*statusLabel_, message);
-    Layout();
+    lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, message, isError);
 }
 }

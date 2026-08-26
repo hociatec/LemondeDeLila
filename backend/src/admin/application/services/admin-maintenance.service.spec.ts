@@ -2,7 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { AdminDaemonReloadService } from '../use-cases/admin-maintenance/admin-daemon-reload.service';
 import { GetAdminBackendServiceStatusService } from '../use-cases/admin-maintenance/get-admin-backend-service-status.service';
 import { StartAdminDeployService } from '../use-cases/admin-maintenance/start-admin-deploy.service';
-import type { AdminMaintenanceConfig } from '../../infrastructure/config/admin-maintenance.config';
+import type { AdminMaintenanceConfig } from '../ports/admin-maintenance-config.port';
 
 describe('Admin maintenance use-cases', () => {
   it('uses runtime port to start deploy', () => {

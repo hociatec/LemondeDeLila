@@ -9,7 +9,7 @@
 #include "modules/options/application/OptionsStore.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/config/domain/AppConfig.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/accessibility/application/FocusCoordinator.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"

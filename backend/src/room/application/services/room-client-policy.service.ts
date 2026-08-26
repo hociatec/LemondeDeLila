@@ -1,5 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import type { RoomPayload } from '../models/room-payload.model';
+import {
+  hasMinimumParticipants,
+  resolveMinimumParticipants,
+} from './room-start-policy';
+
+function countUniqueMembers(
+  members: Array<{ id: number }> | undefined,
+): number {
+  return new Set(
+    (members ?? [])
+      .map((member) => Number(member?.id))
+      .filter((id) => Number.isFinite(id) && id > 0),
+  ).size;
+}
 
 @Injectable()
 export class RoomClientPolicyService {
@@ -41,6 +55,14 @@ export class RoomClientPolicyService {
       room.players?.some((player) => player?.id === userId) ?? false;
     const canToggleRole =
       !started && (!room.isPrivate || isOwner || isParticipant);
+    const humans = countUniqueMembers(room.players);
+    const bots = countUniqueMembers(room.bots);
+    const minimum = resolveMinimumParticipants(payload.manifest?.minPlayers);
+    const maximum =
+      Number.isFinite(room.maxPlayers) && room.maxPlayers > 0
+        ? Math.trunc(room.maxPlayers)
+        : minimum;
+    const canStart = !started && hasMinimumParticipants(humans, bots, minimum);
 
     const actions = new Set<string>([
       'room.rules',
@@ -55,11 +77,11 @@ export class RoomClientPolicyService {
     }
 
     if (isOwner) {
-      actions.add('room.start');
+      if (canStart) actions.add('room.start');
       actions.add('room.reset');
       actions.add('room.toggle-privacy');
-      actions.add('bot.add');
-      actions.add('bot.remove');
+      if (!started && humans + bots < maximum) actions.add('bot.add');
+      if (!started && bots > 0) actions.add('bot.remove');
       actions.add('room.kick');
       actions.add('room.ban');
       actions.add('room.set-owner');

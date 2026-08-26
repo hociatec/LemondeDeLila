@@ -19,8 +19,8 @@ export function actionShortcut(
   return { key: pressed(key), type: 'action', actionType };
 }
 
-export function when<TMeta>(
-  _ctx: GameShortcutsContext<TMeta>,
+export function when(
+  _ctx: GameShortcutsContext,
   condition: boolean,
   shortcuts: readonly GameShortcutHint[],
 ): GameShortcutHint[] {

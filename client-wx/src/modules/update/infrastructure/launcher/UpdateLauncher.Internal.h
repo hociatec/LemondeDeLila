@@ -1,7 +1,7 @@
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
+#define NOMINMAX 1
 #include <windows.h>
 
 #include <chrono>
@@ -57,6 +57,25 @@ struct Process
 
 enum class LauncherReplacement { NotNeeded, Spawned, Failed };
 
+class UpdateProgressDialog final
+{
+public:
+    UpdateProgressDialog() = default;
+    ~UpdateProgressDialog();
+    UpdateProgressDialog(const UpdateProgressDialog&) = delete;
+    UpdateProgressDialog& operator=(const UpdateProgressDialog&) = delete;
+
+    void Show(const std::string& version) noexcept;
+    void SetStage(const std::wstring& stage, std::uint64_t percent) noexcept;
+    void SetDownloadProgress(std::uint64_t completed, std::uint64_t total) noexcept;
+    void Close() noexcept;
+
+private:
+    void* dialog_ = nullptr;
+    bool comInitialized_ = false;
+    int lastDownloadPercent_ = -1;
+};
+
 std::wstring Widen(const std::string& value);
 std::string Narrow(const std::wstring& value);
 std::string Environment(const wchar_t* name);
@@ -69,13 +88,23 @@ void SaveState(const fs::path& root, const State& state);
 bool DeadlineReached(const std::string& value);
 std::string RequiredVersion(const Manifest& manifest);
 std::string DownloadText(const std::string& url);
-void DownloadFile(const std::string& url, const fs::path& destination, std::uint64_t expectedBytes);
+void DownloadFile(const std::string& url, const fs::path& destination,
+    std::uint64_t expectedBytes, UpdateProgressDialog* progress = nullptr);
 std::string Sha256(const fs::path& path);
 bool VerifyAuthenticode(const fs::path& executable, std::string* failureReason = nullptr);
+bool VerifyAuthenticodeWithRetry(
+    const fs::path& executable,
+    std::string* failureReason = nullptr);
 bool VerifyManifestSignature(const Manifest& manifest);
 Manifest ParseManifest(const std::string& raw);
 std::string ManifestUrl(const std::string& currentVersion);
-fs::path PrepareRelease(const fs::path& root, const Manifest& manifest);
+std::uint64_t InspectArchive(const fs::path& archive, std::uint64_t compressedBytes);
+void EnsureFreeSpace(const fs::path& root, std::uint64_t requiredBytes);
+void ExtractArchive(const fs::path& archive, const fs::path& destination,
+    std::uint64_t expectedExtractedBytes, UpdateProgressDialog* progress = nullptr);
+void RenameWithRetry(const fs::path& source, const fs::path& destination);
+fs::path PrepareRelease(const fs::path& root, const Manifest& manifest,
+    UpdateProgressDialog* progress = nullptr);
 Process LaunchClient(const fs::path& directory);
 bool WaitForHealthy(const Process& process);
 void StopForUpdate(Process& process);

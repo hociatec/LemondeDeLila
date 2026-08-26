@@ -87,11 +87,7 @@ describe('Mojibake utilities', () => {
     });
 
     it('should fix strings in arrays', () => {
-      const input = [
-        '\u00c3\u00a9t\u00c3\u00a9',
-        'normal',
-        'for\u00c3\u00aat',
-      ];
+      const input = ['\u00c3\u00a9t\u00c3\u00a9', 'normal', 'for\u00c3\u00aat'];
       const result = fixMojibakeDeep(input);
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBe(3);

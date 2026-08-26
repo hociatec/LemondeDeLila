@@ -146,4 +146,3 @@ export class MessagingWsHandler {
     return { box: finalBox, items };
   }
 }
-

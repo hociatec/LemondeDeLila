@@ -2,10 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import type { GameStateEntity } from '../../application/models/game-state.model';
 import { GamePluginsModule } from '../../../engine/public-api';
 import type {
-  GameDefinition,
-  GameRulesAdapter,
-} from '../../application/contracts/game-rules-adapter.interface';
-import { GameRegistryModule, GameRegistryService } from '../../../engine/public-api';
+  GameCatalogDefinition,
+  GameRuntime,
+} from '../../application/contracts/game-runtime.interface';
+import {
+  GameRegistryModule,
+  GameRegistryService,
+} from '../../../engine/public-api';
 import type { GameSingleActionDto } from '../../application/models/game-action.model';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as fs from 'node:fs';
@@ -13,20 +16,21 @@ import * as path from 'node:path';
 import * as net from 'node:net';
 
 jest.mock('../../../engine/public-api', () => {
-  const { Module, DynamicModule } = jest.requireActual('@nestjs/common');
+  const { Module } = jest.requireActual('@nestjs/common');
+  type DynamicModule = import('@nestjs/common').DynamicModule;
 
   class GameRegistryServiceMock {
-    private readonly handlers = new Map<string, GameRulesAdapter>();
+    private readonly handlers = new Map<string, GameRuntime>();
 
-    register(handler: GameRulesAdapter): void {
+    register(handler: GameRuntime): void {
       this.handlers.set(handler.gameType, handler);
     }
 
-    getHandler(gameType: string): GameRulesAdapter | undefined {
+    getHandler(gameType: string): GameRuntime | undefined {
       return this.handlers.get(gameType);
     }
 
-    async listGames(): Promise<GameDefinition[]> {
+    async listGames(): Promise<GameCatalogDefinition[]> {
       return Array.from(this.handlers.values()).map((handler) => ({
         id: handler.gameType,
         name: handler.displayName,
@@ -76,9 +80,6 @@ function createBaseState(gameType: string, players = 4): GameStateEntity {
   return {
     status: 'started',
     phase: 'playing',
-    round: 1,
-    turnIndex: 0,
-    lastRoll: null,
     log: [],
     players: Array.from({ length: players }, (_, i) => ({
       id: i + 1,
@@ -95,7 +96,6 @@ function createBaseState(gameType: string, players = 4): GameStateEntity {
       rng: { seed: 123456, counter: 0 },
     },
     pending: null,
-    botThinking: false,
   };
 }
 
@@ -298,7 +298,7 @@ function keyFromShortcut(hint: unknown): string {
 }
 
 function collectCandidates(
-  handler: GameRulesAdapter,
+  handler: GameRuntime,
   state: GameStateEntity,
   actorId: number,
   extraActionTypes: string[],
@@ -315,21 +315,17 @@ function collectCandidates(
     out.push(action);
   };
 
-  const available = handler.getAvailableActions?.(state, actorId) ?? [];
+  const available = handler.getAvailableActions(state, actorId);
   for (const action of available) {
     pushCandidate(action);
   }
 
-  const exposed = handler.exposeStateForUser?.(state, actorId);
+  const exposed = handler.exposeStateForUser(state, actorId);
   for (const action of Array.isArray(exposed?.actions) ? exposed.actions : []) {
     pushCandidate(action);
   }
 
-  const shortcuts = handler.getShortcuts?.({
-    metadata:
-      state.metadata && typeof state.metadata === 'object'
-        ? (state.metadata as Record<string, unknown>)
-        : {},
+  const shortcuts = handler.getShortcuts({
     currentPlayerId:
       typeof state.turn?.currentPlayerId === 'number'
         ? state.turn.currentPlayerId
@@ -705,11 +701,7 @@ describe('All games scenario coverage harness', () => {
           let idleSteps = 0;
 
           for (let step = 0; step < HARNESS_STEPS; step += 1) {
-            if (handler.exposeStateForUser) {
-              void handler.exposeStateForUser(state, 1);
-            } else if (handler.exposeState) {
-              void handler.exposeState(state);
-            }
+            void handler.exposeStateForUser(state, 1);
 
             const pending = asRecord(state.pending);
             const pendingPlayerId =
@@ -724,15 +716,7 @@ describe('All games scenario coverage harness', () => {
               .map((p) => Number(p.id))
               .filter((id) => Number.isFinite(id));
 
-            if (handler.getBotActions) {
-              void handler.getBotActions(state, activeId);
-            }
-            if (handler.getBotStrategy) {
-              void handler.getBotStrategy();
-            }
-            if (handler.shouldAnnounceBoardArrivals) {
-              void handler.shouldAnnounceBoardArrivals();
-            }
+            void handler.getBotActions(state, activeId);
 
             const actorOrder = [
               activeId,
@@ -883,6 +867,3 @@ describe('All games scenario coverage harness', () => {
     expect(failures).toEqual([]);
   });
 });
-
-
-

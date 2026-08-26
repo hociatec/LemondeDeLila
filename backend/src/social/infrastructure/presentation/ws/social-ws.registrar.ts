@@ -14,14 +14,17 @@ export class SocialWsRegistrar implements OnModuleInit {
     this.registry.register(WS_EVENTS.social.friendsList, (session, _payload) =>
       this.handler.listFriends(session),
     );
-    this.registry.register(WS_EVENTS.social.friendsRequests, (session, payload) =>
-      this.handler.listRequests(session, payload),
+    this.registry.register(
+      WS_EVENTS.social.friendsRequests,
+      (session, payload) => this.handler.listRequests(session, payload),
     );
-    this.registry.register(WS_EVENTS.social.friendsBlocked, (session, _payload) =>
-      this.handler.listBlocked(session),
+    this.registry.register(
+      WS_EVENTS.social.friendsBlocked,
+      (session, _payload) => this.handler.listBlocked(session),
     );
-    this.registry.register(WS_EVENTS.social.friendsRequest, (session, payload) =>
-      this.handler.requestFriend(session, payload),
+    this.registry.register(
+      WS_EVENTS.social.friendsRequest,
+      (session, payload) => this.handler.requestFriend(session, payload),
     );
     this.registry.register(WS_EVENTS.social.friendsAccept, (session, payload) =>
       this.handler.acceptFriend(session, payload),
@@ -38,8 +41,9 @@ export class SocialWsRegistrar implements OnModuleInit {
     this.registry.register(WS_EVENTS.social.friendsBlock, (session, payload) =>
       this.handler.blockFriend(session, payload),
     );
-    this.registry.register(WS_EVENTS.social.friendsUnblock, (session, payload) =>
-      this.handler.unblockFriend(session, payload),
+    this.registry.register(
+      WS_EVENTS.social.friendsUnblock,
+      (session, payload) => this.handler.unblockFriend(session, payload),
     );
     this.registry.register(WS_EVENTS.social.profileGet, (session, payload) =>
       this.handler.getProfile(session, payload),
@@ -52,4 +56,3 @@ export class SocialWsRegistrar implements OnModuleInit {
     );
   }
 }
-

@@ -1,6 +1,8 @@
 name: Release - Client + Backend
 
 on:
+  # Secours manuel historique uniquement. Le déploiement backend et la
+  # publication WX normaux se font localement avec `sudo updatecmd all`.
   workflow_dispatch:
 
 concurrency:

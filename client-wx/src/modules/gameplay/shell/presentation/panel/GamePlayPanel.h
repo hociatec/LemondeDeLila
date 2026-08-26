@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <functional>
 #include <optional>
+#include <stop_token>
 #include <string>
 #include <vector>
 
@@ -10,6 +11,8 @@
 #include <wx/weakref.h>
 
 #include "modules/gameplay/actions/domain/GameAction.h"
+#include "modules/gameplay/actions/application/GameCommandSubmissionGuard.h"
+#include "modules/gameplay/session/application/GameStartConfigurationFlow.h"
 #include "modules/gameplay/session/domain/GameEvent.h"
 #include "modules/gameplay/state/domain/GameState.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
@@ -27,6 +30,11 @@ namespace lila::modules::gameplay::application
 class GameSessionService;
 }
 
+namespace lila::shared::errors
+{
+class AppError;
+}
+
 namespace lila::modules::gameplay::presentation::confirmation { class GameActionConfirmationPanel; }
 namespace lila::modules::gameplay::presentation::hand { class GameHandPanel; }
 namespace lila::modules::gameplay::presentation::dice { class GameDicePanel; }
@@ -42,13 +50,14 @@ public:
     using HistoryMessageHandler = std::function<void(const wxString&)>;
     using TableShortcutHandler = std::function<bool(wxKeyEvent&)>;
     using DiceRolledHandler = std::function<void()>;
+    using RoomStartRequestedHandler = std::function<void()>;
 
     explicit GamePlayPanel(
         wxWindow* parent,
         application::GameSessionService& service);
     ~GamePlayPanel() override;
 
-    void Open(int roomId, std::string gameType, std::string gameName);
+    void Open(int roomId, std::string gameType, std::string gameName, bool roomStarted = true);
     void CloseSession();
     [[nodiscard]] bool IsOpenFor(int roomId, const std::string& gameType) const;
     [[nodiscard]] bool IsOpen() const noexcept;
@@ -57,9 +66,13 @@ public:
     void SetHistoryMessageHandler(HistoryMessageHandler handler);
     void SetTableShortcutHandler(TableShortcutHandler handler);
     void SetDiceRolledHandler(DiceRolledHandler handler);
-    bool ActivateFromZone();
-    bool HandleZoneKey(wxKeyEvent& event);
-    [[nodiscard]] wxWindow* ActiveNavigationTarget() const noexcept;
+    void SetRoomStartRequestedHandler(RoomStartRequestedHandler handler);
+    bool BeginRoomStart();
+    void SetRoomStarted(bool started);
+    void NotifyRoomStartFailed(const wxString& message);
+    bool HandleZoneActivation();
+    [[nodiscard]] bool HandleKey(wxKeyEvent& event);
+    [[nodiscard]] wxWindow* PreferredNavigationTarget() const;
 
 private:
     void BuildLayout();
@@ -69,15 +82,22 @@ private:
     void PrepareAndExecuteAction(domain::GameAction action);
     void ExecuteAction(domain::GameAction action);
     void RequestRefresh();
-    void RequestTurn();
     void SendKey(std::string key);
+    void SubmitInputCommand(
+        std::string protocolCommand,
+        std::function<void(std::stop_token)> command,
+        std::string failureMessage);
+    void RunCommand(
+        std::function<void(std::stop_token)> command,
+        std::string failureMessage,
+        std::function<void(GamePlayPanel&, const lila::shared::errors::AppError&)>
+            onFailure = {});
     void ApplyState(domain::GameState state);
     void HandleEvent(domain::GameEvent event);
-    [[nodiscard]] bool HandleKey(wxKeyEvent& event);
     void ActivateSelectedLine();
+    bool ActivateSelectedPendingChoice();
     bool ActivateSelectedHandCard();
     bool ActivateSelectedDie();
-    [[nodiscard]] bool HasDiceAction() const;
     [[nodiscard]] std::optional<domain::GameAction> ResolveRollAction() const;
     void SyncInlinePrompt();
     void ShowInlinePrompt(domain::GameAction action);
@@ -95,16 +115,22 @@ private:
     [[nodiscard]] std::string NormalizeKey(const wxKeyEvent& event) const;
     [[nodiscard]] wxString BuildShortcutText() const;
     [[nodiscard]] wxString BuildHeaderText() const;
+    [[nodiscard]] wxString BuildStateSummaryText() const;
+    [[nodiscard]] wxString BuildPendingText() const;
     [[nodiscard]] wxString BuildLineDetail() const;
     [[nodiscard]] wxString BuildInfoText(const std::string& panelId) const;
 
     application::GameSessionService& service_;
     wxStaticText* headerLabel_ = nullptr;
+    wxStaticText* stateSummaryLabel_ = nullptr;
+    wxStaticText* pendingLabel_ = nullptr;
     wxScrolledWindow* contentPanel_ = nullptr;
     hand::GameHandPanel* handPanel_ = nullptr;
     dice::GameDicePanel* dicePanel_ = nullptr;
     wxStaticText* actionsLabel_ = nullptr;
     wxListBox* linesList_ = nullptr;
+    wxStaticText* choicesLabel_ = nullptr;
+    wxListBox* choicesList_ = nullptr;
     wxTextCtrl* infoText_ = nullptr;
     wxStaticText* shortcutsLabel_ = nullptr;
     wxStaticText* statusLabel_ = nullptr;
@@ -118,12 +144,19 @@ private:
     std::string activeInfoPanel_ = "details";
     std::string dismissedPromptActionType_;
     std::string submittedPromptActionType_;
+    bool roomStarted_ = true;
+    bool roomStartFlowRequested_ = false;
+    bool roomStartPending_ = false;
+    application::GameStartConfigurationFlow startConfigurationFlow_;
     history::GameLogCursor logCursor_;
     application::dice::GameDiceRollTracker diceRollTracker_;
     ZoneFocusRequestedHandler onZoneFocusRequested_;
     HistoryMessageHandler onHistoryMessage_;
     TableShortcutHandler onTableShortcut_;
     DiceRolledHandler onDiceRolled_;
+    RoomStartRequestedHandler onRoomStartRequested_;
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
+    lila::shared::concurrency::AsyncRequestSlot inputRequestSlot_;
+    application::GameCommandSubmissionGuard inputSubmissionGuard_;
 };
 }

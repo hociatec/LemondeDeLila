@@ -1,7 +1,8 @@
 #include "modules/options/infrastructure/FileOptionsRepository.h"
 #include "modules/options/infrastructure/OptionsJsonDocumentCodec.h"
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "shared/errors/catalog/CoreErrorMessages.h"
+#include "shared/errors/presentation/ErrorFormatting.h"
 #include "shared/persistence/infrastructure/JsonFileStorage.h"
 
 #include <nlohmann/json.hpp>

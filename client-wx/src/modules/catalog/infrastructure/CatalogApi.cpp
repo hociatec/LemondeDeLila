@@ -6,7 +6,7 @@
 
 #include "modules/catalog/infrastructure/CatalogPayloadCodec.h"
 #include "modules/session/application/SessionStore.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/catalog/domain/CatalogErrorMessages.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 

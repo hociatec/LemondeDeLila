@@ -10,20 +10,20 @@ The codebase is structured around Clean Architecture principles:
 - **Infrastructure Layer (`src/modules/*/infrastructure`, `src/shared/network`, `src/shared/persistence`, `src/shared/security`)**: WinHTTP WebSockets, HTTP ticket providers, DPAPI credential protection, file persistence (`JsonFileStorage`, `AtomicFileWriter`), and network protocol parsers.
 - **Presentation Layer (`src/modules/*/presentation`, `src/app`)**: wxWidgets views, frames, layout builders, event binders, and accessibility focus controllers.
 - **Bootstrap Layer (`src/bootstrap`)**: Dependency injection container (`AppBootstrap`) assembling services, gateways, and UI frames.
-- Runtime configuration is resolved through `shared/config/AppConfig.*` with explicit environment-driven profiles (`LILA_BACKEND_PROFILE`, `LILA_BACKEND_API_WS`) rather than hard-coded per-machine edits.
+- Runtime configuration is resolved through `shared/config/domain/AppConfig.*` with explicit environment-driven profiles (`LILA_BACKEND_PROFILE`, `LILA_BACKEND_API_WS`) rather than hard-coded per-machine edits.
 
 ---
 
 ## 2. Key Architecture Directives & Invariants
 
 ### 2.1 Concurrency & Background Execution
-- All non-UI background tasks use `shared/concurrency/BackgroundExecutor.h` (`RunAsync`).
+- All non-UI background tasks use `shared/concurrency/application/BackgroundExecutor.h` (`RunAsync`).
 - Background worker threads operate on a bounded worker pool (`WorkerPool`) clamped between 2 and 8 threads, with a maximum queue capacity of 256 jobs to prevent memory bloat.
 - Worker jobs accept a `std::stop_token` and check for cooperative cancellation.
 - All exceptions inside background jobs are caught, converted into `AppError` or diagnostic logs, and safely marshaled.
 
 ### 2.2 Security & Session Storage
-- Token persistence uses Windows DPAPI (`CryptProtectData` / `CryptUnprotectData`) via `shared/security/SecurityUtils.h`.
+- Token persistence uses Windows DPAPI (`CryptProtectData` / `CryptUnprotectData`) via `shared/security/infrastructure/SecurityUtils.h`.
 - Session access and refresh tokens in memory are erased upon destruction using `SecureWipeString`.
 - Les événements WebSocket et champs de payload du client sont régénérés depuis
   `backend/src/realtime/infrastructure/presentation/ws/ws-events.ts` et
@@ -54,16 +54,16 @@ The codebase is structured around Clean Architecture principles:
 
 ## 3. Protocol & Network Architecture
 
-- Realtime communication runs over WinHTTP WebSockets (`shared/network/websocket/WinHttpWebSocketClient`).
+- Realtime communication runs over WinHTTP WebSockets (`shared/network/infrastructure/websocket/WinHttpWebSocketClient`).
 - Tickets are requested via authenticated HTTP endpoints before establishing WebSocket connections.
-- JSON messages are validated strictly using `shared/data/JsonApiHelpers.h` (`EnsureArrayStrict`, `ReadStrictTimestamp`).
-- Realtime envelopes explicitly carry `protocolVersion` and `clientVersion`, and common payload parsing is centralized in `shared/network/realtime/RealtimePayloadReaders.h`.
+- JSON messages are validated strictly by the readers in `shared/data/json`.
+- Realtime envelopes explicitly carry `protocolVersion` and `clientVersion`, and common payload parsing is centralized in `shared/network/application/realtime/RealtimePayloadReaders.h`.
 
 ---
 
 ## 4. Testing & Diagnostics
 
 - **Structured Logging**: `lila::shared::logging::Log` outputs formatted timestamps, log levels (`Debug`, `Info`, `Warning`, `Error`), and categories to console and `client.log`.
-- **Unit Testing**: Run unit tests with `NetworkProtocolTests.cpp` covering session validation, options schema migrations, atomic writes, domain types, and security memory wiping.
+- **Unit Testing**: `ctest --preset windows-vcpkg-debug` exécute tous les contrats réseau, session, options, gameplay, audio et mise à jour. Les grands scénarios sont découpés en segments sous `tests/network_protocol` et `tests/gameplay`.
 - **Quality Tooling**: Optional CMake switches expose `clang-tidy`, `cppcheck`, `AddressSanitizer`, and compiler-supported sanitizer runs. See `QUALITY.md`.
-- **Parser Hardening**: A dedicated parser fuzz harness target exists for realtime/chat/UTF-8 entry points.
+- **Parser Hardening**: la cible `lemonde_de_lila_wx_parser_robustness_tests` rejoue un corpus versionné sur les entrées realtime, chat et UTF-8.

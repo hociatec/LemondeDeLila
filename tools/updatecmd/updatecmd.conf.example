@@ -1,0 +1,40 @@
+# Configuration locale de updatecmd. Ce fichier doit appartenir à root et être en mode 0600.
+INSTALL_ROOT=/opt/lemonde-de-lila
+STATE_ROOT=/var/lib/lemonde-de-lila/updatecmd
+CACHE_ROOT=/var/cache/lemonde-de-lila/updatecmd
+LOCK_FILE=/var/lock/lemonde-de-lila-updatecmd.lock
+
+# L'utilisateur doit posséder les caches et les releases construites.
+BUILD_USER=ubuntu
+BACKEND_RUNTIME_USER=ubuntu
+BACKEND_SERVICE=lila-backend.service
+BACKEND_UNIT_FILE=/etc/lemonde-de-lila/lila-backend.service
+BACKEND_ENV_FILE=/etc/lemonde-de-lila/backend.env
+BACKEND_SHARED_DATA_ROOT=/var/lib/lemonde-de-lila/backend-data
+BACKEND_KEYS_ROOT=/etc/lemonde-de-lila/keys
+BACKEND_HEALTH_URL=http://127.0.0.1:3001/health/info
+BACKEND_READINESS_URL=http://127.0.0.1:3001/health
+BACKEND_TEST_COMMAND="npm run test:transverse"
+BACKEND_KEEP_RELEASES=5
+
+# Publication locale du client WX. L'URL peut aussi cibler le domaine public.
+WX_API_BASE=http://127.0.0.1:3001
+WX_PUBLIC_URL=https://api.lilas.hociatec.fr/updates/client-wx/
+WX_UPLOAD_TOKEN_FILE=/etc/lemonde-de-lila/secrets/wx-upload-token
+WX_MANIFEST_PRIVATE_KEY=/etc/lemonde-de-lila/secrets/wx-update-private.pem
+WX_CODESIGN_PFX=/etc/lemonde-de-lila/secrets/wx-codesign.pfx
+WX_CODESIGN_PASSWORD_FILE=/etc/lemonde-de-lila/secrets/wx-codesign-password
+# Empêche une rotation accidentelle qui bloquerait les clients déjà installés.
+WX_EXPECTED_SIGNER_SHA256=62e99e10aeeaf2445da6763f4524863529ab0e1c9d9af7f5aa0b483e80dabef5
+WX_TIMESTAMP_URL=http://timestamp.digicert.com
+WX_VERSION_MAJOR=1
+WX_VERSION_MINOR=2
+WX_MANDATORY=1
+WX_MESSAGE="Mise à jour obligatoire du client WX."
+
+# Ces caches restent en place entre les builds; c'est ce qui ramène le temps à quelques minutes.
+WX_VCPKG_ROOT=/var/cache/lemonde-de-lila/updatecmd/toolchains/vcpkg
+WX_VCPKG_TRIPLET=x64-mingw-lila-dynamic
+WX_BASS_ROOT=/var/cache/lemonde-de-lila/updatecmd/toolchains/bass
+WX_BUILD_DIR=/var/cache/lemonde-de-lila/updatecmd/client-wx-build
+WX_BINARY_CACHE=/var/cache/lemonde-de-lila/updatecmd/vcpkg-binary-cache

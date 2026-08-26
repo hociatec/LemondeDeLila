@@ -8,6 +8,7 @@
 
 #include "modules/gameplay/cards/application/GameCardTextBuilder.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
+#include "shared/ui/presentation/controls/ListBoxNavigation.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::gameplay::presentation::hand
@@ -61,27 +62,15 @@ void GameHandPanel::ClearHand()
 
 bool GameHandPanel::MoveSelection(bool backwards)
 {
-    const auto count = list_->GetCount();
-    if (count == 0) return false;
-    int selected = list_->GetSelection();
-    if (selected == wxNOT_FOUND) selected = backwards ? static_cast<int>(count) - 1 : 0;
-    else if (backwards && selected > 0) --selected;
-    else if (!backwards && static_cast<unsigned int>(selected + 1) < count) ++selected;
-    list_->SetSelection(selected);
-    return true;
+    return lila::shared::ui::controls::list_box::MoveSelection(*list_, backwards);
 }
 
 int GameHandPanel::SelectedIndex() const noexcept { return list_->GetSelection(); }
 
-std::size_t GameHandPanel::Count() const noexcept
+wxWindow* GameHandPanel::NavigationTarget() const noexcept
 {
-    return static_cast<std::size_t>(list_->GetCount());
-}
-
-wxString GameHandPanel::SelectedLabel() const
-{
-    const int selected = list_->GetSelection();
-    return selected == wxNOT_FOUND ? wxString{} : list_->GetString(selected);
+    return lila::shared::ui::controls::list_box::NavigationTarget(
+        *this, *list_);
 }
 
 }

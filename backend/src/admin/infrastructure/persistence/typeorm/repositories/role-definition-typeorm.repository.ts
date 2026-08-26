@@ -6,9 +6,7 @@ import type { RoleDefinition } from '../../../../domain/models/role-definition.m
 import { RoleDefinitionEntity } from '../entities/role-definition.entity';
 
 @Injectable()
-export class RoleDefinitionTypeormRepository
-  implements RoleDefinitionRepository
-{
+export class RoleDefinitionTypeormRepository implements RoleDefinitionRepository {
   constructor(
     @InjectRepository(RoleDefinitionEntity)
     private readonly repo: Repository<RoleDefinitionEntity>,
@@ -33,7 +31,9 @@ export class RoleDefinitionTypeormRepository
   }
 
   async saveMany(definitions: RoleDefinition[]): Promise<void> {
-    await this.repo.save(definitions.map((definition) => this.toEntity(definition)));
+    await this.repo.save(
+      definitions.map((definition) => this.toEntity(definition)),
+    );
   }
 
   async update(

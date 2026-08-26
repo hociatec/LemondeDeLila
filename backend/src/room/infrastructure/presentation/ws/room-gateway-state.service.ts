@@ -10,7 +10,10 @@ import {
 } from './room-announcement.helpers';
 import { emitRoomAnnouncementDiff } from './room-announcement-diff.helpers';
 import type { RoomFocusIntent } from './dto/room-focus-intent.ws.dto';
-import type { RoomIntent, RoomStartWizardIntent } from './dto/room-intent.ws.dto';
+import type {
+  RoomIntent,
+  RoomStartWizardIntent,
+} from './dto/room-intent.ws.dto';
 import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
 import type { ClientMeta } from './room-gateway.types';
 import {
@@ -70,8 +73,15 @@ export class RoomGatewayStateService {
     }
   }
 
-  applySpectators(ctx: StateContext, roomId: number, payload: RoomPayload): void {
-    payload.room.spectators = listVisibleSpectators(ctx.clients.values(), roomId);
+  applySpectators(
+    ctx: StateContext,
+    roomId: number,
+    payload: RoomPayload,
+  ): void {
+    payload.room.spectators = listVisibleSpectators(
+      ctx.clients.values(),
+      roomId,
+    );
     payload.room.counts.spectators = payload.room.spectators.length;
 
     const started =
@@ -82,7 +92,9 @@ export class RoomGatewayStateService {
       payload.room.players?.length &&
       payload.room.spectators?.length
     ) {
-      const spectatorIds = new Set(payload.room.spectators.map((spectator) => spectator.id));
+      const spectatorIds = new Set(
+        payload.room.spectators.map((spectator) => spectator.id),
+      );
       payload.room.players = payload.room.players.filter(
         (player) => !spectatorIds.has(player.id),
       );
@@ -90,7 +102,9 @@ export class RoomGatewayStateService {
     }
 
     if (payload.room.players?.length && payload.room.spectators?.length) {
-      const playerIds = new Set(payload.room.players.map((player) => player.id));
+      const playerIds = new Set(
+        payload.room.players.map((player) => player.id),
+      );
       payload.room.spectators = payload.room.spectators.filter(
         (spectator) => !playerIds.has(spectator.id),
       );
@@ -106,7 +120,10 @@ export class RoomGatewayStateService {
       ...payload,
       room: {
         ...payload.room,
-        allowedActions: this.clientPolicy.listAllowedActions(payload, meta.userId),
+        allowedActions: this.clientPolicy.listAllowedActions(
+          payload,
+          meta.userId,
+        ),
       },
     };
   }
@@ -188,7 +205,10 @@ export class RoomGatewayStateService {
     roomId: number,
     updater: (payload: RoomPayload) => RoomPayload | null,
   ): Promise<boolean> {
-    const updated = await this.roomState.updateRoomPayloadCache(roomId, updater);
+    const updated = await this.roomState.updateRoomPayloadCache(
+      roomId,
+      updater,
+    );
     if (!updated) {
       return false;
     }
@@ -230,27 +250,15 @@ export class RoomGatewayStateService {
       const focusIntent = this.computeStatusFocusIntent(ctx, roomId, payload);
       const meta = ctx.clients.get(client);
       const payloadForClient =
-        meta != null ? this.withAllowedActionsForClient(payload, meta) : payload;
+        meta != null
+          ? this.withAllowedActionsForClient(payload, meta)
+          : payload;
       ctx.safeSend(
         client,
         this.presenter.presentRoomUpdated(roomId, payloadForClient),
       );
       if (focusIntent) {
-        ctx.safeSend(client, this.presenter.presentRoomFocus(roomId, focusIntent));
-        ctx.safeSend(
-          client,
-          this.presenter.presentRoomIntent(
-            roomId,
-            this.presenter.presentFocusIntent(focusIntent),
-          ),
-        );
-        ctx.safeSend(
-          client,
-          this.presenter.presentRoomIntent(
-            roomId,
-            this.presenter.presentFocusAnnouncement(focusIntent),
-          ),
-        );
+        this.sendFocusIntent(ctx, client, roomId, focusIntent);
       }
       const startWizardIntent = this.buildStartWizardIntent(
         payload,
@@ -278,6 +286,29 @@ export class RoomGatewayStateService {
     }
   }
 
+  private sendFocusIntent(
+    ctx: StateContext,
+    client: WebSocket,
+    roomId: number,
+    focusIntent: RoomFocusIntent,
+  ): void {
+    ctx.safeSend(client, this.presenter.presentRoomFocus(roomId, focusIntent));
+    ctx.safeSend(
+      client,
+      this.presenter.presentRoomIntent(
+        roomId,
+        this.presenter.presentFocusIntent(focusIntent),
+      ),
+    );
+    ctx.safeSend(
+      client,
+      this.presenter.presentRoomIntent(
+        roomId,
+        this.presenter.presentFocusAnnouncement(focusIntent),
+      ),
+    );
+  }
+
   private async broadcastRoomUpdated(
     ctx: StateContext,
     roomId: number,
@@ -295,7 +326,10 @@ export class RoomGatewayStateService {
           continue;
         }
         try {
-          const payloadForClient = this.withAllowedActionsForClient(payload, meta);
+          const payloadForClient = this.withAllowedActionsForClient(
+            payload,
+            meta,
+          );
           socket.send(
             JSON.stringify(
               this.presenter.presentRoomUpdated(roomId, payloadForClient),
@@ -385,7 +419,8 @@ export class RoomGatewayStateService {
       roomId,
       previous,
       next,
-      announce: (message) => this.broadcastRoomAnnouncement(ctx, roomId, message),
+      announce: (message) =>
+        this.broadcastRoomAnnouncement(ctx, roomId, message),
     });
   }
 

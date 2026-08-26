@@ -1,3 +1,5 @@
+import { stringOrEmpty } from '@common/utils/public-api';
+
 export type PresenceConnectionContext =
   | 'home'
   | 'chat'
@@ -93,7 +95,7 @@ export function decodePresenceCurrentRoom(
   if (id == null) {
     return null;
   }
-  const name = String(record.name ?? '').trim() || `Table #${id}`;
+  const name = stringOrEmpty(record.name).trim() || `Table #${id}`;
   return { id, name };
 }
 
@@ -112,7 +114,9 @@ export function decodePresencePublicPlayer(
     return null;
   }
 
-  const rawActivity = String(record.activity ?? 'home').trim().toLowerCase();
+  const rawActivity = (stringOrEmpty(record.activity) || 'home')
+    .trim()
+    .toLowerCase();
   const activity = normalizePresenceContext(rawActivity);
   const currentRoom = decodePresenceCurrentRoom(record.currentRoom);
   const lastInteractionAt =
@@ -125,7 +129,7 @@ export function decodePresencePublicPlayer(
 
   return {
     id,
-    username: String(record.username ?? '').trim() || `user#${id}`,
+    username: stringOrEmpty(record.username).trim() || `user#${id}`,
     activity,
     currentRoom,
     lastInteractionAt,
@@ -203,7 +207,10 @@ export function computePresenceLocation(
   currentRoom: { id: number; name: string } | null,
 ): string {
   if (activity === 'table') {
-    return currentRoom?.name || (currentRoom?.id ? `Table #${currentRoom.id}` : 'Table');
+    return (
+      currentRoom?.name ||
+      (currentRoom?.id ? `Table #${currentRoom.id}` : 'Table')
+    );
   }
   if (activity === 'chat') return 'tchat';
   if (activity === 'tavern') return 'taverne';
@@ -222,7 +229,9 @@ export function enrichPresencePlayers(
 ): PresencePublicPlayer[] {
   return players.map((player) => {
     const last =
-      typeof player.lastInteractionAt === 'number' ? player.lastInteractionAt : 0;
+      typeof player.lastInteractionAt === 'number'
+        ? player.lastInteractionAt
+        : 0;
     const availability = computePresenceAvailability(
       player.activity,
       player.roomStarted,
@@ -230,7 +239,10 @@ export function enrichPresencePlayers(
       last,
       absentAfterMs,
     );
-    const location = computePresenceLocation(player.activity, player.currentRoom);
+    const location = computePresenceLocation(
+      player.activity,
+      player.currentRoom,
+    );
     return { ...player, availability, location };
   });
 }

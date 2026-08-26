@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "limits": {
+    "fileLines": 600,
+    "classLines": 500,
+    "methodLines": 80,
+    "methodsPerClass": 20,
+    "constructorDependencies": 8
+  },
+  "ignoredSuffixes": [".spec.ts", ".test.ts", ".e2e-spec.ts", ".d.ts"],
+  "ignoredPathFragments": ["/migrations/"],
+  "constructorDependencyExemptions": [
+    "\\.registrar\\.ts$",
+    "/module/",
+    "\\.module\\.ts$"
+  ]
+}

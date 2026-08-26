@@ -76,4 +76,3 @@ export class AdminMaintenanceGuard implements CanActivate {
     return ip.startsWith('::ffff:') ? ip.slice('::ffff:'.length) : ip;
   }
 }
-

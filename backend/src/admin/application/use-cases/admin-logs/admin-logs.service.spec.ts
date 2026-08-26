@@ -21,9 +21,7 @@ describe('AdminLogsService', () => {
     mockedFs.stat
       .mockResolvedValueOnce({ mtimeMs: 10 } as any)
       .mockResolvedValueOnce({ mtimeMs: 20 } as any);
-    mockedFs.readFile.mockResolvedValue(
-      'one\ntwo\nERR three\nERR four' as any,
-    );
+    mockedFs.readFile.mockResolvedValue('one\ntwo\nERR three\nERR four' as any);
 
     const service = new AdminLogsService({
       getLogDir: jest.fn().mockReturnValue('log'),

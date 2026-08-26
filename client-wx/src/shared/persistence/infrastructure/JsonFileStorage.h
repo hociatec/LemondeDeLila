@@ -11,9 +11,7 @@ class JsonFileStorage final
 public:
     [[nodiscard]] static std::filesystem::path ResolvePath(const char* fileName);
     [[nodiscard]] static bool ReadIfExists(const std::filesystem::path& path, nlohmann::json& content);
-    [[nodiscard]] static nlohmann::json ReadRequired(const std::filesystem::path& path, const char* parseErrorMessage);
     static void Write(const std::filesystem::path& path, const nlohmann::json& content, const char* errorMessage);
-    static void Remove(const std::filesystem::path& path, const char* errorMessage);
 
 private:
     JsonFileStorage() = default;

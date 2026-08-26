@@ -4,15 +4,12 @@ import { BOT_SETTINGS_REPOSITORY } from '../../application/contracts/bot-setting
 import { BotRunnerService } from '../../application/services/bot-runner.service';
 import { BotSchedulerService } from '../../application/services/bot-scheduler.service';
 import { BotSettingsService } from '../../application/services/bot-settings.service';
-import { BotStrategyService } from '../../application/services/bot-strategy.service';
 import { BotSettingsEntity } from '../../infrastructure/persistence/typeorm/entities/bot-settings.entity';
 import { BotSettingsTypeormRepository } from '../../infrastructure/persistence/typeorm/repositories/bot-settings-typeorm.repository';
-import { RandomModule } from './random.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BotSettingsEntity]), RandomModule],
+  imports: [TypeOrmModule.forFeature([BotSettingsEntity])],
   providers: [
-    BotStrategyService,
     BotRunnerService,
     BotSchedulerService,
     BotSettingsService,
@@ -22,11 +19,6 @@ import { RandomModule } from './random.module';
       useExisting: BotSettingsTypeormRepository,
     },
   ],
-  exports: [
-    BotStrategyService,
-    BotRunnerService,
-    BotSchedulerService,
-    BotSettingsService,
-  ],
+  exports: [BotRunnerService, BotSchedulerService, BotSettingsService],
 })
 export class BotModule {}

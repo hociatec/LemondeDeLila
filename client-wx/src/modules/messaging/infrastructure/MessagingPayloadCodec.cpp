@@ -7,7 +7,7 @@
 #include "shared/data/time/DateTime.h"
 #include "shared/data/json/JsonApiHelpers.h"
 #include "shared/data/json/JsonReaders.h"
-#include "shared/errors/catalog/ErrorMessages.h"
+#include "modules/messaging/domain/MessagingErrorMessages.h"
 #include "shared/network/application/realtime/RealtimePayloadReaders.h"
 
 namespace lila::modules::messaging::infrastructure::codec

@@ -17,13 +17,8 @@ public:
 
     [[nodiscard]] static bool ShouldActivateOnKeyCode(int keyCode) noexcept;
     [[nodiscard]] static bool ShouldPreserveVerticalNavigation(int keyCode) noexcept;
-    [[nodiscard]] static bool ShouldSuppressHorizontalNavigation(int keyCode) noexcept;
-    [[nodiscard]] static bool ShouldSuppressTabNavigation(int keyCode) noexcept;
-    void SetMenuNavigationMode(bool enabled) noexcept;
 
 private:
     void OnCharHook(wxKeyEvent& event);
-
-    bool menuNavigationMode_ = false;
 };
 }

@@ -1,11 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  type AdminRoomsPort,
-} from '../../application/ports/admin-room.port';
-import {
-  ROOM_ADMIN_PORT,
-  type RoomAdminPort,
-} from '../../../room/public-api';
+import { type AdminRoomsPort } from '../../application/ports/admin-room.port';
+import { ROOM_ADMIN_PORT, type RoomAdminPort } from '../../../room/public-api';
 
 @Injectable()
 export class AdminRoomsAdapter implements AdminRoomsPort {

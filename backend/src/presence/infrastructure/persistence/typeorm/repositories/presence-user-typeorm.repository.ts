@@ -12,7 +12,9 @@ export class PresenceUserTypeormRepository implements PresenceUserRepository {
     private readonly users: Repository<User>,
   ) {}
 
-  async findChatBanByUserId(userId: number): Promise<PresenceUserChatBan | null> {
+  async findChatBanByUserId(
+    userId: number,
+  ): Promise<PresenceUserChatBan | null> {
     const user = await this.users.findOne({
       where: { id: userId },
       select: ['id', 'chatBannedUntil', 'chatBanReason'] as const,
