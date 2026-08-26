@@ -5,6 +5,7 @@ import { GameRealtimeAutomationService } from '../../../application/services/gam
 import { GameRoomCommandQueueService } from '../../../application/services/game-room-command-queue.service';
 import { GameVisibilityService } from '../../../application/services/game-visibility.service';
 import { GameRoomStateFactory } from '../../../application/services/game-room-state.factory';
+import { GameDevToolsService } from '../../../application/services/game-dev-tools.service';
 
 export const GAME_WS_CORE_PROVIDERS = [
   GameModuleOverviewRegistryService,
@@ -14,4 +15,5 @@ export const GAME_WS_CORE_PROVIDERS = [
   GameRoomCommandQueueService,
   GameVisibilityService,
   GameRoomStateFactory,
+  GameDevToolsService,
 ];

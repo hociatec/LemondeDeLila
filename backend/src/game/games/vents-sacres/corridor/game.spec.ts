@@ -5,7 +5,7 @@ describe('Corridor declarative game', () => {
   it('configures walls and unique pawns with generic choices', async () => {
     const game = testGame(gameDefinition).players(['Vent', 'Eau']).seed(57);
     await game.start();
-    await game.choose(1, 10);
+    await game.as(1).do('game.configure', { wallsPerPlayer: 10 });
     await game.choose(1, 'vent');
     await game.choose(2, 'eau');
     expect(game.state().game.setupComplete).toBe(true);
@@ -15,7 +15,7 @@ describe('Corridor declarative game', () => {
   it('moves legally and replays deterministically', async () => {
     const game = testGame(gameDefinition).players(['Vent', 'Eau']).seed(58);
     await game.start();
-    await game.choose(1, 10);
+    await game.as(1).do('game.configure', { wallsPerPlayer: 10 });
     await game.choose(1, 'vent');
     await game.choose(2, 'eau');
     const move = game.view(1).legalMoves[0];

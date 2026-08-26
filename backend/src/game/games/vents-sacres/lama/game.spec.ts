@@ -5,7 +5,7 @@ describe('LAMA declarative game', () => {
   it('keeps hands private and replays a configured round', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(137);
     await game.start();
-    await game.as(1).do('lama_set_config', {});
+    await game.as(1).do('game.configure', {});
     const actor = game.state().turn?.currentPlayerId ?? 1;
     const actions = game.availableActions(actor);
     if (actions.includes('lama_play')) {

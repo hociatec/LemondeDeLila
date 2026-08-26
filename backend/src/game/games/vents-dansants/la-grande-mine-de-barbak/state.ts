@@ -1,21 +1,18 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export interface MineDomain {
   treasures: string[];
   objects: string[];
 }
 
-export interface GrandeMineState {
-  domains: Record<number, MineDomain>;
+export type GrandeMineState = Record<string, never>;
+
+export type GrandeMinePlayerView = {
+  domains: PlayerMap<MineDomain>;
+  discardNextDraw: PlayerMap<boolean>;
   drawnPlayerId: number | null;
-  skipTurns: Record<number, number>;
-  discardNextDraw: Record<number, boolean>;
+  scores: PlayerMap<number>;
   gameOver: boolean;
   winnerIds: number[];
-}
-
-export type GrandeMinePlayerView = GrandeMineState & {
-  hand: string[];
-  handCounts: Record<number, number>;
-  deckCount: number;
-  discardCount: number;
-  scores: Record<number, number>;
+  skipTurns: PlayerMap<number>;
 };

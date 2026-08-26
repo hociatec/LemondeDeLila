@@ -1,3 +1,9 @@
+import {
+  freezeGameContent,
+  gameEffects,
+  rejectContent,
+} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
 import boardContent from './model/content/board.json';
 import coursesContent from './model/content/courses.json';
 import eventsContent from './model/content/events.json';
@@ -30,7 +36,7 @@ export type PanierTile = {
   turns?: number;
 };
 
-export type PanierEventEffect =
+type PanierEventEffect =
   | { kind: 'move'; delta: number }
   | { kind: 'draw'; count: number; everyone?: boolean }
   | { kind: 'skip'; turns: number }
@@ -43,12 +49,8 @@ export type PanierEventEffect =
   | { kind: 'nearest-stand' }
   | { kind: 'reveal' };
 
-export type PanierExchangeEffect =
-  | 'random-swap'
-  | 'strategic-swap'
-  | 'swap-inventories'
-  | 'steal'
-  | 'discard';
+type PanierExchangeEffect =
+  'random-swap' | 'strategic-swap' | 'swap-inventories' | 'steal' | 'discard';
 
 export const PANIER_TILES: PanierTile[] = boardContent.tiles.map((tile) => ({
   ...tile,
@@ -133,17 +135,81 @@ const EXCHANGE_EFFECTS: PanierExchangeEffect[] = [
 
 export const PANIER_EVENTS = eventsContent.events.map((id, index) => ({
   id,
-  effect: requiredEventEffect(index, id),
+  effects: eventInstructions(requiredEventEffect(index, id)),
 }));
 
 export const PANIER_EXCHANGES = exchangesContent.exchanges.map((id, index) => ({
   id,
-  effect: requiredExchangeEffect(index, id),
+  effects: exchangeInstructions(requiredExchangeEffect(index, id)),
 }));
+
+function eventInstructions(
+  effect: PanierEventEffect,
+): readonly GameEffectInstruction[] {
+  if (effect.kind === 'move') {
+    return [gameEffects.custom('panier.move', { delta: effect.delta })];
+  }
+  if (effect.kind === 'draw') {
+    return [
+      gameEffects.custom('panier.draw', {
+        count: effect.count,
+        everyone: effect.everyone ?? false,
+      }),
+    ];
+  }
+  if (effect.kind === 'skip') return [gameEffects.skipTurn(effect.turns)];
+  if (effect.kind === 'extra-turn') return [gameEffects.extraTurn()];
+  if (effect.kind === 'discard') {
+    return [
+      gameEffects.custom('panier.discard', {
+        count: effect.count,
+        everyone: effect.everyone ?? false,
+      }),
+    ];
+  }
+  if (effect.kind === 'reverse') {
+    return [gameEffects.custom('panier.reverse')];
+  }
+  if (effect.kind === 'quiz') return [gameEffects.custom('panier.quiz')];
+  if (effect.kind === 'nearest-stand') {
+    return [gameEffects.custom('panier.nearest-stand')];
+  }
+  if (effect.kind === 'reveal') {
+    return [
+      gameEffects.addStatus({
+        status: 'panier.reveal',
+        turns: 1,
+        scope: 'turn',
+      }),
+    ];
+  }
+  return targetInstructions(effect.kind);
+}
+
+function exchangeInstructions(
+  effect: PanierExchangeEffect,
+): readonly GameEffectInstruction[] {
+  return effect === 'discard'
+    ? [gameEffects.custom('panier.discard', { count: 1, everyone: false })]
+    : targetInstructions(effect);
+}
+
+function targetInstructions(
+  kind: Exclude<PanierExchangeEffect, 'discard'> | 'steal' | 'swap-inventories',
+): readonly GameEffectInstruction[] {
+  return [
+    gameEffects.custom(
+      'panier.target',
+      { kind },
+      gameEffects.target.chosenOpponent(`panier.${kind}`),
+    ),
+    gameEffects.completeTurn(),
+  ];
+}
 
 function requiredEventEffect(index: number, id: string): PanierEventEffect {
   const effect = EVENT_EFFECTS[index];
-  if (!effect) throw new Error(`Effet événement Panier manquant: ${id}`);
+  if (!effect) rejectContent(`Effet événement Panier manquant: ${id}`);
   return effect;
 }
 
@@ -152,7 +218,7 @@ function requiredExchangeEffect(
   id: string,
 ): PanierExchangeEffect {
   const effect = EXCHANGE_EFFECTS[index];
-  if (!effect) throw new Error(`Effet échange Panier manquant: ${id}`);
+  if (!effect) rejectContent(`Effet échange Panier manquant: ${id}`);
   return effect;
 }
 
@@ -171,5 +237,14 @@ function tileType(value: string): PanierTileType {
     value === 'move_to_stand'
   )
     return value;
-  throw new Error(`Type de case Panier inconnu: ${value}`);
+  rejectContent(`Type de case Panier inconnu: ${value}`);
 }
+
+freezeGameContent(PANIER_TILES);
+freezeGameContent(PANIER_COURSES);
+freezeGameContent(PANIER_LISTS);
+freezeGameContent(PANIER_STANDS);
+freezeGameContent(PANIER_PAWNS);
+freezeGameContent(PANIER_QUIZZES);
+freezeGameContent(PANIER_EVENTS);
+freezeGameContent(PANIER_EXCHANGES);

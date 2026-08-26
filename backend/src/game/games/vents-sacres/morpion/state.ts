@@ -1,17 +1,16 @@
-export interface MorpionState {
-  readonly size: 3;
-  board: number[];
+export type MorpionState = Record<string, never>;
+
+export type MorpionPlayerView = {
   glyphByPlayerId: Record<string, string>;
+  size: 3;
+  board: number[];
   startingPlayerId: number;
   winnerId: number | null;
   draw: boolean;
-}
-
-export interface MorpionPlayerView extends MorpionState {
   pawns: ReadonlyArray<{
     id: string;
     label: string;
     description: string;
     glyph: string;
   }>;
-}
+};

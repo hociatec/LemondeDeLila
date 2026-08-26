@@ -1,9 +1,40 @@
 export { BotSettingsService } from './services/bot-settings.service';
-export { GameContentLoaderService } from './services/game-content-loader.service';
+export {
+  GameDomainError,
+  GameRuleViolationError,
+  rejectContent,
+  rejectRule,
+} from '../domain/errors/game-domain.errors';
 export { GameContentService } from './services/game-content.service';
+export { GameDevToolsService } from './services/game-dev-tools.service';
+export type { GameDevToolsInspection } from './services/game-dev-tools.service';
 export { GameEngineService } from './services/game-engine.service';
+export { GameEngineMetricsService } from './services/game-engine-metrics.service';
+export type { GameEngineMetricSnapshot } from './services/game-engine-metrics.service';
 export { GameRegistryService } from './services/game-registry.service';
+export {
+  GAME_ROOM_COORDINATION_STRATEGY,
+  GameRoomCommandQueueService,
+} from './services/game-room-command-queue.service';
 export type { GameStateEntity } from './models/game-state.model';
+export type {
+  EventVisibility,
+  GameEvent,
+  ProjectedGameEvent,
+} from './models/game-event.model';
+export {
+  GAME_STATE_STORE,
+  type GameStateCommit,
+  type GameStateCommitResult,
+  type GameStateStore,
+} from './ports/game-state-store.port';
+export {
+  GAME_EVENT_STORE,
+  GAME_SNAPSHOT_POLICY,
+  DEFAULT_GAME_SNAPSHOT_POLICY,
+  type GameEventStore,
+  type GameSnapshotPolicy,
+} from './ports/game-event-store.port';
 export * from './runtime/public-api';
 export * from '../testing/public-api';
 export {

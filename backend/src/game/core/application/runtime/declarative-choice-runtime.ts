@@ -6,7 +6,8 @@ import type {
   DeclarativeState,
   GameActionMap,
 } from './game-definition';
-import type { GameRuleContext } from './game-rule-context';
+import type { GameContext } from './game-rule-context';
+import { sameSerializableValue } from './serializable-value';
 
 export class DeclarativeChoiceRuntime<
   TState extends object,
@@ -25,38 +26,42 @@ export class DeclarativeChoiceRuntime<
     runtime: DeclarativeState<TState>,
     actor: PlayerStateEntity,
     action: GameSingleActionDto,
-    context: GameRuleContext<TState>,
+    context: GameContext<TState>,
     timeout: boolean,
   ): void {
     this.ensureActor(runtime, actor, timeout, context.clock.nowMs());
     const data = asRecord(runtime.pending?.data);
     const options = Array.isArray(data.options) ? data.options : [];
     const value = timeout
-      ? timeoutValue(data, options)
+      ? timeoutValue(data, options, context)
       : asRecord(action.payload).value;
-    ensureValidValue(data, options, value);
+    ensureValidValue(data, options, value, timeout);
     const choiceId = typeof data.choiceId === 'string' ? data.choiceId : '';
+    if (context.effects.awaitsChoice(choiceId)) {
+      context.choice.clear();
+      context.effects.resumeChoice(choiceId, value);
+      return;
+    }
     const resolver = this.definition.choices?.[choiceId];
     if (!resolver)
       throw new GameActionRejectedError(`Choix inconnu: ${choiceId}`);
-    context.choice.clear();
-    const next = resolver.resolve({
+    context.choice.resolvePlayer(actor.id);
+    resolver.resolveRaw({
       state: runtime.game,
       actor,
-      value,
+      rawValue: value,
       ctx: context,
     });
-    if (next) context.replaceState(next);
   }
 
   actions(
     runtime: DeclarativeState<TState>,
     actor: PlayerStateEntity,
   ): GameSingleActionDto[] {
-    if (!runtime.pending || runtime.pending.playerId !== actor.id) return [];
+    if (!runtime.pending || !isExpectedActor(runtime.pending, actor.id)) return [];
     const options = asRecord(runtime.pending.data).options;
-    if (!Array.isArray(options)) return [];
-    if (asRecord(runtime.pending.data).kind === 'players') {
+    if (!isUnknownArray(options)) return [];
+    if (isMultiChoice(asRecord(runtime.pending.data).kind)) {
       return [
         {
           type: 'choice.resolve',
@@ -78,7 +83,7 @@ export class DeclarativeChoiceRuntime<
     timeout: boolean,
     nowMs: number,
   ): void {
-    if (!runtime.pending || runtime.pending.playerId !== actor.id) {
+    if (!runtime.pending || !isExpectedActor(runtime.pending, actor.id)) {
       throw new GameActionRejectedError('Aucun choix pour cet acteur');
     }
     if (!timeout) return;
@@ -89,11 +94,26 @@ export class DeclarativeChoiceRuntime<
   }
 }
 
-function timeoutValue(
+function isExpectedActor(
+  pending: NonNullable<DeclarativeState<object>['pending']>,
+  playerId: number,
+): boolean {
+  return pending.playerIds?.length
+    ? pending.playerIds.includes(playerId) &&
+        !(pending.resolvedPlayerIds ?? []).includes(playerId)
+    : pending.playerId === playerId;
+}
+
+function timeoutValue<TState extends object>(
   data: Record<string, unknown>,
   options: unknown[],
+  context: GameContext<TState>,
 ): unknown {
-  if (data.kind !== 'players') return options[0];
+  if (data.timeoutStrategy === 'pass') return null;
+  if (data.timeoutStrategy === 'default') return data.timeoutValue;
+  if (data.timeoutStrategy === 'last') return options.at(-1);
+  if (data.timeoutStrategy === 'random') return context.random.pick(options);
+  if (!isMultiChoice(data.kind)) return options[0];
   const minimum = Math.max(0, Number(data.min ?? 0));
   return options.slice(0, minimum);
 }
@@ -102,8 +122,10 @@ function ensureValidValue(
   data: Record<string, unknown>,
   options: unknown[],
   value: unknown,
+  timeout: boolean,
 ): void {
-  if (data.kind !== 'players') {
+  if (timeout && data.timeoutStrategy === 'pass' && value == null) return;
+  if (!isMultiChoice(data.kind)) {
     if (!options.some((option) => sameValue(option, value))) {
       throw new GameActionRejectedError('Choix invalide');
     }
@@ -124,12 +146,25 @@ function ensureValidValue(
   ) {
     throw new GameActionRejectedError('Sélection de joueurs invalide');
   }
+  if (
+    data.kind === 'ordering' &&
+    (value.length !== options.length ||
+      options.some(
+        (option) => !value.some((selected) => sameValue(option, selected)),
+      ))
+  ) {
+    throw new GameActionRejectedError('Ordre incomplet');
+  }
 }
 
-function sameValue(left: unknown, right: unknown): boolean {
-  return (
-    Object.is(left, right) || JSON.stringify(left) === JSON.stringify(right)
-  );
+function isMultiChoice(kind: unknown): boolean {
+  return kind === 'players' || kind === 'many' || kind === 'ordering';
+}
+
+const sameValue = sameSerializableValue;
+
+function isUnknownArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

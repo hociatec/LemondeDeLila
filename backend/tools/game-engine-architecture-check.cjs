@@ -44,7 +44,6 @@ const forbiddenLegacySymbols = [
   'StateMachineService',
   'GamePhaseOrchestratorService',
   'GameRulesAdapter',
-  'GameDefinition',
   'ActionService',
   'GameCoreService',
   'TurnFlowService',
@@ -55,6 +54,54 @@ const forbiddenLegacyFilePatterns = [
   /\.shortcuts\.ts$/,
   /\.pawns\.ts$/,
   /\.definition\.ts$/,
+];
+const componentUsageContracts = [
+  {
+    name: 'CardsKit',
+    declaration: /\bcards\.(?:deck|hands|sets)\s*\(/,
+    usage: /\bctx\.cards\b|\bgameEffects\.(?:discardCards|drawCards)\s*\(/,
+  },
+  {
+    name: 'InventoryKit',
+    declaration: /\binventory\.set\s*\(/,
+    usage: /\bctx\.inventory\b/,
+  },
+  {
+    name: 'EconomyKit',
+    declaration: /\beconomy\.market\s*\(/,
+    usage: /\bctx\.economy\b/,
+  },
+  {
+    name: 'OwnershipKit',
+    declaration: /\bownership\.registry\s*\(/,
+    usage: /\bctx\.ownership\b/,
+  },
+  {
+    name: 'MovementKit',
+    declaration: /\bmovement\.track\s*\(/,
+    usage:
+      /\bctx\.movement\b|\bgameEffects\.(?:move|moveTo)\s*\(|\b(?:raceTurn|rollAndMove)\s*</,
+  },
+  {
+    name: 'PawnKit',
+    declaration: /\bpawns\.set\s*\(/,
+    usage: /\bctx\.pawns\b|\bsequentialPawnSelection\s*</,
+  },
+  {
+    name: 'DiceKit',
+    declaration: /\bdiceKit\s*\(/,
+    usage: /\bctx\.dice\b|\b(?:raceTurn|rollAndMove|rollDice)\s*</,
+  },
+  {
+    name: 'GridKit',
+    declaration: /\bgrid\.board\s*\(/,
+    usage: /\bctx\.grid\b/,
+  },
+  {
+    name: 'QuizKit',
+    declaration: /\bquiz\.bank\s*\(/,
+    usage: /\bctx\.quiz\b|\banswerQuiz\s*</,
+  },
 ];
 
 function normalize(value) {
@@ -181,6 +228,7 @@ function auditGamePackages(gamesRoot, violations) {
         );
       }
     }
+    inspectUnusedComponents(gameDirectory, relativeDirectory, violations);
     const specFile = path.join(gameDirectory, 'game.spec.ts');
     if (
       fs.existsSync(specFile) &&
@@ -223,6 +271,7 @@ function auditGamePackages(gamesRoot, violations) {
     const relative = normalize(path.relative(repoRoot, file));
     const source = fs.readFileSync(file, 'utf8');
     const basename = path.basename(file);
+    const gameDirectory = findGameDirectory(file, gamesRoot);
     if (
       /\.(module|service|presenter|registrar)\.ts$/.test(basename) ||
       basename === 'rulebook.ts' ||
@@ -243,12 +292,64 @@ function auditGamePackages(gamesRoot, violations) {
         'Import NestJS interdit.',
       );
     }
-    if (/\b(?:Math\.random|Date\.now)\s*\(/.test(source)) {
+    if (
+      /from\s+['"][^'"]*core\/application\/(?!public-api['"])[^'"]+['"]/.test(
+        source,
+      )
+    ) {
+      add(
+        violations,
+        'game-sdk-boundary',
+        relative,
+        'Un jeu doit importer le moteur uniquement via application/public-api.',
+      );
+    }
+    if (/\b(?:Math\.random|Date\.now)\s*\(|\bnew\s+Date\s*\(/.test(source)) {
       add(
         violations,
         'deterministic-rules',
         relative,
         'Utiliser ctx.random ou ctx.clock.',
+      );
+    }
+    if (/\bthrow\s+new\s+(?:Error|RangeError|TypeError)\s*\(/.test(source)) {
+      add(
+        violations,
+        'typed-game-errors',
+        relative,
+        'Utiliser ctx.reject, rejectRule ou rejectContent.',
+      );
+    }
+    if (/structuredClone\s*\(\s*state\s*\)/.test(source)) {
+      add(
+        violations,
+        'explicit-player-projection',
+        relative,
+        'Une vue joueur doit utiliser une projection explicite des champs.',
+      );
+    }
+    if (/ctx\.history\.add\s*\(/.test(source)) {
+      add(
+        violations,
+        'structured-game-events',
+        relative,
+        'Utiliser ctx.events avec un type et des données structurées.',
+      );
+    }
+    if (/\bavailableInputs\s*:/.test(source)) {
+      add(
+        violations,
+        'separate-action-validation',
+        relative,
+        'Utiliser validate pour l’autorité serveur et enumerate pour la découverte.',
+      );
+    }
+    if (/\bGameRuleContext\b/.test(source)) {
+      add(
+        violations,
+        'canonical-game-context',
+        relative,
+        'Utiliser GameContext comme façade métier publique.',
       );
     }
     if (/\bmetadata\b/.test(source) && !basename.endsWith('.spec.ts')) {
@@ -259,18 +360,94 @@ function auditGamePackages(gamesRoot, violations) {
         'Un jeu ne doit pas stocker son état dans metadata.',
       );
     }
-    if (!basename.endsWith('.spec.ts') && lineCount(source) > 550) {
+    if (/\b(?:ctx|state)\.engine\b/.test(source)) {
+      add(
+        violations,
+        'encapsulated-engine-state',
+        relative,
+        'Un jeu ne doit jamais accéder directement à l’état interne du moteur.',
+      );
+    }
+    if (/\bconsole\.(?:log|info|warn|error)\s*\(|\bnew\s+Logger\s*\(/.test(source)) {
+      add(
+        violations,
+        'no-server-game-log',
+        relative,
+        'Les règles métier doivent produire des événements structurés.',
+      );
+    }
+    for (const specifier of importSpecifiers(source)) {
+      if (/(?:^|\/)(?:infrastructure|persistence)(?:\/|$)/.test(specifier)) {
+        add(
+          violations,
+          'persistence-free-games',
+          relative,
+          `Import de persistence/infrastructure interdit: ${specifier}.`,
+        );
+      }
+      if (!gameDirectory || !specifier.startsWith('.')) continue;
+      const target = path.resolve(path.dirname(file), specifier);
+      if (
+        target.startsWith(`${gamesRoot}${path.sep}`) &&
+        !target.startsWith(`${gameDirectory}${path.sep}`) &&
+        target !== gameDirectory
+      ) {
+        add(
+          violations,
+          'no-cross-game-dependency',
+          relative,
+          `Dépendance vers un autre jeu interdite: ${specifier}.`,
+        );
+      }
+    }
+    if (!basename.endsWith('.spec.ts') && lineCount(source) > 500) {
       add(
         violations,
         'game-file-size',
         relative,
-        `Fichier de ${lineCount(source)} lignes (limite 550).`,
+        `Fichier de ${lineCount(source)} lignes (limite 500).`,
       );
     }
     if (!basename.endsWith('.spec.ts')) {
       inspectUnsafeTypes(source, relative, violations);
     }
   }
+}
+
+function inspectUnusedComponents(gameDirectory, relativeDirectory, violations) {
+  const source = walk(gameDirectory)
+    .filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'))
+    .map((file) => fs.readFileSync(file, 'utf8'))
+    .join('\n');
+  for (const contract of componentUsageContracts) {
+    if (contract.declaration.test(source) && !contract.usage.test(source)) {
+      add(
+        violations,
+        'unused-game-component',
+        relativeDirectory,
+        `${contract.name} est déclaré mais aucun usage métier n’est détecté.`,
+      );
+    }
+  }
+}
+
+function findGameDirectory(file, gamesRoot) {
+  let directory = path.dirname(file);
+  while (directory.startsWith(gamesRoot)) {
+    if (fs.existsSync(path.join(directory, 'manifest.json'))) return directory;
+    if (directory === gamesRoot) break;
+    directory = path.dirname(directory);
+  }
+  return null;
+}
+
+function importSpecifiers(source) {
+  const specifiers = [];
+  const matcher = /(?:from\s+|import\s*\(|require\s*\()\s*['"]([^'"]+)['"]/g;
+  for (let match = matcher.exec(source); match; match = matcher.exec(source)) {
+    specifiers.push(match[1]);
+  }
+  return specifiers;
 }
 
 function auditEngine(gameRoot, runtimeRoot, violations) {
@@ -280,6 +457,24 @@ function auditEngine(gameRoot, runtimeRoot, violations) {
     const relative = normalize(path.relative(repoRoot, file));
     const source = fs.readFileSync(file, 'utf8');
     inspectUnsafeTypes(source, relative, violations);
+    if (!file.startsWith(`${gamesRootForFile(gameRoot)}${path.sep}`)) {
+      for (const specifier of importSpecifiers(source)) {
+        const target = specifier.startsWith('.')
+          ? path.resolve(path.dirname(file), specifier)
+          : null;
+        if (
+          /(?:^|\/)games(?:\/|$)/.test(specifier) ||
+          target?.startsWith(`${gamesRootForFile(gameRoot)}${path.sep}`)
+        ) {
+          add(
+            violations,
+            'engine-does-not-import-games',
+            relative,
+            `Le moteur ne doit pas importer un jeu concret: ${specifier}.`,
+          );
+        }
+      }
+    }
     for (const symbol of forbiddenLegacySymbols) {
       const matcher = new RegExp(`\\b${symbol}\\b`);
       if (matcher.test(source)) {
@@ -327,6 +522,7 @@ function auditEngine(gameRoot, runtimeRoot, violations) {
     'getBotActions',
     'getAutomaticActions',
     'getShortcuts',
+    'getDescriptor',
   ]) {
     if (!new RegExp(`\\b${method}\\s*\\(`).test(runtimeContract)) {
       add(
@@ -337,6 +533,10 @@ function auditEngine(gameRoot, runtimeRoot, violations) {
       );
     }
   }
+}
+
+function gamesRootForFile(gameRoot) {
+  return path.join(gameRoot, 'games');
 }
 
 function auditCli(violations) {

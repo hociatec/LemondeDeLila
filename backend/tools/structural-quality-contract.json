@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "limits": {
-    "fileLines": 600,
+    "fileLines": 500,
     "classLines": 500,
     "methodLines": 80,
     "methodsPerClass": 20,

@@ -5,7 +5,13 @@ import {
   SESSION_STORE,
   type SessionStateStore,
 } from '../../../../common/session/public-api';
-import { isVersionLower } from '../../../../common/utils/public-api';
+import {
+  getErrorDetails,
+  getErrorMessage,
+  getErrorPayload,
+  isVersionLower,
+  type PresentedErrorPayload,
+} from '../../../../common/utils/public-api';
 import { WsRouteRegistry } from '../../../../common/ws/public-api';
 import type {
   RealtimeClientSession,
@@ -31,7 +37,7 @@ export class RealtimeApiHandlerService {
       });
     } catch (err) {
       this.logger.warn(
-        `Impossible de persister la session WS (connectionId=${session.connectionId}): ${(err as Error).message}`,
+        `Impossible de persister la session WS (connectionId=${session.connectionId}): ${getErrorMessage(err)}`,
       );
     }
   }
@@ -54,27 +60,8 @@ export class RealtimeApiHandlerService {
     }
 
     const { type, payload, requestId } = decoded;
-    const minRequired = await this.updates.getMinimumVersion(
-      session.clientProduct,
-    );
-    if (
-      minRequired &&
-      (!session.clientVersion ||
-        isVersionLower(session.clientVersion, minRequired) === true)
-    ) {
-      this.sendError(
-        client,
-        `Mise à jour requise (version minimale: ${minRequired}).`,
-        type,
-        requestId,
-      );
-      try {
-        client.close(4406, 'update required');
-      } catch {
-        /* ignore */
-      }
+    if (await this.rejectOutdatedClient(client, session, type, requestId))
       return;
-    }
 
     try {
       if (type === 'r' || type === 'R') {
@@ -112,21 +99,54 @@ export class RealtimeApiHandlerService {
       }
     } catch (err) {
       this.logger.error(
-        `Erreur handler WS type=${type} requestId=${requestId ?? 'n/a'} userId=${session.user?.id ?? 'anon'} connectionId=${session.connectionId}: ${this.formatError(err)}`,
+        `Erreur handler WS type=${type} requestId=${requestId ?? 'n/a'} userId=${session.user?.id ?? 'anon'} connectionId=${session.connectionId}: ${getErrorMessage(err, 'Erreur inconnue')}`,
         err instanceof Error ? err.stack : undefined,
       );
-      this.sendError(client, this.formatError(err), type, requestId);
+      this.sendError(
+        client,
+        getErrorPayload(err, 'Erreur inconnue'),
+        type,
+        requestId,
+      );
     }
   }
 
+  private async rejectOutdatedClient(
+    client: WebSocket,
+    session: RealtimeClientSession,
+    type: string,
+    requestId?: string,
+  ): Promise<boolean> {
+    const minimum = await this.updates.getMinimumVersion(session.clientProduct);
+    if (
+      !minimum ||
+      (session.clientVersion &&
+        isVersionLower(session.clientVersion, minimum) !== true)
+    ) {
+      return false;
+    }
+    this.sendError(
+      client,
+      `Mise à jour requise (version minimale: ${minimum}).`,
+      type,
+      requestId,
+    );
+    try {
+      client.close(4406, 'update required');
+    } catch {
+      /* ignore */
+    }
+    return true;
+  }
+
   private decode(raw: unknown): RealtimeIncomingMessage | null {
-    let text = '';
+    let text: string;
     if (typeof raw === 'string') {
       text = raw;
     } else if (Buffer.isBuffer(raw)) {
       text = raw.toString('utf-8');
-    } else if (raw && typeof raw === 'object' && 'byteLength' in raw) {
-      text = Buffer.from(raw as ArrayBuffer).toString('utf-8');
+    } else if (raw instanceof ArrayBuffer) {
+      text = Buffer.from(raw).toString('utf-8');
     } else {
       return null;
     }
@@ -134,7 +154,19 @@ export class RealtimeApiHandlerService {
       return null;
     }
     try {
-      return JSON.parse(text) as RealtimeIncomingMessage;
+      const parsed: unknown = JSON.parse(text);
+      if (
+        !isRecord(parsed) ||
+        (parsed.type !== undefined && typeof parsed.type !== 'string') ||
+        (parsed.requestId !== undefined && typeof parsed.requestId !== 'string')
+      ) {
+        return null;
+      }
+      return {
+        type: parsed.type,
+        payload: parsed.payload,
+        requestId: parsed.requestId,
+      };
     } catch {
       return null;
     }
@@ -145,7 +177,7 @@ export class RealtimeApiHandlerService {
     try {
       client.send(JSON.stringify(payload));
     } catch (err) {
-      this.logger.warn('Echec envoi WS', err as Error);
+      this.logger.warn('Echec envoi WS', getErrorDetails(err));
       try {
         client.close();
       } catch {
@@ -156,7 +188,7 @@ export class RealtimeApiHandlerService {
 
   private sendError(
     client: WebSocket,
-    message: string,
+    error: string | PresentedErrorPayload,
     context?: string,
     requestId?: string,
   ) {
@@ -164,19 +196,11 @@ export class RealtimeApiHandlerService {
       type: 'error',
       requestId,
       context,
-      payload: { message },
+      payload: typeof error === 'string' ? { message: error } : error,
     });
   }
+}
 
-  private formatError(err: unknown): string {
-    if (
-      err &&
-      typeof err === 'object' &&
-      'message' in err &&
-      typeof (err as { message?: unknown }).message === 'string'
-    ) {
-      return (err as { message: string }).message;
-    }
-    return 'Erreur inconnue';
-  }
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }

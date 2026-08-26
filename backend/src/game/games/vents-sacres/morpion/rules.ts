@@ -1,31 +1,52 @@
 import {
+  rejectRule,
   defineAction,
+  defineEvent,
   gameInput,
   type GameActionDefinition,
+  type GameContext,
 } from '../../../core/application/public-api';
-import { MORPION_PAWNS } from './content';
 import type { MorpionState } from './state';
 
 type PlayInput = { x: number; y: number };
+const MARK_PLACED = defineEvent({
+  type: 'morpion.mark.placed',
+  data: gameInput.object({
+    x: gameInput.number({ integer: true, min: 0, max: 2 }),
+    y: gameInput.number({ integer: true, min: 0, max: 2 }),
+    playerId: gameInput.playerId(),
+  }),
+});
 
 export const play = defineAction<MorpionState, PlayInput>({
   input: gameInput.object({
     x: gameInput.number({ integer: true, min: 0, max: 2 }),
     y: gameInput.number({ integer: true, min: 0, max: 2 }),
   }),
-  availableInputs: ({ state }) => emptyCells(state.board),
+  validate: ({ input, ctx }) =>
+    ctx.grid.get<number>('morpion', input) == null,
+  enumerate: ({ ctx }) => emptyCells(boardState(ctx)),
   execute: ({ state, actor, input, ctx }) => {
-    const index = input.y * state.size + input.x;
-    if (state.board[index] !== 0) throw new Error('Cette case est occupée');
-    state.board[index] = actor.id;
-    state.winnerId = detectWinner(state.board);
-    state.draw = state.winnerId == null && state.board.every(Boolean);
-    const pawn = pawnFor(state, actor.id);
-    ctx.history.add(
-      `${actor.username} place ${pawn?.label ?? pawn?.glyph ?? 'son pion'} en ${cellReference(input)}.`,
-    );
-    ctx.events.emit('morpion.mark.placed', { ...input, playerId: actor.id });
-    if (!state.winnerId && !state.draw) ctx.turn.end();
+    if (ctx.grid.get<number>('morpion', input) != null) {
+      rejectRule('Cette case est occupée');
+    }
+    ctx.grid.set('morpion', input, actor.id);
+    const board = boardState(ctx);
+    const winnerId = detectWinner(board);
+    const draw = winnerId == null && board.every(Boolean);
+    ctx.events.message('morpion.mark.placed', {
+      playerId: actor.id,
+      x: input.x,
+      y: input.y,
+    });
+    MARK_PLACED.emit(ctx, { ...input, playerId: actor.id });
+    if (winnerId != null) {
+      ctx.match.finish({ winners: [winnerId], reason: 'line-3' });
+    } else if (draw) {
+      ctx.match.finish({ winners: [], reason: 'draw' });
+    } else {
+      ctx.turn.end();
+    }
   },
   documentation: 'Place le pion du joueur sur une case vide de la grille 3×3.',
 });
@@ -56,14 +77,24 @@ export function detectWinner(board: readonly number[]): number | null {
 }
 
 export function chooseBotMove(
-  state: MorpionState,
+  ctx: GameContext<MorpionState>,
   botPlayerId: number,
   opponentId: number | null,
 ): PlayInput | null {
+  const board = boardState(ctx);
   return (
-    winningMove(state.board, botPlayerId) ??
-    (opponentId == null ? null : winningMove(state.board, opponentId)) ??
-    preferredMove(state.board)
+    winningMove(board, botPlayerId) ??
+    (opponentId == null ? null : winningMove(board, opponentId)) ??
+    preferredMove(board)
+  );
+}
+
+export function boardState(ctx: GameContext<MorpionState>): number[] {
+  return Array.from({ length: 9 }, (_, index) =>
+    ctx.grid.get<number>('morpion', {
+      x: index % 3,
+      y: Math.floor(index / 3),
+    }) ?? 0,
   );
 }
 
@@ -98,13 +129,4 @@ function emptyCells(board: readonly number[]): PlayInput[] {
   return board.flatMap((owner, index) =>
     owner === 0 ? [{ x: index % 3, y: Math.floor(index / 3) }] : [],
   );
-}
-
-function pawnFor(state: MorpionState, playerId: number) {
-  const pawnId = state.glyphByPlayerId[String(playerId)];
-  return MORPION_PAWNS.find((pawn) => pawn.id === pawnId) ?? null;
-}
-
-function cellReference(input: PlayInput): string {
-  return `${String.fromCharCode(65 + input.x)}${3 - input.y}`;
 }

@@ -33,7 +33,7 @@ export class RedisSessionStore implements SessionStateStore {
     const raw = await this.redis.get(this.prefix + connectionId);
     if (!raw) return null;
     try {
-      return JSON.parse(raw) as SessionState;
+      return decodeSessionState(JSON.parse(raw));
     } catch {
       return null;
     }
@@ -42,4 +42,46 @@ export class RedisSessionStore implements SessionStateStore {
   async delete(connectionId: string): Promise<void> {
     await this.redis.del(this.prefix + connectionId);
   }
+}
+
+function decodeSessionState(value: unknown): SessionState | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+  if (
+    value.userId !== null &&
+    (typeof value.userId !== 'number' || !Number.isSafeInteger(value.userId))
+  ) {
+    return null;
+  }
+  if (
+    value.username !== undefined &&
+    value.username !== null &&
+    typeof value.username !== 'string'
+  ) {
+    return null;
+  }
+  if (
+    value.roles !== undefined &&
+    value.roles !== null &&
+    (!Array.isArray(value.roles) ||
+      !value.roles.every((role) => typeof role === 'string'))
+  ) {
+    return null;
+  }
+  return {
+    userId: value.userId,
+    username:
+      typeof value.username === 'string' || value.username === null
+        ? value.username
+        : undefined,
+    roles:
+      Array.isArray(value.roles) || value.roles === null
+        ? value.roles
+        : undefined,
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }

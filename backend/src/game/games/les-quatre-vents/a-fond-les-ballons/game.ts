@@ -1,12 +1,11 @@
 import {
   cards,
-  clockwise,
+  defineChoice,
   defineGame,
-  diceKit,
-  movement,
+  gameInput,
+  pawns,
   playerView,
-  victoryWhen,
-  when,
+  raceGame,
 } from '../../../core/application/public-api';
 import {
   A_FOND_LES_BALLONS_CARDS,
@@ -15,10 +14,10 @@ import {
 } from './content';
 import {
   A_FOND_LES_BALLONS_ACTIONS,
+  A_FOND_LES_BALLONS_EFFECTS,
+  A_FOND_LES_BALLONS_PHASES,
   requestPawn,
   resolvePawn,
-  resolveSwap,
-  skipBlockedPlayer,
 } from './rules';
 import type { AFondLesBallonsPlayerView, AFondLesBallonsState } from './state';
 
@@ -33,63 +32,46 @@ export default defineGame<
   subcategory: 'LesQuatreVents',
   description: 'Course déjantée jusqu’à la Grosse Noix Dorée.',
   players: { min: 2, max: 6 },
+  patterns: [
+    raceGame({
+      trackId: 'balloons',
+      spaces: A_FOND_LES_BALLONS_TILES.length,
+      overshoot: 'bounce',
+    }),
+  ],
   components: [
-    movement.track({ id: 'balloons', spaces: A_FOND_LES_BALLONS_TILES.length }),
-    diceKit({ id: 'main', count: 1, sides: 6 }),
+    pawns.set({ id: 'balloons', pawns: A_FOND_LES_BALLONS_PAWNS }),
     cards.deck({
       id: 'loufoque',
       cards: A_FOND_LES_BALLONS_CARDS,
       shuffle: true,
+      empty: 'recycle',
     }),
   ],
+  initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
-  setup: ({ players, ctx }) => {
-    const starter = ctx.random.pick(players) ?? players[0];
-    const state: AFondLesBallonsState = {
-      pawnByPlayerId: {},
-      setupComplete: false,
-      starterId: starter.id,
-      skipTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-      trapImmunityTurns: Object.fromEntries(
-        players.map((player) => [player.id, 0]),
-      ),
-      lastRoll: null,
-      extraTurn: false,
-      swapPlayerId: null,
-      winnerId: null,
-    };
-    ctx.turn.to(starter.id);
-    requestPawn(state, starter.id, ctx);
-    return state;
+  setup: ({ ctx }) => {
+    const starterId = ctx.round.starter();
+    if (starterId != null) requestPawn(starterId, ctx);
+    return {};
   },
-  initialPhase: 'setup',
-  turn: clockwise(),
+  initialPhase: A_FOND_LES_BALLONS_PHASES.initialPhase,
+  phases: A_FOND_LES_BALLONS_PHASES.phases,
   actions: A_FOND_LES_BALLONS_ACTIONS,
+  effects: A_FOND_LES_BALLONS_EFFECTS,
   choices: {
-    'a-fond-les-ballons.pawn': {
-      resolve: ({ state, actor, value, ctx }) =>
-        resolvePawn(state, actor.id, String(value), ctx),
-    },
-    'a-fond-les-ballons.swap': {
-      resolve: ({ state, value, ctx }) =>
-        resolveSwap(state, Number(value), ctx),
-    },
+    'a-fond-les-ballons.pawn': defineChoice<AFondLesBallonsState, string>({
+      input: gameInput.string({ min: 1, max: 128 }),
+      resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+    }),
   },
-  automatic: [
-    when(
-      'skip-balloon-player',
-      ({ state, ctx }) =>
-        state.setupComplete &&
-        (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-      ({ state, ctx }) => skipBlockedPlayer(state, ctx),
-    ),
-  ],
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'golden-nut' },
-  ),
-  view: ({ state, actor, ctx }) => {
+  view: ({ actor, ctx }) => {
+    const pawnByPlayerId = Object.fromEntries(
+      ctx.players.all().flatMap((player) => {
+        const pawnId = ctx.pawns.assigned('balloons', player.id)[0];
+        return pawnId == null ? [] : [[player.id, pawnId]];
+      }),
+    );
     const positions = Object.fromEntries(
       ctx.players
         .all()
@@ -98,17 +80,39 @@ export default defineGame<
           ctx.movement.position('balloons', player.id),
         ]),
     );
+    const trapImmunityTurns = Object.fromEntries(
+      ctx.players.all().map((player) => [
+        player.id,
+        ctx.status.get(player.id, 'a-fond-les-ballons.trap-immunity')
+          ?.remaining ?? 0,
+      ]),
+    );
+    const pending = ctx.choice.current();
+    const swapPlayerId =
+      pending?.data?.choiceId === 'a-fond-les-ballons.swap'
+        ? (pending.playerId ?? null)
+        : null;
     return playerView({
       game: {
-        ...structuredClone(state),
+        trapImmunityTurns,
+        swapPlayerId,
+        pawnByPlayerId,
+        starterId: ctx.round.starter() ?? 0,
+        lastRoll: ctx.dice.last('main')?.total ?? null,
+        extraTurn: ctx.turn.extraCount() > 0,
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+        skipTurns: Object.fromEntries(
+          ctx.players
+            .all()
+            .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+        ),
+        setupComplete: A_FOND_LES_BALLONS_PHASES.is(ctx, 'playing'),
         positions,
-        deckCount:
-          ctx.cards.deckCount('loufoque') + ctx.cards.discardCount('loufoque'),
       },
       extras: {
         pawn: actor
           ? (A_FOND_LES_BALLONS_PAWNS.find(
-              (pawn) => pawn.id === state.pawnByPlayerId[actor.id],
+              (pawn) => pawn.id === pawnByPlayerId[actor.id],
             ) ?? null)
           : null,
       },

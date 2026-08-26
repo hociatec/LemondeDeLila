@@ -53,7 +53,7 @@ export class BotRoomTypeormRepository implements BotRoomRepository {
   async findRoomById(roomId: number): Promise<BotManagedRoomRecord | null> {
     const room = await this.rooms.findOne({
       where: { id: roomId },
-      relations: ['owner'],
+      relations: { owner: true },
     });
     if (!room) {
       return null;

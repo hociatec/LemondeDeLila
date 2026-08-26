@@ -1,19 +1,37 @@
 import {
-  cards,
-  clockwise,
+  cardGame,
+  defineChoice,
+  defineConfiguration,
   defineGame,
+  gameInput,
   playerView,
-  victoryWhen,
+  roundScoring,
   when,
 } from '../../../core/application/public-api';
 import { LAMA_MAX_DECK, type LamaCard } from './content';
 import {
   LAMA_ACTIONS,
+  LAMA_PHASES,
+  prepareLamaRound,
   resolvePause,
   resolveReturn,
+  scoreLamaRound,
   skipInactiveLamaPlayer,
+  startLama,
 } from './rules';
-import type { LamaPlayerView, LamaState } from './state';
+import type { LamaConfig, LamaPlayerView, LamaState } from './state';
+
+const LAMA_DEFAULT_CONFIG: LamaConfig = {
+  loseAtScore: 40,
+  roundPauseSeconds: 0,
+  allowPlayAfterDraw: false,
+  startingHandSize: 6,
+  copiesPerCardValue: 8,
+  returnTokenFromRound: 2,
+};
+const scoring = roundScoring<LamaState>({
+  score: ({ state, ctx }) => scoreLamaRound(state, ctx),
+});
 
 export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
   id: 'lama',
@@ -23,56 +41,68 @@ export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
   description:
     'Défaussez vos cartes ou quittez la manche pour limiter vos jetons.',
   players: { min: 2, max: 6 },
-  components: [
-    cards.deck({ id: 'lama', cards: LAMA_MAX_DECK, shuffle: true }),
-    cards.hands({
-      id: 'lama-hands',
-      deck: 'lama',
-      initial: 0,
-      visibility: 'owner',
+  config: defineConfiguration<LamaState, LamaConfig>({
+    input: gameInput.object({
+      loseAtScore: gameInput.number({ integer: true, min: 5, max: 200 }),
+      roundPauseSeconds: gameInput.number({
+        integer: true,
+        min: 0,
+        max: 120,
+      }),
+      allowPlayAfterDraw: gameInput.boolean(),
+      startingHandSize: gameInput.number({
+        integer: true,
+        min: 1,
+        max: 20,
+      }),
+      copiesPerCardValue: gameInput.number({
+        integer: true,
+        min: 1,
+        max: 20,
+      }),
+      returnTokenFromRound: gameInput.number({
+        integer: true,
+        min: 1,
+        max: 50,
+      }),
+    }),
+    defaults: LAMA_DEFAULT_CONFIG,
+    phase: LAMA_PHASES.initialPhase,
+    permission: 'owner',
+    ui: {
+      title: 'Configuration LAMA',
+      submitLabel: 'Démarrer la partie',
+    },
+    validate: ({ config, ctx }) =>
+      ctx.players.count() * config.startingHandSize + 1 <=
+      config.copiesPerCardValue * 7,
+    onConfigured: ({ state, ctx }) => startLama(state, ctx),
+  }),
+  patterns: [
+    cardGame({
+      deckId: 'lama',
+      handId: 'lama-hands',
+      cards: LAMA_MAX_DECK,
     }),
   ],
-  setup: ({ players, ctx }) => {
-    const ownerId =
-      players.find((player) => !player.isBot)?.id ?? players[0].id;
-    ctx.turn.to(ownerId);
-    return {
-      ownerId,
-      configured: false,
-      config: {
-        loseAtScore: 40,
-        roundPauseSeconds: 0,
-        allowPlayAfterDraw: false,
-        startingHandSize: 6,
-        copiesPerCardValue: 8,
-        returnTokenFromRound: 2,
-      },
-      scores: Object.fromEntries(players.map((player) => [player.id, 0])),
-      eliminated: Object.fromEntries(
-        players.map((player) => [player.id, false]),
-      ),
-      droppedOut: Object.fromEntries(
-        players.map((player) => [player.id, false]),
-      ),
-      drawnThisTurn: false,
-      roundNumber: 1,
-      roundStarterIndex: 0,
-      step: 'setup',
-      roundWinnerId: null,
-      winnerId: null,
-    };
+  setup: () => ({}),
+  initialPhase: LAMA_PHASES.initialPhase,
+  phases: LAMA_PHASES.phases,
+  lifecycle: {
+    ...scoring.lifecycle,
+    onRoundStart: ({ state, ctx }) => prepareLamaRound(state, ctx),
   },
-  initialPhase: 'setup',
-  turn: clockwise(),
   actions: LAMA_ACTIONS,
   choices: {
-    'lama.return': {
+    'lama.return': defineChoice<LamaState, number>({
+      input: gameInput.number({ integer: true, min: 0, max: 10 }),
       resolve: ({ state, value, ctx }) =>
-        resolveReturn(state, Number(value), ctx),
-    },
-    'lama.pause': {
+        resolveReturn(state, value, ctx),
+    }),
+    'lama.pause': defineChoice<LamaState, string>({
+      input: gameInput.literal('continue'),
       resolve: ({ state, ctx }) => resolvePause(state, ctx),
-    },
+    }),
   },
   automatic: [
     when(
@@ -80,36 +110,47 @@ export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
       ({ state, ctx }) => {
         const currentId = ctx.players.current()?.id ?? 0;
         return (
-          state.step === 'turn' &&
-          (state.eliminated[currentId] || state.droppedOut[currentId])
+          LAMA_PHASES.is(ctx, 'turn') &&
+          !ctx.round
+            .activePlayers()
+            .some((player) => player.id === currentId)
         );
       },
       ({ state, ctx }) => skipInactiveLamaPlayer(state, ctx),
     ),
   ],
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'last-below-limit' },
-  ),
-  view: ({ state, actor, ctx }) => {
-    const hand = actor ? ctx.cards.hand<LamaCard>('lama-hands', actor.id) : [];
+  view: ({ ctx }) => {
     const discard = ctx.cards.discardPile<LamaCard>('lama');
     return playerView({
       game: {
-        ...structuredClone(state),
-        hand: [...hand],
-        handCounts: ctx.cards.handCounts('lama-hands'),
+        step: LAMA_PHASES.current(ctx),
+        scores: ctx.players.byId((player) => ctx.score.get(player.id)),
+        droppedOut: ctx.players.byId((player) =>
+          ctx.round.leftPlayers().includes(player.id),
+        ),
+        drawnThisTurn:
+          ctx.turn.flags.get<boolean>('lama.drawn') === true,
+        roundNumber: ctx.round.number,
+        roundStarterIndex: Math.max(
+          0,
+          ctx.players
+            .all()
+            .findIndex((player) => player.id === ctx.round.starter()),
+        ),
+        roundWinnerId: ctx.round.winners()[0] ?? null,
+        eliminated: ctx.players.byId(
+          (player) => ctx.match.playerStatus(player.id) === 'eliminated',
+        ),
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
         topCard: discard.at(-1) ?? null,
-        deckCount: ctx.cards.deckCount('lama'),
       },
-      extras: { hand: [...hand], scores: structuredClone(state.scores) },
+      extras: {
+        scores: ctx.players.byId((player) => ctx.score.get(player.id)),
+      },
     });
   },
   bot: {
     choose: ({ state, actor, availableActions, ctx }) => {
-      if (availableActions.includes('lama_set_config'))
-        return { type: 'lama_set_config', payload: {} };
       if (availableActions.includes('lama_play')) {
         const discard = ctx.cards.discardPile<LamaCard>('lama');
         const top = discard.at(-1);
@@ -125,7 +166,10 @@ export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
       }
       if (availableActions.includes('draw'))
         return { type: 'draw', payload: {} };
-      if (state.drawnThisTurn && availableActions.includes('lama_pass'))
+      if (
+        ctx.turn.flags.get<boolean>('lama.drawn') &&
+        availableActions.includes('lama_pass')
+      )
         return { type: 'lama_pass', payload: {} };
       return availableActions.includes('lama_quit')
         ? { type: 'lama_quit', payload: {} }

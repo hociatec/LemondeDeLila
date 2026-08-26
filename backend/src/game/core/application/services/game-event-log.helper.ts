@@ -1,10 +1,14 @@
 import type {
   GameEvent,
   GamePendingEvent,
+  GameSnapshot,
   GameStatePatchOperation,
   GameTimeline,
 } from '../models/game-event.model';
 import type { GameStateEntity } from '../models/game-state.model';
+import type { GameSnapshotPolicy } from '../ports/game-event-store.port';
+import { sameSerializableValue } from '../runtime/serializable-value';
+import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
 
 type StateWithEventBuffer = GameStateEntity & {
   engine?: { pendingEvents?: GamePendingEvent[] };
@@ -43,7 +47,7 @@ export function createStatePatch(
   for (const key of [...keys].sort()) {
     if (!(key in after)) {
       patch.push({ operation: 'remove', key });
-    } else if (!isDeepEqual(before[key], after[key])) {
+    } else if (!sameSerializableValue(before[key], after[key])) {
       patch.push({ operation: 'set', key, value: structuredClone(after[key]) });
     }
   }
@@ -99,16 +103,97 @@ export function sequenceEvents(input: {
     actorId: input.pending.at(-1)?.actorId ?? null,
     occurredAtMs: input.pending.at(-1)?.occurredAtMs ?? input.fallbackTimeMs,
     type: 'engine.state.committed',
-    data: { patch: structuredClone(input.patch) },
+    data: {
+      patch: structuredClone(input.patch),
+      ...(typeof input.pending.at(-1)?.data.commandId === 'string'
+        ? { commandId: input.pending.at(-1)?.data.commandId }
+        : {}),
+    },
+    visibility: { kind: 'internal' },
   });
   return events;
 }
 
-function isDeepEqual(left: unknown, right: unknown): boolean {
-  if (Object.is(left, right)) return true;
-  try {
-    return JSON.stringify(left) === JSON.stringify(right);
-  } catch {
-    return false;
-  }
+export function createGameTimeline(state: GameStateEntity): GameTimeline {
+  const initial = createGameSnapshot(state, 0);
+  return { initial, events: [], snapshots: [initial] };
+}
+
+export function appendGameTimelineCommit(input: {
+  timeline: GameTimeline;
+  previous: GameStateEntity;
+  next: GameStateEntity;
+  pendingEvents: readonly GamePendingEvent[];
+  occurredAtMs: number;
+  snapshotPolicy: Readonly<GameSnapshotPolicy>;
+}): GameTimeline {
+  assertGameStateSize(input.next, input.snapshotPolicy.maxStateBytes);
+  const timeline = structuredClone(input.timeline);
+  const version = input.next.version ?? (input.previous.version ?? 0) + 1;
+  timeline.events.push(
+    ...sequenceEvents({
+      pending: input.pendingEvents,
+      patch: createStatePatch(input.previous, input.next),
+      previousSequence: timeline.events.at(-1)?.seq ?? 0,
+      version,
+      fallbackTimeMs: input.occurredAtMs,
+    }),
+  );
+  capturePeriodicSnapshot(timeline, input.next, input.snapshotPolicy);
+  return timeline;
+}
+
+export function assertGameStateSize(
+  state: GameStateEntity,
+  maxStateBytes: number | null | undefined,
+): void {
+  const limit = positiveThreshold(maxStateBytes);
+  if (limit == null) return;
+  const bytes = Buffer.byteLength(JSON.stringify(state), 'utf8');
+  if (bytes <= limit) return;
+  throw new GameStateViolationError('État de partie trop volumineux', {
+    reason: 'GAME_STATE_SIZE_LIMIT',
+    bytes,
+    maxStateBytes: limit,
+  });
+}
+
+function createGameSnapshot(
+  state: GameStateEntity,
+  seq: number,
+): GameSnapshot {
+  return {
+    seq,
+    version: state.version ?? 1,
+    state: structuredClone(state),
+  };
+}
+
+function capturePeriodicSnapshot(
+  timeline: GameTimeline,
+  state: GameStateEntity,
+  policy: Readonly<GameSnapshotPolicy>,
+): void {
+  const sequence = timeline.events.at(-1)?.seq ?? 0;
+  const previous = timeline.snapshots.at(-1)?.seq ?? 0;
+  const eventCount = sequence - previous;
+  const everyEvents = positiveThreshold(policy.everyEvents);
+  const maxEventBytes = positiveThreshold(policy.maxEventBytes);
+  const reachedCount = everyEvents != null && eventCount >= everyEvents;
+  const reachedSize =
+    maxEventBytes != null &&
+    Buffer.byteLength(
+      JSON.stringify(
+        timeline.events.filter((event) => event.seq > previous),
+      ),
+      'utf8',
+    ) >= maxEventBytes;
+  if (!reachedCount && !reachedSize) return;
+  timeline.snapshots.push(createGameSnapshot(state, sequence));
+}
+
+function positiveThreshold(value: number | null | undefined): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0
+    ? Math.floor(value)
+    : null;
 }

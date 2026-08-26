@@ -1,11 +1,36 @@
 export class GameDomainError extends Error {
+  readonly presentToClient = 'code' as const;
+
   constructor(
     public readonly code: string,
     message: string,
+    public readonly details: Readonly<Record<string, unknown>> = {},
   ) {
     super(message);
     this.name = new.target.name;
   }
+}
+
+export class GameRuleViolationError extends GameDomainError {
+  constructor(
+    code = 'GAME_RULE_VIOLATION',
+    details: Readonly<Record<string, unknown>> = {},
+    message = 'Règle de jeu non respectée',
+  ) {
+    super(code, message, details);
+  }
+}
+
+/**
+ * Compatibility helper for rules that have not yet adopted `ctx.reject`.
+ * It deliberately throws a typed domain error so presentation code never has
+ * to infer a business failure from an arbitrary native Error message.
+ */
+export function rejectRule(
+  _legacyMessage: string,
+  details: Readonly<Record<string, unknown>> = {},
+): never {
+  throw new GameRuleViolationError('GAME_RULE_VIOLATION', details);
 }
 
 export class GameRoomNotFoundError extends GameDomainError {
@@ -21,9 +46,19 @@ export class GamePayloadValidationError extends GameDomainError {
 }
 
 export class GameContentValidationError extends GameDomainError {
-  constructor(message = 'Contenu de jeu invalide') {
-    super('GAME_CONTENT_VALIDATION', message);
+  constructor(
+    message = 'Contenu de jeu invalide',
+    details: Readonly<Record<string, unknown>> = {},
+  ) {
+    super('GAME_CONTENT_VALIDATION', message, details);
   }
+}
+
+export function rejectContent(
+  message: string,
+  details: Readonly<Record<string, unknown>> = {},
+): never {
+  throw new GameContentValidationError(message, details);
 }
 
 export class GameActionRejectedError extends GameDomainError {
@@ -57,8 +92,11 @@ export class GameConfigurationError extends GameDomainError {
 }
 
 export class GameStateViolationError extends GameDomainError {
-  constructor(message = 'État de partie invalide') {
-    super('GAME_STATE_VIOLATION', message);
+  constructor(
+    message = 'État de partie invalide',
+    details: Readonly<Record<string, unknown>> = {},
+  ) {
+    super('GAME_STATE_VIOLATION', message, details);
   }
 }
 

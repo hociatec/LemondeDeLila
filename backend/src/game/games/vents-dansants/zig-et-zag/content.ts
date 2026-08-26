@@ -1,3 +1,5 @@
+import { freezeGameContent } from '../../../core/application/public-api';
+
 export type ZigEtZagColor = 'vert-sauge' | 'bleu-ardoise';
 export type ZigEtZagFamily = 'banane' | 'dentifrice' | 'pantoufle' | 'bougie';
 export type ZigEtZagCardType = 'simple' | 'figure' | 'joker';
@@ -21,6 +23,12 @@ const FAMILY_DEFINITIONS: Record<
   pantoufle: { label: 'Pantoufle', color: 'bleu-ardoise' },
   bougie: { label: 'Bougie', color: 'bleu-ardoise' },
 };
+const ZIG_ET_ZAG_FAMILIES: readonly ZigEtZagFamily[] = [
+  'banane',
+  'dentifrice',
+  'pantoufle',
+  'bougie',
+];
 
 const SIMPLE_CARDS: Array<{ suffix: string; name: string; value: number }> = [
   { suffix: 'libellule', name: 'Libellule', value: 2 },
@@ -43,12 +51,8 @@ const FIGURE_CARDS: Array<{ suffix: string; name: string; value: number }> = [
 
 const deck: ZigEtZagCardDefinition[] = [];
 
-(
-  Object.entries(FAMILY_DEFINITIONS) as [
-    ZigEtZagFamily,
-    { label: string; color: ZigEtZagColor },
-  ][]
-).forEach(([family, { label, color }]) => {
+ZIG_ET_ZAG_FAMILIES.forEach((family) => {
+  const { label, color } = FAMILY_DEFINITIONS[family];
   SIMPLE_CARDS.forEach((card) => {
     deck.push({
       id: `${family}-${card.suffix}`,
@@ -94,3 +98,6 @@ export const ZIG_ET_ZAG_DECK = deck;
 export const ZIG_ET_ZAG_TOTAL_CARDS = deck.length;
 export const ZIG_ET_ZAG_CARD_BY_ID: Record<string, ZigEtZagCardDefinition> =
   Object.fromEntries(deck.map((card) => [card.id, card]));
+
+freezeGameContent(ZIG_ET_ZAG_DECK);
+freezeGameContent(ZIG_ET_ZAG_CARD_BY_ID);

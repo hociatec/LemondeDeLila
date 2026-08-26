@@ -5,10 +5,11 @@ import type { RoomSnapshot } from './room-announcement.helpers';
 import { RoomSocketHeartbeat } from './room-heartbeat.helpers';
 import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
 import type { ClientMeta } from './room-gateway.types';
+import type { PresentedErrorPayload } from '@common/utils/public-api';
 
 @Injectable()
 export class RoomGatewayRuntimeStateService {
-  server!: Server<WebSocket>;
+  server!: Server<typeof WebSocket>;
   readonly clients = new Map<WebSocket, ClientMeta>();
   readonly rooms = new Map<number, Set<WebSocket>>();
   readonly silentRooms = new Map<number, Set<WebSocket>>();
@@ -26,7 +27,7 @@ export class RoomGatewayRuntimeStateService {
 
   constructor(readonly presenter: RoomGatewayStatePresenter) {}
 
-  initialize(server: Server<WebSocket>): void {
+  initialize(server: Server<typeof WebSocket>): void {
     this.server = server;
   }
 
@@ -59,9 +60,12 @@ export class RoomGatewayRuntimeStateService {
     this.sendToRoomSet(roomId, this.silentRooms.get(roomId), message, true);
   }
 
-  async sendError(client: WebSocket, message: string): Promise<void> {
+  async sendError(
+    client: WebSocket,
+    error: string | PresentedErrorPayload,
+  ): Promise<void> {
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(this.presenter.presentError(message)));
+      client.send(JSON.stringify(this.presenter.presentError(error)));
     }
   }
 

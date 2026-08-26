@@ -9,6 +9,7 @@ import type {
 } from '../application/runtime/game-definition';
 import { GameCommandExecutorService } from '../application/services/game-command-executor.service';
 import { GameEngineService } from '../application/services/game-engine.service';
+import { InMemoryGameSessionStore } from '../infrastructure/persistence/memory/in-memory-game-session.store';
 import { GameExecutionScopeService } from '../application/services/game-execution-scope.service';
 
 const PROPERTY_SEEDS = [0, 1, 2, 7, 17, 42, 255, 65_535] as const;
@@ -245,7 +246,8 @@ async function auditCommand<
     stableJson(state) === stableJson(before),
     'commande mute son entrée',
   );
-  const engine = new GameEngineService();
+  const sessionStore = new InMemoryGameSessionStore();
+  const engine = new GameEngineService(sessionStore, sessionStore);
   await engine.restoreInternalState(1, adapter.gameType, state);
   const commit = await engine.compareAndSetInternalState(
     1,
@@ -259,7 +261,8 @@ async function auditCommand<
     'version non monotone',
   );
   invariant(
-    stableJson(engine.replay(1, adapter.gameType)) === stableJson(commit.state),
+    stableJson(await engine.replay(1, adapter.gameType)) ===
+      stableJson(commit.state),
     'replay différent de l’état courant',
   );
 }

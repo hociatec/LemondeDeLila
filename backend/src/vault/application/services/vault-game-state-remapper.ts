@@ -1,4 +1,7 @@
-import type { VaultGameState } from '../models/vault-game-state.model';
+import {
+  isVaultGameState,
+  type VaultGameState,
+} from '../models/vault-game-state.model';
 
 export type VaultGameStateRemapOptions = {
   roomId: number;
@@ -44,7 +47,10 @@ export function remapVaultGameState(
 ): VaultGameState {
   const replaceId = (value: number): number =>
     options.botIdMap.get(value) ?? value;
-  const remapped = remapValue(state, options.botIdMap) as VaultGameState;
+  const remapped = remapValue(state, options.botIdMap);
+  if (!isVaultGameState(remapped)) {
+    throw new Error('État de jeu Vault invalide après remappage.');
+  }
   remapped.status = 'started';
   remapped.metadata = {
     ...(remapped.metadata ?? {}),

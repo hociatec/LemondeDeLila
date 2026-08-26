@@ -1,6 +1,12 @@
 import { GameEngineService } from './game-engine.service';
 import type { GameStateEntity } from '../models/game-state.model';
 import { appendPendingGameEvent } from './game-event-log.helper';
+import { InMemoryGameSessionStore } from '../../infrastructure/persistence/memory/in-memory-game-session.store';
+
+function createEngine(): GameEngineService {
+  const store = new InMemoryGameSessionStore();
+  return new GameEngineService(store, store);
+}
 
 describe('GameEngineService room cleanup', () => {
   const state = (label: string) =>
@@ -12,7 +18,7 @@ describe('GameEngineService room cleanup', () => {
     }) satisfies GameStateEntity;
 
   it('clears every game snapshot for one room only', async () => {
-    const engine = new GameEngineService();
+    const engine = createEngine();
     await engine.restoreInternalState(4, 'lama', state('lama'));
     await engine.restoreInternalState(4, 'other', state('other'));
     await engine.restoreInternalState(5, 'lama', state('kept'));
@@ -25,7 +31,7 @@ describe('GameEngineService room cleanup', () => {
   });
 
   it('does not clear a newer snapshot while cleaning a stale commit', async () => {
-    const engine = new GameEngineService();
+    const engine = createEngine();
     const stale = { ...state('stale'), version: 1 };
     const current = { ...state('current'), version: 2 };
     await engine.restoreInternalState(4, 'lama', current);
@@ -39,7 +45,7 @@ describe('GameEngineService room cleanup', () => {
   });
 
   it('commits only when the expected version still matches', async () => {
-    const engine = new GameEngineService();
+    const engine = createEngine();
     await engine.restoreInternalState(4, 'lama', state('initial'));
 
     const first = await engine.compareAndSetInternalState(
@@ -64,7 +70,7 @@ describe('GameEngineService room cleanup', () => {
   });
 
   it('records commands atomically and replays snapshots plus events', async () => {
-    const engine = new GameEngineService();
+    const engine = createEngine();
     let current: GameStateEntity = { ...state('initial'), version: 1 };
     await engine.restoreInternalState(9, 'replayable', current);
 
@@ -74,6 +80,7 @@ describe('GameEngineService room cleanup', () => {
         actorId: 42,
         type: 'game.command.accepted',
         data: { action: { type: 'advance', payload: { index } } },
+        visibility: { kind: 'public' },
         occurredAtMs: 1_000 + index,
       });
       const result = await engine.compareAndSetInternalState(
@@ -101,7 +108,7 @@ describe('GameEngineService room cleanup', () => {
   });
 
   it('does not publish events for a rejected stale commit', async () => {
-    const engine = new GameEngineService();
+    const engine = createEngine();
     await engine.restoreInternalState(10, 'cas-log', state('initial'));
     await engine.compareAndSetInternalState(10, 'cas-log', 1, state('first'));
     const eventCount = engine.listEvents(10, 'cas-log').length;

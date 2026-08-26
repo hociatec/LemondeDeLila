@@ -1,3 +1,8 @@
+import {
+  freezeGameContent,
+  gameEffects,
+  rejectContent,
+} from '../../../core/application/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type {
@@ -94,14 +99,31 @@ export const AVENTURE_PAWNS = loadPawns();
 
 function makeCards(
   deck: AventureCard['deck'],
-  effects: Array<Pick<AventureCard, 'moveDelta' | 'skipTurns' | 'reroll'>>,
+  definitions: Array<{
+    moveDelta?: number;
+    skipTurns?: number;
+    reroll?: boolean;
+  }>,
 ): AventureCard[] {
-  return effects.map((effect, index) => ({
-    id: index + 1,
-    deck,
-    text: `${deck === 'animal' ? 'Rencontre animale' : 'Coup de patte'} ${index + 1}`,
-    ...effect,
-  }));
+  return definitions.map((definition, index) => {
+    const effects: Array<AventureCard['effects'][number]> = [];
+    if (definition.moveDelta) {
+      effects.push(
+        gameEffects.move('jungle', definition.moveDelta),
+        gameEffects.custom('aventure.resolve-landing'),
+      );
+    }
+    if (definition.skipTurns) {
+      effects.push(gameEffects.skipTurn(definition.skipTurns));
+    }
+    if (definition.reroll) effects.push(gameEffects.extraTurn());
+    return {
+      id: index + 1,
+      deck,
+      text: `${deck === 'animal' ? 'Rencontre animale' : 'Coup de patte'} ${index + 1}`,
+      effects,
+    };
+  });
 }
 
 function loadPawns(): AventurePawn[] {
@@ -113,11 +135,11 @@ function loadPawns(): AventurePawn[] {
     ),
   );
   if (!isRecord(raw) || raw.version !== 1 || !Array.isArray(raw.pawns)) {
-    throw new Error('Pions Aventure Sauvage invalides');
+    rejectContent('Pions Aventure Sauvage invalides');
   }
   const pawns = raw.pawns;
   if (pawns.length < 6 || !pawns.every(isPawn)) {
-    throw new Error('Catalogue de pions Aventure Sauvage invalide');
+    rejectContent('Catalogue de pions Aventure Sauvage invalide');
   }
   return pawns.map((pawn) => ({
     id: pawn.id,
@@ -141,7 +163,7 @@ function contentDirectory(): string {
   const found = candidates.find((directory) =>
     existsSync(resolve(directory, 'pawns.json')),
   );
-  if (!found) throw new Error('Contenu Aventure Sauvage introuvable');
+  if (!found) rejectContent('Contenu Aventure Sauvage introuvable');
   return found;
 }
 
@@ -161,3 +183,8 @@ function isPawn(value: unknown): value is {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
+
+freezeGameContent(AVENTURE_TILES);
+freezeGameContent(AVENTURE_ANIMAL_CARDS);
+freezeGameContent(AVENTURE_PATTE_CARDS);
+freezeGameContent(AVENTURE_PAWNS);

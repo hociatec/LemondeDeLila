@@ -157,8 +157,9 @@ export class SoundsTableAmbiencesManager {
     const filePath = this.deps.filePath();
     try {
       const raw = await fs.promises.readFile(filePath, 'utf-8');
-      const parsed = JSON.parse(raw.replace(/^\uFEFF/, ''));
-      const itemsRaw = Array.isArray(parsed?.items) ? parsed.items : [];
+      const parsed: unknown = JSON.parse(raw.replace(/^\uFEFF/, ''));
+      const record = isRecord(parsed) ? parsed : {};
+      const itemsRaw = Array.isArray(record.items) ? record.items : [];
       const items: TableAmbienceDefinition[] = itemsRaw
         .map((value) =>
           toTableAmbienceDefinition(value, (input) =>
@@ -180,8 +181,8 @@ export class SoundsTableAmbiencesManager {
 
       return {
         updatedAt:
-          typeof parsed?.updatedAt === 'string' && parsed.updatedAt.trim()
-            ? parsed.updatedAt
+          typeof record.updatedAt === 'string' && record.updatedAt.trim()
+            ? record.updatedAt
             : this.deps.now(),
         items: deduped,
       };
@@ -212,4 +213,8 @@ export class SoundsTableAmbiencesManager {
     await this.write(next);
     await this.deps.notifyUpdated(next.updatedAt);
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === 'object' && !Array.isArray(value);
 }

@@ -35,8 +35,9 @@ export class GameExecutionScopeService {
     state: GameStateEntity,
     actorId: number | null,
     clock: GameClock = systemClock,
+    commandId: string | null = null,
   ): GameExecutionContext {
-    return { actorId, rng: new StateGameRng(state), clock };
+    return { actorId, commandId, rng: new StateGameRng(state), clock };
   }
 
   run<T>(context: GameExecutionContext, operation: () => T): T {

@@ -1,28 +1,33 @@
 import {
   cards,
-  clockwise,
+  defineChoice,
   defineGame,
-  diceKit,
-  movement,
+  gameInput,
+  pawns,
   playerView,
-  victoryWhen,
+  raceGame,
   when,
 } from '../../../core/application/public-api';
 import { CONTES_DECKS, CONTES_PAWNS, CONTES_TILES } from './content';
 import {
   CONTES_ACTIONS,
-  replaceContesTurn,
+  CONTES_PHASES,
   requestPawn,
   resolveCard,
   resolveLaughter,
   resolveOption,
   resolvePawn,
   resolveReroll,
-  resolveTarget,
   resolveToken,
-  skipContesPlayer,
+  skipBlockedContesPlayer,
   unblockPassedPlayers,
 } from './rules';
+import {
+  blockedPosition,
+  CONTES_RESOURCES,
+  CONTES_STATUSES,
+} from './resolution';
+import { CONTES_EFFECTS } from './effects';
 import type { ContesPlayerView, ContesState } from './state';
 
 export default defineGame<ContesState, typeof CONTES_ACTIONS, ContesPlayerView>(
@@ -33,106 +38,89 @@ export default defineGame<ContesState, typeof CONTES_ACTIONS, ContesPlayerView>(
     subcategory: 'LesQuatreVents',
     description: 'Une course narrative à travers les contes du monde.',
     players: { min: 2, max: 6 },
+    patterns: [
+      raceGame({
+        trackId: 'story-road',
+        spaces: CONTES_TILES.length,
+        overshoot: 'bounce',
+      }),
+    ],
     components: [
-      movement.track({ id: 'story-road', spaces: CONTES_TILES.length }),
-      diceKit({ id: 'main', count: 1, sides: 6 }),
-      cards.deck({ id: 'bonus', cards: CONTES_DECKS.bonus, shuffle: true }),
-      cards.deck({ id: 'malus', cards: CONTES_DECKS.malus, shuffle: true }),
+      pawns.set({ id: 'contes', pawns: CONTES_PAWNS }),
+      cards.deck({
+        id: 'bonus',
+        cards: CONTES_DECKS.bonus,
+        shuffle: true,
+        empty: 'recycle',
+      }),
+      cards.deck({
+        id: 'malus',
+        cards: CONTES_DECKS.malus,
+        shuffle: true,
+        empty: 'recycle',
+      }),
       cards.deck({
         id: 'surprise',
         cards: CONTES_DECKS.surprise,
         shuffle: true,
+        empty: 'recycle',
       }),
-      cards.deck({ id: 'conte', cards: CONTES_DECKS.conte, shuffle: true }),
+      cards.deck({
+        id: 'conte',
+        cards: CONTES_DECKS.conte,
+        shuffle: true,
+        empty: 'recycle',
+      }),
     ],
+    initialization: { firstPlayer: 'random', startRound: true },
     shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
     setup: ({ players, ctx }) => {
-      const zeros = () =>
-        Object.fromEntries(players.map((player) => [player.id, 0]));
-      const falses = () =>
-        Object.fromEntries(players.map((player) => [player.id, false]));
-      const nulls = () =>
-        Object.fromEntries(players.map((player) => [player.id, null]));
-      const state: ContesState = {
-        pawnByPlayerId: {},
-        setupComplete: false,
-        starterId: (ctx.random.pick(players) ?? players[0]).id,
-        skipTurns: zeros(),
-        rerollTokens: zeros(),
-        shieldMalus: zeros(),
-        protectNextMalus: falses(),
-        cape: falses(),
-        replaceOne: falses(),
-        noBonusTurns: zeros(),
-        forcedOneTurns: zeros(),
-        reverseNextTurn: falses(),
-        blockedAt: nulls(),
-        turnReplacement: nulls(),
-        activeSlotOwnerId: null,
-        keyOfGold: falses(),
-        pendingEffect: null,
-        queuedDraws: [],
-        resolvingPlayerId: null,
-        lastConte: null,
-        winnerId: null,
-      };
-      requestPawn(state, players[0].id, ctx);
-      return state;
+      requestPawn(players[0].id, ctx);
+      return {};
     },
-    initialPhase: 'setup',
-    turn: clockwise(),
+    initialPhase: CONTES_PHASES.initialPhase,
+    phases: CONTES_PHASES.phases,
     actions: CONTES_ACTIONS,
+    effects: CONTES_EFFECTS,
     choices: {
-      'contes.pawn': {
+      'contes.pawn': defineChoice<ContesState, string>({
+        input: gameInput.string({ min: 1, max: 128 }),
+        resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+      }),
+      'contes.reroll': defineChoice<ContesState, string>({
+        input: gameInput.string({ min: 1, max: 128 }),
         resolve: ({ state, actor, value, ctx }) =>
-          resolvePawn(state, actor.id, String(value), ctx),
-      },
-      'contes.reroll': {
+          resolveReroll(state, actor.id, value, ctx),
+      }),
+      'contes.option': defineChoice<ContesState, string>({
+        input: gameInput.string({ min: 1, max: 128 }),
         resolve: ({ state, actor, value, ctx }) =>
-          resolveReroll(state, actor.id, String(value), ctx),
-      },
-      'contes.target': {
+          resolveOption(state, actor.id, value, ctx),
+      }),
+      'contes.number': defineChoice<ContesState, number>({
+        input: gameInput.number({ integer: true }),
         resolve: ({ state, actor, value, ctx }) =>
-          resolveTarget(state, actor.id, Number(value), ctx),
-      },
-      'contes.option': {
+          resolveLaughter(state, actor.id, value, ctx),
+      }),
+      'contes.card': defineChoice<ContesState, number>({
+        input: gameInput.number({ integer: true }),
         resolve: ({ state, actor, value, ctx }) =>
-          resolveOption(state, actor.id, String(value), ctx),
-      },
-      'contes.number': {
+          resolveCard(state, actor.id, value, ctx),
+      }),
+      'contes.token': defineChoice<ContesState, string>({
+        input: gameInput.string({ min: 1, max: 128 }),
         resolve: ({ state, actor, value, ctx }) =>
-          resolveLaughter(state, actor.id, Number(value), ctx),
-      },
-      'contes.card': {
-        resolve: ({ state, actor, value, ctx }) =>
-          resolveCard(state, actor.id, Number(value), ctx),
-      },
-      'contes.token': {
-        resolve: ({ state, actor, value, ctx }) =>
-          resolveToken(state, actor.id, String(value), ctx),
-      },
+          resolveToken(state, actor.id, value, ctx),
+      }),
     },
     automatic: [
-      when(
-        'replace-exchanged-turn',
-        ({ state, ctx }) => {
-          const player = ctx.players.current();
-          return (
-            state.setupComplete &&
-            state.activeSlotOwnerId == null &&
-            player != null &&
-            state.turnReplacement[player.id] != null
-          );
-        },
-        ({ state, ctx }) => replaceContesTurn(state, ctx),
-      ),
       when(
         'unblock-passed-player',
         ({ state, ctx }) => {
           const player = ctx.players.current();
-          const blocked = player ? state.blockedAt[player.id] : null;
+          const blocked = player ? blockedPosition(ctx, player.id) : null;
           return (
-            state.setupComplete &&
+            CONTES_PHASES.is(ctx, 'playing') &&
             player != null &&
             blocked != null &&
             ctx.players
@@ -151,28 +139,43 @@ export default defineGame<ContesState, typeof CONTES_ACTIONS, ContesPlayerView>(
         ({ state, ctx }) => {
           const player = ctx.players.current();
           return (
-            state.setupComplete &&
+            CONTES_PHASES.is(ctx, 'playing') &&
             player != null &&
-            (state.skipTurns[player.id] > 0 ||
-              state.blockedAt[player.id] != null)
+            blockedPosition(ctx, player.id) != null
           );
         },
-        ({ state, ctx }) => skipContesPlayer(state, ctx),
+        ({ state, ctx }) => skipBlockedContesPlayer(state, ctx),
       ),
     ],
-    victory: victoryWhen(({ state }) =>
-      state.winnerId == null
-        ? null
-        : { winnerPlayerIds: [state.winnerId], reason: 'story-road-finished' },
-    ),
     view: ({ state, actor, ctx }) => {
-      const {
-        pendingEffect: _pendingEffect,
-        queuedDraws: _queuedDraws,
-        resolvingPlayerId: _resolvingPlayerId,
-        activeSlotOwnerId: _activeSlotOwnerId,
-        ...publicState
-      } = state;
+      const pawnByPlayerId = Object.fromEntries(
+        ctx.players.all().flatMap((player) => {
+          const pawnId = ctx.pawns.assigned('contes', player.id)[0];
+          return pawnId == null ? [] : [[player.id, pawnId]];
+        }),
+      );
+      const numberMap = (value: (playerId: number) => number) =>
+        Object.fromEntries(
+          ctx.players.all().map((player) => [player.id, value(player.id)]),
+        );
+      const booleanMap = (statusId: string) =>
+        Object.fromEntries(
+          ctx.players
+            .all()
+            .map((player) => [player.id, ctx.status.has(player.id, statusId)]),
+        );
+      const lastConteEntry = [...ctx.events.messages()]
+        .reverse()
+        .find(
+          (entry) =>
+            entry.key === 'game.card.drawn' &&
+            entry.params.deckId === 'conte',
+        );
+      const lastConteCardId = Number(lastConteEntry?.params.cardId);
+      const lastContePlayerId = Number(lastConteEntry?.params.playerId);
+      const lastConteCard = Number.isInteger(lastConteCardId)
+        ? CONTES_DECKS.conte.find((card) => card.id === lastConteCardId)
+        : null;
       const positions = Object.fromEntries(
         ctx.players
           .all()
@@ -181,19 +184,66 @@ export default defineGame<ContesState, typeof CONTES_ACTIONS, ContesPlayerView>(
             ctx.movement.position('story-road', player.id),
           ]),
       );
-      const deckCounts = {
-        bonus: ctx.cards.deckCount('bonus') + ctx.cards.discardCount('bonus'),
-        malus: ctx.cards.deckCount('malus') + ctx.cards.discardCount('malus'),
-        surprise:
-          ctx.cards.deckCount('surprise') + ctx.cards.discardCount('surprise'),
-        conte: ctx.cards.deckCount('conte') + ctx.cards.discardCount('conte'),
-      };
       return playerView({
-        game: { ...structuredClone(publicState), positions, deckCounts },
+        game: {
+          rerollTokens: numberMap((playerId) =>
+            ctx.resources.get(playerId, CONTES_RESOURCES.reroll),
+          ),
+          shieldMalus: numberMap((playerId) =>
+            ctx.resources.get(playerId, CONTES_RESOURCES.shield),
+          ),
+          protectNextMalus: booleanMap(CONTES_STATUSES.protectNextMalus),
+          cape: booleanMap(CONTES_STATUSES.cape),
+          replaceOne: booleanMap(CONTES_STATUSES.replaceOne),
+          noBonusTurns: numberMap(
+            (playerId) =>
+              ctx.status.get(playerId, CONTES_STATUSES.noBonus)?.remaining ?? 0,
+          ),
+          forcedOneTurns: numberMap(
+            (playerId) =>
+              ctx.status.get(playerId, CONTES_STATUSES.forcedOne)?.remaining ?? 0,
+          ),
+          reverseNextTurn: booleanMap(CONTES_STATUSES.reverseNextTurn),
+          blockedAt: Object.fromEntries(
+            ctx.players
+              .all()
+              .map((player) => [player.id, blockedPosition(ctx, player.id)]),
+          ),
+          keyOfGold: booleanMap(CONTES_STATUSES.keyOfGold),
+          pawnByPlayerId,
+          lastConte:
+            lastConteEntry &&
+            Number.isInteger(lastContePlayerId) &&
+            lastConteCard
+              ? {
+                  playerId: lastContePlayerId,
+                  title: lastConteCard.title,
+                  text: lastConteCard.text,
+                  timestamp: lastConteEntry.timestamp ?? '',
+                }
+              : null,
+          starterId: ctx.round.starter() ?? 0,
+          turnReplacement: Object.fromEntries(
+            ctx.players
+              .all()
+              .map((player) => [
+                player.id,
+                ctx.turn.replacementFor(player.id),
+              ]),
+          ),
+          positions,
+          winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+          skipTurns: Object.fromEntries(
+            ctx.players
+              .all()
+              .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+          ),
+          setupComplete: CONTES_PHASES.is(ctx, 'playing'),
+        },
         extras: {
           pawn: actor
             ? (CONTES_PAWNS.find(
-                (pawn) => pawn.id === state.pawnByPlayerId[actor.id],
+                (pawn) => pawn.id === pawnByPlayerId[actor.id],
               ) ?? null)
             : null,
         },

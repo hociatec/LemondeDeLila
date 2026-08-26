@@ -24,3 +24,12 @@ export {
 export { seededShuffle } from './seeded-shuffle';
 export { stringOrEmpty } from './string-value.utils';
 export { getBuildInfo, type BuildInfo } from './build-info.utils';
+export {
+  getErrorCode,
+  getErrorDetails,
+  getErrorMessage,
+} from './error-message.utils';
+export {
+  getErrorPayload,
+  type PresentedErrorPayload,
+} from './error-payload.utils';

@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type {
-  GameCatalogReader,
-  LoadGameJsonFileParams,
-} from '../../application/ports/game-catalog.reader';
+import type { GameCatalogReader } from '../../application/ports/game-catalog.reader';
 import type {
   GameCatalogEntryRecord,
   GameManifestRecord,
@@ -18,12 +15,6 @@ export class FilesystemGameCatalogReader implements GameCatalogReader {
       .filter((entry): entry is GameCatalogEntryRecord => entry != null);
   }
 
-  loadJsonFile<T>(params: LoadGameJsonFileParams): T {
-    const filePath = resolveContentFilePath(params);
-    const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-    return JSON.parse(raw) as T;
-  }
-
   readTextFile(filePath: string): string {
     return fs.readFileSync(filePath, 'utf8');
   }
@@ -31,9 +22,11 @@ export class FilesystemGameCatalogReader implements GameCatalogReader {
   private readEntry(root: string): GameCatalogEntryRecord | null {
     const manifestPath = path.join(root, 'manifest.json');
     try {
-      const manifest = JSON.parse(
-        fs.readFileSync(manifestPath, 'utf8'),
-      ) as GameManifestRecord;
+      const parsed: unknown = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      const manifest = toGameManifest(parsed);
+      if (!manifest) {
+        return null;
+      }
       const code = String(manifest.code ?? '').trim();
       if (!code) {
         return null;
@@ -52,51 +45,62 @@ export class FilesystemGameCatalogReader implements GameCatalogReader {
   }
 }
 
-function resolveContentFilePath(params: LoadGameJsonFileParams): string {
-  const candidates = buildContentFileCandidates(params);
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      return candidate;
-    }
+function toGameManifest(value: unknown): GameManifestRecord | null {
+  if (!isRecord(value)) {
+    return null;
   }
-  return candidates[0];
+  const manifest: GameManifestRecord = {};
+  assignString(manifest, value, 'code');
+  assignString(manifest, value, 'name');
+  assignString(manifest, value, 'summary');
+  assignNumber(manifest, value, 'minPlayers');
+  assignNumber(manifest, value, 'maxPlayers');
+  assignBoolean(manifest, value, 'chatEnabled');
+  assignBoolean(manifest, value, 'chatSoundsEnabled');
+  if (isManifestStatus(value.status)) {
+    manifest.status = value.status;
+  }
+  return manifest;
 }
 
-function buildContentFileCandidates(params: LoadGameJsonFileParams): string[] {
-  const bases = uniquePaths([
-    params.baseDir,
-    params.baseDir.replace(
-      `${path.sep}dist${path.sep}`,
-      `${path.sep}src${path.sep}`,
-    ),
-  ]);
-  const candidates: string[] = [];
-
-  for (const base of bases) {
-    candidates.push(path.join(base, params.contentDir ?? '', params.filename));
-
-    let current = base;
-    for (let depth = 0; depth < 8; depth += 1) {
-      candidates.push(
-        path.join(current, params.contentDir ?? '', params.filename),
-      );
-      candidates.push(path.join(current, 'model', 'content', params.filename));
-      candidates.push(path.join(current, 'content', params.filename));
-      candidates.push(path.join(current, 'model', params.filename));
-
-      const parent = path.dirname(current);
-      if (parent === current) {
-        break;
-      }
-      current = parent;
-    }
+function assignString(
+  target: GameManifestRecord,
+  source: Record<string, unknown>,
+  key: 'code' | 'name' | 'summary',
+): void {
+  if (typeof source[key] === 'string') {
+    target[key] = source[key];
   }
-
-  return uniquePaths(candidates);
 }
 
-function uniquePaths(paths: string[]): string[] {
-  return Array.from(new Set(paths.filter((entry) => entry.trim().length > 0)));
+function assignNumber(
+  target: GameManifestRecord,
+  source: Record<string, unknown>,
+  key: 'minPlayers' | 'maxPlayers',
+): void {
+  if (typeof source[key] === 'number' && Number.isFinite(source[key])) {
+    target[key] = source[key];
+  }
+}
+
+function assignBoolean(
+  target: GameManifestRecord,
+  source: Record<string, unknown>,
+  key: 'chatEnabled' | 'chatSoundsEnabled',
+): void {
+  if (typeof source[key] === 'boolean') {
+    target[key] = source[key];
+  }
+}
+
+function isManifestStatus(
+  value: unknown,
+): value is NonNullable<GameManifestRecord['status']> {
+  return value === 'construction' || value === 'beta' || value === 'finished';
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 function resolveGameRoots(): string[] {
@@ -111,7 +115,7 @@ function resolveGameRoots(): string[] {
 }
 
 function walkGameRoots(dir: string, roots: string[]): void {
-  let entries: fs.Dirent[] = [];
+  let entries: fs.Dirent[];
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch {

@@ -1,8 +1,23 @@
+import {
+  freezeGameContent,
+  rejectContent,
+} from '../../../core/application/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-export const WHITE_CARDS = loadCards('white-cards.txt');
-export const BLACK_CARDS = loadCards('black-cards.txt');
+export interface AbsurdissimesCard {
+  id: string;
+  text: string;
+}
+
+export const WHITE_CARDS = loadCards('white-cards.txt').map((text, index) => ({
+  id: `white-${index + 1}`,
+  text,
+}));
+export const BLACK_CARDS = loadCards('black-cards.txt').map((text, index) => ({
+  id: `black-${index + 1}`,
+  text,
+}));
 
 function loadCards(fileName: string): string[] {
   const candidates = [
@@ -19,7 +34,7 @@ function loadCards(fileName: string): string[] {
     ),
   ];
   const path = candidates.find(existsSync);
-  if (!path) throw new Error(`Contenu Absurdissimes introuvable: ${fileName}`);
+  if (!path) rejectContent(`Contenu Absurdissimes introuvable: ${fileName}`);
   const content = readFileSync(path, 'utf8');
   return [
     ...content.matchAll(/(?:^|\n)\d+\.\s*[\r\n]+([\s\S]*?)(?=\n\d+\.|$)/g),
@@ -32,3 +47,6 @@ function loadCards(fileName: string): string[] {
     )
     .filter(Boolean);
 }
+
+freezeGameContent(WHITE_CARDS);
+freezeGameContent(BLACK_CARDS);

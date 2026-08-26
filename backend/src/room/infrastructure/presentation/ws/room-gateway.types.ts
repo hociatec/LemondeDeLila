@@ -19,8 +19,3 @@ export type IncomingPayload = {
   type?: string;
   payload?: unknown;
 };
-
-export type RoomWithOptionalRuntimeFields = {
-  runId?: unknown;
-  tableAmbienceSoundId?: string | null;
-};

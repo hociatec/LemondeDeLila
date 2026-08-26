@@ -1,5 +1,10 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
+import {
+  defineEffect,
+  gameInput,
+  rejectRule,
+  raceTurn,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
 import { MISSION_GALAXIE_CONTENT } from './content';
 import type {
   MissionGalaxieChoiceCard,
@@ -7,60 +12,64 @@ import type {
   MissionGalaxieState,
 } from './state';
 
-type RuleContext = GameRuleContext<MissionGalaxieState>;
+type RuleContext = GameContext<MissionGalaxieState>;
 const TRACK = 'galaxy';
 const MAX_EFFECT_DEPTH = 20;
 
-export const roll = defineAction<MissionGalaxieState, Record<string, never>>({
-  input: gameInput.object({}),
+export const roll = raceTurn<MissionGalaxieState>({
+  trackId: TRACK,
   documentation: 'Lance le dé et résout entièrement la case galactique.',
-  execute: ({ state, actor, ctx }) => {
-    const total = ctx.dice.roll('main').total;
-    state.lastRoll = total;
-    ctx.history.add(`${actor.username} lance le dé : « ${total} ».`);
-    const next = ctx.movement.move(TRACK, actor.id, total);
-    resolveLanding(state, actor.id, next, 0, ctx);
-    completeTurn(state, ctx);
+  resolveLanding: ({ state, playerId, position, ctx }) => {
+    resolveLanding(state, playerId, position, 0, ctx);
   },
 });
 
 export const MISSION_GALAXIE_ACTIONS = { roll };
 
-export function resolveMissionChoice(
+export function resolveMissionAnswer(
   state: MissionGalaxieState,
-  value: unknown,
+  value: number,
   ctx: RuleContext,
 ): void {
-  const pending = state.pendingChoice;
-  if (!pending) throw new Error('Choix Mission Galaxie introuvable');
-  state.pendingChoice = null;
-  if (pending.kind === 'answer') {
-    const choiceIndex = Number(value);
-    const delta =
-      choiceIndex === pending.card.correctIndex
-        ? pending.card.correctDelta
-        : pending.card.wrongDelta;
-    moveAndLand(state, pending.actorId, delta, 0, ctx);
-  } else {
-    const selected = String(value);
-    const option = pending.options.find(
-      (candidate) => encodeMove(candidate) === selected,
-    );
-    if (!option) throw new Error('Mouvement galactique invalide');
-    moveAndLand(state, option.targetId, option.delta, 0, ctx);
+  const pending = ctx.choice.consumeData<
+    import('./state').MissionGalaxiePending
+  >();
+  if (!pending || pending.kind !== 'answer') {
+    rejectRule('Réponse Mission Galaxie introuvable');
   }
-  completeTurn(state, ctx);
+  const card = MISSION_GALAXIE_CONTENT[pending.deck].find(
+    (candidate) => candidate.id === pending.cardId,
+  );
+  if (!card) rejectRule('Carte Mission Galaxie inconnue');
+  const delta =
+    value === card.correctIndex ? card.correctDelta : card.wrongDelta;
+  moveAndLand(state, pending.actorId, delta, 0, ctx);
+  ctx.turn.complete({ waiting: ctx.choice.current() != null });
 }
 
-export function skipMissionPlayer(
+export function resolveMissionEventMove(
   state: MissionGalaxieState,
+  value: string,
   ctx: RuleContext,
 ): void {
-  const current = ctx.players.current();
-  if (!current) return;
-  state.skipTurns[current.id] = Math.max(0, state.skipTurns[current.id] - 1);
-  ctx.history.add(`${current.username} saute son tour.`);
-  ctx.turn.end();
+  const pending = ctx.choice.consumeData<
+    import('./state').MissionGalaxiePending
+  >();
+  if (!pending || pending.kind !== 'event-move') {
+    rejectRule('Événement Mission Galaxie introuvable');
+  }
+  const card = MISSION_GALAXIE_CONTENT.events.find(
+    (candidate) => candidate.id === pending.cardId,
+  );
+  if (!card?.moveDeltas) {
+    rejectRule('Événement galactique inconnu');
+  }
+  const option = eventMoveOptions(card.moveDeltas, ctx).find(
+    (candidate) => encodeMove(candidate) === value,
+  );
+  if (!option) rejectRule('Mouvement galactique invalide');
+  moveAndLand(state, option.targetId, option.delta, 0, ctx);
+  ctx.turn.complete({ waiting: ctx.choice.current() != null });
 }
 
 function resolveLanding(
@@ -72,20 +81,18 @@ function resolveLanding(
 ): void {
   if (
     depth > MAX_EFFECT_DEPTH ||
-    state.pendingChoice ||
-    state.winnerId != null
+    ctx.choice.current() ||
+    ctx.match.lifecycle() === 'finished'
   ) {
     return;
   }
   const tile = MISSION_GALAXIE_CONTENT.tiles[position];
   if (!tile) return;
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username ?? 'Le joueur'} atteint « ${tile.title} ».`,
-  );
+  ctx.events.message('game.pawn.landed', { playerId, tileId: tile.n });
   if (tile.type === 'move' && tile.delta) {
     moveAndLand(state, playerId, tile.delta, depth + 1, ctx);
   } else if (tile.type === 'skip') {
-    state.skipTurns[playerId] += tile.skipTurns ?? 1;
+    ctx.turn.skip(playerId, tile.skipTurns ?? 1);
   } else if (tile.type === 'question' || tile.type === 'challenge') {
     drawChoiceCard(
       state,
@@ -94,16 +101,16 @@ function resolveLanding(
       ctx,
     );
   } else if (tile.type === 'event') {
-    drawEvent(state, playerId, depth + 1, ctx);
+    drawEvent(playerId, ctx);
   } else if (tile.type === 'swapNearest') {
     swapNearest(playerId, ctx);
   } else if (tile.type === 'goto' && tile.target != null) {
     setPosition(playerId, tile.target - 1, ctx);
     resolveLanding(state, playerId, tile.target - 1, depth + 1, ctx);
   } else if (tile.type === 'finish') {
-    state.winnerId = playerId;
+    ctx.match.finish({ winners: [playerId], reason: 'legendary-planet' });
   }
-  if (tile.keepTurn && state.winnerId == null) ctx.turn.extra();
+  if (tile.keepTurn && ctx.match.lifecycle() !== 'finished') ctx.turn.extra();
 }
 
 function drawChoiceCard(
@@ -115,58 +122,49 @@ function drawChoiceCard(
   const card = ctx.cards.drawOrRecycle<MissionGalaxieChoiceCard>(deck);
   if (!card) return;
   ctx.cards.discard(deck, card);
-  state.pendingChoice = { kind: 'answer', actorId: playerId, card };
+  const pending = {
+    kind: 'answer' as const,
+    actorId: playerId,
+    deck,
+    cardId: card.id,
+  };
   ctx.choice.one({
-    id: 'mission-galaxie.choice',
+    id: 'mission-galaxie.answer',
     player: playerId,
     options: card.choices.map((_choice, index) => index),
+    data: pending,
     label: (index) => card.choices[index],
   });
 }
 
 function drawEvent(
-  state: MissionGalaxieState,
   playerId: number,
-  depth: number,
   ctx: RuleContext,
 ): void {
   const card = ctx.cards.drawOrRecycle<MissionGalaxieEventCard>('events');
   if (!card) return;
   ctx.cards.discard('events', card);
-  ctx.history.add(`Événement « ${card.title} » : ${card.description}`);
-  const effect = card.effect;
-  if (effect.kind === 'move') {
-    moveAndLand(state, playerId, effect.delta, depth, ctx);
-  } else if (effect.kind === 'skip') {
-    state.skipTurns[playerId] += effect.turns;
-  } else if (effect.kind === 'reroll' || effect.kind === 'keepTurn') {
-    ctx.turn.extra();
-  } else if (effect.kind === 'goto') {
-    setPosition(playerId, effect.target - 1, ctx);
-    resolveLanding(state, playerId, effect.target - 1, depth, ctx);
-  } else if (effect.kind === 'skipOthers') {
-    for (const player of ctx.players.all()) {
-      if (player.id !== playerId) state.skipTurns[player.id] += effect.turns;
-    }
-  } else if (effect.kind === 'choosePlayerMove') {
-    requestEventMove(state, playerId, effect.deltas, ctx);
-  }
+  ctx.events.message('game.card.drawn', {
+    playerId,
+    deckId: 'events',
+    cardId: card.id,
+  });
+  ctx.effects.schedule(...card.effects);
 }
 
-function requestEventMove(
-  state: MissionGalaxieState,
+export function requestEventMove(
   actorId: number,
+  cardId: number,
   deltas: number[],
   ctx: RuleContext,
 ): void {
-  const options = deltas.flatMap((delta) =>
-    ctx.players.all().map((player) => ({ targetId: player.id, delta })),
-  );
-  state.pendingChoice = { kind: 'event-move', actorId, options };
+  const options = eventMoveOptions(deltas, ctx);
+  const pending = { kind: 'event-move' as const, actorId, cardId };
   ctx.choice.one({
-    id: 'mission-galaxie.choice',
+    id: 'mission-galaxie.event-move',
     player: actorId,
     options: options.map(encodeMove),
+    data: pending,
     label: (value) => {
       const option = options.find(
         (candidate) => encodeMove(candidate) === value,
@@ -179,7 +177,16 @@ function requestEventMove(
   });
 }
 
-function moveAndLand(
+function eventMoveOptions(
+  deltas: readonly number[],
+  ctx: RuleContext,
+): Array<{ targetId: number; delta: number }> {
+  return deltas.flatMap((delta) =>
+    ctx.players.all().map((player) => ({ targetId: player.id, delta })),
+  );
+}
+
+export function moveAndLand(
   state: MissionGalaxieState,
   playerId: number,
   delta: number,
@@ -214,9 +221,54 @@ function setPosition(playerId: number, next: number, ctx: RuleContext): void {
   ctx.movement.move(TRACK, playerId, next - current);
 }
 
-function completeTurn(state: MissionGalaxieState, ctx: RuleContext): void {
-  if (state.pendingChoice == null && state.winnerId == null) ctx.turn.end();
-}
+export const MISSION_GALAXIE_EFFECTS = {
+  'mission-galaxie.move': defineEffect<
+    MissionGalaxieState,
+    { delta: number }
+  >({
+    input: gameInput.object({
+      delta: gameInput.number({ integer: true }),
+    }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId != null) {
+        moveAndLand(state, actorPlayerId, data.delta, 0, ctx);
+      }
+    },
+  }),
+  'mission-galaxie.goto': defineEffect<
+    MissionGalaxieState,
+    { target: number }
+  >({
+    input: gameInput.object({
+      target: gameInput.number({ integer: true, min: 1 }),
+    }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId == null) return;
+      const position = data.target - 1;
+      setPosition(actorPlayerId, position, ctx);
+      resolveLanding(state, actorPlayerId, position, 0, ctx);
+    },
+  }),
+  'mission-galaxie.choose-player-move': defineEffect<
+    MissionGalaxieState,
+    { cardId: number; deltas: number[] }
+  >({
+    input: gameInput.object({
+      cardId: gameInput.number({ integer: true, min: 1 }),
+      deltas: gameInput.array(gameInput.number({ integer: true }), { min: 1 }),
+    }),
+    apply: ({ actorPlayerId, data, ctx }) => {
+      if (actorPlayerId != null) {
+        requestEventMove(
+          actorPlayerId,
+          data.cardId,
+          data.deltas,
+          ctx,
+        );
+      }
+    },
+  }),
+} as const;
 
 function encodeMove(option: { targetId: number; delta: number }): string {
   return `${option.targetId}:${option.delta}`;

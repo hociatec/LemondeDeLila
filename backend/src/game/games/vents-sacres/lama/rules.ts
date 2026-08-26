@@ -1,83 +1,49 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
+import {
+  rejectRule,
+  defineAction,
+  defineGamePhases,
+  gameInput,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
 import {
   buildLamaDeck,
-  lamaLabel,
+  LAMA_CARD_VALUES,
   lamaPenalty,
   nextLamaValue,
   type LamaCard,
 } from './content';
 import type { LamaConfig, LamaState } from './state';
 
-type RuleContext = GameRuleContext<LamaState>;
+type RuleContext = GameContext<LamaState>;
+export const LAMA_PHASES = defineGamePhases<LamaState>()({
+  initialPhase: 'setup',
+  phases: { setup: {}, turn: {}, return: {}, pause: {} },
+});
 const DECK = 'lama';
 const HANDS = 'lama-hands';
+const DRAWN_TURN_FLAG = 'lama.drawn';
 
-const configInput = gameInput.object({
-  loseAtScore: gameInput.optional(
-    gameInput.number({ integer: true, min: 5, max: 200 }),
-  ),
-  roundPauseSeconds: gameInput.optional(
-    gameInput.number({ integer: true, min: 0, max: 120 }),
-  ),
-  allowPlayAfterDraw: gameInput.optional(gameInput.boolean()),
-  startingHandSize: gameInput.optional(
-    gameInput.number({ integer: true, min: 1, max: 20 }),
-  ),
-  copiesPerCardValue: gameInput.optional(
-    gameInput.number({ integer: true, min: 1, max: 20 }),
-  ),
-  returnTokenFromRound: gameInput.optional(
-    gameInput.number({ integer: true, min: 1, max: 50 }),
-  ),
-});
-
-export const setConfig = defineAction<LamaState, Partial<LamaConfig>>({
-  input: configInput,
-  documentation: 'Configure LAMA et démarre la première manche.',
-  available: ({ state, actor, ctx }) =>
-    !state.configured && actor.id === state.ownerId && ctx.phase() === 'setup',
-  execute: ({ state, input, ctx }) => {
-    const config: LamaConfig = {
-      loseAtScore: input.loseAtScore ?? state.config.loseAtScore,
-      roundPauseSeconds:
-        input.roundPauseSeconds ?? state.config.roundPauseSeconds,
-      allowPlayAfterDraw:
-        input.allowPlayAfterDraw ?? state.config.allowPlayAfterDraw,
-      startingHandSize: input.startingHandSize ?? state.config.startingHandSize,
-      copiesPerCardValue:
-        input.copiesPerCardValue ?? state.config.copiesPerCardValue,
-      returnTokenFromRound:
-        input.returnTokenFromRound ?? state.config.returnTokenFromRound,
-    };
-    const requiredCards =
-      ctx.players.all().length * config.startingHandSize + 1;
-    if (requiredCards > config.copiesPerCardValue * 7)
-      throw new Error('Configuration LAMA: paquet trop petit');
-    state.config = config;
-    state.configured = true;
-    ctx.transitionTo('playing');
-    startRound(state, ctx);
-  },
-});
-
-export const play = defineAction<LamaState, { value: number }>({
+export const play = defineAction<LamaState, { value: LamaCard }>({
   input: gameInput.object({
-    value: gameInput.number({ integer: true, min: 1, max: 7 }),
+    value: gameInput.numberEnum(LAMA_CARD_VALUES),
   }),
   documentation:
     'Joue une carte égale ou immédiatement supérieure à la défausse.',
-  available: ({ state, actor, ctx }) =>
-    state.step === 'turn' && playableValues(actor.id, ctx).length > 0,
-  availableInputs: ({ actor, ctx }) =>
+  available: ({ actor, ctx }) =>
+    LAMA_PHASES.is(ctx, 'turn') && playableValues(actor.id, ctx).length > 0,
+  validate: ({ actor, input, ctx }) =>
+    playableValues(actor.id, ctx).includes(input.value),
+  enumerate: ({ actor, ctx }) =>
     playableValues(actor.id, ctx).map((value) => ({ value })),
   execute: ({ state, actor, input, ctx }) => {
-    const value = input.value as LamaCard;
+    const value = input.value;
     if (!playableValues(actor.id, ctx).includes(value))
-      throw new Error('Carte LAMA injouable');
+      rejectRule('Carte LAMA injouable');
     ctx.cards.play(HANDS, DECK, actor.id, value);
-    state.drawnThisTurn = false;
-    ctx.history.add(`${actor.username} joue ${lamaLabel(value)}.`);
+    ctx.events.message('game.card.played', {
+      playerId: actor.id,
+      cardId: value,
+    });
     if (ctx.cards.hand<LamaCard>(HANDS, actor.id).length === 0)
       endRound(state, actor.id, ctx);
     else ctx.turn.end();
@@ -87,18 +53,22 @@ export const play = defineAction<LamaState, { value: number }>({
 export const draw = defineAction<LamaState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Pioche au plus une carte pendant le tour.',
-  available: ({ state, ctx }) =>
-    state.step === 'turn' &&
-    !state.drawnThisTurn &&
+  available: ({ ctx }) =>
+    LAMA_PHASES.is(ctx, 'turn') &&
+    !ctx.turn.flags.get<boolean>(DRAWN_TURN_FLAG) &&
     ctx.cards.deckCount(DECK) > 0,
-  execute: ({ state, actor, ctx }) => {
+  execute: ({ actor, ctx }) => {
     const card = ctx.cards.draw<LamaCard>(DECK);
-    if (card == null) throw new Error('Pioche LAMA vide');
+    if (card == null) rejectRule('Pioche LAMA vide');
     ctx.cards.give(HANDS, actor.id, card);
-    ctx.history.add(`${actor.username} pioche ${lamaLabel(card)}.`);
-    if (state.config.allowPlayAfterDraw) state.drawnThisTurn = true;
+    ctx.events.message('game.card.drawn', {
+      playerId: actor.id,
+      cardId: card,
+      deckId: DECK,
+    });
+    if (lamaConfig(ctx).allowPlayAfterDraw)
+      ctx.turn.flags.set(DRAWN_TURN_FLAG);
     else {
-      state.drawnThisTurn = false;
       ctx.turn.end();
     }
   },
@@ -108,13 +78,12 @@ export const pass = defineAction<LamaState, Record<string, never>>({
   input: gameInput.object({}),
   documentation:
     'Termine le tour après une pioche lorsque cette option est active.',
-  available: ({ state }) =>
-    state.step === 'turn' &&
-    state.config.allowPlayAfterDraw &&
-    state.drawnThisTurn,
-  execute: ({ state, actor, ctx }) => {
-    state.drawnThisTurn = false;
-    ctx.history.add(`${actor.username} passe.`);
+  available: ({ ctx }) =>
+    LAMA_PHASES.is(ctx, 'turn') &&
+    lamaConfig(ctx).allowPlayAfterDraw &&
+    ctx.turn.flags.get<boolean>(DRAWN_TURN_FLAG) === true,
+  execute: ({ actor, ctx }) => {
+    ctx.events.message('game.player.passed', { playerId: actor.id });
     ctx.turn.end();
   },
 });
@@ -123,19 +92,18 @@ export const quit = defineAction<LamaState, Record<string, never>>({
   input: gameInput.object({}),
   documentation:
     'Se retire de la manche en conservant ses cartes pour le décompte.',
-  available: ({ state, actor }) =>
-    state.step === 'turn' && !state.droppedOut[actor.id],
+  available: ({ actor, ctx }) =>
+    LAMA_PHASES.is(ctx, 'turn') &&
+    ctx.round.activePlayers().some((player) => player.id === actor.id),
   execute: ({ state, actor, ctx }) => {
-    state.droppedOut[actor.id] = true;
-    state.drawnThisTurn = false;
-    ctx.history.add(`${actor.username} se retire de la manche.`);
-    if (activeRoundPlayers(state, ctx).length === 0) endRound(state, null, ctx);
+    ctx.round.leave(actor.id);
+    ctx.events.message('lama.round.quit', { playerId: actor.id });
+    if (activeRoundPlayers(ctx).length === 0) endRound(state, null, ctx);
     else ctx.turn.end();
   },
 });
 
 export const LAMA_ACTIONS = {
-  lama_set_config: setConfig,
   lama_play: play,
   draw,
   lama_pass: pass,
@@ -147,38 +115,42 @@ export function resolveReturn(
   value: number,
   ctx: RuleContext,
 ): void {
-  const playerId = state.roundWinnerId;
-  if (state.step !== 'return' || playerId == null)
-    throw new Error('Rendu de jetons LAMA absent');
+  const playerId = ctx.round.winners()[0] ?? null;
+  if (!LAMA_PHASES.is(ctx, 'return') || playerId == null)
+    rejectRule('Rendu de jetons LAMA absent');
   if (value !== 0 && value !== 1 && value !== 10)
-    throw new Error('Rendu de jetons LAMA invalide');
-  if (value > state.scores[playerId])
-    throw new Error('Jetons LAMA insuffisants');
-  state.scores[playerId] -= value;
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username} rend ${value} jeton(s).`,
-  );
-  state.roundWinnerId = null;
+    rejectRule('Rendu de jetons LAMA invalide');
+  if (value > ctx.score.get(playerId)) rejectRule('Jetons LAMA insuffisants');
+  ctx.score.subtract(playerId, value);
+  ctx.events.message('lama.tokens.returned', { playerId, value });
   finishRound(state, ctx);
 }
 
-export function resolvePause(state: LamaState, ctx: RuleContext): void {
-  if (state.step !== 'pause') throw new Error('Pause LAMA absente');
-  startRound(state, ctx);
+export function resolvePause(_state: LamaState, ctx: RuleContext): void {
+  if (!LAMA_PHASES.is(ctx, 'pause')) rejectRule('Pause LAMA absente');
+  ctx.round.next();
 }
 
 export function skipInactiveLamaPlayer(
-  state: LamaState,
+  _state: LamaState,
   ctx: RuleContext,
 ): void {
-  state.drawnThisTurn = false;
   ctx.turn.end();
 }
 
-function startRound(state: LamaState, ctx: RuleContext): void {
+export function startLama(_state: LamaState, ctx: RuleContext): void {
+  LAMA_PHASES.transition(ctx, 'turn');
+  ctx.round.start(ctx.players.active()[0]?.id);
+}
+
+export function prepareLamaRound(
+  _state: LamaState,
+  ctx: RuleContext,
+): void {
   const players = ctx.players.all();
-  const survivors = players.filter((player) => !state.eliminated[player.id]);
-  const deck = buildLamaDeck(state.config.copiesPerCardValue);
+  const survivors = ctx.round.activePlayers();
+  const config = lamaConfig(ctx);
+  const deck = buildLamaDeck(config.copiesPerCardValue);
   ctx.cards.resetDeck(DECK, deck, { shuffle: true });
   ctx.cards.clearHands(
     HANDS,
@@ -188,27 +160,19 @@ function startRound(state: LamaState, ctx: RuleContext): void {
     DECK,
     HANDS,
     survivors.map((player) => player.id),
-    state.config.startingHandSize,
+    config.startingHandSize,
   );
   const first = ctx.cards.draw<LamaCard>(DECK);
-  if (first == null) throw new Error('Paquet LAMA insuffisant');
+  if (first == null) rejectRule('Paquet LAMA insuffisant');
   ctx.cards.discard(DECK, first);
-  state.droppedOut = Object.fromEntries(
-    players.map((player) => [player.id, state.eliminated[player.id]]),
-  );
-  state.drawnThisTurn = false;
-  state.step = 'turn';
-  state.roundWinnerId = null;
-  const starter = nextSurvivorIndex(
-    players.map((player) => player.id),
-    state.eliminated,
-    state.roundStarterIndex - 1,
-  );
-  state.roundStarterIndex = starter;
-  ctx.turn.to(players[starter].id);
-  ctx.history.add(
-    `Début de la manche ${state.roundNumber}. Défausse : ${lamaLabel(first)}.`,
-  );
+  ctx.turn.flags.clear();
+  LAMA_PHASES.transition(ctx, 'turn');
+  const starterId = ctx.round.starter() ?? survivors[0]?.id;
+  if (starterId != null) ctx.turn.to(starterId);
+  ctx.events.message('game.round.started', {
+    round: ctx.round.number,
+    firstCardId: first,
+  });
 }
 
 function endRound(
@@ -216,25 +180,17 @@ function endRound(
   winnerId: number | null,
   ctx: RuleContext,
 ): void {
-  for (const player of ctx.players.all()) {
-    if (state.eliminated[player.id]) continue;
-    const unique = new Set(ctx.cards.hand<LamaCard>(HANDS, player.id));
-    state.scores[player.id] += [...unique].reduce(
-      (total, card) => total + lamaPenalty(card),
-      0,
-    );
-  }
-  state.roundWinnerId = winnerId;
-  state.step = 'return';
-  ctx.history.add(`Fin de la manche ${state.roundNumber}.`);
+  ctx.round.end(winnerId == null ? [] : [winnerId]);
+  LAMA_PHASES.transition(ctx, 'return');
+  ctx.events.message('game.round.ended', { round: ctx.round.number });
   if (
     winnerId != null &&
-    state.roundNumber >= state.config.returnTokenFromRound &&
-    state.scores[winnerId] > 0
+    ctx.round.number >= lamaConfig(ctx).returnTokenFromRound &&
+    ctx.score.get(winnerId) > 0
   ) {
     ctx.turn.to(winnerId);
     const options = [0, 1];
-    if (state.scores[winnerId] >= 10) options.unshift(10);
+    if (ctx.score.get(winnerId) >= 10) options.unshift(10);
     ctx.choice.one({
       id: 'lama.return',
       player: winnerId,
@@ -244,40 +200,58 @@ function endRound(
     });
     return;
   }
-  state.roundWinnerId = null;
   finishRound(state, ctx);
+}
+
+export function scoreLamaRound(_state: LamaState, ctx: RuleContext): void {
+  for (const player of ctx.players.all()) {
+    if (!isActive(player.id, ctx)) continue;
+    const unique = new Set(ctx.cards.hand<LamaCard>(HANDS, player.id));
+    ctx.score.add(
+      player.id,
+      [...unique].reduce(
+        (total, card) => total + lamaPenalty(card),
+        0,
+      ),
+    );
+  }
 }
 
 function finishRound(state: LamaState, ctx: RuleContext): void {
   const players = ctx.players.all();
-  for (const player of players)
-    state.eliminated[player.id] =
-      state.scores[player.id] >= state.config.loseAtScore;
-  const survivors = players.filter((player) => !state.eliminated[player.id]);
+  for (const player of ctx.players.active()) {
+    if (ctx.score.get(player.id) >= lamaConfig(ctx).loseAtScore) {
+      ctx.match.eliminate(player.id, 'score-limit');
+    }
+  }
+  const survivors = ctx.players.active();
   if (survivors.length <= 1) {
-    state.winnerId =
+    const winnerId =
       survivors[0]?.id ??
       [...players].sort(
-        (left, right) => state.scores[left.id] - state.scores[right.id],
+        (left, right) => ctx.score.get(left.id) - ctx.score.get(right.id),
       )[0].id;
+    ctx.match.finish({ winners: [winnerId], reason: 'last-below-limit' });
     return;
   }
-  state.roundNumber += 1;
-  state.roundStarterIndex = nextSurvivorIndex(
-    players.map((player) => player.id),
-    state.eliminated,
-    state.roundStarterIndex,
-  );
-  if (state.config.roundPauseSeconds > 0) {
-    state.step = 'pause';
+  const config = lamaConfig(ctx);
+  if (config.roundPauseSeconds > 0) {
+    LAMA_PHASES.transition(ctx, 'pause');
     ctx.choice.one({
       id: 'lama.pause',
-      player: state.ownerId,
+      player: ctx.config.owner() ?? players[0].id,
       options: ['continue'],
-      timeoutMs: state.config.roundPauseSeconds * 1_000,
+      timeout: {
+        afterMs: config.roundPauseSeconds * 1_000,
+        strategy: 'first',
+      },
       label: () => 'Continuer',
     });
-  } else startRound(state, ctx);
+  } else ctx.round.next();
+}
+
+function lamaConfig(ctx: RuleContext): LamaConfig {
+  return ctx.config.values<LamaConfig>();
 }
 
 function playableValues(playerId: number, ctx: RuleContext): LamaCard[] {
@@ -290,21 +264,10 @@ function playableValues(playerId: number, ctx: RuleContext): LamaCard[] {
   );
 }
 
-function activeRoundPlayers(state: LamaState, ctx: RuleContext): number[] {
-  return ctx.players
-    .all()
-    .map((player) => player.id)
-    .filter((id) => !state.eliminated[id] && !state.droppedOut[id]);
+function activeRoundPlayers(ctx: RuleContext): number[] {
+  return ctx.round.activePlayers().map((player) => player.id);
 }
 
-function nextSurvivorIndex(
-  playerIds: number[],
-  eliminated: Record<number, boolean>,
-  afterIndex: number,
-): number {
-  for (let distance = 1; distance <= playerIds.length; distance += 1) {
-    const index = (afterIndex + distance + playerIds.length) % playerIds.length;
-    if (!eliminated[playerIds[index]]) return index;
-  }
-  return 0;
+function isActive(playerId: number, ctx: RuleContext): boolean {
+  return ctx.match.playerStatus(playerId) === 'active';
 }

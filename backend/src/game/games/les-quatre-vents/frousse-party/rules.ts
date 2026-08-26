@@ -1,47 +1,70 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
 import {
-  FROUSSE_PAWNS,
+  defineAction,
+  defineEffect,
+  gameInput,
+  sequentialPawnSelection,
+  setupPlayingPhases,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
+import {
   FROUSSE_TILES,
   type FrousseBlock,
   type FrousseCard,
-  type FrousseCardEffect,
   type FrousseCategory,
 } from './content';
 import type { FrousseState } from './state';
 
-type RuleContext = GameRuleContext<FrousseState>;
+type RuleContext = GameContext<FrousseState>;
+export const FROUSSE_PHASES = setupPlayingPhases<FrousseState>();
 const TRACK = 'manor';
 const DECK = 'frights';
-const FINISH = FROUSSE_TILES.length - 1;
 const MAX_CHAIN_DEPTH = 24;
+export const FROUSSE_STATUSES = {
+  ignoreNextTrap: 'frousse.ignore-next-trap',
+  ignoreTrapUntilNextDraw: 'frousse.ignore-trap-until-next-draw',
+  ignoreNextPrank: 'frousse.ignore-next-prank',
+  ignoreNextGhost: 'frousse.ignore-next-ghost',
+  nextMoveCap: 'frousse.next-move-cap',
+  nextRollMalus: 'frousse.next-roll-malus',
+  nextRollKeepLowest: 'frousse.next-roll-keep-lowest',
+  nextRollDouble: 'frousse.next-roll-double',
+  nextRollIfThreeBackTwo: 'frousse.next-roll-if-three-back-two',
+  blocked: 'frousse.blocked',
+} as const;
 
 export const roll = defineAction<FrousseState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Lance le dé, applique les altérations puis résout la case.',
-  available: ({ state }) => state.setupComplete && state.pendingSwap == null,
+  available: ({ ctx }) =>
+    FROUSSE_PHASES.is(ctx, 'playing') && !pendingSwap(ctx),
   execute: ({ state, actor, ctx }) => {
-    const blocked = state.blocked[actor.id];
+    const blocked = blockedRule(actor.id, ctx);
     if (blocked) {
       const value = ctx.dice.roll('main').total;
-      ctx.history.add(`${actor.username} tente de se libérer : ${value}.`);
+      ctx.events.message('frousse.block.escape-attempted', {
+        playerId: actor.id,
+        value,
+      });
       if (passesBlock(value, blocked)) {
-        state.blocked[actor.id] = null;
-        ctx.history.add(`${actor.username} se libère.`);
+        ctx.status.remove(actor.id, FROUSSE_STATUSES.blocked);
+        ctx.events.message('frousse.block.escaped', { playerId: actor.id });
       }
       ctx.turn.end();
       return;
     }
 
-    const value = modifiedRoll(state, actor.id, ctx);
-    ctx.history.add(`${actor.username} lance le dé : ${value}.`);
-    if (state.nextRollIfThreeBackTwo[actor.id]) {
-      state.nextRollIfThreeBackTwo[actor.id] = false;
+    const value = modifiedRoll(actor.id, ctx);
+    ctx.events.message('game.dice.rolled', {
+      playerId: actor.id,
+      diceId: 'main',
+      total: value,
+    });
+    if (ctx.status.consume(actor.id, FROUSSE_STATUSES.nextRollIfThreeBackTwo)) {
       if (value === 3) moveAndLand(state, actor.id, -2, 0, ctx);
     }
-    if (state.winnerId == null && state.pendingSwap == null) {
-      const cap = state.nextMoveCap[actor.id];
-      state.nextMoveCap[actor.id] = 0;
+    if (ctx.match.lifecycle() !== 'finished' && !pendingSwap(ctx)) {
+      const cap = statusNumber(actor.id, FROUSSE_STATUSES.nextMoveCap, ctx);
+      ctx.status.remove(actor.id, FROUSSE_STATUSES.nextMoveCap);
       moveAndLand(
         state,
         actor.id,
@@ -50,94 +73,39 @@ export const roll = defineAction<FrousseState, Record<string, never>>({
         ctx,
       );
     }
-    completeTurn(state, actor.id, ctx);
+    ctx.turn.complete({ waiting: pendingSwap(ctx) });
   },
 });
 
 export const FROUSSE_ACTIONS = { roll };
 
-export function requestPawn(
-  state: FrousseState,
-  actorId: number,
-  ctx: RuleContext,
-): void {
-  const used = new Set(Object.values(state.pawnByPlayerId));
-  const available = FROUSSE_PAWNS.filter((pawn) => !used.has(pawn.id));
-  ctx.choice.one({
-    id: 'frousse.pawn',
-    player: actorId,
-    options: available.map((pawn) => pawn.id),
-    label: (id) => available.find((pawn) => pawn.id === id)?.name ?? id,
-  });
-}
+const pawnSelection = sequentialPawnSelection<FrousseState>({
+  setId: 'frousse',
+  choiceId: 'frousse.pawn',
+  complete: ({ ctx }) => {
+    FROUSSE_PHASES.transition(ctx, 'playing');
+    const starterId = ctx.round.starter();
+    if (starterId != null) ctx.turn.to(starterId);
+  },
+});
 
-export function resolvePawn(
-  state: FrousseState,
-  actorId: number,
-  pawnId: string,
-  ctx: RuleContext,
-): void {
-  if (!FROUSSE_PAWNS.some((pawn) => pawn.id === pawnId))
-    throw new Error('Pion Frousse invalide');
-  if (Object.values(state.pawnByPlayerId).includes(pawnId))
-    throw new Error('Pion Frousse déjà choisi');
-  state.pawnByPlayerId[actorId] = pawnId;
-  const next = ctx.players
-    .all()
-    .find((player) => state.pawnByPlayerId[player.id] == null);
-  if (next) {
-    ctx.turn.to(next.id);
-    requestPawn(state, next.id, ctx);
-    return;
-  }
-  state.setupComplete = true;
-  ctx.transitionTo('playing');
-  ctx.turn.to(state.starterId);
-}
-
-export function resolveSwap(
-  state: FrousseState,
-  targetId: number,
-  ctx: RuleContext,
-): void {
-  const pending = state.pendingSwap;
-  if (!pending) throw new Error('Échange Frousse absent');
-  if (targetId === 0 && !pending.canDecline)
-    throw new Error('Échange Frousse obligatoire');
-  if (targetId !== 0) {
-    if (targetId === pending.actorId || !ctx.players.get(targetId))
-      throw new Error('Cible Frousse invalide');
-    swapPositions(pending.actorId, targetId, ctx);
-  }
-  state.pendingSwap = null;
-  completeTurn(state, pending.actorId, ctx);
-}
-
-export function skipFroussePlayer(state: FrousseState, ctx: RuleContext): void {
-  const player = ctx.players.current();
-  if (!player) return;
-  state.skipTurns[player.id] = Math.max(0, state.skipTurns[player.id] - 1);
-  ctx.history.add(`${player.username} passe son tour.`);
-  ctx.turn.end();
-}
+export const requestPawn = pawnSelection.request;
+export const resolvePawn = pawnSelection.resolve;
 
 function modifiedRoll(
-  state: FrousseState,
   playerId: number,
   ctx: RuleContext,
 ): number {
   let value: number;
-  if (state.nextRollKeepLowest[playerId]) {
+  if (ctx.status.consume(playerId, FROUSSE_STATUSES.nextRollKeepLowest)) {
     const first = ctx.dice.roll('main').total;
     const second = ctx.dice.roll('main').total;
     value = Math.min(first, second);
-    state.nextRollKeepLowest[playerId] = false;
   } else value = ctx.dice.roll('main').total;
-  const malus = state.nextRollMalus[playerId];
-  state.nextRollMalus[playerId] = 0;
-  if (state.nextRollDouble[playerId]) {
+  const malus = statusNumber(playerId, FROUSSE_STATUSES.nextRollMalus, ctx);
+  ctx.status.remove(playerId, FROUSSE_STATUSES.nextRollMalus);
+  if (ctx.status.consume(playerId, FROUSSE_STATUSES.nextRollDouble)) {
     value *= 2;
-    state.nextRollDouble[playerId] = false;
   }
   return Math.max(1, value + malus);
 }
@@ -155,9 +123,10 @@ function moveAndLand(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_CHAIN_DEPTH || state.winnerId != null) return;
-  moveTo(playerId, bounce(position(playerId, ctx) + delta), ctx);
-  resolveLanding(state, playerId, depth + 1, ctx);
+  if (depth > MAX_CHAIN_DEPTH || ctx.match.lifecycle() === 'finished') return;
+  ctx.movement.moveAndLand(TRACK, playerId, delta, () =>
+    resolveLanding(state, playerId, depth + 1, ctx),
+  );
 }
 
 function resolveLanding(
@@ -166,13 +135,20 @@ function resolveLanding(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_CHAIN_DEPTH || state.winnerId != null || state.pendingSwap)
+  if (
+    depth > MAX_CHAIN_DEPTH ||
+    ctx.match.lifecycle() === 'finished' ||
+    pendingSwap(ctx)
+  )
     return;
   const tile = FROUSSE_TILES[position(playerId, ctx)];
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username} atteint « ${tile.title} ».`,
-  );
-  if (tile.type === 'finish') state.winnerId = playerId;
+  ctx.events.message('game.pawn.landed', {
+    playerId,
+    tileId: position(playerId, ctx),
+  });
+  if (tile.type === 'finish') {
+    ctx.match.finish({ winners: [playerId], reason: 'escaped-manor' });
+  }
   else if (tile.type === 'card') drawAndApply(state, playerId, depth, ctx);
 }
 
@@ -182,125 +158,58 @@ function drawAndApply(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_CHAIN_DEPTH || state.pendingSwap) return;
-  const card = ctx.cards.drawOrRecycle<FrousseCard>(DECK);
-  if (!card) return;
-  ctx.cards.discard(DECK, card);
-  ctx.history.add(`Carte ${card.category} : ${card.text}`);
-  if (isProtected(state, playerId, card.category)) return;
-  applyEffect(state, playerId, card.effect, depth + 1, ctx);
+  if (depth > MAX_CHAIN_DEPTH || pendingSwap(ctx)) return;
+  ctx.cards.drawThenResolve<FrousseCard, void>(
+    DECK,
+    (card) => {
+      ctx.events.message('game.card.drawn', {
+        playerId,
+        deckId: DECK,
+        cardId: card.id,
+        category: card.category,
+      });
+      if (isProtected(playerId, card.category, ctx)) return;
+      ctx.effects.schedule(...card.effects);
+    },
+    {},
+  );
 }
 
 function isProtected(
-  state: FrousseState,
   playerId: number,
   category: FrousseCategory,
+  ctx: RuleContext,
 ): boolean {
-  const untilDraw = state.ignoreTrapUntilNextDraw[playerId];
-  state.ignoreTrapUntilNextDraw[playerId] = false;
+  const untilDraw = ctx.status.consume(
+    playerId,
+    FROUSSE_STATUSES.ignoreTrapUntilNextDraw,
+  );
   if (category === 'trap' && untilDraw) return true;
-  if (category === 'trap' && state.ignoreNextTrap[playerId]) {
-    state.ignoreNextTrap[playerId] = false;
+  if (
+    category === 'trap' &&
+    ctx.status.consume(playerId, FROUSSE_STATUSES.ignoreNextTrap)
+  ) {
     return true;
   }
-  if (category === 'prank' && state.ignoreNextPrank[playerId]) {
-    state.ignoreNextPrank[playerId] = false;
+  if (
+    category === 'prank' &&
+    ctx.status.consume(playerId, FROUSSE_STATUSES.ignoreNextPrank)
+  ) {
     return true;
   }
-  if (category === 'ghost' && state.ignoreNextGhost[playerId]) {
-    state.ignoreNextGhost[playerId] = false;
+  if (
+    category === 'ghost' &&
+    ctx.status.consume(playerId, FROUSSE_STATUSES.ignoreNextGhost)
+  ) {
     return true;
   }
   return false;
 }
 
-function applyEffect(
-  state: FrousseState,
-  playerId: number,
-  effect: FrousseCardEffect,
-  depth: number,
+function pendingSwap(
   ctx: RuleContext,
-): void {
-  if (effect.kind === 'move')
-    moveAndLand(state, playerId, effect.delta, depth, ctx);
-  else if (effect.kind === 'skip') state.skipTurns[playerId] += effect.turns;
-  else if (effect.kind === 'goto') {
-    moveTo(playerId, effect.position, ctx);
-    resolveLanding(state, playerId, depth, ctx);
-  } else if (effect.kind === 'block') {
-    state.blocked[playerId] = structuredClone(effect.rule);
-    if (effect.replay) state.replayTurns[playerId] += 1;
-  } else if (effect.kind === 'cap')
-    state.nextMoveCap[playerId] = effect.maximum;
-  else if (effect.kind === 'swap')
-    requestSwap(state, playerId, effect.canDecline, ctx);
-  else if (effect.kind === 'replay')
-    applyReplay(state, playerId, effect.modifier);
-  else if (effect.kind === 'shield')
-    applyShield(state, playerId, effect.category);
-  else if (effect.kind === 'double') state.nextRollDouble[playerId] = true;
-  else if (effect.kind === 'three-back-two') {
-    state.nextRollIfThreeBackTwo[playerId] = true;
-    state.replayTurns[playerId] += 1;
-  } else {
-    for (const player of ctx.players.all())
-      if (player.id !== playerId)
-        moveAndLand(state, player.id, effect.delta, depth, ctx);
-    state.skipTurns[playerId] += effect.turns;
-  }
-}
-
-function requestSwap(
-  state: FrousseState,
-  actorId: number,
-  canDecline: boolean,
-  ctx: RuleContext,
-): void {
-  const targets = ctx.players.all().filter((player) => player.id !== actorId);
-  if (targets.length === 0) return;
-  state.pendingSwap = { actorId, canDecline };
-  const options = targets.map((player) => player.id);
-  if (canDecline) options.push(0);
-  ctx.choice.one({
-    id: 'frousse.swap',
-    player: actorId,
-    options,
-    label: (id) =>
-      id === 0
-        ? 'Refuser l’échange'
-        : (ctx.players.get(id)?.username ?? `Joueur ${id}`),
-  });
-}
-
-function applyReplay(
-  state: FrousseState,
-  playerId: number,
-  modifier: 'minus-two' | 'keep-lowest' | undefined,
-): void {
-  state.replayTurns[playerId] += 1;
-  if (modifier === 'minus-two') state.nextRollMalus[playerId] = -2;
-  if (modifier === 'keep-lowest') state.nextRollKeepLowest[playerId] = true;
-}
-
-function applyShield(
-  state: FrousseState,
-  playerId: number,
-  category: Exclude<FrousseCategory, 'bonus'> | 'trap-until-draw',
-): void {
-  if (category === 'trap') state.ignoreNextTrap[playerId] = true;
-  else if (category === 'prank') state.ignoreNextPrank[playerId] = true;
-  else if (category === 'ghost') state.ignoreNextGhost[playerId] = true;
-  else state.ignoreTrapUntilNextDraw[playerId] = true;
-}
-
-function completeTurn(
-  state: FrousseState,
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  if (state.winnerId != null || state.pendingSwap) return;
-  if (state.replayTurns[playerId] > 0) state.replayTurns[playerId] -= 1;
-  else ctx.turn.end();
+): boolean {
+  return ctx.choice.current()?.data.choiceId === 'frousse.swap';
 }
 
 function swapPositions(
@@ -308,21 +217,79 @@ function swapPositions(
   secondId: number,
   ctx: RuleContext,
 ): void {
-  const first = position(firstId, ctx);
-  const second = position(secondId, ctx);
-  moveTo(firstId, second, ctx);
-  moveTo(secondId, first, ctx);
+  ctx.movement.swap(TRACK, firstId, secondId);
 }
 
 function position(playerId: number, ctx: RuleContext): number {
   return ctx.movement.position(TRACK, playerId);
 }
 
-function moveTo(playerId: number, target: number, ctx: RuleContext): void {
-  ctx.movement.move(TRACK, playerId, target - position(playerId, ctx));
+export function blockedRule(
+  playerId: number,
+  ctx: RuleContext,
+): FrousseBlock | null {
+  const value = ctx.status.get(playerId, FROUSSE_STATUSES.blocked)?.data.rule;
+  return isFrousseBlock(value) ? value : null;
 }
 
-function bounce(raw: number): number {
-  if (raw < 0) return 0;
-  return raw <= FINISH ? raw : Math.max(0, FINISH - (raw - FINISH));
+function isFrousseBlock(value: unknown): value is FrousseBlock {
+  if (value == null || typeof value !== 'object') return false;
+  if (!('kind' in value) || typeof value.kind !== 'string') return false;
+  if (value.kind === 'even') return true;
+  if (value.kind === 'minimum') {
+    return 'minimum' in value && typeof value.minimum === 'number';
+  }
+  return (
+    value.kind === 'one-of' &&
+    'allowed' in value &&
+    Array.isArray(value.allowed) &&
+    value.allowed.every((candidate) => typeof candidate === 'number')
+  );
 }
+
+export function statusNumber(
+  playerId: number,
+  statusId: string,
+  ctx: RuleContext,
+): number {
+  const value = ctx.status.get(playerId, statusId)?.data.value;
+  return typeof value === 'number' ? value : 0;
+}
+
+export const FROUSSE_EFFECTS = {
+  'frousse.move': defineEffect<FrousseState, { delta: number }>({
+    input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId != null) {
+        moveAndLand(state, actorPlayerId, data.delta, 0, ctx);
+      }
+    },
+  }),
+  'frousse.goto': defineEffect<FrousseState, { position: number }>({
+    input: gameInput.object({
+      position: gameInput.number({ integer: true, min: 0 }),
+    }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId == null) return;
+      ctx.movement.moveTo(TRACK, actorPlayerId, data.position);
+      resolveLanding(state, actorPlayerId, 0, ctx);
+    },
+  }),
+  'frousse.swap': defineEffect<FrousseState, Record<string, never>>({
+    input: gameInput.object({}),
+    apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (actorPlayerId != null && targetId != null) {
+        swapPositions(actorPlayerId, targetId, ctx);
+      }
+    },
+  }),
+  'frousse.move-others': defineEffect<FrousseState, { delta: number }>({
+    input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
+    apply: ({ state, targetPlayerIds, data, ctx }) => {
+      for (const targetId of targetPlayerIds) {
+        moveAndLand(state, targetId, data.delta, 0, ctx);
+      }
+    },
+  }),
+} as const;

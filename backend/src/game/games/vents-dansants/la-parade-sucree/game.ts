@@ -1,30 +1,22 @@
 import {
-  cards,
-  clockwise,
+  cardGame,
   defineGame,
   playerView,
   victoryWhen,
 } from '../../../core/application/public-api';
 import {
-  INITIAL_CANDIES,
   PARADE_CARD_BY_ID,
   PARADE_CARDS,
   PARADE_SEQUENCE,
 } from './content';
-import { PARADE_ACTIONS, winners } from './rules';
+import {
+  candyCounts,
+  PARADE_ACTIONS,
+  playedCards,
+  sequenceIndex,
+  winners,
+} from './rules';
 import type { LaParadeSucreePlayerView, LaParadeSucreeState } from './state';
-
-const deck = cards.deck({
-  id: 'parade',
-  cards: PARADE_CARDS.map((card) => card.id),
-  shuffle: true,
-});
-const hands = cards.hands({
-  id: 'players',
-  deck: 'parade',
-  initial: 0,
-  visibility: 'owner',
-});
 
 export default defineGame<
   LaParadeSucreeState,
@@ -37,7 +29,13 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Posez les cartes dans l’ordre et collectionnez les friandises.',
   players: { min: 2, max: 6 },
-  components: [deck, hands],
+  patterns: [
+    cardGame({
+      deckId: 'parade',
+      handId: 'players',
+      cards: PARADE_CARDS.map((card) => card.id),
+    }),
+  ],
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
@@ -49,30 +47,30 @@ export default defineGame<
       players.map((player) => player.id),
       PARADE_CARDS.length,
     );
-    return {
-      candies: Object.fromEntries(
-        players.map((player) => [player.id, structuredClone(INITIAL_CANDIES)]),
-      ),
-      sequenceIndex: 0,
-      played: [],
-    };
+    return {};
   },
-  turn: clockwise(),
   actions: PARADE_ACTIONS,
-  victory: victoryWhen(({ state, ctx }) => {
+  victory: victoryWhen(({ ctx }) => {
     const complete =
-      state.sequenceIndex >= PARADE_SEQUENCE.length ||
+      sequenceIndex(ctx) >= PARADE_SEQUENCE.length ||
       ctx.players
         .all()
         .every((player) => ctx.cards.hand('players', player.id).length === 0);
     return complete
-      ? { winnerPlayerIds: winners(state), reason: 'parade-complete' }
+      ? { winnerPlayerIds: winners(ctx), reason: 'parade-complete' }
       : null;
   }),
   view: ({ state, actor, ctx }) => {
     const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
     const handCounts = ctx.cards.handCounts('players');
-    const nextCard = PARADE_SEQUENCE[state.sequenceIndex] ?? null;
+    const currentSequenceIndex = sequenceIndex(ctx);
+    const played = playedCards(ctx);
+    const candies = Object.fromEntries(
+      ctx.players
+        .all()
+        .map((player) => [player.id, candyCounts(player.id, ctx)]),
+    );
+    const nextCard = PARADE_SEQUENCE[currentSequenceIndex] ?? null;
     const scoreLines = ctx.players
       .all()
       .map(
@@ -81,17 +79,16 @@ export default defineGame<
       );
     return playerView({
       game: {
-        ...structuredClone(state),
-        hand: structuredClone(hand),
-        handCounts,
+        candies,
+        sequenceIndex: currentSequenceIndex,
+        played,
         nextCard,
       },
       extras: {
-        hand: structuredClone(hand),
-        handCounts,
-        candies: structuredClone(state.candies),
+        candies: structuredClone(candies),
+        cardCatalog: PARADE_CARD_BY_ID,
         nextCard,
-        played: state.played.map(
+        played: played.map(
           (cardId) => PARADE_CARD_BY_ID[cardId]?.name ?? cardId,
         ),
         ui: {
@@ -104,8 +101,8 @@ export default defineGame<
     });
   },
   bot: {
-    choose: ({ state, actor, ctx }) => {
-      const expected = PARADE_SEQUENCE[state.sequenceIndex];
+    choose: ({ actor, ctx }) => {
+      const expected = PARADE_SEQUENCE[sequenceIndex(ctx)];
       const cardId = ctx.cards
         .hand<string>('players', actor.id)
         .find((candidate) => PARADE_CARD_BY_ID[candidate]?.value === expected);

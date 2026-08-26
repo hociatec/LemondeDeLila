@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { getErrorDetails } from '@common/utils/public-api';
 import { RedisClientFactory } from '../../../../common/redis/public-api';
 import { NotificationConfigurationError } from '../../../domain/errors/notification-domain.errors';
 
@@ -87,8 +88,8 @@ export class UserInboxRedisService implements OnModuleDestroy {
     for (const value of raw) {
       if (!value) continue;
       try {
-        const parsed = JSON.parse(value);
-        if (parsed?.id) out.push(parsed);
+        const parsed: unknown = JSON.parse(value);
+        if (isInboxNotificationItem(parsed)) out.push(parsed);
       } catch {
         // ignore
       }
@@ -127,7 +128,22 @@ export class UserInboxRedisService implements OnModuleDestroy {
         .hdel(this.hashKey(userId), ...idsToRemove)
         .exec();
     } catch (err) {
-      this.logger.debug('Inbox trim failed', err as Error);
+      this.logger.debug('Inbox trim failed', getErrorDetails(err));
     }
   }
+}
+
+function isInboxNotificationItem(
+  value: unknown,
+): value is InboxNotificationItem {
+  return (
+    value != null &&
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof value.id === 'string' &&
+    'kind' in value &&
+    typeof value.kind === 'string' &&
+    'createdAt' in value &&
+    typeof value.createdAt === 'string'
+  );
 }

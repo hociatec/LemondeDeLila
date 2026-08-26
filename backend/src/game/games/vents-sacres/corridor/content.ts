@@ -1,3 +1,4 @@
+import { freezeGameContent } from '../../../core/application/public-api';
 import type { CorridorPawn } from './state';
 
 export const CORRIDOR_PAWNS: CorridorPawn[] = [
@@ -26,3 +27,5 @@ export const CORRIDOR_PAWNS: CorridorPawn[] = [
 
 export const CORRIDOR_SIZE = 9;
 export const CORRIDOR_DEFAULT_WALLS = 10;
+
+freezeGameContent(CORRIDOR_PAWNS);

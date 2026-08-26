@@ -112,19 +112,19 @@ export class AdminUserTypeormRepository implements AdminUserRepository {
   async findSafeById(id: number): Promise<AdminSafeUser | null> {
     const user = await this.users.findOne({
       where: { id },
-      select: [
-        'id',
-        'email',
-        'username',
-        'avatar',
-        'roles',
-        'emailVerified',
-        'bannedUntil',
-        'banReason',
-        'chatBannedUntil',
-        'chatBanReason',
-        'createdAt',
-      ],
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        avatar: true,
+        roles: true,
+        emailVerified: true,
+        bannedUntil: true,
+        banReason: true,
+        chatBannedUntil: true,
+        chatBanReason: true,
+        createdAt: true,
+      },
     });
     return user ? this.toSafeModel(user) : null;
   }

@@ -6,7 +6,10 @@ import {
   NotificationTransport,
   NotificationEvent,
 } from '../../infrastructure/transport/notification-transport';
-import { fixMojibakeDeep } from '../../../common/utils/public-api';
+import {
+  fixMojibakeDeep,
+  getErrorDetails,
+} from '../../../common/utils/public-api';
 
 @Injectable()
 export class NotificationDispatchService
@@ -29,10 +32,12 @@ export class NotificationDispatchService
   }
 
   register(userId: number, socket: WebSocket) {
-    if (!this.socketsByUserId.has(userId)) {
-      this.socketsByUserId.set(userId, new Set());
+    let sockets = this.socketsByUserId.get(userId);
+    if (!sockets) {
+      sockets = new Set();
+      this.socketsByUserId.set(userId, sockets);
     }
-    this.socketsByUserId.get(userId)!.add(socket);
+    sockets.add(socket);
   }
 
   unregister(userId: number, socket: WebSocket) {
@@ -189,7 +194,7 @@ export class NotificationDispatchService
       } catch (err) {
         this.logger.debug(
           `Echec envoi notification userId=${userId}`,
-          err as Error,
+          getErrorDetails(err),
         );
         targets.delete(socket);
         try {
@@ -219,7 +224,7 @@ export class NotificationDispatchService
         } catch (err) {
           this.logger.debug(
             `Echec envoi notification userId=${userId}`,
-            err as Error,
+            getErrorDetails(err),
           );
           targets.delete(socket);
           try {

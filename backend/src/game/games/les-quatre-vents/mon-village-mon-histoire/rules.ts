@@ -1,4 +1,10 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
+import {
+  defineEvent,
+  gameInput,
+  raceTurn,
+  type GameContext,
+  type PlayerMap,
+} from '../../../core/application/public-api';
 import { VILLAGE_TILES } from './content';
 import type { MonVillageState, VillageCard, VillageCollection } from './state';
 
@@ -13,34 +19,40 @@ const ZONE_RANGES = [
   { min: 37, max: 41, id: 7 },
   { min: 42, max: 42, id: 8 },
 ] as const;
+const CARD_COLLECTED = defineEvent({
+  type: 'mon-village.card.collected',
+  data: gameInput.object({
+    playerId: gameInput.playerId(),
+    zoneId: gameInput.number({ integer: true, min: 1 }),
+    cardId: gameInput.number({ integer: true, min: 1 }),
+  }),
+});
 
-export const roll = defineAction<MonVillageState, Record<string, never>>({
-  input: gameInput.object({}),
+export const roll = raceTurn<MonVillageState>({
+  trackId: TRACK,
   documentation: 'Lance le dé, déplace le pion et collecte le métier atteint.',
-  execute: ({ state, actor, ctx }) => {
-    const value = ctx.dice.roll('main').total;
-    state.lastRoll = value;
-    const position = ctx.movement.move(TRACK, actor.id, value);
+  resolveLanding: ({ playerId, position, ctx }) => {
     const tile = VILLAGE_TILES[position];
-    ctx.history.add(`${actor.username} lance le dé : « ${value} ».`);
-    ctx.history.add(`${actor.username} atteint ${tile.title}.`);
+    ctx.events.message('game.pawn.landed', { playerId, tileId: tile.n });
     if (tile.type === 'finish') {
-      state.winnerId = collectionWinner(state.collections);
-      ctx.history.add(
-        `${ctx.players.get(state.winnerId)?.username ?? 'Un joueur'} remporte la partie avec ${state.collections[state.winnerId]?.total ?? 0} cartes.`,
-      );
+      const collections = villageCollections(ctx);
+      const winnerId = collectionWinner(collections);
+      ctx.events.message('mon-village.collection.won', {
+        playerId: winnerId,
+        total: collections[winnerId]?.total ?? 0,
+      });
+      ctx.match.finish({ winners: [winnerId], reason: 'village-complete' });
       return;
     }
     const zoneId = zoneForTile(tile.n);
-    if (zoneId != null) collectCard(state, actor.id, zoneId, ctx);
-    ctx.turn.end();
+    if (zoneId != null) collectCard(playerId, zoneId, ctx);
   },
 });
 
 export const MON_VILLAGE_ACTIONS = { roll };
 
 export function collectionWinner(
-  collections: Readonly<Record<number, VillageCollection>>,
+  collections: Readonly<PlayerMap<VillageCollection>>,
 ): number {
   const ranked = Object.entries(collections)
     .map(([playerId, collection]) => ({
@@ -69,7 +81,6 @@ function compareZones(
 }
 
 function collectCard(
-  state: MonVillageState,
   playerId: number,
   zoneId: number,
   ctx: Parameters<typeof roll.execute>[0]['ctx'],
@@ -77,17 +88,18 @@ function collectCard(
   const deckId = deckForZone(zoneId);
   const card = ctx.cards.drawOrRecycle<VillageCard>(deckId);
   if (!card) {
-    ctx.history.add(`La zone ${zoneId} ne contient plus de carte.`);
+    ctx.events.message('mon-village.zone.empty', { zoneId });
     return;
   }
   ctx.cards.discard(deckId, card);
-  const collection = state.collections[playerId];
-  collection.total += 1;
-  collection.byZone[zoneId] = (collection.byZone[zoneId] ?? 0) + 1;
-  ctx.history.add(
-    `${ctx.players.get(playerId)?.username ?? 'Le joueur'} collecte « ${card.title} ».`,
-  );
-  ctx.events.emit('mon-village.card.collected', {
+  ctx.score.add(playerId, 1);
+  ctx.resources.add(playerId, zoneResource(zoneId), 1);
+  ctx.events.message('mon-village.card.collected', {
+    playerId,
+    zoneId,
+    cardId: card.id,
+  });
+  CARD_COLLECTED.emit(ctx, {
     playerId,
     zoneId,
     cardId: card.id,
@@ -103,4 +115,27 @@ export function zoneForTile(tile: number): number | null {
 
 export function deckForZone(zoneId: number): string {
   return `zone-${zoneId}`;
+}
+
+export function villageCollections(
+  ctx: GameContext<MonVillageState>,
+): PlayerMap<VillageCollection> {
+  return Object.fromEntries(
+    ctx.players.all().map((player) => [
+      player.id,
+      {
+        total: ctx.score.get(player.id),
+        byZone: Object.fromEntries(
+          ZONE_RANGES.map((zone) => [
+            zone.id,
+            ctx.resources.get(player.id, zoneResource(zone.id)),
+          ]),
+        ),
+      },
+    ]),
+  );
+}
+
+function zoneResource(zoneId: number): string {
+  return `village-zone-${zoneId}`;
 }

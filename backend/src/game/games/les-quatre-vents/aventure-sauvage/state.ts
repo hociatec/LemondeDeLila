@@ -1,3 +1,8 @@
+import type {
+  GameEffectInstruction,
+  PlayerMap,
+} from '../../../core/application/public-api';
+
 export type AventureTileType = 'neutral' | 'animal' | 'patte' | 'finish';
 
 export interface AventureTile {
@@ -15,20 +20,16 @@ export interface AventureCard {
   id: number;
   deck: 'animal' | 'patte';
   text: string;
-  moveDelta?: number;
-  skipTurns?: number;
-  reroll?: boolean;
+  effects: readonly GameEffectInstruction[];
 }
 
-export interface AventureSauvageState {
-  pawnByPlayerId: Record<number, string>;
-  skipTurns: Record<number, number>;
-  setupComplete: boolean;
+export type AventureSauvageState = Record<string, never>;
+
+export type AventureSauvagePlayerView = {
+  pawnByPlayerId: PlayerMap<string>;
   lastRoll: number | null;
+  positions: PlayerMap<number>;
   winnerId: number | null;
-}
-
-export type AventureSauvagePlayerView = AventureSauvageState & {
-  positions: Record<number, number>;
-  deckCounts: Record<'animal' | 'patte', number>;
+  skipTurns: PlayerMap<number>;
+  setupComplete: boolean;
 };

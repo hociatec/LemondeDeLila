@@ -1,20 +1,22 @@
 import {
   cards,
-  clockwise,
+  defineChoice,
   defineGame,
-  diceKit,
-  movement,
+  gameInput,
+  pawns,
   playerView,
-  victoryWhen,
-  when,
+  raceGame,
 } from '../../../core/application/public-api';
 import { FROUSSE_CARDS, FROUSSE_PAWNS, FROUSSE_TILES } from './content';
 import {
   FROUSSE_ACTIONS,
+  FROUSSE_EFFECTS,
+  FROUSSE_PHASES,
+  FROUSSE_STATUSES,
+  blockedRule,
   requestPawn,
   resolvePawn,
-  resolveSwap,
-  skipFroussePlayer,
+  statusNumber,
 } from './rules';
 import type { FroussePlayerView, FrousseState } from './state';
 
@@ -29,68 +31,45 @@ export default defineGame<
   subcategory: 'LesQuatreVents',
   description: 'Course mouvementée dans un manoir hanté.',
   players: { min: 2, max: 6 },
-  components: [
-    movement.track({ id: 'manor', spaces: FROUSSE_TILES.length }),
-    diceKit({ id: 'main', count: 1, sides: 6 }),
-    cards.deck({ id: 'frights', cards: FROUSSE_CARDS, shuffle: true }),
+  patterns: [
+    raceGame({
+      trackId: 'manor',
+      spaces: FROUSSE_TILES.length,
+      overshoot: 'bounce',
+    }),
   ],
+  components: [
+    pawns.set({ id: 'frousse', pawns: FROUSSE_PAWNS }),
+    cards.deck({
+      id: 'frights',
+      cards: FROUSSE_CARDS,
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  ],
+  initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
   setup: ({ players, ctx }) => {
-    const zeros = () =>
-      Object.fromEntries(players.map((player) => [player.id, 0]));
-    const falses = () =>
-      Object.fromEntries(players.map((player) => [player.id, false]));
-    const state: FrousseState = {
-      pawnByPlayerId: {},
-      setupComplete: false,
-      starterId: (ctx.random.pick(players) ?? players[0]).id,
-      skipTurns: zeros(),
-      ignoreNextTrap: falses(),
-      ignoreTrapUntilNextDraw: falses(),
-      ignoreNextPrank: falses(),
-      ignoreNextGhost: falses(),
-      nextMoveCap: zeros(),
-      nextRollMalus: zeros(),
-      nextRollKeepLowest: falses(),
-      nextRollDouble: falses(),
-      nextRollIfThreeBackTwo: falses(),
-      blocked: Object.fromEntries(players.map((player) => [player.id, null])),
-      replayTurns: zeros(),
-      pendingSwap: null,
-      winnerId: null,
-    };
-    requestPawn(state, players[0].id, ctx);
-    return state;
+    requestPawn(players[0].id, ctx);
+    return {};
   },
-  initialPhase: 'setup',
-  turn: clockwise(),
+  initialPhase: FROUSSE_PHASES.initialPhase,
+  phases: FROUSSE_PHASES.phases,
   actions: FROUSSE_ACTIONS,
+  effects: FROUSSE_EFFECTS,
   choices: {
-    'frousse.pawn': {
-      resolve: ({ state, actor, value, ctx }) =>
-        resolvePawn(state, actor.id, String(value), ctx),
-    },
-    'frousse.swap': {
-      resolve: ({ state, value, ctx }) =>
-        resolveSwap(state, Number(value), ctx),
-    },
+    'frousse.pawn': defineChoice<FrousseState, string>({
+      input: gameInput.string({ min: 1, max: 128 }),
+      resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+    }),
   },
-  automatic: [
-    when(
-      'skip-frightened-player',
-      ({ state, ctx }) =>
-        state.setupComplete &&
-        (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-      ({ state, ctx }) => skipFroussePlayer(state, ctx),
-    ),
-  ],
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'escaped-manor' },
-  ),
-  view: ({ state, actor, ctx }) => {
-    const { pendingSwap: _pendingSwap, ...publicState } = state;
+  view: ({ actor, ctx }) => {
+    const pawnByPlayerId = Object.fromEntries(
+      ctx.players.all().flatMap((player) => {
+        const pawnId = ctx.pawns.assigned('frousse', player.id)[0];
+        return pawnId == null ? [] : [[player.id, pawnId]];
+      }),
+    );
     const positions = Object.fromEntries(
       ctx.players
         .all()
@@ -99,17 +78,60 @@ export default defineGame<
           ctx.movement.position('manor', player.id),
         ]),
     );
+    const booleanMap = (statusId: string) =>
+      Object.fromEntries(
+        ctx.players
+          .all()
+          .map((player) => [player.id, ctx.status.has(player.id, statusId)]),
+      );
+    const numberMap = (statusId: string) =>
+      Object.fromEntries(
+        ctx.players
+          .all()
+          .map((player) => [player.id, statusNumber(player.id, statusId, ctx)]),
+      );
     return playerView({
       game: {
-        ...structuredClone(publicState),
+        ignoreNextTrap: booleanMap(FROUSSE_STATUSES.ignoreNextTrap),
+        ignoreTrapUntilNextDraw: booleanMap(
+          FROUSSE_STATUSES.ignoreTrapUntilNextDraw,
+        ),
+        ignoreNextPrank: booleanMap(FROUSSE_STATUSES.ignoreNextPrank),
+        ignoreNextGhost: booleanMap(FROUSSE_STATUSES.ignoreNextGhost),
+        nextMoveCap: numberMap(FROUSSE_STATUSES.nextMoveCap),
+        nextRollMalus: numberMap(FROUSSE_STATUSES.nextRollMalus),
+        nextRollKeepLowest: booleanMap(
+          FROUSSE_STATUSES.nextRollKeepLowest,
+        ),
+        nextRollDouble: booleanMap(FROUSSE_STATUSES.nextRollDouble),
+        nextRollIfThreeBackTwo: booleanMap(
+          FROUSSE_STATUSES.nextRollIfThreeBackTwo,
+        ),
+        blocked: Object.fromEntries(
+          ctx.players
+            .all()
+            .map((player) => [player.id, blockedRule(player.id, ctx)]),
+        ),
+        pawnByPlayerId,
+        starterId: ctx.round.starter() ?? 0,
+        replayTurns: Object.fromEntries(
+          ctx.players
+            .all()
+            .map((player) => [player.id, ctx.turn.extraCount(player.id)]),
+        ),
         positions,
-        deckCount:
-          ctx.cards.deckCount('frights') + ctx.cards.discardCount('frights'),
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+        skipTurns: Object.fromEntries(
+          ctx.players
+            .all()
+            .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+        ),
+        setupComplete: FROUSSE_PHASES.is(ctx, 'playing'),
       },
       extras: {
         pawn: actor
           ? (FROUSSE_PAWNS.find(
-              (pawn) => pawn.id === state.pawnByPlayerId[actor.id],
+              (pawn) => pawn.id === pawnByPlayerId[actor.id],
             ) ?? null)
           : null,
       },

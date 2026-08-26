@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { WsAuthPayload } from '../../../common/interfaces/public-api';
+import { getErrorMessage } from '../../../common/utils/public-api';
 import type { PresenceChatHistory } from '../models/presence-chat-history.model';
 import {
   PRESENCE_CHAT_PORT,
@@ -100,13 +101,14 @@ export class PresenceChatService {
       };
     } catch (err) {
       this.logger.warn(
-        `Message tchat refusé pour ${user.username}: ${
-          (err as Error)?.message ?? 'inconnu'
-        }`,
+        `Message tchat refusé pour ${user.username}: ${getErrorMessage(
+          err,
+          'inconnu',
+        )}`,
       );
       return {
         kind: 'error',
-        message: (err as Error)?.message ?? 'Erreur tchat.',
+        message: getErrorMessage(err, 'Erreur tchat.'),
       };
     }
   }
@@ -135,13 +137,14 @@ export class PresenceChatService {
       };
     } catch (err) {
       this.logger.warn(
-        `Echec édition tchat pour ${user.username}: ${
-          (err as Error)?.message ?? 'inconnu'
-        }`,
+        `Echec édition tchat pour ${user.username}: ${getErrorMessage(
+          err,
+          'inconnu',
+        )}`,
       );
       return {
         kind: 'error',
-        message: (err as Error)?.message ?? 'Modification impossible.',
+        message: getErrorMessage(err, 'Modification impossible.'),
       };
     }
   }
@@ -168,13 +171,14 @@ export class PresenceChatService {
       };
     } catch (err) {
       this.logger.warn(
-        `Echec suppression tchat pour ${user.username}: ${
-          (err as Error)?.message ?? 'inconnu'
-        }`,
+        `Echec suppression tchat pour ${user.username}: ${getErrorMessage(
+          err,
+          'inconnu',
+        )}`,
       );
       return {
         kind: 'error',
-        message: (err as Error)?.message ?? 'Suppression impossible.',
+        message: getErrorMessage(err, 'Suppression impossible.'),
       };
     }
   }

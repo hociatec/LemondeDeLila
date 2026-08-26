@@ -19,7 +19,7 @@ export class SocialUserTypeormRepository implements SocialUserReader {
   async findById(id: number): Promise<SocialUserSummary | null> {
     const user = await this.users.findOne({
       where: { id },
-      select: ['id', 'username', 'avatar'],
+      select: { id: true, username: true, avatar: true },
     });
     if (!user) {
       return null;
@@ -70,12 +70,12 @@ export class SocialUserTypeormRepository implements SocialUserReader {
       username: string;
       avatar: string | null;
       profileVisibility: 'public' | 'friends' | 'private';
-    }> = [];
+    }>;
 
     try {
       rows = await buildQuery(true).getRawMany();
     } catch (error) {
-      const message = String((error as Error)?.message ?? '');
+      const message = error instanceof Error ? error.message : String(error);
       if (!/collation/i.test(message)) {
         throw error;
       }

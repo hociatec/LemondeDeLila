@@ -52,7 +52,17 @@ export class JwtPayloadVerifierService {
     ) {
       throw new UnauthorizedException('Token invalide');
     }
-    return payload as HttpJwtPayload;
+    return {
+      sub: payload.sub,
+      exp: payload.exp,
+      iat: payload.iat,
+      ...(typeof payload.username === 'string'
+        ? { username: payload.username }
+        : {}),
+      ...(isStringArray(payload.roles) ? { roles: payload.roles } : {}),
+      ...(typeof payload.email === 'string' ? { email: payload.email } : {}),
+      ...(typeof payload.id === 'number' ? { id: payload.id } : {}),
+    };
   }
 
   verifyWsToken(token: string): WsAuthPayload {
@@ -61,6 +71,7 @@ export class JwtPayloadVerifierService {
       typeof payload.sub !== 'string' ||
       !payload.sub.trim() ||
       typeof payload.id !== 'number' ||
+      typeof payload.username !== 'string' ||
       typeof payload.exp !== 'number' ||
       typeof payload.iat !== 'number'
     ) {
@@ -69,7 +80,16 @@ export class JwtPayloadVerifierService {
     if (!Number.isFinite(payload.id) || payload.id <= 0) {
       throw new UnauthorizedException('Token invalide');
     }
-    return payload as unknown as VerifiedWsPayload;
+    const verified: VerifiedWsPayload = {
+      id: payload.id,
+      username: payload.username,
+      sub: payload.sub,
+      exp: payload.exp,
+      iat: payload.iat,
+      ...(typeof payload.email === 'string' ? { email: payload.email } : {}),
+      ...(isStringArray(payload.roles) ? { roles: payload.roles } : {}),
+    };
+    return verified;
   }
 
   private verifyRawToken(token: string): Record<string, unknown> {
@@ -91,9 +111,15 @@ export class JwtPayloadVerifierService {
       if (!payload || typeof payload !== 'object') {
         throw new UnauthorizedException('Token invalide');
       }
-      return payload as Record<string, unknown>;
+      return { ...payload };
     } catch {
       throw new UnauthorizedException('Token invalide');
     }
   }
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) && value.every((item) => typeof item === 'string')
+  );
 }

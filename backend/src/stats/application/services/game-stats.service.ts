@@ -142,13 +142,14 @@ export class GameStatsService {
       if (!match) continue;
 
       const key = match.gameType;
-      if (!byGame.has(key)) {
-        byGame.set(key, {
+      let bucket = byGame.get(key);
+      if (!bucket) {
+        bucket = {
           withBots: { finished: 0, quit: 0, won: 0, lost: 0 },
           withoutBots: { finished: 0, quit: 0, won: 0, lost: 0 },
-        });
+        };
+        byGame.set(key, bucket);
       }
-      const bucket = byGame.get(key)!;
       const target = match.withBots ? bucket.withBots : bucket.withoutBots;
 
       // Quit = partie quittée avant la fin (ou reset)
@@ -260,6 +261,6 @@ export class GameStatsService {
       return null;
     }
 
-    return (metadata as Record<string, unknown>).winnerId ?? null;
+    return 'winnerId' in metadata ? metadata.winnerId : null;
   }
 }

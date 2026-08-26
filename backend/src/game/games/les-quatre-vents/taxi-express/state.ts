@@ -1,15 +1,14 @@
 import type { TaxiClient, TaxiEvent } from './content';
+import type { PlayerMap } from '../../../core/application/public-api';
 
-export interface TaxiState {
-  activeClients: Record<number, TaxiClient | null>;
-  completedTrips: Record<number, number>;
+export type TaxiState = Record<string, never>;
+
+export type TaxiPlayerView = {
+  completedTrips: PlayerMap<number>;
   lastEvent: TaxiEvent | null;
   lastRoll: number | null;
-  winnerId: number | null;
-}
-
-export type TaxiPlayerView = Omit<TaxiState, 'activeClients'> & {
-  positions: Record<number, number>;
+  positions: PlayerMap<number>;
   activeClient: TaxiClient | null;
-  hasActiveClient: Record<number, boolean>;
+  hasActiveClient: PlayerMap<boolean>;
+  winnerId: number | null;
 };

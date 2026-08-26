@@ -1,3 +1,5 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export interface CorridorPosition {
   x: number;
   y: number;
@@ -18,19 +20,17 @@ export interface CorridorPawn {
 }
 
 export interface CorridorState {
-  size: number;
-  ownerPlayerId: number;
-  wallsPerPlayer: number;
-  pawnByPlayerId: Record<number, string>;
-  positions: Record<number, CorridorPosition>;
-  goalYByPlayerId: Record<number, number>;
   walls: CorridorWall[];
-  wallsRemaining: Record<number, number>;
-  setupComplete: boolean;
-  winnerId: number | null;
 }
 
-export type CorridorPlayerView = CorridorState & {
+export type CorridorPlayerView = Pick<CorridorState, 'walls'> & {
+  wallsRemaining: PlayerMap<number>;
+  size: number;
+  pawnByPlayerId: PlayerMap<string>;
+  positions: PlayerMap<CorridorPosition>;
+  goalYByPlayerId: PlayerMap<number>;
+  wallsPerPlayer: number;
   legalMoves: CorridorPosition[];
   legalWalls: CorridorWall[];
+  setupComplete: boolean;
 };

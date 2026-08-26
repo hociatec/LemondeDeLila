@@ -1,20 +1,20 @@
 import {
   cards,
-  clockwise,
+  defineChoice,
   defineGame,
-  diceKit,
-  movement,
+  gameInput,
+  pawns,
   playerView,
-  victoryWhen,
-  when,
+  raceGame,
 } from '../../../core/application/public-api';
 import { MINUIT_CARDS, MINUIT_PAWNS, MINUIT_TILES } from './content';
 import {
   MINUIT_ACTIONS,
+  MINUIT_EFFECTS,
+  MINUIT_PHASES,
   requestPawn,
   resolvePawn,
   resolvePending,
-  skipMinuitPlayer,
 } from './rules';
 import type { MinuitPlayerView, MinuitState } from './state';
 
@@ -26,63 +26,53 @@ export default defineGame<MinuitState, typeof MINUIT_ACTIONS, MinuitPlayerView>(
     subcategory: 'LesQuatreVents',
     description: 'Course de Noël jusqu’à la grande fête de Minuit.',
     players: { min: 2, max: 6 },
-    components: [
-      movement.track({ id: 'minuit', spaces: MINUIT_TILES.length }),
-      diceKit({ id: 'main', count: 1, sides: 6 }),
-      cards.deck({ id: 'noel', cards: MINUIT_CARDS, shuffle: true }),
+    patterns: [
+      raceGame({
+        trackId: 'minuit',
+        spaces: MINUIT_TILES.length,
+        overshoot: 'bounce',
+      }),
     ],
+    components: [
+      pawns.set({ id: 'minuit', pawns: MINUIT_PAWNS }),
+      cards.deck({
+        id: 'noel',
+        cards: MINUIT_CARDS,
+        shuffle: true,
+        empty: 'recycle',
+      }),
+    ],
+    initialization: { firstPlayer: 'first', startRound: true },
     shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
     setup: ({ players, ctx }) => {
-      const state: MinuitState = {
-        pawnByPlayerId: {},
-        setupComplete: false,
-        starterId: players[0].id,
-        skipTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-        ignoreNextMalus: Object.fromEntries(
-          players.map((player) => [player.id, false]),
-        ),
-        ignoreNextSkip: Object.fromEntries(
-          players.map((player) => [player.id, false]),
-        ),
-        forceDrawNextTurn: Object.fromEntries(
-          players.map((player) => [player.id, false]),
-        ),
-        keepTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-        pendingResolution: null,
-        winnerId: null,
-      };
-      requestPawn(state, players[0].id, ctx);
-      return state;
+      requestPawn(players[0].id, ctx);
+      return {};
     },
-    initialPhase: 'setup',
-    turn: clockwise(),
+    initialPhase: MINUIT_PHASES.initialPhase,
+    phases: MINUIT_PHASES.phases,
     actions: MINUIT_ACTIONS,
+    effects: MINUIT_EFFECTS,
     choices: {
-      'minuit.pawn': {
-        resolve: ({ state, actor, value, ctx }) =>
-          resolvePawn(state, actor.id, String(value), ctx),
-      },
-      'minuit.resolve': {
+      'minuit.pawn': defineChoice<MinuitState, string>({
+        input: gameInput.string({ min: 1, max: 128 }),
+        resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+      }),
+      'minuit.resolve': defineChoice<MinuitState, number>({
+        input: gameInput.number({ integer: true }),
         resolve: ({ state, value, ctx }) =>
-          resolvePending(state, Number(value), ctx),
-      },
+          resolvePending(state, value, ctx),
+      }),
     },
-    automatic: [
-      when(
-        'skip-minuit-player',
-        ({ state, ctx }) =>
-          state.setupComplete &&
-          (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-        ({ state, ctx }) => skipMinuitPlayer(state, ctx),
-      ),
-    ],
-    victory: victoryWhen(({ state }) =>
-      state.winnerId == null
-        ? null
-        : { winnerPlayerIds: [state.winnerId], reason: 'midnight' },
-    ),
-    view: ({ state, actor, ctx }) => {
-      const { pendingResolution, ...publicState } = state;
+    view: ({ actor, ctx }) => {
+      const pawnByPlayerId = Object.fromEntries(
+        ctx.players.all().flatMap((player) => {
+          const pawnId = ctx.pawns.assigned('minuit', player.id)[0];
+          return pawnId == null ? [] : [[player.id, pawnId]];
+        }),
+      );
+      const pendingResolution = ctx.choice.data<
+        import('./state').MinuitPending
+      >();
       const positions = Object.fromEntries(
         ctx.players
           .all()
@@ -94,23 +84,50 @@ export default defineGame<MinuitState, typeof MINUIT_ACTIONS, MinuitPlayerView>(
       const pendingQuiz =
         pendingResolution?.kind === 'quiz' &&
         pendingResolution.actorId === actor?.id
-          ? {
-              cardId: pendingResolution.cardId,
-              prompt: pendingResolution.prompt,
-              choices: [...pendingResolution.choices],
-            }
+          ? (() => {
+              const card = MINUIT_CARDS.find(
+                (candidate) => candidate.id === pendingResolution.cardId,
+              );
+              return card?.quiz
+                ? {
+                    cardId: card.id,
+                    prompt: card.quiz.prompt,
+                    choices: [...card.quiz.choices],
+                  }
+                : null;
+            })()
           : null;
+      const statusMap = (statusId: string) =>
+        Object.fromEntries(
+          ctx.players
+            .all()
+            .map((player) => [player.id, ctx.status.has(player.id, statusId)]),
+        );
       return playerView({
         game: {
-          ...structuredClone(publicState),
+          ignoreNextMalus: statusMap('minuit.ignore-next-malus'),
+          ignoreNextSkip: statusMap('minuit.ignore-next-skip'),
+          forceDrawNextTurn: statusMap('minuit.force-draw-next-turn'),
+          pawnByPlayerId,
+          starterId: ctx.round.starter() ?? 0,
+          keepTurns: Object.fromEntries(
+            ctx.players
+              .all()
+              .map((player) => [player.id, ctx.turn.extraCount(player.id)]),
+          ),
           positions,
-          deckCount:
-            ctx.cards.deckCount('noel') + ctx.cards.discardCount('noel'),
+          winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+          skipTurns: Object.fromEntries(
+            ctx.players
+              .all()
+              .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+          ),
+          setupComplete: MINUIT_PHASES.is(ctx, 'playing'),
         },
         extras: {
           pawn: actor
             ? (MINUIT_PAWNS.find(
-                (pawn) => pawn.id === state.pawnByPlayerId[actor.id],
+                (pawn) => pawn.id === pawnByPlayerId[actor.id],
               ) ?? null)
             : null,
           pendingQuiz,

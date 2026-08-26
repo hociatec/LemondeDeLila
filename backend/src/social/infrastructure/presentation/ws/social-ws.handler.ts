@@ -29,9 +29,7 @@ export class SocialWsHandler {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialRequestListDto, payload);
     const direction = (dto.direction ?? 'incoming') as
-      | 'incoming'
-      | 'outgoing'
-      | 'all';
+      'incoming' | 'outgoing' | 'all';
     const items = await this.social.listRequests(user.id, direction);
     return { type: WS_EVENTS.social.friendsRequests, payload: { items } };
   }

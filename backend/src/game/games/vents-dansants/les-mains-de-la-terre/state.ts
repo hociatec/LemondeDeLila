@@ -1,18 +1,12 @@
-import type { LesMainsFamily } from './content';
+import type { PlayerMap } from '../../../core/application/public-api';
 
-export interface LesMainsState {
-  completedFamilies: Record<number, LesMainsFamily[]>;
-  skipTurns: Record<number, number>;
-  extraDraws: Record<number, number>;
-  freeFamilyRequest: Record<number, boolean>;
-  vanishedProfessionUsed: Record<number, boolean>;
+export type LesMainsState = Record<string, never>;
+
+export type LesMainsPlayerView = {
+  extraDraws: PlayerMap<number>;
+  freeFamilyRequest: PlayerMap<boolean>;
+  vanishedProfessionUsed: PlayerMap<boolean>;
   gameOver: boolean;
   winnerIds: number[];
-}
-
-export type LesMainsPlayerView = LesMainsState & {
-  hand: string[];
-  handCounts: Record<number, number>;
-  deckCount: number;
-  discardCount: number;
+  skipTurns: PlayerMap<number>;
 };

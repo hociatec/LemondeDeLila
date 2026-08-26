@@ -1,3 +1,7 @@
+import {
+  freezeGameContent,
+  rejectContent,
+} from '../../../core/application/public-api';
 import quizContent from './quiz.json';
 import type { QuizQuestion } from '../../../core/application/public-api';
 
@@ -44,7 +48,7 @@ function toQuizQuestion(question: SourceQuestion): QuizQuestion {
     question.wrong3,
   ];
   if (choices.some((choice) => choice.trim().length === 0))
-    throw new Error(`Réponse Mnémosyne vide: ${question.id}`);
+    rejectContent(`Réponse Mnémosyne vide: ${question.id}`);
   const offset = stableOffset(question.id, choices.length);
   return {
     id: question.id,
@@ -60,3 +64,7 @@ function stableOffset(value: string, modulo: number): number {
     hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
   return hash % modulo;
 }
+
+freezeGameContent(MNEMO_CATEGORIES);
+freezeGameContent(MNEMO_QUESTIONS);
+freezeGameContent(MNEMO_BANKS);

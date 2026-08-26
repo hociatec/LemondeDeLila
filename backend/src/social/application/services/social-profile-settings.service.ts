@@ -33,10 +33,10 @@ export class SocialProfileSettingsService implements OnModuleInit {
   private normalize(
     input: Partial<SocialProfileSettings>,
   ): SocialProfileSettings {
-    const min = Number.isFinite(input.bioMinLength as number)
+    const min = Number.isFinite(input.bioMinLength)
       ? Math.max(0, Math.floor(input.bioMinLength as number))
       : 0;
-    const max = Number.isFinite(input.bioMaxLength as number)
+    const max = Number.isFinite(input.bioMaxLength)
       ? Math.max(
           0,
           Math.min(BioHardMaxLength, Math.floor(input.bioMaxLength as number)),

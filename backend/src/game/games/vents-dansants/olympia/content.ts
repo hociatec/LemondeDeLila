@@ -1,3 +1,12 @@
+import {
+  freezeGameContent,
+  gameEffects,
+  rejectContent,
+} from '../../../core/application/public-api';
+import type {
+  EffectTarget,
+  GameEffectInstruction,
+} from '../../../core/application/public-api';
 import data from './content-data.json';
 
 export type OlympiaCategory =
@@ -70,9 +79,10 @@ export interface OlympiaCardDefinition {
   deck: OlympiaDeckType;
   points?: number;
   effect?: OlympiaEffect | OlympiaEffect[];
+  effects: readonly GameEffectInstruction[];
 }
 
-const categories: OlympiaCategory[] = [
+export const OLYMPIA_CATEGORIES: OlympiaCategory[] = [
   'divinite',
   'heros',
   'creature',
@@ -81,7 +91,7 @@ const categories: OlympiaCategory[] = [
   'attaque',
   'evenement',
 ];
-const decks: OlympiaDeckType[] = [
+export const OLYMPIA_DECK_TYPES: OlympiaDeckType[] = [
   'divinite',
   'heros',
   'creatures',
@@ -90,7 +100,7 @@ const decks: OlympiaDeckType[] = [
   'attaques',
   'evenements',
 ];
-const statusKeys: OlympiaStatusKey[] = [
+export const OLYMPIA_STATUS_KEYS: OlympiaStatusKey[] = [
   'block_play',
   'block_hero',
   'block_exploit',
@@ -109,17 +119,24 @@ const statusKeys: OlympiaStatusKey[] = [
   'exploit_penalty',
 ];
 
-export const OLYMPIA_CARDS: OlympiaCardDefinition[] = data.cards.map(
-  (card) => ({
+export const OLYMPIA_CARDS: OlympiaCardDefinition[] = data.cards.map((card) => {
+  const effect = 'effect' in card ? parseEffects(card.effect) : undefined;
+  const effects = effect == null
+    ? []
+    : (Array.isArray(effect) ? effect : [effect]).flatMap((instruction) =>
+        effectInstructions(instruction, `olympia.${card.id}.target`),
+      );
+  return {
     id: card.id,
     name: card.name,
     description: card.description,
-    category: required(categories, card.category, 'catégorie'),
-    deck: required(decks, card.deck, 'pioche'),
+    category: required(OLYMPIA_CATEGORIES, card.category, 'catégorie'),
+    deck: required(OLYMPIA_DECK_TYPES, card.deck, 'pioche'),
     ...('points' in card ? { points: card.points } : {}),
-    ...('effect' in card ? { effect: parseEffects(card.effect) } : {}),
-  }),
-);
+    ...(effect ? { effect } : {}),
+    effects,
+  };
+});
 
 export const OLYMPIA_DECKS: Record<OlympiaDeckType, string[]> = {
   divinite: [],
@@ -140,7 +157,7 @@ function parseEffects(value: unknown): OlympiaEffect | OlympiaEffect[] {
 }
 
 function parseEffect(value: unknown): OlympiaEffect {
-  if (!isRecord(value)) throw new Error('Effet Olympia invalide');
+  if (!isRecord(value)) rejectContent('Effet Olympia invalide');
   const type = text(value.type);
   if (type === 'prestige')
     return {
@@ -155,14 +172,14 @@ function parseEffect(value: unknown): OlympiaEffect {
       target: target(value.target, ['self', 'all']),
       amount: number(value.amount),
       decks: stringArray(value.decks).map((deck) =>
-        required(decks, deck, 'pioche'),
+        required(OLYMPIA_DECK_TYPES, deck, 'pioche'),
       ),
     };
   if (type === 'status') {
     const optionalValue = value.value;
     return {
       type,
-      key: required(statusKeys, text(value.key), 'statut'),
+      key: required(OLYMPIA_STATUS_KEYS, text(value.key), 'statut'),
       target: target(value.target, ['self', 'target', 'all', 'others']),
       turns: number(value.turns),
       ...(typeof optionalValue === 'number' ? { value: optionalValue } : {}),
@@ -173,7 +190,7 @@ function parseEffect(value: unknown): OlympiaEffect {
       type,
       target: target(value.target, ['target', 'all']),
       categories: stringArray(value.categories).map((category) =>
-        required(categories, category, 'catégorie'),
+        required(OLYMPIA_CATEGORIES, category, 'catégorie'),
       ),
       amount: number(value.amount),
     };
@@ -181,7 +198,7 @@ function parseEffect(value: unknown): OlympiaEffect {
     return {
       type,
       categories: stringArray(value.categories).map((category) =>
-        required(categories, category, 'catégorie'),
+        required(OLYMPIA_CATEGORIES, category, 'catégorie'),
       ),
     };
   if (type === 'skip')
@@ -190,7 +207,89 @@ function parseEffect(value: unknown): OlympiaEffect {
       target: target(value.target, ['target']),
       turns: number(value.turns),
     };
-  throw new Error(`Type d’effet Olympia inconnu: ${type}`);
+  rejectContent(`Type d’effet Olympia inconnu: ${type}`);
+}
+
+function effectInstructions(
+  effect: OlympiaEffect,
+  choiceId: string,
+): readonly GameEffectInstruction[] {
+  if (effect.type === 'prestige') {
+    return forTargets(effect.target, choiceId, (target) =>
+      gameEffects.custom('olympia.prestige', { value: effect.value }, target),
+    );
+  }
+  if (effect.type === 'steal') {
+    return [
+      gameEffects.custom(
+        'olympia.steal',
+        { value: effect.value },
+        gameEffects.target.chosenOpponent(choiceId),
+      ),
+    ];
+  }
+  if (effect.type === 'draw') {
+    return forTargets(effect.target, choiceId, (target) =>
+      gameEffects.custom(
+        'olympia.draw',
+        { amount: effect.amount, decks: effect.decks },
+        target,
+      ),
+    );
+  }
+  if (effect.type === 'status') {
+    return forTargets(effect.target, choiceId, (target) =>
+      gameEffects.addStatus({
+        status: effect.key,
+        turns: effect.turns,
+        scope: 'global-turn',
+        ...(effect.value == null ? {} : { data: { value: effect.value } }),
+        target,
+      }),
+    );
+  }
+  if (effect.type === 'discard') {
+    return forTargets(effect.target, choiceId, (target) =>
+      gameEffects.custom(
+        'olympia.discard',
+        { amount: effect.amount, categories: effect.categories },
+        target,
+      ),
+    );
+  }
+  if (effect.type === 'exchange') {
+    return [
+      gameEffects.custom(
+        'olympia.exchange',
+        { categories: effect.categories },
+        gameEffects.target.chosenOpponent(choiceId),
+      ),
+    ];
+  }
+  return [
+    gameEffects.skipTurn(
+      effect.turns,
+      gameEffects.target.chosenOpponent(choiceId),
+    ),
+  ];
+}
+
+function forTargets(
+  descriptor: 'self' | 'target' | 'all' | 'others',
+  choiceId: string,
+  instruction: (target: EffectTarget) => GameEffectInstruction,
+): readonly GameEffectInstruction[] {
+  if (descriptor === 'self') return [instruction(gameEffects.target.self())];
+  if (descriptor === 'target') {
+    return [instruction(gameEffects.target.chosenOpponent(choiceId))];
+  }
+  if (descriptor === 'others') {
+    return [instruction(gameEffects.target.allOpponents())];
+  }
+  return [
+    instruction(gameEffects.target.self()),
+    instruction(gameEffects.target.allOpponents()),
+  ];
 }
 
 function required<T extends string>(
@@ -199,8 +298,12 @@ function required<T extends string>(
   label: string,
 ): T {
   const found = values.find((candidate) => candidate === value);
-  if (!found) throw new Error(`${label} Olympia inconnue: ${value}`);
+  if (!found) rejectContent(`${label} Olympia inconnue: ${value}`);
   return found;
+}
+
+export function isOlympiaStatusKey(value: string): value is OlympiaStatusKey {
+  return OLYMPIA_STATUS_KEYS.some((candidate) => candidate === value);
 }
 
 function target<T extends string>(value: unknown, values: readonly T[]): T {
@@ -213,16 +316,20 @@ function text(value: unknown): string {
 
 function number(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value))
-    throw new Error('Nombre Olympia invalide');
+    rejectContent('Nombre Olympia invalide');
   return value;
 }
 
 function stringArray(value: unknown): string[] {
   if (!Array.isArray(value) || !value.every((item) => typeof item === 'string'))
-    throw new Error('Liste Olympia invalide');
+    rejectContent('Liste Olympia invalide');
   return value;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
+
+freezeGameContent(OLYMPIA_CARDS);
+freezeGameContent(OLYMPIA_DECKS);
+freezeGameContent(OLYMPIA_CARD_BY_ID);

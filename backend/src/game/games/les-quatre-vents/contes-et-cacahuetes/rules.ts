@@ -1,99 +1,92 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
-import { CONTES_PAWNS } from './content';
+import {
+  rejectRule,
+  defineAction,
+  gameInput,
+  sequentialPawnSelection,
+  setupPlayingPhases,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
+import { CONTES_DECKS } from './content';
 import {
   applyCard,
   applyRoll,
-  applyTarget,
-  completeResolution,
-  decrementTurnStatuses,
+  CONTES_RESOURCES,
+  CONTES_STATUSES,
+  blockedPosition,
+  drainResolution,
   drawAndApply,
-  endResolvedTurn,
   moveAndLand,
   position,
   requestNumber,
-  requestTarget,
+  scheduleContesTarget,
   requirePending,
   rollDie,
   transferToken,
 } from './resolution';
 import type { ContesState } from './state';
 
-type RuleContext = GameRuleContext<ContesState>;
+type RuleContext = GameContext<ContesState>;
+export const CONTES_PHASES = setupPlayingPhases<ContesState>();
 
 export const roll = defineAction<ContesState, Record<string, never>>({
   input: gameInput.object({}),
   documentation:
     'Lance le dé, applique les objets et résout intégralement la case atteinte.',
-  available: ({ state }) =>
-    state.setupComplete &&
-    state.pendingEffect == null &&
-    state.winnerId == null,
+  available: ({ ctx }) =>
+    CONTES_PHASES.is(ctx, 'playing') &&
+    ctx.choice.current() == null &&
+    ctx.match.lifecycle() !== 'finished',
   execute: ({ state, actor, ctx }) => {
-    state.resolvingPlayerId = actor.id;
-    let value = state.forcedOneTurns[actor.id] > 0 ? 1 : rollDie(ctx);
-    if (state.forcedOneTurns[actor.id] > 0) state.forcedOneTurns[actor.id] -= 1;
-    if (value === 1 && state.replaceOne[actor.id]) {
+    ctx.turn.flags.set('contes.resolution', {
+      playerId: actor.id,
+      types: [],
+    });
+    let value = ctx.status.has(actor.id, CONTES_STATUSES.forcedOne)
+      ? 1
+      : rollDie(ctx);
+    if (value === 1 && ctx.status.consume(actor.id, CONTES_STATUSES.replaceOne)) {
       value = 4;
-      state.replaceOne[actor.id] = false;
     }
-    ctx.history.add(`${actor.username} obtient ${value}.`);
-    if (state.rerollTokens[actor.id] > 0 && value !== 1) {
-      state.pendingEffect = { kind: 'reroll', actorId: actor.id, roll: value };
+    ctx.events.message('game.dice.rolled', {
+      playerId: actor.id,
+      diceId: 'main',
+      total: value,
+    });
+    if (ctx.resources.has(actor.id, CONTES_RESOURCES.reroll, 1) && value !== 1) {
+      const pending = {
+        kind: 'reroll' as const,
+        actorId: actor.id,
+        roll: value,
+      };
       ctx.choice.one({
         id: 'contes.reroll',
         player: actor.id,
         options: ['keep', 'reroll'],
+        data: pending,
         label: (choice) =>
           choice === 'keep' ? `Garder ${value}` : 'Utiliser le parchemin',
       });
       return;
     }
     applyRoll(state, actor.id, value, ctx);
-    completeResolution(state, ctx);
+    drainResolution(state, ctx);
   },
 });
 
 export const CONTES_ACTIONS = { roll };
 
-export function requestPawn(
-  state: ContesState,
-  actorId: number,
-  ctx: RuleContext,
-): void {
-  const used = new Set(Object.values(state.pawnByPlayerId));
-  const available = CONTES_PAWNS.filter((pawn) => !used.has(pawn.id));
-  ctx.choice.one({
-    id: 'contes.pawn',
-    player: actorId,
-    options: available.map((pawn) => pawn.id),
-    label: (id) => available.find((pawn) => pawn.id === id)?.label ?? id,
-  });
-}
+const pawnSelection = sequentialPawnSelection<ContesState>({
+  setId: 'contes',
+  choiceId: 'contes.pawn',
+  complete: ({ ctx }) => {
+    CONTES_PHASES.transition(ctx, 'playing');
+    const starterId = ctx.round.starter();
+    if (starterId != null) ctx.turn.to(starterId);
+  },
+});
 
-export function resolvePawn(
-  state: ContesState,
-  actorId: number,
-  pawnId: string,
-  ctx: RuleContext,
-): void {
-  if (!CONTES_PAWNS.some((pawn) => pawn.id === pawnId))
-    throw new Error('Pion Contes invalide');
-  if (Object.values(state.pawnByPlayerId).includes(pawnId))
-    throw new Error('Pion Contes déjà choisi');
-  state.pawnByPlayerId[actorId] = pawnId;
-  const next = ctx.players
-    .all()
-    .find((player) => state.pawnByPlayerId[player.id] == null);
-  if (next) {
-    ctx.turn.to(next.id);
-    requestPawn(state, next.id, ctx);
-    return;
-  }
-  state.setupComplete = true;
-  ctx.transitionTo('playing');
-  ctx.turn.to(state.starterId);
-}
+export const requestPawn = pawnSelection.request;
+export const resolvePawn = pawnSelection.resolve;
 
 export function resolveReroll(
   state: ContesState,
@@ -101,34 +94,24 @@ export function resolveReroll(
   value: string,
   ctx: RuleContext,
 ): void {
-  const pending = requirePending(state, 'reroll', actorId);
+  const pending = requirePending(ctx, 'reroll', actorId);
   let rollValue = pending.roll;
   if (value === 'reroll') {
-    state.rerollTokens[actorId] -= 1;
+    ctx.resources.remove(actorId, CONTES_RESOURCES.reroll, 1);
     rollValue = rollDie(ctx);
-    if (rollValue === 1 && state.replaceOne[actorId]) {
+    if (
+      rollValue === 1 &&
+      ctx.status.consume(actorId, CONTES_STATUSES.replaceOne)
+    ) {
       rollValue = 4;
-      state.replaceOne[actorId] = false;
     }
-    ctx.history.add(`Le parchemin donne ${rollValue}.`);
+    ctx.events.message('contes.reroll.used', {
+      playerId: actorId,
+      total: rollValue,
+    });
   }
-  state.pendingEffect = null;
   applyRoll(state, actorId, rollValue, ctx);
-  completeResolution(state, ctx);
-}
-
-export function resolveTarget(
-  state: ContesState,
-  actorId: number,
-  targetId: number,
-  ctx: RuleContext,
-): void {
-  const pending = requirePending(state, 'target', actorId);
-  if (targetId === actorId || !ctx.players.get(targetId))
-    throw new Error('Cible Contes invalide');
-  state.pendingEffect = null;
-  applyTarget(state, pending, targetId, ctx);
-  completeResolution(state, ctx);
+  drainResolution(state, ctx);
 }
 
 export function resolveOption(
@@ -137,19 +120,19 @@ export function resolveOption(
   value: string,
   ctx: RuleContext,
 ): void {
-  const pending = requirePending(state, 'option', actorId);
-  state.pendingEffect = null;
+  const pending = requirePending(ctx, 'option', actorId);
   if (pending.effect === 'song') {
     if (value === 'move-three') moveAndLand(state, actorId, 3, 0, ctx);
-    else requestTarget(state, actorId, 'song-steal', ctx);
+    else scheduleContesTarget(actorId, 'song-steal', ctx);
   } else if (pending.effect === 'wish') {
     if (value === 'move-two') moveAndLand(state, actorId, 2, 0, ctx);
-    else if (value === 'swap') requestTarget(state, actorId, 'wish-swap', ctx);
+    else if (value === 'swap')
+      scheduleContesTarget(actorId, 'wish-swap', ctx);
     else drawAndApply(state, actorId, 'bonus', 0, ctx);
   } else {
     const targetId = pending.targetId;
-    if (targetId == null) throw new Error('Cible de la Clé d’or absente');
-    state.keyOfGold[actorId] = false;
+    if (targetId == null) rejectRule('Cible de la Clé d’or absente');
+    ctx.status.remove(actorId, CONTES_STATUSES.keyOfGold);
     drawAndApply(
       state,
       targetId,
@@ -158,7 +141,7 @@ export function resolveOption(
       ctx,
     );
   }
-  completeResolution(state, ctx);
+  drainResolution(state, ctx);
 }
 
 export function resolveLaughter(
@@ -167,19 +150,18 @@ export function resolveLaughter(
   value: number,
   ctx: RuleContext,
 ): void {
-  const pending = requirePending(state, 'laughter', actorId);
+  const pending = requirePending(ctx, 'laughter', actorId);
   pending.picks[actorId] = value;
   const nextId = pending.order.find((id) => pending.picks[id] == null);
   if (nextId != null) {
     pending.actorId = nextId;
-    requestNumber(nextId, ctx);
+    requestNumber(nextId, ctx, pending);
     return;
   }
-  state.pendingEffect = null;
   const maximum = Math.max(...Object.values(pending.picks));
   for (const [id, pick] of Object.entries(pending.picks))
     if (pick === maximum) moveAndLand(state, Number(id), 1, 0, ctx);
-  completeResolution(state, ctx);
+  drainResolution(state, ctx);
 }
 
 export function resolveCard(
@@ -188,12 +170,13 @@ export function resolveCard(
   cardId: number,
   ctx: RuleContext,
 ): void {
-  const pending = requirePending(state, 'abundance', actorId);
-  const card = pending.cards.find((candidate) => candidate.id === cardId);
-  if (!card) throw new Error('Carte Contes invalide');
-  state.pendingEffect = null;
+  const pending = requirePending(ctx, 'abundance', actorId);
+  const card = pending.cardIds.includes(cardId)
+    ? CONTES_DECKS.bonus.find((candidate) => candidate.id === cardId)
+    : null;
+  if (!card) rejectRule('Carte Contes invalide');
   applyCard(state, actorId, card, 0, ctx);
-  completeResolution(state, ctx);
+  drainResolution(state, ctx);
 }
 
 export function resolveToken(
@@ -202,34 +185,25 @@ export function resolveToken(
   token: string,
   ctx: RuleContext,
 ): void {
-  const pending = requirePending(state, 'token', actorId);
-  if (!pending.tokens.includes(token)) throw new Error('Objet Contes invalide');
-  transferToken(state, pending.targetId, actorId, token);
-  state.pendingEffect = null;
-  ctx.history.add(`${ctx.players.get(actorId)?.username} vole ${token}.`);
-  completeResolution(state, ctx);
+  const pending = requirePending(ctx, 'token', actorId);
+  if (!pending.tokens.includes(token)) rejectRule('Objet Contes invalide');
+  transferToken(pending.targetId, actorId, token, ctx);
+  ctx.events.message('contes.token.stolen', {
+    playerId: actorId,
+    targetId: pending.targetId,
+    token,
+  });
+  drainResolution(state, ctx);
 }
 
-export function skipContesPlayer(state: ContesState, ctx: RuleContext): void {
+export function skipBlockedContesPlayer(
+  state: ContesState,
+  ctx: RuleContext,
+): void {
   const player = ctx.players.current();
   if (!player) return;
-  state.skipTurns[player.id] = Math.max(0, state.skipTurns[player.id] - 1);
-  decrementTurnStatuses(state, player.id);
-  ctx.history.add(`${player.username} passe son tour.`);
-  endResolvedTurn(state, ctx);
-}
-
-export function replaceContesTurn(state: ContesState, ctx: RuleContext): void {
-  const player = ctx.players.current();
-  if (!player || state.activeSlotOwnerId != null) return;
-  const replacementId = state.turnReplacement[player.id];
-  if (replacementId == null) return;
-  state.turnReplacement[player.id] = null;
-  state.activeSlotOwnerId = player.id;
-  ctx.turn.to(replacementId);
-  ctx.history.add(
-    `${ctx.players.get(replacementId)?.username} joue à la place de ${player.username}.`,
-  );
+  ctx.events.message('game.player.passed', { playerId: player.id });
+  ctx.turn.complete();
 }
 
 export function unblockPassedPlayers(
@@ -238,7 +212,7 @@ export function unblockPassedPlayers(
 ): void {
   const current = ctx.players.current();
   if (!current) return;
-  const blocker = state.blockedAt[current.id];
+  const blocker = blockedPosition(ctx, current.id);
   if (blocker == null) return;
   const passed = ctx.players
     .all()
@@ -246,7 +220,7 @@ export function unblockPassedPlayers(
       (player) =>
         player.id !== current.id && position(player.id, ctx) >= blocker,
     );
-  if (passed) state.blockedAt[current.id] = null;
+  if (passed) ctx.status.remove(current.id, CONTES_STATUSES.blocked);
 }
 
 export { CONTES_CONTENT_COUNTS } from './resolution';

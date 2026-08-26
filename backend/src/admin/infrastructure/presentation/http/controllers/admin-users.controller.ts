@@ -15,7 +15,6 @@ import type {
   ListAdminUsersQuery,
   UpdateAdminUserCommand,
 } from '../../../../application/use-cases/admin-users/admin-users.commands';
-import { AdminUserRolesUpdateService } from '../../../../application/use-cases/admin-users/admin-user-roles-update.service';
 import { AdminUsersCommandService } from '../../../../application/use-cases/admin-users/admin-users-command.service';
 import { AdminUsersQueryService } from '../../../../application/use-cases/admin-users/admin-users-query.service';
 import { AdminCreateUserDto } from '../dto/admin-create-user.dto';
@@ -33,7 +32,6 @@ export class AdminUsersController {
   constructor(
     private readonly adminUsersQueries: AdminUsersQueryService,
     private readonly adminUsersCommands: AdminUsersCommandService,
-    private readonly adminUserRolesUpdate: AdminUserRolesUpdateService,
   ) {}
 
   @Get()

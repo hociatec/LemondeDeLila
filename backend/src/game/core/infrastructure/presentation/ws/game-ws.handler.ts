@@ -20,6 +20,8 @@ import {
 import { GameCommandExecutorService } from '../../../application/services/game-command-executor.service';
 import { GameRoomCommandQueueService } from '../../../application/services/game-room-command-queue.service';
 import { gameNowMs } from '../../../application/services/game-execution-scope.service';
+import { GameRegistryService } from '../../../application/services/game-registry.service';
+import { GAMEPLAY_MECHANICS_CATALOG } from '../../../application/runtime/mechanics-catalog';
 
 @Injectable()
 export class GameWsHandler {
@@ -32,6 +34,7 @@ export class GameWsHandler {
     private readonly rooms: GameWsRoomContextService,
     private readonly executor: GameCommandExecutorService,
     private readonly queue: GameRoomCommandQueueService,
+    private readonly registry: GameRegistryService,
   ) {}
 
   async rules(session: WsSession, payload: unknown) {
@@ -48,7 +51,11 @@ export class GameWsHandler {
     requireUser(session);
     return {
       type: 'game.modules',
-      payload: { modules: this.overviewRegistry.getModules() },
+      payload: {
+        modules: this.overviewRegistry.getModules(),
+        games: this.registry.listDescriptors(),
+        sdk: GAMEPLAY_MECHANICS_CATALOG,
+      },
     };
   }
 
@@ -101,6 +108,28 @@ export class GameWsHandler {
     return {
       type: 'game.state',
       payload: this.realtime.present(resolved, roomId, user.id),
+    };
+  }
+
+  async candidates(session: WsSession, payload: unknown) {
+    const user = requireUser(session);
+    const roomId = this.commands.resolveRoomId(payload);
+    const query = this.commands.resolveCandidateQuery(payload);
+    await this.rooms.ensureReadable(roomId, user.id);
+    const resolved = await this.realtime.resolve(roomId);
+    this.realtime.bind(session, roomId, resolved.gameType);
+    return {
+      type: 'game.action.candidates',
+      payload: {
+        roomId,
+        gameType: resolved.gameType,
+        ...resolved.handler.getActionCandidates(
+          resolved.state,
+          user.id,
+          query.actionType,
+          query,
+        ),
+      },
     };
   }
 
@@ -196,6 +225,7 @@ export class GameWsHandler {
       state: resolved.state,
       actions,
       actorId,
+      roomId,
     });
     await this.realtime.commit(roomId, resolved, resolved.state, next);
   }

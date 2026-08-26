@@ -1,25 +1,23 @@
 import {
-  cards,
+  cardGame,
   defineGame,
   playerView,
-  standardTurn,
-  victoryWhen,
 } from '../../../core/application/public-api';
 import { ZIG_ET_ZAG_CARD_BY_ID, ZIG_ET_ZAG_DECK } from './content';
-import { createRound, ZIG_ET_ZAG_ACTIONS } from './rules';
-import type { ZigEtZagPlayerView, ZigEtZagState } from './state';
+import {
+  createRound,
+  ZIG_ET_ZAG_ACTIONS,
+  ZIG_ET_ZAG_PHASES,
+  zigRoundPlays,
+  zigWaitingPlayers,
+} from './rules';
+import type {
+  ZigEtZagBattleLogEntry,
+  ZigEtZagPlayerView,
+  ZigEtZagState,
+} from './state';
 
-const deck = cards.deck({
-  id: 'battle',
-  cards: ZIG_ET_ZAG_DECK.map((card) => card.id),
-  shuffle: true,
-});
-const hands = cards.hands({
-  id: 'players',
-  deck: 'battle',
-  initial: 27,
-  visibility: 'owner',
-});
+const INITIAL_HAND_SIZE = 27;
 
 export default defineGame<
   ZigEtZagState,
@@ -32,43 +30,69 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Une bataille à familles, figures et jokers colorés.',
   players: { min: 2, max: 2 },
-  components: [deck, hands],
+  patterns: [
+    cardGame({
+      deckId: 'battle',
+      handId: 'players',
+      cards: ZIG_ET_ZAG_DECK.map((card) => card.id),
+      initialHandSize: INITIAL_HAND_SIZE,
+    }),
+  ],
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'draw_card' }],
-  setup: ({ players, ctx }) => ({
-    initialDeckCounts: Object.fromEntries(
-      players.map((player) => [
-        player.id,
-        ctx.cards.hand<string>('players', player.id).length,
-      ]),
-    ),
-    round: createRound(ctx),
-    lastRound: null,
-    winnerId: null,
-  }),
-  turn: standardTurn(),
+  initialization: { firstPlayer: 'first', startRound: true },
+  setup: ({ ctx }) => {
+    const round = createRound(ctx);
+    return {
+      battle: round,
+      lastRound: null,
+    };
+  },
+  initialPhase: ZIG_ET_ZAG_PHASES.initialPhase,
+  phases: ZIG_ET_ZAG_PHASES.phases,
   actions: ZIG_ET_ZAG_ACTIONS,
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'all-cards-captured' },
-  ),
-  view: ({ state, actor, ctx }) => {
-    const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
-    const { round: _round, ...publicState } = state;
+  view: ({ state, ctx }) => {
+    const stage = ZIG_ET_ZAG_PHASES.current(ctx);
+    const waitingPlayers = zigWaitingPlayers(state.battle, ctx);
+    const summary = state.lastRound;
+    const lastRound = summary
+      ? {
+          ...structuredClone(summary),
+          plays: zigRoundPlays({
+            plays: summary.plays,
+            tiedPlayers: [],
+          }),
+          battleLog: ctx.events
+            .messages()
+            .flatMap((entry): ZigEtZagBattleLogEntry[] => {
+              if (
+                (entry.key !== 'zig.battle.started' &&
+                  entry.key !== 'zig.battle.continues') ||
+                entry.params.roundNumber !== summary.roundNumber
+              ) {
+                return [];
+              }
+              return [{
+                key: entry.key,
+                params: { roundNumber: summary.roundNumber },
+              }];
+            }),
+        }
+      : null;
     return playerView({
       game: {
-        ...structuredClone(publicState),
-        hand: structuredClone(hand),
-        handCounts: ctx.cards.handCounts('players'),
-        stage: state.round.stage,
-        waitingPlayers: [...state.round.waitingPlayers],
+        initialDeckCounts: Object.fromEntries(
+          ctx.players.all().map((player) => [player.id, INITIAL_HAND_SIZE]),
+        ),
+        lastRound,
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+        stage,
+        waitingPlayers,
       },
       extras: {
-        hand: hand.map((cardId) => ZIG_ET_ZAG_CARD_BY_ID[cardId]),
-        handCounts: ctx.cards.handCounts('players'),
-        stage: state.round.stage,
-        waitingPlayers: [...state.round.waitingPlayers],
-        lastRound: structuredClone(state.lastRound),
+        cardCatalog: ZIG_ET_ZAG_CARD_BY_ID,
+        stage,
+        waitingPlayers,
+        lastRound,
       },
     });
   },

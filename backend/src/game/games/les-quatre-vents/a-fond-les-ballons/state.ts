@@ -1,16 +1,16 @@
-export interface AFondLesBallonsState {
-  pawnByPlayerId: Record<number, string>;
-  setupComplete: boolean;
+import type { PlayerMap } from '../../../core/application/public-api';
+
+export type AFondLesBallonsState = Record<string, never>;
+
+export type AFondLesBallonsPlayerView = {
+  trapImmunityTurns: PlayerMap<number>;
+  swapPlayerId: number | null;
+  pawnByPlayerId: PlayerMap<string>;
   starterId: number;
-  skipTurns: Record<number, number>;
-  trapImmunityTurns: Record<number, number>;
   lastRoll: number | null;
   extraTurn: boolean;
-  swapPlayerId: number | null;
+  positions: PlayerMap<number>;
   winnerId: number | null;
-}
-
-export type AFondLesBallonsPlayerView = AFondLesBallonsState & {
-  positions: Record<number, number>;
-  deckCount: number;
+  skipTurns: PlayerMap<number>;
+  setupComplete: boolean;
 };

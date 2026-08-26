@@ -1,4 +1,5 @@
 import type { CerclesSacresTheme } from './content';
+import type { PlayerMap } from '../../../core/application/public-api';
 
 export interface CerclesSacresCircle {
   id: string;
@@ -6,15 +7,10 @@ export interface CerclesSacresCircle {
   themes: Record<CerclesSacresTheme, string>;
 }
 
-export interface CerclesSacresState {
-  circles: Record<number, CerclesSacresCircle[]>;
+export type CerclesSacresState = Record<string, never>;
+
+export type CerclesSacresPlayerView = {
+  circles: PlayerMap<CerclesSacresCircle[]>;
   drawnPlayerId: number | null;
   winnerId: number | null;
-}
-
-export type CerclesSacresPlayerView = CerclesSacresState & {
-  hand: string[];
-  handCounts: Record<number, number>;
-  deckCount: number;
-  discardCount: number;
 };

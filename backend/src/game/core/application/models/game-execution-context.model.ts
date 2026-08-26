@@ -17,6 +17,7 @@ export interface GameRng {
 
 export interface GameExecutionContext {
   actorId: PlayerId | null;
+  commandId?: string | null;
   rng: GameRng;
   clock: GameClock;
 }

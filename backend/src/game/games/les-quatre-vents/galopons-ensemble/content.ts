@@ -1,11 +1,12 @@
+import {
+  freezeGameContent,
+  gameEffects,
+} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
+
 export type GaloponsRegion = 'prairie' | 'riviere' | 'foret' | 'montagne';
 export type GaloponsTileType =
-  | 'start'
-  | 'neutral'
-  | 'card'
-  | 'bonus'
-  | 'skip'
-  | 'finish';
+  'start' | 'neutral' | 'card' | 'bonus' | 'skip' | 'finish';
 
 export type GaloponsTile = {
   n: number;
@@ -81,10 +82,14 @@ export type GaloponsCardEffect =
 export type GaloponsCard = {
   id: number;
   text: string;
+  effects: readonly GameEffectInstruction[];
+};
+
+type GaloponsCardDefinition = Omit<GaloponsCard, 'effects'> & {
   effect: GaloponsCardEffect;
 };
 
-export const GALOPONS_CARDS: GaloponsCard[] = [
+const CARD_DEFINITIONS: GaloponsCardDefinition[] = [
   {
     id: 1,
     text: 'Raccourci : avancez de 2 cases.',
@@ -229,6 +234,86 @@ export const GALOPONS_CARDS: GaloponsCard[] = [
   },
 ];
 
+export const GALOPONS_CARDS: GaloponsCard[] = CARD_DEFINITIONS.map((card) => ({
+  id: card.id,
+  text: card.text,
+  effects: cardInstructions(card.effect),
+}));
+
+function cardInstructions(
+  effect: GaloponsCardEffect,
+): readonly GameEffectInstruction[] {
+  if (effect.kind === 'move') {
+    return [gameEffects.custom('galopons.move', { delta: effect.delta })];
+  }
+  if (effect.kind === 'move_to_next_region') {
+    return [
+      gameEffects.custom('galopons.move-to-region', {
+        region: effect.region,
+      }),
+    ];
+  }
+  if (effect.kind === 'replay') return [gameEffects.extraTurn()];
+  if (effect.kind === 'gain_apples') {
+    return [gameEffects.gainResource('apple', effect.count)];
+  }
+  if (effect.kind === 'skip_turn') {
+    return [gameEffects.skipTurn(effect.count)];
+  }
+  if (effect.kind === 'global_skip_turn') {
+    return [
+      gameEffects.skipTurn(effect.count),
+      gameEffects.skipTurn(
+        effect.count,
+        gameEffects.target.allOpponents(),
+      ),
+    ];
+  }
+  if (effect.kind === 'discard_apple_and_replay') {
+    return [
+      gameEffects.loseResource('apple', 1, undefined, {
+        allowPartial: true,
+      }),
+      gameEffects.extraTurn(),
+    ];
+  }
+  if (effect.kind === 'discard_apple') {
+    return [
+      gameEffects.loseResource('apple', 1, undefined, {
+        allowPartial: true,
+      }),
+    ];
+  }
+  if (effect.kind === 'give_apple_with_iou') {
+    return [
+      gameEffects.custom(
+        'galopons.give-apple',
+        {},
+        gameEffects.target.chosenOpponent('galopons.give-apple'),
+      ),
+      gameEffects.completeTurn(),
+    ];
+  }
+  if (effect.kind === 'help_advance_for_apple') {
+    return [
+      gameEffects.custom(
+        'galopons.help-advance',
+        { delta: effect.delta },
+        gameEffects.target.chosenOpponent('galopons.help-advance'),
+      ),
+      gameEffects.completeTurn(),
+    ];
+  }
+  return [
+    gameEffects.custom(
+      'galopons.pair-advance',
+      { delta: effect.delta },
+      gameEffects.target.chosenOpponent('galopons.pair-advance'),
+    ),
+    gameEffects.completeTurn(),
+  ];
+}
+
 export const GALOPONS_PAWNS = [
   {
     id: 'shetland',
@@ -247,3 +332,7 @@ export const GALOPONS_PAWNS = [
     description: 'Rustique et courageux.',
   },
 ] as const;
+
+freezeGameContent(GALOPONS_TILES);
+freezeGameContent(GALOPONS_CARDS);
+freezeGameContent(GALOPONS_PAWNS);

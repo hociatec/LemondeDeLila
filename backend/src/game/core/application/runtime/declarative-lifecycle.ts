@@ -3,7 +3,8 @@ import type {
   DeclarativeState,
   GameActionMap,
 } from './game-definition';
-import type { GameRuleContext } from './game-rule-context';
+import type { GameContext } from './game-rule-context';
+import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
 
 export class DeclarativeLifecycle<
   TState extends object,
@@ -20,31 +21,42 @@ export class DeclarativeLifecycle<
 
   enterInitialPhase(
     runtime: DeclarativeState<TState>,
-    context: GameRuleContext<TState>,
+    context: GameContext<TState>,
   ): void {
-    const phase = this.definition.phases?.[runtime.phase];
-    const entered = phase?.enter?.({ state: runtime.game, ctx: context });
-    if (entered) context.replaceState(entered);
+    context.enterCurrentPhase();
   }
 
   stabilize(
     runtime: DeclarativeState<TState>,
-    context: GameRuleContext<TState>,
+    context: GameContext<TState>,
   ): void {
+    const trace: string[] = [];
     for (let iteration = 0; iteration < 32; iteration += 1) {
       if (this.finishIfVictorious(runtime, context)) return;
-      if (this.applyAutomaticRule(runtime, context)) continue;
-      if (this.transitionAutomaticPhase(runtime, context)) continue;
+      const automaticRuleId = this.applyAutomaticRule(runtime, context);
+      if (automaticRuleId) {
+        trace.push(`automatic:${automaticRuleId}`);
+        continue;
+      }
+      const transitionedPhase = this.transitionAutomaticPhase(
+        runtime,
+        context,
+      );
+      if (transitionedPhase) {
+        trace.push(`phase:${transitionedPhase}`);
+        continue;
+      }
       return;
     }
-    throw new Error(
+    throw new GameStateViolationError(
       `Boucle automatique non convergente: ${this.definition.id}`,
+      { gameId: this.definition.id, phase: runtime.phase, trace },
     );
   }
 
   private finishIfVictorious(
     runtime: DeclarativeState<TState>,
-    context: GameRuleContext<TState>,
+    context: GameContext<TState>,
   ): boolean {
     if (!this.definition.victory) return false;
     const result = this.definition.victory.evaluate({
@@ -52,47 +64,55 @@ export class DeclarativeLifecycle<
       ctx: context,
     });
     if (!result) return false;
-    runtime.status = 'finished';
-    runtime.engine.status = 'finished';
     runtime.extras = { ...(runtime.extras ?? {}), victory: result };
-    context.events.emit('game.finished', result);
+    context.match.finish({
+      winners: result.winnerPlayerIds,
+      reason: result.reason ?? 'victory-rule',
+      ranking: result.ranking,
+    });
     return true;
   }
 
   private applyAutomaticRule(
     runtime: DeclarativeState<TState>,
-    context: GameRuleContext<TState>,
-  ): boolean {
-    const rule = this.definition.automatic?.find((candidate) =>
-      candidate.when({ state: runtime.game, ctx: context }),
-    );
-    if (!rule) return false;
-    const next = rule.apply({ state: runtime.game, ctx: context });
-    if (next) context.replaceState(next);
-    context.events.emit('game.automatic', { ruleId: rule.id });
-    return true;
+    context: GameContext<TState>,
+  ): string | null {
+    const rule = (this.definition.automatic ?? [])
+      .map((candidate, declarationIndex) => ({
+        candidate,
+        declarationIndex,
+      }))
+      .sort(
+        (left, right) =>
+          (right.candidate.priority ?? 0) -
+            (left.candidate.priority ?? 0) ||
+          left.declarationIndex - right.declarationIndex,
+      )
+      .map(({ candidate }) => candidate)
+      .find((candidate) =>
+        candidate.when({ state: runtime.game, ctx: context }),
+      );
+    if (!rule) return null;
+    rule.apply({ state: runtime.game, ctx: context });
+    context.events.engine('game.automatic', {
+      ruleId: rule.id,
+      priority: rule.priority ?? 0,
+    });
+    return rule.id;
   }
 
   private transitionAutomaticPhase(
     runtime: DeclarativeState<TState>,
-    context: GameRuleContext<TState>,
-  ): boolean {
+    context: GameContext<TState>,
+  ): string | null {
     const phase = this.definition.phases?.[runtime.phase];
     if (
       !phase?.next ||
       !phase.autoTransition?.({ state: runtime.game, ctx: context })
     ) {
-      return false;
+      return null;
     }
-    const exited = phase.exit?.({ state: runtime.game, ctx: context });
-    if (exited) context.replaceState(exited);
     context.transitionTo(phase.next);
-    const entered = this.definition.phases?.[phase.next]?.enter?.({
-      state: runtime.game,
-      ctx: context,
-    });
-    if (entered) context.replaceState(entered);
-    context.events.emit('game.phase.changed', { phase: phase.next });
-    return true;
+    return phase.next;
   }
 }

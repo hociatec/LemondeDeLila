@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { GameCatalogOverrideRecord } from '../../../../application/models/game-catalog-override.model';
+import type {
+  GameCatalogOverrideRecord,
+  GameCatalogStatus,
+} from '../../../../application/models/game-catalog-override.model';
 import type { GameCatalogOverridesRepository } from '../../../../application/ports/game-catalog-overrides.repository';
 import { GameCatalogOverrideEntity } from '../entities/game-catalog-override.entity';
 
@@ -44,7 +47,7 @@ export class GameCatalogOverridesTypeormRepository implements GameCatalogOverrid
 function compact(update: GameCatalogOverrideRecord): GameCatalogOverrideRecord {
   return Object.fromEntries(
     Object.entries(update).filter(([, value]) => value !== undefined),
-  ) as GameCatalogOverrideRecord;
+  );
 }
 
 function toRecord(row: GameCatalogOverrideEntity): GameCatalogOverrideRecord {
@@ -55,8 +58,14 @@ function toRecord(row: GameCatalogOverrideEntity): GameCatalogOverrideRecord {
     name: row.name ?? undefined,
     description: row.description ?? undefined,
     rules: row.rules ?? undefined,
-    status: row.status ?? undefined,
+    status: toCatalogStatus(row.status),
     chatEnabled: row.chatEnabled ?? undefined,
     chatSoundsEnabled: row.chatSoundsEnabled ?? undefined,
   };
+}
+
+function toCatalogStatus(value: string | null): GameCatalogStatus | undefined {
+  return value === 'construction' || value === 'beta' || value === 'finished'
+    ? value
+    : undefined;
 }

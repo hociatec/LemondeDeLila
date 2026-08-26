@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { getErrorDetails } from '@common/utils/public-api';
 import {
   FRIEND_PRESENCE_NOTIFIER,
   type FriendPresenceNotifier,
@@ -51,7 +52,7 @@ export class NotificationFriendPresenceService {
         ),
       );
     } catch (err) {
-      this.logger.debug('Friend notify failed', err as Error);
+      this.logger.debug('Friend notify failed', getErrorDetails(err));
     }
   }
 }

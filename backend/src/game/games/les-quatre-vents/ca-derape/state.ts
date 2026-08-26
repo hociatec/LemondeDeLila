@@ -1,22 +1,22 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export type CaPendingKind = 'swap' | 'next-player' | 'next-delta' | 'mirror';
 
-export interface CaDerapeState {
-  lastRollByPlayer: Record<number, number>;
-  lastMoveDelta: Record<number, number>;
-  turnsSinceMoved: Record<number, number>;
-  skipTurns: Record<number, number>;
-  ignoreNextPenalty: Record<number, boolean>;
-  doubleNextMove: Record<number, boolean>;
-  doubleNextRoll: Record<number, boolean>;
-  mirrorNextRollFrom: Record<number, number | null>;
+export type CaDerapeState = Record<string, never>;
+
+export type CaDerapePlayerView = {
+  lastRollByPlayer: PlayerMap<number>;
+  lastMoveDelta: PlayerMap<number>;
+  turnsSinceMoved: PlayerMap<number>;
+  mirrorNextRollFrom: PlayerMap<number | null>;
   nextPlayerDelta: number | null;
   pendingKind: CaPendingKind | null;
   pendingActorId: number | null;
+  ignoreNextPenalty: PlayerMap<boolean>;
+  doubleNextMove: PlayerMap<boolean>;
+  doubleNextRoll: PlayerMap<boolean>;
   extraTurn: boolean;
+  positions: PlayerMap<number>;
   winnerId: number | null;
-}
-
-export type CaDerapePlayerView = CaDerapeState & {
-  positions: Record<number, number>;
-  deckCount: number;
+  skipTurns: PlayerMap<number>;
 };

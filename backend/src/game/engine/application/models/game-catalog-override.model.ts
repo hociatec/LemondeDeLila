@@ -1,3 +1,5 @@
+export type GameCatalogStatus = 'construction' | 'beta' | 'finished';
+
 export type GameCatalogOverrideRecord = {
   enabled?: boolean;
   minPlayers?: number;
@@ -5,7 +7,7 @@ export type GameCatalogOverrideRecord = {
   name?: string;
   description?: string;
   rules?: string;
-  status?: string;
+  status?: GameCatalogStatus;
   chatEnabled?: boolean;
   chatSoundsEnabled?: boolean;
 };

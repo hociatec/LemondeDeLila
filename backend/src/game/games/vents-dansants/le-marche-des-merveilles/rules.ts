@@ -1,56 +1,63 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
 import {
-  EMPTY_INVENTORY,
-  GOOD_LABELS,
-  MARKET_RULES,
-  WONDER_GOODS,
-} from './content';
-import type {
-  WonderGood,
-  WonderInventory,
-  WonderMarketState,
-  WonderPrices,
-} from './state';
+  commonStatuses,
+  defineAction,
+  gameInput,
+  type GameContext,
+} from '../../../core/application/public-api';
+import { MARKET_RULES, WONDER_GOODS } from './content';
+import type { WonderGood, WonderMarketState } from './state';
 
 const goodSchema = gameInput.enum(WONDER_GOODS);
+const MARKET = 'wonders';
+const INVENTORY = 'wonder-goods';
+const CURRENCY = 'coins';
+export const MARKET_TURNS_TAKEN = 'wonder-market.turns-taken';
 
 export const buy = defineAction<WonderMarketState, { good: WonderGood }>({
   input: gameInput.object({ good: goodSchema }),
-  availableInputs: ({ state, actor }) =>
-    WONDER_GOODS.filter(
-      (good) => state.coins[actor.id] >= state.prices[good],
+  validate: ({ actor, input, ctx }) =>
+    ctx.economy.canAfford(MARKET, actor.id, input.good),
+  enumerate: ({ actor, ctx }) =>
+    WONDER_GOODS.filter((good) =>
+      ctx.economy.canAfford(MARKET, actor.id, good),
     ).map((good) => ({ good })),
   execute: ({ state, actor, input, ctx }) => {
-    beginAction(state, actor.id);
-    const price = state.prices[input.good];
-    state.coins[actor.id] -= price;
-    state.inventories[actor.id][input.good] += 1;
-    state.prices[input.good] = clampPrice(price + 1);
-    state.lastMarketEvent = `${GOOD_LABELS[input.good]} monte à ${state.prices[input.good]}.`;
-    ctx.history.add(
-      `${actor.username} achète ${GOOD_LABELS[input.good]} pour ${price} pièces.`,
-    );
-    finishAction(state, ctx);
+    beginAction(actor.id, ctx);
+    const price = ctx.economy.buy(MARKET, actor.id, input.good, {
+      priceDelta: 1,
+    });
+    const nextPrice = ctx.economy.price(MARKET, input.good);
+    ctx.events.message('wonder-market.good.bought', {
+      playerId: actor.id,
+      goodId: input.good,
+      price,
+      nextPrice,
+    });
+    advanceMarket(ctx);
   },
 });
 
 export const sell = defineAction<WonderMarketState, { good: WonderGood }>({
   input: gameInput.object({ good: goodSchema }),
-  availableInputs: ({ state, actor }) =>
-    WONDER_GOODS.filter((good) => state.inventories[actor.id][good] > 0).map(
-      (good) => ({ good }),
-    ),
+  validate: ({ actor, input, ctx }) =>
+    ctx.economy.canSell(MARKET, actor.id, input.good),
+  enumerate: ({ actor, ctx }) =>
+    WONDER_GOODS.filter((good) =>
+      ctx.economy.canSell(MARKET, actor.id, good),
+    ).map((good) => ({ good })),
   execute: ({ state, actor, input, ctx }) => {
-    beginAction(state, actor.id);
-    const price = state.prices[input.good];
-    state.inventories[actor.id][input.good] -= 1;
-    state.coins[actor.id] += price;
-    state.prices[input.good] = clampPrice(price - 1);
-    state.lastMarketEvent = `${GOOD_LABELS[input.good]} baisse à ${state.prices[input.good]}.`;
-    ctx.history.add(
-      `${actor.username} vend ${GOOD_LABELS[input.good]} pour ${price} pièces.`,
-    );
-    finishAction(state, ctx);
+    beginAction(actor.id, ctx);
+    const price = ctx.economy.sell(MARKET, actor.id, input.good, {
+      priceDelta: -1,
+    });
+    const nextPrice = ctx.economy.price(MARKET, input.good);
+    ctx.events.message('wonder-market.good.sold', {
+      playerId: actor.id,
+      goodId: input.good,
+      price,
+      nextPrice,
+    });
+    advanceMarket(ctx);
   },
 });
 
@@ -62,38 +69,44 @@ export const rumor = defineAction<
     good: goodSchema,
     direction: gameInput.enum(['up', 'down'] as const),
   }),
-  available: ({ state, actor }) =>
-    state.coins[actor.id] >= MARKET_RULES.rumorCost,
-  availableInputs: () =>
+  available: ({ actor, ctx }) =>
+    ctx.resources.has(actor.id, CURRENCY, MARKET_RULES.rumorCost),
+  validate: ({ input }) => WONDER_GOODS.includes(input.good),
+  enumerate: () =>
     WONDER_GOODS.flatMap((good) => [
       { good, direction: 'up' as const },
       { good, direction: 'down' as const },
     ]),
   execute: ({ state, actor, input, ctx }) => {
-    beginAction(state, actor.id);
-    state.coins[actor.id] -= MARKET_RULES.rumorCost;
+    beginAction(actor.id, ctx);
+    ctx.economy.pay(MARKET, actor.id, MARKET_RULES.rumorCost);
     const delta = input.direction === 'up' ? 2 : -2;
-    state.prices[input.good] = clampPrice(state.prices[input.good] + delta);
-    state.lastMarketEvent = `Rumeur sur ${GOOD_LABELS[input.good]} : ${state.prices[input.good]}.`;
-    ctx.history.add(
-      `${actor.username} lance une rumeur sur ${GOOD_LABELS[input.good]}.`,
-    );
-    finishAction(state, ctx);
+    const price = ctx.economy.adjustPrice(MARKET, input.good, delta);
+    ctx.events.message('wonder-market.rumor.started', {
+      playerId: actor.id,
+      goodId: input.good,
+      direction: input.direction,
+      price,
+    });
+    advanceMarket(ctx);
   },
 });
 
 export const protect = defineAction<WonderMarketState, Record<string, never>>({
   input: gameInput.object({}),
-  available: ({ state, actor }) =>
-    state.coins[actor.id] >= MARKET_RULES.protectCost &&
-    !state.protectedPlayers[actor.id],
+  available: ({ actor, ctx }) =>
+    ctx.resources.has(actor.id, CURRENCY, MARKET_RULES.protectCost) &&
+    !ctx.status.has(actor.id, commonStatuses.protected),
   execute: ({ state, actor, ctx }) => {
-    beginAction(state, actor.id);
-    state.coins[actor.id] -= MARKET_RULES.protectCost;
-    state.protectedPlayers[actor.id] = true;
-    state.lastMarketEvent = 'Un étal est sous bonne garde.';
-    ctx.history.add(`${actor.username} protège son étal.`);
-    finishAction(state, ctx);
+    beginAction(actor.id, ctx);
+    ctx.economy.pay(MARKET, actor.id, MARKET_RULES.protectCost);
+    ctx.status.add(actor.id, commonStatuses.protected, {
+      scope: 'until-used',
+    });
+    ctx.events.message('wonder-market.stall.protected', {
+      playerId: actor.id,
+    });
+    advanceMarket(ctx);
   },
 });
 
@@ -105,32 +118,47 @@ export const stealDeal = defineAction<
     targetPlayerId: gameInput.playerId(),
     good: goodSchema,
   }),
-  availableInputs: ({ state, actor, ctx }) =>
+  validate: ({ actor, input, ctx }) =>
+    input.targetPlayerId !== actor.id &&
+    ctx.players.get(input.targetPlayerId) != null &&
+    !ctx.status.has(input.targetPlayerId, commonStatuses.protected) &&
+    ctx.inventory.has(INVENTORY, input.targetPlayerId, input.good),
+  enumerate: ({ actor, ctx }) =>
     ctx.players
       .all()
       .flatMap((target) =>
-        target.id === actor.id || state.protectedPlayers[target.id]
+        target.id === actor.id ||
+        ctx.status.has(target.id, commonStatuses.protected)
           ? []
           : WONDER_GOODS.filter(
-              (good) => state.inventories[target.id][good] > 0,
+              (good) => ctx.inventory.has(INVENTORY, target.id, good),
             ).map((good) => ({ targetPlayerId: target.id, good })),
       ),
   execute: ({ state, actor, input, ctx }) => {
-    beginAction(state, actor.id);
-    state.inventories[input.targetPlayerId][input.good] -= 1;
-    state.inventories[actor.id][input.good] += 1;
-    state.lastMarketEvent = `${GOOD_LABELS[input.good]} change discrètement de main.`;
-    ctx.history.add(`${actor.username} vole ${GOOD_LABELS[input.good]}.`);
-    finishAction(state, ctx);
+    beginAction(actor.id, ctx);
+    ctx.inventory.transfer(
+      INVENTORY,
+      input.targetPlayerId,
+      actor.id,
+      input.good,
+    );
+    ctx.events.message('wonder-market.good.stolen', {
+      playerId: actor.id,
+      targetPlayerId: input.targetPlayerId,
+      goodId: input.good,
+    });
+    advanceMarket(ctx);
   },
 });
 
 export const pass = defineAction<WonderMarketState, Record<string, never>>({
   input: gameInput.object({}),
   execute: ({ state, actor, ctx }) => {
-    beginAction(state, actor.id);
-    ctx.history.add(`${actor.username} observe le marché.`);
-    finishAction(state, ctx);
+    beginAction(actor.id, ctx);
+    ctx.events.message('wonder-market.player.passed', {
+      playerId: actor.id,
+    });
+    advanceMarket(ctx);
   },
 });
 
@@ -143,55 +171,35 @@ export const MARKET_ACTIONS = {
   pass,
 };
 
-export function inventoryValue(
-  inventory: WonderInventory,
-  prices: WonderPrices,
-): number {
-  return WONDER_GOODS.reduce(
-    (total, good) => total + inventory[good] * prices[good],
-    0,
+export function marketWinners(
+  ctx: GameContext<WonderMarketState>,
+): number[] {
+  return ctx.ranking.leaders(
+    ctx.players.all().map((player) => player.id),
+    { value: (playerId) => ctx.economy.netWorth(MARKET, playerId) },
   );
 }
 
-export function marketWinners(state: WonderMarketState): number[] {
-  const entries = Object.keys(state.coins)
-    .map(Number)
-    .map((playerId) => ({
-      playerId,
-      score:
-        state.coins[playerId] +
-        inventoryValue(state.inventories[playerId], state.prices),
-    }));
-  const best = Math.max(...entries.map((entry) => entry.score));
-  return entries
-    .filter((entry) => entry.score === best)
-    .map((entry) => entry.playerId);
-}
-
-export function emptyInventory(): WonderInventory {
-  return structuredClone(EMPTY_INVENTORY);
-}
-
-function beginAction(state: WonderMarketState, playerId: number): void {
-  state.protectedPlayers[playerId] = false;
-}
-
-function finishAction(
-  state: WonderMarketState,
-  ctx: { players: { all(): Array<{ id: number }> }; turn: { end(): void } },
+function beginAction(
+  playerId: number,
+  ctx: GameContext<WonderMarketState>,
 ): void {
-  state.turnsTaken += 1;
-  state.round = Math.min(
-    state.maxRounds,
-    Math.floor(state.turnsTaken / ctx.players.all().length) + 1,
-  );
-  if (state.turnsTaken >= ctx.players.all().length * state.maxRounds) {
-    state.winnerId = marketWinners(state)[0] ?? null;
-  } else {
-    ctx.turn.end();
-  }
+  ctx.status.remove(playerId, commonStatuses.protected);
 }
 
-function clampPrice(value: number): number {
-  return Math.max(1, Math.min(10, Math.trunc(value)));
+function advanceMarket(ctx: GameContext<WonderMarketState>): void {
+  const playerCount = ctx.players.all().length;
+  const turnsTaken = ctx.counters.add(MARKET_TURNS_TAKEN, 1);
+  if (turnsTaken >= playerCount * MARKET_RULES.maxRounds) {
+    const winners = marketWinners(ctx);
+    ctx.round.end(winners);
+    ctx.match.finish({ winners, reason: 'market-closed' });
+    return;
+  }
+  if (turnsTaken % playerCount === 0) {
+    const starterId = ctx.round.starter() ?? ctx.players.all()[0]?.id;
+    ctx.round.end();
+    ctx.round.start(starterId);
+  }
+  ctx.turn.end();
 }

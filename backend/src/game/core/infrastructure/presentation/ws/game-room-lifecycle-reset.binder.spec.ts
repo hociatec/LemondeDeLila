@@ -3,8 +3,7 @@ import { GameRoomLifecycleResetBinder } from './game-room-lifecycle-reset.binder
 describe('GameRoomLifecycleResetBinder', () => {
   it('clears game state on room reset and deletion only', async () => {
     let lobbyChanged:
-      | ((roomId: number, reason: string) => Promise<void> | void)
-      | undefined;
+      ((roomId: number, reason: string) => Promise<void> | void) | undefined;
     let roomDeleted: ((roomId: number) => Promise<void> | void) | undefined;
     const roomEvents = {
       onLobbyChanged: jest.fn((listener) => {

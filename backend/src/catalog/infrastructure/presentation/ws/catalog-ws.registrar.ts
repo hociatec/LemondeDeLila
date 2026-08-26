@@ -1,4 +1,5 @@
 ﻿import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { getErrorMessage } from '@common/utils/public-api';
 import { WsRouteRegistry } from '../../../../realtime/public-api';
 import { CatalogWsHandler } from './catalog-ws.handler';
 
@@ -32,9 +33,7 @@ export class CatalogWsRegistrar implements OnModuleInit {
         this.logger.log(`Warm-up catalogue effectue (${count} jeux)`);
       })
       .catch((err) =>
-        this.logger.warn(
-          `Warm-up catalogue echoue: ${(err as Error)?.message ?? err}`,
-        ),
+        this.logger.warn(`Warm-up catalogue echoue: ${getErrorMessage(err)}`),
       );
   }
 }

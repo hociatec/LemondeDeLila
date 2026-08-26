@@ -54,16 +54,17 @@ export class RedisRefreshTokenService
       if value then redis.call('DEL', KEYS[1]) end
       return value
     `;
-    const raw = (await this.redis.eval(
+    const raw: unknown = await this.redis.eval(
       consumeScript,
       1,
       this.key(refreshToken),
-    )) as string | null;
-    if (!raw) return null;
+    );
+    if (typeof raw !== 'string' || !raw) return null;
 
-    let userId = 0;
+    let userId: number;
     try {
-      const decoded = JSON.parse(raw) as { userId?: unknown };
+      const decoded: unknown = JSON.parse(raw);
+      if (!isRecord(decoded)) return null;
       userId = Number(decoded.userId);
     } catch {
       return null;
@@ -89,4 +90,8 @@ export class RedisRefreshTokenService
     const digest = createHash('sha256').update(refreshToken).digest('hex');
     return this.prefix + digest;
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }

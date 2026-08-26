@@ -1,6 +1,9 @@
 ﻿import { Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import { isVersionLower } from '../../../../common/utils/public-api';
+import {
+  getErrorMessage,
+  isVersionLower,
+} from '../../../../common/utils/public-api';
 import type { WsAuthPayload } from '../../../../common/interfaces/public-api';
 import {
   WsJwtAuthService,
@@ -36,7 +39,7 @@ export class PresenceWsConnectionService {
   ) {}
 
   async handleConnection(client: WebSocket, args: unknown[]): Promise<void> {
-    let payload: WsAuthPayload | null = null;
+    let payload: WsAuthPayload | null;
     try {
       payload = this.resolveAuth(client, args);
     } catch {
@@ -113,7 +116,7 @@ export class PresenceWsConnectionService {
     try {
       return this.auth.verify(token);
     } catch (err) {
-      this.logger.warn(`Token WS invalide: ${(err as Error).message}`);
+      this.logger.warn(`Token WS invalide: ${getErrorMessage(err)}`);
       throw err;
     }
   }

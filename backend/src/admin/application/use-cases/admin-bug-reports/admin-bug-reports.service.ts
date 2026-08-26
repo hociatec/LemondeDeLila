@@ -23,12 +23,7 @@ export interface UpdateAdminBugReportCommand {
 export interface UpdateAdminBugReportStatusCommand {
   id: string;
   status:
-    | 'pending'
-    | 'in_progress'
-    | 'to_test'
-    | 'done'
-    | 'refused'
-    | 'rejected';
+    'pending' | 'in_progress' | 'to_test' | 'done' | 'refused' | 'rejected';
 }
 
 @Injectable()

@@ -1,32 +1,22 @@
 import {
-  cards,
-  clockwise,
+  cardGame,
   defineGame,
+  inventory,
   playerView,
-  victoryWhen,
-  when,
 } from '../../../core/application/public-api';
 import { LA_GRANDE_MINE_CARD_BY_ID, LA_GRANDE_MINE_CARDS } from './content';
 import {
   drawAtTurnStart,
+  drawnPlayerId,
   enumeratePlays,
   GRANDE_MINE_ACTIONS,
+  MINE_DISCARD_NEXT_DRAW,
+  MINE_DOMAINS,
+  mineDomains,
   scoreDomain,
-  skipMinePlayer,
 } from './rules';
+import { GRANDE_MINE_EFFECTS } from './effects';
 import type { GrandeMinePlayerView, GrandeMineState } from './state';
-
-const deck = cards.deck({
-  id: 'mine',
-  cards: LA_GRANDE_MINE_CARDS.map((card) => card.id),
-  shuffle: true,
-});
-const hands = cards.hands({
-  id: 'players',
-  deck: 'mine',
-  initial: 5,
-  visibility: 'owner',
-});
 
 export default defineGame<
   GrandeMineState,
@@ -39,65 +29,47 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Amassez le meilleur domaine avant l’effondrement.',
   players: { min: 2, max: 6 },
-  components: [deck, hands],
+  patterns: [
+    cardGame({
+      deckId: 'mine',
+      handId: 'players',
+      cards: LA_GRANDE_MINE_CARDS.map((card) => card.id),
+      initialHandSize: 5,
+      drawAtTurnStart: ({ ctx }) => drawAtTurnStart(ctx),
+    }),
+  ],
+  components: [inventory.set({ id: MINE_DOMAINS, visibility: 'public' })],
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
   ],
-  setup: ({ players }) => ({
-    domains: Object.fromEntries(
-      players.map((player) => [player.id, { treasures: [], objects: [] }]),
-    ),
-    drawnPlayerId: null,
-    skipTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-    discardNextDraw: Object.fromEntries(
-      players.map((player) => [player.id, false]),
-    ),
-    gameOver: false,
-    winnerIds: [],
-  }),
-  turn: clockwise(),
+  setup: () => ({}),
   actions: GRANDE_MINE_ACTIONS,
-  automatic: [
-    when(
-      'skip-mine-player',
-      ({ state, ctx }) =>
-        (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-      ({ state, ctx }) => skipMinePlayer(state, ctx),
-    ),
-    when(
-      'draw-at-turn-start',
-      ({ state, ctx }) =>
-        !state.gameOver &&
-        state.drawnPlayerId !== (ctx.players.current()?.id ?? null),
-      ({ state, ctx }) => drawAtTurnStart(state, ctx),
-    ),
-  ],
-  victory: victoryWhen(({ state }) =>
-    state.gameOver
-      ? { winnerPlayerIds: state.winnerIds, reason: 'mine-collapsed' }
-      : null,
-  ),
-  view: ({ state, actor, ctx }) => {
-    const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
-    const scores = Object.fromEntries(
-      ctx.players
-        .all()
-        .map((player) => [player.id, scoreDomain(state.domains[player.id])]),
+  effects: GRANDE_MINE_EFFECTS,
+  view: ({ ctx }) => {
+    const domains = mineDomains(ctx);
+    const discardNextDraw = ctx.players.byId((player) =>
+      ctx.status.has(player.id, MINE_DISCARD_NEXT_DRAW),
+    );
+    const scores = ctx.players.byId((player) =>
+      scoreDomain(domains[player.id]),
+    );
+    const skipTurns = ctx.players.byId((player) =>
+      ctx.turn.skipCount(player.id),
     );
     return playerView({
       game: {
-        ...structuredClone(state),
-        hand: structuredClone(hand),
-        handCounts: ctx.cards.handCounts('players'),
-        deckCount: ctx.cards.deckCount('mine'),
-        discardCount: ctx.cards.discardCount('mine'),
+        domains,
+        discardNextDraw,
+        drawnPlayerId: drawnPlayerId(ctx),
+        gameOver: ctx.match.lifecycle() === 'finished',
+        winnerIds: ctx.match.result()?.winnerPlayerIds ?? [],
+        skipTurns,
         scores,
       },
       extras: {
-        hand: hand.map((cardId) => LA_GRANDE_MINE_CARD_BY_ID[cardId]),
-        handCounts: ctx.cards.handCounts('players'),
-        domains: structuredClone(state.domains),
+        cardCatalog: LA_GRANDE_MINE_CARD_BY_ID,
+        domains: structuredClone(domains),
         scores,
       },
     });

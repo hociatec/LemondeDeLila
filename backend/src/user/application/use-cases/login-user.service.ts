@@ -49,7 +49,7 @@ export class LoginUserService {
       ? '$2b$' + hash.substring(4)
       : hash;
 
-    let ok = false;
+    let ok: boolean;
     try {
       ok = await this.passwordHasher.compare(input.password, normalizedHash);
     } catch (err) {

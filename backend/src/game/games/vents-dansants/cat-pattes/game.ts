@@ -1,23 +1,34 @@
 import {
-  cards,
+  cardGame,
+  defineConfiguration,
   defineGame,
+  gameInput,
+  movement,
   playerView,
-  standardTurn,
-  victoryWhen,
+  roundScoring,
+  setupPlayingPhases,
 } from '../../../core/application/public-api';
 import {
   CAT_PATTES_CARD_BY_ID,
   CAT_PATTES_DECK,
   CAT_PATTES_DEFAULT_ROUNDS,
+  CAT_PATTES_GOAL,
 } from './content';
 import {
   CAT_PATTES_ACTIONS,
-  initialPlayerRecord,
+  catPattesPlayerState,
+  drawnPlayerId,
   playableInputs,
-  requestRounds,
-  resolveRounds,
+  resetCatPattesRound,
+  scoreCatPattesRound,
 } from './rules';
+import { CAT_PATTES_EFFECTS } from './effects';
 import type { CatPattesPlayerView, CatPattesState } from './state';
+
+const scoring = roundScoring<CatPattesState>({
+  score: ({ state, ctx }) => scoreCatPattesRound(state, ctx),
+});
+const CAT_PATTES_PHASES = setupPlayingPhases<CatPattesState>();
 
 export default defineGame<
   CatPattesState,
@@ -30,83 +41,80 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Course féline jusqu’à 1 000 pattes.',
   players: { min: 2, max: 6 },
-  components: [
-    cards.deck({
-      id: 'cat-pattes',
+  config: defineConfiguration<CatPattesState, { roundsToPlay: number }>({
+    input: gameInput.object({
+      roundsToPlay: gameInput.number({ integer: true, min: 1, max: 20 }),
+    }),
+    defaults: { roundsToPlay: CAT_PATTES_DEFAULT_ROUNDS },
+    phase: CAT_PATTES_PHASES.initialPhase,
+    permission: 'owner',
+    ui: {
+      title: 'Nombre de manches',
+      submitLabel: 'Démarrer la course',
+    },
+    onConfigured: ({ ctx }) => {
+      CAT_PATTES_PHASES.transition(ctx, 'playing');
+      const firstPlayerId = ctx.players.all()[0]?.id;
+      if (firstPlayerId != null) {
+        ctx.round.start(firstPlayerId);
+        ctx.turn.to(firstPlayerId);
+      }
+    },
+  }),
+  patterns: [
+    cardGame({
+      deckId: 'cat-pattes',
+      handId: 'players',
       cards: CAT_PATTES_DECK.map((card) => card.id),
-      shuffle: true,
+      initialHandSize: 6,
     }),
-    cards.hands({
-      id: 'players',
-      deck: 'cat-pattes',
-      initial: 6,
-      visibility: 'owner',
-    }),
+  ],
+  components: [
+    movement.track({ id: 'cat-pattes', spaces: CAT_PATTES_GOAL + 1 }),
   ],
   shortcuts: [
     { key: 'Space', type: 'action', actionType: 'draw' },
     { key: 'Enter', type: 'action', actionType: 'play_card' },
     { key: 'D', type: 'action', actionType: 'discard_card' },
   ],
-  setup: ({ players, ctx }) => {
-    const state: CatPattesState = {
-      ownerPlayerId:
-        players.find((player) => !player.isBot)?.id ?? players[0].id,
-      configComplete: false,
-      roundsToPlay: CAT_PATTES_DEFAULT_ROUNDS,
-      completedRounds: 0,
-      positions: initialPlayerRecord(ctx, () => 0),
-      points: initialPlayerRecord(ctx, () => 0),
-      obstacles: initialPlayerRecord(ctx, () => null),
-      powers: initialPlayerRecord(ctx, () => []),
-      turboPlayed: initialPlayerRecord(ctx, () => 0),
-      hasSun: initialPlayerRecord(ctx, () => false),
-      sunReady: initialPlayerRecord(ctx, () => true),
-      obstacleLock: initialPlayerRecord(ctx, () => false),
-      drawnPlayerId: null,
-      winnerId: null,
-    };
-    ctx.turn.to(state.ownerPlayerId);
-    requestRounds(state, ctx);
-    return state;
+  setup: () => ({}),
+  initialPhase: CAT_PATTES_PHASES.initialPhase,
+  phases: CAT_PATTES_PHASES.phases,
+  lifecycle: {
+    ...scoring.lifecycle,
+    onRoundStart: ({ state, ctx }) => resetCatPattesRound(state, ctx),
   },
-  initialPhase: 'setup',
-  turn: standardTurn(),
   actions: CAT_PATTES_ACTIONS,
-  choices: {
-    'cat-pattes.rounds': {
-      resolve: ({ state, value, ctx }) =>
-        resolveRounds(state, Number(value), ctx),
-    },
-  },
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'most-pattes' },
-  ),
-  view: ({ state, actor, ctx }) => {
-    const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
+  effects: CAT_PATTES_EFFECTS,
+  view: ({ state, ctx }) => {
+    const playerState = catPattesPlayerState(ctx);
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('cat-pattes', player.id),
+    );
+    const points = ctx.players.byId((player) =>
+      ctx.score.get(player.id),
+    );
     return playerView({
       game: {
-        ...structuredClone(state),
-        hand: structuredClone(hand),
-        handCounts: ctx.cards.handCounts('players'),
-        deckCount: ctx.cards.deckCount('cat-pattes'),
-        discardCount: ctx.cards.discardCount('cat-pattes'),
+        ...playerState,
+        positions,
+        points,
+        completedRounds: ctx.round.completed(),
+        drawnPlayerId: drawnPlayerId(ctx),
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
       },
       extras: {
-        hand: hand.map((cardId) => CAT_PATTES_CARD_BY_ID[cardId]),
-        handCounts: ctx.cards.handCounts('players'),
-        positions: structuredClone(state.positions),
-        points: structuredClone(state.points),
-        obstacles: structuredClone(state.obstacles),
-        powers: structuredClone(state.powers),
+        cardCatalog: CAT_PATTES_CARD_BY_ID,
+        positions,
+        points,
+        obstacles: structuredClone(playerState.obstacles),
+        powers: structuredClone(playerState.powers),
       },
     });
   },
   bot: {
     choose: ({ state, actor, ctx }) => {
-      if (state.drawnPlayerId !== actor.id) {
+      if (drawnPlayerId(ctx) !== actor.id) {
         return { type: 'draw', payload: {} };
       }
       const input = playableInputs(state, actor.id, ctx)[0];

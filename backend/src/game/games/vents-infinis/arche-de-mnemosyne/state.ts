@@ -1,3 +1,5 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export interface MnemoConfig {
   targetPoints: number;
   useTimer: boolean;
@@ -9,31 +11,24 @@ export interface MnemoConfig {
   timeoutPoints: number;
 }
 
+export type MnemoGameConfig = MnemoConfig & { categoryId: string };
+
 export type MnemoPublicQuestion = {
   id: string;
   prompt: string;
   choices: readonly string[];
 };
 
-export interface MnemoState {
-  ownerId: number;
-  config: MnemoConfig;
-  categoryId: string | null;
-  scores: Record<number, number>;
+export interface MnemoState {}
+
+export type MnemoPlayerView = {
+  scores: PlayerMap<number>;
   currentQuestion: MnemoPublicQuestion | null;
-  correctnessByPlayerId: Record<number, boolean>;
   answeredPlayerIds: number[];
-  deadlineMs: number | null;
   notBeforeMs: number | null;
   roundNumber: number;
   questionLeaderId: number;
-  winnerId: number | null;
-}
-
-export type MnemoPlayerView = Omit<
-  MnemoState,
-  'correctnessByPlayerId' | 'deadlineMs'
-> & {
   remainingMilliseconds: number | null;
   categories: Array<{ id: string; name: string }>;
+  winnerId: number | null;
 };

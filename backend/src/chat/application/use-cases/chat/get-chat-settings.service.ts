@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { getErrorMessage } from '@common/utils/public-api';
 
 import { ChatSettings } from '../../models/chat-settings.record';
 import {
@@ -64,7 +65,7 @@ export class GetChatSettingsService implements OnModuleInit {
       return;
     } catch (error) {
       this.logger.warn(
-        `Impossible de charger/initialiser chat_settings: ${(error as Error).message}`,
+        `Impossible de charger/initialiser chat_settings: ${getErrorMessage(error)}`,
       );
     }
 

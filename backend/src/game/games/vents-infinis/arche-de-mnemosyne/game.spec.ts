@@ -5,7 +5,8 @@ describe('Arche de Mnémosyne declarative game', () => {
   it('keeps correctness private and resolves simultaneous answers deterministically', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(127);
     await game.start();
-    await game.as(1).do('configure', {
+    await game.as(1).do('game.configure', {
+      categoryId: 'all',
       targetPoints: 20,
       useTimer: false,
       timerSeconds: 30,
@@ -15,7 +16,6 @@ describe('Arche de Mnémosyne declarative game', () => {
       wrongPoints: 0,
       timeoutPoints: -1,
     });
-    await game.as(1).do('selectCategory', { categoryId: 'all' });
     await game.as(1).do('draw', {});
     await game.as(1).do('answer', { answerIndex: 0 });
     await game.as(2).do('answer', { answerIndex: 1 });

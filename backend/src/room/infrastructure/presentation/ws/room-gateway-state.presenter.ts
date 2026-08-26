@@ -5,6 +5,7 @@ import type {
   RoomIntent,
   RoomStartWizardIntent,
 } from './dto/room-intent.ws.dto';
+import type { PresentedErrorPayload } from '@common/utils/public-api';
 
 @Injectable()
 export class RoomGatewayStatePresenter {
@@ -92,11 +93,11 @@ export class RoomGatewayStatePresenter {
     };
   }
 
-  presentError(message: string, roomId?: number) {
+  presentError(error: string | PresentedErrorPayload, roomId?: number) {
     return {
       type: 'error',
       ...(typeof roomId === 'number' ? { roomId } : {}),
-      payload: { message },
+      payload: typeof error === 'string' ? { message: error } : error,
     };
   }
 }

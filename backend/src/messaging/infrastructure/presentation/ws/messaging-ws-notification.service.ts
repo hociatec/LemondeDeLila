@@ -1,4 +1,5 @@
 ﻿import { Inject, Injectable, Logger } from '@nestjs/common';
+import { getErrorMessage } from '@common/utils/public-api';
 import {
   MESSAGING_BADGE_COUNTS_NOTIFIER,
   MESSAGING_NOTIFICATION_DISPATCHER,
@@ -38,7 +39,7 @@ export class MessagingWsNotificationService {
       );
     } catch (err) {
       this.logger.warn(
-        `Echec notification message pour utilisateur ${recipientId}: ${(err as Error).message}`,
+        `Echec notification message pour utilisateur ${recipientId}: ${getErrorMessage(err)}`,
       );
     }
     await this.counts.notifyCounts(recipientId);
@@ -49,7 +50,7 @@ export class MessagingWsNotificationService {
       await this.counts.notifyCounts(userId);
     } catch (err) {
       this.logger.warn(
-        `Echec de la mise a jour des compteurs utilisateur ${userId}: ${(err as Error).message}`,
+        `Echec de la mise a jour des compteurs utilisateur ${userId}: ${getErrorMessage(err)}`,
       );
     }
   }

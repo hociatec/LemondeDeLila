@@ -1,3 +1,8 @@
+import type {
+  GameEffectInstruction,
+  PlayerMap,
+} from '../../../core/application/public-api';
+
 export type VoyageTileType =
   | 'start'
   | 'finish'
@@ -15,6 +20,9 @@ export interface VoyageTile {
   type: VoyageTileType;
   label?: string;
   description?: string;
+  passageEffect?:
+    | { kind: 'swap-position' }
+    | { kind: 'move'; delta: number };
 }
 
 export interface VoyageCard {
@@ -22,42 +30,37 @@ export interface VoyageCard {
   title: string;
   description: string;
   effect: string;
+  effects: readonly GameEffectInstruction[];
+  collectionGain: VoyageCollectionKind | null;
+  discardAfterResolve: boolean;
+  quiz?: VoyageQuiz;
 }
 
+export type VoyageQuiz = {
+  choices: string[];
+  answer: string;
+  successDelta: number;
+};
+
 export type VoyageCollectionKind =
-  | 'legend'
-  | 'farce'
-  | 'treasure'
-  | 'landscape';
+  'legend' | 'farce' | 'treasure' | 'landscape';
 
 export type VoyageCollection = Record<VoyageCollectionKind, number>;
 
-export type VoyagePendingChoice =
-  | {
-      kind: 'quiz';
-      actorId: number;
-      card: VoyageCard;
-      answer: string;
-      successDelta: number;
-    }
-  | {
-      kind: 'target';
-      actorId: number;
-      effect: 'swap-position' | 'skip-turn' | 'swap-card';
-      count: number;
-    };
+export type VoyagePendingChoice = {
+  kind: 'quiz';
+  actorId: number;
+  cardId: number;
+};
 
-export interface VoyageState {
-  collections: Record<number, VoyageCollection>;
-  skipTurns: Record<number, number>;
-  lastTargetByActor: Record<number, number>;
-  lastRoll: number | null;
+export type VoyageState = Record<string, never>;
+
+export type VoyagePlayerView = {
+  collections: PlayerMap<VoyageCollection>;
+  lastTargetByActor: PlayerMap<number>;
   finishCountdown: number | null;
+  lastRoll: number | null;
+  positions: PlayerMap<number>;
   winnerId: number | null;
-  pendingChoice: VoyagePendingChoice | null;
-}
-
-export type VoyagePlayerView = Omit<VoyageState, 'pendingChoice'> & {
-  positions: Record<number, number>;
-  deckCounts: Record<VoyageCollectionKind, number>;
+  skipTurns: PlayerMap<number>;
 };

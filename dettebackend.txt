@@ -1,0 +1,88 @@
+104: Replay de partie systématique: Chaque jeu doit passer automatiquement un test `snapshot + events => même state`.
+
+105: State serialization contract: Tester que tous les states, kits, pendings et événements sont JSON-serialisables.
+
+106: Interdire fonctions/classes dans le state: Ajouter un contract test garantissant que l’état persistant est purement sérialisable.
+
+
+
+
+
+
+
+
+
+
+134: Automatic rules idempotentes: Ajouter des contract tests empêchant une règle automatique de rester vraie après son application sauf intention explicite.
+
+
+
+
+
+
+
+
+
+
+194: Seed reproductible dans les tests: Tous les tests de jeux doivent pouvoir fixer le seed facilement.
+
+195: GameTestKit: Les `game.spec.ts` actuels sont très légers, souvent seulement 1–2 tests ; créer un DSL de test commun.
+
+196: Contract tests pour les 38 jeux: Tous doivent automatiquement subir les mêmes invariants moteur sans écrire ces tests 38 fois.
+
+197: Test setup valide: Vérifier automatiquement nombre de joueurs min/max et état sérialisable après setup.
+
+198: Test actions disponibles valides: Toute action retournée par `getAvailableActions()` doit passer `validateAction()`.
+
+199: Test actions illégales immuables: Une action refusée ne doit modifier ni state ni RNG ni journal.
+
+200: Test déterminisme: Même seed + mêmes commandes = même state + mêmes événements.
+
+201: Test PlayerView secrète: Un joueur ne doit jamais retrouver les cartes/choix/objectifs secrets d’un autre.
+
+202: Test bot: Toute commande choisie par un bot doit être légale.
+
+203: Test victory terminale: Après fin de partie, aucune action normale ne doit être disponible.
+
+204: Test choices: Seul le ou les joueurs concernés peuvent répondre et une choice résolue ne peut pas l’être deux fois.
+
+205: Test timeout: Un timeout exécuté deux fois doit être idempotent ou explicitement rejeté.
+
+206: Test lifecycle convergence: Toutes les séquences d’automatiques/phases doivent stabiliser sans atteindre les 32 itérations.
+
+207: Property-based tests: Utiliser `fast-check` pour générer des séquences d’actions et vérifier les invariants généraux.
+
+208: Invariants par kit: CardsKit doit garantir conservation des cartes ; ResourcesKit pas de ressources impossibles si interdites ; MovementKit positions valides, etc.
+
+209: Invariants propres au jeu: Un jeu ne devrait écrire que les propriétés réellement uniques, par exemple LAMA conserve le nombre total d’exemplaires de chaque valeur.
+
+210: Couverture métier réelle: Les specs actuelles de beaucoup de jeux sont trop petites pour des `rules.ts` de 500–1000 lignes ; une partie doit être remplacée par les contract tests, mais les règles uniques doivent rester couvertes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+294: Reachability tests: Vérifier que chaque phase peut être quittée dans des simulations raisonnables.
+
+
+
+
+
+
+
+
+

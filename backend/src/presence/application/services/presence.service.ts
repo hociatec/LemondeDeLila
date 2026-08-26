@@ -3,6 +3,7 @@ import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
 import { Inject } from '@nestjs/common';
 import type { WsAuthPayload } from '../../../common/interfaces/public-api';
+import { getErrorDetails } from '../../../common/utils/public-api';
 import type {
   PresenceClient,
   PresenceListItem,
@@ -118,7 +119,7 @@ export class PresenceService implements OnModuleDestroy {
       .catch((err) => {
         this.logger.warn(
           'attachRooms a échoué, diffusion présence sans room enrichie',
-          err as Error,
+          getErrorDetails(err),
         );
         this.emitPresence(playersByUser);
       });
@@ -221,7 +222,7 @@ export class PresenceService implements OnModuleDestroy {
       try {
         socket.send(encoded);
       } catch (err) {
-        this.logger.warn('Envoi WS échoué', err as Error);
+        this.logger.warn('Envoi WS échoué', getErrorDetails(err));
         this.unregister(socket);
         try {
           socket.close();

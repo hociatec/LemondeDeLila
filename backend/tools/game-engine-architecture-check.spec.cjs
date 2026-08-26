@@ -50,6 +50,7 @@ function fixture(mutator) {
       'hydrateInitialState(): void; validateActor(): void; validateAction(): void;',
       'applyActions(): void; getAvailableActions(): void; exposeStateForUser(): void;',
       'getBotActions(): void; getAutomaticActions(): void; getShortcuts(): void;',
+      'getDescriptor(): void;',
       '}',
     ].join('\n'),
   );
@@ -85,6 +86,38 @@ test('rejects framework layers, nondeterminism and unsafe types', () => {
   assert.equal(rules.has('framework-free-games'), true);
   assert.equal(rules.has('deterministic-rules'), true);
   assert.equal(rules.has('no-any'), true);
+});
+
+test('rejects untyped game errors and whole-state player projections', () => {
+  const violations = fixture(({ gamesRoot }) => {
+    fs.writeFileSync(
+      path.join(gamesRoot, 'rules.ts'),
+      "throw new Error('invalid move'); ctx.history.add('played');\n",
+    );
+    fs.writeFileSync(
+      path.join(gamesRoot, 'game.ts'),
+      "export default defineGame({ id: 'example', view: ({ state }) => structuredClone(state) });\n",
+    );
+  });
+  const rules = new Set(violations.map((violation) => violation.rule));
+  assert.equal(rules.has('typed-game-errors'), true);
+  assert.equal(rules.has('explicit-player-projection'), true);
+  assert.equal(rules.has('structured-game-events'), true);
+});
+
+test('rejects legacy action input discovery used as validation', () => {
+  const violations = fixture(({ gamesRoot }) => {
+    fs.writeFileSync(
+      path.join(gamesRoot, 'rules.ts'),
+      'export const action = { availableInputs: () => [] };\n',
+    );
+  });
+  assert.equal(
+    violations.some(
+      (violation) => violation.rule === 'separate-action-validation',
+    ),
+    true,
+  );
 });
 
 test('rejects missing standard files and manifest/definition drift', () => {
@@ -163,5 +196,5 @@ test('rejects an incomplete official runtime contract', () => {
   const missing = violations.filter(
     (violation) => violation.rule === 'complete-runtime-contract',
   );
-  assert.equal(missing.length, 8);
+  assert.equal(missing.length, 9);
 });

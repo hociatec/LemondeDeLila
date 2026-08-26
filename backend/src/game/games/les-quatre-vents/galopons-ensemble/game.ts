@@ -1,20 +1,26 @@
 import {
   cards,
-  clockwise,
+  defineChoice,
+  defineEffect,
   defineGame,
-  diceKit,
-  movement,
+  gameInput,
+  pawns,
   playerView,
-  victoryWhen,
-  when,
+  raceGame,
+  type PlayerMap,
 } from '../../../core/application/public-api';
 import { GALOPONS_CARDS, GALOPONS_PAWNS, GALOPONS_TILES } from './content';
 import {
   GALOPONS_ACTIONS,
+  GALOPONS_PHASES,
+  galoponsIous,
+  giveAppleWithIou,
+  helpAdvanceForApple,
+  moveAndLand,
+  moveToNextRegion,
+  pairAdvance,
   requestPawn,
   resolvePawn,
-  resolveTarget,
-  skipGaloponsPlayer,
 } from './rules';
 import type { GaloponsPlayerView, GaloponsState } from './state';
 
@@ -29,67 +35,115 @@ export default defineGame<
   subcategory: 'LesQuatreVents',
   description: 'Course équestre coopétitive avec pommes et aventures.',
   players: { min: 2, max: 4 },
-  components: [
-    movement.track({ id: 'galopons', spaces: GALOPONS_TILES.length }),
-    diceKit({ id: 'main', count: 1, sides: 6 }),
-    cards.deck({ id: 'adventure', cards: GALOPONS_CARDS, shuffle: true }),
+  patterns: [
+    raceGame({ trackId: 'galopons', spaces: GALOPONS_TILES.length }),
   ],
+  components: [
+    pawns.set({ id: 'galopons', pawns: GALOPONS_PAWNS }),
+    cards.deck({
+      id: 'adventure',
+      cards: GALOPONS_CARDS,
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  ],
+  initialization: { firstPlayer: 'first', startRound: true },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
   setup: ({ players, ctx }) => {
-    const state: GaloponsState = {
-      pawnByPlayerId: {},
-      setupComplete: false,
-      starterId: players[0].id,
-      apples: Object.fromEntries(players.map((player) => [player.id, 0])),
-      movementDirection: Object.fromEntries(
-        players.map((player) => [player.id, 1 as const]),
-      ),
-      ious: Object.fromEntries(players.map((player) => [player.id, {}])),
-      skipTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-      replay: false,
-      targetKind: null,
-      targetActorId: null,
-      winnerId: null,
-    };
-    requestPawn(state, players[0].id, ctx);
-    return state;
+    requestPawn(players[0].id, ctx);
+    return {};
   },
-  initialPhase: 'setup',
-  turn: clockwise(),
+  initialPhase: GALOPONS_PHASES.initialPhase,
+  phases: GALOPONS_PHASES.phases,
   actions: GALOPONS_ACTIONS,
   choices: {
-    'galopons.pawn': {
-      resolve: ({ state, actor, value, ctx }) =>
-        resolvePawn(state, actor.id, String(value), ctx),
-    },
-    'galopons.give-apple': {
-      resolve: ({ state, value, ctx }) =>
-        resolveTarget(state, 'give-apple', Number(value), ctx),
-    },
-    'galopons.help-advance': {
-      resolve: ({ state, value, ctx }) =>
-        resolveTarget(state, 'help-advance', Number(value), ctx),
-    },
-    'galopons.pair-advance': {
-      resolve: ({ state, value, ctx }) =>
-        resolveTarget(state, 'pair-advance', Number(value), ctx),
-    },
+    'galopons.pawn': defineChoice<GaloponsState, string>({
+      input: gameInput.string({ min: 1, max: 128 }),
+      resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+    }),
   },
-  automatic: [
-    when(
-      'skip-galopons-player',
-      ({ state, ctx }) =>
-        state.setupComplete &&
-        (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-      ({ state, ctx }) => skipGaloponsPlayer(state, ctx),
-    ),
-  ],
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'three-apples-at-finish' },
-  ),
+  effects: {
+    'galopons.move': defineEffect<GaloponsState, { delta: number }>({
+      input: gameInput.object({
+        delta: gameInput.number({ integer: true }),
+      }),
+      apply: ({ state, actorPlayerId, data, ctx }) => {
+        if (actorPlayerId != null) {
+          moveAndLand(state, actorPlayerId, data.delta, 0, ctx);
+        }
+      },
+    }),
+    'galopons.move-to-region': defineEffect<
+      GaloponsState,
+      { region: 'foret' | 'montagne' }
+    >({
+      input: gameInput.object({
+        region: gameInput.enum(['foret', 'montagne'] as const),
+      }),
+      apply: ({ state, actorPlayerId, data, ctx }) => {
+        if (actorPlayerId != null) {
+          moveToNextRegion(state, actorPlayerId, data.region, 0, ctx);
+        }
+      },
+    }),
+    'galopons.give-apple': defineEffect<
+      GaloponsState,
+      Record<string, never>
+    >({
+      input: gameInput.object({}),
+      apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
+        const targetId = targetPlayerIds[0];
+        if (actorPlayerId != null && targetId != null) {
+          giveAppleWithIou(actorPlayerId, targetId, ctx);
+        }
+      },
+    }),
+    'galopons.help-advance': defineEffect<
+      GaloponsState,
+      { delta: number }
+    >({
+      input: gameInput.object({
+        delta: gameInput.number({ integer: true }),
+      }),
+      apply: ({ state, actorPlayerId, targetPlayerIds, data, ctx }) => {
+        const targetId = targetPlayerIds[0];
+        if (actorPlayerId != null && targetId != null) {
+          helpAdvanceForApple(state, actorPlayerId, targetId, data.delta, ctx);
+        }
+      },
+    }),
+    'galopons.pair-advance': defineEffect<
+      GaloponsState,
+      { delta: number }
+    >({
+      input: gameInput.object({
+        delta: gameInput.number({ integer: true }),
+      }),
+      apply: ({ state, actorPlayerId, targetPlayerIds, data, ctx }) => {
+        const targetId = targetPlayerIds[0];
+        if (actorPlayerId != null && targetId != null) {
+          pairAdvance(state, actorPlayerId, targetId, data.delta, ctx);
+        }
+      },
+    }),
+  },
   view: ({ state, actor, ctx }) => {
+    const pending = ctx.choice.current();
+    const choiceId = pending?.data.choiceId;
+    const targetKind =
+      choiceId === 'galopons.give-apple'
+        ? 'give-apple'
+        : choiceId === 'galopons.help-advance'
+          ? 'help-advance'
+          : choiceId === 'galopons.pair-advance'
+            ? 'pair-advance'
+            : null;
+    const pawnByPlayerId = Object.fromEntries(
+      ctx.players.all().flatMap((player) => {
+        const pawnId = ctx.pawns.assigned('galopons', player.id)[0];
+        return pawnId == null ? [] : [[player.id, pawnId]];
+      }),
+    );
     const positions = Object.fromEntries(
       ctx.players
         .all()
@@ -98,21 +152,43 @@ export default defineGame<
           ctx.movement.position('galopons', player.id),
         ]),
     );
+    const apples = Object.fromEntries(
+      ctx.players
+        .all()
+        .map((player) => [player.id, ctx.resources.get(player.id, 'apple')]),
+    );
+    const movementDirection: PlayerMap<1 | -1> = Object.fromEntries(
+      ctx.players.all().map((player) => [
+        player.id,
+        ctx.status.has(player.id, 'galopons.returning') ? -1 : 1,
+      ]),
+    );
     return playerView({
       game: {
-        ...structuredClone(state),
+        ious: galoponsIous(ctx),
+        apples,
+        movementDirection,
+        targetKind,
+        targetActorId: targetKind == null ? null : (pending?.playerId ?? null),
+        pawnByPlayerId,
+        replay: ctx.turn.extraCount() > 0,
+        starterId: ctx.round.starter() ?? 0,
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+        skipTurns: Object.fromEntries(
+          ctx.players
+            .all()
+            .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
+        ),
+        setupComplete: GALOPONS_PHASES.is(ctx, 'playing'),
         positions,
-        deckCount:
-          ctx.cards.deckCount('adventure') +
-          ctx.cards.discardCount('adventure'),
       },
       extras: {
         pawn: actor
           ? (GALOPONS_PAWNS.find(
-              (pawn) => pawn.id === state.pawnByPlayerId[actor.id],
+              (pawn) => pawn.id === pawnByPlayerId[actor.id],
             ) ?? null)
           : null,
-        apples: structuredClone(state.apples),
+        apples: structuredClone(apples),
       },
       board: { tiles: GALOPONS_TILES, positions },
     });

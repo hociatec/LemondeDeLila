@@ -178,9 +178,10 @@ export class ClientUpdatesPublisherService {
     const metaMin = (latest?.minRequiredVersion || '').trim();
     const publishedClickOnce =
       await this.getPublishedClickOnceVersionFromDisk();
-    const hasClickOnce = Boolean(
-      publishedClickOnce && parseVersion(publishedClickOnce) != null,
-    );
+    const clickOncePacked = publishedClickOnce
+      ? parseVersion(publishedClickOnce)
+      : null;
+    const hasClickOnce = clickOncePacked != null;
     const latestAsMin =
       forceLatest && hasClickOnce ? (publishedClickOnce || '').trim() : '';
 
@@ -199,10 +200,9 @@ export class ClientUpdatesPublisherService {
     }
     parsed.sort((left, right) => right.packed - left.packed);
 
-    if (hasClickOnce) {
-      const clickOncePacked = parseVersion(publishedClickOnce!);
-      if (clickOncePacked != null && parsed[0].packed > clickOncePacked) {
-        return publishedClickOnce!;
+    if (publishedClickOnce && clickOncePacked != null) {
+      if (parsed[0].packed > clickOncePacked) {
+        return publishedClickOnce;
       }
       return parsed[0].value;
     }

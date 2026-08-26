@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -39,8 +38,6 @@ export type RoomAdminContext = {
 
 @Injectable()
 export class RoomAdminMaintenanceService {
-  private readonly logger = new Logger(RoomAdminMaintenanceService.name);
-
   constructor(
     @Inject(ROOM_REPOSITORY)
     private readonly rooms: RoomRepository,

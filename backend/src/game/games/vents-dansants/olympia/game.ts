@@ -1,17 +1,20 @@
 import {
   cards,
-  clockwise,
+  cardGame,
   defineGame,
   playerView,
-  victoryWhen,
-  when,
 } from '../../../core/application/public-api';
 import {
   OLYMPIA_CARD_BY_ID,
   OLYMPIA_DECKS,
+  isOlympiaStatusKey,
   type OlympiaDeckType,
 } from './content';
-import { OLYMPIA_ACTIONS, skipOlympiaPlayer } from './rules';
+import {
+  drawnPlayerId,
+  OLYMPIA_ACTIONS,
+  OLYMPIA_EFFECTS,
+} from './rules';
 import type { OlympiaPlayerView, OlympiaState } from './state';
 
 const DECKS: OlympiaDeckType[] = [
@@ -35,25 +38,32 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Gagnez le prestige suprême du panthéon.',
   players: { min: 2, max: 6 },
+  patterns: [
+    cardGame({
+      deckId: 'heros',
+      handId: 'players',
+      cards: OLYMPIA_DECKS.heros,
+    }),
+    cardGame({
+      deckId: 'divinite',
+      handId: 'divinities',
+      cards: OLYMPIA_DECKS.divinite,
+      visibility: 'public',
+    }),
+  ],
   components: [
-    ...DECKS.map((id) =>
+    ...DECKS.filter((id) => id !== 'heros' && id !== 'divinite').map((id) =>
       cards.deck({ id, cards: OLYMPIA_DECKS[id], shuffle: true }),
     ),
-    cards.hands({
-      id: 'players',
-      deck: 'heros',
-      initial: 0,
-      visibility: 'owner',
-    }),
   ],
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'P', type: 'action', actionType: 'pass' },
   ],
   setup: ({ players, ctx }) => {
-    const divinity: Record<number, string> = {};
     for (const player of players) {
-      divinity[player.id] = ctx.cards.draw<string>('divinite') ?? '';
+      const divinity = ctx.cards.draw<string>('divinite');
+      if (divinity) ctx.cards.give('divinities', player.id, divinity);
       for (let index = 0; index < 2; index += 1) {
         const creature = ctx.cards.draw<string>('creatures');
         if (creature) ctx.cards.give('players', player.id, creature);
@@ -62,52 +72,57 @@ export default defineGame<
         ctx.cards.draw<string>('actions') ?? ctx.cards.draw<string>('attaques');
       if (action) ctx.cards.give('players', player.id, action);
     }
-    return {
-      divinity,
-      prestige: Object.fromEntries(players.map((player) => [player.id, 0])),
-      statuses: Object.fromEntries(players.map((player) => [player.id, []])),
-      skipTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-      drawnPlayerId: null,
-      winnerIds: [],
-    };
+    return {};
   },
-  turn: clockwise(),
   actions: OLYMPIA_ACTIONS,
-  automatic: [
-    when(
-      'skip-olympia-player',
-      ({ state, ctx }) =>
-        (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-      ({ state, ctx }) => skipOlympiaPlayer(state, ctx),
-    ),
-  ],
-  victory: victoryWhen(({ state }) =>
-    state.winnerIds.length === 0
-      ? null
-      : { winnerPlayerIds: state.winnerIds, reason: 'prestige-30' },
-  ),
-  view: ({ state, actor, ctx }) => {
-    const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
-    const deckCounts = Object.fromEntries(
-      DECKS.map((deck) => [
-        deck,
-        ctx.cards.deckCount(deck) + ctx.cards.discardCount(deck),
+  effects: OLYMPIA_EFFECTS,
+  view: ({ state, ctx }) => {
+    const divinity = Object.fromEntries(
+      ctx.players
+        .all()
+        .map((player) => [
+          player.id,
+          ctx.cards.hand<string>('divinities', player.id)[0] ?? '',
+        ]),
+    );
+    const prestige = Object.fromEntries(
+      ctx.players.all().map((player) => [player.id, ctx.score.get(player.id)]),
+    );
+    const statuses = Object.fromEntries(
+      ctx.players.all().map((player) => [
+        player.id,
+        ctx.status
+          .list(player.id)
+          .filter((status) => isOlympiaStatusKey(status.id))
+          .map((status) => {
+            const value = status.data.value;
+            return {
+              key: status.id,
+              turns: status.remaining ?? 0,
+              ...(typeof value === 'number' ? { value } : {}),
+            };
+          }),
       ]),
+    );
+    const skipTurns = Object.fromEntries(
+      ctx.players
+        .all()
+        .map((player) => [player.id, ctx.turn.skipCount(player.id)]),
     );
     return playerView({
       game: {
-        ...structuredClone(state),
-        hand: structuredClone(hand),
-        handCounts: ctx.cards.handCounts('players'),
-        deckCounts,
+        divinity,
+        prestige,
+        statuses,
+        drawnPlayerId: drawnPlayerId(ctx),
+        winnerIds: ctx.match.result()?.winnerPlayerIds ?? [],
+        skipTurns,
       },
       extras: {
-        hand: hand.map((cardId) => OLYMPIA_CARD_BY_ID[cardId]),
-        handCounts: ctx.cards.handCounts('players'),
-        prestige: structuredClone(state.prestige),
-        divinity: structuredClone(state.divinity),
-        statuses: structuredClone(state.statuses),
-        deckCounts,
+        cardCatalog: OLYMPIA_CARD_BY_ID,
+        prestige: structuredClone(prestige),
+        divinity: structuredClone(divinity),
+        statuses: structuredClone(statuses),
       },
     });
   },

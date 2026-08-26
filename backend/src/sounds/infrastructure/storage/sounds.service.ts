@@ -19,6 +19,7 @@ import {
 } from '../../../notification/public-api';
 import {
   buildStorageIoError,
+  decodeSoundManifest,
   resolveSoundsDataRoot,
 } from './sounds-storage.utils';
 import {
@@ -147,8 +148,10 @@ export class SoundsService {
     const file = path.join(this.storageRoot, 'manifest.json');
     try {
       const raw = await fs.promises.readFile(file, 'utf-8');
-      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as SoundManifest;
-      if (!parsed?.sounds || typeof parsed?.sounds !== 'object') {
+      const parsed = decodeSoundManifest(
+        JSON.parse(raw.replace(/^\uFEFF/, '')),
+      );
+      if (!parsed) {
         throw new BadRequestException('manifest invalide');
       }
       return parsed;
@@ -237,7 +240,7 @@ export class SoundsService {
     const next = {
       updatedAt: new Date().toISOString(),
       sounds: { ...(manifest.sounds || {}) },
-    } as SoundManifest;
+    };
     delete next.sounds[soundId];
     await this.writeManifest(next);
 

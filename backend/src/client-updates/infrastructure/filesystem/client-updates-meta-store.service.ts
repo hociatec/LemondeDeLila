@@ -4,6 +4,8 @@ import { Injectable } from '@nestjs/common';
 
 import { ClientUpdateMeta } from '../../application/models/client-update-meta.record';
 import { ClientUpdatesPathsService } from './client-updates-paths.service';
+import { decodeClientUpdateMeta } from './client-update-meta.decoder';
+import { getErrorCode } from '@common/utils/public-api';
 
 @Injectable()
 export class ClientUpdatesMetaStoreService {
@@ -25,12 +27,17 @@ export class ClientUpdatesMetaStoreService {
       }
 
       const raw = await fs.promises.readFile(this.paths.getMetaPath(), 'utf-8');
-      const parsed = JSON.parse(raw.replace(/^\uFEFF/, '')) as ClientUpdateMeta;
+      const parsed = decodeClientUpdateMeta(
+        JSON.parse(raw.replace(/^\uFEFF/, '')),
+      );
+      if (!parsed) {
+        throw new Error('Métadonnées de mise à jour client invalides.');
+      }
       this.latestMeta = parsed;
       this.latestMetaMtimeMs = mtimeMs;
       return parsed;
     } catch (error) {
-      const errno = (error as NodeJS.ErrnoException | null)?.code ?? '';
+      const errno = getErrorCode(error) ?? '';
       if (errno === 'ENOENT') {
         this.latestMeta = null;
         this.latestMetaMtimeMs = null;

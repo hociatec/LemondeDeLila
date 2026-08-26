@@ -1,12 +1,12 @@
 import {
   cards,
-  clockwise,
+  defineChoice,
+  defineEffect,
   defineGame,
-  diceKit,
-  movement,
+  gameInput,
+  pawns,
   playerView,
-  victoryWhen,
-  when,
+  raceGame,
 } from '../../../core/application/public-api';
 import {
   AVENTURE_ANIMAL_CARDS,
@@ -16,9 +16,10 @@ import {
 } from './content';
 import {
   AVENTURE_ACTIONS,
+  AVENTURE_PHASES,
   requestPawn,
+  resolveLanding,
   resolvePawnChoice,
-  skipAventurePlayer,
 } from './rules';
 import type { AventureSauvagePlayerView, AventureSauvageState } from './state';
 
@@ -33,9 +34,15 @@ export default defineGame<
   subcategory: 'LesQuatreVents',
   description: 'Une course animalière jusqu’à la mare de la jungle.',
   players: { min: 2, max: 6 },
+  patterns: [
+    raceGame({
+      trackId: 'jungle',
+      spaces: AVENTURE_TILES.length,
+      winOnFinish: 'jungle-finish',
+    }),
+  ],
   components: [
-    movement.track({ id: 'jungle', spaces: AVENTURE_TILES.length }),
-    diceKit({ id: 'main', count: 1, sides: 6 }),
+    pawns.set({ id: 'avatars', pawns: AVENTURE_PAWNS }),
     cards.deck({ id: 'animal', cards: AVENTURE_ANIMAL_CARDS, shuffle: true }),
     cards.deck({ id: 'patte', cards: AVENTURE_PATTE_CARDS, shuffle: true }),
   ],
@@ -44,62 +51,56 @@ export default defineGame<
     { key: 'P', type: 'interface', id: 'position' },
   ],
   setup: ({ players, ctx }) => {
-    const state: AventureSauvageState = {
-      pawnByPlayerId: {},
-      skipTurns: Object.fromEntries(players.map((player) => [player.id, 0])),
-      setupComplete: false,
-      lastRoll: null,
-      winnerId: null,
-    };
     const first = players[0];
-    if (first) requestPawn(state, first.id, ctx);
-    return state;
+    if (first) requestPawn(first.id, ctx);
+    return {};
   },
-  initialPhase: 'setup',
-  turn: clockwise(),
+  initialPhase: AVENTURE_PHASES.initialPhase,
+  phases: AVENTURE_PHASES.phases,
   actions: AVENTURE_ACTIONS,
-  choices: {
-    'aventure.pawn': {
-      resolve: ({ state, actor, value, ctx }) =>
-        resolvePawnChoice(state, actor.id, String(value), ctx),
-    },
+  effects: {
+    'aventure.resolve-landing': defineEffect({
+      input: gameInput.object({}),
+      apply: ({ actorPlayerId, ctx }) => {
+        if (actorPlayerId != null) resolveLanding(actorPlayerId, ctx);
+      },
+    }),
   },
-  automatic: [
-    when(
-      'skip-aventure-player',
-      ({ state, ctx }) =>
-        state.setupComplete &&
-        (state.skipTurns[ctx.players.current()?.id ?? 0] ?? 0) > 0,
-      ({ state, ctx }) => skipAventurePlayer(state, ctx),
-    ),
-  ],
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'jungle-finish' },
-  ),
-  view: ({ state, actor, ctx }) => {
-    const positions = Object.fromEntries(
+  choices: {
+    'aventure.pawn': defineChoice<AventureSauvageState, string>({
+      input: gameInput.string({ min: 1, max: 128 }),
+      resolve: ({ actor, value, ctx }) =>
+        resolvePawnChoice(actor.id, value, ctx),
+    }),
+  },
+  view: ({ actor, ctx }) => {
+    const positions = ctx.players.byId((player) =>
+      ctx.movement.position('jungle', player.id),
+    );
+    const pawnByPlayerId = Object.fromEntries(
       ctx.players
         .all()
-        .map((player) => [
-          player.id,
-          ctx.movement.position('jungle', player.id),
-        ]),
+        .flatMap((player) => {
+          const pawnId = ctx.pawns.assigned('avatars', player.id)[0];
+          return pawnId == null ? [] : [[player.id, pawnId]];
+        }),
     );
-    const deckCounts = Object.fromEntries(
-      (['animal', 'patte'] as const).map((id) => [
-        id,
-        ctx.cards.deckCount(id) + ctx.cards.discardCount(id),
-      ]),
-    ) as AventureSauvagePlayerView['deckCounts'];
     const pawn = actor
       ? (AVENTURE_PAWNS.find(
-          (entry) => entry.id === state.pawnByPlayerId[actor.id],
+          (entry) => entry.id === pawnByPlayerId[actor.id],
         ) ?? null)
       : null;
     return playerView({
-      game: { ...structuredClone(state), positions, deckCounts },
+      game: {
+        pawnByPlayerId,
+        lastRoll: ctx.dice.last('main')?.total ?? null,
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+        setupComplete: AVENTURE_PHASES.is(ctx, 'playing'),
+        skipTurns: ctx.players.byId((player) =>
+          ctx.turn.skipCount(player.id),
+        ),
+        positions,
+      },
       extras: {
         currentPlayerView: actor
           ? { id: actor.id, username: actor.username }

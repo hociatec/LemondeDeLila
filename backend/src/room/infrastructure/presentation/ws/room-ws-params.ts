@@ -27,13 +27,10 @@ export function extractRoomWsParams(
   client: WebSocket,
   args: unknown[],
 ): RoomWsParams {
-  const wsClient = client as unknown as WsClientLike;
-  const request =
-    ((args && args[0]) as WsRequestLike | undefined) ??
-    wsClient.upgradeReq ??
-    wsClient.req;
+  const wsClient = toWsClient(client);
+  const request = toWsRequest(args[0]) ?? wsClient.upgradeReq ?? wsClient.req;
   const urlCandidate = wsClient.url || request?.url || '';
-  let roomId = 0;
+  let roomId: number;
   let token: string | null = null;
   let spectator = false;
   let silent = false;
@@ -75,6 +72,32 @@ export function extractRoomWsParams(
   }
 
   return { token, roomId, spectator, silent };
+}
+
+function toWsClient(value: unknown): WsClientLike {
+  if (!isRecord(value)) return {};
+  return {
+    upgradeReq: toWsRequest(value.upgradeReq),
+    req: toWsRequest(value.req),
+    url: typeof value.url === 'string' ? value.url : undefined,
+    handshakeHeaders: toHeaders(value.handshakeHeaders),
+  };
+}
+
+function toWsRequest(value: unknown): WsRequestLike | undefined {
+  if (!isRecord(value)) return undefined;
+  return {
+    url: typeof value.url === 'string' ? value.url : undefined,
+    headers: toHeaders(value.headers),
+  };
+}
+
+function toHeaders(value: unknown): Record<string, unknown> | undefined {
+  return isRecord(value) ? value : undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === 'object' && !Array.isArray(value);
 }
 
 function extractBearer(

@@ -3,7 +3,7 @@ import { GameWsCommandMapper } from './game-ws-command.mapper';
 describe('GameWsCommandMapper', () => {
   const mapper = new GameWsCommandMapper();
 
-  it('normalizes legacy action shapes and keeps control fields out of payload', () => {
+  it('rejects removed legacy action shapes', () => {
     const actions = mapper.resolveActions(
       {
         roomId: 4,
@@ -14,13 +14,7 @@ describe('GameWsCommandMapper', () => {
       12,
     );
 
-    expect(actions).toEqual([
-      {
-        type: 'play',
-        payload: { card: 6 },
-        meta: { actorId: 12 },
-      },
-    ]);
+    expect(actions).toEqual([]);
   });
 
   it('binds every decoded action to the authenticated actor', () => {

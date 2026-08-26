@@ -1,19 +1,20 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export type WonderGood = 'gemmes' | 'potions' | 'reliques' | 'ingredients';
 export type WonderInventory = Record<WonderGood, number>;
 export type WonderPrices = Record<WonderGood, number>;
 
-export interface WonderMarketState {
-  round: number;
-  maxRounds: number;
-  turnsTaken: number;
-  prices: WonderPrices;
-  coins: Record<number, number>;
-  inventories: Record<number, WonderInventory>;
-  protectedPlayers: Record<number, boolean>;
-  lastMarketEvent: string | null;
-  winnerId: number | null;
-}
+export type WonderMarketState = Record<string, never>;
 
-export interface WonderMarketPlayerView extends WonderMarketState {
-  myInventory: WonderInventory;
-}
+export type WonderMarketPlayerView = {
+  turnsTaken: number;
+  lastMarketEvent: {
+    key: string;
+    params: Record<string, unknown>;
+    timestamp?: string;
+  } | null;
+  maxRounds: number;
+  round: number;
+  protectedPlayers: PlayerMap<boolean>;
+  winnerId: number | null;
+};

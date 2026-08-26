@@ -1,15 +1,25 @@
 import {
   cards,
-  clockwise,
+  cardGame,
+  defineGamePhases,
   defineGame,
-  diceKit,
-  movement,
   playerView,
-  victoryWhen,
+  raceGame,
 } from '../../../core/application/public-api';
-import { TAXI_CLIENTS, TAXI_EVENTS, TAXI_TILES } from './content';
+import {
+  TAXI_CLIENTS,
+  TAXI_EVENTS,
+  TAXI_TILES,
+  type TaxiClient,
+  type TaxiEvent,
+} from './content';
 import { TAXI_ACTIONS } from './rules';
 import type { TaxiPlayerView, TaxiState } from './state';
+
+const TAXI_PHASES = defineGamePhases<TaxiState>()({
+  initialPhase: 'playing',
+  phases: { playing: {} },
+});
 
 export default defineGame<TaxiState, typeof TAXI_ACTIONS, TaxiPlayerView>({
   id: 'taxi-express',
@@ -18,32 +28,27 @@ export default defineGame<TaxiState, typeof TAXI_ACTIONS, TaxiPlayerView>({
   subcategory: 'LesQuatreVents',
   description: 'Déposez cinq clients en évitant les rues bloquées.',
   players: { min: 2, max: 5 },
+  patterns: [
+    raceGame({ trackId: 'city', spaces: TAXI_TILES.length }),
+    cardGame({
+      deckId: 'clients',
+      handId: 'taxi-clients',
+      cards: TAXI_CLIENTS,
+    }),
+  ],
   components: [
-    movement.track({ id: 'city', spaces: TAXI_TILES.length }),
-    diceKit({ id: 'main', count: 1, sides: 6 }),
-    cards.deck({ id: 'clients', cards: TAXI_CLIENTS, shuffle: true }),
     cards.deck({ id: 'events', cards: TAXI_EVENTS, shuffle: true }),
   ],
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
-  setup: ({ players }) => ({
-    activeClients: Object.fromEntries(
-      players.map((player) => [player.id, null]),
-    ),
-    completedTrips: Object.fromEntries(players.map((player) => [player.id, 0])),
-    lastEvent: null,
-    lastRoll: null,
-    winnerId: null,
-  }),
-  initialPhase: 'playing',
-  turn: clockwise(),
+  setup: () => ({}),
+  initialPhase: TAXI_PHASES.initialPhase,
+  phases: TAXI_PHASES.phases,
   actions: TAXI_ACTIONS,
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'five-trips' },
-  ),
-  view: ({ state, actor, ctx }) => {
-    const { activeClients: _activeClients, ...publicState } = state;
+  view: ({ actor, ctx }) => {
+    const completedTrips = Object.fromEntries(
+      ctx.players.all().map((player) => [player.id, ctx.score.get(player.id)]),
+    );
+    const lastEvent = ctx.cards.discardPile<TaxiEvent>('events').at(-1) ?? null;
     const positions = Object.fromEntries(
       ctx.players
         .all()
@@ -51,17 +56,20 @@ export default defineGame<TaxiState, typeof TAXI_ACTIONS, TaxiPlayerView>({
     );
     return playerView({
       game: {
-        ...structuredClone(publicState),
+        completedTrips,
+        lastEvent,
+        lastRoll: ctx.dice.last('main')?.total ?? null,
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
         positions,
         activeClient: actor
-          ? structuredClone(state.activeClients[actor.id])
+          ? (ctx.cards.hand<TaxiClient>('taxi-clients', actor.id)[0] ?? null)
           : null,
         hasActiveClient: Object.fromEntries(
           ctx.players
             .all()
             .map((player) => [
               player.id,
-              state.activeClients[player.id] != null,
+              ctx.cards.hand<TaxiClient>('taxi-clients', player.id).length > 0,
             ]),
         ),
       },

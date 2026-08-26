@@ -39,7 +39,7 @@ export class BugReportTypeormRepository implements BugReportRepository {
   }
 
   exists(id: string): Promise<boolean> {
-    return this.repo.exist({ where: { id } });
+    return this.repo.exists({ where: { id } });
   }
 
   private toRecord(entity: BugReportEntity): BugReportRecord {

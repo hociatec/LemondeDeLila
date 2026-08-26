@@ -37,7 +37,7 @@ export function toRoomBotRecord(
 export function toRoomParticipantRecord(
   participant: RoomParticipant | null | undefined,
 ): RoomParticipantRecord | null {
-  const user = toRoomUserRecord(participant?.user as User | null | undefined);
+  const user = toRoomUserRecord(participant?.user);
   if (!participant || !user) {
     return null;
   }

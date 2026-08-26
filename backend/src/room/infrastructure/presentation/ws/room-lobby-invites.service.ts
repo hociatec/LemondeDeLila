@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { getErrorMessage } from '@common/utils/public-api';
 import {
   NOTIFICATION_DISPATCHER,
   type NotificationDispatcher,
@@ -165,11 +166,7 @@ export class RoomLobbyInvitesService {
       this.invites.consume(invitationId);
       await this.refreshRoom(invite.roomId);
     } catch (error) {
-      if (
-        !String((error as Error)?.message ?? '')
-          .toLowerCase()
-          .includes('demarr')
-      ) {
+      if (!getErrorMessage(error, '').toLowerCase().includes('demarr')) {
         throw error;
       }
       const state = await this.roomState.getRoomPayload(invite.roomId);

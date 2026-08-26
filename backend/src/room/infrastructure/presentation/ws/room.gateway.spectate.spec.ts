@@ -23,8 +23,11 @@ function createGateway() {
   ) as any;
   const gateway = {
     canSpectate: (roomId: number, userId: number) =>
-      session.canSpectate(roomId, userId, (nextRoomId, nextUserId) =>
-        invites.canSpectate(nextRoomId, nextUserId),
+      session.canSpectate(
+        roomId,
+        userId,
+        (nextRoomId: number, nextUserId: number) =>
+          invites.canSpectate(nextRoomId, nextUserId),
       ),
   } as any;
 

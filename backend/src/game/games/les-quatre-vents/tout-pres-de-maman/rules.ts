@@ -1,9 +1,13 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameRuleContext } from '../../../core/application/runtime/game-rule-context';
+import {
+  defineAction,
+  defineEffect,
+  gameEffects,
+  gameInput,
+} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
 import { MAMAN_CONTENT } from './content';
 import type {
   MamanCard,
-  MamanPendingChoice,
   MamanTileType,
   ToutPresDeMamanState,
 } from './state';
@@ -12,67 +16,36 @@ const TRACK = 'forest';
 const DECK = 'events';
 const TOKENS_TO_WIN = 3;
 const MAX_DEPTH = 12;
+const TOKEN = 'eucalyptus';
+const BONUS_REROLL = 'maman.bonus-reroll';
 
-type RuleContext = GameRuleContext<ToutPresDeMamanState>;
+type RuleContext = GameContext<ToutPresDeMamanState>;
 
 export const roll = defineAction<ToutPresDeMamanState, Record<string, never>>({
   input: gameInput.object({}),
   documentation: 'Lance le dé et résout la chaîne d’effets de la forêt.',
   execute: ({ state, actor, ctx }) => {
-    let total = ctx.dice.roll('main').total;
-    if (state.bonusReroll[actor.id]) {
-      state.bonusReroll[actor.id] = false;
-      total += ctx.dice.roll('main').total;
-    }
-    state.lastRoll = total;
+    const extraDice = ctx.status.consume(actor.id, BONUS_REROLL) ? 1 : 0;
+    const total = ctx.dice.rollWith('main', { extraDice }).total;
     const current = ctx.movement.position(TRACK, actor.id);
     const last = MAMAN_CONTENT.tiles.length - 1;
     const rawTarget = current + total;
     const target =
       rawTarget > last ? Math.max(0, last - (rawTarget - last)) : rawTarget;
     setPosition(actor.id, target, ctx);
-    ctx.history.add(`${actor.username} avance de ${total} case(s).`);
+    ctx.events.message('game.pawn.moved', {
+      playerId: actor.id,
+      distance: total,
+      target,
+    });
     applyTile(state, actor.id, target, 0, ctx);
-    if (state.winnerId == null && state.pendingChoice == null) ctx.turn.end();
+    if (ctx.match.lifecycle() !== 'finished' && ctx.choice.current() == null) {
+      ctx.turn.end();
+    }
   },
 });
 
 export const TOUT_PRES_DE_MAMAN_ACTIONS = { roll };
-
-export function resolveMamanChoice(
-  state: ToutPresDeMamanState,
-  targetId: number,
-  ctx: RuleContext,
-): void {
-  const pending = state.pendingChoice;
-  if (!pending) throw new Error('Choix koala introuvable');
-  state.pendingChoice = null;
-  if (pending.kind === 'transfer-token') {
-    if (state.tokens[pending.actorId] > 0) {
-      state.tokens[pending.actorId] -= 1;
-      state.tokens[targetId] += 1;
-    }
-  } else if (pending.kind === 'share-advance') {
-    moveAndApply(state, targetId, 1, pending.depth, ctx);
-  } else {
-    moveAndApply(state, pending.actorId, 1, pending.depth, ctx);
-    if (state.pendingChoice == null) {
-      moveAndApply(state, targetId, 1, pending.depth, ctx);
-    }
-  }
-  if (state.winnerId == null && state.pendingChoice == null) ctx.turn.end();
-}
-
-export function skipRestingPlayer(
-  state: ToutPresDeMamanState,
-  ctx: RuleContext,
-): void {
-  const current = ctx.players.current();
-  if (!current) return;
-  state.skipTurns[current.id] = Math.max(0, state.skipTurns[current.id] - 1);
-  ctx.history.add(`${current.username} reste au nid et saute son tour.`);
-  ctx.turn.end();
-}
 
 function applyTile(
   state: ToutPresDeMamanState,
@@ -81,83 +54,48 @@ function applyTile(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (depth > MAX_DEPTH || state.pendingChoice != null) return;
+  if (depth > MAX_DEPTH || ctx.choice.current() != null) return;
   const tile = MAMAN_CONTENT.tiles[position];
   if (!tile) return;
-  if (tile.type === 'start') gainTokens(state, playerId, 2);
-  else if (tile.type === 'token') gainTokens(state, playerId, 1);
+  if (tile.type === 'start') gainTokens(playerId, 2, ctx);
+  else if (tile.type === 'token') gainTokens(playerId, 1, ctx);
   else if (tile.type === 'card')
-    drawAndApplyCard(state, playerId, depth + 1, ctx);
+    drawAndApplyCard(playerId, ctx);
   else if (tile.type === 'bonds')
     moveAndApply(state, playerId, 2, depth + 1, ctx);
   else if (tile.type === 'slide')
     moveAndApply(state, playerId, -2, depth + 1, ctx);
   else if (tile.type === 'storm' || tile.type === 'nest')
-    state.skipTurns[playerId] += 1;
+    ctx.turn.skip(playerId, 1);
   else if (tile.type === 'meeting')
-    requestChoice(state, 'meeting', playerId, depth + 1, ctx);
+    ctx.effects.schedule(
+      gameEffects.custom(
+        'maman.meeting',
+        {},
+        gameEffects.target.chosenOpponent('maman.meeting'),
+      ),
+      gameEffects.completeTurn(),
+    );
   else if (tile.type === 'finish')
     finishOrRewind(state, playerId, position, depth + 1, ctx);
 }
 
 function drawAndApplyCard(
-  state: ToutPresDeMamanState,
   playerId: number,
-  depth: number,
   ctx: RuleContext,
 ): void {
-  const card = ctx.cards.drawOrRecycle<MamanCard>(DECK);
-  if (!card) return;
-  ctx.cards.discard(DECK, card);
-  ctx.history.add(`Carte : ${card.text}`);
-  applyCard(state, playerId, card.id, depth, ctx);
-}
-
-function applyCard(
-  state: ToutPresDeMamanState,
-  playerId: number,
-  cardId: number,
-  depth: number,
-  ctx: RuleContext,
-): void {
-  if (depth > MAX_DEPTH) return;
-  if (cardId === 1 || cardId === 30)
-    moveAndApply(state, playerId, 1, depth + 1, ctx);
-  else if (cardId === 2 || cardId === 17)
-    moveAndApply(state, playerId, -1, depth + 1, ctx);
-  else if ([3, 12, 20].includes(cardId)) gainTokens(state, playerId, 1);
-  else if ([4, 18].includes(cardId))
-    moveAndApply(state, playerId, 2, depth + 1, ctx);
-  else if ([5, 13, 22, 28].includes(cardId)) state.skipTurns[playerId] += 1;
-  else if ([6, 19].includes(cardId))
-    moveAndApply(state, playerId, -2, depth + 1, ctx);
-  else if (cardId === 7) moveToType(state, playerId, 'card', 1, depth + 1, ctx);
-  else if (cardId === 8)
-    requestChoice(state, 'transfer-token', playerId, depth, ctx);
-  else if (cardId === 9)
-    moveToType(state, playerId, 'token', -1, depth + 1, ctx);
-  else if (cardId === 10) moveEveryone(state, -1, depth + 1, ctx);
-  else if (cardId === 11) state.bonusReroll[playerId] = true;
-  else if (cardId === 14) moveAndApply(state, playerId, 3, depth + 1, ctx);
-  else if (cardId === 15)
-    moveToType(state, playerId, 'bonds', -1, depth + 1, ctx);
-  else if (cardId === 16)
-    moveAndApply(state, playerId, ctx.dice.roll('main').total, depth + 1, ctx);
-  else if (cardId === 21) moveEveryone(state, 1, depth + 1, ctx);
-  else if (cardId === 23 && ctx.dice.roll('main').total >= 4) {
-    moveAndApply(state, playerId, 1, depth + 1, ctx);
-  } else if (cardId === 24)
-    moveToType(state, playerId, 'bonds', 1, depth + 1, ctx);
-  else if (cardId === 25)
-    state.tokens[playerId] = Math.max(0, state.tokens[playerId] - 1);
-  else if (cardId === 26) {
-    moveAndApply(state, playerId, 1, depth + 1, ctx);
-    if (state.pendingChoice == null)
-      requestChoice(state, 'share-advance', playerId, depth, ctx);
-  } else if (cardId === 29) {
-    moveAndApply(state, playerId, 2, depth + 1, ctx);
-    gainTokens(state, playerId, 1);
-  }
+  ctx.cards.drawThenResolve<MamanCard, void>(
+    DECK,
+    (card) => {
+      ctx.events.message('game.card.drawn', {
+        playerId,
+        deckId: DECK,
+        cardId: card.id,
+      });
+      ctx.effects.schedule(...card.effects);
+    },
+    {},
+  );
 }
 
 function moveAndApply(
@@ -167,7 +105,7 @@ function moveAndApply(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (state.pendingChoice != null) return;
+  if (ctx.choice.current() != null) return;
   const position = ctx.movement.move(TRACK, playerId, delta);
   applyTile(state, playerId, position, depth, ctx);
 }
@@ -192,18 +130,6 @@ function moveToType(
   }
 }
 
-function moveEveryone(
-  state: ToutPresDeMamanState,
-  delta: number,
-  depth: number,
-  ctx: RuleContext,
-): void {
-  for (const player of ctx.players.all()) {
-    if (state.pendingChoice != null) return;
-    moveAndApply(state, player.id, delta, depth, ctx);
-  }
-}
-
 function finishOrRewind(
   state: ToutPresDeMamanState,
   playerId: number,
@@ -211,36 +137,14 @@ function finishOrRewind(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (state.tokens[playerId] >= TOKENS_TO_WIN) {
-    state.winnerId = playerId;
+  const tokens = ctx.resources.get(playerId, TOKEN);
+  if (tokens >= TOKENS_TO_WIN) {
+    ctx.match.finish({ winners: [playerId], reason: 'maman-found' });
     return;
   }
-  const rewind = Math.min(position, TOKENS_TO_WIN - state.tokens[playerId]);
+  const rewind = Math.min(position, TOKENS_TO_WIN - tokens);
   setPosition(playerId, position - rewind, ctx);
   applyTile(state, playerId, position - rewind, depth, ctx);
-}
-
-function requestChoice(
-  state: ToutPresDeMamanState,
-  kind: MamanPendingChoice['kind'],
-  actorId: number,
-  depth: number,
-  ctx: RuleContext,
-): void {
-  if (kind === 'transfer-token' && state.tokens[actorId] === 0) return;
-  const options = ctx.players
-    .all()
-    .filter((player) => player.id !== actorId)
-    .map((player) => player.id);
-  if (options.length === 0) return;
-  state.pendingChoice = { kind, actorId, depth };
-  ctx.choice.one({
-    id: 'maman.target',
-    player: actorId,
-    options,
-    label: (targetId) =>
-      ctx.players.get(targetId)?.username ?? String(targetId),
-  });
 }
 
 function setPosition(
@@ -253,9 +157,107 @@ function setPosition(
 }
 
 function gainTokens(
-  state: ToutPresDeMamanState,
   playerId: number,
   amount: number,
+  ctx: RuleContext,
 ): void {
-  state.tokens[playerId] += amount;
+  ctx.resources.add(playerId, TOKEN, amount);
 }
+
+export const MAMAN_EFFECTS = {
+  'maman.move': defineEffect<ToutPresDeMamanState, { delta: number }>({
+    input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
+    apply: ({ state, targetPlayerIds, data, ctx }) => {
+      for (const playerId of targetPlayerIds) {
+        if (ctx.choice.current() == null) {
+          moveAndApply(state, playerId, data.delta, 0, ctx);
+        }
+      }
+    },
+  }),
+  'maman.move-to-type': defineEffect<
+    ToutPresDeMamanState,
+    {
+      type: 'card' | 'token' | 'bonds';
+      direction: 'forward' | 'backward';
+    }
+  >({
+    input: gameInput.object({
+      type: gameInput.enum(['card', 'token', 'bonds'] as const),
+      direction: gameInput.enum(['forward', 'backward'] as const),
+    }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId != null) {
+        moveToType(
+          state,
+          actorPlayerId,
+          data.type,
+          data.direction === 'forward' ? 1 : -1,
+          0,
+          ctx,
+        );
+      }
+    },
+  }),
+  'maman.transfer-token': defineEffect<
+    ToutPresDeMamanState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (
+        actorPlayerId != null &&
+        targetId != null &&
+        ctx.resources.has(actorPlayerId, TOKEN, 1)
+      ) {
+        ctx.resources.transfer(actorPlayerId, targetId, TOKEN, 1);
+      }
+    },
+  }),
+  'maman.share-advance': defineEffect<
+    ToutPresDeMamanState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ state, targetPlayerIds, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (targetId != null) moveAndApply(state, targetId, 1, 0, ctx);
+    },
+  }),
+  'maman.meeting': defineEffect<
+    ToutPresDeMamanState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ state, actorPlayerId, targetPlayerIds, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (actorPlayerId != null) moveAndApply(state, actorPlayerId, 1, 0, ctx);
+      if (targetId != null && ctx.match.lifecycle() !== 'finished') {
+        moveAndApply(state, targetId, 1, 0, ctx);
+      }
+    },
+  }),
+  'maman.roll-move': defineEffect<
+    ToutPresDeMamanState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ state, actorPlayerId, ctx }) => {
+      if (actorPlayerId != null) {
+        moveAndApply(state, actorPlayerId, ctx.dice.roll('main').total, 0, ctx);
+      }
+    },
+  }),
+  'maman.roll-threshold-move': defineEffect<
+    ToutPresDeMamanState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ state, actorPlayerId, ctx }) => {
+      if (actorPlayerId != null && ctx.dice.roll('main').total >= 4) {
+        moveAndApply(state, actorPlayerId, 1, 0, ctx);
+      }
+    },
+  }),
+} as const;

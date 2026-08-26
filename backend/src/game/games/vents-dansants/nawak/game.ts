@@ -2,10 +2,9 @@ import {
   defineGame,
   playerView,
   simultaneous,
-  victoryWhen,
 } from '../../../core/application/public-api';
 import { NAWAK_CHALLENGES } from './content';
-import { NAWAK_ACTIONS } from './rules';
+import { NAWAK_ACTIONS, NAWAK_TARGET_SCORE, nawakStage } from './rules';
 import type { NawakPlayerView, NawakState } from './state';
 
 export default defineGame<NawakState, typeof NAWAK_ACTIONS, NawakPlayerView>({
@@ -20,53 +19,78 @@ export default defineGame<NawakState, typeof NAWAK_ACTIONS, NawakPlayerView>({
     { key: 'C', type: 'action', actionType: 'choose_answer' },
     { key: 'V', type: 'action', actionType: 'vote_answer' },
   ],
-  setup: ({ players, ctx }) => ({
-    targetScore: 5,
-    scores: Object.fromEntries(players.map((player) => [player.id, 0])),
-    currentChallenge: ctx.random.pick(NAWAK_CHALLENGES) ?? NAWAK_CHALLENGES[0],
-    roundStage: 'choose',
-    submissions: {},
-    votes: {},
-    lastRound: null,
-    winnerId: null,
-  }),
+  initialization: { firstPlayer: 'first', startRound: true },
+  setup: ({ ctx }) => {
+    ctx.submissions.open({ id: 'nawak.answers', secret: true });
+    ctx.turn.waitForAll('nawak.answers');
+    return {
+      currentChallengeId: (
+        ctx.random.pick(NAWAK_CHALLENGES) ?? NAWAK_CHALLENGES[0]
+      ).id,
+      lastRound: null,
+    };
+  },
   turn: simultaneous(),
   actions: NAWAK_ACTIONS,
-  victory: victoryWhen(({ state }) =>
-    state.winnerId == null
-      ? null
-      : { winnerPlayerIds: [state.winnerId], reason: 'target-score' },
-  ),
-  view: ({ state }) => {
-    const revealAnswers = state.roundStage === 'vote';
+  view: ({ state, ctx }) => {
+    const currentChallenge =
+      NAWAK_CHALLENGES.find(
+        (challenge) => challenge.id === state.currentChallengeId,
+      ) ?? NAWAK_CHALLENGES[0];
+    const scores = Object.fromEntries(
+      ctx.players.all().map((player) => [player.id, ctx.score.get(player.id)]),
+    );
+    const lastRound = state.lastRound
+      ? {
+          ...structuredClone(state.lastRound),
+          prompt:
+            NAWAK_CHALLENGES.find(
+              (challenge) => challenge.id === state.lastRound?.challengeId,
+            )?.prompt ?? '',
+        }
+      : null;
+    const roundStage = nawakStage(ctx);
+    const revealAnswers = roundStage === 'vote';
+    const submissions = ctx.submissions.values<number>('nawak.answers');
+    const votes =
+      roundStage === 'vote'
+        ? ctx.submissions.values<number>('nawak.votes')
+        : {};
     return playerView({
       game: {
-        ...structuredClone(state),
-        submissions: revealAnswers ? structuredClone(state.submissions) : {},
+        targetScore: NAWAK_TARGET_SCORE,
+        scores,
+        currentChallenge: structuredClone(currentChallenge),
+        lastRound,
+        roundStage,
+        winnerId: ctx.match.result()?.winnerPlayerIds[0] ?? null,
+        submissions: revealAnswers ? submissions : {},
         votes: {},
       },
       extras: {
-        hand: [...state.currentChallenge.answers],
-        targetScore: state.targetScore,
-        scores: structuredClone(state.scores),
-        stage: state.roundStage,
-        challenge: structuredClone(state.currentChallenge),
-        submissions: revealAnswers ? structuredClone(state.submissions) : {},
-        submissionCount: Object.keys(state.submissions).length,
-        voteCount: Object.keys(state.votes).length,
-        lastRound: structuredClone(state.lastRound),
+        hand: [...currentChallenge.answers],
+        targetScore: NAWAK_TARGET_SCORE,
+        scores: structuredClone(scores),
+        stage: roundStage,
+        challenge: structuredClone(currentChallenge),
+        submissions: revealAnswers ? submissions : {},
+        submissionCount: Object.keys(submissions).length,
+        voteCount: Object.keys(votes).length,
+        lastRound: structuredClone(lastRound),
       },
     });
   },
   bot: {
     choose: ({ state, actor, ctx }) => {
-      if (state.roundStage === 'choose') {
+      if (nawakStage(ctx) === 'choose') {
         return {
           type: 'choose_answer',
           payload: { answerIndex: ctx.random.int(3) },
         };
       }
-      const targets = Object.keys(state.submissions)
+      const targets = Object.keys(
+        ctx.submissions.values<number>('nawak.answers'),
+      )
         .map(Number)
         .filter((playerId) => playerId !== actor.id);
       const targetPlayerId = ctx.random.pick(targets);

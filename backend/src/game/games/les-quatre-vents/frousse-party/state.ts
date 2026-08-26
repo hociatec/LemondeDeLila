@@ -1,26 +1,24 @@
 import type { FrousseBlock } from './content';
+import type { PlayerMap } from '../../../core/application/public-api';
 
-export interface FrousseState {
-  pawnByPlayerId: Record<number, string>;
-  setupComplete: boolean;
+export type FrousseState = Record<string, never>;
+
+export type FroussePlayerView = {
+  ignoreNextTrap: PlayerMap<boolean>;
+  ignoreTrapUntilNextDraw: PlayerMap<boolean>;
+  ignoreNextPrank: PlayerMap<boolean>;
+  ignoreNextGhost: PlayerMap<boolean>;
+  nextMoveCap: PlayerMap<number>;
+  nextRollMalus: PlayerMap<number>;
+  nextRollKeepLowest: PlayerMap<boolean>;
+  nextRollDouble: PlayerMap<boolean>;
+  nextRollIfThreeBackTwo: PlayerMap<boolean>;
+  blocked: PlayerMap<FrousseBlock | null>;
+  pawnByPlayerId: PlayerMap<string>;
   starterId: number;
-  skipTurns: Record<number, number>;
-  ignoreNextTrap: Record<number, boolean>;
-  ignoreTrapUntilNextDraw: Record<number, boolean>;
-  ignoreNextPrank: Record<number, boolean>;
-  ignoreNextGhost: Record<number, boolean>;
-  nextMoveCap: Record<number, number>;
-  nextRollMalus: Record<number, number>;
-  nextRollKeepLowest: Record<number, boolean>;
-  nextRollDouble: Record<number, boolean>;
-  nextRollIfThreeBackTwo: Record<number, boolean>;
-  blocked: Record<number, FrousseBlock | null>;
-  replayTurns: Record<number, number>;
-  pendingSwap: { actorId: number; canDecline: boolean } | null;
+  replayTurns: PlayerMap<number>;
+  positions: PlayerMap<number>;
   winnerId: number | null;
-}
-
-export type FroussePlayerView = Omit<FrousseState, 'pendingSwap'> & {
-  positions: Record<number, number>;
-  deckCount: number;
+  skipTurns: PlayerMap<number>;
+  setupComplete: boolean;
 };

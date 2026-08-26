@@ -1,3 +1,5 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export interface NawakChallenge {
   id: string;
   prompt: string;
@@ -6,24 +8,24 @@ export interface NawakChallenge {
 
 export type NawakStage = 'choose' | 'vote';
 
-export interface NawakRoundSummary {
+export interface NawakRoundState {
   challengeId: string;
-  prompt: string;
-  submissions: Record<number, number>;
-  votes: Record<number, number>;
-  pointsAwarded: Record<number, number>;
+  submissions: PlayerMap<number>;
+  votes: PlayerMap<number>;
+  pointsAwarded: PlayerMap<number>;
   tie: boolean;
 }
 
 export interface NawakState {
-  targetScore: number;
-  scores: Record<number, number>;
-  currentChallenge: NawakChallenge;
-  roundStage: NawakStage;
-  submissions: Record<number, number>;
-  votes: Record<number, number>;
-  lastRound: NawakRoundSummary | null;
-  winnerId: number | null;
+  currentChallengeId: string;
+  lastRound: NawakRoundState | null;
 }
 
-export type NawakPlayerView = NawakState;
+export type NawakPlayerView = {
+  targetScore: number;
+  scores: PlayerMap<number>;
+  currentChallenge: NawakChallenge;
+  lastRound: (NawakRoundState & { prompt: string }) | null;
+  roundStage: NawakStage;
+  winnerId: number | null;
+};

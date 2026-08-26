@@ -52,7 +52,7 @@ export class GameWsStatePresenter {
     if (Number.isFinite(viewerId) && viewerId > 0) {
       return handler.exposeStateForUser(state, viewerId);
     }
-    return handler.exposeStateForUser(state, 0);
+    return handler.exposeStateForUser(state, null);
   }
 
   private resolveShortcuts(

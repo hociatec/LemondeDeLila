@@ -41,7 +41,7 @@ export class PresenceRoomParticipantTypeormRepository implements PresenceRoomPar
         leftAt: IsNull(),
         user: { id: In(normalizedUserIds) },
       } as FindOptionsWhere<PresenceRoomParticipantRow>,
-      relations: ['room', 'user'],
+      relations: { room: true, user: true },
       order: { joinedAt: 'DESC' },
     });
 

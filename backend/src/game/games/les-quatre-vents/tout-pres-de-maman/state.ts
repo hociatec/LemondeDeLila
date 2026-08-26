@@ -1,3 +1,8 @@
+import type {
+  GameEffectInstruction,
+  PlayerMap,
+} from '../../../core/application/public-api';
+
 export type MamanTileType =
   | 'start'
   | 'neutral'
@@ -20,28 +25,16 @@ export interface MamanTile {
 export interface MamanCard {
   id: number;
   text: string;
+  effects: readonly GameEffectInstruction[];
 }
 
-export type MamanPendingChoice = {
-  kind: 'transfer-token' | 'share-advance' | 'meeting';
-  actorId: number;
-  depth: number;
-};
+export type ToutPresDeMamanState = Record<string, never>;
 
-export interface ToutPresDeMamanState {
-  tokens: Record<number, number>;
-  skipTurns: Record<number, number>;
-  bonusReroll: Record<number, boolean>;
+export type ToutPresDeMamanPlayerView = {
+  tokens: PlayerMap<number>;
+  bonusReroll: PlayerMap<boolean>;
   lastRoll: number | null;
+  positions: PlayerMap<number>;
   winnerId: number | null;
-  pendingChoice: MamanPendingChoice | null;
-}
-
-export type ToutPresDeMamanPlayerView = Omit<
-  ToutPresDeMamanState,
-  'pendingChoice'
-> & {
-  positions: Record<number, number>;
-  deckCount: number;
-  discardCount: number;
+  skipTurns: PlayerMap<number>;
 };

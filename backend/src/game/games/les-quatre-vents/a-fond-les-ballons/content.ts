@@ -1,3 +1,12 @@
+import {
+  freezeGameContent,
+  gameEffects,
+} from '../../../core/application/public-api';
+import type {
+  EffectTarget,
+  GameEffectInstruction,
+} from '../../../core/application/public-api';
+
 export type BalloonPawn = {
   id: string;
   label: string;
@@ -53,9 +62,8 @@ const normalizeText = (value: string): string =>
 
 export const resolvePawnId = (raw: unknown): string | null => {
   if (raw == null) return null;
-  if (typeof raw === 'object') {
-    const record = raw as Record<string, unknown>;
-    const maybeId = record.id ?? record.pawnId ?? record.value;
+  if (isRecord(raw)) {
+    const maybeId = raw.id ?? raw.pawnId ?? raw.value;
     if (
       typeof maybeId === 'string' ||
       typeof maybeId === 'number' ||
@@ -77,6 +85,9 @@ export const resolvePawnId = (raw: unknown): string | null => {
   );
   return byLabel ? byLabel.id : null;
 };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value != null && typeof value === 'object' && !Array.isArray(value);
 
 const toText = (value: unknown): string => {
   if (typeof value === 'string') return value.trim();
@@ -181,10 +192,15 @@ export type BalloonCardEffect =
 export type BalloonCard = {
   id: number;
   text: string;
+  effects: readonly GameEffectInstruction[];
+  retreatScore: number;
+};
+
+type BalloonCardDefinition = Omit<BalloonCard, 'effects' | 'retreatScore'> & {
   effect: BalloonCardEffect;
 };
 
-export const A_FOND_LES_BALLONS_CARDS: BalloonCard[] = [
+const CARD_DEFINITIONS: BalloonCardDefinition[] = [
   {
     id: 1,
     text: 'Peau de banane : reculez de 2 cases.',
@@ -386,3 +402,112 @@ export const A_FOND_LES_BALLONS_CARDS: BalloonCard[] = [
     effect: { type: 'finish-if-slide' },
   },
 ];
+
+export const A_FOND_LES_BALLONS_CARDS: BalloonCard[] = CARD_DEFINITIONS.map(
+  (card) => ({
+    id: card.id,
+    text: card.text,
+    effects: cardInstructions(card.effect),
+    retreatScore: effectRetreatScore(card.effect),
+  }),
+);
+
+function cardInstructions(
+  effect: BalloonCardEffect,
+): readonly GameEffectInstruction[] {
+  if (effect.type === 'move') {
+    return [
+      gameEffects.custom(
+        'a-fond-les-ballons.move',
+        { delta: effect.value },
+        gameEffects.target.self(),
+      ),
+    ];
+  }
+  if (effect.type === 'skip') return [gameEffects.skipTurn(effect.turns)];
+  if (effect.type === 'move-all') {
+    return allPlayers((target) =>
+      gameEffects.custom(
+        'a-fond-les-ballons.move',
+        { delta: effect.value },
+        target,
+      ),
+    );
+  }
+  if (effect.type === 'next') {
+    return [
+      gameEffects.custom('a-fond-les-ballons.next-tile', {
+        tile: effect.tile,
+      }),
+    ];
+  }
+  if (effect.type === 'freeze-all') {
+    return [
+      gameEffects.skipTurn(1),
+      gameEffects.skipTurn(1, gameEffects.target.allOpponents()),
+    ];
+  }
+  if (effect.type === 'extra-turn') return [gameEffects.extraTurn()];
+  if (effect.type === 'repeat-roll-all') {
+    return allPlayers((target) =>
+      gameEffects.custom('a-fond-les-ballons.repeat-roll', {}, target),
+    );
+  }
+  if (effect.type === 'swap') {
+    return [
+      gameEffects.custom(
+        'a-fond-les-ballons.swap',
+        {},
+        gameEffects.target.chosenOpponent('a-fond-les-ballons.swap', true),
+      ),
+      gameEffects.completeTurn(),
+    ];
+  }
+  if (effect.type === 'go-to') {
+    return [
+      gameEffects.custom('a-fond-les-ballons.go-to', {
+        position: effect.position,
+      }),
+    ];
+  }
+  if (effect.type === 'boutique') {
+    return [gameEffects.custom('a-fond-les-ballons.boutique')];
+  }
+  if (effect.type === 'trap-immunity') {
+    return [
+      gameEffects.addStatus({
+        status: 'a-fond-les-ballons.trap-immunity',
+        turns: effect.turns,
+        scope: 'turn',
+        stack: true,
+      }),
+    ];
+  }
+  if (effect.type === 'random-all') {
+    return allPlayers((target) =>
+      gameEffects.custom('a-fond-les-ballons.random-move', {}, target),
+    );
+  }
+  return [gameEffects.custom('a-fond-les-ballons.finish-if-slide')];
+}
+
+function allPlayers(
+  instruction: (target: EffectTarget) => GameEffectInstruction,
+): readonly GameEffectInstruction[] {
+  return [
+    instruction(gameEffects.target.self()),
+    instruction(gameEffects.target.allOpponents()),
+  ];
+}
+
+function effectRetreatScore(effect: BalloonCardEffect): number {
+  if (effect.type === 'go-to' && effect.position === 0) return -200;
+  if (effect.type === 'go-to') return -100;
+  if (effect.type === 'move' && effect.value < 0) return effect.value;
+  if (effect.type === 'move-all' && effect.value < 0) return effect.value;
+  return 0;
+}
+
+freezeGameContent(A_FOND_LES_BALLONS_PAWNS);
+freezeGameContent(A_FOND_LES_BALLONS_TILES);
+freezeGameContent(A_FOND_LES_BALLONS_CARDS);

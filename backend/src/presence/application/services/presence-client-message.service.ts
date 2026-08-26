@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
+import { getErrorDetails } from '@common/utils/public-api';
 import type {
   PresenceClient,
   PresenceIncomingPayload,
@@ -64,7 +65,7 @@ export class PresenceClientMessageService {
         }),
       );
     } catch (error) {
-      this.logger.error('Echec envoi historique chat', error as Error);
+      this.logger.error('Echec envoi historique chat', getErrorDetails(error));
       to.close();
     }
   }

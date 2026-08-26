@@ -1,3 +1,5 @@
+import type { PlayerMap } from '../../../core/application/public-api';
+
 export interface LamaConfig {
   loseAtScore: number;
   roundPauseSeconds: number;
@@ -7,24 +9,18 @@ export interface LamaConfig {
   returnTokenFromRound: number;
 }
 
-export interface LamaState {
-  ownerId: number;
-  configured: boolean;
-  config: LamaConfig;
-  scores: Record<number, number>;
-  eliminated: Record<number, boolean>;
-  droppedOut: Record<number, boolean>;
+export type LamaStep = 'setup' | 'turn' | 'return' | 'pause';
+export type LamaState = Record<string, never>;
+
+export type LamaPlayerView = {
+  step: LamaStep;
+  scores: PlayerMap<number>;
+  eliminated: PlayerMap<boolean>;
+  droppedOut: PlayerMap<boolean>;
   drawnThisTurn: boolean;
   roundNumber: number;
   roundStarterIndex: number;
-  step: 'setup' | 'turn' | 'return' | 'pause';
   roundWinnerId: number | null;
-  winnerId: number | null;
-}
-
-export type LamaPlayerView = LamaState & {
-  hand: number[];
-  handCounts: Record<number, number>;
   topCard: number | null;
-  deckCount: number;
+  winnerId: number | null;
 };

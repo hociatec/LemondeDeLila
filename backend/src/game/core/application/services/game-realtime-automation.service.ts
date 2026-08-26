@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import type { GameRuntime } from '../contracts/game-runtime.interface';
 import type { GameSingleActionDto } from '../models/game-action.model';
 import type { GameStateEntity } from '../models/game-state.model';
@@ -8,6 +8,7 @@ import { BotSettingsService } from './bot-settings.service';
 import { GameEngineService } from './game-engine.service';
 import { GameCommandExecutorService } from './game-command-executor.service';
 import { gameNowMs } from './game-execution-scope.service';
+import { GameEngineMetricsService } from './game-engine-metrics.service';
 
 type AutomationCommit = (
   previous: GameStateEntity,
@@ -31,6 +32,7 @@ export class GameRealtimeAutomationService {
     private readonly botScheduler: BotSchedulerService,
     private readonly botSettings: BotSettingsService,
     private readonly executor: GameCommandExecutorService,
+    @Optional() private readonly metrics?: GameEngineMetricsService,
   ) {}
 
   schedule(input: {
@@ -84,7 +86,12 @@ export class GameRealtimeAutomationService {
           state: current,
           actions: currentPlan.actions,
           actorId: null,
+          roomId: input.roomId,
         });
+        this.metrics?.recordAutomaticActions(
+          input.gameType,
+          currentPlan.actions.length,
+        );
         if ((this.generations.get(timerKey) ?? 0) !== generation) return;
         await input.commit(current, next);
         if ((this.generations.get(timerKey) ?? 0) !== generation) {
