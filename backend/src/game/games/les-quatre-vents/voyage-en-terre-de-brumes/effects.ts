@@ -5,7 +5,6 @@ import {
   applyVoyageTarget,
   loseRandomCard,
   position,
-  resolveVoyageTile,
   scheduleTargetEffect,
   type VoyageTargetEffect,
 } from './rules';
@@ -16,10 +15,9 @@ const TARGET_EFFECTS = ['swap-position', 'skip-turn', 'swap-card'] as const;
 export const VOYAGE_EFFECTS = {
   'voyage.move': defineEffect<VoyageState, { delta: number }>({
     input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
-    apply: ({ state, actorPlayerId, data, ctx }) => {
+    apply: ({ actorPlayerId, data, ctx }) => {
       if (actorPlayerId == null) return;
       ctx.movement.move(TRACK, actorPlayerId, data.delta);
-      resolveVoyageTile(state, actorPlayerId, false, ctx);
     },
   }),
   'voyage.schedule-target': defineEffect<

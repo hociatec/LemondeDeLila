@@ -9,6 +9,7 @@ import type { GameInputSchema } from './game-input-schema';
 import type { DiceRollPolicy } from './dice-kit';
 import type { PawnDefinition } from './pawn-kit';
 import type { GameContext } from './game-rule-context';
+import type { GameEffectInstruction } from './effects-kit';
 
 export type CompleteRoundOptions<TState extends object> = {
   winnerPlayerIds?: readonly number[];
@@ -25,6 +26,116 @@ export type CompleteRoundOptions<TState extends object> = {
     | { starterPlayerId: number }
     | ((input: { state: TState; ctx: GameContext<TState> }) => number | null);
 };
+
+export type TileDefinition<TTileType extends string = string> = {
+  id: string | number;
+  type?: TTileType;
+  tags?: readonly string[];
+  eventDeckId?: string;
+  movement?: number;
+  status?: string;
+  effects?: readonly GameEffectInstruction[];
+  quizId?: string;
+};
+
+export type TileResolutionInput<TState extends object, TTile> = {
+  state: TState;
+  trackId: string;
+  playerId: number;
+  tile: TTile;
+  position: number;
+  ctx: GameContext<TState>;
+};
+
+export type TileResolutionRule<TState extends object, TTile> = {
+  type?: string;
+  tag?: string;
+  when?: (input: TileResolutionInput<TState, TTile>) => boolean;
+  apply: (input: TileResolutionInput<TState, TTile>) => void;
+};
+
+export type EventTrackOptions<TState extends object, TTile> = {
+  trackId: string;
+  tiles: readonly TTile[];
+  diceId?: string;
+  policy?: DiceRollPolicy;
+  endTurn?: boolean;
+  maxLandingDepth?: number;
+  rules?: readonly TileResolutionRule<TState, TTile>[];
+  resolve?: (input: TileResolutionInput<TState, TTile>) => void;
+};
+
+export function resolveTile<TState extends object, TTile>(
+  input: TileResolutionInput<TState, TTile> & {
+    rules?: readonly TileResolutionRule<TState, TTile>[];
+  },
+): void {
+  const tileRecord = input.tile as {
+    type?: string;
+    tags?: readonly string[];
+    eventDeckId?: string;
+    movement?: number;
+    status?: string;
+    effects?: readonly GameEffectInstruction[];
+    quizId?: string;
+  };
+  for (const rule of input.rules ?? []) {
+    if (rule.type && tileRecord.type !== rule.type) continue;
+    if (rule.tag && !(tileRecord.tags ?? []).includes(rule.tag)) continue;
+    if (rule.when && !rule.when(input)) continue;
+    rule.apply(input);
+  }
+  if (tileRecord.eventDeckId) {
+    drawEvent<TState, unknown>(input.ctx, {
+      deckId: tileRecord.eventDeckId,
+      playerId: input.playerId,
+      recycle: true,
+      discard: true,
+    });
+  }
+  if (tileRecord.movement) {
+    input.ctx.movement.move(input.trackId, input.playerId, tileRecord.movement);
+  }
+  if (tileRecord.status)
+    input.ctx.status.add(input.playerId, tileRecord.status);
+  if (tileRecord.effects?.length)
+    input.ctx.effects.schedule(...tileRecord.effects);
+}
+
+export function eventTrackTurn<TState extends object, TTile>(
+  options: EventTrackOptions<TState, TTile>,
+): GameActionDefinition<TState, Record<string, never>> {
+  return rollDice<TState>({
+    diceId: options.diceId,
+    policy: options.policy,
+    execute: ({ state, playerId, total, ctx }) => {
+      ctx.movement.moveAndResolve({
+        trackId: options.trackId,
+        playerId,
+        distance: total,
+        tiles: options.tiles,
+        maxDepth: options.maxLandingDepth ?? 8,
+        blocked: () => ctx.choice.current() != null,
+        onLand: ({ position, tile }) => {
+          if (tile == null) return;
+          const input = {
+            state,
+            trackId: options.trackId,
+            playerId,
+            tile,
+            position,
+            ctx,
+          };
+          resolveTile({ ...input, rules: options.rules });
+          options.resolve?.(input);
+        },
+      });
+      if (options.endTurn ?? true) ctx.turn.complete();
+    },
+    documentation:
+      'Lance le dé, avance sur une piste, résout la case atteinte et termine le tour si aucun workflow ne suspend la résolution.',
+  });
+}
 
 /**
  * Pipeline unique de fin de manche: score, résultat de manche, résultat de

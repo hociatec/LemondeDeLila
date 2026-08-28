@@ -233,6 +233,7 @@ export interface DeclarativeGameDefinition<
   readonly subcategory?: string;
   readonly description?: string;
   readonly content: GameContentShape;
+  readonly compiled: CompiledGameDiagnostics;
   readonly stateVersion: number;
   readonly rulesVersion: string;
   readonly migrations: readonly GameStateMigration<TState>[];
@@ -271,6 +272,28 @@ export interface DeclarativeGameDefinition<
     }): GameActionDecision<TActions> | null;
   };
 }
+
+export type CompiledGameDiagnostics = {
+  readonly compiledAt: 'defineGame';
+  readonly gameId: string;
+  readonly patternIds: readonly string[];
+  readonly mechanics: readonly string[];
+  readonly componentIds: readonly string[];
+  readonly actionIds: readonly string[];
+  readonly phaseIds: readonly string[];
+  readonly choiceIds: readonly string[];
+  readonly effectIds: readonly string[];
+  readonly automaticRuleIds: readonly string[];
+  readonly hookOrder: readonly string[];
+  readonly turnPolicy: {
+    readonly kind: TurnPolicy['kind'];
+    readonly actionPoints?: number;
+  } | null;
+  readonly victoryPriority: readonly ('game' | 'pattern')[];
+  readonly contentVersion: string;
+  readonly stateVersion: number;
+  readonly rulesVersion: string;
+};
 
 export type DeclarativeState<TState extends object> = GameStateEntity & {
   game: TState;
@@ -319,7 +342,12 @@ type GameDefinitionInput<
   TBoard extends object = object,
 > = Omit<
   DeclarativeGameDefinition<TState, TActions, TPlayerView, TExtras, TBoard>,
-  'kind' | 'content' | 'stateVersion' | 'rulesVersion' | 'migrations'
+  | 'kind'
+  | 'content'
+  | 'compiled'
+  | 'stateVersion'
+  | 'rulesVersion'
+  | 'migrations'
 > & {
   readonly content?: GameContentShape;
   readonly stateVersion?: number;
@@ -385,13 +413,17 @@ export function defineGame<
     ...(patterns.components ?? []),
     ...(definition.components ?? []),
   ];
-  const normalized = {
+  const normalizedBase = {
     stateVersion: 1,
     rulesVersion: '1',
     migrations: [],
     ...definition,
     patterns: [...(definition.patterns ?? [])],
     components,
+    actions: {
+      ...(patterns.actions ?? {}),
+      ...definition.actions,
+    },
     initialization: mergeInitialization(
       patterns.initialization,
       definition.initialization,
@@ -412,8 +444,90 @@ export function defineGame<
       [definition.initialPhase ?? 'playing']: {},
     },
   };
+  const normalized = {
+    ...normalizedBase,
+    compiled: describeCompiledGameDefinition(
+      normalizedBase as unknown as DeclarativeGameDefinition<
+        object,
+        GameActionMap<object>,
+        object
+      >,
+    ),
+  };
   assertGameDefinition(normalized);
   return deepFreeze({ ...normalized, kind: GAME_DEFINITION_KIND });
+}
+
+export function describeCompiledGameDefinition(
+  definition: Pick<
+    DeclarativeGameDefinition<object, GameActionMap<object>, object>,
+    | 'id'
+    | 'patterns'
+    | 'components'
+    | 'actions'
+    | 'phases'
+    | 'choices'
+    | 'effects'
+    | 'automatic'
+    | 'lifecycle'
+    | 'turn'
+    | 'victory'
+    | 'content'
+    | 'stateVersion'
+    | 'rulesVersion'
+  >,
+): CompiledGameDiagnostics {
+  return {
+    compiledAt: 'defineGame',
+    gameId: definition.id,
+    patternIds: Object.freeze(
+      (definition.patterns ?? []).map((pattern) => pattern.id),
+    ),
+    mechanics: Object.freeze([
+      ...new Set(
+        (definition.patterns ?? []).flatMap((pattern) => pattern.mechanics),
+      ),
+    ]),
+    componentIds: Object.freeze(
+      (definition.components ?? []).map(
+        (component) => `${component.component}:${component.id}`,
+      ),
+    ),
+    actionIds: Object.freeze(Object.keys(definition.actions)),
+    phaseIds: Object.freeze(Object.keys(definition.phases ?? {})),
+    choiceIds: Object.freeze(Object.keys(definition.choices ?? {})),
+    effectIds: Object.freeze(Object.keys(definition.effects ?? {})),
+    automaticRuleIds: Object.freeze(
+      (definition.automatic ?? []).map((rule) => rule.id),
+    ),
+    hookOrder: Object.freeze(
+      [
+        definition.lifecycle?.beforeTurn ? 'beforeTurn' : null,
+        definition.lifecycle?.afterTurn ? 'afterTurn' : null,
+        definition.lifecycle?.onRoundStart ? 'onRoundStart' : null,
+        definition.lifecycle?.onRoundEnd ? 'onRoundEnd' : null,
+      ].filter((hook): hook is string => hook != null),
+    ),
+    turnPolicy: definition.turn
+      ? {
+          kind: definition.turn.kind,
+          ...(definition.turn.actionPoints == null
+            ? {}
+            : { actionPoints: definition.turn.actionPoints }),
+        }
+      : null,
+    victoryPriority: Object.freeze(
+      [
+        definition.victory ? 'game' : null,
+        (definition.patterns ?? []).some((pattern) => pattern.victory)
+          ? 'pattern'
+          : null,
+      ].filter((source): source is 'game' | 'pattern' => source != null),
+    ),
+    contentVersion: `${definition.id}@state:${definition.stateVersion}/rules:${definition.rulesVersion}`,
+    stateVersion: definition.stateVersion,
+    rulesVersion: definition.rulesVersion,
+  };
 }
 
 function mergeInitialization(

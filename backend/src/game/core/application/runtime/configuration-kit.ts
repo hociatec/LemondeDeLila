@@ -82,9 +82,7 @@ export function createGameConfigurationState(
   return {
     ownerPlayerId,
     complete: definition == null,
-    values: structuredClone(
-      (definition?.defaults ?? {}) as Record<string, unknown>,
-    ),
+    values: plainConfigurationValues(definition?.defaults ?? {}),
   };
 }
 
@@ -140,7 +138,7 @@ export function commitGameConfiguration(
   state: GameConfigurationState,
   config: object,
 ): void {
-  state.values = structuredClone(config as Record<string, unknown>);
+  state.values = plainConfigurationValues(config);
   state.complete = true;
 }
 
@@ -161,4 +159,8 @@ function asConfigurationRecord(value: unknown): Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+}
+
+function plainConfigurationValues(value: object): Record<string, unknown> {
+  return { ...(structuredClone(value) as Record<string, unknown>) };
 }

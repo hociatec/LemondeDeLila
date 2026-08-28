@@ -17,10 +17,16 @@ import { pawns, type PawnDefinition } from './pawn-kit';
 import { quiz, type QuizQuestion } from './quiz-kit';
 import { clockwise, simultaneous, type TurnPolicy } from './turn-kit';
 import type { VictoryRule } from './game-definition';
+import type { GameActionMap } from './game-definition';
 import { grid } from './grid-kit';
 import { economy } from './economy-kit';
 import { inventory } from './inventory-kit';
-import { completeRound } from './gameplay-recipes';
+import {
+  completeRound,
+  eventTrackTurn,
+  type EventTrackOptions,
+} from './gameplay-recipes';
+import { GameConfigurationError } from '../../domain/errors/game-domain.errors';
 
 export type GamePattern<TState extends object> = {
   readonly id: string;
@@ -30,6 +36,7 @@ export type GamePattern<TState extends object> = {
   readonly initialization?: GameInitialization;
   readonly turn?: TurnPolicy;
   readonly victory?: VictoryRule<TState>;
+  readonly actions?: GameActionMap<TState>;
 };
 
 export function definePattern<TState extends object>(
@@ -39,16 +46,19 @@ export function definePattern<TState extends object>(
     ...pattern,
     mechanics: Object.freeze([...pattern.mechanics]),
     components: Object.freeze([...(pattern.components ?? [])]),
+    actions: Object.freeze({ ...(pattern.actions ?? {}) }),
   });
 }
 
 export function composePatterns<TState extends object>(
   ...patterns: readonly GamePattern<TState>[]
 ): Omit<GamePattern<TState>, 'id'> & { ids: string[] } {
+  assertComposablePatterns(patterns);
   return {
     ids: patterns.map((pattern) => pattern.id),
     mechanics: [...new Set(patterns.flatMap((pattern) => pattern.mechanics))],
     components: patterns.flatMap((pattern) => pattern.components ?? []),
+    actions: Object.assign({}, ...patterns.map((pattern) => pattern.actions)),
     lifecycle: composeLifecycle(
       patterns.flatMap((pattern) =>
         pattern.lifecycle ? [pattern.lifecycle] : [],
@@ -67,6 +77,43 @@ export function composePatterns<TState extends object>(
   };
 }
 
+export function eventTrackGame<TState extends object, TTile>(
+  options: EventTrackOptions<TState, TTile> & {
+    actionType?: string;
+    spaces?: number;
+    overshoot?: Parameters<typeof movement.track>[0]['overshoot'];
+  },
+): GamePattern<TState> {
+  const actionType = options.actionType ?? 'roll';
+  return definePattern({
+    id: `event-track-game:${options.trackId}:${actionType}`,
+    mechanics: [
+      'race',
+      'track',
+      'dice',
+      'tile-resolution',
+      'event-deck',
+      'effect-pipeline',
+    ],
+    turn: clockwise(),
+    components: [
+      diceKit({
+        id: options.diceId ?? 'main',
+        count: 1,
+        sides: 6,
+      }),
+      movement.track({
+        id: options.trackId,
+        spaces: options.spaces ?? options.tiles.length,
+        overshoot: options.overshoot ?? 'clamp',
+      }),
+    ],
+    actions: {
+      [actionType]: eventTrackTurn(options),
+    },
+  });
+}
+
 export function raceGame<TState extends object>(options: {
   trackId?: string;
   spaces: number;
@@ -80,7 +127,7 @@ export function raceGame<TState extends object>(options: {
   winOnFinish?: boolean | string;
 }): GamePattern<TState> {
   return definePattern({
-    id: 'race-game',
+    id: `race-game:${options.trackId ?? 'main'}`,
     mechanics: ['race', 'track', 'dice'],
     turn: clockwise(),
     components: [
@@ -140,7 +187,7 @@ export function quizRace<TState extends object>(options: {
   const race = raceGame<TState>(options);
   return definePattern({
     ...race,
-    id: 'quiz-race',
+    id: `quiz-race:${options.trackId ?? 'main'}:${options.quizId}`,
     mechanics: [...race.mechanics, 'quiz'],
     components: [
       ...(race.components ?? []),
@@ -169,7 +216,7 @@ export function pawnRace<TState extends object>(options: {
   diceSides?: number;
 }): GamePattern<TState> {
   return definePattern({
-    id: 'pawn-race',
+    id: `pawn-race:${options.pawnSetId}`,
     mechanics: ['race', 'pawns', 'dice', 'pawn-selection'],
     turn: clockwise(),
     components: [
@@ -232,7 +279,7 @@ export function cardGame<TState extends object, TCard>(options: {
           })
         : undefined;
   return definePattern({
-    id: 'card-game',
+    id: `card-game:${deckId}:${handId}`,
     mechanics: ['cards', 'hands', 'deck-lifecycle'],
     components,
     turn: clockwise(),
@@ -339,7 +386,7 @@ export function roundScoring<TState extends object>(options: {
   matchReason?: string | ((input: RoundLifecycleInput<TState>) => string);
 }): GamePattern<TState> {
   return definePattern({
-    id: 'round-scoring',
+    id: 'round-scoring:main',
     mechanics: ['rounds', 'scoring', 'starter-rotation'],
     lifecycle: {
       onRoundEnd: ({ state, ctx }) => {
@@ -411,7 +458,7 @@ export function gridGame<TState extends object>(options: {
 }): GamePattern<TState> {
   const boardId = options.boardId ?? 'main';
   return definePattern({
-    id: 'grid-game',
+    id: `grid-game:${boardId}`,
     mechanics: ['grid', 'legal-cells', 'grid-victory'],
     turn: clockwise(),
     components: [
@@ -463,7 +510,7 @@ export function marketGame<TState extends object>(options: {
   winnerReason?: string;
 }): GamePattern<TState> {
   return definePattern({
-    id: 'market-game',
+    id: `market-game:${options.marketId}:${options.inventoryId}`,
     mechanics: ['market', 'economy', 'buy', 'sell', 'solvency'],
     turn: clockwise(),
     components: [
@@ -534,7 +581,7 @@ export function submissionJudgeGame<TState extends object>(
   } = {},
 ): GamePattern<TState> {
   return definePattern({
-    id: 'submission-judge-game',
+    id: `submission-judge-game:${options.submissionId ?? 'main'}:${options.judgeId ?? 'judge'}`,
     mechanics: [
       'simultaneous',
       'secret-submissions',
@@ -592,6 +639,61 @@ export function submissionJudgeGame<TState extends object>(
 }
 
 export const submissionGame = submissionJudgeGame;
+
+function assertComposablePatterns<TState extends object>(
+  patterns: readonly GamePattern<TState>[],
+): void {
+  const seenPatternIds = new Set<string>();
+  const seenComponentKeys = new Set<string>();
+  const seenActionKeys = new Set<string>();
+  let selectedTurn: { id: string; policy: TurnPolicy } | null = null;
+  for (const pattern of patterns) {
+    if (seenPatternIds.has(pattern.id)) {
+      throw new GameConfigurationError(
+        `Composition de patterns invalide: pattern dupliqué « ${pattern.id} »`,
+      );
+    }
+    seenPatternIds.add(pattern.id);
+
+    for (const component of pattern.components ?? []) {
+      const id = 'id' in component ? component.id : undefined;
+      const key = `${component.component}:${String(id)}`;
+      if (seenComponentKeys.has(key)) {
+        throw new GameConfigurationError(
+          `Composition de patterns invalide: composant dupliqué « ${key} »`,
+        );
+      }
+      seenComponentKeys.add(key);
+    }
+
+    for (const actionId of Object.keys(pattern.actions ?? {})) {
+      if (seenActionKeys.has(actionId)) {
+        throw new GameConfigurationError(
+          `Composition de patterns invalide: action dupliquée « ${actionId} »`,
+        );
+      }
+      seenActionKeys.add(actionId);
+    }
+
+    if (!pattern.turn) continue;
+    if (!selectedTurn) {
+      selectedTurn = { id: pattern.id, policy: pattern.turn };
+      continue;
+    }
+    if (!sameTurnPolicy(selectedTurn.policy, pattern.turn)) {
+      throw new GameConfigurationError(
+        `Composition de patterns invalide: politiques de tour incompatibles « ${selectedTurn.id} » et « ${pattern.id} »`,
+      );
+    }
+  }
+}
+
+function sameTurnPolicy(left: TurnPolicy, right: TurnPolicy): boolean {
+  return (
+    left.kind === right.kind &&
+    (left.actionPoints ?? null) === (right.actionPoints ?? null)
+  );
+}
 
 function composeInitialization(
   initializations: ReadonlyArray<GameInitialization | undefined>,

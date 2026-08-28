@@ -247,6 +247,7 @@ function assertSerializable(
   seen: WeakSet<object>,
 ): void {
   if (
+    value === undefined ||
     value === null ||
     typeof value === 'string' ||
     typeof value === 'boolean'
@@ -271,16 +272,22 @@ function assertSerializable(
     );
   } else {
     const prototype = Reflect.getPrototypeOf(value);
-    invariant(
-      prototype === Object.prototype || prototype === null,
-      'serializable.prototype',
-      { path },
-    );
+    invariant(isPlainObjectPrototype(prototype), 'serializable.prototype', {
+      path,
+    });
     for (const [key, entry] of Object.entries(value)) {
       assertSerializable(entry, `${path}.${key}`, seen);
     }
   }
   seen.delete(value);
+}
+
+function isPlainObjectPrototype(prototype: object | null): boolean {
+  return (
+    prototype === null ||
+    prototype === Object.prototype ||
+    prototype.constructor?.name === 'Object'
+  );
 }
 
 function invariant(

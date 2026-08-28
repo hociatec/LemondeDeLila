@@ -228,6 +228,7 @@ export {
   drawForPlayer,
   drawCard,
   drawThenResolve,
+  eventTrackTurn,
   eliminateAtScore,
   giveCard,
   lastPlayerStanding,
@@ -255,6 +256,10 @@ export type {
   CompleteRoundOptions,
   DrawAndResolveOptions,
   DrawForPlayerOptions,
+  EventTrackOptions,
+  TileDefinition,
+  TileResolutionInput,
+  TileResolutionRule,
 } from './gameplay-recipes';
 export {
   cardGame,
@@ -263,6 +268,7 @@ export {
   definePattern,
   drawCardsAtTurnStart,
   economyGame,
+  eventTrackGame,
   gridGame,
   marketGame,
   pushYourLuck,
