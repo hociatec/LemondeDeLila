@@ -31,24 +31,3 @@ export type ContesPendingEffect =
   | { kind: 'token'; actorId: number; targetId: number; tokens: string[] };
 
 export type ContesState = Record<string, never>;
-
-export type ContesPlayerView = {
-  rerollTokens: PlayerMap<number>;
-  shieldMalus: PlayerMap<number>;
-  protectNextMalus: PlayerMap<boolean>;
-  cape: PlayerMap<boolean>;
-  replaceOne: PlayerMap<boolean>;
-  noBonusTurns: PlayerMap<number>;
-  forcedOneTurns: PlayerMap<number>;
-  reverseNextTurn: PlayerMap<boolean>;
-  blockedAt: PlayerMap<number | null>;
-  keyOfGold: PlayerMap<boolean>;
-  pawnByPlayerId: PlayerMap<string>;
-  lastConte: {
-    playerId: number;
-    title: string;
-    text: string;
-    timestamp: string;
-  } | null;
-  turnReplacement: PlayerMap<number | null>;
-};

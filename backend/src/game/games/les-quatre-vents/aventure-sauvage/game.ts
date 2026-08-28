@@ -3,9 +3,9 @@ import {
   defineChoice,
   defineEffect,
   defineGame,
+  defineGameContent,
   gameInput,
   pawns,
-  playerView,
   raceGame,
 } from '../../../core/application/public-api';
 import {
@@ -21,19 +21,21 @@ import {
   resolveAventureTile,
   resolvePawnChoice,
 } from './rules';
-import type { AventureSauvagePlayerView, AventureSauvageState } from './state';
+import type { AventureSauvageState } from './state';
 
-export default defineGame<
-  AventureSauvageState,
-  typeof AVENTURE_ACTIONS,
-  AventureSauvagePlayerView
->({
+export default defineGame<AventureSauvageState, typeof AVENTURE_ACTIONS>({
   id: 'aventure-sauvage',
   displayName: 'Aventure Sauvage',
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
   description: 'Une course animalière jusqu’à la mare de la jungle.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('aventure-sauvage', {
+    tiles: AVENTURE_TILES,
+    pawns: AVENTURE_PAWNS,
+    animalCards: AVENTURE_ANIMAL_CARDS,
+    pawCards: AVENTURE_PATTE_CARDS,
+  }),
   patterns: [
     raceGame({
       trackId: 'jungle',
@@ -72,34 +74,6 @@ export default defineGame<
       resolve: ({ actor, value, ctx }) =>
         resolvePawnChoice(actor.id, value, ctx),
     }),
-  },
-  view: ({ actor, ctx }) => {
-    const positions = ctx.players.byId((player) =>
-      ctx.movement.position('jungle', player.id),
-    );
-    const pawnByPlayerId = Object.fromEntries(
-      ctx.players.all().flatMap((player) => {
-        const pawnId = ctx.pawns.assigned('avatars', player.id)[0];
-        return pawnId == null ? [] : [[player.id, pawnId]];
-      }),
-    );
-    const pawn = actor
-      ? (AVENTURE_PAWNS.find(
-          (entry) => entry.id === pawnByPlayerId[actor.id],
-        ) ?? null)
-      : null;
-    return playerView({
-      game: {
-        pawnByPlayerId,
-      },
-      extras: {
-        currentPlayerView: actor
-          ? { id: actor.id, username: actor.username }
-          : null,
-        pawn,
-      },
-      board: { tiles: AVENTURE_TILES, positions },
-    });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

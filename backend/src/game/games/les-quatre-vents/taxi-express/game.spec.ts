@@ -1,4 +1,7 @@
-import { testGame } from '../../../core/application/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../core/application/public-api';
 import { TAXI_CLIENTS, TAXI_EVENTS, TAXI_TILES } from './content';
 import gameDefinition from './game';
 
@@ -10,7 +13,14 @@ describe('Taxi Express declarative game', () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(137);
     await game.start();
     await game.as(1).do('roll', {});
-    expect('activeClients' in game.view(1)).toBe(false);
-    expect(game.replay()).toEqual(game.state());
+    const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
+    expect(Array.isArray(kits.cards?.hands['taxi-clients'].byPlayer['1'])).toBe(
+      true,
+    );
+    expect(kits.cards?.hands['taxi-clients'].byPlayer['2']).toEqual({
+      count: 0,
+    });
+    expect(kits.cards?.discards.events.cards).toHaveLength(1);
+    expect(await game.replay()).toEqual(game.state());
   });
 });

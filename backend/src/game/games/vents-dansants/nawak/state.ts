@@ -21,9 +21,7 @@ export interface NawakState {
   lastRound: NawakRoundState | null;
 }
 
-export type NawakPlayerView = {
-  targetScore: number;
-  currentChallenge: NawakChallenge;
-  lastRound: (NawakRoundState & { prompt: string }) | null;
-  roundStage: NawakStage;
-};
+export type NawakPlayerView = Pick<
+  NawakState,
+  'currentChallengeId' | 'lastRound'
+>;

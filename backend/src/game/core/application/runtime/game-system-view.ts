@@ -1,4 +1,5 @@
 import type { TurnStateEntity } from '../models/game-state.model';
+import type { PlayerStateEntity } from '../models/game-state.model';
 import type { GameConfigurationState } from './configuration-kit';
 import type { GameComponentDefinition } from './component-kit';
 import type { DeclarativeState } from './game-definition';
@@ -25,6 +26,15 @@ import {
 } from './player-values-kit';
 import type { RoundKitState } from './round-kit';
 import type { EffectSource } from './effects-kit';
+import {
+  projectSubmissions,
+  type SubmissionPlayerView,
+} from './submission-kit';
+import {
+  projectCollections,
+  type CollectionPlayerView,
+  type CollectionViewDefinition,
+} from './collection-view';
 
 export const GAME_SYSTEM_VIEW_VERSION = 1 as const;
 
@@ -54,6 +64,30 @@ export type StableGameSystemView = {
   round: RoundPlayerView;
   turn: GameTurnPlayerView;
   setup: GameSetupPlayerView;
+  players: GamePlayersPlayerView;
+  events: GameEventsPlayerView;
+};
+
+export type GameEventsPlayerView = {
+  latestByType: Record<
+    string,
+    {
+      type: string;
+      data: Record<string, unknown>;
+      actorId: number | null;
+      occurredAtMs: number;
+    }
+  >;
+};
+
+export type GamePlayersPlayerView = {
+  all: Array<{ id: number; username: string; isBot: boolean; alive: boolean }>;
+  current: {
+    id: number;
+    username: string;
+    isBot: boolean;
+    alive: boolean;
+  } | null;
 };
 
 export type StableGameKitsView = {
@@ -63,11 +97,15 @@ export type StableGameKitsView = {
   grid: NonNullable<GameKitsPlayerView['grid']> | null;
   dice: DicePlayerView | null;
   score: ScorePlayerView;
+  resources: Record<string, Record<string, number>>;
+  counters: Record<string, number>;
   status: GameStatusPlayerView;
   inventory: GameKitsPlayerView['inventory'] | null;
   economy: GameKitsPlayerView['economy'] | null;
   ownership: GameKitsPlayerView['ownership'] | null;
   quiz: GameKitsPlayerView['quiz'] | null;
+  submissions: SubmissionPlayerView;
+  collections: CollectionPlayerView;
 };
 
 export type GameTurnPlayerView = {
@@ -76,14 +114,19 @@ export type GameTurnPlayerView = {
   number: number;
   actionPointsRemaining: number | null;
   immediateExtraTurns: number;
+  extraCount: number;
   skipTurnsByPlayer: Record<string, number>;
   extraTurnsByPlayer: Record<string, number>;
+  replacementTurnsByPlayer: Record<string, number>;
+  waitingSessionId: string | null;
+  waitingPlayerIds: number[];
 };
 
 export type GameSetupPlayerView = {
   complete: boolean;
   phase: string;
   ownerPlayerId: number | null;
+  values: Record<string, unknown>;
 };
 
 export type GenericBoardPlayerView = {
@@ -95,6 +138,8 @@ export type GenericBoardPlayerView = {
 export type GameStatusPlayerView = {
   viewer: PlayerStatus[];
   byPlayer: Record<string, PlayerStatus[]>;
+  /** Public statuses indexed by status id then player id. */
+  byId: Record<string, Record<string, PlayerStatus>>;
 };
 
 export type GenericGamePlayerView = {
@@ -124,29 +169,51 @@ export function projectGameSystemView<TState extends object>(input: {
     input.components ?? [],
   );
   const match = projectMatch(runtime.engine.match);
-  const turn = projectTurn(runtime.turn, runtime.engine.playerValues);
+  const turn = projectTurn(
+    runtime.turn,
+    runtime.engine.playerValues,
+    runtime.engine.submissions,
+  );
   const round = projectRound(runtime.engine.round);
   const setup = projectSetup(
     runtime.phase,
     runtime.engine.configuration,
     input.hasConfiguration ?? false,
   );
+  const players = projectPlayers(runtime.players ?? [], turn.currentPlayerId);
+  const events = projectEvents(runtime.engine.pendingEvents ?? []);
   const cards = kits.cards ?? null;
   const dice = kits.dice ?? null;
   const score = values.scoring;
-  const status = {
+  const status: GameStatusPlayerView = {
     viewer: values.statuses,
     byPlayer: projectStatusesByPlayer(
       runtime.engine.playerValues.statuses,
       viewerPlayerId,
       input.playerValuesVisibility?.statuses,
     ),
+    byId: {},
   };
+  for (const [playerId, statuses] of Object.entries(status.byPlayer)) {
+    for (const playerStatus of statuses) {
+      (status.byId[playerStatus.id] ??= {})[playerId] =
+        structuredClone(playerStatus);
+    }
+  }
   const board = {
     movement: kits.movement ?? null,
     pawns: kits.pawns ?? null,
     grid: kits.grid ?? null,
   };
+  const collections = projectCollections(
+    (input.components ?? []).filter(
+      (component): component is CollectionViewDefinition =>
+        component.component === 'collection.view',
+    ),
+    (runtime.players ?? []).map((player) => player.id),
+    values,
+    kits.inventory ?? null,
+  );
   return {
     viewVersion: GAME_SYSTEM_VIEW_VERSION,
     system: {
@@ -155,6 +222,8 @@ export function projectGameSystemView<TState extends object>(input: {
       round,
       turn,
       setup,
+      players,
+      events,
     },
     kits: {
       cards,
@@ -163,17 +232,60 @@ export function projectGameSystemView<TState extends object>(input: {
       grid: board.grid,
       dice,
       score,
+      resources: values.resources,
+      counters: values.counters,
       status,
       inventory: kits.inventory ?? null,
       economy: kits.economy ?? null,
       ownership: kits.ownership ?? null,
       quiz: kits.quiz ?? null,
+      submissions: projectSubmissions(
+        runtime.engine.submissions,
+        viewerPlayerId,
+      ),
+      collections,
     },
     effect: {
       source: runtime.engine.effects.source
         ? structuredClone(runtime.engine.effects.source)
         : null,
     },
+  };
+}
+
+function projectEvents(
+  events: readonly {
+    type: string;
+    data: Record<string, unknown>;
+    actorId: number | null;
+    occurredAtMs: number;
+  }[],
+): GameEventsPlayerView {
+  const latestByType: GameEventsPlayerView['latestByType'] = {};
+  for (const event of events) {
+    latestByType[event.type] = {
+      type: event.type,
+      data: structuredClone(event.data),
+      actorId: event.actorId,
+      occurredAtMs: event.occurredAtMs,
+    };
+  }
+  return { latestByType };
+}
+
+function projectPlayers(
+  players: readonly PlayerStateEntity[],
+  currentPlayerId: number | null,
+): GamePlayersPlayerView {
+  const all = players.map((player) => ({
+    id: player.id,
+    username: player.username,
+    isBot: player.isBot === true,
+    alive: player.alive !== false,
+  }));
+  return {
+    all,
+    current: all.find((player) => player.id === currentPlayerId) ?? null,
   };
 }
 
@@ -202,15 +314,36 @@ function projectRound(round: RoundKitState): RoundPlayerView {
 function projectTurn(
   turn: TurnStateEntity | undefined,
   values: DeclarativeState<object>['engine']['playerValues'],
+  submissions: DeclarativeState<object>['engine']['submissions'],
 ): GameTurnPlayerView {
+  const waitingSessionId = turn?.simultaneousSessionId ?? null;
+  const waitingSession = waitingSessionId
+    ? submissions.sessions[waitingSessionId]
+    : null;
+  const currentPlayerId = turn?.currentPlayerId ?? null;
+  const immediateExtraTurns = turn?.extraTurns ?? 0;
   return {
-    currentPlayerId: turn?.currentPlayerId ?? null,
+    currentPlayerId,
     direction: turn?.direction ?? 1,
     number: turn?.turnNumber ?? 0,
     actionPointsRemaining: turn?.actionPointsRemaining ?? null,
-    immediateExtraTurns: turn?.extraTurns ?? 0,
+    immediateExtraTurns,
+    extraCount:
+      immediateExtraTurns +
+      (currentPlayerId == null
+        ? 0
+        : (values.scheduledExtraTurns[String(currentPlayerId)] ?? 0)),
     skipTurnsByPlayer: structuredClone(values.scheduledSkips),
     extraTurnsByPlayer: structuredClone(values.scheduledExtraTurns),
+    replacementTurnsByPlayer: structuredClone(
+      turn?.scheduledTurnReplacements ?? {},
+    ),
+    waitingSessionId,
+    waitingPlayerIds: waitingSession
+      ? waitingSession.participantPlayerIds.filter(
+          (playerId) => !(String(playerId) in waitingSession.valuesByPlayerId),
+        )
+      : [],
   };
 }
 
@@ -224,5 +357,6 @@ function projectSetup(
       phase !== 'setup' && (!hasConfiguration || configuration.complete),
     phase,
     ownerPlayerId: configuration.ownerPlayerId,
+    values: structuredClone(configuration.values),
   };
 }

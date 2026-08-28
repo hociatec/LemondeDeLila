@@ -1,4 +1,7 @@
-import { testGame } from '../../../core/application/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../core/application/public-api';
 import gameDefinition from './game';
 
 describe('Gérard président declarative game', () => {
@@ -10,7 +13,11 @@ describe('Gérard président declarative game', () => {
     await game.as(1).do('set_theme', {});
     const name = game.view(2).hand[0];
     await game.as(2).do('play_name', { names: [name] });
-    expect(JSON.stringify(game.view(3).submissions)).toContain('Prénom secret');
+    const kits = (game.view(3) as unknown as { kits: StableGameKitsView }).kits;
+    const session = kits.submissions.sessions['gerard.names'];
+    expect(session.submittedPlayerIds).toEqual([2]);
+    expect(session.valuesByPlayerId).toBeUndefined();
+    expect(session.ownValue).toBeUndefined();
   });
 
   it('replays a deterministic theme draw', async () => {
@@ -20,6 +27,6 @@ describe('Gérard président declarative game', () => {
     await game.start();
     await game.as(1).do('set_theme', {});
     expect(game.view(1).currentTheme).not.toBeNull();
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

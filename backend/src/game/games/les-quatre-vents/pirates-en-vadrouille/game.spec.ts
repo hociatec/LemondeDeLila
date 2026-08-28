@@ -10,7 +10,7 @@ describe('Pirates en vadrouille declarative game', () => {
 
     expect(game.state().game.lastRoll).not.toBeNull();
     expect(game.view(1).positions[1]).toBeGreaterThan(0);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 
   it('never exposes an unresolved effect context', async () => {

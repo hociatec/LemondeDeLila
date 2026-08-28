@@ -38,6 +38,7 @@ export type DiceSetPlayerView = {
 export type DicePlayerView = DiceSetPlayerView & {
   activeSetId: string;
   sets: Record<string, DiceSetPlayerView>;
+  byPlayer: Record<string, Record<string, { values: number[]; total: number }>>;
 };
 
 export type MovementPlayerView = {
@@ -58,6 +59,7 @@ export type PawnSetsPlayerView = {
       definitions: PawnSetDefinition['pawns'];
       owners: Record<string, number>;
       assignments: Record<string, string[]>;
+      byPlayer: Record<string, string[]>;
       positions: Record<string, number>;
     }
   >;
@@ -156,7 +158,12 @@ export function projectGameKits(
         turnNumber,
         dice.sequence,
       );
-    extras.dice = { ...active, activeSetId, sets };
+    extras.dice = {
+      ...active,
+      activeSetId,
+      sets,
+      byPlayer: structuredClone(dice.rollsByPlayer ?? {}),
+    };
   }
   const movement = kits.movement;
   const trackDefinitions = components.filter(
@@ -200,6 +207,7 @@ export function projectGameKits(
               definitions: structuredClone(definition?.pawns ?? []),
               owners: structuredClone(pawns.owners[setId] ?? {}),
               assignments: structuredClone(pawns.assignments[setId] ?? {}),
+              byPlayer: structuredClone(pawns.assignments[setId] ?? {}),
               positions: structuredClone(positions),
             },
           ];

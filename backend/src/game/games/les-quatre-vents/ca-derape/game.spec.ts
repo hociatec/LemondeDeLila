@@ -1,4 +1,7 @@
-import { testGame } from '../../../core/application/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../core/application/public-api';
 import { CA_DERAPE_CARDS } from './content';
 import gameDefinition from './game';
 
@@ -8,7 +11,11 @@ describe('Ça Dérape declarative game', () => {
     await game.start();
     expect(game.view(1).deckCount).toBe(CA_DERAPE_CARDS.length);
     await game.as(1).do('roll', {});
-    expect(game.view(1).lastRollByPlayer[1]).toBeGreaterThanOrEqual(1);
-    expect(game.replay()).toEqual(game.state());
+    const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
+    expect(kits.resources['ca-derape.last-roll']['1']).toBeGreaterThanOrEqual(
+      1,
+    );
+    expect(kits.dice?.byPlayer['1']?.main.total).toBeGreaterThanOrEqual(1);
+    expect(await game.replay()).toEqual(game.state());
   });
 });

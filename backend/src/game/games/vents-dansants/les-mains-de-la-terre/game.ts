@@ -2,23 +2,15 @@ import {
   cards,
   cardGame,
   defineGame,
-  playerView,
+  defineGameContent,
 } from '../../../core/application/public-api';
-import {
-  LES_MAINS_CARD_BY_ID,
-  LES_MAINS_DECK,
-  LES_MAINS_FAMILIES,
-  LES_MAINS_METIER_CARDS,
-} from './content';
+import { LES_MAINS_DECK, LES_MAINS_METIER_CARDS } from './content';
 import {
   dealProfessionHands,
-  LES_MAINS_EXTRA_DRAWS,
-  LES_MAINS_FREE_REQUEST,
   LES_MAINS_ACTIONS,
   LES_MAINS_EFFECTS,
-  LES_MAINS_VANISHED_USED,
 } from './rules';
-import type { LesMainsPlayerView, LesMainsState } from './state';
+import type { LesMainsState } from './state';
 
 const familySets = cards.sets({
   id: 'profession-families',
@@ -34,17 +26,16 @@ const familySets = cards.sets({
   ),
 });
 
-export default defineGame<
-  LesMainsState,
-  typeof LES_MAINS_ACTIONS,
-  LesMainsPlayerView
->({
+export default defineGame<LesMainsState, typeof LES_MAINS_ACTIONS>({
   id: 'les-mains-de-la-terre',
   displayName: 'Les Mains de la Terre',
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
   description: 'Complétez les sept familles de métiers du monde.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('les-mains-de-la-terre', {
+    cards: LES_MAINS_DECK,
+  }),
   patterns: [
     cardGame({
       deckId: 'professions',
@@ -63,34 +54,6 @@ export default defineGame<
   },
   actions: LES_MAINS_ACTIONS,
   effects: LES_MAINS_EFFECTS,
-  view: ({ actor, ctx }) => {
-    const extraDraws = ctx.players.byId((player) =>
-      ctx.resources.get(player.id, LES_MAINS_EXTRA_DRAWS),
-    );
-    const statusMap = (statusId: string) =>
-      ctx.players.byId((player) => ctx.status.has(player.id, statusId));
-    const freeFamilyRequest = statusMap(LES_MAINS_FREE_REQUEST);
-    const vanishedProfessionUsed = statusMap(LES_MAINS_VANISHED_USED);
-    return playerView({
-      game: {
-        extraDraws,
-        freeFamilyRequest,
-        vanishedProfessionUsed,
-      },
-      extras: {
-        cardCatalog: LES_MAINS_CARD_BY_ID,
-        catalog: Object.fromEntries(
-          LES_MAINS_FAMILIES.map((family) => [
-            family,
-            Object.values(LES_MAINS_CARD_BY_ID).filter(
-              (card) => card.family === family,
-            ),
-          ]),
-        ),
-        freeRequest: actor ? freeFamilyRequest[actor.id] : false,
-      },
-    });
-  },
   bot: {
     choose: ({ state, actor, ctx }) => {
       const first = LES_MAINS_ACTIONS.request_card.enumerate?.({

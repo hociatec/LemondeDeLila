@@ -30,9 +30,10 @@ export const playCard = defineAction<GrandeMineState, { cardId: string }>({
   execute: ({ actor, input, ctx }) => {
     const card = LA_GRANDE_MINE_CARD_BY_ID[input.cardId];
     ctx.cards.take(HANDS, actor.id, input.cardId);
-    if (card.category === 'tresor' || card.category === 'objet')
+    if (card.category === 'tresor' || card.category === 'objet') {
       ctx.inventory.add(MINE_DOMAINS, actor.id, card.id);
-    else {
+      syncDomainScore(actor.id, ctx);
+    } else {
       ctx.cards.discard(DECK, card.id);
       resolveImmediate(card, ctx);
     }
@@ -142,6 +143,7 @@ export function removeRandomDomainCard(
     return;
   }
   ctx.inventory.remove(MINE_DOMAINS, playerId, cardId);
+  syncDomainScore(playerId, ctx);
   ctx.cards.discard(DECK, cardId);
 }
 
@@ -150,6 +152,7 @@ export function removeRandomTreasure(playerId: number, ctx: RuleContext): void {
   const cardId = ctx.random.pick(domain.treasures);
   if (!cardId) return;
   ctx.inventory.remove(MINE_DOMAINS, playerId, cardId);
+  syncDomainScore(playerId, ctx);
   ctx.cards.discard(DECK, cardId);
 }
 
@@ -194,9 +197,13 @@ export function trimHand(playerId: number, ctx: RuleContext): void {
 export function finishMine(ctx: RuleContext): void {
   const winnerIds = ctx.ranking.leaders(
     ctx.players.all().map((player) => player.id),
-    { value: (playerId) => scoreDomain(mineDomain(playerId, ctx)) },
+    { value: (playerId) => ctx.score.get(playerId) },
   );
   ctx.match.finish({ winners: winnerIds, reason: 'mine-collapsed' });
+}
+
+function syncDomainScore(playerId: number, ctx: RuleContext): void {
+  ctx.score.set(playerId, scoreDomain(mineDomain(playerId, ctx)));
 }
 
 export function mineDomains(ctx: RuleContext): PlayerMap<MineDomain> {

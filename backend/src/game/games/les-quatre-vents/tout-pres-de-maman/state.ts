@@ -1,7 +1,4 @@
-import type {
-  GameEffectInstruction,
-  PlayerMap,
-} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
 
 export type MamanTileType =
   | 'start'
@@ -29,8 +26,3 @@ export interface MamanCard {
 }
 
 export type ToutPresDeMamanState = Record<string, never>;
-
-export type ToutPresDeMamanPlayerView = {
-  tokens: PlayerMap<number>;
-  bonusReroll: PlayerMap<boolean>;
-};

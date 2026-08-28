@@ -21,6 +21,6 @@ describe('Entre Rites & Lumières declarative game', () => {
     );
     await game.as(1).do('ask_card', { cardId: card!.id, targetPlayerId: 2 });
 
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

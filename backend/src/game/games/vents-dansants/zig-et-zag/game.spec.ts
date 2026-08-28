@@ -9,7 +9,7 @@ describe('Zig et Zag declarative game', () => {
     await game.as(2).do('draw_card', {});
     expect(game.state().game.lastRound).not.toBeNull();
     expect(game.view(1).hand.length + game.view(2).hand.length).toBe(54);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 
   it('never exposes another pile or unresolved battle internals', async () => {

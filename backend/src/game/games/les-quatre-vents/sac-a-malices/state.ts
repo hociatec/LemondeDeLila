@@ -1,5 +1,3 @@
-import type { PlayerMap } from '../../../core/application/public-api';
-
 export type SacBuilding = {
   houses: number;
   hotel: boolean;
@@ -14,9 +12,4 @@ export interface SacState {
 
 export type SacPlayerView = {
   buildings: Record<number, SacBuilding>;
-  jailTurns: PlayerMap<number>;
-  jailCards: PlayerMap<number>;
-  consecutiveDoubles: PlayerMap<number>;
-  pot: number;
-  extraRoll: PlayerMap<boolean>;
 };

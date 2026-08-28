@@ -1,4 +1,7 @@
-import { testGame } from '../../../core/application/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../core/application/public-api';
 import gameDefinition from './game';
 
 describe('Olympia declarative game', () => {
@@ -9,7 +12,9 @@ describe('Olympia declarative game', () => {
     await game.start();
     expect(game.view(1).hand).toHaveLength(3);
     expect(game.view(2).hand).toHaveLength(3);
-    expect(game.view(1).divinity[1]).not.toBe(game.view(1).divinity[2]);
+    const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
+    const divinities = kits.cards?.hands.divinities.byPlayer;
+    expect(divinities?.['1']).not.toEqual(divinities?.['2']);
   });
 
   it('limits drawing and supports replay', async () => {
@@ -19,6 +24,6 @@ describe('Olympia declarative game', () => {
     await game.start();
     await game.as(1).do('draw_card', { deck: 'heros' });
     expect(game.view(1).hand).toHaveLength(4);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

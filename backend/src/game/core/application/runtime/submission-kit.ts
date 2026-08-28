@@ -23,6 +23,7 @@ export type SubmissionKitState = {
 };
 
 export type SubmissionPlayerView = {
+  stage: SubmissionFlowStage;
   sessions: Record<
     string,
     {
@@ -554,6 +555,7 @@ export function projectSubmissions(
   viewerPlayerId: number | null,
 ): SubmissionPlayerView {
   return {
+    stage: projectSubmissionStage(state),
     sessions: Object.fromEntries(
       Object.entries(state.sessions).map(([id, session]) => {
         const submittedPlayerIds = Object.keys(session.valuesByPlayerId).map(
@@ -599,4 +601,16 @@ export function projectSubmissions(
       ]),
     ),
   };
+}
+
+function projectSubmissionStage(
+  state: SubmissionKitState,
+): SubmissionFlowStage {
+  const sessions = Object.values(state.sessions);
+  const vote = sessions.find((session) => session.kind === 'vote');
+  if (vote) return vote.closed ? 'complete' : 'voting';
+  const submission = sessions.find((session) => session.kind === 'submission');
+  if (!submission) return 'idle';
+  if (!submission.closed) return 'collecting';
+  return submission.revealed ? 'revealed' : 'ready-to-reveal';
 }

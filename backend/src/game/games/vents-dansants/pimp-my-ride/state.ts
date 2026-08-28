@@ -22,7 +22,6 @@ export interface PimpMyRideState {
 }
 
 export type PimpMyRidePlayerView = {
-  carNameIndex: number;
   progress: Record<
     number,
     Omit<CarProgress, 'completedCars'> & { completedCars: CompletedCarView[] }

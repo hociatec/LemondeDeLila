@@ -23,6 +23,6 @@ describe('Panier Express declarative game', () => {
     await game.as(actor).do('roll', {});
     expect('shoppingLists' in game.view(actor)).toBe(false);
     expect('inventories' in game.view(actor)).toBe(false);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

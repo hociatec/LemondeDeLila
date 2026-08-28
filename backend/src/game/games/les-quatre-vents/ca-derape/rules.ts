@@ -7,10 +7,7 @@ import {
   positionOf,
   rejectRule,
 } from '../../../core/application/public-api';
-import type {
-  GameContext,
-  PlayerMap,
-} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
 import {
   CA_DERAPE_TILES,
   type CaCard,
@@ -406,17 +403,6 @@ function incrementIdleCounters(
   for (const player of ctx.players.all())
     ctx.resources.add(player.id, CA_IDLE_TURNS, 1);
   if (delta !== 0) ctx.resources.set(actorId, CA_IDLE_TURNS, 0);
-}
-
-export function caResourceMap(
-  ctx: RuleContext,
-  resourceId: string,
-): PlayerMap<number> {
-  return ctx.players.byId((player) => ctx.resources.get(player.id, resourceId));
-}
-
-export function mirrorSourceMap(ctx: RuleContext): PlayerMap<number | null> {
-  return ctx.players.byId((player) => mirrorSource(player.id, ctx));
 }
 
 function mirrorSource(playerId: number, ctx: RuleContext): number | null {

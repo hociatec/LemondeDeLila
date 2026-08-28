@@ -2,7 +2,7 @@ import {
   cards,
   cardGame,
   defineGame,
-  playerView,
+  defineGameContent,
 } from '../../../core/application/public-api';
 import {
   DAME_NATURE_CARD_BY_ID,
@@ -39,6 +39,9 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Réunissez quatre familles avant le pic de pollution.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('dame-nature', {
+    cards: Object.values(DAME_NATURE_CARD_BY_ID),
+  }),
   patterns: [
     cardGame({
       deckId: 'nature',
@@ -65,7 +68,7 @@ export default defineGame<
     return {};
   },
   actions: DAME_NATURE_ACTIONS,
-  view: ({ state: _state, ctx }) => {
+  viewFragment: ({ ctx }) => {
     const result = ctx.match.result();
     const lastQuizCardId =
       [...ctx.cards.discardPile<string>('nature')]
@@ -79,18 +82,7 @@ export default defineGame<
             .find((player) => !result.winnerPlayerIds.includes(player.id))
             ?.id ?? null)
         : null;
-    const pollutionTokens = ctx.counters.get(DAME_NATURE_POLLUTION);
-    return playerView({
-      game: {
-        pollutionTokens,
-        pollutionLoserId,
-        lastQuizCardId,
-      },
-      extras: {
-        cardCatalog: DAME_NATURE_CARD_BY_ID,
-        pollutionTokens,
-      },
-    });
+    return { pollutionLoserId, lastQuizCardId };
   },
   bot: {
     choose: ({ actor, ctx }) => {

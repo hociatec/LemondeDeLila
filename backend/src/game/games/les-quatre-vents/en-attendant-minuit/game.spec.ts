@@ -9,8 +9,8 @@ describe('En Attendant Minuit declarative game', () => {
     await game.choose(1, 'lutin');
     await game.choose(2, 'renne');
     await game.as(1).do('roll', {});
-    expect(game.view(1).deckCount).toBe(MINUIT_CARDS.length);
+    expect(game.view(1).deckCount).toBe(MINUIT_CARDS.length - 1);
     expect('pendingResolution' in game.view(1)).toBe(false);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

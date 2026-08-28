@@ -2,15 +2,11 @@ import {
   cards,
   cardGame,
   defineGame,
-  playerView,
+  defineGameContent,
 } from '../../../core/application/public-api';
-import {
-  OLYMPIA_CARD_BY_ID,
-  OLYMPIA_DECKS,
-  type OlympiaDeckType,
-} from './content';
+import { OLYMPIA_DECKS, type OlympiaDeckType } from './content';
 import { OLYMPIA_ACTIONS, OLYMPIA_EFFECTS } from './rules';
-import type { OlympiaPlayerView, OlympiaState } from './state';
+import type { OlympiaState } from './state';
 
 const DECKS: OlympiaDeckType[] = [
   'divinite',
@@ -22,17 +18,14 @@ const DECKS: OlympiaDeckType[] = [
   'evenements',
 ];
 
-export default defineGame<
-  OlympiaState,
-  typeof OLYMPIA_ACTIONS,
-  OlympiaPlayerView
->({
+export default defineGame<OlympiaState, typeof OLYMPIA_ACTIONS>({
   id: 'olympia',
   displayName: 'Olympia',
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
   description: 'Gagnez le prestige suprême du panthéon.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('olympia', { decks: OLYMPIA_DECKS }),
   patterns: [
     cardGame({
       deckId: 'heros',
@@ -71,20 +64,6 @@ export default defineGame<
   },
   actions: OLYMPIA_ACTIONS,
   effects: OLYMPIA_EFFECTS,
-  view: ({ ctx }) => {
-    const divinity = ctx.players.byId(
-      (player) => ctx.cards.hand<string>('divinities', player.id)[0] ?? '',
-    );
-    return playerView({
-      game: {
-        divinity,
-      },
-      extras: {
-        cardCatalog: OLYMPIA_CARD_BY_ID,
-        divinity: structuredClone(divinity),
-      },
-    });
-  },
   bot: {
     choose: ({ actor, ctx }) => {
       const cardId = ctx.cards.hand<string>('players', actor.id)[0];

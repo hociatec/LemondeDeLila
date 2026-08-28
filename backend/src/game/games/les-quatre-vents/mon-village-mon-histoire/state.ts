@@ -1,5 +1,3 @@
-import type { PlayerMap } from '../../../core/application/public-api';
-
 export type VillageTile = {
   n: number;
   title: string;
@@ -20,8 +18,3 @@ export type VillageCollection = {
 };
 
 export type MonVillageState = Record<string, never>;
-
-export type MonVillagePlayerView = {
-  collections: PlayerMap<VillageCollection>;
-  availableCards: Record<number, number>;
-};

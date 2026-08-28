@@ -112,6 +112,9 @@ export function migrateDeclarativeState<TState extends object>(
     runtime.engine.kits.quiz.sessions ??= {};
     runtime.engine.kits.quiz.sequence ??= 0;
   }
+  if (runtime.engine.kits.dice) {
+    runtime.engine.kits.dice.rollsByPlayer ??= {};
+  }
   const legacyEngine = runtime.engine as DeclarativeState<TState>['engine'] & {
     version?: unknown;
     status?: unknown;

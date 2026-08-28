@@ -1,4 +1,7 @@
-import { testGame } from '../../../core/application/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../core/application/public-api';
 import gameDefinition from './game';
 
 describe('Odyssée des Quatre Cieux declarative game', () => {
@@ -19,20 +22,24 @@ describe('Odyssée des Quatre Cieux declarative game', () => {
       } else {
         await game.as(actorId).do('roll', {});
       }
-      const moved = Object.values(game.view(actorId).pawnsByPlayer)
-        .flat()
-        .some((pawn) => pawn.progress >= 0);
+      const kits = (
+        game.view(actorId) as unknown as { kits: StableGameKitsView }
+      ).kits;
+      const moved = Object.values(
+        kits.pawns?.sets.odyssee.positions ?? {},
+      ).some((position) => position >= 0);
       if (moved) break;
     }
 
     expect(
-      Object.values(game.view(1).pawnsByPlayer)
-        .flat()
-        .some((pawn) => pawn.progress >= 0),
+      Object.values(
+        (game.view(1) as unknown as { kits: StableGameKitsView }).kits.pawns
+          ?.sets.odyssee.positions ?? {},
+      ).some((position) => position >= 0),
     ).toBe(true);
     expect(
       game.state().log.some((entry) => entry.key === 'game.dice.rolled'),
     ).toBe(true);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

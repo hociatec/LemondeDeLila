@@ -1,4 +1,7 @@
-import { testGame } from '../../../core/application/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../core/application/public-api';
 import gameDefinition from './game';
 
 describe('Les Absurdissimes declarative game', () => {
@@ -11,15 +14,31 @@ describe('Les Absurdissimes declarative game', () => {
 
     const aliceCard = game.player('Alice').hand[0] as string;
     await game.as('Alice').do('play_card', { cardId: aliceCard });
-    expect(game.view('Bob').submissions).toEqual({});
+    const bobKits = (
+      game.view('Bob') as unknown as { kits: StableGameKitsView }
+    ).kits;
+    const bobSession = bobKits.submissions.sessions['absurdissimes.answers'];
+    expect(bobSession.valuesByPlayerId).toBeUndefined();
+    expect(bobSession.ownValue).toBeUndefined();
     const bobCard = game.player('Bob').hand[0] as string;
     await game.as('Bob').do('play_card', { cardId: bobCard });
 
-    expect(game.view('Judge').roundStage).toBe('judge');
-    expect(Object.keys(game.view('Judge').submissions)).toHaveLength(2);
+    const judgeView = game.view('Judge');
+    const judgeKits = (judgeView as unknown as { kits: StableGameKitsView })
+      .kits;
+    expect(game.state().phase).toBe('judge');
+    expect(
+      Object.keys(
+        judgeKits.submissions.sessions['absurdissimes.answers']
+          .valuesByPlayerId ?? {},
+      ),
+    ).toHaveLength(2);
     await game.as('Judge').do('judge_pick', { winnerId: 2 });
-    expect(game.state().game.scores[2]).toBe(1);
-    expect(game.state().game.roundStage).toBe('play');
-    expect(game.replay()).toEqual(game.state());
+    const scoredKits = (
+      game.view('Judge') as unknown as { kits: StableGameKitsView }
+    ).kits;
+    expect(scoredKits.score.byPlayer['2']).toBe(1);
+    expect(game.state().phase).toBe('play');
+    expect(await game.replay()).toEqual(game.state());
   });
 });

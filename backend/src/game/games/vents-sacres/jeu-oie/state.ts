@@ -1,5 +1,3 @@
-import type { PlayerMap } from '../../../core/application/public-api';
-
 export type GooseTile = {
   id: string;
   label: string;
@@ -23,8 +21,3 @@ export type GooseTile = {
 export type GoosePawn = { id: string; label: string; feminine: boolean };
 
 export type JeuOieState = Record<string, never>;
-
-export type JeuOiePlayerView = {
-  inWell: PlayerMap<boolean>;
-  pawnByPlayerId: PlayerMap<string>;
-};

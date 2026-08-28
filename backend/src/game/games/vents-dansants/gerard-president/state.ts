@@ -1,5 +1,3 @@
-import type { PlayerMap } from '../../../core/application/public-api';
-
 export type GerardPhase =
   'waiting-theme' | 'collecting-names' | 'choosing-winner';
 
@@ -12,13 +10,4 @@ export interface GerardState {
 export type GerardPlayerView = {
   currentTheme: string | null;
   secondTheme: string | null;
-  extraNamesAllowed: PlayerMap<number>;
-  defenseActive: PlayerMap<boolean>;
-  themeSecretActive: boolean;
-  juryOverrideId: number | null;
-  targetScore: number;
-  phase: GerardPhase;
-  masterId: number;
-  pendingPlayers: number[];
-  submissions: PlayerMap<string[]>;
 };

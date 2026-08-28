@@ -5,10 +5,7 @@ import {
   sequentialPawnSelection,
   setupPlayingPhases,
 } from '../../../core/application/public-api';
-import type {
-  GameContext,
-  PlayerMap,
-} from '../../../core/application/public-api';
+import type { GameContext } from '../../../core/application/public-api';
 import {
   GALOPONS_TILES,
   type GaloponsCard,
@@ -222,17 +219,6 @@ function payIou(
   if (creditor == null || !ctx.resources.has(playerId, APPLE, 1)) return;
   ctx.resources.transfer(playerId, creditor, APPLE, 1);
   ctx.resources.remove(playerId, iouResource(creditor), 1);
-}
-
-export function galoponsIous(ctx: RuleContext): PlayerMap<PlayerMap<number>> {
-  return ctx.players.byId((debtor) => {
-    const rows = Object.entries(
-      ctx.players.byId((creditor) =>
-        ctx.resources.get(debtor.id, iouResource(creditor.id)),
-      ),
-    ).filter(([, count]) => count > 0);
-    return Object.fromEntries(rows);
-  });
 }
 
 function iouResource(creditorId: number): string {

@@ -4,22 +4,15 @@ import {
   defineConfiguration,
   defineEvent,
   defineGame,
+  defineGameContent,
   gameInput,
   ownership,
-  playerView,
-  publicFields,
   raceGame,
   setupPlayingPhases,
 } from '../../../core/application/public-api';
 import { SAC_VARIANTS, type SacVariantId } from './content';
 import { SAC_ACTIONS } from './actions';
-import {
-  currentSacVariant,
-  SAC_CONSECUTIVE_DOUBLES,
-  SAC_JAIL_CARDS,
-  SAC_JAIL_TURNS,
-  SAC_POT,
-} from './economy';
+import { SAC_POT } from './economy';
 import { resolveManagement, resolvePurchase, SAC_EFFECTS } from './rules';
 import type { SacPlayerView, SacState } from './state';
 
@@ -37,6 +30,7 @@ export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
   subcategory: 'LesQuatreVents',
   description: 'Jeu immobilier décliné sur sept plateaux thématiques.',
   players: { min: 2, max: 8 },
+  content: defineGameContent('sac-a-malices', { variants: SAC_VARIANTS }),
   config: defineConfiguration<SacState, { variantId: SacVariantId }>({
     input: gameInput.object({
       variantId: gameInput.enum(SAC_VARIANT_IDS),
@@ -108,31 +102,9 @@ export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
       resolve: ({ state, value, ctx }) => resolveManagement(state, value, ctx),
     }),
   },
-  view: ({ state, ctx }) => {
-    const variant = currentSacVariant(ctx);
-    const positions = ctx.players.byId((player) =>
-      ctx.movement.position('city', player.id),
-    );
-    const playerResourceMap = (resourceId: string) =>
-      ctx.players.byId((player) => ctx.resources.get(player.id, resourceId));
-    return playerView({
-      game: {
-        ...publicFields(state, ['buildings']),
-        jailTurns: playerResourceMap(SAC_JAIL_TURNS),
-        jailCards: playerResourceMap(SAC_JAIL_CARDS),
-        consecutiveDoubles: playerResourceMap(SAC_CONSECUTIVE_DOUBLES),
-        pot: ctx.counters.get(SAC_POT),
-        extraRoll: ctx.players.byId(
-          (player) => ctx.turn.extraCount(player.id) > 0,
-        ),
-      },
-      extras: {
-        buildings: structuredClone(state.buildings),
-        variant: { id: variant.id, label: variant.label },
-      },
-      board: { tiles: variant.tiles, positions },
-    });
-  },
+  viewFragment: ({ state }) => ({
+    buildings: structuredClone(state.buildings),
+  }),
   bot: {
     choose: ({ availableActions }) => {
       if (availableActions.includes('use_jail_card'))

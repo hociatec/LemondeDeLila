@@ -22,6 +22,6 @@ describe('Cat Pattes declarative game', () => {
     await game.as(1).do('discard_card', { cardId: game.view(1).hand[0] });
     expect(game.view(1).hand).toHaveLength(6);
     expect(game.state().turn?.currentPlayerId).toBe(2);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

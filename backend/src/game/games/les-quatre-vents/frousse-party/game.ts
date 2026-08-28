@@ -2,9 +2,10 @@ import {
   cards,
   defineChoice,
   defineGame,
+  defineGameContent,
   gameInput,
   pawns,
-  playerView,
+  publicField,
   raceGame,
 } from '../../../core/application/public-api';
 import { FROUSSE_CARDS, FROUSSE_PAWNS, FROUSSE_TILES } from './content';
@@ -12,25 +13,24 @@ import {
   FROUSSE_ACTIONS,
   FROUSSE_EFFECTS,
   FROUSSE_PHASES,
-  FROUSSE_STATUSES,
-  blockedRule,
   requestPawn,
   resolvePawn,
-  statusNumber,
 } from './rules';
-import type { FroussePlayerView, FrousseState } from './state';
+import type { FrousseState } from './state';
 
-export default defineGame<
-  FrousseState,
-  typeof FROUSSE_ACTIONS,
-  FroussePlayerView
->({
+export default defineGame<FrousseState, typeof FROUSSE_ACTIONS>({
   id: 'frousse-party',
   displayName: 'Frousse Party',
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
   description: 'Course mouvementée dans un manoir hanté.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('frousse-party', {
+    tiles: FROUSSE_TILES,
+    pawns: FROUSSE_PAWNS,
+    cards: FROUSSE_CARDS,
+  }),
+  playerValuesVisibility: { statuses: publicField() },
   patterns: [
     raceGame({
       trackId: 'manor',
@@ -62,51 +62,6 @@ export default defineGame<
       input: gameInput.string({ min: 1, max: 128 }),
       resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
     }),
-  },
-  view: ({ actor, ctx }) => {
-    const pawnByPlayerId = Object.fromEntries(
-      ctx.players.all().flatMap((player) => {
-        const pawnId = ctx.pawns.assigned('frousse', player.id)[0];
-        return pawnId == null ? [] : [[player.id, pawnId]];
-      }),
-    );
-    const positions = ctx.players.byId((player) =>
-      ctx.movement.position('manor', player.id),
-    );
-    const booleanMap = (statusId: string) =>
-      ctx.players.byId((player) => ctx.status.has(player.id, statusId));
-    const numberMap = (statusId: string) =>
-      ctx.players.byId((player) => statusNumber(player.id, statusId, ctx));
-    return playerView({
-      game: {
-        ignoreNextTrap: booleanMap(FROUSSE_STATUSES.ignoreNextTrap),
-        ignoreTrapUntilNextDraw: booleanMap(
-          FROUSSE_STATUSES.ignoreTrapUntilNextDraw,
-        ),
-        ignoreNextPrank: booleanMap(FROUSSE_STATUSES.ignoreNextPrank),
-        ignoreNextGhost: booleanMap(FROUSSE_STATUSES.ignoreNextGhost),
-        nextMoveCap: numberMap(FROUSSE_STATUSES.nextMoveCap),
-        nextRollMalus: numberMap(FROUSSE_STATUSES.nextRollMalus),
-        nextRollKeepLowest: booleanMap(FROUSSE_STATUSES.nextRollKeepLowest),
-        nextRollDouble: booleanMap(FROUSSE_STATUSES.nextRollDouble),
-        nextRollIfThreeBackTwo: booleanMap(
-          FROUSSE_STATUSES.nextRollIfThreeBackTwo,
-        ),
-        blocked: ctx.players.byId((player) => blockedRule(player.id, ctx)),
-        pawnByPlayerId,
-        replayTurns: ctx.players.byId((player) =>
-          ctx.turn.extraCount(player.id),
-        ),
-      },
-      extras: {
-        pawn: actor
-          ? (FROUSSE_PAWNS.find(
-              (pawn) => pawn.id === pawnByPlayerId[actor.id],
-            ) ?? null)
-          : null,
-      },
-      board: { tiles: FROUSSE_TILES, positions },
-    });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

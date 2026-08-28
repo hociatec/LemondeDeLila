@@ -19,6 +19,6 @@ describe('Les Mains de la Terre declarative game', () => {
     await game
       .as(1)
       .do('request_card', { cardId: requested!.id, targetPlayerId: 2 });
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

@@ -1,32 +1,33 @@
 import {
   defineChoice,
   defineGame,
+  defineGameContent,
   gameInput,
   pawns,
-  playerView,
+  publicField,
   raceGame,
 } from '../../../core/application/public-api';
 import { GOOSE_PAWNS, GOOSE_TILES } from './content';
 import {
   assignPawn,
-  GOOSE_IN_WELL,
   initializeGoose,
   JEU_OIE_ACTIONS,
   JEU_OIE_PHASES,
 } from './rules';
-import type { JeuOiePlayerView, JeuOieState } from './state';
+import type { JeuOieState } from './state';
 
-export default defineGame<
-  JeuOieState,
-  typeof JEU_OIE_ACTIONS,
-  JeuOiePlayerView
->({
+export default defineGame<JeuOieState, typeof JEU_OIE_ACTIONS>({
   id: 'jeu-oie',
   displayName: 'Jeu de l’oie',
   category: 'JeuxDePlateaux',
   subcategory: 'VentsSacres',
   description: 'Course classique sur 63 cases et ses pièges.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('jeu-oie', {
+    tiles: GOOSE_TILES,
+    pawns: GOOSE_PAWNS,
+  }),
+  playerValuesVisibility: { statuses: publicField() },
   patterns: [
     raceGame({
       trackId: 'goose-board',
@@ -56,33 +57,6 @@ export default defineGame<
       input: gameInput.string({ min: 1, max: 128 }),
       resolve: ({ actor, value, ctx }) => assignPawn(actor.id, value, ctx),
     }),
-  },
-  view: ({ state: _state, actor, ctx }) => {
-    const pawnByPlayerId = Object.fromEntries(
-      ctx.players.all().flatMap((player) => {
-        const pawnId = ctx.pawns.assigned('goose', player.id)[0];
-        return pawnId == null ? [] : [[player.id, pawnId]];
-      }),
-    );
-    const positions = ctx.players.byId((player) =>
-      ctx.movement.position('goose-board', player.id),
-    );
-    return playerView({
-      game: {
-        inWell: ctx.players.byId((player) =>
-          ctx.status.has(player.id, GOOSE_IN_WELL),
-        ),
-        pawnByPlayerId,
-      },
-      extras: {
-        currentPlayerView: actor
-          ? { id: actor.id, username: actor.username }
-          : null,
-        pawns: GOOSE_PAWNS,
-        pawnByPlayerId,
-      },
-      board: { tiles: GOOSE_TILES, positions },
-    });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

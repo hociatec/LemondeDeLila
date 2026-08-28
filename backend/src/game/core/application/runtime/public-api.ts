@@ -9,6 +9,7 @@ export {
   defineAction,
   defineChoice,
   defineGame,
+  gameViewExtension,
   overrideAction,
   playerView,
 } from './game-definition';
@@ -30,6 +31,7 @@ export type {
   GameChoiceUiHint,
   GameContentMigration,
   GamePlayerProjection,
+  GameViewExtension,
   GameDefinition,
   GameSession,
   GameStateMigration,
@@ -39,6 +41,8 @@ export type {
 export type {
   GameStatusPlayerView,
   GameSetupPlayerView,
+  GamePlayersPlayerView,
+  GameEventsPlayerView,
   GameTurnPlayerView,
   GenericBoardPlayerView,
   GenericGamePlayerView,
@@ -187,6 +191,12 @@ export type {
 } from './cards-kit';
 export { inventory } from './inventory-kit';
 export type { InventoryDefinition, InventoryKitState } from './inventory-kit';
+export { collection } from './collection-view';
+export type {
+  CollectionPlayerView,
+  CollectionValueSource,
+  CollectionViewDefinition,
+} from './collection-view';
 export { economy } from './economy-kit';
 export type { EconomyKitState, MarketDefinition } from './economy-kit';
 export { ownership } from './ownership-kit';

@@ -9,6 +9,6 @@ describe('Sac à Malices declarative game', () => {
     await game.as(1).do('roll', {});
     expect(game.view(1).money[1]).toBeGreaterThanOrEqual(0);
     expect('pendingPurchase' in game.view(1)).toBe(false);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

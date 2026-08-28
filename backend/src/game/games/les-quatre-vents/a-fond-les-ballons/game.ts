@@ -2,9 +2,9 @@ import {
   cards,
   defineChoice,
   defineGame,
+  defineGameContent,
   gameInput,
   pawns,
-  playerView,
   raceGame,
 } from '../../../core/application/public-api';
 import {
@@ -19,12 +19,11 @@ import {
   requestPawn,
   resolvePawn,
 } from './rules';
-import type { AFondLesBallonsPlayerView, AFondLesBallonsState } from './state';
+import type { AFondLesBallonsState } from './state';
 
 export default defineGame<
   AFondLesBallonsState,
-  typeof A_FOND_LES_BALLONS_ACTIONS,
-  AFondLesBallonsPlayerView
+  typeof A_FOND_LES_BALLONS_ACTIONS
 >({
   id: 'a-fond-les-ballons',
   displayName: 'A fond les ballons !',
@@ -32,6 +31,11 @@ export default defineGame<
   subcategory: 'LesQuatreVents',
   description: 'Course déjantée jusqu’à la Grosse Noix Dorée.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('a-fond-les-ballons', {
+    cards: A_FOND_LES_BALLONS_CARDS,
+    pawns: A_FOND_LES_BALLONS_PAWNS,
+    tiles: A_FOND_LES_BALLONS_TILES,
+  }),
   patterns: [
     raceGame({
       trackId: 'balloons',
@@ -64,42 +68,6 @@ export default defineGame<
       input: gameInput.string({ min: 1, max: 128 }),
       resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
     }),
-  },
-  view: ({ actor, ctx }) => {
-    const pawnByPlayerId = Object.fromEntries(
-      ctx.players.all().flatMap((player) => {
-        const pawnId = ctx.pawns.assigned('balloons-pawns', player.id)[0];
-        return pawnId == null ? [] : [[player.id, pawnId]];
-      }),
-    );
-    const positions = ctx.players.byId((player) =>
-      ctx.movement.position('balloons', player.id),
-    );
-    const trapImmunityTurns = ctx.players.byId(
-      (player) =>
-        ctx.status.get(player.id, 'a-fond-les-ballons.trap-immunity')
-          ?.remaining ?? 0,
-    );
-    const pending = ctx.choice.current();
-    const swapPlayerId =
-      pending?.data?.choiceId === 'a-fond-les-ballons.swap'
-        ? (pending.playerId ?? null)
-        : null;
-    return playerView({
-      game: {
-        trapImmunityTurns,
-        swapPlayerId,
-        pawnByPlayerId,
-      },
-      extras: {
-        pawn: actor
-          ? (A_FOND_LES_BALLONS_PAWNS.find(
-              (pawn) => pawn.id === pawnByPlayerId[actor.id],
-            ) ?? null)
-          : null,
-      },
-      board: { tiles: A_FOND_LES_BALLONS_TILES, positions },
-    });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

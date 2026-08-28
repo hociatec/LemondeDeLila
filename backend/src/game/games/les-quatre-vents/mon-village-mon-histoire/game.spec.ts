@@ -1,4 +1,7 @@
-import { testGame } from '../../../core/application/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../core/application/public-api';
 import { VILLAGE_ZONES } from './content';
 import gameDefinition from './game';
 
@@ -10,17 +13,20 @@ describe('Mon Village, Mon Histoire declarative game', () => {
     await game.as(1).do('roll', {});
 
     expect(game.state().game.lastRoll).not.toBeNull();
-    expect(game.view(1).collections[1]?.total).toBe(1);
+    const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
+    expect(kits.collections.village.byPlayer['1']?.total).toBe(1);
     expect(game.view(1).positions[1]).toBeGreaterThan(0);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 
   it('loads every declared zone and exposes only aggregate deck counts', async () => {
     const game = testGame(gameDefinition).players(['Alice', 'Bob']).seed(5);
     await game.start();
 
-    const view = game.view(1);
-    expect(Object.keys(view.availableCards)).toHaveLength(VILLAGE_ZONES.length);
-    expect(JSON.stringify(view)).not.toContain('decks');
+    const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
+    expect(Object.keys(kits.cards?.decks ?? {})).toHaveLength(
+      VILLAGE_ZONES.length,
+    );
+    expect(JSON.stringify(kits.cards?.decks)).not.toContain('title');
   });
 });

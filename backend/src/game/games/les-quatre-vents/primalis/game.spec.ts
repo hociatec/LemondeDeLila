@@ -1,4 +1,7 @@
-import { testGame } from '../../../core/application/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../core/application/public-api';
 import gameDefinition from './game';
 
 describe('Primalis declarative game', () => {
@@ -15,8 +18,9 @@ describe('Primalis declarative game', () => {
       await game.as(actorId).do('roll', {});
     }
 
-    expect(game.state().game.lastRoll).not.toBeNull();
+    const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
+    expect(kits.dice?.total).toBeGreaterThanOrEqual(1);
     expect(game.state().log.length).toBeGreaterThan(0);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

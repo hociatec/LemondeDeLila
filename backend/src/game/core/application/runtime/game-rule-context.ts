@@ -375,6 +375,7 @@ export class GameContext<TState extends object> {
         (component): component is DiceDefinition =>
           component.component === 'dice.set',
       ),
+      () => this.actor?.id ?? this.runtime.turn?.currentPlayerId ?? null,
     ));
   }
 
