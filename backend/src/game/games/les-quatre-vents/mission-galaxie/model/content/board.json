@@ -20,7 +20,7 @@
       "n": 4,
       "title": "Panne de communication",
       "type": "skip",
-      "skipTurns": 1
+      "turnsToSkip": 1
     },
     {
       "n": 5,
@@ -74,7 +74,7 @@
       "n": 14,
       "title": "Turbulences orbitales",
       "type": "skip",
-      "skipTurns": 1
+      "turnsToSkip": 1
     },
     {
       "n": 15,
@@ -123,7 +123,7 @@
       "n": 23,
       "title": "Champ énergétique instable",
       "type": "skip",
-      "skipTurns": 1
+      "turnsToSkip": 1
     },
     {
       "n": 24,
@@ -210,7 +210,7 @@
       "n": 39,
       "title": "Rayonnement cosmique",
       "type": "skip",
-      "skipTurns": 1
+      "turnsToSkip": 1
     },
     {
       "n": 40,

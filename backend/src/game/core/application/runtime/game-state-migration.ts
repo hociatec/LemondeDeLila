@@ -14,6 +14,7 @@ export function migrateDeclarativeState<TState extends object>(
   state: GameStateEntity,
   gameId: string,
   targetVersion: number,
+  targetContentVersion: string,
   targetRulesVersion: string,
   migrations: readonly GameStateMigration<TState>[],
   configuration: GameConfigurationShape<TState> | undefined,
@@ -25,6 +26,7 @@ export function migrateDeclarativeState<TState extends object>(
   > & {
     schemaVersion?: number;
     rulesVersion?: string;
+    contentVersion?: string;
   };
   let version = Number(versionedEngine.schemaVersion ?? 1);
   if (!Number.isInteger(version) || version < 1) version = 1;
@@ -35,6 +37,20 @@ export function migrateDeclarativeState<TState extends object>(
     );
   }
   const storedRulesVersion = versionedEngine.rulesVersion;
+  const storedContentVersion = versionedEngine.contentVersion;
+  if (
+    typeof storedContentVersion === 'string' &&
+    storedContentVersion !== targetContentVersion
+  ) {
+    throw new GameStateViolationError(
+      `Version de contenu indisponible pour ${gameId}`,
+      {
+        gameId,
+        storedContentVersion,
+        targetContentVersion,
+      },
+    );
+  }
   if (
     typeof storedRulesVersion === 'string' &&
     storedRulesVersion !== targetRulesVersion
@@ -63,6 +79,7 @@ export function migrateDeclarativeState<TState extends object>(
     version = migration.to;
   }
   runtime.engine.schemaVersion = version;
+  runtime.engine.contentVersion = storedContentVersion ?? targetContentVersion;
   runtime.engine.rulesVersion = storedRulesVersion ?? targetRulesVersion;
   runtime.engine.configuration ??= createGameConfigurationState(
     configuration as GameConfigurationShape<object> | undefined,

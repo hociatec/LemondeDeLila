@@ -680,6 +680,7 @@ export class DeclarativeGameRuntime<
       turn,
       clock,
       this.definition.stateVersion,
+      this.definition.contentVersion,
       this.definition.rulesVersion,
       this.definition.config,
     );
@@ -714,6 +715,7 @@ export class DeclarativeGameRuntime<
       state,
       this.definition.id,
       this.definition.stateVersion,
+      this.definition.contentVersion,
       this.definition.rulesVersion,
       this.definition.migrations,
       this.definition.config,

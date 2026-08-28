@@ -238,6 +238,7 @@ export interface DeclarativeGameDefinition<
   readonly content: GameContentShape;
   readonly compiled: CompiledGameDiagnostics;
   readonly stateVersion: number;
+  readonly contentVersion: string;
   readonly rulesVersion: string;
   readonly migrations: readonly GameStateMigration<TState>[];
   readonly shortcuts?: readonly GameShortcutHint[];
@@ -297,6 +298,9 @@ export type CompiledGameDiagnostics = {
   readonly victoryPriority: readonly ('game' | 'pattern')[];
   readonly actionSources: Readonly<Record<string, string>>;
   readonly componentSources: Readonly<Record<string, string>>;
+  readonly phaseSources: Readonly<Record<string, string>>;
+  readonly choiceSources: Readonly<Record<string, string>>;
+  readonly effectSources: Readonly<Record<string, string>>;
   readonly contentVersion: string;
   readonly stateVersion: number;
   readonly rulesVersion: string;
@@ -306,6 +310,7 @@ export type DeclarativeState<TState extends object> = GameStateEntity & {
   game: TState;
   engine: {
     schemaVersion: number;
+    contentVersion: string;
     rulesVersion: string;
     kits: EngineKitsState;
     pendingEvents?: GamePendingEvent[];
@@ -353,11 +358,13 @@ type GameDefinitionInput<
   | 'content'
   | 'compiled'
   | 'stateVersion'
+  | 'contentVersion'
   | 'rulesVersion'
   | 'migrations'
 > & {
   readonly content?: GameContentShape;
   readonly stateVersion?: number;
+  readonly contentVersion?: string;
   readonly rulesVersion?: string;
   readonly migrations?: readonly GameStateMigration<TState>[];
 };
@@ -425,11 +432,18 @@ export function defineGame<
     definition.actions,
     definition.id,
   );
+  const content =
+    definition.content ??
+    defineGameContent(definition.id, {
+      components,
+    });
   const normalizedBase = {
     stateVersion: 1,
     rulesVersion: '1',
     migrations: [],
     ...definition,
+    content,
+    contentVersion: definition.contentVersion ?? content.version,
     patterns: [...(definition.patterns ?? [])],
     components,
     actions: {
@@ -443,11 +457,6 @@ export function defineGame<
     turn: definition.turn ?? patterns.turn,
     lifecycle: mergeLifecycleHooks(patterns.lifecycle, definition.lifecycle),
     victory: mergeVictoryRules(definition.victory, patterns.victory),
-    content:
-      definition.content ??
-      defineGameContent(definition.id, {
-        components,
-      }),
     initialPhase:
       definition.initialPhase ??
       Object.keys(definition.phases ?? {})[0] ??
@@ -486,6 +495,7 @@ export function describeCompiledGameDefinition(
     | 'victory'
     | 'content'
     | 'stateVersion'
+    | 'contentVersion'
     | 'rulesVersion'
   >,
 ): CompiledGameDiagnostics {
@@ -545,7 +555,22 @@ export function describeCompiledGameDefinition(
     ),
     actionSources: Object.freeze(actionSources(definition)),
     componentSources: Object.freeze(componentSources(definition)),
-    contentVersion: `${definition.id}@state:${definition.stateVersion}/rules:${definition.rulesVersion}`,
+    phaseSources: Object.freeze(
+      Object.fromEntries(
+        Object.keys(definition.phases ?? {}).map((id) => [id, 'game']),
+      ),
+    ),
+    choiceSources: Object.freeze(
+      Object.fromEntries(
+        Object.keys(definition.choices ?? {}).map((id) => [id, 'game']),
+      ),
+    ),
+    effectSources: Object.freeze(
+      Object.fromEntries(
+        Object.keys(definition.effects ?? {}).map((id) => [id, 'game']),
+      ),
+    ),
+    contentVersion: definition.contentVersion,
     stateVersion: definition.stateVersion,
     rulesVersion: definition.rulesVersion,
   };

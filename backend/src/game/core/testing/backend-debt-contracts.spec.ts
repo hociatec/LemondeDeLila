@@ -22,6 +22,8 @@ import {
 } from '../application/public-api';
 import { GameConfigurationError } from '../domain/errors/game-domain.errors';
 import { GameTestKit } from './game-test-kit';
+import { DeclarativeGameRuntime } from '../application/runtime/declarative-game.runtime';
+import { GameSimulator } from './game-simulator';
 
 describe('backend debt contracts', () => {
   const definitions = discoverGameDefinitions();
@@ -41,6 +43,12 @@ describe('backend debt contracts', () => {
       expect(definition.compiled.actionSources).toBeDefined();
       expect(definition.compiled.componentSources).toBeDefined();
       expect(definition.compiled.lifecycleHookSources).toBeDefined();
+      expect(definition.compiled.phaseSources).toBeDefined();
+      expect(definition.compiled.choiceSources).toBeDefined();
+      expect(definition.compiled.effectSources).toBeDefined();
+      expect(definition.compiled.contentVersion).toBe(
+        definition.contentVersion,
+      );
     }
   });
 
@@ -60,6 +68,12 @@ describe('backend debt contracts', () => {
       actions: {},
     });
     const game = await new GameTestKit(definition).players(2).start();
+    expect(
+      (game.state() as unknown as { engine: { contentVersion: string } }).engine
+        .contentVersion,
+    ).toBe(definition.contentVersion);
+    expect(definition.content.version).toBe(definition.contentVersion);
+    expect(definition.compiled.contentVersion).toBe(definition.contentVersion);
     const view = game.view(1) as unknown as {
       system: object;
       kits: object;
@@ -87,6 +101,46 @@ describe('backend debt contracts', () => {
         }),
       ]),
     );
+  });
+
+  it('exposes a versioned content manifest through runtime descriptors', () => {
+    const definition = defineGame({
+      id: 'content-manifest-contract',
+      displayName: 'Content Manifest Contract',
+      category: 'Tests',
+      players: { min: 1, max: 1 },
+      setup: () => ({}),
+      actions: {
+        pass: defineAction({
+          input: gameInput.object({}),
+          execute: ({ ctx }) => ctx.turn.complete(),
+        }),
+      },
+    });
+    const descriptor = new DeclarativeGameRuntime(definition).getDescriptor();
+    expect(descriptor.content).toMatchObject({
+      gameId: definition.id,
+      version: definition.contentVersion,
+      sections: ['components'],
+    });
+  });
+
+  it('keeps patterns optional for atypical games using only actions and kits', async () => {
+    const definition = defineGame({
+      id: 'no-pattern-contract',
+      displayName: 'No Pattern Contract',
+      category: 'Tests',
+      players: { min: 1, max: 1 },
+      setup: () => ({}),
+      actions: {
+        pass: defineAction({
+          input: gameInput.object({}),
+          execute: ({ ctx }) => ctx.turn.complete(),
+        }),
+      },
+    });
+    const game = await new GameTestKit(definition).players(1).start();
+    expect(game.availableActions(1)).toContain('pass');
   });
 
   it('requires explicit overrideAction when a game replaces a pattern action', () => {
@@ -309,6 +363,62 @@ describe('backend debt contracts', () => {
         queuedKinds: expect.arrayContaining(['gain-score']),
       },
     });
+  });
+
+  it('supports deterministic bot simulation and explicit deadlock accounting', async () => {
+    const finishDefinition = defineGame({
+      id: 'simulation-finish-contract',
+      displayName: 'Simulation Finish Contract',
+      category: 'Tests',
+      players: { min: 1, max: 1 },
+      setup: () => ({}),
+      actions: {
+        finish: defineAction({
+          input: gameInput.object({}),
+          execute: ({ actor, ctx }) =>
+            ctx.match.finish({ winners: [actor.id], reason: 'simulation' }),
+        }),
+      },
+      bot: { choose: () => ({ type: 'finish', payload: {} }) },
+    });
+    const finishGame = await new GameTestKit(finishDefinition)
+      .players(1)
+      .start();
+    const simulator = new GameSimulator();
+    const report = simulator.runMany(
+      new DeclarativeGameRuntime(finishDefinition),
+      () => finishGame.state(),
+      { games: 3, maxCommands: 3, retainResults: true },
+    );
+    expect(report.finished).toBe(3);
+    expect(report.deadlocks).toBe(0);
+
+    const deadlockDefinition = defineGame({
+      id: 'simulation-deadlock-contract',
+      displayName: 'Simulation Deadlock Contract',
+      category: 'Tests',
+      players: { min: 1, max: 1 },
+      setup: () => ({}),
+      actions: {
+        hidden: defineAction({
+          input: gameInput.object({}),
+          available: () => false,
+          execute: () => undefined,
+        }),
+      },
+    });
+    const deadlockGame = await new GameTestKit(deadlockDefinition)
+      .players(1)
+      .start();
+    expect(
+      simulator.run(
+        new DeclarativeGameRuntime(deadlockDefinition),
+        deadlockGame.state(),
+        {
+          maxCommands: 3,
+        },
+      ).status,
+    ).toBe('deadlock');
   });
 });
 

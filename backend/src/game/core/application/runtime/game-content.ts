@@ -14,14 +14,22 @@ export type LinkedBoardContent = IdentifiedGameContent & {
 export type GameContent<TData extends object = Record<string, unknown>> = {
   readonly kind: typeof GAME_CONTENT_KIND;
   readonly gameId: string;
+  readonly version: string;
   readonly data: Readonly<TData>;
 };
 
 export interface GameContentShape {
   readonly kind: typeof GAME_CONTENT_KIND;
   readonly gameId: string;
+  readonly version: string;
   readonly data: Readonly<object>;
 }
+
+export type GameContentManifest = {
+  readonly gameId: string;
+  readonly version: string;
+  readonly sections: readonly string[];
+};
 
 export type GameContentSchema<TData extends object> = {
   parse(value: unknown, path?: string): TData;
@@ -61,15 +69,31 @@ export function loadGameContent<TData extends object>(
 export function defineGameContent<TData extends object>(
   gameId: string,
   data: TData,
+  options: { version?: string } = {},
 ): GameContent<TData> {
   if (!gameId.trim()) {
     throw new GameContentValidationError('Identifiant de contenu vide');
+  }
+  const version = options.version ?? stableContentVersion(gameId, data);
+  if (!version.trim()) {
+    throw new GameContentValidationError('Version de contenu vide');
   }
   validateStaticContent(data, `${gameId}.content`);
   return deepFreeze({
     kind: GAME_CONTENT_KIND,
     gameId,
+    version,
     data: structuredClone(data),
+  });
+}
+
+export function contentManifest(
+  content: GameContentShape,
+): GameContentManifest {
+  return deepFreeze({
+    gameId: content.gameId,
+    version: content.version,
+    sections: Object.keys(content.data).sort(),
   });
 }
 
@@ -157,6 +181,30 @@ export function assertUniqueContentIds(
 
 function contentIdKey(id: string | number): string {
   return `${typeof id}:${String(id)}`;
+}
+
+function stableContentVersion(gameId: string, data: object): string {
+  return `${gameId}@content:${hashString(stableJson(data))}`;
+}
+
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (value != null && typeof value === 'object') {
+    return `{${Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, nested]) => `${JSON.stringify(key)}:${stableJson(nested)}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function hashString(value: string): string {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, '0');
 }
 
 function validateStaticContent(

@@ -124,7 +124,7 @@ function land(
   else if (tile.type === 'death' || tile.type === 'labyrinth') {
     land(playerId, tile.backTo ?? 1, rollValue, depth + 1, ctx);
   } else if (tile.type === 'inn' || tile.type === 'prison') {
-    ctx.turn.skip(playerId, tile.skipTurns ?? 1);
+    ctx.turn.skip(playerId, tile.turnsToSkip ?? 1);
   } else if (tile.type === 'magic-die') {
     const magic = ctx.dice.roll('main').total;
     const delta = magic <= 3 ? magic : -magic;

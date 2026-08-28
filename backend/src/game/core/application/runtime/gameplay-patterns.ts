@@ -652,6 +652,10 @@ function assertComposablePatterns<TState extends object>(
   const seenPatternIds = new Set<string>();
   const seenComponentKeys = new Set<string>();
   const seenActionKeys = new Set<string>();
+  const initializedResources = new Map<string, string>();
+  const initializedCounters = new Map<string, string>();
+  const initializedTracks = new Map<string, string>();
+  const initializedPawns = new Map<string, string>();
   let selectedTurn: { id: string; policy: TurnPolicy } | null = null;
   for (const pattern of patterns) {
     if (seenPatternIds.has(pattern.id)) {
@@ -681,6 +685,37 @@ function assertComposablePatterns<TState extends object>(
       seenActionKeys.add(actionId);
     }
 
+    assertInitializationKeys(
+      pattern.initialization?.resources,
+      initializedResources,
+      pattern.id,
+      'resource',
+    );
+    assertInitializationKeys(
+      pattern.initialization?.counters,
+      initializedCounters,
+      pattern.id,
+      'counter',
+    );
+    assertInitializationKeys(
+      pattern.initialization?.tracks,
+      initializedTracks,
+      pattern.id,
+      'track',
+    );
+    for (const [index, pawn] of (
+      pattern.initialization?.pawns ?? []
+    ).entries()) {
+      const key = `${pawn.setId}:${index}`;
+      const previous = initializedPawns.get(key);
+      if (previous) {
+        throw new GameConfigurationError(
+          `Composition de patterns invalide: initialisation de pion dupliquée « ${key} » par « ${previous} » et « ${pattern.id} »`,
+        );
+      }
+      initializedPawns.set(key, pattern.id);
+    }
+
     if (!pattern.turn) continue;
     if (!selectedTurn) {
       selectedTurn = { id: pattern.id, policy: pattern.turn };
@@ -690,6 +725,23 @@ function assertComposablePatterns<TState extends object>(
     throw new GameConfigurationError(
       `Composition de patterns invalide: politiques de tour incompatibles « ${selectedTurn.id} » et « ${pattern.id} »`,
     );
+  }
+}
+
+function assertInitializationKeys<TValue>(
+  values: Readonly<Record<string, TValue>> | undefined,
+  seen: Map<string, string>,
+  patternId: string,
+  kind: string,
+): void {
+  for (const key of Object.keys(values ?? {})) {
+    const previous = seen.get(key);
+    if (previous) {
+      throw new GameConfigurationError(
+        `Composition de patterns invalide: initialisation ${kind} dupliquée « ${key} » par « ${previous} » et « ${patternId} »`,
+      );
+    }
+    seen.set(key, patternId);
   }
 }
 

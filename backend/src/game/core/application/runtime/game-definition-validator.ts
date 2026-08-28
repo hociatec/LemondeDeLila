@@ -25,6 +25,7 @@ type DefinitionToValidate = {
   automatic?: readonly { id: string; priority?: number }[];
   choices?: Readonly<Record<string, { input?: unknown }>>;
   stateVersion?: number;
+  contentVersion?: string;
   rulesVersion?: string;
   migrations?: readonly { from: number; to: number }[];
   config?: {
@@ -36,6 +37,7 @@ type DefinitionToValidate = {
   content?: {
     kind?: unknown;
     gameId?: unknown;
+    version?: unknown;
     data?: unknown;
   };
   effects?: Readonly<Record<string, { input?: unknown; apply?: unknown }>>;
@@ -71,6 +73,12 @@ export function assertGameDefinition(definition: DefinitionToValidate): void {
   ) {
     fail('rulesVersion', 'la version des règles ne peut pas être vide');
   }
+  if (
+    definition.contentVersion != null &&
+    definition.contentVersion.trim().length === 0
+  ) {
+    fail('contentVersion', 'la version du contenu ne peut pas être vide');
+  }
   if (definition.content) {
     if (definition.content.kind !== 'lila.game-content') {
       fail('content.kind', 'utiliser defineGameContent');
@@ -80,6 +88,12 @@ export function assertGameDefinition(definition: DefinitionToValidate): void {
         'content.gameId',
         `identifiant « ${String(definition.content.gameId)} » différent du jeu`,
       );
+    }
+    if (
+      typeof definition.content.version !== 'string' ||
+      definition.content.version.trim().length === 0
+    ) {
+      fail('content.version', 'version de contenu requise');
     }
     if (
       definition.content.data == null ||

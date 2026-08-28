@@ -55,6 +55,7 @@ export type {
 export {
   boardContent,
   cardContent,
+  contentManifest,
   defineGameContent,
   freezeGameContent,
   loadGameContent,
@@ -63,6 +64,7 @@ export {
 } from './game-content';
 export type {
   GameContent,
+  GameContentManifest,
   GameContentSchema,
   GameContentShape,
   IdentifiedGameContent,

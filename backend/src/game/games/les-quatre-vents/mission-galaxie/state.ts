@@ -17,7 +17,7 @@ export interface MissionGalaxieTile {
   title: string;
   type: MissionGalaxieTileType;
   delta?: number;
-  skipTurns?: number;
+  turnsToSkip?: number;
   target?: number;
   keepTurn?: boolean;
 }

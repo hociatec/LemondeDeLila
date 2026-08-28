@@ -130,7 +130,8 @@ export type GameRuntimeDescriptor = {
   };
   content?: {
     gameId: string;
-    sections: string[];
+    version: string;
+    sections: readonly string[];
   };
 };
 

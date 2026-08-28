@@ -19,6 +19,7 @@ export function createDeclarativeState<TState extends object>(
   turn: NonNullable<GameStateEntity['turn']>,
   clock: GameClock,
   schemaVersion: number,
+  contentVersion: string,
   rulesVersion: string,
   configuration: GameConfigurationShape<TState> | undefined,
 ): DeclarativeState<TState> {
@@ -33,6 +34,7 @@ export function createDeclarativeState<TState extends object>(
     game: {} as TState,
     engine: {
       schemaVersion,
+      contentVersion,
       rulesVersion,
       kits: {},
       match: createMatchKitState(players, clock.nowMs()),
