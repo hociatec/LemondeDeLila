@@ -48,7 +48,10 @@ export async function auditGameDefinition<
         gameId: definition.id,
         criterion: 'runtime-property-contract',
         seed,
-        message: error instanceof Error ? error.message : String(error),
+        message:
+          error instanceof Error
+            ? `${error.message}${errorDetails(error)}`
+            : String(error),
       });
     }
   }
@@ -334,4 +337,18 @@ function stableJson(value: unknown): string {
 
 function invariant(condition: boolean, message: string): asserts condition {
   if (!condition) throw new Error(message);
+}
+
+function errorDetails(error: Error): string {
+  const details = (error as { details?: unknown }).details;
+  if (!details || typeof details !== 'object') return '';
+  const path =
+    'path' in details && typeof details.path === 'string'
+      ? ` path=${details.path}`
+      : '';
+  const type =
+    'type' in details && typeof details.type === 'string'
+      ? ` type=${details.type}`
+      : '';
+  return path || type ? ` (${path.trim()}${type})` : '';
 }

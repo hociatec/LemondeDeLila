@@ -134,7 +134,7 @@ export const playSpecial = defineAction<GerardState, SpecialInput>({
     name: gameInput.optional(gameInput.string({ min: 1, max: 80 })),
   }),
   documentation: 'Joue une carte spéciale et applique son effet immédiatement.',
-  available: ({ ctx }) => !GERARD_PHASES.is(ctx, 'choosing-winner'),
+  available: ({ ctx }) => GERARD_PHASES.is(ctx, 'collecting-names'),
   validate: ({ actor, input, ctx }) =>
     specialInputs(actor.id, input.cardId, ctx).some((candidate) =>
       sameSpecialInput(candidate, input),

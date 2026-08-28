@@ -213,6 +213,7 @@ function validateIdentifiedCollection(
       isRecord(entry) && 'id' in entry,
   );
   if (identified.length === 0) return;
+  const hasLinks = identified.some((entry) => Array.isArray(entry.links));
   const ids = new Set<string>();
   for (const [index, entry] of identified.entries()) {
     if (!isContentId(entry.id)) {
@@ -220,7 +221,11 @@ function validateIdentifiedCollection(
         `Identifiant invalide dans ${path}[${index}]`,
       );
     }
-    const key = contentIdKey(entry.id);
+    if (!hasLinks) continue;
+    const key =
+      path.endsWith('.components') && typeof entry.component === 'string'
+        ? `${entry.component}:${contentIdKey(entry.id)}`
+        : contentIdKey(entry.id);
     if (ids.has(key)) {
       throw new GameContentValidationError(
         `Identifiant dupliqué dans ${path}: ${String(entry.id)}`,

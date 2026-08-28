@@ -40,7 +40,7 @@ export default defineGame<
     }),
   ],
   components: [
-    pawns.set({ id: 'balloons', pawns: A_FOND_LES_BALLONS_PAWNS }),
+    pawns.set({ id: 'balloons-pawns', pawns: A_FOND_LES_BALLONS_PAWNS }),
     cards.deck({
       id: 'loufoque',
       cards: A_FOND_LES_BALLONS_CARDS,
@@ -68,7 +68,7 @@ export default defineGame<
   view: ({ actor, ctx }) => {
     const pawnByPlayerId = Object.fromEntries(
       ctx.players.all().flatMap((player) => {
-        const pawnId = ctx.pawns.assigned('balloons', player.id)[0];
+        const pawnId = ctx.pawns.assigned('balloons-pawns', player.id)[0];
         return pawnId == null ? [] : [[player.id, pawnId]];
       }),
     );

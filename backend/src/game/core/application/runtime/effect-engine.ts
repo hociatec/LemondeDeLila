@@ -42,6 +42,8 @@ function executeRegisteredPrimitive(
 }
 
 export class GameEffectEngineController<TState extends object> {
+  private draining = false;
+
   constructor(
     private readonly state: EffectEngineState,
     private readonly gameState: () => TState,
@@ -362,28 +364,56 @@ export class GameEffectEngineController<TState extends object> {
     return this.state.awaitingChoiceId === choiceId;
   }
 
+  continue(): boolean {
+    if (
+      this.draining ||
+      this.state.awaitingChoiceId != null ||
+      this.state.queue.length === 0 ||
+      this.context.choice.current() != null
+    ) {
+      return false;
+    }
+    this.drain();
+    return true;
+  }
+
   isResolving(): boolean {
-    return this.state.queue.length > 0 || this.state.awaitingChoiceId != null;
+    return (
+      this.draining ||
+      this.state.queue.length > 0 ||
+      this.state.awaitingChoiceId != null
+    );
   }
 
   private drain(): void {
-    for (
-      let executed = 0;
-      executed < MAX_EFFECTS_PER_RESOLUTION;
-      executed += 1
-    ) {
-      const instruction = this.state.queue.shift();
-      if (!instruction) {
-        const completeTurn = this.state.completeTurnWhenDrained === true;
-        this.reset();
-        if (completeTurn) this.context.turn.complete();
-        return;
+    this.draining = true;
+    try {
+      for (
+        let executed = 0;
+        executed < MAX_EFFECTS_PER_RESOLUTION;
+        executed += 1
+      ) {
+        const instruction = this.state.queue.shift();
+        if (!instruction) {
+          const completeTurn = this.state.completeTurnWhenDrained === true;
+          this.reset();
+          if (completeTurn) this.context.turn.complete();
+          return;
+        }
+        if (!this.execute(instruction)) return;
+        if (
+          this.state.awaitingChoiceId == null &&
+          this.context.choice.current() != null
+        ) {
+          return;
+        }
       }
-      if (!this.execute(instruction)) return;
+      throw new GameStateViolationError('Chaîne d’effets non convergente', {
+        remaining: this.state.queue.length,
+      });
+    } finally {
+      this.draining = false;
     }
-    throw new GameStateViolationError('Chaîne d’effets non convergente', {
-      remaining: this.state.queue.length,
-    });
   }
 
   private execute(instruction: GameEffectInstruction): boolean {

@@ -79,13 +79,13 @@ export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
     ...SAC_VARIANTS.flatMap((variant) => [
       cards.deck({
         id: `chance:${variant.id}`,
-        cards: variant.chance,
+        cards: uniqueDeckCards(variant.id, 'chance', variant.chance),
         shuffle: true,
         empty: 'recycle',
       }),
       cards.deck({
         id: `community:${variant.id}`,
-        cards: variant.community,
+        cards: uniqueDeckCards(variant.id, 'community', variant.community),
         shuffle: true,
         empty: 'recycle',
       }),
@@ -145,3 +145,14 @@ export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
     },
   },
 });
+
+function uniqueDeckCards(
+  variantId: SacVariantId,
+  deck: 'chance' | 'community',
+  source: (typeof SAC_VARIANTS)[number]['chance'],
+): (typeof SAC_VARIANTS)[number]['chance'] {
+  return source.map((card, index) => ({
+    ...card,
+    id: `${variantId}:${deck}:${card.id}:${index}`,
+  }));
+}

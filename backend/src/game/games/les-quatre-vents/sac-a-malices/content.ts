@@ -84,7 +84,7 @@ export type SacMovement =
   | { kind: 'next-group'; group: string }
   | { kind: 'named'; name: string; direction: 'forward' | 'backward' };
 export type SacCard = {
-  id: number;
+  id: string | number;
   text: string;
   effects: readonly GameEffectInstruction[];
   retained: boolean;

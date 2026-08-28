@@ -21,6 +21,7 @@ type RuleContext = GameContext<AFondLesBallonsState>;
 export const A_FOND_LES_BALLONS_PHASES =
   setupPlayingPhases<AFondLesBallonsState>();
 const TRACK = 'balloons';
+const PAWNS = 'balloons-pawns';
 const DECK = 'loufoque';
 const MAX_DEPTH = 12;
 const TRAP_IMMUNITY = 'a-fond-les-ballons.trap-immunity';
@@ -37,7 +38,7 @@ export const roll = rollDice<AFondLesBallonsState>({
 export const A_FOND_LES_BALLONS_ACTIONS = { roll };
 
 const pawnSelection = sequentialPawnSelection<AFondLesBallonsState>({
-  setId: 'balloons',
+  setId: PAWNS,
   choiceId: 'a-fond-les-ballons.pawn',
   complete: ({ ctx }) => {
     A_FOND_LES_BALLONS_PHASES.transition(ctx, 'playing');

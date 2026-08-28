@@ -32,6 +32,10 @@ export class DeclarativeLifecycle<
   ): void {
     const trace: string[] = [];
     for (let iteration = 0; iteration < 32; iteration += 1) {
+      if (context.effects.continue()) {
+        trace.push('effects');
+        continue;
+      }
       if (this.finishIfVictorious(runtime, context)) return;
       const automaticRuleId = this.applyAutomaticRule(runtime, context);
       if (automaticRuleId) {

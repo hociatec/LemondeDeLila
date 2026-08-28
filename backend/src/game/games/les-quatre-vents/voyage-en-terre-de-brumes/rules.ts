@@ -122,7 +122,7 @@ function drawVoyageCard(
 }
 
 function resolveQuiz(
-  state: VoyageState,
+  _state: VoyageState,
   pending: Extract<VoyagePendingChoice, { kind: 'quiz' }>,
   answer: string,
   ctx: RuleContext,
@@ -149,7 +149,6 @@ function resolveQuiz(
   gain(pending.actorId, 'legend', ctx);
   if (quiz.successDelta !== 0) {
     ctx.movement.move(TRACK, pending.actorId, quiz.successDelta);
-    resolveVoyageTile(state, pending.actorId, false, ctx);
   }
 }
 
