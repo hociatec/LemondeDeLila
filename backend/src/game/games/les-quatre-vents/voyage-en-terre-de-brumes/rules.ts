@@ -313,10 +313,6 @@ function lastTarget(playerId: number, ctx: RuleContext): number | null {
   return typeof value === 'number' ? value : null;
 }
 
-export function position(playerId: number, ctx: RuleContext): number {
-  return ctx.movement.position(TRACK, playerId);
-}
-
 function normalize(value: string): string {
   return value.trim().toLocaleLowerCase('fr');
 }

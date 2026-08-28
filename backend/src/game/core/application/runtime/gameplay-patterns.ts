@@ -58,7 +58,13 @@ export function composePatterns<TState extends object>(
     ids: patterns.map((pattern) => pattern.id),
     mechanics: [...new Set(patterns.flatMap((pattern) => pattern.mechanics))],
     components: patterns.flatMap((pattern) => pattern.components ?? []),
-    actions: Object.assign({}, ...patterns.map((pattern) => pattern.actions)),
+    actions: patterns.reduce<GameActionMap<TState>>(
+      (merged, pattern) => ({
+        ...merged,
+        ...(pattern.actions ?? {}),
+      }),
+      {},
+    ),
     lifecycle: composeLifecycle(
       patterns.flatMap((pattern) =>
         pattern.lifecycle ? [pattern.lifecycle] : [],
@@ -680,11 +686,10 @@ function assertComposablePatterns<TState extends object>(
       selectedTurn = { id: pattern.id, policy: pattern.turn };
       continue;
     }
-    if (!sameTurnPolicy(selectedTurn.policy, pattern.turn)) {
-      throw new GameConfigurationError(
-        `Composition de patterns invalide: politiques de tour incompatibles « ${selectedTurn.id} » et « ${pattern.id} »`,
-      );
-    }
+    if (sameTurnPolicy(selectedTurn.policy, pattern.turn)) continue;
+    throw new GameConfigurationError(
+      `Composition de patterns invalide: politiques de tour incompatibles « ${selectedTurn.id} » et « ${pattern.id} »`,
+    );
   }
 }
 

@@ -2,6 +2,7 @@ import {
   defineAction,
   drawAndResolve,
   gameInput,
+  positionOf,
   rejectRule,
   sequentialPawnSelection,
   setupPlayingPhases,
@@ -170,7 +171,7 @@ export function moveAndResolve(
     ctx.match.lifecycle() === 'finished'
   )
     return;
-  const before = position(playerId, ctx);
+  const before = positionOf(ctx, TRACK, playerId);
   const raw = before + distance;
   ctx.movement.move(TRACK, playerId, distance);
   if (distance > 0 && raw >= PANIER_TILES.length) ctx.score.add(playerId, 1);
@@ -183,10 +184,10 @@ function resolveTile(
   depth: number,
   ctx: RuleContext,
 ): void {
-  const tile = PANIER_TILES[position(playerId, ctx)];
+  const tile = PANIER_TILES[positionOf(ctx, TRACK, playerId)];
   ctx.events.message('game.pawn.landed', {
     playerId,
-    tileId: position(playerId, ctx),
+    tileId: positionOf(ctx, TRACK, playerId),
   });
   if (tile.type === 'start') checkVictory(playerId, ctx);
   else if (tile.type === 'stand') drawCourse(playerId, tile.standId, ctx);
@@ -324,7 +325,7 @@ export function moveToNearestStand(
   depth: number,
   ctx: RuleContext,
 ): void {
-  const current = position(playerId, ctx);
+  const current = positionOf(ctx, TRACK, playerId);
   for (let distance = 1; distance < PANIER_TILES.length; distance += 1) {
     const index = (current + distance) % PANIER_TILES.length;
     if (PANIER_TILES[index].type === 'stand') {
@@ -347,8 +348,4 @@ function finishResolution(ctx: RuleContext): void {
   if (ctx.choice.current() || ctx.match.lifecycle() === 'finished') return;
   ctx.turn.flags.consume(RESOLVING_PLAYER_FLAG);
   ctx.turn.end();
-}
-
-function position(playerId: number, ctx: RuleContext): number {
-  return ctx.movement.position(TRACK, playerId);
 }

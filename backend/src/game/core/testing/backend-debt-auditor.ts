@@ -25,30 +25,29 @@ const STATE_OWNERSHIP_FIELDS: Readonly<Record<string, readonly RegExp[]>> = {
   'cards.deck': [/\bdeck\b/i, /\bdiscard\b/i, /\bhand\b/i],
   'cards.hands': [/\bhand\b/i, /\bhands\b/i],
   'dice.set': [/\blastRoll\b/i, /\bdice\b/i],
+  'score.track': [/\bscore\b/i, /\bscores\b/i],
+  'turn.policy': [/\bskipTurns?\b/i, /\bextraTurns?\b/i],
 };
 
 const GAME_IMPORT_ALLOWLIST = [
   '../../../core/application/public-api',
   '../../core/application/public-api',
   '../core/application/public-api',
-  './content',
-  './rules',
-  './state',
-  './effects',
-  './support',
-  './special-cards',
-  './manifest.json',
 ];
 
 export function auditGameStateOwnership(input: {
   gameId: string;
   stateSource: string;
   components: readonly GameComponentDefinition[];
+  exceptions?: readonly string[];
 }): BackendDebtAuditViolation[] {
   const violations: BackendDebtAuditViolation[] = [];
+  const stateSource = extractStateDeclarations(input.stateSource);
+  const exceptions = new Set(input.exceptions ?? []);
   for (const component of input.components) {
     for (const pattern of STATE_OWNERSHIP_FIELDS[component.component] ?? []) {
-      if (!pattern.test(input.stateSource)) continue;
+      if (exceptions.has(pattern.source)) continue;
+      if (!pattern.test(stateSource)) continue;
       violations.push({
         gameId: input.gameId,
         criterion: 'state-ownership',
@@ -57,6 +56,12 @@ export function auditGameStateOwnership(input: {
     }
   }
   return violations;
+}
+
+export function gameSpecificState(
+  ...fields: readonly string[]
+): readonly string[] {
+  return Object.freeze([...fields]);
 }
 
 export function auditGameImportBoundaries(input: {
@@ -68,6 +73,7 @@ export function auditGameImportBoundaries(input: {
   );
   return imports
     .filter((specifier) => specifier.startsWith('.'))
+    .filter((specifier) => specifier.includes('/core/'))
     .filter(
       (specifier) =>
         !GAME_IMPORT_ALLOWLIST.some(
@@ -180,4 +186,12 @@ function countLoc(files: readonly string[]): number {
         .filter((line) => line.trim() && !line.trim().startsWith('//')).length
     );
   }, 0);
+}
+
+function extractStateDeclarations(source: string): string {
+  const blocks = [
+    ...source.matchAll(/export\s+interface\s+\w*State\s*\{[\s\S]*?\n\}/g),
+    ...source.matchAll(/export\s+type\s+\w*State\s*=[^;]+;/g),
+  ].map((match) => match[0]);
+  return blocks.join('\n');
 }

@@ -3,7 +3,9 @@ import { resolve } from 'node:path';
 import { discoverGameDefinitions } from '../../composition/game-module-discovery';
 import {
   auditGameImportBoundaries,
+  auditGameStateOwnership,
   auditPhaseReachability,
+  gameSpecificState,
   repeatedFunctionNames,
 } from './backend-debt-auditor';
 import {
@@ -11,11 +13,14 @@ import {
   defineAction,
   defineGame,
   eventTrackGame,
+  GAME_SYSTEM_VIEW_VERSION,
   gameEffects,
   gameInput,
   movement,
+  overrideAction,
   playerView,
 } from '../application/public-api';
+import { GameConfigurationError } from '../domain/errors/game-domain.errors';
 import { GameTestKit } from './game-test-kit';
 
 describe('backend debt contracts', () => {
@@ -33,7 +38,95 @@ describe('backend debt contracts', () => {
           (component) => `${component.component}:${component.id}`,
         ),
       );
+      expect(definition.compiled.actionSources).toBeDefined();
+      expect(definition.compiled.componentSources).toBeDefined();
+      expect(definition.compiled.lifecycleHookSources).toBeDefined();
     }
+  });
+
+  it('projects a versioned generic PlayerView contract even without custom view', async () => {
+    const definition = defineGame({
+      id: 'default-view-contract',
+      displayName: 'Default View Contract',
+      category: 'Tests',
+      players: { min: 2, max: 2 },
+      patterns: [
+        eventTrackGame({
+          trackId: 'main',
+          tiles: [{ id: 0, type: 'start' }],
+        }),
+      ],
+      setup: () => ({ secret: 'server-only' }),
+      actions: {},
+    });
+    const game = await new GameTestKit(definition).players(2).start();
+    const view = game.view(1) as unknown as {
+      system: object;
+      kits: object;
+      actionCatalog: object[];
+      secret?: unknown;
+    };
+    expect(view).not.toHaveProperty('secret');
+    expect(view.system).toMatchObject({
+      version: GAME_SYSTEM_VIEW_VERSION,
+      match: expect.any(Object),
+      round: expect.any(Object),
+      turn: expect.any(Object),
+      setup: expect.any(Object),
+    });
+    expect(view.kits).toMatchObject({
+      movement: expect.any(Object),
+      dice: expect.any(Object),
+      score: expect.any(Object),
+    });
+    expect(view.actionCatalog).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'roll',
+          ui: expect.objectContaining({ control: 'button' }),
+        }),
+      ]),
+    );
+  });
+
+  it('requires explicit overrideAction when a game replaces a pattern action', () => {
+    const pattern = eventTrackGame({
+      trackId: 'main',
+      tiles: [{ id: 0, type: 'start' }],
+    });
+    const replacement = defineAction({
+      input: gameInput.object({}),
+      execute: ({ ctx }) => ctx.turn.complete(),
+    });
+    expect(() =>
+      defineGame({
+        id: 'implicit-action-override-contract',
+        displayName: 'Implicit Action Override Contract',
+        category: 'Tests',
+        players: { min: 2, max: 2 },
+        patterns: [pattern],
+        setup: () => ({}),
+        actions: { roll: replacement },
+        view: () => playerView({ game: {} }),
+      }),
+    ).toThrow(GameConfigurationError);
+    expect(() =>
+      defineGame({
+        id: 'explicit-action-override-contract',
+        displayName: 'Explicit Action Override Contract',
+        category: 'Tests',
+        players: { min: 2, max: 2 },
+        patterns: [pattern],
+        setup: () => ({}),
+        actions: {
+          roll: overrideAction('roll', {
+            input: gameInput.object({}),
+            execute: ({ ctx }) => ctx.turn.complete(),
+          }),
+        },
+        view: () => playerView({ game: {} }),
+      }),
+    ).not.toThrow();
   });
 
   it('uses only the generated registry for runtime game discovery', () => {
@@ -65,6 +158,34 @@ describe('backend debt contracts', () => {
         message: 'Import non autorisé depuis un jeu: ../../core/private-store',
       },
     ]);
+    expect(
+      gameSources().flatMap((source) => auditGameImportBoundaries(source)),
+    ).toEqual([]);
+  });
+
+  it('detects kit-owned fields in TState unless explicitly annotated', () => {
+    const components = [movement.track({ id: 'main', spaces: 4 })];
+    expect(
+      auditGameStateOwnership({
+        gameId: 'ownership-sample',
+        stateSource:
+          'export interface OwnershipSampleState {\n  positions: Record<string, number>;\n}\n',
+        components,
+      }),
+    ).toEqual([
+      expect.objectContaining({
+        criterion: 'state-ownership',
+      }),
+    ]);
+    expect(
+      auditGameStateOwnership({
+        gameId: 'ownership-sample',
+        stateSource:
+          'export interface OwnershipSampleState {\n  positions: Record<string, number>;\n}\n',
+        components,
+        exceptions: gameSpecificState('\\bpositions?\\b'),
+      }),
+    ).toEqual([]);
   });
 
   it('provides executable boilerplate metrics and repeated-function detection', () => {
@@ -160,6 +281,34 @@ describe('backend debt contracts', () => {
     };
     expect(effect.input.parse({ amount: 2 })).toEqual({ amount: 2 });
     expect(() => effect.input.parse({ amount: 1.5 })).toThrow();
+  });
+
+  it('reports effect queue overflow with source and queued effect kinds', async () => {
+    const definition = defineGame({
+      id: 'effect-overflow-contract',
+      displayName: 'Effect Overflow Contract',
+      category: 'Tests',
+      players: { min: 2, max: 2 },
+      setup: () => ({}),
+      actions: {
+        overflow: defineAction({
+          input: gameInput.object({}),
+          execute: ({ ctx }) => {
+            ctx.effects.schedule(
+              ...Array.from({ length: 300 }, () => gameEffects.gainScore(1)),
+            );
+          },
+        }),
+      },
+      view: () => playerView({ game: {} }),
+    });
+    const game = await new GameTestKit(definition).players(2).start();
+    await expect(game.as(1).do('overflow', {})).rejects.toMatchObject({
+      details: {
+        remaining: expect.any(Number),
+        queuedKinds: expect.arrayContaining(['gain-score']),
+      },
+    });
   });
 });
 

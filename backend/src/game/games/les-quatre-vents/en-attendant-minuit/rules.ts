@@ -3,6 +3,7 @@ import {
   defineEffect,
   drawAndResolve,
   gameInput,
+  positionOf,
   rejectRule,
   sequentialPawnSelection,
   setupPlayingPhases,
@@ -130,16 +131,16 @@ function applyMinuitTile(
   depth: number,
   ctx: RuleContext,
 ): void {
-  let current = position(playerId, ctx);
+  let current = positionOf(ctx, TRACK, playerId);
   const occupied = ctx.players
     .all()
     .some(
       (player) =>
-        player.id !== playerId && position(player.id, ctx) === current,
+        player.id !== playerId && positionOf(ctx, TRACK, player.id) === current,
     );
   if (occupied) {
     ctx.movement.moveTo(TRACK, playerId, Math.max(0, current - 1));
-    current = position(playerId, ctx);
+    current = positionOf(ctx, TRACK, playerId);
   }
   const tile = MINUIT_TILES[current];
   ctx.events.message('game.pawn.landed', { playerId, tileId: current });
@@ -209,7 +210,7 @@ function moveToTypedTile(
   depth: number,
   ctx: RuleContext,
 ): void {
-  const current = position(playerId, ctx);
+  const current = positionOf(ctx, TRACK, playerId);
   const candidates = MINUIT_TILES.filter(
     (tile, index) =>
       tile.type === type &&
@@ -240,23 +241,23 @@ export function applySwap(
 }
 
 function swapWithBehind(actorId: number, ctx: RuleContext): void {
-  const actorPosition = position(actorId, ctx);
+  const actorPosition = positionOf(ctx, TRACK, actorId);
   const behind = ctx.players
     .all()
     .filter(
       (player) =>
-        player.id !== actorId && position(player.id, ctx) < actorPosition,
+        player.id !== actorId &&
+        positionOf(ctx, TRACK, player.id) < actorPosition,
     )
-    .sort((left, right) => position(right.id, ctx) - position(left.id, ctx))[0];
+    .sort(
+      (left, right) =>
+        positionOf(ctx, TRACK, right.id) - positionOf(ctx, TRACK, left.id),
+    )[0];
   if (behind) ctx.movement.swap(TRACK, actorId, behind.id);
 }
 
 function moveDirect(playerId: number, delta: number, ctx: RuleContext): void {
   ctx.movement.move(TRACK, playerId, delta);
-}
-
-function position(playerId: number, ctx: RuleContext): number {
-  return ctx.movement.position(TRACK, playerId);
 }
 
 export const MINUIT_EFFECTS = {

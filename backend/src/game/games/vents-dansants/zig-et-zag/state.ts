@@ -18,7 +18,7 @@ export interface ZigEtZagRound {
 
 export interface ZigEtZagRoundSummary {
   roundNumber: number;
-  winnerId: number | null;
+  roundWinnerPlayerId: number | null;
   cardsWon: number;
   plays: ZigEtZagPlayState[];
 }

@@ -39,7 +39,6 @@ import {
 } from './component-kit';
 import { standardTurn, type TurnPolicy } from './turn-kit';
 import { projectGameSystemView } from './game-system-view';
-import { projectVisibility } from './visibility-kit';
 import { asRecord } from './runtime-game-action';
 import {
   deriveGameShortcuts,
@@ -347,11 +346,7 @@ export class DeclarativeGameRuntime<
     const projection = this.definition.view
       ? this.definition.view({ state: runtime.game, actor, ctx: context })
       : playerView({
-          game: projectVisibility(
-            runtime.game as Record<string, unknown>,
-            this.definition.visibility ?? {},
-            actor?.id ?? null,
-          ) as TPlayerView,
+          game: {} as TPlayerView,
         });
     const {
       engine: _engine,
@@ -376,6 +371,7 @@ export class DeclarativeGameRuntime<
       extras: {
         ...(publicState.extras ?? {}),
         ...system,
+        actionCatalog: describeGameDefinition(this.definition).actions,
         submissions: projectSubmissions(
           runtime.engine.submissions,
           actor?.id ?? null,

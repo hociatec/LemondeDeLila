@@ -4,6 +4,7 @@ import {
   drawEvent,
   gameEffects,
   gameInput,
+  positionOf,
   rollDice,
   sequentialPawnSelection,
   setupPlayingPhases,
@@ -152,15 +153,11 @@ function moveToNextTile(
   depth: number,
   ctx: RuleContext,
 ): void {
-  const current = position(playerId, ctx);
+  const current = positionOf(ctx, TRACK, playerId);
   const next = A_FOND_LES_BALLONS_TILES.findIndex(
     (tile, index) => index > current && tile.type === type,
   );
   if (next >= 0) landOn(state, playerId, next, depth + 1, ctx);
-}
-
-function position(playerId: number, ctx: RuleContext): number {
-  return ctx.movement.position(TRACK, playerId);
 }
 
 function applyBoutique(playerId: number, ctx: RuleContext): void {
@@ -277,7 +274,7 @@ export const A_FOND_LES_BALLONS_EFFECTS = {
     apply: ({ state, actorPlayerId, ctx }) => {
       if (
         actorPlayerId != null &&
-        A_FOND_LES_BALLONS_TILES[position(actorPlayerId, ctx)].type ===
+        A_FOND_LES_BALLONS_TILES[positionOf(ctx, TRACK, actorPlayerId)].type ===
           'glissade'
       ) {
         landOn(

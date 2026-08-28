@@ -39,6 +39,7 @@ import type { GameCommandJournalState } from './game-command-journal';
 import type { SubmissionKitState } from './submission-kit';
 import type { GameSchedulerState } from './scheduler-kit';
 import { composePatterns, type GamePattern } from './gameplay-patterns';
+import { GameConfigurationError } from '../../domain/errors/game-domain.errors';
 
 export const GAME_DEFINITION_KIND = 'lila.game-definition' as const;
 
@@ -82,6 +83,7 @@ export interface GameActionShape<TState extends object> {
   executeInput?(input: GameActionExecution<TState, object>): void;
   documentation?: string;
   ui?: GameActionUiHint;
+  overrides?: string;
 }
 
 export type GameActionMap<TState extends object> = Readonly<
@@ -123,6 +125,7 @@ export interface GameActionDefinition<
   execute(input: GameActionExecution<TState, TInput>): void;
   documentation?: string;
   ui?: GameActionUiHint;
+  overrides?: string;
 }
 
 export type DefinedGameAction<
@@ -285,11 +288,15 @@ export type CompiledGameDiagnostics = {
   readonly effectIds: readonly string[];
   readonly automaticRuleIds: readonly string[];
   readonly hookOrder: readonly string[];
+  readonly lifecycleHookSources: Readonly<Record<string, readonly string[]>>;
   readonly turnPolicy: {
     readonly kind: TurnPolicy['kind'];
     readonly actionPoints?: number;
   } | null;
+  readonly turnPolicySource: string | null;
   readonly victoryPriority: readonly ('game' | 'pattern')[];
+  readonly actionSources: Readonly<Record<string, string>>;
+  readonly componentSources: Readonly<Record<string, string>>;
   readonly contentVersion: string;
   readonly stateVersion: number;
   readonly rulesVersion: string;
@@ -413,6 +420,11 @@ export function defineGame<
     ...(patterns.components ?? []),
     ...(definition.components ?? []),
   ];
+  assertNoImplicitActionOverrides(
+    patterns.actions ?? {},
+    definition.actions,
+    definition.id,
+  );
   const normalizedBase = {
     stateVersion: 1,
     rulesVersion: '1',
@@ -508,6 +520,9 @@ export function describeCompiledGameDefinition(
         definition.lifecycle?.onRoundEnd ? 'onRoundEnd' : null,
       ].filter((hook): hook is string => hook != null),
     ),
+    lifecycleHookSources: Object.freeze(
+      lifecycleHookSources(definition.patterns ?? [], definition.lifecycle),
+    ),
     turnPolicy: definition.turn
       ? {
           kind: definition.turn.kind,
@@ -516,6 +531,10 @@ export function describeCompiledGameDefinition(
             : { actionPoints: definition.turn.actionPoints }),
         }
       : null,
+    turnPolicySource: definition.turn
+      ? 'game'
+      : ((definition.patterns ?? []).find((pattern) => pattern.turn)?.id ??
+        null),
     victoryPriority: Object.freeze(
       [
         definition.victory ? 'game' : null,
@@ -524,10 +543,91 @@ export function describeCompiledGameDefinition(
           : null,
       ].filter((source): source is 'game' | 'pattern' => source != null),
     ),
+    actionSources: Object.freeze(actionSources(definition)),
+    componentSources: Object.freeze(componentSources(definition)),
     contentVersion: `${definition.id}@state:${definition.stateVersion}/rules:${definition.rulesVersion}`,
     stateVersion: definition.stateVersion,
     rulesVersion: definition.rulesVersion,
   };
+}
+
+function actionSources(
+  definition: Pick<
+    DeclarativeGameDefinition<object, GameActionMap<object>, object>,
+    'patterns' | 'actions'
+  >,
+): Record<string, string> {
+  const sources: Record<string, string> = {};
+  for (const pattern of definition.patterns ?? []) {
+    for (const actionId of Object.keys(pattern.actions ?? {})) {
+      sources[actionId] = pattern.id;
+    }
+  }
+  for (const [actionId, action] of Object.entries(definition.actions)) {
+    sources[actionId] = action.overrides
+      ? `game overrides ${action.overrides}`
+      : 'game';
+  }
+  return sources;
+}
+
+function componentSources(
+  definition: Pick<
+    DeclarativeGameDefinition<object, GameActionMap<object>, object>,
+    'patterns' | 'components'
+  >,
+): Record<string, string> {
+  const sources: Record<string, string> = {};
+  for (const pattern of definition.patterns ?? []) {
+    for (const component of pattern.components ?? []) {
+      sources[`${component.component}:${component.id}`] = pattern.id;
+    }
+  }
+  for (const component of definition.components ?? []) {
+    sources[`${component.component}:${component.id}`] ??= 'game';
+  }
+  return sources;
+}
+
+function lifecycleHookSources<TState extends object>(
+  patterns: readonly GamePattern<TState>[],
+  gameHooks?: GameLifecycleHooks<TState>,
+): Record<string, string[]> {
+  const sources: Record<string, string[]> = {};
+  for (const pattern of patterns) {
+    for (const hook of lifecycleHookNames(pattern.lifecycle)) {
+      (sources[hook] ??= []).push(pattern.id);
+    }
+  }
+  for (const hook of lifecycleHookNames(gameHooks)) {
+    (sources[hook] ??= []).push('game');
+  }
+  return sources;
+}
+
+function lifecycleHookNames<TState extends object>(
+  hooks?: GameLifecycleHooks<TState>,
+): string[] {
+  return [
+    hooks?.beforeTurn ? 'beforeTurn' : null,
+    hooks?.afterTurn ? 'afterTurn' : null,
+    hooks?.onRoundStart ? 'onRoundStart' : null,
+    hooks?.onRoundEnd ? 'onRoundEnd' : null,
+  ].filter((hook): hook is string => hook != null);
+}
+
+function assertNoImplicitActionOverrides<TState extends object>(
+  patternActions: GameActionMap<TState>,
+  gameActions: GameActionMap<TState>,
+  gameId: string,
+): void {
+  for (const [actionId, action] of Object.entries(gameActions)) {
+    if (!(actionId in patternActions)) continue;
+    if (action.overrides === actionId) continue;
+    throw new GameConfigurationError(
+      `Action "${actionId}" fournie par un pattern et redéfinie par "${gameId}" sans overrideAction() explicite`,
+    );
+  }
 }
 
 function mergeInitialization(
@@ -622,6 +722,16 @@ export function defineAction<TState extends object, TInput extends object>(
       : {}),
     executeInput: (input: GameActionExecution<TState, object>) =>
       action.execute({ ...input, input: input.input as TInput }),
+  });
+}
+
+export function overrideAction<TState extends object, TInput extends object>(
+  actionId: string,
+  action: GameActionDefinition<TState, TInput>,
+): DefinedGameAction<TState, TInput> {
+  return defineAction({
+    ...action,
+    overrides: actionId,
   });
 }
 
