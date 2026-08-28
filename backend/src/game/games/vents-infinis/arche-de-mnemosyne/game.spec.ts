@@ -21,7 +21,7 @@ describe('Arche de Mnémosyne declarative game', () => {
     await game.as(2).do('answer', { answerIndex: 1 });
     expect('correctnessByPlayerId' in game.view(1)).toBe(false);
     expect('deadlineMs' in game.view(1)).toBe(false);
-    expect(game.state().game.currentQuestion).toBeNull();
-    expect(game.replay()).toEqual(game.state());
+    expect(game.view(1).currentQuestion).toBeNull();
+    expect(await game.replay()).toEqual(game.state());
   });
 });

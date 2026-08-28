@@ -77,6 +77,12 @@ versionnée : `extras.system`, `extras.kits`, `extras.actionCatalog`,
 `actions`, `pending`, `submissions` et `timers`. Une `view()` custom ne doit
 ajouter que la projection métier impossible à dériver des kits.
 
+`extras.system` et `extras.kits` sont la forme canonique de `GameSystemView`
+version 1. Les alias plats (`extras.match`, `extras.round`, `extras.cards`,
+`extras.score`, etc.) restent exposés uniquement pour compatibilité pendant la
+transition des clients. Ils ne doivent plus être utilisés par le nouveau code et
+peuvent être retirés lors de la prochaine version majeure du contrat de vue.
+
 ### Exemple complexe
 
 Pour un jeu de cartes à effets, le socle reste identique :
@@ -121,3 +127,19 @@ export default defineGame({
 Les primitives universelles restent dans `gameEffects`. Une mécanique propre à
 un jeu passe par `defineEffect` ou par une recipe locale. Une extraction vers le
 core n’est candidate qu’après plusieurs implémentations comparables.
+
+## Contrats stables
+
+- Un jeu peut utiliser `defineGame()` sans pattern. Les patterns sont des
+  accélérateurs, pas une obligation architecturale.
+- Une action fournie par un pattern ne peut être remplacée que via
+  `overrideAction(actionId, definition)`.
+- Les hooks lifecycle sont exécutés dans cet ordre : hooks issus des patterns,
+  puis hooks du jeu. L’ordre entre patterns suit l’ordre du tableau `patterns`.
+- La victoire déclarée par le jeu est évaluée avant les victoires fournies par
+  les patterns. Cet ordre est exposé par `compiled.victoryPriority`.
+- Les collisions de composants, actions, IDs de patterns et initialisations
+  sémantiques de patterns sont des erreurs de configuration.
+- Le contenu statique possède un manifest (`GameContentManifest`) et une version
+  stable. Les snapshots de partie ne doivent stocker que des IDs et de l’état
+  runtime ; le contenu complet reste dans le catalogue versionné.

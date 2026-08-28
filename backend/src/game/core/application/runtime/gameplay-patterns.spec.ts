@@ -74,6 +74,23 @@ describe('gameplay pattern composition', () => {
     ).toThrow('politiques de tour incompatibles');
   });
 
+  it('rejects duplicated semantic initialization keys from patterns', () => {
+    expect(() =>
+      composePatterns(
+        definePattern({
+          id: 'coins-a',
+          mechanics: ['economy'],
+          initialization: { resources: { coins: 3 } },
+        }),
+        definePattern({
+          id: 'coins-b',
+          mechanics: ['economy'],
+          initialization: { resources: { coins: 5 } },
+        }),
+      ),
+    ).toThrow('initialisation resource dupliquée');
+  });
+
   it('defines independent contracts for the major reusable patterns', () => {
     const patterns = [
       raceGame({ trackId: 'race', spaces: 8 }),

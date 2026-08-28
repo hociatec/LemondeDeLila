@@ -16,7 +16,7 @@ export type GooseTile = {
     | 'well'
     | 'normal'
     | 'finish';
-  skipTurns?: number;
+  turnsToSkip?: number;
   backTo?: number;
 };
 

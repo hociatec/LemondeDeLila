@@ -31,7 +31,18 @@ export type GameComponentScope = 'match' | 'round';
 
 export type GameComponentDefinition = GameComponent & {
   readonly scope?: GameComponentScope;
+  /** Component key deliberately replaced from a pattern. */
+  readonly overrides?: string;
 };
+
+export function overrideComponent<TComponent extends GameComponentDefinition>(
+  component: TComponent,
+): TComponent {
+  return Object.freeze({
+    ...component,
+    overrides: `${component.component}:${component.id}`,
+  }) as TComponent;
+}
 
 export function roundScoped<TComponent extends GameComponent>(
   component: TComponent,
@@ -58,6 +69,8 @@ export function matchScoped<TComponent extends GameComponent>(
 export type PerPlayerInitialValue = number | Readonly<Record<string, number>>;
 
 export type GameInitialization = {
+  /** Explicit keys intentionally replacing pattern initialization. */
+  overrides?: readonly string[];
   firstPlayer?: 'first' | 'random' | number;
   startRound?: boolean;
   scores?: PerPlayerInitialValue;
@@ -69,6 +82,16 @@ export type GameInitialization = {
     assignment?: 'round-robin' | 'grouped' | 'random';
   }[];
 };
+
+export function overrideInitialization(
+  overrides: readonly string[],
+  initialization: Omit<GameInitialization, 'overrides'>,
+): GameInitialization {
+  return Object.freeze({
+    ...initialization,
+    overrides: Object.freeze([...overrides]),
+  });
+}
 
 export function installGameComponents<TState extends object>(
   components: readonly GameComponentDefinition[],

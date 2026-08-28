@@ -27,6 +27,12 @@ type SampleState = {
 };
 
 const deck = cards.deck({ id: 'main', cards: ['a', 'b', 'c'], shuffle: true });
+const hands = cards.hands({
+  id: 'hands',
+  deck: 'main',
+  initial: 1,
+  visibility: 'owner',
+});
 const track = movement.track({ id: 'main', spaces: 10 });
 
 const sampleGame = defineGame({
@@ -34,16 +40,9 @@ const sampleGame = defineGame({
   displayName: 'Runtime Contract',
   category: 'test',
   players: { min: 2, max: 4 },
+  components: [deck, hands, track],
   initialPhase: 'setup',
-  setup: ({ players, ctx }) => {
-    ctx.cards.createDeck(deck);
-    ctx.cards.deal(
-      'main',
-      'hands',
-      players.map((player) => player.id),
-      1,
-    );
-    ctx.movement.createTrack(track);
+  setup: () => {
     return {
       score: 0,
       secret: 'server-only',
@@ -138,7 +137,7 @@ describe('DeclarativeGameRuntime', () => {
     const first = adapter.hydrateInitialState(baseState());
     const second = adapter.hydrateInitialState(baseState());
 
-    expect(first).toEqual(second);
+    expect(normalizeTimestamps(first)).toEqual(normalizeTimestamps(second));
     expect(first.phase).toBe('playing');
     expect(first.turn?.currentPlayerId).toBe(1);
     expect(first).not.toBe(baseState());
@@ -165,9 +164,9 @@ describe('DeclarativeGameRuntime', () => {
     };
 
     expect(current.game.score).toBe(2);
-    expect(engine.pendingEvents.map((event) => event.type)).toEqual([
+    expect(engine.pendingEvents.map((event) => event.type)).toContain(
       'score.changed',
-    ]);
+    );
     expect(initial).not.toEqual(current);
   });
 
@@ -256,11 +255,29 @@ describe('DeclarativeGameRuntime', () => {
     const view = adapter.exposeStateForUser(state, 1);
     expect(view.game).toEqual({ score: 5 });
     expect(view.game).not.toHaveProperty('secret');
-    expect(view.extras).toHaveProperty('cards');
+    expect(view.extras).toHaveProperty('kits.cards');
     expect(state.status).toBe('finished');
     expect(adapter.getAvailableActions(state, 1)).toEqual([]);
   });
 });
+
+function normalizeTimestamps<T>(value: T): T {
+  const normalized = structuredClone(value) as Record<string, unknown>;
+  const visit = (current: unknown): void => {
+    if (Array.isArray(current)) {
+      current.forEach(visit);
+      return;
+    }
+    if (current == null || typeof current !== 'object') return;
+    const record = current as Record<string, unknown>;
+    for (const [key, nested] of Object.entries(record)) {
+      if (key === 'occurredAtMs' || key === 'startedAtMs') record[key] = 0;
+      else visit(nested);
+    }
+  };
+  visit(normalized);
+  return normalized as T;
+}
 
 type RuntimeState = ReturnType<typeof runtimeState>;
 

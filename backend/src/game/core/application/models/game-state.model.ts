@@ -28,6 +28,8 @@ export type PlayerStateEntity = {
 };
 
 export type PendingState = {
+  /** Schema version of this persisted choice continuation. */
+  schemaVersion?: number;
   type?: string;
   /**
    * Libellé prêt à afficher pour la liste de choix (serveur source de vérité).

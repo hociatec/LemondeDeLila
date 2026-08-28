@@ -18,6 +18,6 @@ describe('LAMA declarative game', () => {
       if (value != null) await game.as(actor).do('lama_play', { value });
     } else await game.as(actor).do('draw', {});
     expect(game.view(1).hand.length).toBeGreaterThan(0);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

@@ -10,10 +10,17 @@ import {
   type PawnSetsPlayerView,
 } from './game-kit-view';
 import type { CardsPlayerView } from './cards-kit';
-import type { MatchKitState } from './match-kit';
+import type {
+  MatchKitState,
+  MatchLifecycleStatus,
+  MatchPlayerStatus,
+  MatchResult,
+} from './match-kit';
 import {
   projectPlayerValues,
+  projectStatusesByPlayer,
   type PlayerStatus,
+  type PlayerValuesVisibility,
   type ScorePlayerView,
 } from './player-values-kit';
 import type { RoundKitState } from './round-kit';
@@ -21,10 +28,30 @@ import type { EffectSource } from './effects-kit';
 
 export const GAME_SYSTEM_VIEW_VERSION = 1 as const;
 
+/** Public match contract, deliberately separate from the persisted kit state. */
+export type MatchPlayerView = {
+  status: MatchLifecycleStatus;
+  startedAtMs: number | null;
+  finishedAtMs: number | null;
+  result: MatchResult | null;
+  playerStatuses: Record<string, MatchPlayerStatus>;
+};
+
+/** Public round contract, deliberately separate from the persisted kit state. */
+export type RoundPlayerView = {
+  number: number;
+  status: RoundKitState['status'];
+  starterPlayerId: number | null;
+  participantPlayerIds: number[];
+  leftPlayerIds: number[];
+  winnerPlayerIds: number[];
+  completedRounds: number;
+};
+
 export type StableGameSystemView = {
   version: typeof GAME_SYSTEM_VIEW_VERSION;
-  match: MatchKitState;
-  round: RoundKitState;
+  match: MatchPlayerView;
+  round: RoundPlayerView;
   turn: GameTurnPlayerView;
   setup: GameSetupPlayerView;
 };
@@ -70,26 +97,10 @@ export type GameStatusPlayerView = {
   byPlayer: Record<string, PlayerStatus[]>;
 };
 
-export type GenericGamePlayerView = Omit<
-  GameKitsPlayerView,
-  'cards' | 'dice'
-> & {
+export type GenericGamePlayerView = {
   viewVersion: typeof GAME_SYSTEM_VIEW_VERSION;
   system: StableGameSystemView;
   kits: StableGameKitsView;
-  match: MatchKitState;
-  turn: GameTurnPlayerView;
-  round: RoundKitState;
-  board: GenericBoardPlayerView;
-  cards: CardsPlayerView | null;
-  dice: DicePlayerView | null;
-  score: ScorePlayerView;
-  scores: Record<string, number>;
-  resources: Record<string, Record<string, number>>;
-  counters: Record<string, number>;
-  statuses: PlayerStatus[];
-  status: GameStatusPlayerView;
-  setup: GameSetupPlayerView;
   effect: { source: EffectSource | null };
 };
 
@@ -98,11 +109,13 @@ export function projectGameSystemView<TState extends object>(input: {
   viewerPlayerId: number | null;
   components?: readonly GameComponentDefinition[];
   hasConfiguration?: boolean;
+  playerValuesVisibility?: PlayerValuesVisibility;
 }): GenericGamePlayerView {
   const { runtime, viewerPlayerId } = input;
   const values = projectPlayerValues(
     runtime.engine.playerValues,
     viewerPlayerId,
+    input.playerValuesVisibility,
   );
   const kits = projectGameKits(
     runtime.engine.kits,
@@ -110,9 +123,9 @@ export function projectGameSystemView<TState extends object>(input: {
     runtime.turn?.turnNumber ?? 0,
     input.components ?? [],
   );
-  const match = structuredClone(runtime.engine.match);
+  const match = projectMatch(runtime.engine.match);
   const turn = projectTurn(runtime.turn, runtime.engine.playerValues);
-  const round = structuredClone(runtime.engine.round);
+  const round = projectRound(runtime.engine.round);
   const setup = projectSetup(
     runtime.phase,
     runtime.engine.configuration,
@@ -123,7 +136,11 @@ export function projectGameSystemView<TState extends object>(input: {
   const score = values.scoring;
   const status = {
     viewer: values.statuses,
-    byPlayer: structuredClone(runtime.engine.playerValues.statuses),
+    byPlayer: projectStatusesByPlayer(
+      runtime.engine.playerValues.statuses,
+      viewerPlayerId,
+      input.playerValuesVisibility?.statuses,
+    ),
   };
   const board = {
     movement: kits.movement ?? null,
@@ -152,29 +169,33 @@ export function projectGameSystemView<TState extends object>(input: {
       ownership: kits.ownership ?? null,
       quiz: kits.quiz ?? null,
     },
-    ...kits,
-    match,
-    turn,
-    round,
-    setup,
-    board,
-    cards,
-    dice,
-    score,
-    scores: values.scores,
-    resources: values.resources,
-    counters: values.counters,
-    statuses: values.statuses,
-    status,
-    inventory: kits.inventory,
-    economy: kits.economy,
-    ownership: kits.ownership,
-    quiz: kits.quiz,
     effect: {
       source: runtime.engine.effects.source
         ? structuredClone(runtime.engine.effects.source)
         : null,
     },
+  };
+}
+
+function projectMatch(match: MatchKitState): MatchPlayerView {
+  return {
+    status: match.status,
+    startedAtMs: match.startedAtMs,
+    finishedAtMs: match.finishedAtMs,
+    result: match.result ? structuredClone(match.result) : null,
+    playerStatuses: structuredClone(match.playerStatuses),
+  };
+}
+
+function projectRound(round: RoundKitState): RoundPlayerView {
+  return {
+    number: round.number,
+    status: round.status,
+    starterPlayerId: round.starterPlayerId,
+    participantPlayerIds: [...round.participantPlayerIds],
+    leftPlayerIds: [...round.leftPlayerIds],
+    winnerPlayerIds: [...round.winnerPlayerIds],
+    completedRounds: round.completedRounds,
   };
 }
 

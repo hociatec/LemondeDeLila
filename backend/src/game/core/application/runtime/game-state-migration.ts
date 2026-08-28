@@ -1,6 +1,10 @@
 import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
 import type { GameStateEntity } from '../models/game-state.model';
-import type { DeclarativeState, GameStateMigration } from './game-definition';
+import type {
+  DeclarativeState,
+  GameContentMigration,
+  GameStateMigration,
+} from './game-definition';
 import {
   createGameConfigurationState,
   type GameConfigurationShape,
@@ -14,8 +18,10 @@ export function migrateDeclarativeState<TState extends object>(
   state: GameStateEntity,
   gameId: string,
   targetVersion: number,
+  targetContentVersion: string,
   targetRulesVersion: string,
   migrations: readonly GameStateMigration<TState>[],
+  contentMigrations: readonly GameContentMigration<TState>[],
   configuration: GameConfigurationShape<TState> | undefined,
 ): DeclarativeState<TState> {
   const runtime = structuredClone(state) as DeclarativeState<TState>;
@@ -25,6 +31,7 @@ export function migrateDeclarativeState<TState extends object>(
   > & {
     schemaVersion?: number;
     rulesVersion?: string;
+    contentVersion?: string;
   };
   let version = Number(versionedEngine.schemaVersion ?? 1);
   if (!Number.isInteger(version) || version < 1) version = 1;
@@ -35,6 +42,16 @@ export function migrateDeclarativeState<TState extends object>(
     );
   }
   const storedRulesVersion = versionedEngine.rulesVersion;
+  const storedContentVersion = versionedEngine.contentVersion;
+  if (typeof storedContentVersion === 'string') {
+    migrateContentVersion(
+      runtime,
+      gameId,
+      storedContentVersion,
+      targetContentVersion,
+      contentMigrations,
+    );
+  }
   if (
     typeof storedRulesVersion === 'string' &&
     storedRulesVersion !== targetRulesVersion
@@ -63,6 +80,7 @@ export function migrateDeclarativeState<TState extends object>(
     version = migration.to;
   }
   runtime.engine.schemaVersion = version;
+  runtime.engine.contentVersion = targetContentVersion;
   runtime.engine.rulesVersion = storedRulesVersion ?? targetRulesVersion;
   runtime.engine.configuration ??= createGameConfigurationState(
     configuration as GameConfigurationShape<object> | undefined,
@@ -70,6 +88,7 @@ export function migrateDeclarativeState<TState extends object>(
     runtime.metadata?.ownerPlayerId ?? runtime.metadata?.roomOwnerId,
   );
   runtime.engine.effects ??= createEffectEngineState();
+  runtime.engine.effects.schemaVersion ??= 1;
   runtime.engine.effects.awaitingReaction ??= null;
   runtime.engine.effects.awaitingPlayerChoice ??= null;
   runtime.engine.effects.playerChoiceResolved ??=
@@ -84,6 +103,7 @@ export function migrateDeclarativeState<TState extends object>(
   runtime.engine.scheduler ??= createGameSchedulerState();
   runtime.engine.submissions.judges ??= {};
   runtime.engine.kits ??= {};
+  migratePendingChoice(runtime.pending);
   if (runtime.engine.kits.cards) {
     runtime.engine.kits.cards.deckLifecycles ??= {};
     runtime.engine.kits.cards.completedSets ??= {};
@@ -112,6 +132,39 @@ export function migrateDeclarativeState<TState extends object>(
   delete legacyEngine.eventSequence;
   stripLegacyStaticKitDefinitions(runtime.engine.kits);
   return runtime;
+}
+
+function migrateContentVersion<TState extends object>(
+  runtime: DeclarativeState<TState>,
+  gameId: string,
+  from: string,
+  target: string,
+  migrations: readonly GameContentMigration<TState>[],
+): void {
+  let version = from;
+  const visited = new Set<string>();
+  while (version !== target) {
+    if (visited.has(version)) break;
+    visited.add(version);
+    const migration = migrations.find(
+      (candidate) => candidate.from === version,
+    );
+    if (!migration) break;
+    migration.migrate(runtime);
+    version = migration.to;
+  }
+  if (version !== target) {
+    throw new GameStateViolationError(
+      `Version de contenu indisponible pour ${gameId}`,
+      { gameId, storedContentVersion: from, targetContentVersion: target },
+    );
+  }
+}
+
+function migratePendingChoice(pending: GameStateEntity['pending']): void {
+  if (!pending) return;
+  pending.schemaVersion ??= 1;
+  for (const queued of pending.queue ?? []) migratePendingChoice(queued);
 }
 
 function stripLegacyStaticKitDefinitions(

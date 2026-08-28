@@ -13,6 +13,12 @@ export interface TurnPolicy {
     players: readonly PlayerStateEntity[],
   ): NonNullable<GameStateEntity['turn']>;
   actionPoints?: number;
+  /** Marks an intentional replacement of a policy supplied by a pattern. */
+  overrides?: boolean;
+}
+
+export function overrideTurn(policy: TurnPolicy): TurnPolicy {
+  return Object.freeze({ ...policy, overrides: true });
 }
 
 export function standardTurn(): TurnPolicy {

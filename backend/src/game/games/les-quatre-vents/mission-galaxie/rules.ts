@@ -91,7 +91,7 @@ function resolveMissionTile(
       if (tile.type === 'move' && tile.delta) {
         moveMissionAndResolve(state, playerId, tile.delta, depth + 1, ctx);
       } else if (tile.type === 'skip') {
-        ctx.turn.skip(playerId, tile.skipTurns ?? 1);
+        ctx.turn.skip(playerId, tile.turnsToSkip ?? 1);
       } else if (tile.type === 'question' || tile.type === 'challenge') {
         drawChoiceCard(
           state,

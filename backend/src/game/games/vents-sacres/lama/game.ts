@@ -4,7 +4,6 @@ import {
   defineConfiguration,
   defineGame,
   gameInput,
-  playerView,
   roundScoring,
   when,
 } from '../../../core/application/public-api';
@@ -116,24 +115,22 @@ export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
       ({ state, ctx }) => skipInactiveLamaPlayer(state, ctx),
     ),
   ],
-  view: ({ ctx }) => {
+  viewFragment: ({ ctx }) => {
     const discard = ctx.cards.discardPile<LamaCard>('lama');
-    return playerView({
-      game: {
-        step: LAMA_PHASES.current(ctx),
-        droppedOut: ctx.players.byId((player) =>
-          ctx.round.leftPlayers().includes(player.id),
-        ),
-        drawnThisTurn: ctx.turn.flags.get<boolean>('lama.drawn') === true,
-        roundStarterIndex: Math.max(
-          0,
-          ctx.players
-            .all()
-            .findIndex((player) => player.id === ctx.round.starter()),
-        ),
-        topCard: discard.at(-1) ?? null,
-      },
-    });
+    return {
+      step: LAMA_PHASES.current(ctx),
+      droppedOut: ctx.players.byId((player) =>
+        ctx.round.leftPlayers().includes(player.id),
+      ),
+      drawnThisTurn: ctx.turn.flags.get<boolean>('lama.drawn') === true,
+      roundStarterIndex: Math.max(
+        0,
+        ctx.players
+          .all()
+          .findIndex((player) => player.id === ctx.round.starter()),
+      ),
+      topCard: discard.at(-1) ?? null,
+    };
   },
   bot: {
     choose: ({ state: _state, actor, availableActions, ctx }) => {

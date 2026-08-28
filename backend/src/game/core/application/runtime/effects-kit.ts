@@ -202,6 +202,8 @@ export type GameEffectInstruction =
     };
 
 export type EffectEngineState = {
+  /** Schema version of persisted effect continuations. */
+  schemaVersion: number;
   queue: GameEffectInstruction[];
   actorPlayerId: number | null;
   chosenPlayerId: number | null;
@@ -261,6 +263,7 @@ export function defineEffect<TState extends object, TData>(
 
 export function createEffectEngineState(): EffectEngineState {
   return {
+    schemaVersion: 1,
     queue: [],
     actorPlayerId: null,
     chosenPlayerId: null,

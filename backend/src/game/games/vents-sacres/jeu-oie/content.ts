@@ -65,12 +65,13 @@ function buildTiles(
     if (index === 1) return { ...base, type: 'start' as const };
     if (index === 63) return { ...base, type: 'finish' as const };
     if (index === 6) return { ...base, type: 'bridge' as const };
-    if (index === 19) return { ...base, type: 'inn' as const, skipTurns: 1 };
+    if (index === 19) return { ...base, type: 'inn' as const, turnsToSkip: 1 };
     if (index === 26) return { ...base, type: 'magic-die' as const };
     if (index === 31) return { ...base, type: 'well' as const };
     if (index === 42)
       return { ...base, type: 'labyrinth' as const, backTo: 30 };
-    if (index === 52) return { ...base, type: 'prison' as const, skipTurns: 2 };
+    if (index === 52)
+      return { ...base, type: 'prison' as const, turnsToSkip: 2 };
     if (index === 58) return { ...base, type: 'death' as const, backTo: 1 };
     if (goose.has(index)) return { ...base, type: 'goose' as const };
     return { ...base, type: 'normal' as const };

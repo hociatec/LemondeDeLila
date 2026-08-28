@@ -5,6 +5,7 @@ import type {
 } from './game-definition';
 import { GAME_CONFIGURE_ACTION } from './configuration-kit';
 import type { GameShortcutHint } from '../../../shortcuts/public-api';
+import { contentManifest } from './game-content';
 
 export function describeGameDefinition<
   TState extends object,
@@ -91,8 +92,7 @@ export function describeGameDefinition<
     ...(definition.content
       ? {
           content: {
-            gameId: definition.content.gameId,
-            sections: Object.keys(definition.content.data).sort(),
+            ...contentManifest(definition.content),
           },
         }
       : {}),

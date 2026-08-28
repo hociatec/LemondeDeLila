@@ -110,7 +110,7 @@ function isTile(value: unknown): value is MissionGalaxieTile {
     typeof value.title === 'string' &&
     isTileType(value.type, types) &&
     optionalNumber(value.delta) &&
-    optionalNumber(value.skipTurns) &&
+    optionalNumber(value.turnsToSkip) &&
     optionalNumber(value.target) &&
     (value.keepTurn == null || typeof value.keepTurn === 'boolean')
   );
