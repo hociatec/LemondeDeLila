@@ -27,6 +27,7 @@ import type { MatchKitState } from './match-kit';
 import type { RoundKitState } from './round-kit';
 import type { PlayerValuesKitState } from './player-values-kit';
 import type { VisibilityRule } from './visibility-kit';
+import type { PlayerValuesVisibility } from './player-values-kit';
 import { assertGameDefinition } from './game-definition-validator';
 import type { GameLifecycleHooks } from './game-lifecycle-hooks';
 import type {
@@ -222,6 +223,13 @@ export type GameStateMigration<TState extends object> = {
   migrate(state: TState): TState;
 };
 
+/** Migrates persisted references when a static content catalogue changes. */
+export type GameContentMigration<TState extends object> = {
+  from: string;
+  to: string;
+  migrate(state: DeclarativeState<TState>): void;
+};
+
 export interface DeclarativeGameDefinition<
   TState extends object,
   TActions extends GameActionMap<TState>,
@@ -241,6 +249,7 @@ export interface DeclarativeGameDefinition<
   readonly contentVersion: string;
   readonly rulesVersion: string;
   readonly migrations: readonly GameStateMigration<TState>[];
+  readonly contentMigrations: readonly GameContentMigration<TState>[];
   readonly shortcuts?: readonly GameShortcutHint[];
   readonly players: { min: number; max: number };
   readonly patterns?: readonly GamePattern<TState>[];
@@ -261,11 +270,19 @@ export interface DeclarativeGameDefinition<
   readonly effects?: Readonly<Record<string, GameEffectResolverShape<TState>>>;
   readonly victory?: VictoryRule<TState>;
   readonly visibility?: Readonly<Record<string, VisibilityRule>>;
+  /** Visibility policy applied to system score/resource/status projections. */
+  readonly playerValuesVisibility?: PlayerValuesVisibility;
   readonly view?: (input: {
     state: TState;
     actor: PlayerStateEntity | null;
     ctx: GameContext<TState>;
   }) => GamePlayerProjection<TPlayerView, TExtras, TBoard>;
+  /** Small game-specific addition merged into the generic PlayerView. */
+  readonly viewFragment?: (input: {
+    state: TState;
+    actor: PlayerStateEntity | null;
+    ctx: GameContext<TState>;
+  }) => TPlayerView;
   readonly bot?: {
     choose(input: {
       state: TState;
@@ -361,12 +378,14 @@ type GameDefinitionInput<
   | 'contentVersion'
   | 'rulesVersion'
   | 'migrations'
+  | 'contentMigrations'
 > & {
   readonly content?: GameContentShape;
   readonly stateVersion?: number;
   readonly contentVersion?: string;
   readonly rulesVersion?: string;
   readonly migrations?: readonly GameStateMigration<TState>[];
+  readonly contentMigrations?: readonly GameContentMigration<TState>[];
 };
 
 export function defineGame<
@@ -397,16 +416,17 @@ export function defineGame<
 export function defineGame<
   TState extends object,
   TActions extends GameActionMap<TState>,
+  TPlayerView extends object = TState,
   TExtras extends object = object,
   TBoard extends object = object,
 >(
   definition: Omit<
-    GameDefinitionInput<TState, TActions, TState, TExtras, TBoard>,
+    GameDefinitionInput<TState, TActions, TPlayerView, TExtras, TBoard>,
     'view'
   > & {
     view?: undefined;
   },
-): DeclarativeGameDefinition<TState, TActions, TState, TExtras, TBoard>;
+): DeclarativeGameDefinition<TState, TActions, TPlayerView, TExtras, TBoard>;
 export function defineGame<
   TState extends object,
   TActions extends GameActionMap<TState>,
@@ -423,6 +443,12 @@ export function defineGame<
   >,
 ): DeclarativeGameDefinition<TState, TActions, TPlayerView, TExtras, TBoard> {
   const patterns = composePatterns(...(definition.patterns ?? []));
+  assertNoImplicitComponentOverrides(
+    patterns.components ?? [],
+    definition.components ?? [],
+    definition.id,
+  );
+  assertNoImplicitTurnOverride(patterns.turn, definition.turn, definition.id);
   const components = [
     ...(patterns.components ?? []),
     ...(definition.components ?? []),
@@ -441,6 +467,7 @@ export function defineGame<
     stateVersion: 1,
     rulesVersion: '1',
     migrations: [],
+    contentMigrations: [],
     ...definition,
     content,
     contentVersion: definition.contentVersion ?? content.version,
@@ -661,6 +688,7 @@ function mergeInitialization(
 ): GameInitialization | undefined {
   if (!pattern) return game;
   if (!game) return pattern;
+  assertNoImplicitInitializationOverrides(pattern, game);
   return {
     ...pattern,
     ...game,
@@ -670,6 +698,85 @@ function mergeInitialization(
     tracks: { ...pattern.tracks, ...game.tracks },
     pawns: [...(pattern.pawns ?? []), ...(game.pawns ?? [])],
   };
+}
+
+function assertNoImplicitComponentOverrides(
+  patternComponents: readonly GameComponentDefinition[],
+  gameComponents: readonly GameComponentDefinition[],
+  gameId: string,
+): void {
+  const patternKeys = new Set(
+    patternComponents.map(
+      (component) => `${component.component}:${component.id}`,
+    ),
+  );
+  for (const component of gameComponents) {
+    const key = `${component.component}:${component.id}`;
+    if (patternKeys.has(key) && component.overrides !== key) {
+      throw new GameConfigurationError(
+        `Composant "${key}" fourni par un pattern et redéfini par "${gameId}" sans overrideComponent() explicite`,
+      );
+    }
+  }
+}
+
+function assertNoImplicitTurnOverride(
+  pattern: TurnPolicy | undefined,
+  game: TurnPolicy | undefined,
+  gameId: string,
+): void {
+  if (!pattern || !game || sameTurnPolicy(pattern, game)) return;
+  if (game.overrides) return;
+  throw new GameConfigurationError(
+    `Politique de tour fournie par un pattern et redéfinie par "${gameId}" sans overrideTurn() explicite`,
+  );
+}
+
+function assertNoImplicitInitializationOverrides(
+  pattern: GameInitialization,
+  game: GameInitialization,
+): void {
+  const overrides = new Set(game.overrides ?? []);
+  const assertKeys = (
+    kind: 'resources' | 'counters' | 'tracks',
+    labels: Readonly<Record<string, unknown>> | undefined,
+    inherited: Readonly<Record<string, unknown>> | undefined,
+  ) => {
+    for (const key of Object.keys(labels ?? {})) {
+      if (!(key in (inherited ?? {}))) continue;
+      const overrideKey = `${kind}.${key}`;
+      if (!overrides.has(overrideKey)) {
+        throw new GameConfigurationError(
+          `Initialisation ${overrideKey} fournie par un pattern et redéfinie sans overrideInitialization(["${overrideKey}"], ...) explicite`,
+        );
+      }
+    }
+  };
+  assertKeys('resources', game.resources, pattern.resources);
+  assertKeys('counters', game.counters, pattern.counters);
+  assertKeys('tracks', game.tracks, pattern.tracks);
+  if (
+    game.scores != null &&
+    pattern.scores != null &&
+    !overrides.has('scores')
+  ) {
+    throw new GameConfigurationError(
+      'Initialisation scores fournie par un pattern et redéfinie sans overrideInitialization(["scores"], ...) explicite',
+    );
+  }
+  const patternPawns = new Set((pattern.pawns ?? []).map((pawn) => pawn.setId));
+  for (const pawn of game.pawns ?? []) {
+    const overrideKey = `pawns.${pawn.setId}`;
+    if (patternPawns.has(pawn.setId) && !overrides.has(overrideKey)) {
+      throw new GameConfigurationError(
+        `Initialisation ${overrideKey} fournie par un pattern et redéfinie sans overrideInitialization(["${overrideKey}"], ...) explicite`,
+      );
+    }
+  }
+}
+
+function sameTurnPolicy(left: TurnPolicy, right: TurnPolicy): boolean {
+  return left.kind === right.kind && left.actionPoints === right.actionPoints;
 }
 
 function mergeLifecycleHooks<TState extends object>(

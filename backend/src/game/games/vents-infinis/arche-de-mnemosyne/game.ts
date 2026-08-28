@@ -3,7 +3,6 @@ import {
   defineEvent,
   defineGame,
   gameInput,
-  playerView,
   quiz,
   simultaneousAnswers,
 } from '../../../core/application/public-api';
@@ -87,24 +86,22 @@ export default defineGame<MnemoState, typeof MNEMO_ACTIONS, MnemoPlayerView>({
   initialPhase: MNEMO_PHASES.initialPhase,
   phases: MNEMO_PHASES.phases,
   actions: MNEMO_ACTIONS,
-  view: ({ ctx }) => {
+  viewFragment: ({ ctx }) => {
     const session = ctx.quiz.session(MNEMO_SESSION);
     const currentSession = session?.phase === 'closed' ? null : session;
     const answeredPlayerIds = Object.keys(currentSession?.answers ?? {}).map(
       Number,
     );
-    return playerView({
-      game: {
-        notBeforeMs: ctx.scheduler.deadline(MNEMO_NEXT_QUESTION_TIMER),
-        answeredPlayerIds,
-        questionLeaderId: ctx.round.starter() ?? 0,
-        currentQuestion: currentSession
-          ? structuredClone(currentSession.question)
-          : null,
-        remainingMilliseconds: ctx.scheduler.remaining(MNEMO_QUESTION_TIMER),
-        categories: MNEMO_CATEGORIES,
-      },
-    });
+    return {
+      notBeforeMs: ctx.scheduler.deadline(MNEMO_NEXT_QUESTION_TIMER),
+      answeredPlayerIds,
+      questionLeaderId: ctx.round.starter() ?? 0,
+      currentQuestion: currentSession
+        ? structuredClone(currentSession.question)
+        : null,
+      remainingMilliseconds: ctx.scheduler.remaining(MNEMO_QUESTION_TIMER),
+      categories: MNEMO_CATEGORIES,
+    };
   },
   bot: {
     choose: ({ availableActions, ctx }) => {

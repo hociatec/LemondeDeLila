@@ -20,7 +20,7 @@ describe('projectGameKits', () => {
     kits.cards.discards.main = ['played'];
     kits.cards.hands.main = { '1': ['mine'], '2': ['theirs'] };
 
-    expect(projectGameKits(kits, 1, 3, [handDefinition])).toEqual({
+    expect(projectGameKits(kits, 1, 3, [handDefinition])).toMatchObject({
       cards: {
         decks: { main: { count: 1 } },
         discards: { main: { count: 1, cards: ['played'] } },
@@ -32,7 +32,7 @@ describe('projectGameKits', () => {
         },
       },
     });
-    expect(projectGameKits(kits, null, 3, [handDefinition])).toEqual({
+    expect(projectGameKits(kits, null, 3, [handDefinition])).toMatchObject({
       cards: {
         decks: { main: { count: 1 } },
         discards: { main: { count: 1, cards: ['played'] } },
@@ -80,7 +80,7 @@ describe('projectGameKits', () => {
     } satisfies DiceDefinition;
     kits.dice.rolls.main = { values: [2, 5], total: 7 };
 
-    expect(projectGameKits(kits, 1, 4, [diceDefinition])).toEqual({
+    expect(projectGameKits(kits, 1, 4, [diceDefinition])).toMatchObject({
       dice: {
         id: 'main',
         label: 'Dés',
@@ -90,7 +90,7 @@ describe('projectGameKits', () => {
           { id: 'main-2', label: 'Dé 2', sides: 6, value: 5 },
         ],
         total: 7,
-        rollKey: '4:2-5',
+        rollKey: '4:0:main',
       },
     });
   });

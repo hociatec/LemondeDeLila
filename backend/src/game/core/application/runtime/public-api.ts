@@ -28,6 +28,7 @@ export type {
   GameActionMap,
   GameActionUiHint,
   GameChoiceUiHint,
+  GameContentMigration,
   GamePlayerProjection,
   GameDefinition,
   GameSession,
@@ -41,6 +42,8 @@ export type {
   GameTurnPlayerView,
   GenericBoardPlayerView,
   GenericGamePlayerView,
+  MatchPlayerView,
+  RoundPlayerView,
   StableGameKitsView,
   StableGameSystemView,
 } from './game-system-view';
@@ -138,9 +141,12 @@ export { commonStatuses } from './player-values-kit';
 export type {
   CommonStatusId,
   PlayerStatus,
+  PlayerValuesVisibility,
   ScorePlayerView,
   StatusScope,
 } from './player-values-kit';
+export { overrideComponent, overrideInitialization } from './component-kit';
+export { overrideTurn } from './turn-kit';
 export { defineGamePhases, phase, setupPlayingPhases } from './phase-kit';
 export type {
   GamePhaseId,

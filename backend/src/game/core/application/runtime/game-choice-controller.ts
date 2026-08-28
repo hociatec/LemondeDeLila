@@ -223,6 +223,7 @@ export class GameChoiceController {
     }
     const values = [...options.options];
     const pending: PendingState = {
+      schemaVersion: 1,
       type: `engine.choice.${kind}`,
       label: 'Choix requis',
       playerId: options.player,

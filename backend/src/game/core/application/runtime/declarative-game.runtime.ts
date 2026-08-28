@@ -346,7 +346,13 @@ export class DeclarativeGameRuntime<
     const projection = this.definition.view
       ? this.definition.view({ state: runtime.game, actor, ctx: context })
       : playerView({
-          game: {} as TPlayerView,
+          game: this.definition.viewFragment
+            ? this.definition.viewFragment({
+                state: runtime.game,
+                actor,
+                ctx: context,
+              })
+            : ({} as TPlayerView),
         });
     const {
       engine: _engine,
@@ -360,6 +366,7 @@ export class DeclarativeGameRuntime<
       viewerPlayerId: actor?.id ?? null,
       components: this.definition.components,
       hasConfiguration: this.definition.config != null,
+      playerValuesVisibility: this.definition.playerValuesVisibility,
     });
     return {
       ...publicState,
@@ -392,19 +399,19 @@ export class DeclarativeGameRuntime<
               },
             }
           : {}),
-        ...(system.match.result
+        ...(system.system.match.result
           ? {
               victory: {
-                ...system.match.result,
+                ...system.system.match.result,
                 ranking:
-                  system.match.result.ranking ??
-                  system.score.leaderboard
+                  system.system.match.result.ranking ??
+                  system.kits.score.leaderboard
                     .reduce<number[][]>((tiers, entry) => {
                       (tiers[entry.rank - 1] ??= []).push(entry.playerId);
                       return tiers;
                     }, [])
                     .filter((tier) => tier.length > 0),
-                finalScores: structuredClone(system.scores),
+                finalScores: structuredClone(system.kits.score.byPlayer),
               },
             }
           : {}),
@@ -718,6 +725,7 @@ export class DeclarativeGameRuntime<
       this.definition.contentVersion,
       this.definition.rulesVersion,
       this.definition.migrations,
+      this.definition.contentMigrations,
       this.definition.config,
     );
   }

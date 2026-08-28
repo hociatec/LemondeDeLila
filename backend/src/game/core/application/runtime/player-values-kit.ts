@@ -1,4 +1,5 @@
 import { GameRuleViolationError } from '../../domain/errors/game-domain.errors';
+import type { VisibilityRule } from './visibility-kit';
 
 export type StatusScope =
   'turn' | 'global-turn' | 'round' | 'match' | 'until-used';
@@ -48,6 +49,14 @@ export type ScorePlayerView = {
   leaderboard: Array<{ playerId: number; score: number; rank: number }>;
 };
 
+/** Projection policy for values held by the player-values kit. */
+export type PlayerValuesVisibility = {
+  scores?: VisibilityRule;
+  resources?: Readonly<Record<string, VisibilityRule>>;
+  counters?: Readonly<Record<string, VisibilityRule>>;
+  statuses?: VisibilityRule;
+};
+
 export function createPlayerValuesKitState(): PlayerValuesKitState {
   return {
     scores: {},
@@ -63,18 +72,97 @@ export function createPlayerValuesKitState(): PlayerValuesKitState {
 export function projectPlayerValues(
   state: PlayerValuesKitState,
   viewerPlayerId: number | null,
+  visibility: PlayerValuesVisibility = {},
 ): PlayerValuesPlayerView {
-  const scores = structuredClone(state.scores);
+  const scores = projectNumericByPlayer(
+    state.scores,
+    viewerPlayerId,
+    visibility.scores,
+  );
   return {
     scores,
     scoring: projectScores(scores),
-    resources: structuredClone(state.resources),
-    counters: structuredClone(state.counters ?? {}),
-    statuses:
-      viewerPlayerId == null
-        ? []
-        : structuredClone(state.statuses[String(viewerPlayerId)] ?? []),
+    resources: Object.fromEntries(
+      Object.entries(state.resources).flatMap(([resource, values]) => {
+        const projected = projectNumericByPlayer(
+          values,
+          viewerPlayerId,
+          visibility.resources?.[resource],
+        );
+        return Object.keys(projected).length > 0 ? [[resource, projected]] : [];
+      }),
+    ),
+    counters: projectCounters(state.counters ?? {}, visibility.counters ?? {}),
+    statuses: projectStatuses(
+      state.statuses,
+      viewerPlayerId,
+      visibility.statuses,
+    ),
   };
+}
+
+export function projectStatusesByPlayer(
+  statuses: Readonly<Record<string, PlayerStatus[]>>,
+  viewerPlayerId: number | null,
+  visibility: VisibilityRule | undefined,
+): Record<string, PlayerStatus[]> {
+  if (visibility?.kind === 'hidden') return {};
+  if (visibility?.kind === 'hidden-until') {
+    return visibility.revealed ? structuredClone(statuses) : {};
+  }
+  if (visibility?.kind === 'public') return structuredClone(statuses);
+  if (viewerPlayerId == null) return {};
+  const own = statuses[String(viewerPlayerId)];
+  return own == null ? {} : { [String(viewerPlayerId)]: structuredClone(own) };
+}
+
+function projectStatuses(
+  statuses: Readonly<Record<string, PlayerStatus[]>>,
+  viewerPlayerId: number | null,
+  visibility: VisibilityRule | undefined,
+): PlayerStatus[] {
+  if (viewerPlayerId == null || visibility?.kind === 'hidden') return [];
+  if (visibility?.kind === 'hidden-until' && !visibility.revealed) return [];
+  return structuredClone(statuses[String(viewerPlayerId)] ?? []);
+}
+
+function projectNumericByPlayer(
+  values: Readonly<Record<string, number>>,
+  viewerPlayerId: number | null,
+  visibility: VisibilityRule | undefined,
+): Record<string, number> {
+  if (visibility?.kind === 'hidden') return {};
+  if (visibility?.kind === 'hidden-until' && !visibility.revealed) return {};
+  if (visibility?.kind === 'private-by-player') {
+    if (viewerPlayerId == null) return {};
+    const value = values[String(viewerPlayerId)];
+    return value == null ? {} : { [String(viewerPlayerId)]: value };
+  }
+  if (visibility?.kind === 'count-only') {
+    return Object.fromEntries(
+      Object.entries(values).map(([playerId, value]) => [
+        playerId,
+        value === 0 ? 0 : 1,
+      ]),
+    );
+  }
+  return structuredClone(values);
+}
+
+function projectCounters(
+  counters: Readonly<Record<string, number>>,
+  visibility: Readonly<Record<string, VisibilityRule>>,
+): Record<string, number> {
+  return Object.fromEntries(
+    Object.entries(counters).flatMap(([counter, value]) => {
+      const rule = visibility[counter];
+      if (rule?.kind === 'hidden') return [];
+      if (rule?.kind === 'hidden-until' && !rule.revealed) return [];
+      return [
+        [counter, rule?.kind === 'count-only' ? (value === 0 ? 0 : 1) : value],
+      ];
+    }),
+  );
 }
 
 export function projectScores(
