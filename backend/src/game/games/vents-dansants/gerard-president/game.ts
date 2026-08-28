@@ -2,10 +2,9 @@ import {
   cards,
   cardGame,
   defineGame,
-  playerView,
+  defineGameContent,
 } from '../../../core/application/public-api';
 import {
-  GERARD_PRESIDENT_NAME_BY_ID,
   GERARD_PRESIDENT_NAME_CARDS,
   GERARD_PRESIDENT_SPECIAL_CARDS,
   GERARD_PRESIDENT_THEME_BY_ID,
@@ -18,11 +17,7 @@ import {
   GERARD_JUDGE,
   GERARD_PHASES,
   GERARD_SUBMISSIONS,
-  GERARD_TARGET_SCORE,
   GERARD_THEME_SECRET,
-  gerardDefenses,
-  gerardExtraNames,
-  gerardJuryOverride,
   gerardMasterId,
 } from './support';
 import type { GerardPlayerView, GerardState } from './state';
@@ -40,6 +35,11 @@ export default defineGame<GerardState, typeof GERARD_ACTIONS, GerardPlayerView>(
     subcategory: 'VentsDansants',
     description: 'Élisez le prénom le plus absurde face au thème du jury.',
     players: { min: 3, max: 10 },
+    content: defineGameContent('gerard-president', {
+      names: GERARD_PRESIDENT_NAME_CARDS,
+      themes: GERARD_PRESIDENT_THEME_CARDS,
+      specialCards: GERARD_PRESIDENT_SPECIAL_CARDS,
+    }),
     patterns: [
       cardGame({
         deckId: 'names',
@@ -79,59 +79,23 @@ export default defineGame<GerardState, typeof GERARD_ACTIONS, GerardPlayerView>(
     phases: GERARD_PHASES.phases,
     actions: GERARD_ACTIONS,
     effects: GERARD_EFFECTS,
-    view: ({ state, actor, ctx }) => {
+    viewFragment: ({ state, actor, ctx }) => {
       const masterId = gerardMasterId(ctx);
-      const juryOverrideId = gerardJuryOverride(ctx);
-      const isJury =
-        actor != null &&
-        GERARD_PHASES.is(ctx, 'choosing-winner') &&
-        (juryOverrideId ?? masterId) === actor.id;
-      const storedSubmissions = ctx.submissions.has(GERARD_SUBMISSIONS)
-        ? ctx.submissions.values<string[]>(GERARD_SUBMISSIONS)
-        : {};
-      const submissions = Object.fromEntries(
-        Object.entries(storedSubmissions).map(([playerId, cardIds]) => [
-          Number(playerId),
-          isJury || Number(playerId) === actor?.id
-            ? cardIds.map(
-                (cardId) => GERARD_PRESIDENT_NAME_BY_ID[cardId]?.name ?? cardId,
-              )
-            : cardIds.map(() => 'Prénom secret'),
-        ]),
-      );
       const themeSecretActive = ctx.counters.get(GERARD_THEME_SECRET) > 0;
       const themeHidden = themeSecretActive && actor?.id !== masterId;
-      return playerView({
-        game: {
-          extraNamesAllowed: gerardExtraNames(ctx),
-          defenseActive: gerardDefenses(ctx),
-          themeSecretActive,
-          juryOverrideId,
-          targetScore: GERARD_TARGET_SCORE,
-          phase: GERARD_PHASES.current(ctx),
-          masterId,
-          pendingPlayers: ctx.submissions.has(GERARD_SUBMISSIONS)
-            ? ctx.submissions.pendingPlayers(GERARD_SUBMISSIONS)
-            : [],
-          currentTheme: themeHidden
-            ? 'Thème secret'
-            : state.currentThemeId == null
-              ? null
-              : (GERARD_PRESIDENT_THEME_BY_ID[state.currentThemeId]?.text ??
-                null),
-          secondTheme: themeHidden
+      return {
+        currentTheme: themeHidden
+          ? 'Thème secret'
+          : state.currentThemeId == null
             ? null
-            : state.secondThemeId == null
-              ? null
-              : (GERARD_PRESIDENT_THEME_BY_ID[state.secondThemeId]?.text ??
-                null),
-          submissions,
-        },
-        extras: {
-          specialCardCatalog: GERARD_PRESIDENT_SPECIAL_CARDS,
-          submissions,
-        },
-      });
+            : (GERARD_PRESIDENT_THEME_BY_ID[state.currentThemeId]?.text ??
+              null),
+        secondTheme: themeHidden
+          ? null
+          : state.secondThemeId == null
+            ? null
+            : (GERARD_PRESIDENT_THEME_BY_ID[state.secondThemeId]?.text ?? null),
+      };
     },
     bot: {
       choose: ({ state: _state, actor, ctx }) => {

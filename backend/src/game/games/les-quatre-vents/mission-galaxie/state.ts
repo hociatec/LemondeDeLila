@@ -64,5 +64,3 @@ export type MissionGalaxiePending =
     };
 
 export type MissionGalaxieState = Record<string, never>;
-
-export type MissionGalaxiePlayerView = Record<string, never>;

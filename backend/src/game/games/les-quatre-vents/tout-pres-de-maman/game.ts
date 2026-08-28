@@ -1,12 +1,12 @@
 import {
   cards,
   defineGame,
-  playerView,
+  defineGameContent,
   raceGame,
 } from '../../../core/application/public-api';
 import { MAMAN_CONTENT } from './content';
 import { MAMAN_EFFECTS, TOUT_PRES_DE_MAMAN_ACTIONS } from './rules';
-import type { ToutPresDeMamanPlayerView, ToutPresDeMamanState } from './state';
+import type { ToutPresDeMamanState } from './state';
 
 const deck = cards.deck({
   id: 'events',
@@ -17,8 +17,7 @@ const deck = cards.deck({
 
 export default defineGame<
   ToutPresDeMamanState,
-  typeof TOUT_PRES_DE_MAMAN_ACTIONS,
-  ToutPresDeMamanPlayerView
+  typeof TOUT_PRES_DE_MAMAN_ACTIONS
 >({
   id: 'tout-pres-de-maman',
   displayName: 'Tout près de Maman !',
@@ -26,6 +25,7 @@ export default defineGame<
   subcategory: 'LesQuatreVents',
   description: 'Collectez les eucalyptus et retrouvez maman.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('tout-pres-de-maman', MAMAN_CONTENT),
   patterns: [
     raceGame({ trackId: 'forest', spaces: MAMAN_CONTENT.tiles.length }),
   ],
@@ -39,39 +39,5 @@ export default defineGame<
   setup: () => ({}),
   actions: TOUT_PRES_DE_MAMAN_ACTIONS,
   effects: MAMAN_EFFECTS,
-  view: ({ actor, ctx }) => {
-    const positions = ctx.players.byId((player) =>
-      ctx.movement.position('forest', player.id),
-    );
-    const tokens = ctx.players.byId((player) =>
-      ctx.resources.get(player.id, 'eucalyptus'),
-    );
-    const bonusReroll = ctx.players.byId((player) =>
-      ctx.status.has(player.id, 'maman.bonus-reroll'),
-    );
-    return playerView({
-      game: {
-        tokens,
-        bonusReroll,
-      },
-      extras: {
-        currentPlayerView: actor
-          ? { id: actor.id, username: actor.username }
-          : null,
-        tokens: structuredClone(tokens),
-        ui: {
-          panels: [
-            {
-              title: 'Eucalyptus',
-              lines: ctx.players
-                .all()
-                .map((player) => `${player.username} : ${tokens[player.id]}`),
-            },
-          ],
-        },
-      },
-      board: { tiles: MAMAN_CONTENT.tiles, positions },
-    });
-  },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

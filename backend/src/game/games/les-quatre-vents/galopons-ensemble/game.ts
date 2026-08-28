@@ -3,16 +3,15 @@ import {
   defineChoice,
   defineEffect,
   defineGame,
+  defineGameContent,
   gameInput,
   pawns,
-  playerView,
   raceGame,
 } from '../../../core/application/public-api';
 import { GALOPONS_CARDS, GALOPONS_PAWNS, GALOPONS_TILES } from './content';
 import {
   GALOPONS_ACTIONS,
   GALOPONS_PHASES,
-  galoponsIous,
   giveAppleWithIou,
   helpAdvanceForApple,
   moveGaloponsAndResolve,
@@ -21,19 +20,20 @@ import {
   requestPawn,
   resolvePawn,
 } from './rules';
-import type { GaloponsPlayerView, GaloponsState } from './state';
+import type { GaloponsState } from './state';
 
-export default defineGame<
-  GaloponsState,
-  typeof GALOPONS_ACTIONS,
-  GaloponsPlayerView
->({
+export default defineGame<GaloponsState, typeof GALOPONS_ACTIONS>({
   id: 'galopons-ensemble',
   displayName: 'Galopons ensemble !',
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
   description: 'Course équestre coopétitive avec pommes et aventures.',
   players: { min: 2, max: 4 },
+  content: defineGameContent('galopons-ensemble', {
+    cards: GALOPONS_CARDS,
+    pawns: GALOPONS_PAWNS,
+    tiles: GALOPONS_TILES,
+  }),
   patterns: [raceGame({ trackId: 'galopons', spaces: GALOPONS_TILES.length })],
   components: [
     pawns.set({ id: 'galopons', pawns: GALOPONS_PAWNS }),
@@ -114,49 +114,6 @@ export default defineGame<
         }
       },
     }),
-  },
-  view: ({ state: _state, actor, ctx }) => {
-    const pending = ctx.choice.current();
-    const choiceId = pending?.data?.choiceId;
-    const targetKind =
-      choiceId === 'galopons.give-apple'
-        ? 'give-apple'
-        : choiceId === 'galopons.help-advance'
-          ? 'help-advance'
-          : choiceId === 'galopons.pair-advance'
-            ? 'pair-advance'
-            : null;
-    const pawnByPlayerId = Object.fromEntries(
-      ctx.players.all().flatMap((player) => {
-        const pawnId = ctx.pawns.assigned('galopons', player.id)[0];
-        return pawnId == null ? [] : [[player.id, pawnId]];
-      }),
-    );
-    const positions = ctx.players.byId((player) =>
-      ctx.movement.position('galopons', player.id),
-    );
-    const apples = ctx.players.byId((player) =>
-      ctx.resources.get(player.id, 'apple'),
-    );
-    return playerView({
-      game: {
-        ious: galoponsIous(ctx),
-        apples,
-        targetKind,
-        targetActorId: targetKind == null ? null : (pending?.playerId ?? null),
-        pawnByPlayerId,
-        replay: ctx.turn.extraCount() > 0,
-      },
-      extras: {
-        pawn: actor
-          ? (GALOPONS_PAWNS.find(
-              (pawn) => pawn.id === pawnByPlayerId[actor.id],
-            ) ?? null)
-          : null,
-        apples: structuredClone(apples),
-      },
-      board: { tiles: GALOPONS_TILES, positions },
-    });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

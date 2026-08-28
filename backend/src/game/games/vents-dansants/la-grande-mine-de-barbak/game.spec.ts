@@ -10,6 +10,6 @@ describe('La Grande Mine de Barbak declarative game', () => {
     expect(JSON.stringify(game.view(2))).not.toContain(game.view(1).hand[0]);
     expect(game.availableActions(1)).toContain('pass');
     if (game.state().status !== 'finished') await game.as(1).do('pass', {});
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

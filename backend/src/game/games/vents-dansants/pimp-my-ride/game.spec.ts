@@ -12,6 +12,6 @@ describe('Pimp My Ride declarative game', () => {
 
     await game.as(1).do('pass', {});
     expect(game.view(2).hand).toHaveLength(4);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

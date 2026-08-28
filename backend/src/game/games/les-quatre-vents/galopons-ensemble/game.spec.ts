@@ -10,7 +10,7 @@ describe('Galopons ensemble declarative game', () => {
     await game.choose(2, 'mustang');
     await game.as(1).do('roll', {});
     expect(game.view(1).setupComplete).toBe(true);
-    expect(game.view(1).deckCount).toBe(GALOPONS_CARDS.length);
-    expect(game.replay()).toEqual(game.state());
+    expect(game.view(1).deckCount).toBe(GALOPONS_CARDS.length - 1);
+    expect(await game.replay()).toEqual(game.state());
   });
 });

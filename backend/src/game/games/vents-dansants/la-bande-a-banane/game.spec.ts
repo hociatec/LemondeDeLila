@@ -13,7 +13,7 @@ describe('La Bande à Banane declarative game', () => {
     await game.as(1).do('pass', {});
 
     expect(game.view(2).hand).toHaveLength(6);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 
   it('enumerates only fully specified legal card plays', async () => {

@@ -44,10 +44,7 @@ export const GERARD_PHASES = defineGamePhases<GerardState>()({
   },
 });
 
-export function advanceSubmission(actorId: number, ctx: RuleContext): void {
-  if (pendingPlayers(ctx)[0] !== actorId) {
-    rejectRule('Ordre de jeu invalide');
-  }
+export function advanceSubmission(ctx: RuleContext): void {
   updateCollectionPhase(ctx);
 }
 

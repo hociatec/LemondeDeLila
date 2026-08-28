@@ -1,7 +1,4 @@
-import type {
-  GameEffectInstruction,
-  PlayerMap,
-} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
 
 export type VoyageTileType =
   | 'start'
@@ -52,9 +49,3 @@ export type VoyagePendingChoice = {
 };
 
 export type VoyageState = Record<string, never>;
-
-export type VoyagePlayerView = {
-  collections: PlayerMap<VoyageCollection>;
-  lastTargetByActor: PlayerMap<number>;
-  finishCountdown: number | null;
-};

@@ -1,7 +1,4 @@
-import type {
-  GameEffectInstruction,
-  PlayerMap,
-} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
 
 export type PirateTileType =
   'start' | 'neutral' | 'bonus' | 'treasure' | 'obstacle' | 'gold' | 'finish';
@@ -20,13 +17,6 @@ export interface PirateCard {
   effects: readonly GameEffectInstruction[];
 }
 
-export interface PirateCollection {
-  treasures: PirateCard[];
-  obstacles: PirateCard[];
-  bonus: PirateCard[];
-  goldPieces: number;
-}
-
 export interface PirateCollectionState {
   treasureIds: number[];
   obstacleIds: number[];
@@ -34,8 +24,3 @@ export interface PirateCollectionState {
 }
 
 export type PiratesState = Record<string, never>;
-
-export type PiratesPlayerView = {
-  obstacleImmunity: PlayerMap<number>;
-  collections: PlayerMap<PirateCollection>;
-};

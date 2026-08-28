@@ -10,8 +10,8 @@ describe('Frousse Party declarative game', () => {
     await game.choose(2, 'fantome-peureux');
     const actor = game.state().turn?.currentPlayerId ?? 1;
     await game.as(actor).do('roll', {});
-    expect(game.view(actor).deckCount).toBe(FROUSSE_CARDS.length);
+    expect(game.view(actor).deckCount).toBe(FROUSSE_CARDS.length - 1);
     expect('pendingSwap' in game.view(actor)).toBe(false);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

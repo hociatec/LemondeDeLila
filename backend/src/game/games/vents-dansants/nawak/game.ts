@@ -1,6 +1,6 @@
 import {
   defineGame,
-  playerView,
+  defineGameContent,
   submissionJudgeGame,
 } from '../../../core/application/public-api';
 import { NAWAK_CHALLENGES } from './content';
@@ -15,6 +15,10 @@ export default defineGame<NawakState, typeof NAWAK_ACTIONS, NawakPlayerView>({
   description:
     'Répondez aux défis absurdes puis votez pour une réponse étrangère.',
   players: { min: 2, max: 8 },
+  content: defineGameContent('nawak', {
+    challenges: NAWAK_CHALLENGES,
+    targetScore: NAWAK_TARGET_SCORE,
+  }),
   patterns: [
     submissionJudgeGame({
       submissionId: 'nawak.answers',
@@ -43,48 +47,10 @@ export default defineGame<NawakState, typeof NAWAK_ACTIONS, NawakPlayerView>({
     };
   },
   actions: NAWAK_ACTIONS,
-  view: ({ state, ctx }) => {
-    const currentChallenge =
-      NAWAK_CHALLENGES.find(
-        (challenge) => challenge.id === state.currentChallengeId,
-      ) ?? NAWAK_CHALLENGES[0];
-    const lastRound = state.lastRound
-      ? {
-          ...structuredClone(state.lastRound),
-          prompt:
-            NAWAK_CHALLENGES.find(
-              (challenge) => challenge.id === state.lastRound?.challengeId,
-            )?.prompt ?? '',
-        }
-      : null;
-    const roundStage = nawakStage(ctx);
-    const revealAnswers = roundStage === 'vote';
-    const submissions = ctx.submissions.values<number>('nawak.answers');
-    const votes =
-      roundStage === 'vote'
-        ? ctx.submissions.values<number>('nawak.votes')
-        : {};
-    return playerView({
-      game: {
-        targetScore: NAWAK_TARGET_SCORE,
-        currentChallenge: structuredClone(currentChallenge),
-        lastRound,
-        roundStage,
-        submissions: revealAnswers ? submissions : {},
-        votes: {},
-      },
-      extras: {
-        hand: [...currentChallenge.answers],
-        targetScore: NAWAK_TARGET_SCORE,
-        stage: roundStage,
-        challenge: structuredClone(currentChallenge),
-        submissions: revealAnswers ? submissions : {},
-        submissionCount: Object.keys(submissions).length,
-        voteCount: Object.keys(votes).length,
-        lastRound: structuredClone(lastRound),
-      },
-    });
-  },
+  viewFragment: ({ state }) => ({
+    currentChallengeId: state.currentChallengeId,
+    lastRound: structuredClone(state.lastRound),
+  }),
   bot: {
     choose: ({ state: _state, actor, ctx }) => {
       if (nawakStage(ctx) === 'choose') {

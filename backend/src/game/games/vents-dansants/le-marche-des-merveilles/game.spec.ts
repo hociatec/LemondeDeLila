@@ -14,13 +14,16 @@ describe('Le Marché des Merveilles declarative game', () => {
         .filter((item) => item === 'ingredients'),
     ).toHaveLength(1);
     await game.as('Bob').do('protect', {});
-    expect(game.state().game.protectedPlayers[2]).toBe(true);
+    const view = game.view('Bob') as unknown as {
+      kits: { status: { byId: Record<string, Record<string, unknown>> } };
+    };
+    expect(view.kits.status.byId.protected?.['2']).toBeDefined();
     await game.as('Alice').do('sell', { good: 'ingredients' });
     expect(
       game
         .inventory('Alice', 'wonder-goods')
         .filter((item) => item === 'ingredients'),
     ).toHaveLength(0);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

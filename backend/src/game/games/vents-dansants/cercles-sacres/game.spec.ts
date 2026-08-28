@@ -13,7 +13,7 @@ describe('Cercles Sacrés declarative game', () => {
     await game.as(1).do('pass', {});
 
     expect(game.view(2).hand).toHaveLength(7);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 
   it('forces a player above the hand limit to discard', async () => {

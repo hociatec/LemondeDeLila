@@ -1,15 +1,14 @@
 import {
   cardGame,
   defineGame,
-  playerView,
+  defineGameContent,
 } from '../../../core/application/public-api';
-import { ZIG_ET_ZAG_CARD_BY_ID, ZIG_ET_ZAG_DECK } from './content';
+import { ZIG_ET_ZAG_DECK } from './content';
 import {
   createRound,
   ZIG_ET_ZAG_ACTIONS,
   ZIG_ET_ZAG_PHASES,
   zigRoundPlays,
-  zigWaitingPlayers,
 } from './rules';
 import type {
   ZigEtZagBattleLogEntry,
@@ -30,6 +29,7 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Une bataille à familles, figures et jokers colorés.',
   players: { min: 2, max: 2 },
+  content: defineGameContent('zig-et-zag', { cards: ZIG_ET_ZAG_DECK }),
   patterns: [
     cardGame({
       deckId: 'battle',
@@ -50,9 +50,7 @@ export default defineGame<
   initialPhase: ZIG_ET_ZAG_PHASES.initialPhase,
   phases: ZIG_ET_ZAG_PHASES.phases,
   actions: ZIG_ET_ZAG_ACTIONS,
-  view: ({ state, ctx }) => {
-    const stage = ZIG_ET_ZAG_PHASES.current(ctx);
-    const waitingPlayers = zigWaitingPlayers(state.battle, ctx);
+  viewFragment: ({ state, ctx }) => {
     const summary = state.lastRound;
     const lastRound = summary
       ? {
@@ -80,20 +78,7 @@ export default defineGame<
             }),
         }
       : null;
-    return playerView({
-      game: {
-        initialDeckCounts: ctx.players.byId(() => INITIAL_HAND_SIZE),
-        lastRound,
-        stage,
-        waitingPlayers,
-      },
-      extras: {
-        cardCatalog: ZIG_ET_ZAG_CARD_BY_ID,
-        stage,
-        waitingPlayers,
-        lastRound,
-      },
-    });
+    return { lastRound };
   },
   bot: { choose: () => ({ type: 'draw_card', payload: {} }) },
 });

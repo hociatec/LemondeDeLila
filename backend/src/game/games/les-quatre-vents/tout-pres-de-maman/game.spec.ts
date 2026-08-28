@@ -1,4 +1,7 @@
-import { testGame } from '../../../core/application/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../core/application/public-api';
 import gameDefinition from './game';
 
 describe('Tout près de Maman declarative game', () => {
@@ -8,9 +11,10 @@ describe('Tout près de Maman declarative game', () => {
 
     await game.as(1).do('roll', {});
 
-    expect(game.state().game.lastRoll).not.toBeNull();
+    const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
+    expect(kits.dice?.total).toBeGreaterThanOrEqual(1);
     expect(game.view(1).positions[1]).toBeGreaterThanOrEqual(0);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 
   it('does not expose the internal continuation of a choice', async () => {

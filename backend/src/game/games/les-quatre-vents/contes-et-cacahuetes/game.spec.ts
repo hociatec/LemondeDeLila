@@ -19,6 +19,6 @@ describe('Contes et Cacahuètes declarative game', () => {
     if (game.state().pending?.playerId === actor)
       await game.choose(actor, game.state().pending?.data?.options?.[0]);
     expect('pendingEffect' in game.view(actor)).toBe(false);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

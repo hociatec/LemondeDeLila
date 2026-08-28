@@ -2,7 +2,7 @@ import {
   cards,
   cardGame,
   defineGame,
-  playerView,
+  defineGameContent,
 } from '../../../core/application/public-api';
 import { BLACK_CARDS, WHITE_CARDS } from './content';
 import type { AbsurdissimesCard } from './content';
@@ -11,28 +11,26 @@ import {
   ABSURDISSIMES_ANSWERS,
   ABSURDISSIMES_JUDGE,
   ABSURDISSIMES_PHASES,
-  ABSURDISSIMES_TARGET_SCORE,
-  currentWhiteCard,
   drawWhiteCard,
 } from './rules';
-import type { AbsurdissimesPlayerView, AbsurdissimesState } from './state';
+import type { AbsurdissimesState } from './state';
 
 const whiteDeck = cards.deck({
   id: 'white',
   cards: WHITE_CARDS,
   shuffle: true,
 });
-export default defineGame<
-  AbsurdissimesState,
-  typeof ABSURDISSIMES_ACTIONS,
-  AbsurdissimesPlayerView
->({
+export default defineGame<AbsurdissimesState, typeof ABSURDISSIMES_ACTIONS>({
   id: 'les-absurdissimes',
   displayName: 'Les Absurdissimes !',
   category: 'Cartes',
   subcategory: 'VentsDansants',
   description: 'Proposez la réponse la plus absurde et convainquez le juge.',
   players: { min: 3, max: 8 },
+  content: defineGameContent('les-absurdissimes', {
+    blackCards: BLACK_CARDS,
+    whiteCards: WHITE_CARDS,
+  }),
   patterns: [
     cardGame({
       deckId: 'black',
@@ -66,25 +64,6 @@ export default defineGame<
   initialPhase: ABSURDISSIMES_PHASES.initialPhase,
   phases: ABSURDISSIMES_PHASES.phases,
   actions: ABSURDISSIMES_ACTIONS,
-  view: ({ state: _state, ctx }) => {
-    const roundStage = ABSURDISSIMES_PHASES.current(ctx);
-    const currentWhite = currentWhiteCard(ctx);
-    return playerView({
-      game: {
-        currentWhite,
-        roundStage,
-        targetScore: ABSURDISSIMES_TARGET_SCORE,
-        remainingPlayers: ctx.round.activePlayers().map((player) => player.id),
-      },
-      extras: {
-        stage: roundStage,
-        currentWhite,
-        judgeId: ctx.judge.current(ABSURDISSIMES_JUDGE),
-        remainingPlayers: ctx.round.activePlayers().map((player) => player.id),
-        targetScore: ABSURDISSIMES_TARGET_SCORE,
-      },
-    });
-  },
   bot: {
     choose: ({ actor, ctx }) => {
       if (ABSURDISSIMES_PHASES.is(ctx, 'judge')) {

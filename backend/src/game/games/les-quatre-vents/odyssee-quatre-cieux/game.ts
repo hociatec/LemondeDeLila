@@ -1,9 +1,9 @@
 import {
   defineChoice,
   defineGame,
+  defineGameContent,
   gameInput,
   pawnRace,
-  playerView,
 } from '../../../core/application/public-api';
 import { ODYSSEE_CONTENT } from './content';
 import {
@@ -12,7 +12,7 @@ import {
   ODYSSEE_ACTIONS,
   type OdysseeMove,
 } from './rules';
-import type { OdysseePlayerView, OdysseeState } from './state';
+import type { OdysseeState } from './state';
 
 const ODYSSEE_PAWNS = Array.from({ length: 4 }, (_seat, seatIndex) =>
   ODYSSEE_CONTENT.pawnNames.map((label, pawnIndex) => ({
@@ -21,17 +21,14 @@ const ODYSSEE_PAWNS = Array.from({ length: 4 }, (_seat, seatIndex) =>
   })),
 ).flat();
 
-export default defineGame<
-  OdysseeState,
-  typeof ODYSSEE_ACTIONS,
-  OdysseePlayerView
->({
+export default defineGame<OdysseeState, typeof ODYSSEE_ACTIONS>({
   id: 'odyssee-quatre-cieux',
   displayName: 'L’Odyssée des Quatre Cieux',
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
   description: 'Course galactique de pions.',
   players: { min: 2, max: 4 },
+  content: defineGameContent('odyssee-quatre-cieux', ODYSSEE_CONTENT),
   patterns: [
     pawnRace({
       pawnSetId: 'odyssee',
@@ -70,57 +67,6 @@ export default defineGame<
         if (ctx.match.lifecycle() !== 'finished') endMove(ctx, value.roll);
       },
     }),
-  },
-  view: ({ actor, ctx }) => {
-    const players = ctx.players.all();
-    const offsets = ctx.players.byId(
-      (_player, index) => (index * 14) % ODYSSEE_CONTENT.trackLength,
-    );
-    const pawnsByPlayer = ctx.players.byId((player) =>
-      ctx.pawns.assigned('odyssee', player.id).map((pawnId) => ({
-        pawnIndex: Number(pawnId.split(':')[1]),
-        progress: ctx.pawns.position('odyssee', pawnId),
-      })),
-    );
-    const arrival =
-      ODYSSEE_CONTENT.trackLength + ODYSSEE_CONTENT.homeLength - 1;
-    const myPawns = actor ? (pawnsByPlayer[actor.id] ?? []) : [];
-    const stableLines = [
-      `Base: ${myPawns.filter((pawn) => pawn.progress < 0).length}/4.`,
-      `Hangar: ${myPawns.filter((pawn) => pawn.progress >= ODYSSEE_CONTENT.trackLength && pawn.progress < arrival).length}/4.`,
-      `Arrivée: ${myPawns.filter((pawn) => pawn.progress >= arrival).length}/4.`,
-    ];
-    const scoreLines = players.map((player) => {
-      const finished = (pawnsByPlayer[player.id] ?? []).filter(
-        (pawn) => pawn.progress >= arrival,
-      ).length;
-      return `${player.username} : ${finished} arrivée${finished > 1 ? 's' : ''}`;
-    });
-    return playerView({
-      game: {
-        offsets,
-        pawnsByPlayer,
-        trackLength: ODYSSEE_CONTENT.trackLength,
-        homeLength: ODYSSEE_CONTENT.homeLength,
-      },
-      extras: {
-        currentPlayerView: actor
-          ? { id: actor.id, username: actor.username }
-          : null,
-        ui: {
-          panels: {
-            stable: { title: 'État', message: stableLines.join(' ') },
-            score: { title: 'Scores', message: scoreLines.join('\n') },
-          },
-        },
-      },
-      board: {
-        trackLength: ODYSSEE_CONTENT.trackLength,
-        homeLength: ODYSSEE_CONTENT.homeLength,
-        offsets,
-        pawnsByPlayer,
-      },
-    });
   },
   bot: {
     choose: () => ({ type: 'roll', payload: {} }),

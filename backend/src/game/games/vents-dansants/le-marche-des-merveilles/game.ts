@@ -1,8 +1,8 @@
 import {
-  commonStatuses,
+  defineGameContent,
   defineGame,
   marketGame,
-  playerView,
+  publicField,
 } from '../../../core/application/public-api';
 import {
   GOOD_LABELS,
@@ -11,19 +11,22 @@ import {
   WONDER_GOODS,
 } from './content';
 import { MARKET_ACTIONS, MARKET_TURNS_TAKEN } from './rules';
-import type { WonderMarketPlayerView, WonderMarketState } from './state';
+import type { WonderMarketState } from './state';
 
-export default defineGame<
-  WonderMarketState,
-  typeof MARKET_ACTIONS,
-  WonderMarketPlayerView
->({
+export default defineGame<WonderMarketState, typeof MARKET_ACTIONS>({
   id: 'le-marche-des-merveilles',
   displayName: 'Le Marché des Merveilles',
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
   description: 'Achetez, vendez et influencez les cours du marché.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('le-marche-des-merveilles', {
+    goods: WONDER_GOODS,
+    labels: GOOD_LABELS,
+    initialPrices: INITIAL_PRICES,
+    rules: MARKET_RULES,
+  }),
+  playerValuesVisibility: { statuses: publicField() },
   patterns: [
     marketGame({
       marketId: 'wonders',
@@ -49,48 +52,6 @@ export default defineGame<
   ],
   setup: () => ({}),
   actions: MARKET_ACTIONS,
-  view: ({ state: _state, actor, ctx }) => {
-    const prices = ctx.economy.prices('wonders');
-    const myInventory = actor
-      ? ctx.inventory.quantities('wonder-goods', actor.id)
-      : {};
-    const marketLines = WONDER_GOODS.map(
-      (good) => `${GOOD_LABELS[good]} : ${prices[good]} pièces`,
-    );
-    const playerLines = ctx.players.all().map((player) => {
-      const coins = ctx.resources.get(player.id, 'coins');
-      const value = ctx.economy.netWorth('wonders', player.id);
-      return `${player.username} : ${coins} pièces, valeur ${value}${ctx.status.has(player.id, commonStatuses.protected) ? ', étal protégé' : ''}`;
-    });
-    return playerView({
-      game: {
-        turnsTaken: ctx.counters.get(MARKET_TURNS_TAKEN),
-        lastMarketEvent: ctx.events.latestMessage(),
-        maxRounds: MARKET_RULES.maxRounds,
-        protectedPlayers: ctx.players.byId((player) =>
-          ctx.status.has(player.id, commonStatuses.protected),
-        ),
-      },
-      extras: {
-        market: marketLines,
-        round: ctx.round.number,
-        maxRounds: MARKET_RULES.maxRounds,
-        lastMarketEvent: ctx.events.latestMessage(),
-        ui: {
-          panels: [
-            { title: 'Marché', lines: marketLines },
-            { title: 'Marchands', lines: playerLines },
-            {
-              title: 'Mon étal',
-              lines: WONDER_GOODS.map(
-                (good) => `${GOOD_LABELS[good]} : ${myInventory[good] ?? 0}`,
-              ),
-            },
-          ],
-        },
-      },
-    });
-  },
   bot: {
     choose: ({ actor, ctx }) => {
       const sellable = WONDER_GOODS.find((good) =>

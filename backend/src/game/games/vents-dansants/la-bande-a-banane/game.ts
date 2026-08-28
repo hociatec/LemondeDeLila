@@ -1,30 +1,28 @@
 import {
   cardGame,
   defineGame,
+  defineGameContent,
   inventory,
-  playerView,
 } from '../../../core/application/public-api';
-import { BANDE_A_BANANE_CARD_BY_ID, BANDE_A_BANANE_DECK } from './content';
+import { BANDE_A_BANANE_DECK } from './content';
 import {
   BANDE_A_BANANE_ACTIONS,
   BANDE_A_BANANE_EFFECTS,
-  bananaTroops,
   drawAtTurnStart,
   enumeratePlays,
 } from './rules';
-import type { BandeABananePlayerView, BandeABananeState } from './state';
+import type { BandeABananeState } from './state';
 
-export default defineGame<
-  BandeABananeState,
-  typeof BANDE_A_BANANE_ACTIONS,
-  BandeABananePlayerView
->({
+export default defineGame<BandeABananeState, typeof BANDE_A_BANANE_ACTIONS>({
   id: 'la-bande-a-banane',
   displayName: 'La Bande à Banane !',
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
   description: 'Réunissez les cinq espèces pour crier BANAAAANE.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('la-bande-a-banane', {
+    cards: BANDE_A_BANANE_DECK,
+  }),
   patterns: [
     cardGame({
       deckId: 'banana',
@@ -43,38 +41,6 @@ export default defineGame<
   setup: () => ({}),
   actions: BANDE_A_BANANE_ACTIONS,
   effects: BANDE_A_BANANE_EFFECTS,
-  view: ({ state: _state, actor, ctx }) => {
-    const troops = bananaTroops(ctx);
-    const hand = actor ? ctx.cards.hand<string>('players', actor.id) : [];
-    return playerView({
-      game: {
-        troops,
-      },
-      extras: {
-        cardCatalog: BANDE_A_BANANE_CARD_BY_ID,
-        troops: structuredClone(troops),
-        ui: {
-          panels: [
-            {
-              title: 'Main',
-              lines: hand.map(
-                (cardId) => BANDE_A_BANANE_CARD_BY_ID[cardId]?.name ?? cardId,
-              ),
-            },
-            {
-              title: 'Troupes',
-              lines: ctx.players
-                .all()
-                .map(
-                  (player) =>
-                    `${player.username} : ${troops[player.id].length}/5`,
-                ),
-            },
-          ],
-        },
-      },
-    });
-  },
   bot: {
     choose: ({ state, actor, ctx }) => {
       const play = enumeratePlays(state, actor.id, ctx)[0];

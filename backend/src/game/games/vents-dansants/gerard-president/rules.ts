@@ -122,7 +122,7 @@ export const playName = defineAction<GerardState, { names: string[] }>({
     }
     ctx.submissionFlow.submit(GERARD_SUBMISSIONS, actor.id, distinct);
     ctx.resources.set(actor.id, GERARD_EXTRA_NAMES, 0);
-    advanceSubmission(actor.id, ctx);
+    advanceSubmission(ctx);
   },
 });
 
@@ -219,7 +219,7 @@ export const pass = defineAction<GerardState, Record<string, never>>({
     pendingPlayers(ctx)[0] === actor.id,
   execute: ({ actor, ctx }) => {
     ctx.submissionFlow.submit(GERARD_SUBMISSIONS, actor.id, []);
-    advanceSubmission(actor.id, ctx);
+    advanceSubmission(ctx);
   },
 });
 

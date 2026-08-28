@@ -163,6 +163,9 @@ export type GamePlayerProjection<
   readonly board?: TBoard;
 };
 
+/** Game-specific fragment merged beside the stable system and kit projections. */
+export type GameViewExtension<TValue extends object> = Readonly<TValue>;
+
 export type ChoiceResolution<TState extends object, TValue> = {
   state: TState;
   actor: PlayerStateEntity;
@@ -282,7 +285,7 @@ export interface DeclarativeGameDefinition<
     state: TState;
     actor: PlayerStateEntity | null;
     ctx: GameContext<TState>;
-  }) => TPlayerView;
+  }) => GameViewExtension<TPlayerView>;
   readonly bot?: {
     choose(input: {
       state: TState;
@@ -891,6 +894,13 @@ export function playerView<
     ...structuredClone(projection),
     kind: GAME_PLAYER_VIEW_KIND,
   };
+}
+
+/** Preferred helper for a minimal game-specific `viewFragment`. */
+export function gameViewExtension<TValue extends object>(
+  extension: TValue,
+): GameViewExtension<TValue> {
+  return structuredClone(extension);
 }
 
 function deepFreeze<TValue>(value: TValue): TValue {

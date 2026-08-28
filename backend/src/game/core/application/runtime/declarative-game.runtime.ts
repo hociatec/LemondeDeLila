@@ -54,7 +54,6 @@ import {
   GAME_CONFIGURE_ACTION,
   parseGameConfiguration,
 } from './configuration-kit';
-import { projectSubmissions } from './submission-kit';
 import { nextScheduledAction, projectScheduler } from './scheduler-kit';
 
 export class DeclarativeGameRuntime<
@@ -379,26 +378,11 @@ export class DeclarativeGameRuntime<
         ...(publicState.extras ?? {}),
         ...system,
         actionCatalog: describeGameDefinition(this.definition).actions,
-        submissions: projectSubmissions(
-          runtime.engine.submissions,
-          actor?.id ?? null,
-        ),
         timers: projectScheduler(
           runtime.engine.scheduler,
           actor?.id ?? null,
           context.clock.nowMs(),
         ),
-        ...(this.definition.config
-          ? {
-              configuration: {
-                complete: runtime.engine.configuration.complete,
-                ownerPlayerId: runtime.engine.configuration.ownerPlayerId,
-                values: structuredClone(runtime.engine.configuration.values),
-                schema: this.definition.config.input.describe(),
-                ui: structuredClone(this.definition.config.ui ?? {}),
-              },
-            }
-          : {}),
         ...(system.system.match.result
           ? {
               victory: {
@@ -845,6 +829,12 @@ function projectPending(
       : pending.playerId == null || pending.playerId === viewerPlayerId);
   const common: PendingState = {
     type: pending.type,
+    choiceId:
+      typeof pending.data?.choiceId === 'string'
+        ? pending.data.choiceId
+        : undefined,
+    workflowKind:
+      typeof pending.data?.kind === 'string' ? pending.data.kind : undefined,
     label: pending.label,
     playerId: pending.playerId,
     playerIds: pending.playerIds ? [...pending.playerIds] : undefined,

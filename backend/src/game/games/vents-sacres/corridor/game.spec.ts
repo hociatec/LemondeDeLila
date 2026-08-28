@@ -9,7 +9,7 @@ describe('Corridor declarative game', () => {
     await game.choose(1, 'vent');
     await game.choose(2, 'eau');
     expect(game.view(1).setupComplete).toBe(true);
-    expect(game.view(1).legalMoves.length).toBeGreaterThan(0);
+    expect(game.availableActions(1)).toContain('corridor_move');
   });
 
   it('moves legally and replays deterministically', async () => {
@@ -18,8 +18,7 @@ describe('Corridor declarative game', () => {
     await game.as(1).do('game.configure', { wallsPerPlayer: 10 });
     await game.choose(1, 'vent');
     await game.choose(2, 'eau');
-    const move = game.view(1).legalMoves[0];
-    await game.as(1).do('corridor_move', move);
-    expect(game.replay()).toEqual(game.state());
+    await game.as(1).do('corridor_move', { x: 4, y: 1 });
+    expect(await game.replay()).toEqual(game.state());
   });
 });

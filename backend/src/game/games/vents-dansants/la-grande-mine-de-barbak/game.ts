@@ -1,33 +1,29 @@
 import {
   cardGame,
   defineGame,
+  defineGameContent,
   inventory,
-  playerView,
 } from '../../../core/application/public-api';
-import { LA_GRANDE_MINE_CARD_BY_ID, LA_GRANDE_MINE_CARDS } from './content';
+import { LA_GRANDE_MINE_CARDS } from './content';
 import {
   drawAtTurnStart,
   enumeratePlays,
   GRANDE_MINE_ACTIONS,
-  MINE_DISCARD_NEXT_DRAW,
   MINE_DOMAINS,
-  mineDomains,
-  scoreDomain,
 } from './rules';
 import { GRANDE_MINE_EFFECTS } from './effects';
-import type { GrandeMinePlayerView, GrandeMineState } from './state';
+import type { GrandeMineState } from './state';
 
-export default defineGame<
-  GrandeMineState,
-  typeof GRANDE_MINE_ACTIONS,
-  GrandeMinePlayerView
->({
+export default defineGame<GrandeMineState, typeof GRANDE_MINE_ACTIONS>({
   id: 'la-grande-mine-de-barbak',
   displayName: 'La Grande Mine de Barbak !',
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
   description: 'Amassez le meilleur domaine avant l’effondrement.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('la-grande-mine-de-barbak', {
+    cards: LA_GRANDE_MINE_CARDS,
+  }),
   patterns: [
     cardGame({
       deckId: 'mine',
@@ -38,6 +34,7 @@ export default defineGame<
     }),
   ],
   components: [inventory.set({ id: MINE_DOMAINS, visibility: 'public' })],
+  initialization: { scores: 0 },
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
@@ -45,27 +42,6 @@ export default defineGame<
   setup: () => ({}),
   actions: GRANDE_MINE_ACTIONS,
   effects: GRANDE_MINE_EFFECTS,
-  view: ({ ctx }) => {
-    const domains = mineDomains(ctx);
-    const discardNextDraw = ctx.players.byId((player) =>
-      ctx.status.has(player.id, MINE_DISCARD_NEXT_DRAW),
-    );
-    const scores = ctx.players.byId((player) =>
-      scoreDomain(domains[player.id]),
-    );
-    return playerView({
-      game: {
-        domains,
-        discardNextDraw,
-        scores,
-      },
-      extras: {
-        cardCatalog: LA_GRANDE_MINE_CARD_BY_ID,
-        domains: structuredClone(domains),
-        scores,
-      },
-    });
-  },
   bot: {
     choose: ({ actor, ctx }) => {
       const play = enumeratePlays(actor.id, ctx)[0];

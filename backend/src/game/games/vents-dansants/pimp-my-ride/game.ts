@@ -1,15 +1,11 @@
 import {
   cardGame,
   defineGame,
+  defineGameContent,
   inventory,
-  playerView,
   when,
 } from '../../../core/application/public-api';
-import {
-  PIMP_MY_RIDE_CARD_BY_ID,
-  PIMP_MY_RIDE_CAR_NAMES,
-  PIMP_MY_RIDE_DECK,
-} from './content';
+import { PIMP_MY_RIDE_CAR_NAMES, PIMP_MY_RIDE_DECK } from './content';
 import {
   currentCarParts,
   drawCarPart,
@@ -30,6 +26,10 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Assemblez trois voitures dans l’ordre des sept pièces.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('pimp-my-ride', {
+    cards: PIMP_MY_RIDE_DECK,
+    carNames: PIMP_MY_RIDE_CAR_NAMES,
+  }),
   patterns: [
     cardGame({
       deckId: 'car-parts',
@@ -68,7 +68,7 @@ export default defineGame<
       ({ state, ctx }) => drawCarPart(state, ctx),
     ),
   ],
-  view: ({ state, ctx }) => {
+  viewFragment: ({ state, ctx }) => {
     const progress = ctx.players.byId((player) => {
       const carParts = currentCarParts(player.id, ctx);
       return {
@@ -84,17 +84,7 @@ export default defineGame<
         }),
       };
     });
-    return playerView({
-      game: {
-        carNameIndex: ctx.counters.get(PIMP_CAR_NAME_INDEX),
-        progress,
-        drawnCardId: drawnCardId(ctx),
-      },
-      extras: {
-        cardCatalog: PIMP_MY_RIDE_CARD_BY_ID,
-        progress: structuredClone(progress),
-      },
-    });
+    return { progress, drawnCardId: drawnCardId(ctx) };
   },
   bot: {
     choose: ({ state, actor, ctx }) => {

@@ -1,32 +1,29 @@
 import {
   defineAction,
   defineGame,
-  playerView,
 } from '../application/runtime/game-definition';
 import { gameInput } from '../application/runtime/game-input-schema';
 import { testGame } from './game-test-kit';
 
-type RaceState = { scores: Record<string, number> };
+type RaceState = Record<string, never>;
 
 const race = defineGame({
   id: 'test-race',
   displayName: 'Test Race',
   category: 'test',
   players: { min: 2, max: 4 },
-  setup: () => ({ scores: {} }),
+  setup: () => ({}),
   actions: {
     advance: defineAction<RaceState, { steps: number }>({
       input: gameInput.object({
         steps: gameInput.number({ integer: true, min: 1, max: 3 }),
       }),
-      execute: ({ state, actor, input, ctx }) => {
-        state.scores[String(actor.id)] =
-          (state.scores[String(actor.id)] ?? 0) + input.steps;
+      execute: ({ actor, input, ctx }) => {
+        ctx.score.add(actor.id, input.steps);
         ctx.turn.end();
       },
     }),
   },
-  view: ({ state }) => playerView({ game: structuredClone(state) }),
 });
 
 describe('GameTestKit', () => {
@@ -40,7 +37,7 @@ describe('GameTestKit', () => {
     await game.as('bob').do('advance', { steps: 1 });
 
     expect(game.view('alice').scores).toEqual({ '1': 2, '2': 1 });
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 
   it('rejects invalid player counts and actions through the real runtime', async () => {

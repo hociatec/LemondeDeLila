@@ -31,7 +31,7 @@ describe('Morpion declarative game', () => {
     await game.as(1).do('morpion_play', { x: 2, y: 0 });
 
     expect(game.state().status).toBe('finished');
-    expect(game.state().game.winnerId).toBe(1);
+    expect(game.result()?.winnerPlayerIds).toEqual([1]);
     expect(
       game
         .state()
@@ -42,7 +42,7 @@ describe('Morpion declarative game', () => {
             entry.params.y === 0,
         ),
     ).toBe(true);
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 
   it('rejects occupied cells and proposes a strategic legal bot move', async () => {

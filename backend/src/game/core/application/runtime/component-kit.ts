@@ -13,6 +13,7 @@ import type { OwnershipDefinition } from './ownership-kit';
 import type { TrackDefinition } from './movement-kit';
 import type { QuizDefinition } from './quiz-kit';
 import type { PawnSetDefinition } from './pawn-kit';
+import type { CollectionViewDefinition } from './collection-view';
 
 type GameComponent =
   | DeckDefinition<unknown>
@@ -25,7 +26,8 @@ type GameComponent =
   | GridDefinition
   | TrackDefinition
   | PawnSetDefinition
-  | QuizDefinition;
+  | QuizDefinition
+  | CollectionViewDefinition;
 
 export type GameComponentScope = 'match' | 'round';
 

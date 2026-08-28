@@ -1,4 +1,7 @@
-import { testGame } from '../../../core/application/public-api';
+import {
+  testGame,
+  type StableGameSystemView,
+} from '../../../core/application/public-api';
 import gameDefinition from './game';
 
 describe('Foulées Fantastiques declarative game', () => {
@@ -7,7 +10,9 @@ describe('Foulées Fantastiques declarative game', () => {
     await game.start();
     await game.choose(1, 'equides');
     await game.choose(2, 'oiseaux');
-    expect(game.state().game.setupComplete).toBe(true);
+    const system = (game.view(1) as unknown as { system: StableGameSystemView })
+      .system;
+    expect(system.setup.complete).toBe(true);
     expect(game.state().phase).toBe('turn');
   });
 
@@ -18,6 +23,6 @@ describe('Foulées Fantastiques declarative game', () => {
     await game.choose(2, 'oiseaux');
     await game.as(1).do('roll', {});
     expect(JSON.stringify(game.view(1))).not.toContain('pendingMove');
-    expect(game.replay()).toEqual(game.state());
+    expect(await game.replay()).toEqual(game.state());
   });
 });

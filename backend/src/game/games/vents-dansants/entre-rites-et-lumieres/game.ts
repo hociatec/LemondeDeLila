@@ -3,26 +3,25 @@ import {
   cardGame,
   defineChoice,
   defineGame,
+  defineGameContent,
   gameInput,
   inventory,
-  playerView,
 } from '../../../core/application/public-api';
-import { ENTRE_RITES_CARD_BY_ID, ENTRE_RITES_DECK } from './content';
+import { ENTRE_RITES_DECK } from './content';
 import {
   dealFamilyHands,
   ENTRE_RITES_ACTIONS,
   enumerateRequests,
-  peaceTurnsRemaining,
+  RITES_PEACE,
   RITES_SILENCE,
   RITES_SPECIALS,
   resolveRitesCardChoice,
   resolveRitesFamilyChoice,
   resolveRitesStealChoice,
-  statusOwner,
   type RitesStealChoice,
 } from './rules';
 import { ENTRE_RITES_EFFECTS } from './effects';
-import type { EntreRitesPlayerView, EntreRitesState } from './state';
+import type { EntreRitesState } from './state';
 
 const familySets = cards.sets({
   id: 'rite-families',
@@ -35,17 +34,16 @@ const familySets = cards.sets({
   }, {}),
 });
 
-export default defineGame<
-  EntreRitesState,
-  typeof ENTRE_RITES_ACTIONS,
-  EntreRitesPlayerView
->({
+export default defineGame<EntreRitesState, typeof ENTRE_RITES_ACTIONS>({
   id: 'entre-rites-et-lumieres',
   displayName: 'Entre Rites & Lumières !',
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
   description: 'Rassemblez les cinq familles pascales.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('entre-rites-et-lumieres', {
+    cards: ENTRE_RITES_DECK,
+  }),
   patterns: [
     cardGame({
       deckId: 'rites',
@@ -95,30 +93,16 @@ export default defineGame<
         resolveRitesStealChoice(state, value, ctx),
     }),
   },
-  view: ({ ctx }) => {
-    const specialsPlayed = ctx.players.byId((player) =>
-      ctx.inventory.items(RITES_SPECIALS, player.id),
-    );
-    return playerView({
-      game: {
-        specialsPlayed,
-        peaceTurnsRemaining: peaceTurnsRemaining(ctx),
-        silenceOwnerId: statusOwner(RITES_SILENCE, ctx),
-      },
-      extras: {
-        cardCatalog: ENTRE_RITES_CARD_BY_ID,
-        specialsPlayedCount: ctx.players.byId(
-          (player) => specialsPlayed[player.id].length,
-        ),
-      },
-    });
-  },
   bot: {
     choose: ({ actor, ctx }) => {
-      const request =
-        peaceTurnsRemaining(ctx) === 0
-          ? enumerateRequests(actor.id, ctx)[0]
-          : null;
+      const request = ctx.players
+        .all()
+        .every(
+          (player) =>
+            (ctx.status.get(player.id, RITES_PEACE)?.remaining ?? 0) === 0,
+        )
+        ? enumerateRequests(actor.id, ctx)[0]
+        : null;
       return request
         ? { type: 'ask_card', payload: request }
         : { type: 'pass', payload: {} };

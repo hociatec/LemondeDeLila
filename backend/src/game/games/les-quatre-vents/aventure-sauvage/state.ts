@@ -1,7 +1,4 @@
-import type {
-  GameEffectInstruction,
-  PlayerMap,
-} from '../../../core/application/public-api';
+import type { GameEffectInstruction } from '../../../core/application/public-api';
 
 export type AventureTileType = 'neutral' | 'animal' | 'patte' | 'finish';
 
@@ -24,7 +21,3 @@ export interface AventureCard {
 }
 
 export type AventureSauvageState = Record<string, never>;
-
-export type AventureSauvagePlayerView = {
-  pawnByPlayerId: PlayerMap<string>;
-};

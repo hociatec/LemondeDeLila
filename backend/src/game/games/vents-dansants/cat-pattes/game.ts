@@ -2,14 +2,13 @@ import {
   cardGame,
   defineConfiguration,
   defineGame,
+  defineGameContent,
   gameInput,
   movement,
-  playerView,
   roundScoring,
   setupPlayingPhases,
 } from '../../../core/application/public-api';
 import {
-  CAT_PATTES_CARD_BY_ID,
   CAT_PATTES_DECK,
   CAT_PATTES_DEFAULT_ROUNDS,
   CAT_PATTES_GOAL,
@@ -40,6 +39,7 @@ export default defineGame<
   subcategory: 'VentsDansants',
   description: 'Course féline jusqu’à 1 000 pattes.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('cat-pattes', { cards: CAT_PATTES_DECK }),
   config: defineConfiguration<CatPattesState, { roundsToPlay: number }>({
     input: gameInput.object({
       roundsToPlay: gameInput.number({ integer: true, min: 1, max: 20 }),
@@ -85,19 +85,7 @@ export default defineGame<
   },
   actions: CAT_PATTES_ACTIONS,
   effects: CAT_PATTES_EFFECTS,
-  view: ({ state: _state, ctx }) => {
-    const playerState = catPattesPlayerState(ctx);
-    return playerView({
-      game: {
-        ...playerState,
-      },
-      extras: {
-        cardCatalog: CAT_PATTES_CARD_BY_ID,
-        obstacles: structuredClone(playerState.obstacles),
-        powers: structuredClone(playerState.powers),
-      },
-    });
-  },
+  viewFragment: ({ ctx }) => catPattesPlayerState(ctx),
   bot: {
     choose: ({ state, actor, ctx }) => {
       if (ctx.effects.sourcePlayerId() !== actor.id) {

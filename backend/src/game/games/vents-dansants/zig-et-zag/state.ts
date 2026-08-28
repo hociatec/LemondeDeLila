@@ -1,5 +1,3 @@
-import type { PlayerMap } from '../../../core/application/public-api';
-
 export interface ZigEtZagPlayState {
   playerId: number;
   playedCards: string[];
@@ -34,9 +32,6 @@ export interface ZigEtZagBattleLogEntry {
 }
 
 export type ZigEtZagPlayerView = {
-  initialDeckCounts: PlayerMap<number>;
   lastRound:
     (ZigEtZagRoundSummary & { battleLog: ZigEtZagBattleLogEntry[] }) | null;
-  stage: 'selection' | 'battle-face-down' | 'battle-face-up';
-  waitingPlayers: number[];
 };

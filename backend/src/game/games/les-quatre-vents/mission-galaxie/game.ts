@@ -1,9 +1,9 @@
 import {
   cards,
   defineChoice,
+  defineGameContent,
   defineGame,
   gameInput,
-  playerView,
   raceGame,
 } from '../../../core/application/public-api';
 import { MISSION_GALAXIE_CONTENT } from './content';
@@ -13,7 +13,7 @@ import {
   resolveMissionAnswer,
   resolveMissionEventMove,
 } from './rules';
-import type { MissionGalaxiePlayerView, MissionGalaxieState } from './state';
+import type { MissionGalaxieState } from './state';
 
 const decks = [
   cards.deck({
@@ -33,11 +33,7 @@ const decks = [
   }),
 ];
 
-export default defineGame<
-  MissionGalaxieState,
-  typeof MISSION_GALAXIE_ACTIONS,
-  MissionGalaxiePlayerView
->({
+export default defineGame<MissionGalaxieState, typeof MISSION_GALAXIE_ACTIONS>({
   id: 'mission-galaxie',
   displayName: 'Mission Galaxie',
   category: 'JeuxDePlateaux',
@@ -45,6 +41,7 @@ export default defineGame<
   description:
     'Une course cosmique rythmée par questions, défis et événements.',
   players: { min: 2, max: 6 },
+  content: defineGameContent('mission-galaxie', MISSION_GALAXIE_CONTENT),
   patterns: [
     raceGame({
       trackId: 'galaxy',
@@ -70,38 +67,6 @@ export default defineGame<
       resolve: ({ state, value, ctx }) =>
         resolveMissionEventMove(state, value, ctx),
     }),
-  },
-  view: ({ state: _state, actor, ctx }) => {
-    const positions = ctx.players.byId((player) =>
-      ctx.movement.position('galaxy', player.id),
-    );
-    const pending =
-      ctx.choice.continuation<import('./state').MissionGalaxiePending>();
-    const pendingCard =
-      actor && pending?.kind === 'answer' && pending.actorId === actor.id
-        ? (MISSION_GALAXIE_CONTENT[pending.deck].find(
-            (card) => card.id === pending.cardId,
-          ) ?? null)
-        : null;
-    return playerView({
-      game: {},
-      extras: {
-        currentPlayerView: actor
-          ? { id: actor.id, username: actor.username }
-          : null,
-        pendingCard: pendingCard
-          ? {
-              title: pendingCard.title,
-              prompt: pendingCard.prompt,
-              choices: structuredClone(pendingCard.choices),
-            }
-          : null,
-      },
-      board: {
-        tiles: MISSION_GALAXIE_CONTENT.tiles,
-        positions,
-      },
-    });
   },
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

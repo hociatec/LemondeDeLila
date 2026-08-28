@@ -20,12 +20,15 @@ export class GameVisibilityService {
     viewerPlayerId: number | null,
   ): GameStateEntity['pending'] {
     if (!pending) return pending;
+    const hasTarget =
+      Boolean(pending.playerIds?.length) || pending.playerId != null;
     const canAnswer =
-      viewerPlayerId != null &&
-      (pending.playerIds?.length
-        ? pending.playerIds.includes(viewerPlayerId) &&
-          !(pending.resolvedPlayerIds ?? []).includes(viewerPlayerId)
-        : pending.playerId == null || pending.playerId === viewerPlayerId);
+      !hasTarget ||
+      (viewerPlayerId != null &&
+        (pending.playerIds?.length
+          ? pending.playerIds.includes(viewerPlayerId) &&
+            !(pending.resolvedPlayerIds ?? []).includes(viewerPlayerId)
+          : pending.playerId === viewerPlayerId));
     const {
       choices: _choices,
       data: _data,

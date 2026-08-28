@@ -13,6 +13,10 @@ export type DiceDefinition = {
 
 export type DiceKitState = {
   rolls: Record<string, { values: number[]; total: number }>;
+  rollsByPlayer: Record<
+    string,
+    Record<string, { values: number[]; total: number }>
+  >;
   lastRollId: string | null;
   sequence: number;
 };
@@ -59,7 +63,9 @@ export class GameDiceController {
       data: Record<string, unknown>,
     ) => void = () => {},
     definitions: readonly DiceDefinition[] = [],
+    private readonly actorPlayerId: () => number | null = () => null,
   ) {
+    this.state.rollsByPlayer ??= {};
     this.state.lastRollId ??= Object.keys(this.state.rolls).at(-1) ?? null;
     this.state.sequence ??= Object.keys(this.state.rolls).length;
     for (const definition of definitions) {
@@ -138,6 +144,11 @@ export class GameDiceController {
         (policy.modifier ?? 0),
     };
     this.state.rolls[id] = result;
+    const actorPlayerId = this.actorPlayerId();
+    if (actorPlayerId != null) {
+      (this.state.rollsByPlayer[String(actorPlayerId)] ??= {})[id] =
+        structuredClone(result);
+    }
     this.state.lastRollId = id;
     this.state.sequence += 1;
     this.emit('dice.rolled', {
@@ -198,5 +209,5 @@ function keepValues(
 }
 
 export function createDiceKitState(): DiceKitState {
-  return { rolls: {}, lastRollId: null, sequence: 0 };
+  return { rolls: {}, rollsByPlayer: {}, lastRollId: null, sequence: 0 };
 }

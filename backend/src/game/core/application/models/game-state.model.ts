@@ -31,6 +31,8 @@ export type PendingState = {
   /** Schema version of this persisted choice continuation. */
   schemaVersion?: number;
   type?: string;
+  choiceId?: string;
+  workflowKind?: string;
   /**
    * Libellé prêt à afficher pour la liste de choix (serveur source de vérité).
    */
