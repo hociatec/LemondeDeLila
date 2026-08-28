@@ -1,10 +1,13 @@
-import { defineEffect, gameInput } from '../../../core/application/public-api';
+import {
+  defineEffect,
+  gameInput,
+  positionOf,
+} from '../../../core/application/public-api';
 import {
   COLLECTION_KINDS,
   TRACK,
   applyVoyageTarget,
   loseRandomCard,
-  position,
   scheduleTargetEffect,
   type VoyageTargetEffect,
 } from './rules';
@@ -53,7 +56,10 @@ export const VOYAGE_EFFECTS = {
       if (actorPlayerId == null) return;
       const targetId = ctx.players
         .otherIds(actorPlayerId)
-        .sort((left, right) => position(left, ctx) - position(right, ctx))[0];
+        .sort(
+          (left, right) =>
+            positionOf(ctx, TRACK, left) - positionOf(ctx, TRACK, right),
+        )[0];
       if (targetId != null) ctx.movement.swap(TRACK, actorPlayerId, targetId);
     },
   }),

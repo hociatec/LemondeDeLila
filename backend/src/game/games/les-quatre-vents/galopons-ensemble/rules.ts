@@ -1,5 +1,6 @@
 import {
   drawAndResolve,
+  positionOf,
   rollDice,
   sequentialPawnSelection,
   setupPlayingPhases,
@@ -81,7 +82,7 @@ function moveHorse(
   delta: number,
   ctx: RuleContext,
 ): void {
-  const current = position(playerId, ctx);
+  const current = positionOf(ctx, TRACK, playerId);
   const direction = movementDirection(playerId, ctx);
   const signed = delta < 0 ? -direction : direction;
   let target = current;
@@ -135,7 +136,8 @@ function resolveGaloponsTile(
         .all()
         .find(
           (player) =>
-            player.id !== playerId && position(player.id, ctx) === current,
+            player.id !== playerId &&
+            positionOf(ctx, TRACK, player.id) === current,
         );
       if (occupant) moveHorse(state, occupant.id, -5, ctx);
       if (tile.type === 'bonus') {
@@ -172,7 +174,7 @@ export function moveToNextRegion(
   depth: number,
   ctx: RuleContext,
 ): void {
-  const current = position(playerId, ctx);
+  const current = positionOf(ctx, TRACK, playerId);
   const direction = movementDirection(playerId, ctx);
   const target = GALOPONS_TILES.findIndex(
     (tile, index) =>
@@ -239,8 +241,4 @@ function iouResource(creditorId: number): string {
 
 function movementDirection(playerId: number, ctx: RuleContext): 1 | -1 {
   return ctx.status.has(playerId, RETURNING) ? -1 : 1;
-}
-
-function position(playerId: number, ctx: RuleContext): number {
-  return ctx.movement.position(TRACK, playerId);
 }

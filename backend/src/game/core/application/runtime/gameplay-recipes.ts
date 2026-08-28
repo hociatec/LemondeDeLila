@@ -65,6 +65,14 @@ export type EventTrackOptions<TState extends object, TTile> = {
   resolve?: (input: TileResolutionInput<TState, TTile>) => void;
 };
 
+export function positionOf<TState extends object>(
+  ctx: GameContext<TState>,
+  trackId: string,
+  playerId: number,
+): number {
+  return ctx.movement.position(trackId, playerId);
+}
+
 export function resolveTile<TState extends object, TTile>(
   input: TileResolutionInput<TState, TTile> & {
     rules?: readonly TileResolutionRule<TState, TTile>[];

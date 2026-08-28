@@ -9,6 +9,7 @@ export {
   defineAction,
   defineChoice,
   defineGame,
+  overrideAction,
   playerView,
 } from './game-definition';
 export type {
@@ -40,7 +41,10 @@ export type {
   GameTurnPlayerView,
   GenericBoardPlayerView,
   GenericGamePlayerView,
+  StableGameKitsView,
+  StableGameSystemView,
 } from './game-system-view';
+export { GAME_SYSTEM_VIEW_VERSION } from './game-system-view';
 export type {
   DicePlayerView,
   DiceSetPlayerView,
@@ -215,6 +219,7 @@ export type {
   GameEffectResolver,
   GameEffectResolverShape,
 } from './effects-kit';
+export type { EffectEngineDebugSnapshot } from './effect-engine';
 export type { SubmissionFlowStage } from './submission-kit';
 export {
   answerQuiz,
@@ -237,6 +242,7 @@ export {
   movePawn,
   passTurn,
   playCard,
+  positionOf,
   raceTurn,
   rollAndMove,
   rollDice,

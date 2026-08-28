@@ -145,7 +145,7 @@ function completeZigEtZagRound(
   }
   state.lastRound = {
     roundNumber: ctx.round.number,
-    winnerId,
+    roundWinnerPlayerId: winnerId,
     cardsWon: tableCards.length,
     plays: structuredClone(state.battle.plays),
   };

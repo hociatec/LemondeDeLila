@@ -19,6 +19,30 @@ import {
 import type { RoundKitState } from './round-kit';
 import type { EffectSource } from './effects-kit';
 
+export const GAME_SYSTEM_VIEW_VERSION = 1 as const;
+
+export type StableGameSystemView = {
+  version: typeof GAME_SYSTEM_VIEW_VERSION;
+  match: MatchKitState;
+  round: RoundKitState;
+  turn: GameTurnPlayerView;
+  setup: GameSetupPlayerView;
+};
+
+export type StableGameKitsView = {
+  cards: CardsPlayerView | null;
+  movement: MovementPlayerView | null;
+  pawns: PawnSetsPlayerView | null;
+  grid: NonNullable<GameKitsPlayerView['grid']> | null;
+  dice: DicePlayerView | null;
+  score: ScorePlayerView;
+  status: GameStatusPlayerView;
+  inventory: GameKitsPlayerView['inventory'] | null;
+  economy: GameKitsPlayerView['economy'] | null;
+  ownership: GameKitsPlayerView['ownership'] | null;
+  quiz: GameKitsPlayerView['quiz'] | null;
+};
+
 export type GameTurnPlayerView = {
   currentPlayerId: number | null;
   direction: 1 | -1;
@@ -50,6 +74,9 @@ export type GenericGamePlayerView = Omit<
   GameKitsPlayerView,
   'cards' | 'dice'
 > & {
+  viewVersion: typeof GAME_SYSTEM_VIEW_VERSION;
+  system: StableGameSystemView;
+  kits: StableGameKitsView;
   match: MatchKitState;
   turn: GameTurnPlayerView;
   round: RoundKitState;
@@ -83,32 +110,66 @@ export function projectGameSystemView<TState extends object>(input: {
     runtime.turn?.turnNumber ?? 0,
     input.components ?? [],
   );
+  const match = structuredClone(runtime.engine.match);
+  const turn = projectTurn(runtime.turn, runtime.engine.playerValues);
+  const round = structuredClone(runtime.engine.round);
+  const setup = projectSetup(
+    runtime.phase,
+    runtime.engine.configuration,
+    input.hasConfiguration ?? false,
+  );
+  const cards = kits.cards ?? null;
+  const dice = kits.dice ?? null;
+  const score = values.scoring;
+  const status = {
+    viewer: values.statuses,
+    byPlayer: structuredClone(runtime.engine.playerValues.statuses),
+  };
+  const board = {
+    movement: kits.movement ?? null,
+    pawns: kits.pawns ?? null,
+    grid: kits.grid ?? null,
+  };
   return {
-    ...kits,
-    match: structuredClone(runtime.engine.match),
-    turn: projectTurn(runtime.turn, runtime.engine.playerValues),
-    round: structuredClone(runtime.engine.round),
-    board: {
-      movement: kits.movement ?? null,
-      pawns: kits.pawns ?? null,
-      grid: kits.grid ?? null,
+    viewVersion: GAME_SYSTEM_VIEW_VERSION,
+    system: {
+      version: GAME_SYSTEM_VIEW_VERSION,
+      match,
+      round,
+      turn,
+      setup,
     },
-    cards: kits.cards ?? null,
-    dice: kits.dice ?? null,
-    score: values.scoring,
+    kits: {
+      cards,
+      movement: board.movement,
+      pawns: board.pawns,
+      grid: board.grid,
+      dice,
+      score,
+      status,
+      inventory: kits.inventory ?? null,
+      economy: kits.economy ?? null,
+      ownership: kits.ownership ?? null,
+      quiz: kits.quiz ?? null,
+    },
+    ...kits,
+    match,
+    turn,
+    round,
+    setup,
+    board,
+    cards,
+    dice,
+    score,
     scores: values.scores,
     resources: values.resources,
     counters: values.counters,
     statuses: values.statuses,
-    status: {
-      viewer: values.statuses,
-      byPlayer: structuredClone(runtime.engine.playerValues.statuses),
-    },
-    setup: projectSetup(
-      runtime.phase,
-      runtime.engine.configuration,
-      input.hasConfiguration ?? false,
-    ),
+    status,
+    inventory: kits.inventory,
+    economy: kits.economy,
+    ownership: kits.ownership,
+    quiz: kits.quiz,
     effect: {
       source: runtime.engine.effects.source
         ? structuredClone(runtime.engine.effects.source)

@@ -4,6 +4,7 @@ import {
   drawEvent,
   gameEffects,
   gameInput,
+  positionOf,
   rejectRule,
 } from '../../../core/application/public-api';
 import type {
@@ -125,7 +126,7 @@ export function applySpecial(
       ...ctx.players
         .all()
         .filter((player) => player.id !== actorId)
-        .map((player) => position(player.id, ctx)),
+        .map((player) => positionOf(ctx, TRACK, player.id)),
     );
     ctx.movement.moveTo(TRACK, actorId, Math.min(FINISH, lead + 1));
   } else if (effect === 'move-and-shield') {
@@ -137,25 +138,26 @@ export function applySpecial(
       .filter(
         (player) =>
           player.id !== actorId &&
-          position(player.id, ctx) > position(actorId, ctx),
+          positionOf(ctx, TRACK, player.id) > positionOf(ctx, TRACK, actorId),
       )
       .sort(
-        (left, right) => position(left.id, ctx) - position(right.id, ctx),
+        (left, right) =>
+          positionOf(ctx, TRACK, left.id) - positionOf(ctx, TRACK, right.id),
       )[0];
     if (ahead) {
       ctx.movement.moveTo(
         TRACK,
         actorId,
-        Math.min(FINISH, position(ahead.id, ctx) + 1),
+        Math.min(FINISH, positionOf(ctx, TRACK, ahead.id) + 1),
       );
       ctx.movement.moveTo(
         TRACK,
         ahead.id,
-        Math.max(0, position(ahead.id, ctx) - 1),
+        Math.max(0, positionOf(ctx, TRACK, ahead.id) - 1),
       );
     }
   } else if (effect === 'next-multiple-five') {
-    const current = position(actorId, ctx);
+    const current = positionOf(ctx, TRACK, actorId);
     const next =
       Array.from(
         { length: FINISH - current },
@@ -178,14 +180,16 @@ export function applyGlobal(effect: CaGlobalEffect, ctx: RuleContext): void {
   if (effect === 'shuffle')
     assignPositions(
       ids,
-      ctx.random.shuffle(ids.map((id) => position(id, ctx))),
+      ctx.random.shuffle(ids.map((id) => positionOf(ctx, TRACK, id))),
       ctx,
     );
   else if (effect === 'reverse-ranking') {
-    const ranked = [...ids].sort((a, b) => position(a, ctx) - position(b, ctx));
+    const ranked = [...ids].sort(
+      (a, b) => positionOf(ctx, TRACK, a) - positionOf(ctx, TRACK, b),
+    );
     assignPositions(
       ranked,
-      ranked.map((id) => position(id, ctx)).reverse(),
+      ranked.map((id) => positionOf(ctx, TRACK, id)).reverse(),
       ctx,
     );
   } else if (effect === 'skip-all') {
@@ -193,8 +197,10 @@ export function applyGlobal(effect: CaGlobalEffect, ctx: RuleContext): void {
   } else if (effect === 'advance-all') moveAll(ids, 1, ctx);
   else if (effect === 'retreat-all') moveAll(ids, -2, ctx);
   else if (effect === 'cycle-ranking') {
-    const ranked = [...ids].sort((a, b) => position(b, ctx) - position(a, ctx));
-    const values = ranked.map((id) => position(id, ctx));
+    const ranked = [...ids].sort(
+      (a, b) => positionOf(ctx, TRACK, b) - positionOf(ctx, TRACK, a),
+    );
+    const values = ranked.map((id) => positionOf(ctx, TRACK, id));
     assignPositions(
       ranked,
       values.map((_value, index) => values[(index + 1) % values.length]),
@@ -205,7 +211,7 @@ export function applyGlobal(effect: CaGlobalEffect, ctx: RuleContext): void {
       ctx.movement.moveTo(
         TRACK,
         id,
-        Math.min(FINISH, position(id, ctx) + ctx.random.int(6) + 1),
+        Math.min(FINISH, positionOf(ctx, TRACK, id) + ctx.random.int(6) + 1),
       );
   }
 }
@@ -217,7 +223,9 @@ export function applyConditional(
   ctx: RuleContext,
 ): void {
   const ids = ctx.players.all().map((player) => player.id);
-  const ranked = [...ids].sort((a, b) => position(a, ctx) - position(b, ctx));
+  const ranked = [...ids].sort(
+    (a, b) => positionOf(ctx, TRACK, a) - positionOf(ctx, TRACK, b),
+  );
   if (effect === 'leader-retreat-others-advance')
     applyPenaltyAwareMove(
       state,
@@ -239,7 +247,7 @@ export function applyConditional(
     applyPenaltyAwareMove(
       state,
       actorId,
-      (position(actorId, ctx) + 1) % 5 === 0 ? 4 : -1,
+      (positionOf(ctx, TRACK, actorId) + 1) % 5 === 0 ? 4 : -1,
       0,
       ctx,
     );
@@ -250,25 +258,30 @@ export function applyConditional(
     movePlayer(state, actorId, 5, 0, true, ctx);
   else if (effect === 'shared-position') {
     const other = ids.find(
-      (id) => id !== actorId && position(id, ctx) === position(actorId, ctx),
+      (id) =>
+        id !== actorId &&
+        positionOf(ctx, TRACK, id) === positionOf(ctx, TRACK, actorId),
     );
     if (other != null) {
       ctx.movement.moveTo(
         TRACK,
         actorId,
-        Math.min(FINISH, position(actorId, ctx) + 2),
+        Math.min(FINISH, positionOf(ctx, TRACK, actorId) + 2),
       );
       ctx.movement.moveTo(
         TRACK,
         other,
-        Math.min(FINISH, position(other, ctx) + 2),
+        Math.min(FINISH, positionOf(ctx, TRACK, other) + 2),
       );
     }
   } else if (effect === 'replay') ctx.turn.extra();
   else if (effect === 'join-ahead') {
     const ahead = ranked[ranked.indexOf(actorId) + 1];
-    if (ahead != null && position(ahead, ctx) === position(actorId, ctx) + 1)
-      ctx.movement.moveTo(TRACK, actorId, position(ahead, ctx));
+    if (
+      ahead != null &&
+      positionOf(ctx, TRACK, ahead) === positionOf(ctx, TRACK, actorId) + 1
+    )
+      ctx.movement.moveTo(TRACK, actorId, positionOf(ctx, TRACK, ahead));
   } else if (
     effect === 'after-one-step' &&
     ctx.resources.get(actorId, CA_LAST_MOVE) === 1
@@ -360,7 +373,10 @@ function movePlayer(
   resolve: boolean,
   ctx: RuleContext,
 ): void {
-  const target = Math.min(FINISH, Math.max(0, position(playerId, ctx) + delta));
+  const target = Math.min(
+    FINISH,
+    Math.max(0, positionOf(ctx, TRACK, playerId) + delta),
+  );
   ctx.movement.moveTo(TRACK, playerId, target);
   ctx.resources.set(playerId, CA_LAST_MOVE, delta);
   if (delta !== 0) ctx.resources.set(playerId, CA_IDLE_TURNS, 0);
@@ -411,7 +427,7 @@ function mirrorSource(playerId: number, ctx: RuleContext): number | null {
 export function markWinnerIfReached(ctx: RuleContext): void {
   const winner = ctx.players
     .all()
-    .find((player) => position(player.id, ctx) >= FINISH);
+    .find((player) => positionOf(ctx, TRACK, player.id) >= FINISH);
   if (winner) {
     ctx.match.finish({ winners: [winner.id], reason: 'finish-line' });
   }
@@ -422,7 +438,7 @@ function moveAll(ids: number[], delta: number, ctx: RuleContext): void {
     ctx.movement.moveTo(
       TRACK,
       id,
-      Math.min(FINISH, Math.max(0, position(id, ctx) + delta)),
+      Math.min(FINISH, Math.max(0, positionOf(ctx, TRACK, id) + delta)),
     );
 }
 
@@ -434,8 +450,4 @@ function assignPositions(
   ids.forEach((id, index) =>
     ctx.movement.moveTo(TRACK, id, values[index] ?? 0),
   );
-}
-
-function position(playerId: number, ctx: RuleContext): number {
-  return ctx.movement.position(TRACK, playerId);
 }
