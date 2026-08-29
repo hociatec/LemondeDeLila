@@ -5,7 +5,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import { AVENTURE_TILES } from './content';
-import type { AventureCard, AventureSauvageState } from './state';
+import type { AventureCard, AventureSauvageState } from './types';
 
 type RuleContext = GameContext<AventureSauvageState>;
 export const AVENTURE_PHASES = setupPlayingPhases<AventureSauvageState>();

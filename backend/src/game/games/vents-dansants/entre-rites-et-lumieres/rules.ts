@@ -15,7 +15,7 @@ import {
   ENTRE_RITES_FAMILY_IDS,
   type RiteFamilyCard,
 } from './content';
-import type { EntreRitesState, RitesPendingChoice } from './state';
+import type { EntreRitesState, RitesPendingChoice } from './types';
 
 const DECK = 'rites';
 const HANDS = 'players';

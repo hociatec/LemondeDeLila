@@ -6,7 +6,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import { GOOSE_TILES } from './content';
-import type { JeuOieState } from './state';
+import type { JeuOieState } from './types';
 
 const TRACK = 'goose-board';
 export const GOOSE_IN_WELL = 'goose.in-well';

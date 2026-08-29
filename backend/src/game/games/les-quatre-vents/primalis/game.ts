@@ -11,7 +11,7 @@ import {
   PRIMALIS_DANGER_AMPLIFIED,
   winnerByResources,
 } from './rules';
-import type { PrimalisState } from './state';
+import type { PrimalisState } from './types';
 
 export default defineGame<PrimalisState, typeof PRIMALIS_ACTIONS>({
   id: 'primalis',

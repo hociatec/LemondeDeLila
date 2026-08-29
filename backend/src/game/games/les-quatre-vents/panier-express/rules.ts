@@ -14,7 +14,7 @@ import {
   PANIER_STANDS,
   PANIER_TILES,
 } from './content';
-import type { PanierPending, PanierState } from './state';
+import type { PanierPending, PanierState } from './types';
 
 type RuleContext = GameContext<PanierState>;
 export const PANIER_PHASES = setupPlayingPhases<PanierState>();

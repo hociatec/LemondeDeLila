@@ -13,7 +13,7 @@ import {
   resolveMissionAnswer,
   resolveMissionEventMove,
 } from './rules';
-import type { MissionGalaxieState } from './state';
+import type { MissionGalaxieState } from './types';
 
 const decks = [
   cards.deck({

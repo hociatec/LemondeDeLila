@@ -1,5 +1,5 @@
 import { freezeGameContent } from '../../../engine/sdk/public-api';
-import type { CandyCounts, ParadeCandyType } from './state';
+import type { CandyCounts, ParadeCandyType } from './types';
 
 export interface ParadeCard {
   id: string;

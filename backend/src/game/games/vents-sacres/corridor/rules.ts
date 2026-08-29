@@ -5,15 +5,19 @@ import {
   sequentialPawnSelection,
   setupPlayingPhases,
 } from '../../../engine/sdk/public-api';
-import type { GameContext, PlayerMap } from '../../../engine/sdk/public-api';
+import type {
+  GameContext,
+  NoGameState,
+  PlayerMap,
+} from '../../../engine/sdk/public-api';
 import { CORRIDOR_SIZE } from './content';
 import type {
   CorridorOrientation,
   CorridorPosition,
-  CorridorState,
   CorridorWall,
-} from './state';
+} from './types';
 
+type CorridorState = NoGameState;
 type RuleContext = GameContext<CorridorState>;
 export const CORRIDOR_PHASES = setupPlayingPhases<CorridorState>();
 export const CORRIDOR_WALLS = 'corridor.walls';
@@ -75,7 +79,7 @@ export const placeWall = defineAction<
     ) {
       rejectRule('Placement de mur Corridor illégal');
     }
-    state.walls.push({ ...input });
+    ctx.grid.appendOverlay('corridor', 'walls', input);
     ctx.resources.remove(actor.id, CORRIDOR_WALLS, 1);
     ctx.turn.end();
   },
@@ -119,7 +123,7 @@ export function startCorridorSetup(
 export const resolvePawn = pawnSelection.resolve;
 
 export function legalMoves(
-  state: CorridorState,
+  _state: CorridorState,
   actorId: number,
   ctx: RuleContext,
 ): CorridorPosition[] {
@@ -130,10 +134,10 @@ export function legalMoves(
   const results: CorridorPosition[] = [];
   for (const direction of DIRECTIONS) {
     const step = add(from, direction);
-    if (!inside(step) || edgeBlocked(state, from, step)) continue;
+    if (!inside(step) || edgeBlocked(corridorWalls(ctx), from, step)) continue;
     if (opponentPosition && same(step, opponentPosition)) {
       const jump = add(step, direction);
-      if (inside(jump) && !edgeBlocked(state, step, jump)) {
+      if (inside(jump) && !edgeBlocked(corridorWalls(ctx), step, jump)) {
         results.push(jump);
       } else {
         const sides =
@@ -148,7 +152,10 @@ export function legalMoves(
               ];
         for (const side of sides) {
           const diagonal = add(step, side);
-          if (inside(diagonal) && !edgeBlocked(state, step, diagonal)) {
+          if (
+            inside(diagonal) &&
+            !edgeBlocked(corridorWalls(ctx), step, diagonal)
+          ) {
             results.push(diagonal);
           }
         }
@@ -163,7 +170,7 @@ export function legalMoves(
 }
 
 export function legalWalls(
-  state: CorridorState,
+  _state: CorridorState,
   actorId: number,
   ctx: RuleContext,
 ): CorridorWall[] {
@@ -173,8 +180,9 @@ export function legalWalls(
     for (let y = 0; y < CORRIDOR_SIZE - 1; y += 1) {
       for (let x = 0; x < CORRIDOR_SIZE - 1; x += 1) {
         const wall = { x, y, orientation };
-        if (overlaps(state, wall)) continue;
-        const candidate = { ...state, walls: [...state.walls, wall] };
+        const existingWalls = corridorWalls(ctx);
+        if (overlaps(existingWalls, wall)) continue;
+        const candidate = [...existingWalls, wall];
         if (
           ctx.players
             .all()
@@ -195,7 +203,7 @@ export function legalWalls(
 }
 
 function hasPath(
-  state: CorridorState,
+  walls: readonly CorridorWall[],
   start: CorridorPosition,
   goalY: number,
 ): boolean {
@@ -207,7 +215,7 @@ function hasPath(
     if (current.y === goalY) return true;
     for (const direction of DIRECTIONS) {
       const next = add(current, direction);
-      if (!inside(next) || edgeBlocked(state, current, next)) continue;
+      if (!inside(next) || edgeBlocked(walls, current, next)) continue;
       const id = key(next);
       if (seen.has(id)) continue;
       seen.add(id);
@@ -218,7 +226,7 @@ function hasPath(
 }
 
 function edgeBlocked(
-  state: CorridorState,
+  walls: readonly CorridorWall[],
   from: CorridorPosition,
   to: CorridorPosition,
 ): boolean {
@@ -227,7 +235,7 @@ function edgeBlocked(
   if (Math.abs(dx) + Math.abs(dy) !== 1) return true;
   if (dy !== 0) {
     const y = Math.min(from.y, to.y);
-    return state.walls.some(
+    return walls.some(
       (wall) =>
         wall.orientation === 'h' &&
         wall.y === y &&
@@ -235,7 +243,7 @@ function edgeBlocked(
     );
   }
   const x = Math.min(from.x, to.x);
-  return state.walls.some(
+  return walls.some(
     (wall) =>
       wall.orientation === 'v' &&
       wall.x === x &&
@@ -243,8 +251,8 @@ function edgeBlocked(
   );
 }
 
-function overlaps(state: CorridorState, wall: CorridorWall): boolean {
-  return state.walls.some((existing) => {
+function overlaps(walls: readonly CorridorWall[], wall: CorridorWall): boolean {
+  return walls.some((existing) => {
     if (
       existing.x === wall.x &&
       existing.y === wall.y &&
@@ -257,6 +265,10 @@ function overlaps(state: CorridorState, wall: CorridorWall): boolean {
       ? existing.y === wall.y && Math.abs(existing.x - wall.x) <= 1
       : existing.x === wall.x && Math.abs(existing.y - wall.y) <= 1;
   });
+}
+
+function corridorWalls(ctx: RuleContext): readonly CorridorWall[] {
+  return ctx.grid.overlays<CorridorWall>('corridor', 'walls');
 }
 
 function inside(position: CorridorPosition): boolean {

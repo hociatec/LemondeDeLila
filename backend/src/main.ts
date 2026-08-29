@@ -4,9 +4,9 @@ import { NestFactory } from '@nestjs/core';
 import compression from 'compression';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { ServLoggerService } from './common/observability/public-api';
-import { LilaWsAdapter } from './common/ws/infrastructure/platform/lila-ws.adapter';
-import { NormalizedValidationPipe } from './common/validation/public-api';
+import { ServLoggerService } from './platform/observability/public-api';
+import { LilaWsAdapter } from './platform/ws/infrastructure/platform/lila-ws.adapter';
+import { NormalizedValidationPipe } from './platform/validation/public-api';
 
 const bootstrapLogger = new Logger('bootstrap');
 

@@ -1,4 +1,4 @@
-import { nextRngFloat, nextRngInt } from '../../../../common/utils/public-api';
+import { nextRngFloat, nextRngInt } from '../../../../shared/utils/public-api';
 import type { GameStateEntity, GameStateMetadata } from './game-state.model';
 
 export type PlayerId = number;

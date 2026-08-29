@@ -17,7 +17,7 @@ import type {
   ContesPendingEffect,
   ContesState,
   ContesTargetEffect,
-} from './state';
+} from './types';
 import { blockedPosition, moveTo, position } from './resolution-support';
 import { CONTES_RESOURCES, CONTES_STATUSES } from './constants';
 import { listTokens } from './tokens';

@@ -6,7 +6,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import { MAMAN_CONTENT } from './content';
 import { MAMAN_EFFECTS, TOUT_PRES_DE_MAMAN_ACTIONS } from './rules';
-import type { ToutPresDeMamanState } from './state';
+import type { ToutPresDeMamanState } from './types';
 
 const deck = cards.deck({
   id: 'events',

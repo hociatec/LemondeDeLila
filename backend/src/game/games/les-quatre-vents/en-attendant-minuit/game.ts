@@ -17,7 +17,7 @@ import {
   resolvePawn,
   resolvePending,
 } from './rules';
-import type { MinuitState } from './state';
+import type { MinuitState } from './types';
 
 export default defineGame<MinuitState, typeof MINUIT_ACTIONS>({
   id: 'en-attendant-minuit',

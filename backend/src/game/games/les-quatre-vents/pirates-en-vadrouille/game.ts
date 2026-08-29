@@ -10,7 +10,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import { PIRATES_CONTENT } from './content';
 import { PIRATES_ACTIONS, stealTreasure } from './rules';
-import type { PiratesState } from './state';
+import type { PiratesState } from './types';
 
 const cardDecks = (['treasure', 'obstacle', 'bonus'] as const).map((id) =>
   cards.deck({ id, cards: PIRATES_CONTENT[id], shuffle: true }),

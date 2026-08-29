@@ -5,13 +5,13 @@
     "directProcessEnv": 3
   },
   "requiredLocalSpecs": [
-    "user",
-    "chat",
-    "messaging",
-    "notification",
-    "bot",
-    "catalog",
-    "stats"
+    "modules/user",
+    "modules/chat",
+    "modules/messaging",
+    "modules/notification",
+    "modules/bot",
+    "modules/catalog",
+    "modules/stats"
   ],
   "requiredDocuments": [
     "docs/architecture/concurrency-and-state.md",
@@ -19,6 +19,7 @@
     "docs/architecture/backend-definition-of-done.md",
     "docs/architecture/adr-001-platform.md",
     "docs/architecture/adr-002-source-layout.md",
+    "docs/architecture/adr-003-module-game-platform-shared.md",
     "docs/architecture/realtime-resilience-test-matrix.md",
     "docs/architecture/transaction-boundaries.md"
   ]

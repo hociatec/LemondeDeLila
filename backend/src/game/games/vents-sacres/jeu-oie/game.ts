@@ -14,7 +14,7 @@ import {
   JEU_OIE_ACTIONS,
   JEU_OIE_PHASES,
 } from './rules';
-import type { JeuOieState } from './state';
+import type { JeuOieState } from './types';
 
 export default defineGame<JeuOieState, typeof JEU_OIE_ACTIONS>({
   id: 'jeu-oie',

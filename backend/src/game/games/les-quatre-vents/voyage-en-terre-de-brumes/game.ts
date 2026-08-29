@@ -16,7 +16,7 @@ import {
   VOYAGE_FINISH_STARTED,
 } from './rules';
 import { VOYAGE_EFFECTS } from './effects';
-import type { VoyageCollectionKind, VoyageState } from './state';
+import type { VoyageCollectionKind, VoyageState } from './types';
 
 const deckNames: VoyageCollectionKind[] = [
   'legend',

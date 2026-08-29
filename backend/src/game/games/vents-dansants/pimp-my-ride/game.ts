@@ -9,7 +9,6 @@ import { PIMP_MY_RIDE_CAR_NAMES, PIMP_MY_RIDE_DECK } from './content';
 import {
   currentCarParts,
   drawCarPart,
-  drawnCardId,
   PIMP_MY_RIDE_ACTIONS,
   PIMP_CAR_NAME_INDEX,
 } from './rules';
@@ -84,7 +83,7 @@ export default defineGame<
         }),
       };
     });
-    return { progress, drawnCardId: drawnCardId(ctx) };
+    return { progress };
   },
   bot: {
     choose: ({ state, actor, ctx }) => {

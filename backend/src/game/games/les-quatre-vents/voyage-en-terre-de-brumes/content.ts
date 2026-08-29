@@ -11,7 +11,7 @@ import type {
   VoyageQuiz,
   VoyageTile,
   VoyageTileType,
-} from './state';
+} from './types';
 import { TRACK } from './rules';
 
 type RawVoyageCard = Omit<

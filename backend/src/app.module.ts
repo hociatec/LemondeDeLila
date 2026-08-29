@@ -3,34 +3,34 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AdminModule } from './admin/public-api';
-import { BotModule } from './bot/public-api';
-import { BugReportsModule } from './bug-reports/public-api';
-import { CatalogModule } from './catalog/public-api';
-import { ChatModule } from './chat/public-api';
-import { JwksModule } from './common/auth/public-api';
-import { RedisModule } from './common/redis/public-api';
-import { ValidationModule } from './common/validation/public-api';
-import { WsRoutingModule, WsTicketModule } from './common/ws/public-api';
+import { AdminModule } from './modules/admin/public-api';
+import { BotModule } from './modules/bot/public-api';
+import { BugReportsModule } from './modules/bug-reports/public-api';
+import { CatalogModule } from './modules/catalog/public-api';
+import { ChatModule } from './modules/chat/public-api';
+import { JwksModule } from './platform/auth/public-api';
+import { RedisModule } from './platform/redis/public-api';
+import { ValidationModule } from './platform/validation/public-api';
+import { WsRoutingModule, WsTicketModule } from './platform/ws/public-api';
 import {
   environmentValidationSchema,
   shouldIgnoreEnvironmentFile,
-} from './config/environment-validation';
-import { createRateLimitOptions } from './config/rate-limit-options.factory';
-import { createDatabaseOptions } from './database/database-options.factory';
+} from './platform/config/environment-validation';
+import { createRateLimitOptions } from './platform/config/rate-limit-options.factory';
+import { createDatabaseOptions } from './platform/database/database-options.factory';
 import { GameWsModule } from './game/core/infrastructure/presentation/ws/public-api';
 import { GameLoggerModule, GameModule } from './game/public-api';
-import { HealthModule } from './health/public-api';
-import { MessagingModule } from './messaging/public-api';
-import { NotificationModule } from './notification/public-api';
-import { PresenceModule } from './presence/public-api';
-import { RealtimeModule } from './realtime/public-api';
-import { RoomModule } from './room/public-api';
-import { SocialModule } from './social/public-api';
-import { SoundsModule } from './sounds/public-api';
-import { UpdateModule } from './update/public-api';
-import { UserModule } from './user/public-api';
-import { VaultModule } from './vault/public-api';
+import { HealthModule } from './modules/health/public-api';
+import { MessagingModule } from './modules/messaging/public-api';
+import { NotificationModule } from './modules/notification/public-api';
+import { PresenceModule } from './modules/presence/public-api';
+import { RealtimeModule } from './platform/realtime/public-api';
+import { RoomModule } from './modules/room/public-api';
+import { SocialModule } from './modules/social/public-api';
+import { SoundsModule } from './modules/sounds/public-api';
+import { UpdateModule, UpdatePolicyService } from './modules/update/public-api';
+import { UserModule } from './modules/user/public-api';
+import { VaultModule } from './modules/vault/public-api';
 
 @Module({
   imports: [
@@ -61,7 +61,10 @@ import { VaultModule } from './vault/public-api';
     BotModule,
     WsRoutingModule,
     ValidationModule,
-    RealtimeModule,
+    RealtimeModule.register({
+      imports: [UpdateModule],
+      clientVersionPolicy: UpdatePolicyService,
+    }),
     NotificationModule,
     AdminModule,
     HealthModule,

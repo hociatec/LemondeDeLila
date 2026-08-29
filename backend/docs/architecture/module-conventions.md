@@ -5,7 +5,7 @@
 Un domaine métier expose `public-api.ts` et ne crée que les dossiers utiles :
 
 ```text
-feature/
+modules/feature/
   domain/          règles, entités, value objects et erreurs sans Nest/DB/Redis
   application/     commandes, queries, résultats, use-cases et ports
   infrastructure/  adapters TypeORM, Redis, filesystem et processus
@@ -48,10 +48,12 @@ dans leur nom de classe et décrivent leur ownership.
 
 ## Frontières transversales
 
-`user` possède identité et profil. `auth` possède authentification, credentials,
-hashing, JWT, refresh tokens et sessions. `realtime` est le transport générique
-(connexion, routage, resynchronisation) ; `room/presentation/ws` porte les
-commandes métier Room ; `common/ws` ne contient que les primitives protocole,
+`modules/user` possède identité et profil. `platform/auth` possède
+authentification, credentials, hashing, JWT, refresh tokens et sessions.
+`platform/realtime` est le transport générique
+(connexion, routage, resynchronisation) ;
+`modules/room/infrastructure/presentation/ws` porte les
+commandes métier Room ; `platform/ws` ne contient que les primitives protocole,
 authentification WS et sécurité communes. Ces trois niveaux ne dupliquent pas de
 règle métier.
 
@@ -73,7 +75,7 @@ contrat.
 - Les tests unitaires et de contrat sont colocalisés en `*.spec.ts`. Les scénarios
   d'intégration restent près de la feature. Les audits de dépendances et de
   structure vivent dans `tools/` ou dans un dossier explicitement nommé
-  `architecture-tests`, jamais parmi les fixtures de jeu.
+  `game/testing/architecture-tests`, jamais parmi les fixtures de jeu.
 
 Les facades sans frontière sont interdites : une facade doit stabiliser une API,
 appliquer une politique ou coordonner plusieurs capacités, pas seulement renvoyer

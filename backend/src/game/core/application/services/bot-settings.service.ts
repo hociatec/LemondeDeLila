@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { getErrorMessage } from '@common/utils/public-api';
+import { getErrorMessage } from '@shared/utils/public-api';
 import {
   BOT_SETTINGS_REPOSITORY,
   type BotSettingsRepository,

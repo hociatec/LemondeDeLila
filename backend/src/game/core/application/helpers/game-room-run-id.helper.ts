@@ -1,4 +1,4 @@
-import { stringOrEmpty } from '@common/utils/public-api';
+import { stringOrEmpty } from '@shared/utils/public-api';
 
 type RoomRunContext = {
   status?: unknown;

@@ -6,7 +6,7 @@ import {
   requestQuiz,
   requestStrategicSwap,
 } from './rules';
-import type { PanierState } from './state';
+import type { PanierState } from './types';
 
 const countInput = gameInput.object({
   count: gameInput.number({ integer: true, min: 1 }),

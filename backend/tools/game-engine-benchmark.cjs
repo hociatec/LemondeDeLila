@@ -10,7 +10,7 @@ const {
 } = require('../src/game/composition/game-module-discovery');
 const {
   auditGameDefinition,
-} = require('../src/architecture-tests/game/game-contract-auditor');
+} = require('../src/game/testing/architecture-tests/game/game-contract-auditor');
 
 const iterations = Math.max(
   1,

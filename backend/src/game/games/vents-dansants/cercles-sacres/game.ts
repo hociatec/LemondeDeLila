@@ -6,7 +6,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import { CERCLES_SACRES_DECK } from './content';
 import { CERCLES_SACRES_ACTIONS, drawAtTurnStart } from './rules';
-import type { CerclesSacresState } from './state';
+import type { CerclesSacresState } from './types';
 
 export default defineGame<CerclesSacresState, typeof CERCLES_SACRES_ACTIONS>({
   id: 'cercles-sacres',

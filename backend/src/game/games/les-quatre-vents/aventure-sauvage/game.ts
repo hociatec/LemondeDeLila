@@ -21,7 +21,7 @@ import {
   resolveAventureTile,
   resolvePawnChoice,
 } from './rules';
-import type { AventureSauvageState } from './state';
+import type { AventureSauvageState } from './types';
 
 export default defineGame<AventureSauvageState, typeof AVENTURE_ACTIONS>({
   id: 'aventure-sauvage',

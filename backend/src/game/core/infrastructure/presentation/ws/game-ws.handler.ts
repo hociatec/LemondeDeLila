@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { requireUser } from '../../../../../realtime/public-api';
-import type { WsSession } from '../../../../../realtime/public-api';
-import { PayloadValidationService } from '../../../../../common/validation/public-api';
+import { requireUser } from '../../../../../platform/realtime/public-api';
+import type { WsSession } from '../../../../../platform/realtime/public-api';
+import { PayloadValidationService } from '../../../../../platform/validation/public-api';
 import { GameContentService } from '../../../../engine/public-api';
 import { GameModuleOverviewRegistryService } from '../../../application/services/game-module-overview.service';
 import type { GameSingleActionDto } from '../../../application/models/game-action.model';
@@ -10,7 +10,7 @@ import { GameWsCommandMapper } from './game-ws-command.mapper';
 import {
   GameWsRealtimeStateService,
   type ResolvedGameState,
-} from './game-ws-realtime-state.service';
+} from './state/game-ws-realtime-state.service';
 import { GameWsRoomContextService } from './game-ws-room-context.service';
 import {
   normalizeGameKey,
@@ -21,7 +21,7 @@ import { GameCommandExecutorService } from '../../../application/services/game-c
 import { GameRoomCommandQueueService } from '../../../application/services/game-room-command-queue.service';
 import { gameNowMs } from '../../../application/services/game-execution-scope.service';
 import { GameRegistryService } from '../../../application/services/game-registry.service';
-import { GAMEPLAY_MECHANICS_CATALOG } from '../../../application/runtime/mechanics-catalog';
+import { GAMEPLAY_MECHANICS_CATALOG } from '../../../application/runtime/definitions/mechanics-catalog';
 
 @Injectable()
 export class GameWsHandler {

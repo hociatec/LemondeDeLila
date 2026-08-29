@@ -1,7 +1,7 @@
-import { cards } from './cards-contracts';
-import type { GameSetupPlayerViewFor } from './game-system-view';
-import type { PlayerValuesKitState } from './player-values-kit';
-import { defineCardsSchema, type CardOfDeck } from './typed-cards';
+import { cards } from './cards/cards-contracts';
+import type { GameSetupPlayerViewFor } from './projection/game-system-view';
+import type { PlayerValuesKitState } from './kits/player-values-kit';
+import { defineCardsSchema, type CardOfDeck } from './cards/typed-cards';
 
 describe('typed game contracts', () => {
   const schema = defineCardsSchema({

@@ -7,7 +7,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import { MAMAN_CONTENT } from './content';
-import type { MamanCard, MamanTileType, ToutPresDeMamanState } from './state';
+import type { MamanCard, MamanTileType, ToutPresDeMamanState } from './types';
 
 const TRACK = 'forest';
 const DECK = 'events';

@@ -51,7 +51,7 @@ export default tseslint.config(
       'src/**/*.spec.ts',
       'src/**/*.test.ts',
       'src/**/tests/**/*.ts',
-      'src/migrations/**/*.ts',
+      'src/platform/database/migrations/**/*.ts',
     ],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',

@@ -6,13 +6,17 @@ import type {
   GameStateEntity,
   PlayerStateEntity,
 } from '../models/game-state.model';
-import { victoryWhen, when } from './automatic-kit';
-import { cards } from './cards-kit';
+import { victoryWhen, when } from './automation/automatic-kit';
+import { cards } from './cards/cards-kit';
 import { DeclarativeGameRuntime } from './declarative-game.runtime';
-import { defineAction, defineChoice, defineGame } from './game-definition';
-import { gameInput } from './game-input-schema';
-import { movement } from './movement-kit';
-import { phase } from './phase-kit';
+import {
+  defineAction,
+  defineChoice,
+  defineGame,
+} from './definitions/game-definition';
+import { gameInput } from './actions/game-input-schema';
+import { movement } from './kits/movement-kit';
+import { phase } from './kits/phase-kit';
 
 type SampleState = {
   score: number;

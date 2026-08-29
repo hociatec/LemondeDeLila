@@ -3,7 +3,7 @@ import {
   GAME_ROOM_EVENTS_PORT,
   type GameRoomEventsPort,
 } from '../../../application/ports/game-room.port';
-import { GameWsRealtimeStateService } from './game-ws-realtime-state.service';
+import { GameWsRealtimeStateService } from './state/game-ws-realtime-state.service';
 
 @Injectable()
 export class GameRoomLifecycleResetBinder implements OnModuleInit {

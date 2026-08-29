@@ -54,7 +54,7 @@ function auditFile(file) {
   const source = fs.readFileSync(file, 'utf8');
   const ast = sourceFile(file);
   const violations = [];
-  const nPlusOneSensitive = /^(messaging|notification|social|stats)\/application\//.test(
+  const nPlusOneSensitive = /^modules\/(messaging|notification|social|stats)\/application\//.test(
     name,
   );
   const visit = (node) => {

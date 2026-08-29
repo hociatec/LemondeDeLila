@@ -14,11 +14,6 @@ import {
 } from './content';
 import { DAME_NATURE_ACTIONS, DAME_NATURE_POLLUTION } from './rules';
 
-interface DameNatureViewExtension {
-  pollutionLoserId: number | null;
-  lastQuizCardId: string | null;
-}
-
 const familySets = cards.sets({
   id: 'nature-families',
   hand: 'players',
@@ -33,11 +28,7 @@ const familySets = cards.sets({
   ),
 });
 
-export default defineGame<
-  NoGameState,
-  typeof DAME_NATURE_ACTIONS,
-  DameNatureViewExtension
->({
+export default defineGame<NoGameState, typeof DAME_NATURE_ACTIONS>({
   id: 'dame-nature',
   displayName: 'Dame Nature',
   category: 'JeuxDePlateaux',
@@ -73,22 +64,6 @@ export default defineGame<
     return {};
   },
   actions: DAME_NATURE_ACTIONS,
-  viewExtension: ({ ctx }) => {
-    const result = ctx.match.result();
-    const lastQuizCardId =
-      [...ctx.cards.discardPile<string>('nature')]
-        .reverse()
-        .find((cardId) => DAME_NATURE_CARD_BY_ID[cardId]?.type === 'quiz') ??
-      null;
-    const pollutionLoserId =
-      result?.reason === 'pollution-limit'
-        ? (ctx.players
-            .all()
-            .find((player) => !result.winnerPlayerIds.includes(player.id))
-            ?.id ?? null)
-        : null;
-    return { pollutionLoserId, lastQuizCardId };
-  },
   bot: {
     choose: ({ actor, ctx }) => {
       const target = ctx.players.all().find((player) => player.id !== actor.id);

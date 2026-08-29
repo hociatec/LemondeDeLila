@@ -11,7 +11,7 @@ import {
   drawAtTurnStart,
   enumeratePlays,
 } from './rules';
-import type { BandeABananeState } from './state';
+import type { BandeABananeState } from './types';
 
 export default defineGame<BandeABananeState, typeof BANDE_A_BANANE_ACTIONS>({
   id: 'la-bande-a-banane',

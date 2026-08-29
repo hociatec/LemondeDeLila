@@ -4,16 +4,30 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..', 'src');
-const businessRoots = [
-  'admin', 'bot', 'bug-reports', 'catalog', 'chat', 'client-updates', 'game',
-  'health', 'messaging', 'notification', 'presence', 'realtime', 'room',
-  'social', 'sounds', 'stats', 'update', 'user', 'vault',
+const moduleNames = [
+  'admin', 'bot', 'bug-reports', 'catalog', 'chat', 'client-updates', 'health',
+  'messaging', 'notification', 'presence', 'room', 'social', 'sounds', 'stats',
+  'update', 'user', 'vault',
 ];
-const platformRoots = ['common', 'config', 'database', 'migrations', 'types'];
-const allowedRoots = new Set([...businessRoots, ...platformRoots, 'architecture-tests']);
+const platformNames = [
+  'auth', 'config', 'database', 'observability', 'pubsub', 'realtime', 'redis',
+  'session', 'validation', 'ws',
+];
+const sharedNames = ['interfaces', 'types', 'utils'];
+const runtimeDomains = [
+  'actions', 'automation', 'cards', 'choices', 'configuration', 'content',
+  'definitions', 'effects', 'events', 'kits', 'lifecycle', 'patterns',
+  'projection', 'recipes', 'state', 'submissions',
+];
+const runtimeRootFiles = new Set([
+  'declarative-game.runtime.spec.ts', 'declarative-game.runtime.ts',
+  'game-identifiers.ts', 'game-rule-context.ts', 'game-sdk-version.ts',
+  'game-selectors.ts', 'public-api.ts', 'typed-contracts.spec.ts',
+]);
+const allowedRoots = new Set(['modules', 'game', 'platform', 'shared']);
 const allowedFacades = new Set([
-  'room/application/services/room-lifecycle-facade.service.ts',
-  'room/application/services/room-membership-facade.service.ts',
+  'modules/room/application/services/room-lifecycle-facade.service.ts',
+  'modules/room/application/services/room-membership-facade.service.ts',
 ]);
 
 function walk(directory = root) {
@@ -27,6 +41,24 @@ function relative(file) {
   return path.relative(root, file).replaceAll(path.sep, '/');
 }
 
+function directoryNames(directory) {
+  return fs.readdirSync(path.join(root, directory), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+}
+
+function compareDirectories(container, expected, violations) {
+  const expectedSet = new Set(expected);
+  for (const name of directoryNames(container)) {
+    if (!expectedSet.has(name)) violations.push(`${container}/${name}: composant non classé`);
+  }
+  for (const name of expected) {
+    if (!fs.existsSync(path.join(root, container, name))) {
+      violations.push(`${container}/${name}: composant manquant`);
+    }
+  }
+}
+
 function audit() {
   const violations = [];
   const roots = fs.readdirSync(root, { withFileTypes: true })
@@ -35,9 +67,27 @@ function audit() {
   for (const directory of roots) {
     if (!allowedRoots.has(directory)) violations.push(`racine non classée: ${directory}`);
   }
-  for (const component of businessRoots) {
-    if (!fs.existsSync(path.join(root, component, 'public-api.ts'))) {
-      violations.push(`${component}: public-api.ts manquant`);
+  compareDirectories('modules', moduleNames, violations);
+  compareDirectories('platform', platformNames, violations);
+  compareDirectories('shared', sharedNames, violations);
+  compareDirectories('game/core/application/runtime', runtimeDomains, violations);
+  for (const entry of fs.readdirSync(path.join(root, 'game/core/application/runtime'), { withFileTypes: true })) {
+    if (entry.isFile() && !runtimeRootFiles.has(entry.name)) {
+      violations.push(`game/core/application/runtime/${entry.name}: runtime non classé par sous-domaine`);
+    }
+  }
+  for (const presenter of [
+    'game-ws-state.presenter.ts',
+    'game-ws-realtime-state.service.ts',
+  ]) {
+    if (fs.existsSync(path.join(root, 'game/core/infrastructure/presentation/ws', presenter))) {
+      violations.push(`game/core/infrastructure/presentation/ws/${presenter}: projection d'état hors sous-domaine state`);
+    }
+  }
+
+  for (const component of moduleNames) {
+    if (!fs.existsSync(path.join(root, 'modules', component, 'public-api.ts'))) {
+      violations.push(`modules/${component}: public-api.ts manquant`);
     }
   }
 
@@ -51,8 +101,11 @@ function audit() {
     if (/\/infrastructure\/.*repository\.ts$/.test(name) && !name.includes('/persistence/')) {
       violations.push(`${name}: repository hors persistence`);
     }
-    if (name.includes('/common/utils/') && /from ['"](?:\.\.\/){3,}(?!common\/)/.test(source)) {
-      violations.push(`${name}: utilitaire common dépendant du métier`);
+    if (
+      name.startsWith('shared/') &&
+      /from ['"][^'"]*(?:modules|platform|game)\//.test(source)
+    ) {
+      violations.push(`${name}: shared dépend d'une frontière supérieure`);
     }
     if (name.startsWith('game/games/') && /game\/core\/application\/runtime/.test(source)) {
       violations.push(`${name}: jeu important directement le runtime privé`);
@@ -61,7 +114,7 @@ function audit() {
       violations.push(`${name}: nouvelle façade sans frontière approuvée`);
     }
     if (
-      name.startsWith('room/infrastructure/presentation/ws/room-gateway-') &&
+      name.startsWith('modules/room/infrastructure/presentation/ws/room-gateway-') &&
       name.endsWith('.service.ts') &&
       !name.endsWith('dispatcher.service.ts') &&
       !name.endsWith('context.service.ts') &&
@@ -72,13 +125,15 @@ function audit() {
   }
 
   const roomServices = files.filter((file) =>
-    relative(file).match(/^room\/application\/services\/[^/]+\.ts$/),
+    relative(file).match(/^modules\/room\/application\/services\/[^/]+\.ts$/),
   );
   if (roomServices.length > 30) {
-    violations.push(`room/application/services: ${roomServices.length} fichiers (max 30)`);
+    violations.push(`modules/room/application/services: ${roomServices.length} fichiers (max 30)`);
   }
 
-  const migrations = files.filter((file) => relative(file).startsWith('migrations/'));
+  const migrations = files.filter((file) =>
+    relative(file).startsWith('platform/database/migrations/'),
+  );
   for (const file of migrations) {
     const basename = path.basename(file);
     if (/\.spec\.ts$/.test(basename)) continue;

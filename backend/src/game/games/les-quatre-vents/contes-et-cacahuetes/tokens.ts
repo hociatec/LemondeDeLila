@@ -1,6 +1,6 @@
 import type { GameContext } from '../../../engine/sdk/public-api';
 import { CONTES_RESOURCES, CONTES_STATUSES } from './constants';
-import type { ContesState } from './state';
+import type { ContesState } from './types';
 
 type RuleContext = GameContext<ContesState>;
 

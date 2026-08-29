@@ -13,7 +13,7 @@ import {
   commandReceipt,
   normalizeCommandId,
   recordCommandReceipt,
-} from '../runtime/game-command-journal';
+} from '../runtime/actions/game-command-journal';
 import { GameEngineMetricsService } from './game-engine-metrics.service';
 
 @Injectable()

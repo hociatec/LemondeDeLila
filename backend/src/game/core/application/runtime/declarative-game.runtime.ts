@@ -12,30 +12,30 @@ import {
   GameActorRequiredError,
   GameUnknownActionError,
 } from '../../domain/errors/game-domain.errors';
-import { DeclarativeChoiceRuntime } from './declarative-choice-runtime';
-import { DeclarativeLifecycle } from './declarative-lifecycle';
+import { DeclarativeChoiceRuntime } from './choices/declarative-choice-runtime';
+import { DeclarativeLifecycle } from './lifecycle/declarative-lifecycle';
 import type {
   CompiledGameDefinition,
   DeclarativeState,
   GameActionShape,
   GameActionMap,
-} from './game-definition';
+} from './definitions/game-definition';
 import { GameContext } from './game-rule-context';
 import {
   initializeGameComponents,
   installGameComponents,
-} from './component-kit';
-import { standardTurn } from './turn-kit';
-import { createDeclarativeState } from './declarative-state.factory';
-import { migrateDeclarativeState } from './game-state-migration';
-import { assertValidGameSession } from './game-session-contracts';
+} from './definitions/component-kit';
+import { standardTurn } from './kits/turn-kit';
+import { createDeclarativeState } from './state/declarative-state.factory';
+import { migrateDeclarativeState } from './content/game-state-migration';
+import { assertValidGameSession } from './state/game-session-contracts';
 import {
   canConfigureGame,
   commitGameConfiguration,
   GAME_CONFIGURE_ACTION,
   parseGameConfiguration,
-} from './configuration-kit';
-import { DeclarativeGameQueries } from './declarative-game-queries';
+} from './configuration/configuration-kit';
+import { DeclarativeGameQueries } from './projection/declarative-game-queries';
 
 export class DeclarativeGameRuntime<
   TState extends object,

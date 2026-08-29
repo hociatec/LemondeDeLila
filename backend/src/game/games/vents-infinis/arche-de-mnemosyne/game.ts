@@ -9,27 +9,8 @@ import {
   simultaneousAnswers,
 } from '../../../engine/sdk/public-api';
 import { MNEMO_BANKS, MNEMO_CATEGORIES } from './content';
-import {
-  MNEMO_ACTIONS,
-  MNEMO_NEXT_QUESTION_TIMER,
-  MNEMO_PHASES,
-  MNEMO_QUESTION_TIMER,
-  MNEMO_SESSION,
-} from './rules';
+import { MNEMO_ACTIONS, MNEMO_PHASES } from './rules';
 import type { MnemoGameConfig } from './config';
-
-interface MnemoViewExtension {
-  currentQuestion: {
-    id: string;
-    prompt: string;
-    choices: readonly string[];
-  } | null;
-  answeredPlayerIds: number[];
-  notBeforeMs: number | null;
-  questionLeaderId: number;
-  remainingMilliseconds: number | null;
-  categories: typeof MNEMO_CATEGORIES;
-}
 
 const MNEMO_DEFAULT_CONFIG: MnemoGameConfig = {
   categoryId: 'all',
@@ -48,11 +29,7 @@ const QUIZ_STARTED = defineEvent({
   data: gameInput.object({ categoryId: gameInput.enum(MNEMO_CATEGORY_IDS) }),
 });
 
-export default defineGame<
-  NoGameState,
-  typeof MNEMO_ACTIONS,
-  MnemoViewExtension
->({
+export default defineGame<NoGameState, typeof MNEMO_ACTIONS>({
   id: 'arche-de-mnemosyne',
   displayName: "L'Arche de Mnémosyne",
   category: 'Quiz',
@@ -108,23 +85,6 @@ export default defineGame<
   initialPhase: MNEMO_PHASES.initialPhase,
   phases: MNEMO_PHASES.phases,
   actions: MNEMO_ACTIONS,
-  viewExtension: ({ ctx }) => {
-    const session = ctx.quiz.session(MNEMO_SESSION);
-    const currentSession = session?.phase === 'closed' ? null : session;
-    const answeredPlayerIds = Object.keys(currentSession?.answers ?? {}).map(
-      Number,
-    );
-    return {
-      notBeforeMs: ctx.scheduler.deadline(MNEMO_NEXT_QUESTION_TIMER),
-      answeredPlayerIds,
-      questionLeaderId: ctx.round.starter() ?? 0,
-      currentQuestion: currentSession
-        ? structuredClone(currentSession.question)
-        : null,
-      remainingMilliseconds: ctx.scheduler.remaining(MNEMO_QUESTION_TIMER),
-      categories: MNEMO_CATEGORIES,
-    };
-  },
   bot: {
     choose: ({ availableActions, ctx }) => {
       if (availableActions.includes('answer'))

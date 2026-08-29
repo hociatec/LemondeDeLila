@@ -12,7 +12,7 @@ import {
   PARADE_SEQUENCE,
   SPECIAL_REWARDS,
 } from './content';
-import type { CandyCounts, LaParadeSucreeState } from './state';
+import type { CandyCounts, LaParadeSucreeState } from './types';
 
 const HAND = 'players';
 const DECK = 'parade';

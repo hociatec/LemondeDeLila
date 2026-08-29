@@ -3,8 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BOT_SETTINGS_REPOSITORY } from '../../application/contracts/bot-settings.repository';
 import { BotRunnerService } from '../../application/services/bot-runner.service';
 import { BotSettingsService } from '../../application/services/bot-settings.service';
-import { BotSettingsEntity } from '../../infrastructure/persistence/typeorm/entities/bot-settings.entity';
-import { BotSettingsTypeormRepository } from '../../infrastructure/persistence/typeorm/repositories/bot-settings-typeorm.repository';
+import { BotSettingsEntity } from '../persistence/typeorm/entities/bot-settings.entity';
+import { BotSettingsTypeormRepository } from '../persistence/typeorm/repositories/bot-settings-typeorm.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([BotSettingsEntity])],

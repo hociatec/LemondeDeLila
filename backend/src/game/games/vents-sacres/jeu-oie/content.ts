@@ -4,7 +4,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { GoosePawn, GooseTile } from './state';
+import type { GoosePawn, GooseTile } from './types';
 
 export const GOOSE_PAWNS: GoosePawn[] = [
   { id: 'coq-rockeur', label: 'Coq rockeur', feminine: false },

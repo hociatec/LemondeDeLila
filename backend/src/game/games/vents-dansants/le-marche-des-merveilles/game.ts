@@ -11,7 +11,7 @@ import {
   WONDER_GOODS,
 } from './content';
 import { MARKET_ACTIONS, MARKET_TURNS_TAKEN } from './rules';
-import type { WonderMarketState } from './state';
+import type { WonderMarketState } from './types';
 
 export default defineGame<WonderMarketState, typeof MARKET_ACTIONS>({
   id: 'le-marche-des-merveilles',

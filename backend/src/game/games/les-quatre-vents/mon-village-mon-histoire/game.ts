@@ -7,7 +7,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import { VILLAGE_TILES, VILLAGE_ZONES } from './content';
 import { deckForZone, MON_VILLAGE_ACTIONS } from './rules';
-import type { MonVillageState } from './state';
+import type { MonVillageState } from './types';
 
 const zoneDecks = VILLAGE_ZONES.map((zone) =>
   cards.deck({ id: deckForZone(zone.id), cards: zone.cards, shuffle: true }),
