@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { spawn, spawnSync } from 'node:child_process';
 import * as http from 'node:http';
+import { getProcessEnvironment } from '../../../config/public-api';
 import type {
   AdminMaintenanceRuntimePort,
   MaintenanceCommandResult,
@@ -16,7 +17,7 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
     const [cmd, ...args] = argv;
     const result = spawnSync(cmd, args, {
       encoding: 'utf8',
-      env: process.env,
+      env: getProcessEnvironment(),
       windowsHide: true,
       maxBuffer: 10 * 1024 * 1024,
       cwd: opts?.cwd,
@@ -42,7 +43,7 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
           const [cmd, ...args] = argv;
           const child = spawn(cmd, args, {
             cwd: opts?.cwd,
-            env: process.env,
+            env: getProcessEnvironment(),
             detached: true,
             stdio: 'ignore',
             windowsHide: true,

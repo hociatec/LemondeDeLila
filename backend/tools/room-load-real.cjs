@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { WebSocket } = require('ws');
 const mysql = require('mysql2/promise');
+const Redis = require('ioredis');
 
 function loadEnv(envPath) {
   const out = {};
@@ -159,6 +160,39 @@ async function queryOne(conn, sql, params) {
   const [rows] = await conn.execute(sql, params);
   if (!Array.isArray(rows) || rows.length === 0) return null;
   return rows[0];
+}
+
+function processMetrics() {
+  const usage = process.resourceUsage();
+  const memory = process.memoryUsage();
+  return {
+    cpuUserMs: Math.round(usage.userCPUTime / 1000),
+    cpuSystemMs: Math.round(usage.systemCPUTime / 1000),
+    rssBytes: memory.rss,
+    heapUsedBytes: memory.heapUsed,
+  };
+}
+
+async function dependencyMetrics(db, redis) {
+  const threads = await queryOne(db, "SHOW STATUS LIKE 'Threads_connected'", []);
+  const questions = await queryOne(db, "SHOW STATUS LIKE 'Questions'", []);
+  let redisMetrics = null;
+  if (redis) {
+    const info = await redis.info('memory');
+    redisMetrics = Object.fromEntries(
+      info
+        .split(/\r?\n/)
+        .filter((line) => /^(used_memory|used_memory_rss|mem_fragmentation_ratio):/.test(line))
+        .map((line) => line.split(':')),
+    );
+  }
+  return {
+    mysql: {
+      threadsConnected: Number(threads?.Value ?? 0),
+      questions: Number(questions?.Value ?? 0),
+    },
+    redis: redisMetrics,
+  };
 }
 
 async function runPool(items, limit, worker) {
@@ -327,6 +361,16 @@ async function main() {
     password: process.env.DB_PASSWORD || env.DB_PASSWORD || '',
     database: process.env.DB_NAME || env.DB_NAME || 'le_monde_de_lila',
   });
+  const redisUrl =
+    process.env.ROOM_LOAD_REDIS_URL ||
+    env.ROOM_LOAD_REDIS_URL ||
+    process.env.SESSION_STORE_REDIS_URL ||
+    env.SESSION_STORE_REDIS_URL ||
+    null;
+  const redis = redisUrl
+    ? new Redis(redisUrl, { lazyConnect: true, connectTimeout: 3000, maxRetriesPerRequest: 1 })
+    : null;
+  if (redis) await redis.connect();
 
   const allSockets = [];
   const createdRoomIds = [];
@@ -336,6 +380,8 @@ async function main() {
     spectatorsPerRoom,
     totalUsers: users.length,
     timingsMs: {},
+    processBefore: processMetrics(),
+    dependenciesBefore: await dependencyMetrics(db, redis),
   };
 
   try {
@@ -529,6 +575,8 @@ async function main() {
       );
     }
     summary.timingsMs.validateParticipants = phaseMs(participantsStart);
+    summary.processAfter = processMetrics();
+    summary.dependenciesAfter = await dependencyMetrics(db, redis);
 
     console.log('ROOM LOAD TEST REPORT');
     console.log(
@@ -546,6 +594,10 @@ async function main() {
       `- Phase validate participants: ${summary.timingsMs.validateParticipants}ms`,
     );
     console.log(`- Rooms created: ${createdRoomIds.length}`);
+    console.log(`- Resources: ${JSON.stringify({
+      process: { before: summary.processBefore, after: summary.processAfter },
+      dependencies: { before: summary.dependenciesBefore, after: summary.dependenciesAfter },
+    })}`);
     console.log('RESULT: PASS');
   } finally {
     for (const ws of allSockets.reverse()) {
@@ -585,6 +637,11 @@ async function main() {
       await db.end();
     } catch {
       // ignore
+    }
+    try {
+      await redis?.quit();
+    } catch {
+      redis?.disconnect();
     }
   }
 }

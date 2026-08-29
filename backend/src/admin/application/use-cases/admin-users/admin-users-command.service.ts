@@ -19,6 +19,7 @@ import type {
 } from './admin-users.commands';
 import { AdminUserBanPolicyService } from './admin-user-ban-policy.service';
 import { AdminUserPasswordService } from './admin-user-password.service';
+import { normalizeEmail, normalizeUsername } from '../../../../user/public-api';
 
 @Injectable()
 export class AdminUsersCommandService {
@@ -30,27 +31,29 @@ export class AdminUsersCommandService {
   ) {}
 
   async create(body: CreateAdminUserCommand) {
-    const email = body.email.toLowerCase();
+    const email = normalizeEmail(body.email);
+    const username = normalizeUsername(body.username);
     await this.ensureEmailAvailable(email);
-    await this.ensureUsernameAvailable(body.username);
+    await this.ensureUsernameAvailable(username);
 
     const password =
       body.password?.trim() || this.passwords.generateTemporaryPassword();
     const hash = await this.passwords.hashPassword(password);
     const roles = body.roles?.length ? body.roles : ['ROLE_USER'];
 
-    const saved = await this.users.create({
-      email,
-      username: body.username,
-      password: hash,
-      roles,
-      avatar: body.avatar ?? null,
-      emailVerified: body.emailVerified ?? true,
-      bannedUntil: null,
-      banReason: null,
-      chatBannedUntil: null,
-      chatBanReason: null,
-    });
+    const saved = await this.mapUniquenessConflict(() =>
+      this.users.create({
+        email,
+        username,
+        password: hash,
+        roles,
+        avatar: body.avatar ?? null,
+        bannedUntil: null,
+        banReason: null,
+        chatBannedUntil: null,
+        chatBanReason: null,
+      }),
+    );
 
     return {
       user: this.omitPassword(saved),
@@ -65,12 +68,14 @@ export class AdminUsersCommandService {
     const user = await this.requireUser(id);
 
     if (body.email && body.email.toLowerCase() !== user.email.toLowerCase()) {
-      await this.ensureEmailAvailable(body.email.toLowerCase(), id);
-      user.email = body.email.toLowerCase();
+      const email = normalizeEmail(body.email);
+      await this.ensureEmailAvailable(email, id);
+      user.email = email;
     }
     if (body.username && body.username !== user.username) {
-      await this.ensureUsernameAvailable(body.username, id);
-      user.username = body.username;
+      const username = normalizeUsername(body.username);
+      await this.ensureUsernameAvailable(username, id);
+      user.username = username;
     }
     if (body.roles) {
       user.roles = body.roles;
@@ -87,9 +92,6 @@ export class AdminUsersCommandService {
     if (body.avatar !== undefined) {
       user.avatar = body.avatar;
     }
-    if (body.emailVerified !== undefined) {
-      user.emailVerified = body.emailVerified;
-    }
     if (body.password !== undefined) {
       const password = body.password.trim();
       if (!password) {
@@ -98,7 +100,7 @@ export class AdminUsersCommandService {
       user.password = await this.passwords.hashPassword(password);
     }
 
-    const saved = await this.users.save(user);
+    const saved = await this.mapUniquenessConflict(() => this.users.save(user));
     return this.omitPassword(saved);
   }
 
@@ -164,4 +166,23 @@ export class AdminUsersCommandService {
     void password;
     return safe;
   }
+
+  private async mapUniquenessConflict<T>(
+    operation: () => Promise<T>,
+  ): Promise<T> {
+    try {
+      return await operation();
+    } catch (error) {
+      if (isUniqueConstraintViolation(error)) {
+        throw new ConflictException('Email ou nom utilisateur déjà utilisé');
+      }
+      throw error;
+    }
+  }
+}
+
+function isUniqueConstraintViolation(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  const candidate = error as { code?: unknown; errno?: unknown };
+  return candidate.code === 'ER_DUP_ENTRY' || candidate.errno === 1062;
 }

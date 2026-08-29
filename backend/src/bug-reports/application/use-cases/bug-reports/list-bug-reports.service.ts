@@ -8,8 +8,12 @@ export class ListBugReportsService {
     private readonly normalizer: BugReportStatusNormalizerService,
   ) {}
 
-  async execute(): Promise<BugReportRecord[]> {
-    const items = await this.repo.list();
+  async execute(
+    options: { offset?: number; limit?: number } = {},
+  ): Promise<BugReportRecord[]> {
+    const offset = Math.max(0, Math.trunc(options.offset ?? 0));
+    const limit = Math.max(1, Math.min(100, Math.trunc(options.limit ?? 50)));
+    const items = await this.repo.list({ offset, limit });
     return items.map((item) => this.normalizer.normalizeRecord(item));
   }
 }

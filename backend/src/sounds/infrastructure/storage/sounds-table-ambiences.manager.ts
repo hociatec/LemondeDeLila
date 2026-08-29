@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as fs from 'fs';
+import { writeFileAtomic } from '../../../common/utils/public-api';
 import {
   SOUND_KEYS,
   type SoundKey,
@@ -197,10 +198,9 @@ export class SoundsTableAmbiencesManager {
         this.deps.filePath().replace(/[\\/][^\\/]+$/, ''),
         { recursive: true },
       );
-      await fs.promises.writeFile(
+      await writeFileAtomic(
         this.deps.filePath(),
         JSON.stringify(next, null, 2),
-        'utf-8',
       );
     } catch (err) {
       throw this.deps.storageIoError('écriture table-ambiences.json', err);

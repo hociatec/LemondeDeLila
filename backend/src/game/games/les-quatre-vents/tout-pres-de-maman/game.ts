@@ -3,7 +3,7 @@ import {
   defineGame,
   defineGameContent,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { MAMAN_CONTENT } from './content';
 import { MAMAN_EFFECTS, TOUT_PRES_DE_MAMAN_ACTIONS } from './rules';
 import type { ToutPresDeMamanState } from './state';
@@ -36,7 +36,6 @@ export default defineGame<
     { key: 'P', type: 'interface', id: 'position' },
     { key: 'S', type: 'interface', id: 'score' },
   ],
-  setup: () => ({}),
   actions: TOUT_PRES_DE_MAMAN_ACTIONS,
   effects: MAMAN_EFFECTS,
   bot: { choose: () => ({ type: 'roll', payload: {} }) },

@@ -13,7 +13,13 @@ describe('AdminBugReportCommentsService', () => {
     );
 
     await expect(service.list('r1')).resolves.toEqual([{ id: 'c1' }]);
-    expect(listBugReportComments.execute).toHaveBeenCalledWith('r1');
+    expect(listBugReportComments.execute).toHaveBeenCalledWith('r1', {});
+
+    await service.list('r1', { offset: 10, limit: 20 });
+    expect(listBugReportComments.execute).toHaveBeenLastCalledWith('r1', {
+      offset: 10,
+      limit: 20,
+    });
   });
 
   it('throws when target report is missing', async () => {

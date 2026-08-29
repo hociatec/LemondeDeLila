@@ -79,6 +79,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
       await this.participants.find({
         where: { room: { id: roomId }, leftAt: IsNull() },
         relations: { room: true, user: true },
+        take: 100,
       })
     )
       .map((participant) => toRoomParticipantRecord(participant))
@@ -107,6 +108,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
       await this.participants.find({
         where: { user: { id: userId }, leftAt: IsNull() },
         relations: { room: true, user: true },
+        take: 100,
       })
     )
       .map((participant) => toRoomParticipantRecord(participant))

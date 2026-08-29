@@ -1,5 +1,5 @@
-import { defineEffect, gameInput } from '../../../core/application/public-api';
-import type { GameEffectResolver } from '../../../core/application/public-api';
+import { defineEffect, gameInput } from '../../../engine/sdk/public-api';
+import type { DefinedGameEffectResolver } from '../../../engine/sdk/public-api';
 import { type GerardPresidentThemeCard } from './content';
 import type { GerardSpecialEffect } from './special-cards';
 import type { GerardState } from './state';
@@ -44,7 +44,7 @@ type GerardSpecialExecution = {
 function gerardSpecial(
   effect: GerardSpecialEffect,
   apply: (input: GerardSpecialExecution) => void,
-): GameEffectResolver<GerardState, GerardSpecialData> {
+): DefinedGameEffectResolver<GerardState, GerardSpecialData> {
   return defineEffect<GerardState, GerardSpecialData>({
     input: gameInput.object({
       targetPlayerId: gameInput.optional(gameInput.playerId()),

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { getErrorMessage } from '@common/utils/public-api';
+import { bestEffort, getErrorMessage } from '@common/utils/public-api';
 import {
   NOTIFICATION_DISPATCHER,
   type NotificationDispatcher,
@@ -225,7 +225,10 @@ export class RoomLobbyInvitesService {
   }
 
   private async refreshRoom(roomId: number): Promise<void> {
-    await this.roomState.notifyRoomStateUpdated(roomId).catch(() => undefined);
+    await bestEffort(
+      this.roomState.notifyRoomStateUpdated(roomId),
+      `rafraîchissement room après invitation room=${roomId}`,
+    );
   }
 
   private isStarted(state: RoomPayload): boolean {

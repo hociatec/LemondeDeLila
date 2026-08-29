@@ -6,7 +6,7 @@ import {
   gameInput,
   pawns,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   A_FOND_LES_BALLONS_CARDS,
   A_FOND_LES_BALLONS_PAWNS,
@@ -19,7 +19,7 @@ import {
   requestPawn,
   resolvePawn,
 } from './rules';
-import type { AFondLesBallonsState } from './state';
+import type { NoGameState as AFondLesBallonsState } from '../../../engine/sdk/public-api';
 
 export default defineGame<
   AFondLesBallonsState,

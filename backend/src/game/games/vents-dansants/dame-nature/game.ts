@@ -3,7 +3,8 @@ import {
   cardGame,
   defineGame,
   defineGameContent,
-} from '../../../core/application/public-api';
+  type NoGameState,
+} from '../../../engine/sdk/public-api';
 import {
   DAME_NATURE_CARD_BY_ID,
   DAME_NATURE_FAMILY_CARD_DEFINITIONS,
@@ -12,7 +13,11 @@ import {
   DAME_NATURE_QUIZ_CARD_IDS,
 } from './content';
 import { DAME_NATURE_ACTIONS, DAME_NATURE_POLLUTION } from './rules';
-import type { DameNaturePlayerView, DameNatureState } from './state';
+
+interface DameNatureViewExtension {
+  pollutionLoserId: number | null;
+  lastQuizCardId: string | null;
+}
 
 const familySets = cards.sets({
   id: 'nature-families',
@@ -29,9 +34,9 @@ const familySets = cards.sets({
 });
 
 export default defineGame<
-  DameNatureState,
+  NoGameState,
   typeof DAME_NATURE_ACTIONS,
-  DameNaturePlayerView
+  DameNatureViewExtension
 >({
   id: 'dame-nature',
   displayName: 'Dame Nature',
@@ -68,7 +73,7 @@ export default defineGame<
     return {};
   },
   actions: DAME_NATURE_ACTIONS,
-  viewFragment: ({ ctx }) => {
+  viewExtension: ({ ctx }) => {
     const result = ctx.match.result();
     const lastQuizCardId =
       [...ctx.cards.discardPile<string>('nature')]

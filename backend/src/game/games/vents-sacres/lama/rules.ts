@@ -4,8 +4,8 @@ import {
   defineAction,
   defineGamePhases,
   gameInput,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext, NoGameState } from '../../../engine/sdk/public-api';
 import {
   buildLamaDeck,
   LAMA_CARD_VALUES,
@@ -13,7 +13,9 @@ import {
   nextLamaValue,
   type LamaCard,
 } from './content';
-import type { LamaConfig, LamaState } from './state';
+import type { LamaConfig } from './config';
+
+type LamaState = NoGameState;
 
 type RuleContext = GameContext<LamaState>;
 export const LAMA_PHASES = defineGamePhases<LamaState>()({

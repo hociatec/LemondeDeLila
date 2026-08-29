@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Redis } from 'ioredis';
 import { RedisClientFactory } from '../../../common/redis/public-api';
@@ -6,7 +6,7 @@ import { RoomPayload } from '../../application/models/room-payload.model';
 import { decodeRoomPayload } from './room-payload.decoder';
 
 @Injectable()
-export class RoomPayloadCacheService {
+export class RoomPayloadCacheService implements OnModuleDestroy {
   private readonly logger = new Logger(RoomPayloadCacheService.name);
   private redis: Redis | null = null;
   private redisDisabled = false;
@@ -101,6 +101,12 @@ export class RoomPayloadCacheService {
         error,
       );
     }
+  }
+
+  onModuleDestroy(): void {
+    if (!this.redis) return;
+    this.redis.disconnect();
+    this.redis = null;
   }
 
   private key(roomId: number): string {

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { operationalPolicy } from '../../../config/public-api';
 
 export type RoomInvite = {
   id: string;
@@ -14,7 +15,7 @@ export type RoomInvite = {
 @Injectable()
 export class RoomInviteService {
   private readonly invites = new Map<string, RoomInvite>();
-  private readonly ttlMs = 10 * 60 * 1000; // 10 minutes
+  private readonly ttlMs = operationalPolicy.roomInviteTtlMs;
 
   create(roomId: number, fromUserId: number, toUserId: number): RoomInvite {
     this.cleanupExpired();

@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  PayloadTooLargeException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
   ROOM_VAULT_PORT,
@@ -63,6 +69,8 @@ function buildSnapshot(
 
 @Injectable()
 export class VaultSnapshotWriterService {
+  private static readonly MAX_SNAPSHOTS_PER_OWNER = 50;
+  private static readonly MAX_SNAPSHOT_BYTES = 5 * 1024 * 1024;
   constructor(
     @Inject(VAULT_ROOM_SNAPSHOT_REPOSITORY)
     private readonly snapshots: VaultRoomSnapshotRepository,
@@ -179,17 +187,33 @@ export class VaultSnapshotWriterService {
     const existing = requestedId
       ? await this.snapshots.findByIdForOwner(requestedId, ownerUserId)
       : null;
+    const snapshotJson = JSON.stringify(prepared.snapshot);
+    if (
+      Buffer.byteLength(snapshotJson, 'utf8') >
+      VaultSnapshotWriterService.MAX_SNAPSHOT_BYTES
+    ) {
+      throw new PayloadTooLargeException('Snapshot de partie trop volumineux.');
+    }
     const data = {
       name: prepared.name,
       gameType: prepared.gameType,
       roomName: prepared.snapshot.room.name.slice(0, 255),
       playersLabel: prepared.playersLabel,
-      snapshotJson: JSON.stringify(prepared.snapshot),
+      snapshotJson,
       createdAt: new Date(),
     };
     if (existing) {
       Object.assign(existing, data);
       return this.snapshots.save(existing);
+    }
+    const current = await this.snapshots.listByOwner(
+      ownerUserId,
+      VaultSnapshotWriterService.MAX_SNAPSHOTS_PER_OWNER,
+    );
+    if (current.length >= VaultSnapshotWriterService.MAX_SNAPSHOTS_PER_OWNER) {
+      throw new ConflictException(
+        `Quota de ${VaultSnapshotWriterService.MAX_SNAPSHOTS_PER_OWNER} snapshots atteint.`,
+      );
     }
     const created = this.snapshots.create({
       ...data,

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { readEnvironment } from '../../../../config/public-api';
 import type { GameCatalogReader } from '../../application/ports/game-catalog.reader';
 import type {
   GameCatalogEntryRecord,
@@ -104,7 +105,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function resolveGameRoots(): string[] {
-  const configured = String(process.env.GAME_MODULES_ROOT ?? '').trim();
+  const configured = readEnvironment('GAME_MODULES_ROOT').trim();
   const baseRoot = configured
     ? path.resolve(configured)
     : path.resolve(process.cwd(), 'src', 'game', 'games');

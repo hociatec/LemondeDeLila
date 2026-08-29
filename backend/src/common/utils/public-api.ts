@@ -33,3 +33,10 @@ export {
   getErrorPayload,
   type PresentedErrorPayload,
 } from './error-payload.utils';
+export { assertPathInside, writeFileAtomic } from './atomic-file.utils';
+export { bestEffort } from './best-effort.utils';
+export {
+  assertStorageCapacity,
+  StorageCapacityError,
+  type StorageCapacityPolicy,
+} from './storage-capacity';

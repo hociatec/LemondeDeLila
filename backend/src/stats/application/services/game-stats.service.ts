@@ -59,25 +59,19 @@ export class GameStatsService {
     // Fermer tout match actif de la room (robustesse).
     await this.closeActiveMatch(params.roomId, 'restart');
 
-    const match = await this.statsRepo.createMatch({
-      roomId: params.roomId,
-      gameType,
-      botsCount: params.botsCount,
-      humansCount: params.humans.length,
-      withBots: params.botsCount > 0,
+    return this.statsRepo.createMatchWithPlayers({
+      match: {
+        roomId: params.roomId,
+        gameType,
+        botsCount: params.botsCount,
+        humansCount: params.humans.length,
+        withBots: params.botsCount > 0,
+      },
+      players: params.humans.map((human) => ({
+        userId: human.id,
+        username: human.username,
+      })),
     });
-
-    for (const h of params.humans) {
-      await this.statsRepo.createPlayer({
-        matchId: match.id,
-        userId: h.id,
-        username: h.username,
-        outcome: 'unknown',
-        leftAt: null,
-      });
-    }
-
-    return match;
   }
 
   async markQuit(roomId: number, userId: number): Promise<void> {
@@ -116,8 +110,6 @@ export class GameStatsService {
     match.endedAt = new Date();
     match.endedReason = 'finished';
     match.winnerUserId = winnerId;
-    await this.statsRepo.saveMatch(match);
-
     const rows = await this.statsRepo.findPlayersByMatchId(match.id);
     for (const row of rows) {
       if (row.outcome === 'quit') {
@@ -125,8 +117,8 @@ export class GameStatsService {
       }
 
       row.outcome = this.resolveOutcome(row.userId, winnerId, cooperative);
-      await this.statsRepo.savePlayer(row);
     }
+    await this.statsRepo.saveMatchWithPlayers(match, rows);
   }
 
   async getMyStats(userId: number): Promise<MyGameStats[]> {
@@ -166,12 +158,12 @@ export class GameStatsService {
       if (r.outcome === 'lost') target.lost += 1;
     }
 
+    const gameNames = await this.gameNames();
     const results: MyGameStats[] = [];
     for (const [gameType, counts] of byGame.entries()) {
-      const manifest = await this.catalog.getGame(gameType);
       results.push({
         gameType,
-        gameName: manifest?.name ?? gameType,
+        gameName: gameNames.get(gameType) ?? gameType,
         withBots: counts.withBots,
         withoutBots: counts.withoutBots,
       });
@@ -182,11 +174,11 @@ export class GameStatsService {
   }
 
   async getLeaderboardGames(): Promise<LeaderboardGame[]> {
+    const gameNames = await this.gameNames();
     const list: LeaderboardGame[] = [];
     for (const gameType of await this.statsRepo.listFinishedGameTypes()) {
       if (!gameType) continue;
-      const manifest = await this.catalog.getGame(gameType);
-      list.push({ gameType, gameName: manifest?.name ?? gameType });
+      list.push({ gameType, gameName: gameNames.get(gameType) ?? gameType });
     }
 
     list.sort((a, b) => a.gameName.localeCompare(b.gameName, 'fr'));
@@ -230,8 +222,6 @@ export class GameStatsService {
     match.endedAt = new Date();
     match.endedReason = reason;
     match.winnerUserId = null;
-    await this.statsRepo.saveMatch(match);
-
     const rows = await this.statsRepo.findPlayersByMatchId(match.id);
     for (const row of rows) {
       if (
@@ -243,10 +233,16 @@ export class GameStatsService {
       }
       row.outcome = 'quit';
       row.leftAt = row.leftAt ?? new Date();
-      await this.statsRepo.savePlayer(row);
     }
+    await this.statsRepo.saveMatchWithPlayers(match, rows);
 
     this.logger.warn(`Match actif clos (roomId=${roomId}, reason=${reason})`);
+  }
+
+  private async gameNames(): Promise<Map<string, string>> {
+    return new Map(
+      (await this.catalog.getAllGames()).map((game) => [game.id, game.name]),
+    );
   }
 
   async resetAllStats(): Promise<{

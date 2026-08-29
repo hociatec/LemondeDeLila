@@ -1,0 +1,262 @@
+import { cards, type DeckDefinition, type HandsDefinition } from './cards-kit';
+import { diceKit } from './dice-kit';
+import type {
+  GameLifecycleHooks,
+  TurnLifecycleInput,
+} from './game-lifecycle-hooks';
+import { movement } from './movement-kit';
+import type { GameEffectInstruction } from './effects-kit';
+import { pawns, type PawnDefinition } from './pawn-kit';
+import { quiz, type QuizQuestion } from './quiz-kit';
+import { clockwise } from './turn-kit';
+import { eventTrackTurn, type EventTrackOptions } from './gameplay-recipes';
+import { definePattern, type GamePattern } from './gameplay-pattern-core';
+
+export function eventTrackGame<TState extends object, TTile>(
+  options: EventTrackOptions<TState, TTile> & {
+    actionType?: string;
+    spaces?: number;
+    overshoot?: Parameters<typeof movement.track>[0]['overshoot'];
+  },
+): GamePattern<TState> {
+  const actionType = options.actionType ?? 'roll';
+  return definePattern({
+    id: `event-track-game:${options.trackId}:${actionType}`,
+    mechanics: [
+      'race',
+      'track',
+      'dice',
+      'tile-resolution',
+      'event-deck',
+      'effect-pipeline',
+    ],
+    turn: clockwise(),
+    components: [
+      diceKit({
+        id: options.diceId ?? 'main',
+        count: 1,
+        sides: 6,
+      }),
+      movement.track({
+        id: options.trackId,
+        spaces: options.spaces ?? options.tiles.length,
+        overshoot: options.overshoot ?? 'clamp',
+      }),
+    ],
+    actions: {
+      [actionType]: eventTrackTurn(options),
+    },
+  });
+}
+
+export function raceGame<TState extends object>(options: {
+  trackId?: string;
+  spaces: number;
+  overshoot?: 'clamp' | 'wrap' | 'bounce' | 'exact';
+  finish?: number;
+  homeStretch?: { from: number; to?: number };
+  landingEffects?: Readonly<Record<number, readonly GameEffectInstruction[]>>;
+  diceId?: string;
+  diceCount?: number;
+  diceSides?: number;
+  winOnFinish?: boolean | string;
+}): GamePattern<TState> {
+  return definePattern({
+    id: `race-game:${options.trackId ?? 'main'}`,
+    mechanics: ['race', 'track', 'dice'],
+    turn: clockwise(),
+    components: [
+      movement.track({
+        id: options.trackId ?? 'main',
+        spaces: options.spaces,
+        overshoot: options.overshoot ?? 'clamp',
+        finish: options.finish,
+        homeStretch: options.homeStretch,
+        landingEffects: options.landingEffects,
+      }),
+      diceKit({
+        id: options.diceId ?? 'main',
+        count: options.diceCount ?? 1,
+        sides: options.diceSides ?? 6,
+      }),
+    ],
+    ...(options.winOnFinish
+      ? {
+          victory: {
+            evaluate: ({ ctx }) => {
+              const winner = ctx.players
+                .active()
+                .find((player) =>
+                  ctx.movement.atFinish(options.trackId ?? 'main', player.id),
+                );
+              return winner
+                ? {
+                    winnerPlayerIds: [winner.id],
+                    reason:
+                      typeof options.winOnFinish === 'string'
+                        ? options.winOnFinish
+                        : 'track-finished',
+                  }
+                : null;
+            },
+          },
+        }
+      : {}),
+  });
+}
+
+export function quizRace<TState extends object>(options: {
+  trackId?: string;
+  spaces: number;
+  overshoot?: 'clamp' | 'wrap' | 'bounce' | 'exact';
+  finish?: number;
+  landingEffects?: Readonly<Record<number, readonly GameEffectInstruction[]>>;
+  diceId?: string;
+  diceCount?: number;
+  diceSides?: number;
+  winOnFinish?: boolean | string;
+  quizId: string;
+  questions: readonly QuizQuestion[];
+  shuffleQuestions?: boolean;
+}): GamePattern<TState> {
+  const race = raceGame<TState>(options);
+  return definePattern({
+    ...race,
+    id: `quiz-race:${options.trackId ?? 'main'}:${options.quizId}`,
+    mechanics: [...race.mechanics, 'quiz'],
+    components: [
+      ...(race.components ?? []),
+      quiz.bank({
+        id: options.quizId,
+        questions: options.questions,
+        shuffle: options.shuffleQuestions ?? true,
+      }),
+    ],
+  });
+}
+
+export function pawnRace<TState extends object>(options: {
+  pawnSetId: string;
+  pawns: readonly PawnDefinition[];
+  perPlayer?: number;
+  spaces?: number;
+  overshoot?: 'clamp' | 'wrap' | 'bounce' | 'exact';
+  initialPosition?: number;
+  entryRoll?: number;
+  entryPosition?: number;
+  exactFinish?: boolean;
+  homeStretchFrom?: number;
+  diceId?: string;
+  diceCount?: number;
+  diceSides?: number;
+}): GamePattern<TState> {
+  return definePattern({
+    id: `pawn-race:${options.pawnSetId}`,
+    mechanics: ['race', 'pawns', 'dice', 'pawn-selection'],
+    turn: clockwise(),
+    components: [
+      diceKit({
+        id: options.diceId ?? 'main',
+        count: options.diceCount ?? 1,
+        sides: options.diceSides ?? 6,
+      }),
+      pawns.set({
+        id: options.pawnSetId,
+        pawns: options.pawns,
+        perPlayer: options.perPlayer,
+        spaces: options.spaces,
+        overshoot: options.overshoot,
+        initialPosition: options.initialPosition,
+        entryRoll: options.entryRoll,
+        entryPosition: options.entryPosition,
+        exactFinish: options.exactFinish,
+        homeStretchFrom: options.homeStretchFrom,
+      }),
+    ],
+  });
+}
+
+export function cardGame<TState extends object, TCard>(options: {
+  deckId?: string;
+  handId?: string;
+  cards: readonly TCard[];
+  initialHandSize?: number;
+  drawAtTurnStart?:
+    number | NonNullable<GameLifecycleHooks<TState>['beforeTurn']>;
+  visibility?: HandsDefinition['visibility'];
+  shuffle?: boolean;
+  empty?: DeckDefinition<TCard>['empty'];
+}): GamePattern<TState> {
+  const deckId = options.deckId ?? 'main';
+  const handId = options.handId ?? 'players';
+  const components: Array<DeckDefinition<TCard> | HandsDefinition> = [
+    cards.deck({
+      id: deckId,
+      cards: options.cards,
+      shuffle: options.shuffle ?? true,
+      empty: options.empty ?? 'recycle',
+    }),
+    cards.hands({
+      id: handId,
+      deck: deckId,
+      initial: options.initialHandSize ?? 0,
+      visibility: options.visibility ?? 'owner',
+    }),
+  ];
+  const beforeTurn =
+    typeof options.drawAtTurnStart === 'function'
+      ? options.drawAtTurnStart
+      : (options.drawAtTurnStart ?? 0) > 0
+        ? drawCardsAtTurnStart<TState, TCard>({
+            deckId,
+            handId,
+            count: options.drawAtTurnStart,
+          })
+        : undefined;
+  return definePattern({
+    id: `card-game:${deckId}:${handId}`,
+    mechanics: ['cards', 'hands', 'deck-lifecycle'],
+    components,
+    turn: clockwise(),
+    ...(beforeTurn ? { lifecycle: { beforeTurn } } : {}),
+  });
+}
+
+export function drawCardsAtTurnStart<TState extends object, TCard>(options: {
+  deckId: string;
+  handId: string;
+  count?: number;
+  recycle?: boolean;
+  when?: (input: TurnLifecycleInput<TState>) => boolean;
+  afterDraw?: (input: TurnLifecycleInput<TState> & { card: TCard }) => void;
+  afterAttempt?: (
+    input: TurnLifecycleInput<TState> & {
+      drawn: readonly TCard[];
+    },
+  ) => void;
+}): NonNullable<GameLifecycleHooks<TState>['beforeTurn']> {
+  return (input) => {
+    if (!input.player || (options.when && !options.when(input))) return;
+    const drawn = input.ctx.cards.drawManyToHand<TCard>(
+      options.deckId,
+      options.handId,
+      input.player.id,
+      options.count ?? 1,
+      { recycle: options.recycle },
+    );
+    const last = drawn.at(-1);
+    input.ctx.effects.recordSource({
+      playerId: input.player.id,
+      deckId: options.deckId,
+      ...(last != null && typeof last === 'object' && 'id' in last
+        ? {
+            cardId: (last as { id: string | number }).id,
+          }
+        : typeof last === 'string' || typeof last === 'number'
+          ? { cardId: last }
+          : {}),
+    });
+    for (const card of drawn) options.afterDraw?.({ ...input, card });
+    options.afterAttempt?.({ ...input, drawn });
+  };
+}

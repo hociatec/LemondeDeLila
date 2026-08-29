@@ -15,6 +15,8 @@ import { GameCatalogOverrideEntity } from '../../../engine/infrastructure/persis
 import { FilesystemGameCatalogReader } from '../system/filesystem-game-catalog.reader';
 import { GameSessionTypeormStore } from '../persistence/typeorm/repositories/game-session-typeorm.store';
 import { GameSessionEntity } from '../persistence/typeorm/entities/game-session.entity';
+import { GameSessionEventEntity } from '../persistence/typeorm/entities/game-session-event.entity';
+import { GameSessionSnapshotEntity } from '../persistence/typeorm/entities/game-session-snapshot.entity';
 import { GAME_STATE_STORE } from '../../application/ports/game-state-store.port';
 import { GAME_EVENT_STORE } from '../../application/ports/game-event-store.port';
 import { GameEngineMetricsService } from '../../application/services/game-engine-metrics.service';
@@ -26,6 +28,8 @@ import { GameEngineMetricsService } from '../../application/services/game-engine
       GameCategoryAssignmentEntity,
       GameCatalogOverrideEntity,
       GameSessionEntity,
+      GameSessionEventEntity,
+      GameSessionSnapshotEntity,
     ]),
   ],
   providers: [

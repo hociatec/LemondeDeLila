@@ -1,11 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { AdminClientUpdatesSharedService } from './admin-client-updates-shared.service';
-import { AdminClientUpdateSchedulePlannerService } from './admin-client-update-schedule-planner.service';
+import {
+  AdminClientUpdateSchedulePlannerService,
+  type AdminClientUpdateSchedulePlan,
+} from './admin-client-update-schedule-planner.service';
 import { AdminClientUpdateSchedulerDispatchService } from './admin-client-update-scheduler-dispatch.service';
 import type { AdminClientUpdateScheduleCommand } from './admin-client-updates.types';
+import { operationalPolicy } from '../../../../config/public-api';
+import type { AdminNotificationPort } from '../../ports/admin-notification.port';
+import type { AdminClientUpdatesPort } from '../../ports/admin-client-updates.port';
 
 @Injectable()
-export class AdminClientUpdateSchedulerService {
+export class AdminClientUpdateSchedulerService implements OnModuleDestroy {
+  private readonly logger = new Logger(AdminClientUpdateSchedulerService.name);
   private scheduledTimer: NodeJS.Timeout | null = null;
   private scheduledAtMs: number | null = null;
   private warningTimer: NodeJS.Timeout | null = null;
@@ -16,6 +23,10 @@ export class AdminClientUpdateSchedulerService {
     private readonly planner: AdminClientUpdateSchedulePlannerService,
     private readonly dispatch: AdminClientUpdateSchedulerDispatchService,
   ) {}
+
+  onModuleDestroy(): void {
+    this.clearScheduledTimers();
+  }
 
   async schedule(
     command: AdminClientUpdateScheduleCommand,
@@ -29,24 +40,8 @@ export class AdminClientUpdateSchedulerService {
     this.scheduledAtMs = plan.scheduledAtMs;
     this.warningAtMs = plan.scheduledAtMs;
 
-    const sendImminentNotification = async () => {
-      if (this.warningAtMs !== plan.scheduledAtMs) {
-        return;
-      }
-      this.warningTimer = null;
-      this.warningAtMs = null;
-      try {
-        await this.dispatch.sendImminentNotification({
-          command,
-          recipientIds,
-          notifications,
-          scheduledAtMs: plan.scheduledAtMs,
-          imminentMessage: plan.imminentMessage,
-        });
-      } catch {
-        // ignore
-      }
-    };
+    const sendImminentNotification = () =>
+      this.sendImminent(command, recipientIds, notifications, plan);
 
     if (plan.warningDelayMs <= 0) {
       void sendImminentNotification();
@@ -57,41 +52,81 @@ export class AdminClientUpdateSchedulerService {
       );
     }
 
-    const sendForcedUpdate = async () => {
-      if (this.scheduledAtMs !== plan.scheduledAtMs) {
-        return;
-      }
-      this.scheduledTimer = null;
-      try {
-        const delivered = await this.dispatch.sendForcedUpdate({
-          command,
-          recipientIds,
-          notifications,
-          clientUpdates,
-        });
-        if (!delivered) {
-          this.scheduledAtMs = null;
-          return;
-        }
-      } catch {
-        // ignore
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      notifications.disconnectAll('Mise à jour en cours.');
-      this.scheduledAtMs = null;
-    };
+    const sendForcedUpdate = () =>
+      this.sendForced(
+        command,
+        recipientIds,
+        notifications,
+        clientUpdates,
+        plan,
+      );
 
     this.scheduledTimer = setTimeout(
       () => void sendForcedUpdate(),
       plan.delayMs,
     );
 
-    return {
-      delivered: recipientIds.length,
-      scheduledAt: new Date(plan.scheduledAtMs).toISOString(),
-      delaySeconds: plan.effectiveDelaySeconds,
-    };
+    return scheduleResult(
+      recipientIds.length,
+      plan.scheduledAtMs,
+      plan.effectiveDelaySeconds,
+    );
+  }
+
+  private async sendImminent(
+    command: AdminClientUpdateScheduleCommand,
+    recipientIds: number[],
+    notifications: AdminNotificationPort,
+    plan: AdminClientUpdateSchedulePlan,
+  ): Promise<void> {
+    if (this.warningAtMs !== plan.scheduledAtMs) return;
+    this.warningTimer = null;
+    this.warningAtMs = null;
+    try {
+      await this.dispatch.sendImminentNotification({
+        command,
+        recipientIds,
+        notifications,
+        scheduledAtMs: plan.scheduledAtMs,
+        imminentMessage: plan.imminentMessage,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Notification de mise à jour imminente non diffusée: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  private async sendForced(
+    command: AdminClientUpdateScheduleCommand,
+    recipientIds: number[],
+    notifications: AdminNotificationPort,
+    clientUpdates: AdminClientUpdatesPort,
+    plan: AdminClientUpdateSchedulePlan,
+  ): Promise<void> {
+    if (this.scheduledAtMs !== plan.scheduledAtMs) return;
+    this.scheduledTimer = null;
+    try {
+      const delivered = await this.dispatch.sendForcedUpdate({
+        command,
+        recipientIds,
+        notifications,
+        clientUpdates,
+      });
+      if (!delivered) {
+        this.scheduledAtMs = null;
+        return;
+      }
+    } catch (error) {
+      this.logger.error(
+        `Mise à jour forcée non diffusée: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    await new Promise((resolve) =>
+      setTimeout(resolve, operationalPolicy.clientUpdateDisconnectDelayMs),
+    );
+    notifications.disconnectAll('Mise à jour en cours.');
+    this.scheduledAtMs = null;
   }
 
   private clearScheduledTimers(): void {
@@ -106,4 +141,16 @@ export class AdminClientUpdateSchedulerService {
       this.scheduledAtMs = null;
     }
   }
+}
+
+function scheduleResult(
+  delivered: number,
+  scheduledAtMs: number,
+  delaySeconds: number,
+) {
+  return {
+    delivered,
+    scheduledAt: new Date(scheduledAtMs).toISOString(),
+    delaySeconds,
+  };
 }

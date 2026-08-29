@@ -1,17 +1,29 @@
-import { Injectable, Optional } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import {
+  GAME_ROOM_LOCK,
+  type GameRoomLock,
+} from '../ports/game-room-lock.port';
 
 export const GAME_ROOM_COORDINATION_STRATEGY = Object.freeze({
   local: 'promise-tail-per-room',
-  distributed: 'postgres-advisory-lock-per-room',
-  commit: 'database-cas',
+  distributed: 'mysql-named-lock-per-room',
+  commit: 'transactional-database-cas',
+  responsibilities: Object.freeze({
+    local: 'preserve-order-and-limit-work-inside-one-process',
+    distributed: 'avoid-concurrent-room-work-across-processes',
+    commit: 'authoritative-correctness-and-version-conflict-detection',
+  }),
 });
 
 @Injectable()
 export class GameRoomCommandQueueService {
   private readonly tails = new Map<number, Promise<void>>();
 
-  constructor(@Optional() private readonly dataSource?: DataSource) {}
+  constructor(
+    @Optional()
+    @Inject(GAME_ROOM_LOCK)
+    private readonly distributedLock?: GameRoomLock,
+  ) {}
 
   run<T>(roomId: number, command: () => Promise<T>): Promise<T> {
     const previous = this.tails.get(roomId) ?? Promise.resolve();
@@ -36,21 +48,8 @@ export class GameRoomCommandQueueService {
     roomId: number,
     command: () => Promise<T>,
   ): Promise<T> {
-    if (!this.dataSource || this.dataSource.options.type !== 'postgres') {
-      return command();
-    }
-    const connection = this.dataSource.createQueryRunner();
-    await connection.connect();
-    let locked = false;
-    try {
-      await connection.query('SELECT pg_advisory_lock($1)', [roomId]);
-      locked = true;
-      return await command();
-    } finally {
-      if (locked) {
-        await connection.query('SELECT pg_advisory_unlock($1)', [roomId]);
-      }
-      await connection.release();
-    }
+    return this.distributedLock
+      ? this.distributedLock.runExclusive(roomId, command)
+      : command();
   }
 }

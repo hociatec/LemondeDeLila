@@ -2,11 +2,11 @@ import {
   freezeGameContent,
   gameEffects,
   rejectContent,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import type {
   EffectTarget,
   GameEffectInstruction,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import data from './content-data.json';
 
 export type OlympiaCategory =

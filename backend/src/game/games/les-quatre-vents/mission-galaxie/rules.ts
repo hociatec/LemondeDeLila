@@ -4,8 +4,8 @@ import {
   gameInput,
   rejectRule,
   raceTurn,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import { MISSION_GALAXIE_CONTENT } from './content';
 import type {
   MissionGalaxieChoiceCard,

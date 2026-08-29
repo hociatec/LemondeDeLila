@@ -6,8 +6,8 @@ import {
   gameInput,
   positionOf,
   rejectRule,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   CA_DERAPE_TILES,
   type CaCard,
@@ -16,7 +16,7 @@ import {
   type CaRuleEffect,
   type CaSpecialEffect,
 } from './content';
-import type { CaDerapeState } from './state';
+import type { NoGameState as CaDerapeState } from '../../../engine/sdk/public-api';
 
 type RuleContext = GameContext<CaDerapeState>;
 export const TRACK = 'derape';

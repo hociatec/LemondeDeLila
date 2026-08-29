@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { Injectable } from '@nestjs/common';
+import { readEnvironment } from '../../../config/public-api';
 
 @Injectable()
 export class ClientUpdatesPathsService {
@@ -14,7 +15,7 @@ export class ClientUpdatesPathsService {
   constructor() {
     const backendRoot = path.resolve(__dirname, '..', '..', '..', '..');
     const legacyDataDir = path.join(backendRoot, 'data', 'client-updates');
-    const nodeEnv = (process.env.NODE_ENV || '').trim().toLowerCase();
+    const nodeEnv = readEnvironment('NODE_ENV').trim().toLowerCase();
     const defaultDataDir =
       nodeEnv === 'production'
         ? path.join(
@@ -29,18 +30,18 @@ export class ClientUpdatesPathsService {
 
     if (
       nodeEnv === 'production' &&
-      !process.env.CLIENT_UPDATES_DIR &&
-      !process.env.CLIENT_UPDATES_META_PATH
+      !readEnvironment('CLIENT_UPDATES_DIR') &&
+      !readEnvironment('CLIENT_UPDATES_META_PATH')
     ) {
       this.bootstrapPersistentStorage(legacyDataDir, defaultDataDir);
     }
 
-    this.updatesDir = process.env.CLIENT_UPDATES_DIR || defaultUpdatesDir;
+    this.updatesDir = readEnvironment('CLIENT_UPDATES_DIR', defaultUpdatesDir);
     this.metaPath =
-      process.env.CLIENT_UPDATES_META_PATH ||
+      readEnvironment('CLIENT_UPDATES_META_PATH') ||
       path.join(defaultDataDir, 'latest.json');
     this.uploadsRoot =
-      (process.env.CLIENT_UPDATES_UPLOADS_DIR || '').trim() ||
+      readEnvironment('CLIENT_UPDATES_UPLOADS_DIR').trim() ||
       path.join(path.dirname(this.updatesDir), 'uploads');
   }
 
@@ -57,7 +58,7 @@ export class ClientUpdatesPathsService {
   }
 
   getPublicUrl(): string | null {
-    return process.env.CLIENT_UPDATES_PUBLIC_URL || null;
+    return readEnvironment('CLIENT_UPDATES_PUBLIC_URL') || null;
   }
 
   getLegacyApplicationName(): string {

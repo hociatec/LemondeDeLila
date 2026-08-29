@@ -15,7 +15,6 @@ const PUBLIC_USER_SELECT = {
   avatar: true,
   preferences: true,
   roles: true,
-  emailVerified: true,
   bannedUntil: true,
   banReason: true,
   chatBannedUntil: true,
@@ -29,10 +28,15 @@ export class UserTypeormRepository implements UserRepository {
     @InjectRepository(User) private readonly users: Repository<User>,
   ) {}
 
-  async listPublic(): Promise<UserModel[]> {
+  async listPublic(options: {
+    offset: number;
+    limit: number;
+  }): Promise<UserModel[]> {
     const items = await this.users.find({
       select: PUBLIC_USER_SELECT,
       order: { id: 'ASC' },
+      skip: options.offset,
+      take: options.limit,
     });
     return items.map((item) => this.toPublicModel(item));
   }
@@ -41,6 +45,7 @@ export class UserTypeormRepository implements UserRepository {
     const items = await this.users.find({
       select: PUBLIC_USER_SELECT,
       order: { id: 'ASC' },
+      take: 500,
     });
     return items
       .map((item) => this.toPublicModel(item))
@@ -89,7 +94,6 @@ export class UserTypeormRepository implements UserRepository {
       username: record.username,
       avatar: record.avatar,
       preferences: record.preferences,
-      emailVerified: record.emailVerified,
       bannedUntil: record.bannedUntil,
       banReason: record.banReason,
       chatBannedUntil: record.chatBannedUntil,
@@ -108,7 +112,6 @@ export class UserTypeormRepository implements UserRepository {
       username: user.username,
       avatar: user.avatar,
       preferences: user.preferences,
-      emailVerified: user.emailVerified,
       bannedUntil: user.bannedUntil,
       banReason: user.banReason,
       chatBannedUntil: user.chatBannedUntil,
@@ -126,7 +129,6 @@ export class UserTypeormRepository implements UserRepository {
       username: user.username,
       avatar: user.avatar ?? null,
       preferences: user.preferences ?? null,
-      emailVerified: Boolean(user.emailVerified),
       bannedUntil: user.bannedUntil ?? null,
       banReason: user.banReason ?? null,
       chatBannedUntil: user.chatBannedUntil ?? null,

@@ -18,6 +18,16 @@ export type SocialRelationshipStatus = 'pending' | 'accepted' | 'blocked';
 @Index('idx_social_relationship_status', ['status'])
 @Index('idx_social_relationship_requester', ['requester'])
 @Index('idx_social_relationship_addressee', ['addressee'])
+@Index('idx_social_relationship_requester_status_updated', [
+  'requester',
+  'status',
+  'updatedAt',
+])
+@Index('idx_social_relationship_addressee_status_updated', [
+  'addressee',
+  'status',
+  'updatedAt',
+])
 export class SocialRelationshipEntity {
   @PrimaryGeneratedColumn()
   id!: number;

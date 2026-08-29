@@ -7,8 +7,8 @@ import {
   scanGridWinner,
   type GameActionDefinition,
   type GameContext,
-} from '../../../core/application/public-api';
-import type { MorpionState } from './state';
+} from '../../../engine/sdk/public-api';
+import type { NoGameState as MorpionState } from '../../../engine/sdk/public-api';
 
 type PlayInput = { x: number; y: number };
 const MARK_PLACED = defineEvent({

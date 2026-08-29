@@ -11,6 +11,12 @@ import {
   submissionJudgeGame,
 } from './gameplay-patterns';
 import { clockwise, simultaneous } from './turn-kit';
+import {
+  defineConfiguration,
+  overrideConfiguration,
+} from './configuration-kit';
+import { gameInput } from './game-input-schema';
+import { defineAction, defineGame } from './game-definition';
 
 describe('gameplay pattern composition', () => {
   it('keeps configured pattern instances uniquely identifiable', () => {
@@ -89,6 +95,62 @@ describe('gameplay pattern composition', () => {
         }),
       ),
     ).toThrow('initialisation resource dupliquée');
+  });
+
+  it('composes pattern configuration and requires explicit key overrides', () => {
+    const noopAction = defineAction<object, Record<string, never>>({
+      input: gameInput.object({}),
+      execute: () => undefined,
+    });
+    const configuredPattern = definePattern<object>({
+      id: 'configurable-race',
+      mechanics: ['config'],
+      config: defineConfiguration({
+        input: gameInput.object({ target: gameInput.number({ min: 1 }) }),
+        defaults: { target: 10 },
+      }),
+    });
+    const extraPattern = definePattern<object>({
+      id: 'configurable-rounds',
+      mechanics: ['config'],
+      config: defineConfiguration({
+        input: gameInput.object({ rounds: gameInput.number({ min: 1 }) }),
+        defaults: { rounds: 3 },
+      }),
+    });
+    expect(
+      composePatterns(configuredPattern, extraPattern).config?.input.parse({
+        target: 12,
+        rounds: 4,
+      }),
+    ).toEqual({ target: 12, rounds: 4 });
+
+    const local = defineConfiguration({
+      input: gameInput.object({ target: gameInput.number({ min: 2 }) }),
+      defaults: { target: 20 },
+    });
+    expect(() =>
+      defineGame({
+        id: 'implicit-config-override',
+        displayName: 'Implicit config override',
+        category: 'Tests',
+        players: { min: 1, max: 1 },
+        patterns: [configuredPattern],
+        config: local,
+        actions: { noop: noopAction },
+      }),
+    ).toThrow('overrideConfiguration');
+    expect(() =>
+      defineGame({
+        id: 'explicit-config-override',
+        displayName: 'Explicit config override',
+        category: 'Tests',
+        players: { min: 1, max: 1 },
+        patterns: [configuredPattern],
+        config: overrideConfiguration(['target'], local),
+        actions: { noop: noopAction },
+      }),
+    ).not.toThrow();
   });
 
   it('defines independent contracts for the major reusable patterns', () => {

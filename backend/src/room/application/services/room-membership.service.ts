@@ -23,6 +23,7 @@ export type { RoomMembershipContext } from '../models/room-membership-context.mo
 import { PresenceService } from '../../../presence/public-api';
 import { CatalogService } from '../../../catalog/public-api';
 import { GameStatsService } from '../../../stats/public-api';
+import { bestEffort } from '../../../common/utils/public-api';
 import { RoomLeaveService } from './room-leave.service';
 import {
   getRoomManifestStatus,
@@ -67,7 +68,11 @@ export class RoomMembershipService {
       throw new BadRequestException('Type de jeu requis');
     }
 
-    await context.leaveAllRoomsForUser(userId).catch(() => undefined);
+    await bestEffort(
+      context.leaveAllRoomsForUser(userId),
+      `sortie des anciennes rooms user=${userId}`,
+      this.logger,
+    );
 
     const gameId = gameType.trim();
     const known =

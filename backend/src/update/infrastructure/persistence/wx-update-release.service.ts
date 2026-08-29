@@ -1,45 +1,19 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-} from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-
+import { readEnvironment } from '../../../config/public-api';
 import {
   compareUpdateVersions,
   parseUpdateVersion,
 } from '../../domain/update-version';
-import {
-  canonicalizeWxUpdateSignature,
-  WX_UPDATE_ARCHITECTURE,
-  WX_UPDATE_CHANNEL,
-  WX_UPDATE_PLATFORM,
-  WX_UPDATE_PRODUCT,
-  WX_UPDATE_SCHEMA_VERSION,
-  WX_UPDATE_SIGNATURE_ALGORITHM,
-  type WxUpdateManifest,
-  type WxUpdateManifestResponse,
+import type {
+  WxUpdateManifest,
+  WxUpdateManifestResponse,
 } from '../../domain/wx-update-manifest';
-
 import type { PublishWxUpdateInput } from './wx-update-publication.model';
 export type { PublishWxUpdateInput } from './wx-update-publication.model';
 import { WxUpdateArtifactValidatorService } from './wx-update-artifact-validator.service';
-
-type CommitWxPublication = {
-  input: PublishWxUpdateInput;
-  releaseId: string;
-  version: string;
-  sequence: number;
-  publishedAt: string;
-  mandatoryAt: string | null;
-  minimumVersion: string | null;
-  signature: string;
-  sha256: string;
-  artifactSize: number;
-  installer: { size: number; sha256: string } | null;
-};
+import { WxUpdatePublicationManager } from './wx-update-publication.manager';
 
 @Injectable()
 export class WxUpdateReleaseService {
@@ -50,6 +24,7 @@ export class WxUpdateReleaseService {
   private readonly metaPath: string;
   private readonly publicUrl: string;
   private readonly maxArtifactBytes: number;
+  private readonly publication: WxUpdatePublicationManager;
   private cachedManifest: WxUpdateManifest | null = null;
   private manifestCacheInitialized = false;
   private manifestCacheExpiresAt = 0;
@@ -60,19 +35,29 @@ export class WxUpdateReleaseService {
     const backendRoot = path.resolve(__dirname, '..', '..', '..', '..');
     const dataRoot = path.join(backendRoot, 'data', 'client-updates');
     this.updatesDir =
-      (process.env.CLIENT_WX_UPDATES_DIR || '').trim() ||
+      readEnvironment('CLIENT_WX_UPDATES_DIR').trim() ||
       path.join(dataRoot, 'client-wx');
     this.metaPath =
-      (process.env.CLIENT_WX_UPDATES_META_PATH || '').trim() ||
+      readEnvironment('CLIENT_WX_UPDATES_META_PATH').trim() ||
       path.join(dataRoot, 'client-wx-latest.json');
     this.publicUrl =
-      (process.env.CLIENT_WX_UPDATES_PUBLIC_URL || '').trim() ||
+      readEnvironment('CLIENT_WX_UPDATES_PUBLIC_URL').trim() ||
       '/updates/client-wx';
-    const configuredMax = Number(process.env.CLIENT_WX_MAX_ARTIFACT_BYTES);
+    const configuredMax = Number(
+      readEnvironment('CLIENT_WX_MAX_ARTIFACT_BYTES'),
+    );
     this.maxArtifactBytes =
       Number.isSafeInteger(configuredMax) && configuredMax > 0
         ? configuredMax
         : WxUpdateReleaseService.defaultMaxArtifactBytes;
+    this.publication = new WxUpdatePublicationManager(
+      this.updatesDir,
+      this.metaPath,
+      this.publicUrl,
+      this.maxArtifactBytes,
+      validator,
+      (manifest) => this.updateManifestCache(manifest),
+    );
   }
 
   getTargetDir(): string {
@@ -114,7 +99,7 @@ export class WxUpdateReleaseService {
 
   async getMinimumVersion(): Promise<string | null> {
     const latest = await this.getLatest();
-    const explicit = (process.env.CLIENT_WX_MIN_VERSION || '').trim();
+    const explicit = readEnvironment('CLIENT_WX_MIN_VERSION').trim();
     const candidates = [explicit, latest?.minimumVersion || ''].filter(
       (version) => parseUpdateVersion(version) != null,
     );
@@ -150,12 +135,12 @@ export class WxUpdateReleaseService {
       ...latest,
       artifact: {
         ...latest.artifact,
-        url: this.resolvePublicUrl(latest.artifact.url, origin),
+        url: resolvePublicUrl(latest.artifact.url, origin),
       },
       installer: latest.installer
         ? {
             ...latest.installer,
-            url: this.resolvePublicUrl(latest.installer.url, origin),
+            url: resolvePublicUrl(latest.installer.url, origin),
           }
         : undefined,
       currentVersion: current,
@@ -172,22 +157,7 @@ export class WxUpdateReleaseService {
       input.version,
       'Version WX invalide.',
     );
-    const minimumVersionInput = input.minimumVersion?.trim() ?? '';
-    const minimumVersion =
-      minimumVersionInput === ''
-        ? null
-        : this.validator.requireVersion(
-            minimumVersionInput,
-            'Version minimale WX invalide.',
-          );
-    if (
-      minimumVersion &&
-      (compareUpdateVersions(minimumVersion, version) ?? 1) > 0
-    ) {
-      throw new BadRequestException(
-        'La version minimale WX dépasse la version publiée.',
-      );
-    }
+    const minimumVersion = this.resolveMinimumVersion(input, version);
     const sequence = Number(input.sequence);
     if (!Number.isSafeInteger(sequence) || sequence <= 0) {
       throw new BadRequestException('Séquence de publication WX invalide.');
@@ -210,7 +180,6 @@ export class WxUpdateReleaseService {
     if (!signature || !this.validator.isBase64(signature)) {
       throw new BadRequestException('Signature WX invalide ou absente.');
     }
-
     const artifact = await this.validator.validateArtifact(
       { ...input, expectedSha256 },
       this.maxArtifactBytes,
@@ -219,8 +188,7 @@ export class WxUpdateReleaseService {
       input,
       this.maxArtifactBytes,
     );
-
-    return this.commitPublication({
+    return this.publication.commit({
       input,
       releaseId,
       version,
@@ -235,250 +203,34 @@ export class WxUpdateReleaseService {
     });
   }
 
-  private async commitPublication(
-    params: CommitWxPublication,
-  ): Promise<WxUpdateManifest> {
-    const lock = await this.acquirePublicationLock();
-    try {
-      const previous = await this.readLatestFromDisk();
-      if (
-        previous?.releaseId === params.releaseId &&
-        previous.sequence === params.sequence &&
-        previous.artifact.sha256 === params.sha256
-      ) {
-        this.updateManifestCache(previous);
-        await this.pruneSupersededReleases(previous.releaseId);
-        return previous;
-      }
-      if (previous && params.sequence <= previous.sequence) {
-        throw new ConflictException(
-          `La séquence WX doit être supérieure à ${previous.sequence}.`,
-        );
-      }
-      const signaturePayload = canonicalizeWxUpdateSignature({
-        releaseId: params.releaseId,
-        version: params.version,
-        sequence: params.sequence,
-        publishedAt: params.publishedAt,
-        mandatoryAt: params.mandatoryAt,
-        minimumVersion: params.minimumVersion,
-        artifactSize: params.artifactSize,
-        artifactSha256: params.sha256,
-      });
-      if (!this.validator.verifySignature(signaturePayload, params.signature)) {
-        throw new BadRequestException('Signature cryptographique WX invalide.');
-      }
-
-      const files = await this.prepareReleaseFiles(params);
-      const manifest = this.buildManifest(params, files);
-      await this.saveLatestAtomically(manifest);
-      this.updateManifestCache(manifest);
-      await this.pruneSupersededReleases(manifest.releaseId);
-      return manifest;
-    } finally {
-      await lock.close().catch(() => undefined);
-      await fs.promises.rm(this.publicationLockPath(), { force: true });
-    }
-  }
-
-  private async prepareReleaseFiles(params: CommitWxPublication): Promise<{
-    fileName: string;
-    installerFileName: string;
-  }> {
-    const releasesDir = path.join(this.updatesDir, 'releases');
-    const stagingDir = path.join(this.updatesDir, '.staging', params.releaseId);
-    const finalDir = path.join(releasesDir, params.releaseId);
-    const fileName = `client-wx-${params.version}-windows-x64.zip`;
-    const installerFileName = `LeMondeDeLilaWX-${params.version}-Setup.exe`;
-    if (await this.pathExists(finalDir)) {
-      const artifactHash = await this.validator
-        .sha256(path.join(finalDir, fileName))
-        .catch(() => '');
-      if (artifactHash !== params.sha256) {
-        throw new ConflictException(
-          'Cet identifiant de release WX existe avec un autre contenu.',
-        );
-      }
-      await this.ensureExistingInstaller(params, finalDir, installerFileName);
-      return { fileName, installerFileName };
-    }
-    await fs.promises.mkdir(stagingDir, { recursive: true });
-    try {
-      await fs.promises.copyFile(
-        params.input.zipPath,
-        path.join(stagingDir, fileName),
-      );
-      if (params.installer && params.input.installerZipPath) {
-        await fs.promises.copyFile(
-          params.input.installerZipPath,
-          path.join(stagingDir, installerFileName),
-        );
-      }
-      await fs.promises.mkdir(releasesDir, { recursive: true });
-      await fs.promises.rename(stagingDir, finalDir);
-    } catch (error) {
-      await fs.promises.rm(stagingDir, { recursive: true, force: true });
-      throw error;
-    }
-    return { fileName, installerFileName };
-  }
-
-  private async ensureExistingInstaller(
-    params: CommitWxPublication,
-    finalDir: string,
-    installerFileName: string,
-  ): Promise<void> {
-    if (!params.installer) return;
-    const installerPath = path.join(finalDir, installerFileName);
-    const hash = await this.validator.sha256(installerPath).catch(() => '');
-    if (hash && hash !== params.installer.sha256) {
-      throw new ConflictException(
-        'Cet identifiant de release WX existe avec un autre installateur.',
+  private resolveMinimumVersion(
+    input: PublishWxUpdateInput,
+    version: string,
+  ): string | null {
+    const value = input.minimumVersion?.trim() ?? '';
+    const minimum = value
+      ? this.validator.requireVersion(value, 'Version minimale WX invalide.')
+      : null;
+    if (minimum && (compareUpdateVersions(minimum, version) ?? 1) > 0) {
+      throw new BadRequestException(
+        'La version minimale WX dépasse la version publiée.',
       );
     }
-    if (!hash && params.input.installerZipPath) {
-      await fs.promises.copyFile(params.input.installerZipPath, installerPath);
-    }
+    return minimum;
   }
 
-  private buildManifest(
-    params: CommitWxPublication,
-    files: { fileName: string; installerFileName: string },
-  ): WxUpdateManifest {
-    const baseUrl = `${this.publicUrl.replace(/\/$/, '')}/releases/${encodeURIComponent(params.releaseId)}`;
-    const manifest: WxUpdateManifest = {
-      schemaVersion: WX_UPDATE_SCHEMA_VERSION,
-      product: WX_UPDATE_PRODUCT,
-      platform: WX_UPDATE_PLATFORM,
-      architecture: WX_UPDATE_ARCHITECTURE,
-      channel: WX_UPDATE_CHANNEL,
-      releaseId: params.releaseId,
-      version: params.version,
-      sequence: params.sequence,
-      publishedAt: params.publishedAt,
-      mandatoryAt: params.mandatoryAt,
-      minimumVersion: params.minimumVersion,
-      message: (params.input.message || '').trim() || null,
-      artifact: {
-        url: `${baseUrl}/${encodeURIComponent(files.fileName)}`,
-        size: params.artifactSize,
-        sha256: params.sha256,
-        signature: params.signature,
-        signatureAlgorithm: WX_UPDATE_SIGNATURE_ALGORITHM,
-      },
-    };
-    if (params.installer) {
-      manifest.installer = {
-        url: `${baseUrl}/${encodeURIComponent(files.installerFileName)}`,
-        size: params.installer.size,
-        sha256: params.installer.sha256,
-      };
-    }
-    return manifest;
-  }
-
-  private async pruneSupersededReleases(
-    activeReleaseId: string,
-  ): Promise<void> {
-    const releasesDir = path.join(this.updatesDir, 'releases');
-    const entries = await fs.promises.readdir(releasesDir, {
-      withFileTypes: true,
-    });
-    await Promise.all(
-      entries
-        .filter((entry) => entry.name !== activeReleaseId)
-        .map((entry) =>
-          fs.promises.rm(path.join(releasesDir, entry.name), {
-            recursive: true,
-            force: true,
-          }),
-        ),
-    );
-    await fs.promises.rm(path.join(this.updatesDir, '.staging'), {
-      recursive: true,
-      force: true,
-    });
-  }
-
-  private updateManifestCache(manifest: WxUpdateManifest | null): void {
+  private updateManifestCache(manifest: WxUpdateManifest): void {
     this.cachedManifest = manifest;
     this.manifestCacheInitialized = true;
     this.manifestCacheExpiresAt =
       Date.now() + WxUpdateReleaseService.manifestCacheTtlMs;
   }
+}
 
-  private publicationLockPath(): string {
-    return path.join(this.updatesDir, '.publish.lock');
+function resolvePublicUrl(value: string, origin: string | null): string {
+  if (/^https:\/\//i.test(value)) return value;
+  if (origin && value.startsWith('/')) {
+    return `${origin.replace(/\/$/, '')}${value}`;
   }
-
-  private async acquirePublicationLock(): Promise<fs.promises.FileHandle> {
-    await fs.promises.mkdir(this.updatesDir, { recursive: true });
-    try {
-      return await fs.promises.open(this.publicationLockPath(), 'wx');
-    } catch {
-      const stat = await fs.promises
-        .stat(this.publicationLockPath())
-        .catch(() => null);
-      if (stat && stat.mtimeMs < Date.now() - 2 * 60 * 60 * 1000) {
-        await fs.promises.rm(this.publicationLockPath(), { force: true });
-        try {
-          return await fs.promises.open(this.publicationLockPath(), 'wx');
-        } catch {
-          // Another instance recovered the stale lock first.
-        }
-      }
-      throw new ConflictException('Une publication WX est déjà en cours.');
-    }
-  }
-
-  private async readLatestFromDisk(): Promise<WxUpdateManifest | null> {
-    try {
-      const value = JSON.parse(
-        await fs.promises.readFile(this.metaPath, 'utf-8'),
-      ) as unknown;
-      return this.validator.verifyManifest(
-        value as WxUpdateManifest,
-        this.maxArtifactBytes,
-      )
-        ? (value as WxUpdateManifest)
-        : null;
-    } catch {
-      return null;
-    }
-  }
-
-  private resolvePublicUrl(value: string, origin: string | null): string {
-    if (/^https:\/\//i.test(value)) return value;
-    if (origin && value.startsWith('/')) {
-      return `${origin.replace(/\/$/, '')}${value}`;
-    }
-    return value;
-  }
-
-  private async saveLatestAtomically(
-    manifest: WxUpdateManifest,
-  ): Promise<void> {
-    await fs.promises.mkdir(path.dirname(this.metaPath), { recursive: true });
-    const temporary = `${this.metaPath}.${process.pid}.${randomUUID()}.tmp`;
-    const handle = await fs.promises.open(temporary, 'wx');
-    try {
-      await handle.writeFile(JSON.stringify(manifest, null, 2), 'utf-8');
-      await handle.sync();
-    } finally {
-      await handle.close();
-    }
-    try {
-      await fs.promises.rename(temporary, this.metaPath);
-    } catch (error) {
-      await fs.promises.rm(temporary, { force: true });
-      throw error;
-    }
-  }
-
-  private async pathExists(target: string): Promise<boolean> {
-    return fs.promises
-      .access(target)
-      .then(() => true)
-      .catch(() => false);
-  }
+  return value;
 }

@@ -36,8 +36,8 @@ describe('GameWsStatePresenter', () => {
       version: 1,
       viewerPlayerId: 1,
     });
-    const extras = payload.extras as { shortcuts: Array<{ key: string }> };
-    expect(extras.shortcuts.map((shortcut) => shortcut.key)).toEqual([
+    const system = payload.system as { shortcuts: Array<{ key: string }> };
+    expect(system.shortcuts.map((shortcut) => shortcut.key)).toEqual([
       'P',
       'S',
     ]);
@@ -118,9 +118,10 @@ describe('GameWsStatePresenter', () => {
       status: 'started',
       phase: 'turn',
       turn: { currentPlayerId: null, direction: 1, turnNumber: 3 },
+      system: { turn: { number: 3 } },
       players: [],
       actions: [{ type: 'roll', payload: {} }],
-      extras: { dice: { total: 5 } },
+      kits: { dice: { total: 5 } },
     } as unknown as GameStateEntity;
     const handler = {
       exposeStateForUser: () => state,
@@ -134,7 +135,7 @@ describe('GameWsStatePresenter', () => {
       gameType: 'dice-game',
       version: 8,
     });
-    expect((payload.extras as any).dice).toEqual(
+    expect((payload.kits as any).dice).toEqual(
       expect.objectContaining({ total: 5, rollActionIndex: 0 }),
     );
     expect(payload.state).toBeUndefined();

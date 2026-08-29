@@ -1,6 +1,7 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import * as fs from 'fs';
 import { homedir } from 'os';
+import { readEnvironment } from '../../../config/public-api';
 import * as path from 'path';
 import {
   SOUND_KEYS,
@@ -63,13 +64,11 @@ export function resolveSoundsDataRoot(options: {
   legacyRoot: string;
   warn: (message: string) => void;
 }): string {
-  const override = String(process.env.LMDL_SOUNDS_DIR ?? '').trim();
+  const override = readEnvironment('LMDL_SOUNDS_DIR').trim();
   if (override) return path.resolve(override);
 
   const { legacyRoot, warn } = options;
-  const nodeEnv = String(process.env.NODE_ENV ?? '')
-    .trim()
-    .toLowerCase();
+  const nodeEnv = readEnvironment('NODE_ENV').trim().toLowerCase();
 
   if (nodeEnv !== 'production') {
     return legacyRoot;
@@ -79,7 +78,10 @@ export function resolveSoundsDataRoot(options: {
     process.platform === 'win32'
       ? path.join(
           String(
-            process.env.PROGRAMDATA ?? path.join(homedir(), 'AppData', 'Local'),
+            readEnvironment(
+              'PROGRAMDATA',
+              path.join(homedir(), 'AppData', 'Local'),
+            ),
           ),
           'lemonde-de-lila',
           'sounds',

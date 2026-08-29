@@ -6,7 +6,7 @@ import {
   defineGameContent,
   gameInput,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { VOYAGE_CONTENT } from './content';
 import {
   advanceFinishCountdown,
@@ -71,7 +71,6 @@ export default defineGame<VoyageState, typeof VOYAGE_ACTIONS>({
     { key: 'P', type: 'interface', id: 'position' },
     { key: 'C', type: 'interface', id: 'cards' },
   ],
-  setup: () => ({}),
   lifecycle: {
     afterTurn: ({ state, ctx }) => advanceFinishCountdown(state, ctx),
   },

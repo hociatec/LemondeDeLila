@@ -8,7 +8,7 @@
     "constructorDependencies": 8
   },
   "ignoredSuffixes": [".spec.ts", ".test.ts", ".e2e-spec.ts", ".d.ts"],
-  "ignoredPathFragments": ["/migrations/"],
+  "ignoredPathFragments": ["/migrations/", "/tests/"],
   "constructorDependencyExemptions": [
     "\\.registrar\\.ts$",
     "/module/",

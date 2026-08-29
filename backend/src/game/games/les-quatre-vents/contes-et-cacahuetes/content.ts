@@ -2,8 +2,8 @@ import {
   freezeGameContent,
   gameEffects,
   rejectContent,
-} from '../../../core/application/public-api';
-import type { GameEffectInstruction } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 import { CONTES_RESOURCES, CONTES_STATUSES } from './constants';
 import rawContent from './content-data.json';
 

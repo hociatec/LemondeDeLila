@@ -1,7 +1,7 @@
 import {
   testGame,
   type StableGameSystemView,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import gameDefinition from './game';
 
 describe('Foulées Fantastiques declarative game', () => {

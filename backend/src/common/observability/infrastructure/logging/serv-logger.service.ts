@@ -2,6 +2,11 @@ import { LoggerService, LogLevel } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as winston from 'winston';
+import {
+  readEnvironment,
+  readEnvironmentBoolean,
+} from '../../../../config/public-api';
+import { sanitizeLogText } from '../../application/log-sanitizer';
 
 export class ServLoggerService implements LoggerService {
   private readonly logger: winston.Logger;
@@ -47,23 +52,26 @@ export class ServLoggerService implements LoggerService {
   }
 
   log(message: unknown, context?: string) {
-    this.logger.info(String(message), { context });
+    this.logger.info(sanitizeLogText(String(message)), { context });
   }
 
   error(message: unknown, trace?: string, context?: string) {
-    this.logger.error(String(message), { context, trace });
+    this.logger.error(sanitizeLogText(String(message)), {
+      context,
+      trace: trace ? sanitizeLogText(trace) : trace,
+    });
   }
 
   warn(message: unknown, context?: string) {
-    this.logger.warn(String(message), { context });
+    this.logger.warn(sanitizeLogText(String(message)), { context });
   }
 
   debug(message: unknown, context?: string) {
-    this.logger.debug(String(message), { context });
+    this.logger.debug(sanitizeLogText(String(message)), { context });
   }
 
   verbose(message: unknown, context?: string) {
-    this.logger.verbose(String(message), { context });
+    this.logger.verbose(sanitizeLogText(String(message)), { context });
   }
 
   setLogLevels(levels: LogLevel[]) {
@@ -88,7 +96,7 @@ export class ServLoggerService implements LoggerService {
   }
 
   private resolveLevel(): string {
-    const raw = (process.env.LOG_LEVEL || '').toLowerCase().trim();
+    const raw = readEnvironment('LOG_LEVEL').toLowerCase().trim();
     const allowed = new Set([
       'error',
       'warn',
@@ -99,7 +107,7 @@ export class ServLoggerService implements LoggerService {
       'silly',
     ]);
     if (allowed.has(raw)) return raw;
-    const env = (process.env.NODE_ENV || 'development').toLowerCase();
+    const env = readEnvironment('NODE_ENV', 'development').toLowerCase();
     return env === 'production' ? 'info' : 'debug';
   }
 
@@ -107,18 +115,12 @@ export class ServLoggerService implements LoggerService {
     enabled: boolean;
     logFilePath: string | null;
   } {
-    const enabledRaw = (process.env.LOG_FILES_ENABLED || '')
-      .toLowerCase()
-      .trim();
-    const enabled =
-      enabledRaw === ''
-        ? true
-        : enabledRaw === 'true' || enabledRaw === '1' || enabledRaw === 'yes';
+    const enabled = readEnvironmentBoolean('LOG_FILES_ENABLED', true);
     if (!enabled) {
       return { enabled: false, logFilePath: null };
     }
 
-    const configuredDir = (process.env.LOG_DIR || '').trim();
+    const configuredDir = readEnvironment('LOG_DIR').trim();
     const logDir = configuredDir
       ? path.isAbsolute(configuredDir)
         ? configuredDir

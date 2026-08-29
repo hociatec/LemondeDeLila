@@ -1,4 +1,4 @@
-import { freezeGameContent } from '../../../core/application/public-api';
+import { freezeGameContent } from '../../../engine/sdk/public-api';
 import type { WonderGood, WonderInventory, WonderPrices } from './state';
 
 export const WONDER_GOODS: readonly WonderGood[] = [

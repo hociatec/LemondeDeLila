@@ -93,6 +93,25 @@ describe('AdminUsersCommandService', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
+  it('normalizes identities and converts concurrent DB uniqueness failures', async () => {
+    const repo = createRepositoryMock();
+    repo.findByEmail.mockResolvedValue(null);
+    repo.findByUsername.mockResolvedValue(null);
+    repo.create.mockRejectedValue({ code: 'ER_DUP_ENTRY', errno: 1062 });
+    const service = createService(repo);
+
+    await expect(
+      service.create({
+        email: '  Alice@Example.COM ',
+        username: '  Alice  ',
+        password: 'StrongPassword123!',
+        roles: ['ROLE_USER'],
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(repo.findByEmail).toHaveBeenCalledWith('alice@example.com');
+    expect(repo.findByUsername).toHaveBeenCalledWith('Alice');
+  });
+
   it('throws when deleting unknown user', async () => {
     const repo = createRepositoryMock();
     repo.findById.mockResolvedValue(null);

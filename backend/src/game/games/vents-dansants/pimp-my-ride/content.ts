@@ -1,7 +1,7 @@
 import {
   freezeGameContent,
   rejectContent,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import data from './content-data.json';
 
 export type PimpMyRideCategory =

@@ -6,7 +6,7 @@ import {
   pawns,
   publicField,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { GOOSE_PAWNS, GOOSE_TILES } from './content';
 import {
   assignPawn,

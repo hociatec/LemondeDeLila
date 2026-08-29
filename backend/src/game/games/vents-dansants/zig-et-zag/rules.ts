@@ -4,8 +4,8 @@ import {
   defineAction,
   defineGamePhases,
   gameInput,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import { ZIG_ET_ZAG_CARD_BY_ID, ZIG_ET_ZAG_TOTAL_CARDS } from './content';
 import type {
   ZigEtZagPlay,

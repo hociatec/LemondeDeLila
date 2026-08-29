@@ -3,8 +3,8 @@ import {
   defineAction,
   gameInput,
   setupPlayingPhases,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import { GOOSE_TILES } from './content';
 import type { JeuOieState } from './state';
 

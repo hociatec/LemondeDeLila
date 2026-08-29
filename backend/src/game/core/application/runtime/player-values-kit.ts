@@ -26,21 +26,27 @@ export type PlayerStatus = {
   data: Record<string, unknown>;
 };
 
-export type PlayerValuesKitState = {
+export type PlayerValuesKitState<
+  TResourceId extends string = string,
+  TCounterId extends string = string,
+> = {
   scores: Record<string, number>;
-  resources: Record<string, Record<string, number>>;
-  counters?: Record<string, number>;
+  resources: Record<TResourceId, Record<string, number>>;
+  counters?: Record<TCounterId, number>;
   statuses: Record<string, PlayerStatus[]>;
   turnFlags: Record<string, unknown>;
   scheduledSkips: Record<string, number>;
   scheduledExtraTurns: Record<string, number>;
 };
 
-export type PlayerValuesPlayerView = {
+export type PlayerValuesPlayerView<
+  TResourceId extends string = string,
+  TCounterId extends string = string,
+> = {
   scores: Record<string, number>;
   scoring: ScorePlayerView;
-  resources: Record<string, Record<string, number>>;
-  counters: Record<string, number>;
+  resources: Record<TResourceId, Record<string, number>>;
+  counters: Record<TCounterId, number>;
   statuses: PlayerStatus[];
 };
 
@@ -57,7 +63,10 @@ export type PlayerValuesVisibility = {
   statuses?: VisibilityRule;
 };
 
-export function createPlayerValuesKitState(): PlayerValuesKitState {
+export function createPlayerValuesKitState<
+  TResourceId extends string = string,
+  TCounterId extends string = string,
+>(): PlayerValuesKitState<TResourceId, TCounterId> {
   return {
     scores: {},
     resources: {},
@@ -66,7 +75,7 @@ export function createPlayerValuesKitState(): PlayerValuesKitState {
     turnFlags: {},
     scheduledSkips: {},
     scheduledExtraTurns: {},
-  };
+  } as PlayerValuesKitState<TResourceId, TCounterId>;
 }
 
 export function projectPlayerValues(
@@ -114,6 +123,27 @@ export function projectStatusesByPlayer(
   if (viewerPlayerId == null) return {};
   const own = statuses[String(viewerPlayerId)];
   return own == null ? {} : { [String(viewerPlayerId)]: structuredClone(own) };
+}
+
+export function projectStatusViews(
+  statuses: Readonly<Record<string, PlayerStatus[]>>,
+  viewerPlayerId: number | null,
+  visibility: VisibilityRule | undefined,
+): {
+  byId: Record<string, Record<string, PlayerStatus>>;
+} {
+  const byPlayer = projectStatusesByPlayer(
+    statuses,
+    viewerPlayerId,
+    visibility,
+  );
+  const byId: Record<string, Record<string, PlayerStatus>> = {};
+  for (const [playerId, playerStatuses] of Object.entries(byPlayer)) {
+    for (const status of playerStatuses) {
+      (byId[status.id] ??= {})[playerId] = status;
+    }
+  }
+  return { byId };
 }
 
 function projectStatuses(

@@ -1,192 +1,226 @@
 import type { GameRuntime } from '../contracts/game-runtime.interface';
 import type { GameStateEntity } from '../models/game-state.model';
+import type {
+  GameScheduledTask,
+  GameTaskProcessor,
+} from '../ports/game-task-scheduler.port';
 import { GameRealtimeAutomationService } from './game-realtime-automation.service';
 
 describe('GameRealtimeAutomationService', () => {
-  const executor = () => ({
-    execute: jest.fn(({ handler, state, actions }) =>
-      handler.applyActions(state, actions),
-    ),
-  });
   const state = (overrides: Record<string, unknown> = {}) =>
     ({
       status: 'started',
-      phase: 'turn',
-      turnIndex: 3,
-      players: [],
-      turn: { currentPlayerId: null, direction: 1 },
+      version: 4,
+      players: [{ id: 1, username: 'Alice', isBot: false }],
+      turn: { currentPlayerId: 1, direction: 1, turnNumber: 2 },
       metadata: {},
       ...overrides,
     }) as unknown as GameStateEntity;
 
-  it('executes an automatic transition declared by the game adapter', async () => {
-    let scheduled: { delayMs: number; run: () => Promise<void> } | undefined;
-    const current = state({ metadata: { step: 'pause' } });
-    const next = state({ turnIndex: 4 });
+  const handler = (executeAtMs = Date.now() - 1, actionType = 'resume') =>
+    ({
+      gameType: 'example',
+      getAutomaticActions: () => ({
+        key: 'pause:2',
+        executeAtMs,
+        actions: [{ type: actionType, payload: {} }],
+      }),
+    }) as unknown as GameRuntime;
+
+  function harness(current = state(), runtime = handler()) {
+    let processor: GameTaskProcessor | undefined;
+    const scheduled: GameScheduledTask[] = [];
+    const scheduler = {
+      registerProcessor: jest.fn((value: GameTaskProcessor) => {
+        processor = value;
+      }),
+      schedule: jest.fn(async (task: GameScheduledTask) => {
+        scheduled.push(task);
+      }),
+      cancel: jest.fn(async () => undefined),
+      cancelRoom: jest.fn(async () => undefined),
+    };
+    const next = state({ version: 4, metadata: { resumed: true } });
     const engine = {
       exportInternalState: jest.fn().mockResolvedValue(current),
-    };
-    const scheduler = {
-      clear: jest.fn(),
-      has: jest.fn().mockReturnValue(false),
-      schedule: jest.fn((plan) => {
-        scheduled = plan;
+      compareAndSetInternalState: jest.fn().mockResolvedValue({
+        committed: true,
+        version: 5,
+        state: { ...next, version: 5 },
       }),
     };
-    const applyActions = jest.fn().mockReturnValue(next);
-    const handler = {
-      getAutomaticActions: () => ({
-        key: 'pause:1',
-        executeAtMs: Date.now(),
-        actions: [{ type: 'resume', payload: {} }],
-      }),
-      applyActions,
-    } as unknown as GameRuntime;
-    const commit = jest.fn().mockResolvedValue(undefined);
+    const executor = { execute: jest.fn().mockReturnValue(next) };
     const service = new GameRealtimeAutomationService(
       engine as never,
       { suggestForHandler: jest.fn() } as never,
-      scheduler as never,
-      { getBotTurnDelayMs: () => 10 } as never,
-      executor() as never,
+      scheduler,
+      { getBotTurnDelayMs: () => 25 } as never,
+      executor as never,
+      undefined,
+      { getHandler: () => runtime } as never,
     );
+    service.onModuleInit();
+    return {
+      service,
+      scheduler,
+      scheduled,
+      engine,
+      executor,
+      processor: () => processor!,
+      runtime,
+      current,
+    };
+  }
 
-    service.schedule({
+  it('persists a stable task identity and absolute deadline in the scheduler', async () => {
+    const dueAtMs = Date.now() + 1_000;
+    const test = harness(state(), handler(dueAtMs));
+    test.service.schedule({
       roomId: 12,
       gameType: 'example',
-      handler,
-      state: current,
-      commit,
+      handler: test.runtime,
+      state: test.current,
     });
-    expect(scheduler.clear).toHaveBeenCalledWith('game-realtime:12:example');
-    expect(scheduled).toBeDefined();
-    await scheduled!.run();
-
-    expect(applyActions).toHaveBeenCalledWith(current, [
-      { type: 'resume', payload: {} },
-    ]);
-    expect(commit).toHaveBeenCalledWith(current, next);
-  });
-
-  it('runs a bot suggestion with the bot actor id', async () => {
-    let run: (() => Promise<void>) | undefined;
-    const current = state({
-      players: [{ id: 9, username: 'Bot', isBot: true }],
-      turn: { currentPlayerId: 9, direction: 1 },
-    });
-    const applyActions = jest.fn().mockReturnValue(current);
-    const handler = {
-      getAutomaticActions: () => null,
-      applyActions,
-    } as unknown as GameRuntime;
-    const service = new GameRealtimeAutomationService(
-      { exportInternalState: jest.fn().mockResolvedValue(current) } as never,
-      {
-        suggestForHandler: jest
-          .fn()
-          .mockReturnValue([{ type: 'draw', payload: {} }]),
-      } as never,
-      {
-        clear: jest.fn(),
-        has: jest.fn().mockReturnValue(false),
-        schedule: jest.fn((plan) => {
-          run = plan.run;
-        }),
-      } as never,
-      { getBotTurnDelayMs: () => 25 } as never,
-      executor() as never,
-    );
-
-    service.schedule({
-      roomId: 4,
-      gameType: 'example',
-      handler,
-      state: current,
-      commit: jest.fn().mockResolvedValue(undefined),
-    });
-    await run!();
-
-    expect(applyActions).toHaveBeenCalledWith(current, [
-      { type: 'draw', payload: {}, meta: { actorId: 9 } },
+    await Promise.resolve();
+    expect(test.scheduled).toEqual([
+      expect.objectContaining({
+        key: 'game-realtime:12:example',
+        roomId: 12,
+        gameType: 'example',
+        generation: 4,
+        dueAtMs,
+      }),
     ]);
   });
 
-  it('does not postpone an unchanged plan when state is requested again', () => {
-    const current = state();
-    const scheduler = {
-      clear: jest.fn(),
-      has: jest.fn().mockReturnValue(true),
-      schedule: jest.fn(),
-    };
-    const handler = {
-      getAutomaticActions: () => ({
-        key: 'pause:1',
-        executeAtMs: Date.now() + 1000,
-        actions: [{ type: 'resume', payload: {} }],
-      }),
-    } as unknown as GameRuntime;
-    const service = new GameRealtimeAutomationService(
-      {} as never,
-      {} as never,
-      scheduler as never,
-      {} as never,
-      executor() as never,
-    );
-    const input = {
-      roomId: 1,
+  it('executes a due task through the command executor and an atomic CAS', async () => {
+    const test = harness();
+    test.service.schedule({
+      roomId: 12,
       gameType: 'example',
-      handler,
-      state: current,
-      commit: jest.fn(),
-    };
+      handler: test.runtime,
+      state: test.current,
+    });
+    await Promise.resolve();
+    await test.processor()(test.scheduled[0]!);
 
-    service.schedule(input);
-    service.schedule(input);
-
-    expect(scheduler.schedule).toHaveBeenCalledTimes(1);
-    expect(scheduler.clear).toHaveBeenCalledTimes(1);
+    expect(test.executor.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        handler: test.runtime,
+        state: test.current,
+        roomId: 12,
+        actions: [
+          expect.objectContaining({
+            type: 'resume',
+            meta: expect.objectContaining({ commandId: expect.any(String) }),
+          }),
+        ],
+      }),
+    );
+    expect(test.engine.compareAndSetInternalState).toHaveBeenCalledWith(
+      12,
+      'example',
+      4,
+      expect.any(Object),
+    );
   });
 
-  it('cancels a pending bot action when its room is reset', async () => {
-    let run: (() => Promise<void>) | undefined;
-    const current = state({
-      players: [{ id: 9, username: 'Bot', isBot: true }],
-      turn: { currentPlayerId: 9, direction: 1 },
+  it('makes a stale delivery harmless and replaces it from persisted state', async () => {
+    const current = state({ version: 5 });
+    const test = harness(current);
+    await test.processor()({
+      key: 'game-realtime:3:example',
+      roomId: 3,
+      gameType: 'example',
+      signature: 'automatic:pause:2:2',
+      generation: 4,
+      dueAtMs: Date.now() - 10,
     });
-    const applyActions = jest.fn().mockReturnValue(current);
-    const scheduler = {
-      clear: jest.fn(),
-      has: jest.fn().mockReturnValue(false),
-      schedule: jest.fn((plan) => {
-        run = plan.run;
-      }),
-    };
-    const service = new GameRealtimeAutomationService(
-      { exportInternalState: jest.fn().mockResolvedValue(current) } as never,
-      {
-        suggestForHandler: jest
-          .fn()
-          .mockReturnValue([{ type: 'draw', payload: {} }]),
-      } as never,
-      scheduler as never,
-      { getBotTurnDelayMs: () => 25 } as never,
-      executor() as never,
+    await Promise.resolve();
+    expect(test.executor.execute).not.toHaveBeenCalled();
+    expect(test.scheduled.at(-1)).toEqual(
+      expect.objectContaining({ generation: 5 }),
     );
+  });
 
-    service.schedule({
-      roomId: 4,
-      gameType: 'lama',
-      handler: {
-        getAutomaticActions: () => null,
-        applyActions,
-      } as unknown as GameRuntime,
-      state: current,
-      commit: jest.fn(),
+  it('allows a fresh service instance to process a task created before restart', async () => {
+    const first = harness();
+    first.service.schedule({
+      roomId: 8,
+      gameType: 'example',
+      handler: first.runtime,
+      state: first.current,
     });
-    service.clearRoom(4);
-    await run!();
+    await Promise.resolve();
+    const durableTask = structuredClone(first.scheduled[0]!);
 
-    expect(scheduler.clear).toHaveBeenCalledWith('game-realtime:4:lama');
-    expect(applyActions).not.toHaveBeenCalled();
+    const restarted = harness(first.current, first.runtime);
+    await restarted.processor()(durableTask);
+    expect(restarted.engine.compareAndSetInternalState).toHaveBeenCalledTimes(
+      1,
+    );
+  });
+
+  it('commits only one transition when two workers deliver the same task', async () => {
+    const test = harness();
+    let committed = false;
+    test.engine.compareAndSetInternalState.mockImplementation(
+      async (_roomId, _gameType, _version, nextState) => {
+        if (committed) {
+          return { committed: false, version: 5, state: nextState };
+        }
+        committed = true;
+        return { committed: true, version: 5, state: nextState };
+      },
+    );
+    const task: GameScheduledTask = {
+      key: 'game-realtime:9:example',
+      roomId: 9,
+      gameType: 'example',
+      signature: 'automatic:pause:2:2',
+      generation: 4,
+      dueAtMs: Date.now() - 1,
+    };
+
+    const results = await Promise.allSettled([
+      test.processor()(task),
+      test.processor()(task),
+    ]);
+    expect(
+      results.filter((result) => result.status === 'fulfilled'),
+    ).toHaveLength(1);
+    expect(
+      results.filter((result) => result.status === 'rejected'),
+    ).toHaveLength(1);
+  });
+
+  it('processes tasks from different rooms independently', async () => {
+    const test = harness();
+    await Promise.all([
+      test.processor()({
+        key: 'game-realtime:20:example',
+        roomId: 20,
+        gameType: 'example',
+        signature: 'automatic:pause:2:2',
+        generation: 4,
+        dueAtMs: Date.now() - 1,
+      }),
+      test.processor()({
+        key: 'game-realtime:21:example',
+        roomId: 21,
+        gameType: 'example',
+        signature: 'automatic:pause:2:2',
+        generation: 4,
+        dueAtMs: Date.now() - 1,
+      }),
+    ]);
+    expect(test.engine.compareAndSetInternalState).toHaveBeenCalledTimes(2);
+  });
+
+  it('cancels all durable jobs for a room without a process-local timer map', async () => {
+    const test = harness();
+    test.service.clearRoom(42);
+    await Promise.resolve();
+    expect(test.scheduler.cancelRoom).toHaveBeenCalledWith(42);
   });
 });

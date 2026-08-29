@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { AddSystemBotToRoomService } from '../../../bot/public-api';
 import { PresenceService } from '../../../presence/public-api';
 import { GameStatsService } from '../../../stats/public-api';
+import { bestEffort } from '../../../common/utils/public-api';
 import type {
   RoomLeaveOptions,
   RoomMembershipContext,
@@ -90,7 +91,10 @@ export class RoomLeaveService {
     participantLeft: boolean,
   ): Promise<void> {
     if (participantLeft && isStartedRoom(room)) {
-      await this.stats.markQuit(room.id, userId).catch(() => undefined);
+      await bestEffort(
+        this.stats.markQuit(room.id, userId),
+        `statistique de départ room=${room.id} user=${userId}`,
+      );
     }
   }
 

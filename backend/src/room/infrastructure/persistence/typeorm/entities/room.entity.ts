@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -12,6 +13,11 @@ import { RoomParticipant } from './room-participant.entity';
 import { RoomBot } from './room-bot.entity';
 
 @Entity({ name: 'rooms' })
+@Index('idx_rooms_lobby_status_privacy_created', [
+  'status',
+  'isPrivate',
+  'createdAt',
+])
 export class Room {
   @PrimaryGeneratedColumn()
   id!: number;

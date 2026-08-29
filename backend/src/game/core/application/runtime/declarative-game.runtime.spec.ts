@@ -9,12 +9,7 @@ import type {
 import { victoryWhen, when } from './automatic-kit';
 import { cards } from './cards-kit';
 import { DeclarativeGameRuntime } from './declarative-game.runtime';
-import {
-  defineAction,
-  defineChoice,
-  defineGame,
-  playerView,
-} from './game-definition';
+import { defineAction, defineChoice, defineGame } from './game-definition';
 import { gameInput } from './game-input-schema';
 import { movement } from './movement-kit';
 import { phase } from './phase-kit';
@@ -121,7 +116,7 @@ const sampleGame = defineGame({
       ? { winnerPlayerIds: [ctx.actor?.id ?? 0], reason: 'target' }
       : null,
   ),
-  view: ({ state }) => playerView({ game: { score: state.score } }),
+  viewExtension: ({ state }) => ({ score: state.score }),
   bot: {
     choose: ({ availableActions }) =>
       availableActions.includes('score')
@@ -255,7 +250,9 @@ describe('DeclarativeGameRuntime', () => {
     const view = adapter.exposeStateForUser(state, 1);
     expect(view.game).toEqual({ score: 5 });
     expect(view.game).not.toHaveProperty('secret');
-    expect(view.extras).toHaveProperty('kits.cards');
+    expect(view.kits).toHaveProperty('cards');
+    expect(view).not.toHaveProperty('extras');
+    expect(view).not.toHaveProperty('board');
     expect(state.status).toBe('finished');
     expect(adapter.getAvailableActions(state, 1)).toEqual([]);
   });

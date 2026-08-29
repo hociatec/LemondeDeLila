@@ -2,11 +2,8 @@ import {
   completeRound,
   defineGamePhases,
   rejectRule,
-} from '../../../core/application/public-api';
-import type {
-  GameContext,
-  PlayerMap,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext, PlayerMap } from '../../../engine/sdk/public-api';
 import {
   GERARD_PRESIDENT_NAME_BY_ID,
   GERARD_PRESIDENT_SPECIAL_CARDS,

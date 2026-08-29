@@ -22,6 +22,8 @@ import { BugReportCommentEntity } from '../bug-reports/infrastructure/persistenc
 import { NotificationInboxItemEntity } from '../notification/infrastructure/persistence/typeorm/entities/notification-inbox-item.entity';
 import { VaultRoomSnapshotEntity } from '../vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity';
 import { GameSessionEntity } from '../game/core/infrastructure/persistence/typeorm/entities/game-session.entity';
+import { GameSessionEventEntity } from '../game/core/infrastructure/persistence/typeorm/entities/game-session-event.entity';
+import { GameSessionSnapshotEntity } from '../game/core/infrastructure/persistence/typeorm/entities/game-session-snapshot.entity';
 
 export const ORM_ENTITIES = [
   User,
@@ -48,4 +50,6 @@ export const ORM_ENTITIES = [
   NotificationInboxItemEntity,
   VaultRoomSnapshotEntity,
   GameSessionEntity,
+  GameSessionEventEntity,
+  GameSessionSnapshotEntity,
 ];

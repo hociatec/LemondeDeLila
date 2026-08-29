@@ -5,7 +5,6 @@ export type UserModel = {
   username: string;
   avatar: string | null;
   preferences: Record<string, unknown> | null;
-  emailVerified: boolean;
   bannedUntil: Date | null;
   banReason: string | null;
   chatBannedUntil: Date | null;

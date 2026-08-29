@@ -2,8 +2,8 @@ import {
   freezeGameContent,
   gameEffects,
   rejectContent,
-} from '../../../core/application/public-api';
-import type { GameEffectInstruction } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 import boardContent from './model/content/board.json';
 import coursesContent from './model/content/courses.json';
 import eventsContent from './model/content/events.json';

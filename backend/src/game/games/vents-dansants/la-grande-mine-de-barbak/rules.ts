@@ -2,11 +2,8 @@ import {
   defineAction,
   gameEffects,
   gameInput,
-} from '../../../core/application/public-api';
-import type {
-  GameContext,
-  PlayerMap,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext, PlayerMap } from '../../../engine/sdk/public-api';
 import { LA_GRANDE_MINE_CARD_BY_ID, type LaGrandeMineCard } from './content';
 import type { GrandeMineState, MineDomain } from './state';
 
@@ -158,31 +155,6 @@ export function removeRandomTreasure(playerId: number, ctx: RuleContext): void {
 
 export function discardRandomHand(playerId: number, ctx: RuleContext): void {
   ctx.cards.discardRandom(HANDS, DECK, playerId);
-}
-
-export function giveRandomToNext(playerId: number, ctx: RuleContext): void {
-  const targetId = ctx.players.after(playerId)?.id ?? null;
-  if (targetId != null) giveRandom(playerId, targetId, ctx);
-}
-
-export function giveRandomToOpponent(playerId: number, ctx: RuleContext): void {
-  const targetId = randomOpponent(playerId, ctx);
-  if (targetId != null) giveRandom(playerId, targetId, ctx);
-}
-
-function giveRandom(fromId: number, toId: number, ctx: RuleContext): void {
-  const cardId = ctx.random.pick(ctx.cards.hand<string>(HANDS, fromId));
-  if (!cardId) return;
-  ctx.cards.transfer(HANDS, fromId, toId, cardId);
-}
-
-function randomOpponent(playerId: number, ctx: RuleContext): number | null {
-  return ctx.random.pick(
-    ctx.players
-      .all()
-      .filter((player) => player.id !== playerId)
-      .map((player) => player.id),
-  );
 }
 
 export function trimHand(playerId: number, ctx: RuleContext): void {

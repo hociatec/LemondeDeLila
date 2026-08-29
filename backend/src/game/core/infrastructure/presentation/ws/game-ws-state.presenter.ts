@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { GameRuntime } from '../../../application/contracts/game-runtime.interface';
 import type { GameStateEntity } from '../../../application/models/game-state.model';
+import type { GameStateWithActions } from '../../../application/models/game-action.model';
 import type { GameShortcutHint } from '../../../../shortcuts/public-api';
 import { withDicePresentation } from '../../../../dice/public-api';
 import { GameVisibilityService } from '../../../application/services/game-visibility.service';
@@ -36,8 +37,8 @@ export class GameWsStatePresenter {
       roomId: input.roomId,
       gameType: input.gameType,
       version: input.version,
-      extras: {
-        ...(exposed.extras ?? {}),
+      system: {
+        ...this.asRecord(exposed.system),
         shortcuts: this.resolveShortcuts(input.handler, input.state, exposed),
       },
     };
@@ -47,7 +48,7 @@ export class GameWsStatePresenter {
     handler: GameRuntime,
     state: GameStateEntity,
     viewerPlayerId?: number | null,
-  ): GameStateEntity {
+  ): GameStateWithActions {
     const viewerId = Number(viewerPlayerId ?? 0);
     if (Number.isFinite(viewerId) && viewerId > 0) {
       return handler.exposeStateForUser(state, viewerId);
@@ -58,14 +59,13 @@ export class GameWsStatePresenter {
   private resolveShortcuts(
     handler: GameRuntime,
     state: GameStateEntity,
-    exposed: GameStateEntity,
+    exposed: GameStateWithActions,
   ): GameShortcutHint[] {
     const shortcuts = handler.getShortcuts({
       currentPlayerId: state.turn?.currentPlayerId ?? null,
       started: String(state.status ?? '').toLowerCase() === 'started',
     });
-    const rawActions = (exposed as GameStateEntity & { actions?: unknown })
-      .actions;
+    const rawActions = exposed.actions;
     const actionTypes = new Set(
       (Array.isArray(rawActions) ? rawActions : [])
         .map((action) => this.asRecord(action).type)

@@ -8,7 +8,7 @@ import {
   publicField,
   raceGame,
   when,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { CONTES_DECKS, CONTES_PAWNS, CONTES_TILES } from './content';
 import {
   CONTES_ACTIONS,

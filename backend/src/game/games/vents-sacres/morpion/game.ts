@@ -5,10 +5,10 @@ import {
   gameInput,
   gridGame,
   pawns,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { MORPION_PAWNS } from './content';
 import { chooseBotMove, MORPION_ACTIONS } from './rules';
-import type { MorpionState } from './state';
+import type { NoGameState as MorpionState } from '../../../engine/sdk/public-api';
 
 const PAWN_CHOICE = 'morpion.pawn';
 

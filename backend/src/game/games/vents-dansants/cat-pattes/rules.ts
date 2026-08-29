@@ -5,11 +5,12 @@ import {
   drawForPlayer,
   gameEffects,
   gameInput,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import type {
   GameContext,
+  NoGameState,
   PlayerMap,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   CAT_PATTES_CARD_BY_ID,
   CAT_PATTES_DECK,
@@ -19,7 +20,7 @@ import {
   type CatPattesObstacleType,
   type CatPattesParadeType,
 } from './content';
-import type { CatPattesState } from './state';
+type CatPattesState = NoGameState;
 
 const DECK = 'cat-pattes';
 const HANDS = 'players';
@@ -200,7 +201,7 @@ export function playableInputs(
 function effectsForPlay(
   card: CatPattesCardDefinition,
   targetId: number | null,
-): readonly import('../../../core/application/public-api').GameEffectInstruction[] {
+): readonly import('../../../engine/sdk/public-api').GameEffectInstruction[] {
   if (card.type !== 'obstacle' || targetId == null) return card.effects;
   return card.effects.map((effect) =>
     effect.kind === 'add-status'

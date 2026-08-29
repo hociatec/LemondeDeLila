@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { readEnvironment } from '../../config/public-api';
 
 export type BuildInfo = {
   sha: string | null;
@@ -99,11 +100,11 @@ export function getBuildInfo(): BuildInfo {
   }
 
   const envSha =
-    (process.env.LEMONDEDELILA_BUILD_ID ?? '').trim() ||
-    (process.env.LEMONDEDELILA_GIT_SHA ?? '').trim() ||
-    (process.env.GITHUB_SHA ?? '').trim() ||
-    (process.env.COMMIT_SHA ?? '').trim() ||
-    (process.env.SOURCE_VERSION ?? '').trim();
+    readEnvironment('LEMONDEDELILA_BUILD_ID').trim() ||
+    readEnvironment('LEMONDEDELILA_GIT_SHA').trim() ||
+    readEnvironment('GITHUB_SHA').trim() ||
+    readEnvironment('COMMIT_SHA').trim() ||
+    readEnvironment('SOURCE_VERSION').trim();
 
   if (envSha) {
     cached = {

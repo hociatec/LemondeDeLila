@@ -2,7 +2,7 @@ import {
   defineAction,
   gameInput,
   rejectRule,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   GERARD_PRESIDENT_SPECIAL_CARDS,
   type GerardPresidentNameCard,

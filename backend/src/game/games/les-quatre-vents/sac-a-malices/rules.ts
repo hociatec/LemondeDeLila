@@ -3,8 +3,8 @@ import {
   defineEffect,
   gameInput,
   rejectRule,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import type { SacCard, SacMovement, SacTile } from './content';
 import {
   buildCost,

@@ -3,6 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as winston from 'winston';
+import {
+  sanitizeLogText,
+  sanitizeLogValue,
+} from '../../../../common/observability/public-api';
 
 import { GameError } from '../../domain/errors/game-errors';
 
@@ -102,27 +106,27 @@ export class GameLoggerService {
     context?: GameLogContext,
   ): void {
     const logData: GameErrorLogData = {
-      message,
-      context: context || {},
+      message: sanitizeLogText(message),
+      context: sanitizeLogValue(context || {}) as GameLogContext,
     };
 
     if (error instanceof GameError) {
       logData.error = {
         name: error.name,
-        message: error.message,
+        message: sanitizeLogText(error.message),
         severity: error.severity,
-        context: error.context,
-        stack: error.stack,
+        context: sanitizeLogValue(error.context),
+        stack: error.stack ? sanitizeLogText(error.stack) : undefined,
       };
     } else if (error instanceof Error) {
       logData.error = {
         name: error.name,
-        message: error.message,
-        stack: error.stack,
+        message: sanitizeLogText(error.message),
+        stack: error.stack ? sanitizeLogText(error.stack) : undefined,
       };
     } else if (error) {
       logData.error = {
-        message: String(error),
+        message: sanitizeLogText(String(error)),
       };
     }
 
@@ -131,22 +135,22 @@ export class GameLoggerService {
 
   warn(message: string, context?: GameLogContext): void {
     this.logger.warn({
-      message,
-      context: context || {},
+      message: sanitizeLogText(message),
+      context: sanitizeLogValue(context || {}),
     });
   }
 
   info(message: string, context?: GameLogContext): void {
     this.logger.info({
-      message,
-      context: context || {},
+      message: sanitizeLogText(message),
+      context: sanitizeLogValue(context || {}),
     });
   }
 
   debug(message: string, context?: GameLogContext): void {
     this.logger.debug({
-      message,
-      context: context || {},
+      message: sanitizeLogText(message),
+      context: sanitizeLogValue(context || {}),
     });
   }
 

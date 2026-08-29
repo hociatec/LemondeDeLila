@@ -1,8 +1,12 @@
 import { DataSource } from 'typeorm';
 import { ORM_ENTITIES } from './database/entities';
+import {
+  getProcessEnvironment,
+  readEnvironment,
+  readEnvironmentBoolean,
+} from './config/public-api';
 
-const shouldIgnoreEnvFile =
-  (process.env.IGNORE_ENV_FILE || '').toLowerCase().trim() === 'true';
+const shouldIgnoreEnvFile = readEnvironmentBoolean('IGNORE_ENV_FILE', false);
 if (!shouldIgnoreEnvFile) {
   // Load `.env` for migrations as well (default behavior).
   // When env vars come from systemd/docker, set `IGNORE_ENV_FILE=true`.
@@ -17,9 +21,9 @@ const {
   DB_USER = 'root',
   DB_PASSWORD = '',
   DB_NAME = 'le_monde_de_lila',
-} = process.env;
+} = getProcessEnvironment();
 
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = readEnvironment('NODE_ENV') === 'production';
 const base = DATABASE_URL
   ? {
       type: 'mysql' as const,

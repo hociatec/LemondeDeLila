@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { writeFileAtomic } from '../../../common/utils/public-api';
 import * as path from 'path';
 import { Injectable } from '@nestjs/common';
 
@@ -54,7 +55,7 @@ export class ClientUpdatesUploadStoreService {
       completedAt: new Date().toISOString(),
       meta,
     };
-    await fs.promises.writeFile(
+    await writeFileAtomic(
       this.getCompletedMarkerPath(uploadId),
       JSON.stringify(marker, null, 2),
     );

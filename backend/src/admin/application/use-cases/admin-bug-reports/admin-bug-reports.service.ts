@@ -47,8 +47,8 @@ export class AdminBugReportsService {
     });
   }
 
-  async list() {
-    const items = await this.listBugReports.execute();
+  async list(options: { offset?: number; limit?: number } = {}) {
+    const items = await this.listBugReports.execute(options);
     const counts = await this.countBugReportComments.execute(
       items.map((item) => item.id),
     );

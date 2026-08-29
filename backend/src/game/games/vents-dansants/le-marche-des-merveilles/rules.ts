@@ -3,7 +3,7 @@ import {
   defineAction,
   gameInput,
   type GameContext,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { MARKET_RULES, WONDER_GOODS } from './content';
 import type { WonderGood, WonderMarketState } from './state';
 

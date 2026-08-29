@@ -1,11 +1,15 @@
 import {
+  IsInt,
   IsIn,
   IsOptional,
   IsString,
   Matches,
+  Max,
   MaxLength,
   MinLength,
+  Min,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class AdminBugReportCreateWsDto {
   @IsString()
@@ -26,13 +30,23 @@ export class AdminBugReportIdWsDto {
   @MinLength(1)
   @Matches(/\S/, { message: 'id must not be blank' })
   @MaxLength(64)
+  @Matches(/^[A-Za-z0-9_-]+$/)
   id!: string;
 }
 
 export class AdminBugReportsListWsDto {
   @IsOptional()
-  @IsString()
-  _noop?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  offset: number = 0;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit: number = 50;
 }
 
 export class AdminBugReportUpdateWsDto extends AdminBugReportIdWsDto {

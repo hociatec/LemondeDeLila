@@ -1,5 +1,6 @@
 ﻿import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
+import { ConfigService } from '@nestjs/config';
 import { UpdatePolicyService } from '../../../../update/public-api';
 import {
   SESSION_STORE,
@@ -9,6 +10,7 @@ import {
   getErrorDetails,
   getErrorMessage,
   getErrorPayload,
+  bestEffort,
   isVersionLower,
   type PresentedErrorPayload,
 } from '../../../../common/utils/public-api';
@@ -17,6 +19,10 @@ import type {
   RealtimeClientSession,
   RealtimeIncomingMessage,
 } from './realtime-api.types';
+import {
+  RealtimeRequestReplayService,
+  type RealtimeResponseFrame,
+} from './realtime-request-replay.service';
 
 @Injectable()
 export class RealtimeApiHandlerService {
@@ -26,6 +32,8 @@ export class RealtimeApiHandlerService {
     private readonly registry: WsRouteRegistry,
     @Inject(SESSION_STORE) private readonly sessionStore: SessionStateStore,
     private readonly updates: UpdatePolicyService,
+    private readonly config: ConfigService,
+    private readonly replay: RealtimeRequestReplayService,
   ) {}
 
   async persistSession(session: RealtimeClientSession): Promise<void> {
@@ -43,7 +51,11 @@ export class RealtimeApiHandlerService {
   }
 
   async clearSession(connectionId: string): Promise<void> {
-    await this.sessionStore.delete(connectionId).catch(() => {});
+    await bestEffort(
+      this.sessionStore.delete(connectionId),
+      `suppression session realtime connection=${connectionId}`,
+      this.logger,
+    );
   }
 
   async handleIncoming(
@@ -52,19 +64,79 @@ export class RealtimeApiHandlerService {
     raw: unknown,
   ): Promise<void> {
     const decoded = this.decode(raw);
-    if (!decoded?.type) {
-      this.logger.debug(
-        `Message WS ignoré (invalide ou sans type) connectionId=${session.connectionId}`,
+    if (!decoded) {
+      this.logger.warn(
+        `Message WS rejeté (invalide ou sans type) connectionId=${session.connectionId}`,
       );
+      this.sendError(client, 'Message WebSocket invalide');
       return;
     }
 
-    const { type, payload, requestId } = decoded;
-    if (await this.rejectOutdatedClient(client, session, type, requestId))
-      return;
+    await this.handleDecoded(client, session, decoded);
+  }
 
+  private async handleDecoded(
+    client: WebSocket,
+    session: RealtimeClientSession,
+    decoded: RealtimeIncomingMessage & { type: string },
+  ): Promise<void> {
+    const { type, payload, requestId } = decoded;
+    const replay = this.replay.begin(session, type, requestId);
+    if (replay.kind === 'collision') {
+      this.sendError(
+        client,
+        'requestId déjà utilisé pour une autre commande',
+        type,
+        requestId,
+      );
+      return;
+    }
+    if (replay.kind === 'replay') {
+      for (const frame of await replay.frames) this.safeSend(client, frame);
+      return;
+    }
+    if (!this.consumeRateLimit(session)) {
+      this.logger.warn(
+        JSON.stringify({
+          event: 'ws.rate_limit.rejected',
+          connectionId: session.connectionId,
+          userId: session.user?.id ?? null,
+          type,
+        }),
+      );
+      this.sendError(client, 'Trop de requêtes', type, requestId);
+      replay.fail();
+      return;
+    }
+    if (await this.rejectOutdatedClient(client, session, type, requestId)) {
+      replay.fail();
+      return;
+    }
+
+    await this.executeHandler(
+      client,
+      session,
+      type,
+      payload,
+      requestId,
+      replay,
+    );
+  }
+
+  private async executeHandler(
+    client: WebSocket,
+    session: RealtimeClientSession,
+    type: string,
+    payload: unknown,
+    requestId: string | undefined,
+    replay: Extract<
+      ReturnType<RealtimeRequestReplayService['begin']>,
+      { kind: 'execute' }
+    >,
+  ): Promise<void> {
     try {
       if (type === 'r' || type === 'R') {
+        replay.complete([]);
         return;
       }
 
@@ -74,6 +146,7 @@ export class RealtimeApiHandlerService {
           `Type WS inconnu: ${type} (requestId=${requestId ?? 'n/a'})`,
         );
         this.sendError(client, 'Type de message inconnu', type, requestId);
+        replay.fail();
         return;
       }
 
@@ -92,22 +165,25 @@ export class RealtimeApiHandlerService {
           `WS handler ok: ${type} (${elapsedMs}ms) requestId=${requestId ?? 'n/a'}`,
         );
       }
-      if (response) {
-        for (const item of Array.isArray(response) ? response : [response]) {
-          this.safeSend(client, { requestId, ...item });
-        }
-      }
+      const responseItems = response ? [response] : [];
+      const frames: RealtimeResponseFrame[] = responseItems.map((item) => ({
+        requestId,
+        ...item,
+      }));
+      replay.complete(frames);
+      for (const frame of frames) this.safeSend(client, frame);
     } catch (err) {
       this.logger.error(
         `Erreur handler WS type=${type} requestId=${requestId ?? 'n/a'} userId=${session.user?.id ?? 'anon'} connectionId=${session.connectionId}: ${getErrorMessage(err, 'Erreur inconnue')}`,
         err instanceof Error ? err.stack : undefined,
       );
-      this.sendError(
-        client,
+      const frame = this.errorFrame(
         getErrorPayload(err, 'Erreur inconnue'),
         type,
         requestId,
       );
+      replay.complete([frame]);
+      this.safeSend(client, frame);
     }
   }
 
@@ -153,12 +229,24 @@ export class RealtimeApiHandlerService {
     if (!text.trim()) {
       return null;
     }
+    const maxPayloadBytes = this.config.get<number>(
+      'WS_MAX_PAYLOAD_BYTES',
+      65_536,
+    );
+    if (Buffer.byteLength(text, 'utf8') > maxPayloadBytes) return null;
     try {
       const parsed: unknown = JSON.parse(text);
       if (
         !isRecord(parsed) ||
-        (parsed.type !== undefined && typeof parsed.type !== 'string') ||
-        (parsed.requestId !== undefined && typeof parsed.requestId !== 'string')
+        Object.keys(parsed).some(
+          (key) => !['type', 'payload', 'requestId'].includes(key),
+        ) ||
+        typeof parsed.type !== 'string' ||
+        parsed.type.length === 0 ||
+        parsed.type.length > 100 ||
+        (parsed.requestId !== undefined &&
+          (typeof parsed.requestId !== 'string' ||
+            parsed.requestId.length > 128))
       ) {
         return null;
       }
@@ -170,6 +258,19 @@ export class RealtimeApiHandlerService {
     } catch {
       return null;
     }
+  }
+
+  private consumeRateLimit(session: RealtimeClientSession): boolean {
+    const now = Date.now();
+    const windowMs = this.config.get<number>('WS_RATE_LIMIT_WINDOW_MS', 10_000);
+    const limit = this.config.get<number>('WS_RATE_LIMIT_COUNT', 60);
+    const current = session.rateLimit;
+    if (!current || now - current.windowStartedAtMs >= windowMs) {
+      session.rateLimit = { windowStartedAtMs: now, count: 1 };
+      return true;
+    }
+    current.count += 1;
+    return current.count <= limit;
   }
 
   private safeSend(client: WebSocket, payload: unknown) {
@@ -192,12 +293,20 @@ export class RealtimeApiHandlerService {
     context?: string,
     requestId?: string,
   ) {
-    this.safeSend(client, {
+    this.safeSend(client, this.errorFrame(error, context, requestId));
+  }
+
+  private errorFrame(
+    error: string | PresentedErrorPayload,
+    context?: string,
+    requestId?: string,
+  ): RealtimeResponseFrame {
+    return {
       type: 'error',
       requestId,
       context,
       payload: typeof error === 'string' ? { message: error } : error,
-    });
+    };
   }
 }
 

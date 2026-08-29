@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Server, WebSocket } from 'ws';
+import { WebSocket } from 'ws';
 import { CatalogService } from '../../../../catalog/public-api';
 import { PerfMetricsService } from '../../../../common/observability/public-api';
+import { bestEffort } from '@common/utils/public-api';
 import { RoomWsPrivateInvitationRequiredError } from '../../../domain/errors/room-ws.errors';
-import type { RoomPayload } from '../../../public-api';
 import { RoomJoinPolicyService } from '../../../application/services/room-join-policy.service';
 import { RoomLifecycleFacadeService } from '../../../application/services/room-lifecycle-facade.service';
 import { RoomMembershipFacadeService } from '../../../application/services/room-membership-facade.service';
@@ -12,12 +12,11 @@ import { RoomStateService } from '../../../application/services/room-state.servi
 import { buildCreatedRoomState } from './room-created-state.helpers';
 import { extractTraceMeta } from './room-command.helpers';
 import { RoomGatewayLifecyclePresenter } from './room-gateway-lifecycle.presenter';
-import type { RoomIntent } from './dto/room-intent.ws.dto';
+import type { AuthedClient, ClientMeta } from './room-gateway.types';
 import type {
-  AuthedClient,
-  ClientMeta,
-  ClientRole,
-} from './room-gateway.types';
+  JoinResolution,
+  LifecycleContext,
+} from './room-gateway-lifecycle.types';
 import {
   addSocketToRoomMembership,
   removeSocketFromRoomMembership,
@@ -26,51 +25,6 @@ import {
   parseRoomCreateRequest,
   parseRoomJoinRequest,
 } from './room-request.helpers';
-
-type LifecycleContext = {
-  server: Server<typeof WebSocket>;
-  rooms: Map<number, Set<WebSocket>>;
-  silentRooms: Map<number, Set<WebSocket>>;
-  clients: Map<WebSocket, ClientMeta>;
-  sendRoomLeftOrDeleted: (client: WebSocket, roomId: number) => Promise<void>;
-  resetClientRoomState: (meta: ClientMeta) => void;
-  hasUserConnections: (roomId: number, userId: number) => boolean;
-  sendRoomState: (roomId: number) => Promise<void>;
-  sendRoomStateToClient: (
-    client: WebSocket,
-    roomId: number,
-    options?: {
-      includeRealtimePlayers?: boolean;
-      includeHiddenSelf?: { userId: number; username: string };
-    },
-  ) => Promise<void>;
-  broadcast: (roomId: number, type: string, payload: unknown) => Promise<void>;
-  broadcastRoomIntent: (roomId: number, payload: RoomIntent) => Promise<void>;
-  broadcastRoomPayload: (roomId: number, payload: RoomPayload) => Promise<void>;
-  sendError: (client: WebSocket, message: string) => Promise<void>;
-  safeSend: (client: WebSocket, payload: unknown) => void;
-  tryUpdateRoomPayload: (
-    roomId: number,
-    updater: (payload: RoomPayload) => RoomPayload | null,
-  ) => Promise<boolean>;
-  canSpectate: (roomId: number, userId: number) => Promise<boolean>;
-  leavePreviousRoomOnSwitch: (
-    previousRoomId: number,
-    userId: number,
-    previousRole: ClientRole,
-  ) => Promise<void>;
-  withAllowedActionsForClient: (
-    payload: RoomPayload,
-    meta: ClientMeta,
-  ) => RoomPayload;
-  asRecord: (value: unknown) => Record<string, unknown>;
-};
-
-type JoinResolution = {
-  roomId: number;
-  silent: boolean;
-  spectator: boolean;
-};
 
 @Injectable()
 export class RoomGatewayLifecycleService {
@@ -111,36 +65,42 @@ export class RoomGatewayLifecycleService {
 
     await ctx.sendRoomLeftOrDeleted(client, roomId);
 
-    (async () => {
-      try {
+    void bestEffort(
+      (async () => {
         if (wasParticipant) {
-          await this.membership.leaveRoom(roomId, userId, {
-            preserveRoom: remainingTotalConnections > 0,
-            disconnectOnly: false,
-          });
+          await bestEffort(
+            this.membership.leaveRoom(roomId, userId, {
+              preserveRoom: remainingTotalConnections > 0,
+              disconnectOnly: false,
+            }),
+            `sortie participant room=${roomId} user=${userId}`,
+          );
         } else {
           if (!userStillConnected) {
-            await this.membership.transferOwnerIfCurrent(roomId, userId);
+            await bestEffort(
+              this.membership.transferOwnerIfCurrent(roomId, userId),
+              `transfert propriétaire room=${roomId} user=${userId}`,
+            );
           }
           if (remainingTotalConnections === 0) {
-            await this.membership.leaveRoom(roomId, userId, {
-              preserveRoom: false,
-              disconnectOnly: false,
-            });
+            await bestEffort(
+              this.membership.leaveRoom(roomId, userId, {
+                preserveRoom: false,
+                disconnectOnly: false,
+              }),
+              `sortie spectateur room=${roomId} user=${userId}`,
+            );
           }
         }
-      } catch {
-        // ignore
-      }
-
-      try {
         if (remainingTotalConnections > 0) {
-          await ctx.sendRoomState(roomId);
+          await bestEffort(
+            ctx.sendRoomState(roomId),
+            `rafraîchissement après sortie room=${roomId}`,
+          );
         }
-      } catch {
-        // ignore
-      }
-    })().catch(() => {});
+      })(),
+      'cycle de connexion room',
+    );
   }
 
   async handleRoomStart(

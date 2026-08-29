@@ -2,7 +2,7 @@ import {
   freezeGameContent,
   gameEffects,
   rejectContent,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type {
@@ -12,6 +12,7 @@ import type {
   VoyageTile,
   VoyageTileType,
 } from './state';
+import { TRACK } from './rules';
 
 type RawVoyageCard = Omit<
   VoyageCard,
@@ -184,7 +185,7 @@ function cardInstructions(text: string): VoyageCard['effects'] {
     return [gameEffects.custom('voyage.lose-random-card', { allowed })];
   }
   const delta = extractMoveDelta(text);
-  if (delta !== 0) return [gameEffects.custom('voyage.move', { delta })];
+  if (delta !== 0) return [gameEffects.move(TRACK, delta)];
   const skip = extractSkipTurns(text);
   if (skip > 0) return [gameEffects.skipTurn(skip)];
   if (/échange/i.test(text) && /carte/i.test(text)) {

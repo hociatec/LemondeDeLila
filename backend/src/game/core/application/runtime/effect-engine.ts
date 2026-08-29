@@ -1,108 +1,26 @@
-import {
-  GameNotFoundError,
-  GameStateViolationError,
-} from '../../domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
 import type {
   EffectEngineState,
   EffectSource,
-  EffectTarget,
   GameEffectInstruction,
   GameEffectResolverShape,
 } from './effects-kit';
 import { evaluateEffectCondition } from './effect-condition-evaluator';
 import type { GameContext } from './game-rule-context';
+import { EffectTargetResolver } from './effect-target-resolver';
+import {
+  executeRegisteredPrimitive,
+  type EffectEngineDebugSnapshot,
+  type PrimitiveEffectHandlers,
+} from './effect-primitive-executor';
+export type { EffectEngineDebugSnapshot } from './effect-primitive-executor';
+import { executeCustomEffect } from './custom-effect-executor';
 
 const MAX_EFFECTS_PER_RESOLUTION = 256;
 
-type ControlEffectInstruction = Extract<
-  GameEffectInstruction,
-  { kind: 'conditional' | 'reaction' | 'choose-player' | 'custom' }
->;
-type PrimitiveEffectInstruction = Exclude<
-  GameEffectInstruction,
-  ControlEffectInstruction
->;
-type PrimitiveEffectHandlers = {
-  [TKind in PrimitiveEffectInstruction['kind']]: (
-    instruction: Extract<PrimitiveEffectInstruction, { kind: TKind }>,
-  ) => boolean;
-};
-
-export type EffectEngineDebugSnapshot = {
-  queueLength: number;
-  queueKinds: string[];
-  currentSource: EffectSource | null;
-  actorPlayerId: number | null;
-  chosenPlayerId: number | null;
-  awaitingChoiceId: string | null;
-  awaitingReactionChoiceId: string | null;
-  awaitingPlayerChoiceId: string | null;
-  completeTurnWhenDrained: boolean;
-};
-
-function executeRegisteredPrimitive(
-  handlers: PrimitiveEffectHandlers,
-  instruction: PrimitiveEffectInstruction,
-): boolean {
-  switch (instruction.kind) {
-    case 'extra-turn':
-      return handlers['extra-turn'](instruction);
-    case 'roll-dice':
-      return handlers['roll-dice'](instruction);
-    case 'complete-turn':
-      return handlers['complete-turn'](instruction);
-    case 'reverse-turn-order':
-      return handlers['reverse-turn-order'](instruction);
-    case 'transfer-resource':
-      return handlers['transfer-resource'](instruction);
-    case 'give-card':
-      return handlers['give-card'](instruction);
-    case 'steal-card':
-      return handlers['steal-card'](instruction);
-    case 'swap-hands':
-      return handlers['swap-hands'](instruction);
-    case 'swap-positions':
-      return handlers['swap-positions'](instruction);
-    case 'steal-random-inventory':
-      return handlers['steal-random-inventory'](instruction);
-    case 'swap-inventories':
-      return handlers['swap-inventories'](instruction);
-    case 'exchange-random-inventory':
-      return handlers['exchange-random-inventory'](instruction);
-    case 'move':
-      return handlers.move(instruction);
-    case 'move-to':
-      return handlers['move-to'](instruction);
-    case 'draw-cards':
-      return handlers['draw-cards'](instruction);
-    case 'discard-random':
-      return handlers['discard-random'](instruction);
-    case 'discard-random-inventory':
-      return handlers['discard-random-inventory'](instruction);
-    case 'gain-resource':
-      return handlers['gain-resource'](instruction);
-    case 'lose-resource':
-      return handlers['lose-resource'](instruction);
-    case 'gain-score':
-      return handlers['gain-score'](instruction);
-    case 'skip-turn':
-      return handlers['skip-turn'](instruction);
-    case 'add-status':
-      return handlers['add-status'](instruction);
-    case 'remove-status':
-      return handlers['remove-status'](instruction);
-  }
-  return assertUnhandledPrimitive(instruction);
-}
-
-function assertUnhandledPrimitive(instruction: never): never {
-  throw new GameStateViolationError(
-    `Primitive d'effet non enregistrée: ${JSON.stringify(instruction)}`,
-  );
-}
-
 export class GameEffectEngineController<TState extends object> {
   private draining = false;
+  private readonly targetResolver: EffectTargetResolver<TState>;
 
   constructor(
     private readonly state: EffectEngineState,
@@ -111,12 +29,10 @@ export class GameEffectEngineController<TState extends object> {
     private readonly resolvers: Readonly<
       Record<string, GameEffectResolverShape<TState>>
     > = {},
-  ) {}
+  ) {
+    this.targetResolver = new EffectTargetResolver(state, context);
+  }
 
-  /**
-   * Registre fermé aux primitives universelles. Les orchestrations métier
-   * restent des effets `custom` déclarés par chaque jeu avec `defineEffect`.
-   */
   private readonly primitiveHandlers = {
     'extra-turn': (instruction) => {
       this.context.turn.extra(instruction.count ?? 1);
@@ -135,7 +51,7 @@ export class GameEffectEngineController<TState extends object> {
       return true;
     },
     'transfer-resource': (instruction) =>
-      this.applyToPair(
+      this.targetResolver.applyToPair(
         instruction,
         instruction.from,
         instruction.to,
@@ -148,7 +64,7 @@ export class GameEffectEngineController<TState extends object> {
           ),
       ),
     'give-card': (instruction) =>
-      this.applyToPair(
+      this.targetResolver.applyToPair(
         instruction,
         instruction.from,
         instruction.to,
@@ -161,7 +77,7 @@ export class GameEffectEngineController<TState extends object> {
           ),
       ),
     'steal-card': (instruction) =>
-      this.applyToPair(
+      this.targetResolver.applyToPair(
         instruction,
         instruction.from,
         instruction.to,
@@ -180,7 +96,7 @@ export class GameEffectEngineController<TState extends object> {
         },
       ),
     'swap-hands': (instruction) =>
-      this.applyToPair(
+      this.targetResolver.applyToPair(
         instruction,
         instruction.left,
         instruction.right,
@@ -192,7 +108,7 @@ export class GameEffectEngineController<TState extends object> {
           ),
       ),
     'swap-positions': (instruction) =>
-      this.applyToPair(
+      this.targetResolver.applyToPair(
         instruction,
         instruction.left,
         instruction.right,
@@ -204,7 +120,7 @@ export class GameEffectEngineController<TState extends object> {
           ),
       ),
     'steal-random-inventory': (instruction) =>
-      this.applyToPair(
+      this.targetResolver.applyToPair(
         instruction,
         instruction.from,
         instruction.to,
@@ -223,7 +139,7 @@ export class GameEffectEngineController<TState extends object> {
         },
       ),
     'swap-inventories': (instruction) =>
-      this.applyToPair(
+      this.targetResolver.applyToPair(
         instruction,
         instruction.left,
         instruction.right,
@@ -235,7 +151,7 @@ export class GameEffectEngineController<TState extends object> {
           ),
       ),
     'exchange-random-inventory': (instruction) =>
-      this.applyToPair(
+      this.targetResolver.applyToPair(
         instruction,
         instruction.left,
         instruction.right,
@@ -247,7 +163,7 @@ export class GameEffectEngineController<TState extends object> {
           ),
       ),
     move: (instruction) =>
-      this.applyToTargets(instruction, (playerId) =>
+      this.targetResolver.applyToTargets(instruction, (playerId) =>
         this.context.movement.move(
           instruction.trackId,
           playerId,
@@ -255,7 +171,7 @@ export class GameEffectEngineController<TState extends object> {
         ),
       ),
     'move-to': (instruction) =>
-      this.applyToTargets(instruction, (playerId) =>
+      this.targetResolver.applyToTargets(instruction, (playerId) =>
         this.context.movement.moveTo(
           instruction.trackId,
           playerId,
@@ -263,7 +179,7 @@ export class GameEffectEngineController<TState extends object> {
         ),
       ),
     'draw-cards': (instruction) =>
-      this.applyToTargets(instruction, (playerId) => {
+      this.targetResolver.applyToTargets(instruction, (playerId) => {
         for (let count = 0; count < instruction.count; count += 1) {
           const card = instruction.recycle
             ? this.context.cards.drawOrRecycle(instruction.deckId)
@@ -273,7 +189,7 @@ export class GameEffectEngineController<TState extends object> {
         }
       }),
     'discard-random': (instruction) =>
-      this.applyToTargets(instruction, (playerId) => {
+      this.targetResolver.applyToTargets(instruction, (playerId) => {
         for (let count = 0; count < instruction.count; count += 1) {
           if (
             this.context.cards.discardRandom(
@@ -287,7 +203,7 @@ export class GameEffectEngineController<TState extends object> {
         }
       }),
     'discard-random-inventory': (instruction) =>
-      this.applyToTargets(instruction, (playerId) => {
+      this.targetResolver.applyToTargets(instruction, (playerId) => {
         for (let count = 0; count < instruction.count; count += 1) {
           if (
             this.context.inventory.removeRandom(
@@ -300,7 +216,7 @@ export class GameEffectEngineController<TState extends object> {
         }
       }),
     'gain-resource': (instruction) =>
-      this.applyToTargets(instruction, (playerId) =>
+      this.targetResolver.applyToTargets(instruction, (playerId) =>
         this.context.resources.add(
           playerId,
           instruction.resource,
@@ -308,7 +224,7 @@ export class GameEffectEngineController<TState extends object> {
         ),
       ),
     'lose-resource': (instruction) =>
-      this.applyToTargets(instruction, (playerId) => {
+      this.targetResolver.applyToTargets(instruction, (playerId) => {
         const amount = instruction.allowPartial
           ? Math.min(
               instruction.amount,
@@ -320,15 +236,15 @@ export class GameEffectEngineController<TState extends object> {
         }
       }),
     'gain-score': (instruction) =>
-      this.applyToTargets(instruction, (playerId) =>
+      this.targetResolver.applyToTargets(instruction, (playerId) =>
         this.context.score.add(playerId, instruction.amount),
       ),
     'skip-turn': (instruction) =>
-      this.applyToTargets(instruction, (playerId) =>
+      this.targetResolver.applyToTargets(instruction, (playerId) =>
         this.context.turn.skip(playerId, instruction.count ?? 1),
       ),
     'add-status': (instruction) =>
-      this.applyToTargets(instruction, (playerId) => {
+      this.targetResolver.applyToTargets(instruction, (playerId) => {
         const turns = instruction.stack
           ? (this.context.status.get(playerId, instruction.status)?.remaining ??
               0) + (instruction.turns ?? 1)
@@ -340,7 +256,7 @@ export class GameEffectEngineController<TState extends object> {
         });
       }),
     'remove-status': (instruction) =>
-      this.applyToTargets(instruction, (playerId) =>
+      this.targetResolver.applyToTargets(instruction, (playerId) =>
         this.context.status.remove(playerId, instruction.status),
       ),
   } satisfies PrimitiveEffectHandlers;
@@ -500,7 +416,7 @@ export class GameEffectEngineController<TState extends object> {
     if (instruction.kind === 'conditional') {
       const matched = evaluateEffectCondition(
         instruction.condition,
-        (target) => this.targets(target, instruction),
+        (target) => this.targetResolver.targets(target, instruction),
         this.context,
       );
       if (matched == null) return false;
@@ -512,10 +428,13 @@ export class GameEffectEngineController<TState extends object> {
       return true;
     }
     if (instruction.kind === 'reaction') {
-      const reactors = this.targets(instruction.reactor, instruction);
+      const reactors = this.targetResolver.targets(
+        instruction.reactor,
+        instruction,
+      );
       if (!reactors) return false;
       const reactor = reactors[0];
-      const options = this.availableReactionOptions(instruction);
+      const options = this.targetResolver.availableReactionOptions(instruction);
       if (options == null) return false;
       if (reactor == null || options.length === 0) {
         this.state.queue.unshift(
@@ -544,189 +463,25 @@ export class GameEffectEngineController<TState extends object> {
       return false;
     }
     if (instruction.kind === 'choose-player') {
-      this.requestPlayerChoice(
+      this.targetResolver.requestPlayerChoice(
         instruction.choiceId ?? 'engine.effect.player',
         instruction.candidates ?? 'opponents',
       );
       return false;
     }
     if (instruction.kind === 'custom') {
-      return this.executeCustom(instruction);
+      return executeCustomEffect({
+        instruction,
+        resolvers: this.resolvers,
+        gameState: this.gameState,
+        engineState: this.state,
+        source: this.source(),
+        context: this.context,
+        targets: () =>
+          this.targetResolver.targets(instruction.target, instruction),
+      });
     }
     return executeRegisteredPrimitive(this.primitiveHandlers, instruction);
-  }
-
-  private applyToTargets(
-    instruction: PrimitiveEffectInstruction & { target?: EffectTarget },
-    apply: (playerId: number) => void,
-  ): boolean {
-    const playerIds = this.targets(instruction.target, instruction);
-    if (!playerIds) return false;
-    for (const playerId of playerIds) apply(playerId);
-    return true;
-  }
-
-  private applyToPair(
-    instruction: PrimitiveEffectInstruction,
-    leftTarget: EffectTarget,
-    rightTarget: EffectTarget | undefined,
-    apply: (leftPlayerId: number, rightPlayerId: number) => void,
-  ): boolean {
-    const leftPlayerIds = this.targets(leftTarget, instruction);
-    if (!leftPlayerIds) return false;
-    const rightPlayerIds = this.targets(rightTarget, instruction);
-    if (!rightPlayerIds) return false;
-    const leftPlayerId = leftPlayerIds[0];
-    const rightPlayerId = rightPlayerIds[0];
-    if (leftPlayerId != null && rightPlayerId != null) {
-      apply(leftPlayerId, rightPlayerId);
-    }
-    return true;
-  }
-
-  private executeCustom(
-    instruction: Extract<GameEffectInstruction, { kind: 'custom' }>,
-  ): boolean {
-    const resolver = this.resolvers[instruction.effectId];
-    if (!resolver) {
-      throw new GameNotFoundError(
-        `Effet de jeu inconnu: ${instruction.effectId}`,
-      );
-    }
-    const data = resolver.input.parse(
-      instruction.data ?? {},
-      `effect.${instruction.effectId}`,
-    );
-    const targetPlayerIds = instruction.target
-      ? this.targets(instruction.target, instruction)
-      : [];
-    if (!targetPlayerIds) return false;
-    resolver.apply({
-      state: this.gameState(),
-      actorPlayerId: this.state.actorPlayerId,
-      source: this.source(),
-      targetPlayerIds,
-      data,
-      ctx: this.context,
-    });
-    this.context.events.engine('game.effect.resolved', {
-      effectId: instruction.effectId,
-    });
-    return true;
-  }
-
-  private targets(
-    target: EffectTarget | undefined,
-    instruction: GameEffectInstruction,
-  ): number[] | null {
-    const selector = target ?? { kind: 'self' };
-    const actorId = this.state.actorPlayerId;
-    if (selector.kind === 'player') return [selector.playerId];
-    if (selector.kind === 'self') return actorId == null ? [] : [actorId];
-    if (selector.kind === 'next') {
-      const next = this.context.players.next();
-      return next ? [next.id] : [];
-    }
-    const opponents = this.context.players
-      .active()
-      .filter((player) => player.id !== actorId)
-      .map((player) => player.id);
-    if (selector.kind === 'all-opponents') return opponents;
-    if (selector.kind === 'random-opponent') {
-      const selected = this.context.random.pick(opponents);
-      return selected == null ? [] : [selected];
-    }
-    const choiceId = selector.choiceId ?? 'engine.effect.player';
-    if (
-      this.state.playerChoiceResolved &&
-      this.state.resolvedPlayerChoiceId === choiceId
-    ) {
-      return this.state.chosenPlayerId == null
-        ? []
-        : [this.state.chosenPlayerId];
-    }
-    this.state.queue.unshift(structuredClone(instruction));
-    this.requestPlayerChoice(
-      choiceId,
-      selector.kind === 'chosen-player' ? 'active-players' : 'opponents',
-      selector.optional === true,
-      selector.kind === 'chosen-player' ? selector.playerIds : undefined,
-      selector.chooserPlayerId,
-    );
-    return null;
-  }
-
-  private requestPlayerChoice(
-    choiceId: string,
-    candidates: 'opponents' | 'active-players',
-    optional = false,
-    candidatePlayerIds?: readonly number[],
-    chooserPlayerId?: number,
-  ): void {
-    const actorId = chooserPlayerId ?? this.state.actorPlayerId;
-    const allowed = candidatePlayerIds && new Set(candidatePlayerIds);
-    const options = this.context.players
-      .active()
-      .filter(
-        (player) =>
-          (candidates === 'active-players' || player.id !== actorId) &&
-          (!allowed || allowed.has(player.id)),
-      )
-      .map((player) => player.id);
-    if (actorId == null || (!optional && options.length === 0)) {
-      throw new GameStateViolationError(
-        'Aucune cible disponible pour cet effet',
-        { choiceId, actorId },
-      );
-    }
-    this.state.chosenPlayerId = null;
-    this.state.playerChoiceResolved = false;
-    this.state.resolvedPlayerChoiceId = null;
-    this.state.awaitingChoiceId = choiceId;
-    this.state.awaitingPlayerChoice = { choiceId, optional };
-    const label = (playerId: number | null) =>
-      playerId == null
-        ? 'Aucune cible'
-        : (this.context.players.get(playerId)?.username ??
-          `Joueur ${playerId}`);
-    if (optional) {
-      this.context.choice.one({
-        id: choiceId,
-        player: actorId,
-        options: [...options, null],
-        timeout: { afterMs: 30_000, strategy: 'last' },
-        label,
-      });
-    } else {
-      this.context.choice.player({
-        id: choiceId,
-        player: actorId,
-        options,
-        timeout: { afterMs: 30_000, strategy: 'random' },
-        label,
-      });
-    }
-  }
-
-  private availableReactionOptions(
-    instruction: Extract<GameEffectInstruction, { kind: 'reaction' }>,
-  ): string[] | null {
-    const availability = instruction.availability;
-    if (!availability) return [...instruction.options];
-    const owners = this.targets(availability.owner, instruction);
-    if (!owners) return null;
-    const ownerId = owners[0];
-    if (ownerId == null) return [];
-    if (availability.kind === 'cards') {
-      const cards = new Set(
-        this.context.cards.hand<string>(availability.handId, ownerId),
-      );
-      return instruction.options.filter((option) => cards.has(option));
-    }
-    const amount = availability.amount ?? 1;
-    return instruction.options.filter((resource) =>
-      this.context.resources.has(ownerId, resource, amount),
-    );
   }
 
   private reset(): void {

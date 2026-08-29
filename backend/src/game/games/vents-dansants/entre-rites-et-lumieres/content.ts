@@ -1,8 +1,5 @@
-import {
-  freezeGameContent,
-  gameEffects,
-} from '../../../core/application/public-api';
-import type { GameEffectInstruction } from '../../../core/application/public-api';
+import { freezeGameContent, gameEffects } from '../../../engine/sdk/public-api';
+import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 
 export type RiteFamilyId =
   | 'symboles-sacres'

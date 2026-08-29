@@ -1,12 +1,14 @@
 import {
   cardGame,
   defineChoice,
-  defineConfiguration,
   defineGame,
+  defineGameContent,
   gameInput,
+  type NoGameState,
+  type PlayerMap,
   roundScoring,
   when,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { LAMA_MAX_DECK, type LamaCard } from './content';
 import {
   LAMA_ACTIONS,
@@ -16,67 +18,33 @@ import {
   resolveReturn,
   scoreLamaRound,
   skipInactiveLamaPlayer,
-  startLama,
 } from './rules';
-import type { LamaConfig, LamaPlayerView, LamaState } from './state';
+import { LAMA_CONFIGURATION } from './configuration';
 
-const LAMA_DEFAULT_CONFIG: LamaConfig = {
-  loseAtScore: 40,
-  roundPauseSeconds: 0,
-  allowPlayAfterDraw: false,
-  startingHandSize: 6,
-  copiesPerCardValue: 8,
-  returnTokenFromRound: 2,
-};
+type LamaState = NoGameState;
+type LamaStep = 'setup' | 'turn' | 'return' | 'pause';
+interface LamaViewExtension {
+  step: LamaStep;
+  droppedOut: PlayerMap<boolean>;
+  drawnThisTurn: boolean;
+  roundStarterIndex: number;
+  topCard: LamaCard | null;
+}
+
 const scoring = roundScoring<LamaState>({
   score: ({ state, ctx }) => scoreLamaRound(state, ctx),
 });
 
-export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
+export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaViewExtension>({
   id: 'lama',
   displayName: 'LAMA',
   category: 'JeuxDeCartes',
   subcategory: 'VentsSacres',
   description:
     'Défaussez vos cartes ou quittez la manche pour limiter vos jetons.',
+  content: defineGameContent('lama', { cards: LAMA_MAX_DECK }),
   players: { min: 2, max: 6 },
-  config: defineConfiguration<LamaState, LamaConfig>({
-    input: gameInput.object({
-      loseAtScore: gameInput.number({ integer: true, min: 5, max: 200 }),
-      roundPauseSeconds: gameInput.number({
-        integer: true,
-        min: 0,
-        max: 120,
-      }),
-      allowPlayAfterDraw: gameInput.boolean(),
-      startingHandSize: gameInput.number({
-        integer: true,
-        min: 1,
-        max: 20,
-      }),
-      copiesPerCardValue: gameInput.number({
-        integer: true,
-        min: 1,
-        max: 20,
-      }),
-      returnTokenFromRound: gameInput.number({
-        integer: true,
-        min: 1,
-        max: 50,
-      }),
-    }),
-    defaults: LAMA_DEFAULT_CONFIG,
-    phase: LAMA_PHASES.initialPhase,
-    permission: 'owner',
-    ui: {
-      title: 'Configuration LAMA',
-      submitLabel: 'Démarrer la partie',
-    },
-    validate: ({ config, ctx }) =>
-      ctx.players.count() * config.startingHandSize + 1 <=
-      config.copiesPerCardValue * 7,
-    onConfigured: ({ state, ctx }) => startLama(state, ctx),
-  }),
+  config: LAMA_CONFIGURATION,
   patterns: [
     cardGame({
       deckId: 'lama',
@@ -84,7 +52,6 @@ export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
       cards: LAMA_MAX_DECK,
     }),
   ],
-  setup: () => ({}),
   initialPhase: LAMA_PHASES.initialPhase,
   phases: LAMA_PHASES.phases,
   lifecycle: {
@@ -115,7 +82,7 @@ export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaPlayerView>({
       ({ state, ctx }) => skipInactiveLamaPlayer(state, ctx),
     ),
   ],
-  viewFragment: ({ ctx }) => {
+  viewExtension: ({ ctx }) => {
     const discard = ctx.cards.discardPile<LamaCard>('lama');
     return {
       step: LAMA_PHASES.current(ctx),

@@ -1,11 +1,9 @@
-import { defineEffect, gameInput } from '../../../core/application/public-api';
+import { defineEffect, gameInput } from '../../../engine/sdk/public-api';
 import type { GrandeMineState } from './state';
 import {
   discardRandomHand,
   drawPassive,
   finishMine,
-  giveRandomToNext,
-  giveRandomToOpponent,
   recoverDiscard,
   removeRandomDomainCard,
   removeRandomTreasure,
@@ -42,15 +40,6 @@ export const GRANDE_MINE_EFFECTS = {
       }
     },
   }),
-  'mine.discard-hand-all': defineEffect<GrandeMineState, Record<string, never>>(
-    {
-      input: gameInput.object({}),
-      apply: ({ ctx }) => {
-        for (const player of ctx.players.all())
-          discardRandomHand(player.id, ctx);
-      },
-    },
-  ),
   'mine.remove-treasure-all': defineEffect<GrandeMineState, { count: number }>({
     input: gameInput.object({
       count: gameInput.number({ integer: true, min: 0 }),
@@ -69,14 +58,6 @@ export const GRANDE_MINE_EFFECTS = {
       if (actorPlayerId != null) recoverDiscard(actorPlayerId, ctx);
     },
   }),
-  'mine.give-random-next': defineEffect<GrandeMineState, Record<string, never>>(
-    {
-      input: gameInput.object({}),
-      apply: ({ actorPlayerId, ctx }) => {
-        if (actorPlayerId != null) giveRandomToNext(actorPlayerId, ctx);
-      },
-    },
-  ),
   'mine.draw-passive': defineEffect<GrandeMineState, { count: number }>({
     input: gameInput.object({
       count: gameInput.number({ integer: true, min: 0 }),
@@ -87,15 +68,6 @@ export const GRANDE_MINE_EFFECTS = {
           drawPassive(targetId, ctx);
         }
       }
-    },
-  }),
-  'mine.draw-and-give': defineEffect<GrandeMineState, Record<string, never>>({
-    input: gameInput.object({}),
-    apply: ({ actorPlayerId, ctx }) => {
-      if (actorPlayerId == null) return;
-      drawPassive(actorPlayerId, ctx);
-      drawPassive(actorPlayerId, ctx);
-      giveRandomToOpponent(actorPlayerId, ctx);
     },
   }),
   'mine.trim-hand': defineEffect<GrandeMineState, Record<string, never>>({

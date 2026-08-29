@@ -7,6 +7,8 @@ import {
 import { RoomAdminContextService } from './room-admin-context.service';
 import { RoomAdminMaintenanceService } from './room-admin-maintenance.service';
 import { RoomMaintenanceSettingsService } from './room-maintenance-settings.service';
+import { bestEffort } from '../../../common/utils/public-api';
+import { operationalPolicy } from '../../../config/public-api';
 
 @Injectable()
 export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
@@ -23,11 +25,19 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
   onModuleInit() {
     // Timer is always running (cheap). Actual execution is gated by settings.
     this.timer = setInterval(() => {
-      this.tick().catch(() => {});
-    }, 30_000);
+      void bestEffort(
+        this.tick(),
+        'nettoyage automatique des rooms',
+        this.logger,
+      );
+    }, operationalPolicy.roomCleanupTickMs);
     setTimeout(() => {
-      this.tick().catch(() => {});
-    }, 5_000);
+      void bestEffort(
+        this.tick(),
+        'nettoyage automatique initial des rooms',
+        this.logger,
+      );
+    }, operationalPolicy.roomCleanupInitialDelayMs);
   }
 
   async onModuleDestroy() {

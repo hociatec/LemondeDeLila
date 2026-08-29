@@ -20,6 +20,7 @@ import {
 import type { RoomRecord } from '../models/room-record.model';
 import { CatalogService } from '../../../catalog/public-api';
 import { GameStatsService } from '../../../stats/public-api';
+import { bestEffort } from '../../../common/utils/public-api';
 import {
   buildMinimumParticipantsMessage,
   hasMinimumParticipants,
@@ -88,14 +89,15 @@ export class RoomLifecycleService {
     try {
       const activeParticipants =
         await this.participants.findActiveByRoomWithUsers(room.id);
-      void this.stats
-        .startMatch({
+      void bestEffort(
+        this.stats.startMatch({
           roomId: room.id,
           gameType: room.gameType,
           humans: buildUniqueActiveRoomPlayers(activeParticipants),
           botsCount: bots,
-        })
-        .catch(() => undefined);
+        }),
+        `création des statistiques room=${room.id}`,
+      );
     } catch {
       // best effort
     }
@@ -131,7 +133,10 @@ export class RoomLifecycleService {
 
     if (String(room.status ?? '').toLowerCase() === 'started') {
       try {
-        void this.stats.endMatchOnReset(room.id).catch(() => undefined);
+        void bestEffort(
+          this.stats.endMatchOnReset(room.id),
+          `finalisation des statistiques room=${room.id}`,
+        );
       } catch {
         // best effort
       }

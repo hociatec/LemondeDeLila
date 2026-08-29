@@ -3,7 +3,7 @@ import {
   defineGame,
   defineGameContent,
   victoryWhen,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { PARADE_CARD_BY_ID, PARADE_CARDS, PARADE_SEQUENCE } from './content';
 import { PARADE_ACTIONS, sequenceIndex, winners } from './rules';
 import type { LaParadeSucreeState } from './state';

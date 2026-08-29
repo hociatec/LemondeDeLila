@@ -3,8 +3,8 @@ import {
   drawEvent,
   gameInput,
   requestCardFromPlayer,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   isLesMainsSpecialCard,
   LES_MAINS_CARD_BY_ID,
@@ -12,7 +12,7 @@ import {
   LES_MAINS_METIER_CARDS,
   type LesMainsFamily,
 } from './content';
-import type { LesMainsState } from './state';
+import type { NoGameState as LesMainsState } from '../../../engine/sdk/public-api';
 
 const DECK = 'professions';
 const HANDS = 'players';

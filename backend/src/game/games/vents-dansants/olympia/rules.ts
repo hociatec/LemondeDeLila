@@ -5,8 +5,8 @@ import {
   gameInput,
   gameEffects,
   rejectRule,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   OLYMPIA_CARD_BY_ID,
   OLYMPIA_CATEGORIES,
@@ -16,7 +16,7 @@ import {
   type OlympiaDeckType,
   type OlympiaStatusKey,
 } from './content';
-import type { OlympiaState } from './state';
+import type { NoGameState as OlympiaState } from '../../../engine/sdk/public-api';
 
 const HANDS = 'players';
 const PRESTIGE_TO_WIN = 30;

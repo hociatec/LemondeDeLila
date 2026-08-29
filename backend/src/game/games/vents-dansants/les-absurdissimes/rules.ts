@@ -6,9 +6,9 @@ import {
   gameInput,
   rejectRule,
   type GameContext,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import type { AbsurdissimesCard } from './content';
-import type { AbsurdissimesState } from './state';
+import type { NoGameState as AbsurdissimesState } from '../../../engine/sdk/public-api';
 
 const HAND = 'answers';
 const BLACK_DECK = 'black';

@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -15,6 +16,8 @@ type StatsUserReference = {
 };
 
 @Entity({ name: 'game_matches' })
+@Index('idx_game_matches_room_ended', ['roomId', 'endedAt'])
+@Index('idx_game_matches_type_ended', ['gameType', 'endedAt'])
 export class GameMatchEntity {
   @PrimaryGeneratedColumn()
   id!: number;

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { WsApiHubService } from '../../../common/ws/public-api';
 
 type Subscription = {
@@ -7,7 +7,7 @@ type Subscription = {
 };
 
 @Injectable()
-export class RoomLobbyRefreshService {
+export class RoomLobbyRefreshService implements OnModuleDestroy {
   private readonly subscriptions = new Map<string, Subscription>();
   private pending: { roomId: number | null; reason: string | null } | null =
     null;
@@ -15,6 +15,13 @@ export class RoomLobbyRefreshService {
   private readonly flushDelayMs = 250;
 
   constructor(private readonly hub: WsApiHubService) {}
+
+  onModuleDestroy(): void {
+    if (this.flushTimer) clearTimeout(this.flushTimer);
+    this.flushTimer = null;
+    this.pending = null;
+    this.subscriptions.clear();
+  }
 
   subscribe(
     connectionId: string,

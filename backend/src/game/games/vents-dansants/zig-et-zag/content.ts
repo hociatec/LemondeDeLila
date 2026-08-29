@@ -1,4 +1,4 @@
-import { freezeGameContent } from '../../../core/application/public-api';
+import { freezeGameContent } from '../../../engine/sdk/public-api';
 
 export type ZigEtZagColor = 'vert-sauge' | 'bleu-ardoise';
 export type ZigEtZagFamily = 'banane' | 'dentifrice' | 'pantoufle' | 'bougie';

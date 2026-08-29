@@ -4,6 +4,7 @@ import type {
 } from '../../application/ports/session-state-store.port';
 import { Logger } from '@nestjs/common';
 import Redis from 'ioredis';
+import { bestEffort } from '../../../utils/public-api';
 
 export class RedisSessionStore implements SessionStateStore {
   private readonly logger = new Logger(RedisSessionStore.name);
@@ -41,6 +42,14 @@ export class RedisSessionStore implements SessionStateStore {
 
   async delete(connectionId: string): Promise<void> {
     await this.redis.del(this.prefix + connectionId);
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    await bestEffort(
+      this.redis.quit(),
+      'fermeture Redis sessions realtime',
+      this.logger,
+    );
   }
 }
 

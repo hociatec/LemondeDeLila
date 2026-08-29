@@ -16,7 +16,10 @@ export class BotNameTypeormRepository implements BotNameRepository {
   ) {}
 
   async listAll(): Promise<BotNameRecord[]> {
-    const rows = await this.botNames.find({ order: { name: 'ASC' } });
+    const rows = await this.botNames.find({
+      order: { name: 'ASC' },
+      take: 500,
+    });
     return rows.map((row) => this.toRecord(row));
   }
 
@@ -24,6 +27,7 @@ export class BotNameTypeormRepository implements BotNameRepository {
     const rows = await this.botNames.find({
       where: { enabled: true },
       order: { name: 'ASC' },
+      take: 500,
     });
     return rows.map((row) => this.toRecord(row));
   }

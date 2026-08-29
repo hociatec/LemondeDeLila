@@ -1,5 +1,4 @@
 import { Column, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-import type { GameTimeline } from '../../../../application/models/game-event.model';
 import type { GameStateEntity } from '../../../../application/models/game-state.model';
 
 @Entity({ name: 'game_sessions' })
@@ -15,9 +14,6 @@ export class GameSessionEntity {
 
   @Column({ type: 'json' })
   state!: GameStateEntity;
-
-  @Column({ type: 'json' })
-  timeline!: GameTimeline;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'datetime', precision: 3 })
   updatedAt!: Date;

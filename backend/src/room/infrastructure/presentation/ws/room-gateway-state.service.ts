@@ -318,6 +318,25 @@ export class RoomGatewayStateService {
     const targets = ctx.rooms.get(roomId);
     const silentTargets = ctx.silentRooms.get(roomId);
 
+    const serializedByActions = new Map<string, string>();
+    const messageFor = (meta: ClientMeta): string => {
+      const actions = this.clientPolicy.listAllowedActions(
+        payload,
+        meta.userId,
+      );
+      const cacheKey = JSON.stringify(actions);
+      const cached = serializedByActions.get(cacheKey);
+      if (cached) return cached;
+      const message = JSON.stringify(
+        this.presenter.presentRoomUpdated(roomId, {
+          ...payload,
+          room: { ...payload.room, allowedActions: actions },
+        }),
+      );
+      serializedByActions.set(cacheKey, message);
+      return message;
+    };
+
     const sendToSet = (set?: Set<WebSocket>) => {
       if (!set) return;
       for (const socket of Array.from(set)) {
@@ -327,15 +346,7 @@ export class RoomGatewayStateService {
           continue;
         }
         try {
-          const payloadForClient = this.withAllowedActionsForClient(
-            payload,
-            meta,
-          );
-          socket.send(
-            JSON.stringify(
-              this.presenter.presentRoomUpdated(roomId, payloadForClient),
-            ),
-          );
+          socket.send(messageFor(meta));
         } catch {
           set.delete(socket);
           try {

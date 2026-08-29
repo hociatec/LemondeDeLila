@@ -2,15 +2,15 @@ import {
   defineAction,
   drawEvent,
   gameInput,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   TAXI_TILES,
   TAXI_TARGET_TRIPS,
   type TaxiClient,
   type TaxiEvent,
 } from './content';
-import type { TaxiState } from './state';
+import type { NoGameState as TaxiState } from '../../../engine/sdk/public-api';
 
 type RuleContext = GameContext<TaxiState>;
 const TRACK = 'city';

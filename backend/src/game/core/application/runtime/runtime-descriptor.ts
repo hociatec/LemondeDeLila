@@ -1,8 +1,5 @@
 import type { GameRuntimeDescriptor } from '../contracts/game-runtime.interface';
-import type {
-  DeclarativeGameDefinition,
-  GameActionMap,
-} from './game-definition';
+import type { CompiledGameDefinition, GameActionMap } from './game-definition';
 import { GAME_CONFIGURE_ACTION } from './configuration-kit';
 import type { GameShortcutHint } from '../../../shortcuts/public-api';
 import { contentManifest } from './game-content';
@@ -12,7 +9,7 @@ export function describeGameDefinition<
   TActions extends GameActionMap<TState>,
   TPlayerView extends object,
 >(
-  definition: DeclarativeGameDefinition<TState, TActions, TPlayerView>,
+  definition: CompiledGameDefinition<TState, TActions, TPlayerView>,
 ): GameRuntimeDescriptor {
   return {
     id: definition.id,
@@ -104,7 +101,7 @@ export function deriveGameShortcuts<
   TActions extends GameActionMap<TState>,
   TPlayerView extends object,
 >(
-  definition: DeclarativeGameDefinition<TState, TActions, TPlayerView>,
+  definition: CompiledGameDefinition<TState, TActions, TPlayerView>,
 ): GameShortcutHint[] {
   const shortcuts = [...structuredClone(definition.shortcuts ?? [])];
   const usedKeys = new Set(shortcuts.map((shortcut) => shortcut.key));

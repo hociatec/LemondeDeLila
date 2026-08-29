@@ -18,6 +18,17 @@ export class HealthController {
   @Get()
   @HealthCheck()
   check() {
+    return this.ready();
+  }
+
+  @Get('live')
+  live() {
+    return { status: 'ok' as const };
+  }
+
+  @Get('ready')
+  @HealthCheck()
+  ready() {
     return this.health.check([
       () => this.db.pingCheck('database'),
       () => this.redis.check('redis'),

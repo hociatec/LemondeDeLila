@@ -3,7 +3,7 @@ import {
   cardGame,
   defineGame,
   defineGameContent,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { BLACK_CARDS, WHITE_CARDS } from './content';
 import type { AbsurdissimesCard } from './content';
 import {
@@ -13,7 +13,7 @@ import {
   ABSURDISSIMES_PHASES,
   drawWhiteCard,
 } from './rules';
-import type { AbsurdissimesState } from './state';
+import type { NoGameState as AbsurdissimesState } from '../../../engine/sdk/public-api';
 
 const whiteDeck = cards.deck({
   id: 'white',

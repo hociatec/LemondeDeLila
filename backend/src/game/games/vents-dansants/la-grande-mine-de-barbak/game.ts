@@ -3,7 +3,7 @@ import {
   defineGame,
   defineGameContent,
   inventory,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { LA_GRANDE_MINE_CARDS } from './content';
 import {
   drawAtTurnStart,
@@ -39,7 +39,6 @@ export default defineGame<GrandeMineState, typeof GRANDE_MINE_ACTIONS>({
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
   ],
-  setup: () => ({}),
   actions: GRANDE_MINE_ACTIONS,
   effects: GRANDE_MINE_EFFECTS,
   bot: {

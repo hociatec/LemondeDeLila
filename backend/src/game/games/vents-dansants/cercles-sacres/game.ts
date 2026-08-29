@@ -3,7 +3,7 @@ import {
   defineGame,
   defineGameContent,
   inventory,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { CERCLES_SACRES_DECK } from './content';
 import { CERCLES_SACRES_ACTIONS, drawAtTurnStart } from './rules';
 import type { CerclesSacresState } from './state';
@@ -36,7 +36,6 @@ export default defineGame<CerclesSacresState, typeof CERCLES_SACRES_ACTIONS>({
     { key: 'D', type: 'action', actionType: 'discard_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
   ],
-  setup: () => ({}),
   actions: CERCLES_SACRES_ACTIONS,
   bot: {
     choose: ({ actor, ctx }) => {

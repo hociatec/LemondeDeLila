@@ -1,14 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
 import { Server, WebSocket } from 'ws';
 import { RoomChatStore } from './room-chat-state';
 import type { RoomSnapshot } from './room-announcement.helpers';
 import { RoomSocketHeartbeat } from './room-heartbeat.helpers';
 import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
 import type { ClientMeta } from './room-gateway.types';
-import type { PresentedErrorPayload } from '@common/utils/public-api';
+import {
+  bestEffort,
+  type PresentedErrorPayload,
+} from '@common/utils/public-api';
 
 @Injectable()
-export class RoomGatewayRuntimeStateService {
+export class RoomGatewayRuntimeStateService implements OnModuleDestroy {
   server!: Server<typeof WebSocket>;
   readonly clients = new Map<WebSocket, ClientMeta>();
   readonly rooms = new Map<number, Set<WebSocket>>();
@@ -36,13 +39,27 @@ export class RoomGatewayRuntimeStateService {
     const next = previous.then(task, task);
     this.messageQueues.set(
       client,
-      next.catch(() => undefined),
+      bestEffort(next, 'traitement de la file de messages room', this.logger),
     );
     return next;
   }
 
   deleteMessageQueue(client: WebSocket): void {
     this.messageQueues.delete(client);
+  }
+
+  onModuleDestroy(): void {
+    this.heartbeat.stopAll();
+    for (const timeout of this.pendingParticipantLeaves.values()) {
+      clearTimeout(timeout);
+    }
+    this.pendingParticipantLeaves.clear();
+    this.clients.clear();
+    this.rooms.clear();
+    this.silentRooms.clear();
+    this.lastRoomStatusByRoomId.clear();
+    this.lastRoomSnapshotByRoomId.clear();
+    this.roomChat.clear();
   }
 
   async broadcast(

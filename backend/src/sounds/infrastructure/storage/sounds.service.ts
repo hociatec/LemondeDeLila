@@ -3,11 +3,18 @@
   Inject,
   Injectable,
   InternalServerErrorException,
+  HttpException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import {
+  assertStorageCapacity,
+  StorageCapacityError,
+  writeFileAtomic,
+} from '../../../common/utils/public-api';
+import { readEnvironment } from '../../../config/public-api';
 import {
   SOUND_KEYS,
   SoundKey,
@@ -73,7 +80,7 @@ export class SoundsService {
     });
     this.tableAmbiences = new SoundsTableAmbiencesManager({
       filePath: () => path.join(this.storageRoot, 'table-ambiences.json'),
-      normalizeSoundKey: (input) => this.normalizeSoundKey(input),
+      normalizeSoundKey,
       notifyUpdated: (updatedAt) =>
         this.notifications.notifyAll('sounds.tableAmbiences.updated', {
           updatedAt,
@@ -84,7 +91,7 @@ export class SoundsService {
     });
     this.uploads = new SoundsUploadManager({
       dataRoot: this.storageRoot,
-      normalizeSoundKey: (input) => this.normalizeSoundKey(input),
+      normalizeSoundKey,
       readManifest: () => this.readManifest(),
       writeManifest: (manifest) => this.writeManifest(manifest),
       removeUnusedFiles: (soundId, keepSha256) =>
@@ -97,6 +104,8 @@ export class SoundsService {
           updatedAt,
         }),
       storageError: (action, error) => this.storageIoError(action, error),
+      ensureStorageCapacity: (incomingBytes) =>
+        this.ensureStorageCapacity(incomingBytes),
       warn: (message) => this.logger.warn(message),
     });
   }
@@ -108,6 +117,30 @@ export class SoundsService {
     return buildStorageIoError(action, err, (message, stack) =>
       this.logger.error(message, stack),
     );
+  }
+
+  private async ensureStorageCapacity(incomingBytes: number): Promise<void> {
+    const quota = environmentBytes(
+      'SOUNDS_STORAGE_QUOTA_BYTES',
+      2 * 1024 * 1024 * 1024,
+    );
+    const reserve = environmentBytes(
+      'STORAGE_MIN_FREE_BYTES',
+      512 * 1024 * 1024,
+    );
+    try {
+      await assertStorageCapacity({
+        root: this.storageRoot,
+        incomingBytes,
+        maxTotalBytes: quota,
+        minFreeBytes: reserve,
+      });
+    } catch (error) {
+      if (error instanceof StorageCapacityError) {
+        throw new HttpException(error.message, 507);
+      }
+      throw error;
+    }
   }
 
   private async removeUnusedFilesForSoundId(
@@ -135,15 +168,6 @@ export class SoundsService {
     return deleted;
   }
 
-  private normalizeSoundKey(input: string): SoundKey {
-    const raw = (input || '').trim();
-    const found = SOUND_KEYS.find((k) => k.toLowerCase() === raw.toLowerCase());
-    if (!found) {
-      throw new BadRequestException(`soundId invalide: ${raw}`);
-    }
-    return found;
-  }
-
   private async readManifest(): Promise<SoundManifest> {
     const file = path.join(this.storageRoot, 'manifest.json');
     try {
@@ -164,10 +188,9 @@ export class SoundsService {
     const root = this.storageRoot;
     try {
       await fs.promises.mkdir(root, { recursive: true });
-      await fs.promises.writeFile(
+      await writeFileAtomic(
         path.join(this.storageRoot, 'manifest.json'),
         JSON.stringify(next, null, 2),
-        'utf-8',
       );
     } catch (err) {
       throw this.storageIoError('écriture manifest.json', err);
@@ -232,7 +255,7 @@ export class SoundsService {
   }
 
   async clearSound(soundIdRaw: string): Promise<{ ok: true }> {
-    const soundId = this.normalizeSoundKey(soundIdRaw);
+    const soundId = normalizeSoundKey(soundIdRaw);
     const manifest = await this.readManifest();
     if (!manifest.sounds?.[soundId]) {
       return { ok: true as const };
@@ -280,7 +303,7 @@ export class SoundsService {
   }
 
   async resolveSoundFile(soundIdRaw: string, shaFromUrl?: string | null) {
-    const soundId = this.normalizeSoundKey(soundIdRaw);
+    const soundId = normalizeSoundKey(soundIdRaw);
     const manifest = await this.readManifest();
     const entry = manifest.sounds?.[soundId];
     if (!entry) {
@@ -304,4 +327,23 @@ export class SoundsService {
   async ensureDirs() {
     await fs.promises.mkdir(this.storageRoot, { recursive: true });
   }
+}
+
+function environmentBytes(
+  key: 'SOUNDS_STORAGE_QUOTA_BYTES' | 'STORAGE_MIN_FREE_BYTES',
+  fallback: number,
+): number {
+  const raw = readEnvironment(key).trim();
+  if (!raw) return fallback;
+  const parsed = Number(raw);
+  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function normalizeSoundKey(input: string): SoundKey {
+  const raw = (input || '').trim();
+  const found = SOUND_KEYS.find(
+    (key) => key.toLowerCase() === raw.toLowerCase(),
+  );
+  if (!found) throw new BadRequestException(`soundId invalide: ${raw}`);
+  return found;
 }

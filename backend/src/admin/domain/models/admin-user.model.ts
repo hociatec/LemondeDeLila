@@ -5,7 +5,6 @@ export interface AdminUser {
   password?: string;
   avatar: string | null;
   roles: string[];
-  emailVerified: boolean;
   bannedUntil: Date | null;
   banReason: string | null;
   chatBannedUntil: Date | null;

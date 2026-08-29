@@ -1,4 +1,4 @@
-import { testGame } from '../../../core/application/public-api';
+import { testGame } from '../../../engine/sdk/public-api';
 import { CONTES_DECKS, CONTES_PAWNS, CONTES_TILES } from './content';
 import gameDefinition from './game';
 import { CONTES_CONTENT_COUNTS } from './rules';

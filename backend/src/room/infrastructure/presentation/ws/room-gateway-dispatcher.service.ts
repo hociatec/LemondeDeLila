@@ -3,6 +3,7 @@ import { Server, WebSocket } from 'ws';
 import { getErrorPayload } from '@common/utils/public-api';
 import { SoundsService } from '../../../../sounds/public-api';
 import { RoomGatewayActionsService } from './room-gateway-actions.service';
+import { RoomGatewayBotActionsService } from './room-gateway-bot-actions.service';
 import { RoomGatewayCommandService } from './room-gateway-command.service';
 import { RoomGatewayConnectionService } from './room-gateway-connection.service';
 import { RoomGatewayContextService } from './room-gateway-context.service';
@@ -11,11 +12,16 @@ import type { ClientMeta } from './room-gateway.types';
 
 @Injectable()
 export class RoomGatewayDispatcherService {
+  private readonly socketListeners = new WeakMap<
+    WebSocket,
+    { message: (raw: unknown) => void; error: () => void }
+  >();
   constructor(
     private readonly runtime: RoomGatewayRuntimeStateService,
     private readonly contexts: RoomGatewayContextService,
     private readonly sounds: SoundsService,
     private readonly actions: RoomGatewayActionsService,
+    private readonly botActions: RoomGatewayBotActionsService,
     private readonly commands: RoomGatewayCommandService,
     private readonly connection: RoomGatewayConnectionService,
   ) {}
@@ -36,11 +42,20 @@ export class RoomGatewayDispatcherService {
       return;
     }
     this.runtime.heartbeat.start(client);
-    client.on('message', (raw) => void this.handleMessage(client, raw));
-    client.on('error', () => client.close());
+    const message = (raw: unknown) => void this.handleMessage(client, raw);
+    const error = () => client.close();
+    this.socketListeners.set(client, { message, error });
+    client.on('message', message);
+    client.on('error', error);
   }
 
   handleDisconnect(client: WebSocket): Promise<void> {
+    const listeners = this.socketListeners.get(client);
+    if (listeners) {
+      client.removeListener('message', listeners.message);
+      client.removeListener('error', listeners.error);
+      this.socketListeners.delete(client);
+    }
     return this.contexts.presence.handleDisconnect(
       this.contexts.presenceContext(),
       client,
@@ -207,9 +222,9 @@ export class RoomGatewayDispatcherService {
           () => this.sounds.listTableAmbiencesWithFilter(),
         ),
       handleBotAdd: (meta: ClientMeta, payload: unknown, at: number) =>
-        this.actions.handleBotAdd(context(), meta, payload, at),
+        this.botActions.add(context(), meta, payload, at),
       handleBotRemove: (meta: ClientMeta, payload: unknown, at: number) =>
-        this.actions.handleBotRemove(context(), meta, payload, at),
+        this.botActions.remove(context(), meta, payload, at),
     };
   }
 }

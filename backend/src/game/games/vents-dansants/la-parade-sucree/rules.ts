@@ -3,8 +3,8 @@ import {
   defineAction,
   gameInput,
   playCard as playCardAction,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   CANDY_VALUES,
   CANDY_TYPES,

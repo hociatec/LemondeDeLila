@@ -15,6 +15,11 @@ import { User } from '../../../../../user/public-api';
 @Index('idx_messaging_private_messages_created_at', ['createdAt'])
 @Index('idx_messaging_private_messages_sender', ['sender'])
 @Index('idx_messaging_private_messages_recipient', ['recipient'])
+@Index('idx_messaging_private_messages_sender_created', ['sender', 'createdAt'])
+@Index('idx_messaging_private_messages_recipient_created', [
+  'recipient',
+  'createdAt',
+])
 export class PrivateMessageEntity {
   @PrimaryGeneratedColumn()
   id!: number;

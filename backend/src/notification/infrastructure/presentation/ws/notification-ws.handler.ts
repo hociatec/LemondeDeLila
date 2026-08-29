@@ -5,6 +5,7 @@ import { WS_EVENTS } from '../../../../realtime/public-api';
 import { UpdatePolicyService } from '../../../../update/public-api';
 import type { NotificationClientMeta } from './notification-ws.types';
 import { NotificationWsInboxHandler } from './notification-ws-inbox.handler';
+import { operationalPolicy } from '../../../../config/public-api';
 
 @Injectable()
 export class NotificationWsHandler {
@@ -56,7 +57,9 @@ export class NotificationWsHandler {
       );
       if (notice.updateRequired && notice.minimumVersion) {
         this.sendRequiredUpdate(client, version, notice);
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) =>
+          setTimeout(resolve, operationalPolicy.wsReconnectBackoffMs),
+        );
         try {
           client.close(4406, 'update required');
         } catch {

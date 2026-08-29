@@ -3,7 +3,7 @@ import {
   defineGameContent,
   raceGame,
   victoryWhen,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { PRIMALIS_TILES } from './content';
 import {
   primalisCollections,
@@ -37,7 +37,6 @@ export default defineGame<PrimalisState, typeof PRIMALIS_ACTIONS>({
     { key: 'S', type: 'interface', id: 'score' },
     { key: 'V', type: 'interface', id: 'ressources' },
   ],
-  setup: () => ({}),
   actions: PRIMALIS_ACTIONS,
   victory: victoryWhen(({ state: _state, ctx }) => {
     const finished = ctx.players

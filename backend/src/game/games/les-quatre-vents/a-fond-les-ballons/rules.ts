@@ -8,15 +8,15 @@ import {
   rollDice,
   sequentialPawnSelection,
   setupPlayingPhases,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   A_FOND_LES_BALLONS_CARDS,
   A_FOND_LES_BALLONS_TILES,
   type BalloonCard,
   type BalloonTileType,
 } from './content';
-import type { AFondLesBallonsState } from './state';
+import type { NoGameState as AFondLesBallonsState } from '../../../engine/sdk/public-api';
 
 type RuleContext = GameContext<AFondLesBallonsState>;
 export const A_FOND_LES_BALLONS_PHASES =

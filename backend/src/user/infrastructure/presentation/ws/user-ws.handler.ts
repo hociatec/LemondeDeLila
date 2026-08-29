@@ -2,8 +2,9 @@
 import { GetUserService } from '../../../application/use-cases/get-user.service';
 import { ListUsersService } from '../../../application/use-cases/list-users.service';
 import { PayloadValidationService } from '../../../../common/validation/public-api';
-import { UserGetDto } from './dto/user-get.dto';
+import { UserGetDto, UserListDto } from './dto/user-get.dto';
 import { WS_EVENTS } from '../../../../realtime/public-api';
+import { requireUser, type WsSession } from '../../../../realtime/public-api';
 
 @Injectable()
 export class UserWsHandler {
@@ -13,12 +14,15 @@ export class UserWsHandler {
     private readonly validator: PayloadValidationService,
   ) {}
 
-  async list() {
-    const items = await this.listUsers.execute();
+  async list(session: WsSession, payload: unknown = {}) {
+    requireUser(session);
+    const dto = this.validator.validate(UserListDto, payload ?? {});
+    const items = await this.listUsers.execute(dto);
     return { type: WS_EVENTS.users.list, payload: { items } };
   }
 
-  async get(payload: unknown) {
+  async get(session: WsSession, payload: unknown) {
+    requireUser(session);
     const dto = this.validator.validate(UserGetDto, payload);
     const user = await this.getUser.execute(dto.id);
     return { type: WS_EVENTS.users.get, payload: { user } };

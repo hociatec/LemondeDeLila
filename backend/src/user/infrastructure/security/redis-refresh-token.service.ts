@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'crypto';
 import Redis from 'ioredis';
 import { RedisClientFactory } from '../../../common/redis/public-api';
+import { bestEffort } from '../../../common/utils/public-api';
 import type {
   RefreshTokenRotation,
   RefreshTokenServicePort,
@@ -83,7 +84,7 @@ export class RedisRefreshTokenService
   }
 
   async onModuleDestroy(): Promise<void> {
-    await this.redis.quit().catch(() => undefined);
+    await bestEffort(this.redis.quit(), 'fermeture Redis refresh tokens');
   }
 
   private key(refreshToken: string): string {

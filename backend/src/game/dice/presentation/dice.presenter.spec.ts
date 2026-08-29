@@ -3,15 +3,15 @@ import { withDicePresentation } from './dice.presenter';
 describe('withDicePresentation', () => {
   it('associe le de a l action de lancer sans exposer son nom au client', () => {
     const state = withDicePresentation({
-      turn: { turnNumber: 7 },
+      system: { turn: { number: 7 } },
       actions: [
         { type: 'inspect', payload: {} },
         { type: 'roll', payload: {} },
       ],
-      extras: { dice: { total: 4 } },
+      kits: { dice: { total: 4 } },
     });
 
-    expect((state.extras as any).dice).toEqual({
+    expect((state.kits as any).dice).toEqual({
       label: 'Dés',
       total: 4,
       rollActionIndex: 1,
@@ -26,12 +26,12 @@ describe('withDicePresentation', () => {
       { id: 'blue', label: 'Dé bleu', sides: 8, value: 5 },
     ];
     const state = withDicePresentation({
-      turn: { turnNumber: 2 },
+      system: { turn: { number: 2 } },
       actions: [],
-      extras: { dice: { dice, total: 8, rollKey: 'round-2-roll-1' } },
+      kits: { dice: { dice, total: 8, rollKey: 'round-2-roll-1' } },
     });
 
-    expect((state.extras as any).dice.dice).toEqual(dice);
-    expect((state.extras as any).dice.rollKey).toBe('round-2-roll-1');
+    expect((state.kits as any).dice.dice).toEqual(dice);
+    expect((state.kits as any).dice.rollKey).toBe('round-2-roll-1');
   });
 });

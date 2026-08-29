@@ -33,8 +33,11 @@ export class AdminBugReportsWsHandler {
 
   async list(session: WsSession, payload: unknown) {
     requireAdmin(session);
-    this.validator.validate(AdminBugReportsListWsDto, payload ?? {});
-    const items = await this.bugReports.list();
+    const dto = this.validator.validate(
+      AdminBugReportsListWsDto,
+      payload ?? {},
+    );
+    const items = await this.bugReports.list(dto);
     return { type: WS_EVENTS.admin.bugReports.list, payload: { items } };
   }
 

@@ -6,7 +6,7 @@ import {
   defineGameContent,
   gameInput,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { CA_DERAPE_CARDS, CA_DERAPE_TILES } from './content';
 import {
   CA_DERAPE_ACTIONS,
@@ -14,7 +14,7 @@ import {
   resolveDeltaChoice,
 } from './rules';
 import { CA_DERAPE_EFFECTS } from './effects';
-import type { CaDerapeState } from './state';
+import type { NoGameState as CaDerapeState } from '../../../engine/sdk/public-api';
 
 const CA_DERAPE_PHASES = defineGamePhases<CaDerapeState>()({
   initialPhase: 'playing',

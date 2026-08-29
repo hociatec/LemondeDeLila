@@ -2,7 +2,7 @@ import {
   defineGame,
   defineGameContent,
   submissionJudgeGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { NAWAK_CHALLENGES } from './content';
 import { NAWAK_ACTIONS, NAWAK_TARGET_SCORE, nawakStage } from './rules';
 import type { NawakPlayerView, NawakState } from './state';
@@ -47,7 +47,7 @@ export default defineGame<NawakState, typeof NAWAK_ACTIONS, NawakPlayerView>({
     };
   },
   actions: NAWAK_ACTIONS,
-  viewFragment: ({ state }) => ({
+  viewExtension: ({ state }) => ({
     currentChallengeId: state.currentChallengeId,
     lastRound: structuredClone(state.lastRound),
   }),

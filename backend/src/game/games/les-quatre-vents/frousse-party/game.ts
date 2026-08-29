@@ -7,7 +7,7 @@ import {
   pawns,
   publicField,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { FROUSSE_CARDS, FROUSSE_PAWNS, FROUSSE_TILES } from './content';
 import {
   FROUSSE_ACTIONS,
@@ -16,7 +16,7 @@ import {
   requestPawn,
   resolvePawn,
 } from './rules';
-import type { FrousseState } from './state';
+import type { NoGameState as FrousseState } from '../../../engine/sdk/public-api';
 
 export default defineGame<FrousseState, typeof FROUSSE_ACTIONS>({
   id: 'frousse-party',

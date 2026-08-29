@@ -17,6 +17,7 @@ import {
   type RefreshTokenServicePort,
 } from '../ports/refresh-token.port';
 import { USER_REPOSITORY, type UserRepository } from '../ports/user.repository';
+import { normalizeUsername } from '../../domain/policies/user-credentials.policy';
 
 @Injectable()
 export class LoginUserService {
@@ -39,7 +40,9 @@ export class LoginUserService {
     userId: number;
     username: string;
   }> {
-    const user = await this.users.findByUsername(input.username);
+    const user = await this.users.findByUsername(
+      normalizeUsername(input.username),
+    );
     if (!user) {
       throw new UnauthorizedException('Identifiants invalides');
     }
@@ -63,10 +66,6 @@ export class LoginUserService {
     if (!ok) {
       throw new UnauthorizedException('Identifiants invalides');
     }
-    if (!user.emailVerified) {
-      throw new UnauthorizedException('Email non verifie');
-    }
-
     if (user.bannedUntil && user.bannedUntil.getTime() <= Date.now()) {
       user.bannedUntil = null;
       user.banReason = null;

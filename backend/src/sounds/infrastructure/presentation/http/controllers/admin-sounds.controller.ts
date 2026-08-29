@@ -18,6 +18,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as os from 'os';
 import * as path from 'path';
+import { bestEffort } from '../../../../../common/utils/public-api';
 import {
   AdminRoleGuard,
   HttpJwtGuard,
@@ -158,7 +159,10 @@ export class AdminSoundsController {
       try {
         // best-effort cleanup of temp file
         const fs = await import('fs');
-        fs.promises.rm(file.path, { force: true }).catch(() => undefined);
+        await bestEffort(
+          fs.promises.rm(file.path, { force: true }),
+          'suppression de l’upload audio temporaire',
+        );
       } catch {
         // ignore
       }

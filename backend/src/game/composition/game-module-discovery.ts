@@ -1,11 +1,11 @@
 import {
   isGameDefinition,
-  type DeclarativeGameDefinition,
+  type CompiledGameDefinition,
   type GameActionMap,
 } from '../core/application/runtime/game-definition';
 import { GENERATED_GAME_DEFINITIONS } from './generated-game-registry';
 
-export type DiscoveredGameDefinition = DeclarativeGameDefinition<
+export type DiscoveredGameDefinition = CompiledGameDefinition<
   object,
   GameActionMap<object>,
   object

@@ -1,4 +1,4 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
+import { defineAction, gameInput } from '../../../engine/sdk/public-api';
 import {
   changeMoney,
   currentSacVariant,

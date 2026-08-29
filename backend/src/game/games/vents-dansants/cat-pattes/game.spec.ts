@@ -1,4 +1,4 @@
-import { testGame } from '../../../core/application/public-api';
+import { testGame } from '../../../engine/sdk/public-api';
 import { CAT_PATTES_CARD_COUNT } from './rules';
 import gameDefinition from './game';
 

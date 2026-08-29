@@ -7,7 +7,7 @@ import {
   gameInput,
   pawns,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   AVENTURE_ANIMAL_CARDS,
   AVENTURE_PATTE_CARDS,

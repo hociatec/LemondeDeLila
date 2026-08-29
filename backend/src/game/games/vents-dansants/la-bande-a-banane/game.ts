@@ -3,7 +3,7 @@ import {
   defineGame,
   defineGameContent,
   inventory,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { BANDE_A_BANANE_DECK } from './content';
 import {
   BANDE_A_BANANE_ACTIONS,
@@ -38,7 +38,6 @@ export default defineGame<BandeABananeState, typeof BANDE_A_BANANE_ACTIONS>({
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
   ],
-  setup: () => ({}),
   actions: BANDE_A_BANANE_ACTIONS,
   effects: BANDE_A_BANANE_EFFECTS,
   bot: {

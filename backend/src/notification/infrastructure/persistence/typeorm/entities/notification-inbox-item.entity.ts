@@ -13,6 +13,11 @@ import { User } from '../../../../../user/public-api';
 @Index('idx_notification_inbox_user_created', ['user', 'createdAt'])
 @Index('idx_notification_inbox_user_unread', ['user', 'readAt'])
 @Index('idx_notification_inbox_user_deleted', ['user', 'deletedAt'])
+@Index('idx_notification_inbox_user_deleted_created', [
+  'user',
+  'deletedAt',
+  'createdAt',
+])
 export class NotificationInboxItemEntity {
   @PrimaryColumn({ type: 'varchar', length: 36 })
   id!: string;

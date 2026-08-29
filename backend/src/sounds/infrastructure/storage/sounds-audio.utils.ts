@@ -9,7 +9,8 @@ import * as path from 'path';
 import ffmpegStatic from 'ffmpeg-static';
 import ffprobeStatic from 'ffprobe-static';
 import { toSoundErrorLike } from './sounds-storage.utils';
-import { stringOrEmpty } from '@common/utils/public-api';
+import { bestEffort, stringOrEmpty } from '@common/utils/public-api';
+import { operationalPolicy } from '../../../config/public-api';
 
 type ProcessResult = {
   code: number;
@@ -150,7 +151,7 @@ export async function transcodeSoundToStableWav(
       '-1',
       outputPath,
     ],
-    30000,
+    operationalPolicy.soundTranscodeTimeoutMs,
   );
   if (res.code !== 0) {
     warn(`ffmpeg transcode failed: ${res.stderr || res.stdout}`);
@@ -183,7 +184,7 @@ function getFfprobePath(): string {
 async function runSoundProcess(
   command: string,
   args: string[],
-  timeoutMs = 15000,
+  timeoutMs = operationalPolicy.soundProbeTimeoutMs,
 ): Promise<ProcessResult> {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { windowsHide: true });
@@ -334,7 +335,7 @@ async function readWavMeta(filePath: string): Promise<{
       byteRate,
     };
   } finally {
-    await fh.close().catch(() => undefined);
+    await bestEffort(fh.close(), 'fermeture du fichier audio analysé');
   }
 }
 
@@ -367,6 +368,6 @@ async function isWavSilent(filePath: string): Promise<boolean> {
     }
     return true;
   } finally {
-    await fh.close().catch(() => undefined);
+    await bestEffort(fh.close(), 'fermeture du fichier audio validé');
   }
 }

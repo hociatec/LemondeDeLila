@@ -20,16 +20,31 @@ export function getErrorPayload(
       params: isRecord(value.details) ? value.details : {},
     };
   }
-  return { message: errorMessage(value, fallback) };
+  const publicHttpMessage = httpClientMessage(value);
+  return { message: publicHttpMessage ?? fallback };
 }
 
-function errorMessage(value: unknown, fallback: string): string {
-  if (value instanceof Error) return value.message.trim() || fallback;
-  if (typeof value === 'string') return value.trim() || fallback;
-  if (isRecord(value) && typeof value.message === 'string') {
-    return value.message.trim() || fallback;
+function httpClientMessage(value: unknown): string | null {
+  if (!isRecord(value)) return null;
+  const getStatus = value.getStatus;
+  const getResponse = value.getResponse;
+  if (typeof getStatus !== 'function' || typeof getResponse !== 'function') {
+    return null;
   }
-  return fallback;
+  const status = Number(getStatus.call(value));
+  if (!Number.isInteger(status) || status < 400 || status >= 500) return null;
+  const response: unknown = getResponse.call(value);
+  if (typeof response === 'string') return response.trim() || null;
+  if (!isRecord(response)) return null;
+  const message = response.message;
+  if (typeof message === 'string') return message.trim() || null;
+  if (Array.isArray(message)) {
+    const joined = message
+      .filter((item) => typeof item === 'string')
+      .join(', ');
+    return joined.trim() || null;
+  }
+  return null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

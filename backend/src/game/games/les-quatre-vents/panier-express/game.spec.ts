@@ -1,4 +1,4 @@
-import { testGame } from '../../../core/application/public-api';
+import { testGame } from '../../../engine/sdk/public-api';
 import {
   PANIER_EVENTS,
   PANIER_EXCHANGES,

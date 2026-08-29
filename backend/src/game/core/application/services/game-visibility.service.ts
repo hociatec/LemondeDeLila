@@ -1,24 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import type { GameStateEntity } from '../models/game-state.model';
+import type { GameStateWithActions } from '../models/game-action.model';
+import type { PendingState } from '../models/game-state.model';
 
 @Injectable()
 export class GameVisibilityService {
-  project(
+  project<TView extends GameStateEntity | GameStateWithActions>(
     _internal: GameStateEntity,
-    exposed: GameStateEntity,
+    exposed: TView,
     viewerPlayerId: number | null,
-  ): GameStateEntity {
+  ): TView {
     const view = structuredClone(exposed);
-    delete (view as GameStateEntity & { engine?: unknown }).engine;
-    view.metadata = {};
+    delete (view as unknown as { engine?: unknown }).engine;
+    if ('metadata' in view) view.metadata = {};
     view.pending = this.redactPending(view.pending, viewerPlayerId);
     return view;
   }
 
   private redactPending(
-    pending: GameStateEntity['pending'],
+    pending: PendingState | null | undefined,
     viewerPlayerId: number | null,
-  ): GameStateEntity['pending'] {
+  ): PendingState | null | undefined {
     if (!pending) return pending;
     const hasTarget =
       Boolean(pending.playerIds?.length) || pending.playerId != null;

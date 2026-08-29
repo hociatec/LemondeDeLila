@@ -5,15 +5,15 @@ import {
   gameInput,
   sequentialPawnSelection,
   setupPlayingPhases,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   FROUSSE_TILES,
   type FrousseBlock,
   type FrousseCard,
   type FrousseCategory,
 } from './content';
-import type { FrousseState } from './state';
+import type { NoGameState as FrousseState } from '../../../engine/sdk/public-api';
 
 type RuleContext = GameContext<FrousseState>;
 export const FROUSSE_PHASES = setupPlayingPhases<FrousseState>();

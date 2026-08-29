@@ -11,15 +11,14 @@ export {
   defineGame,
   gameViewExtension,
   overrideAction,
-  playerView,
 } from './game-definition';
 export type {
   AutomaticRule,
   ChoiceResolver,
   ChoiceResolverShape,
   ChoiceResolution,
+  CompiledGameDefinition,
   DefinedChoiceResolver,
-  DeclarativeGameDefinition,
   DeclarativeState,
   DefinedGameAction,
   GameActionDefinition,
@@ -30,19 +29,22 @@ export type {
   GameActionUiHint,
   GameChoiceUiHint,
   GameContentMigration,
-  GamePlayerProjection,
   GameViewExtension,
   GameDefinition,
   GameSession,
   GameStateMigration,
+  NoGameState,
   RawChoiceResolution,
   VictoryRule,
 } from './game-definition';
 export type {
   GameStatusPlayerView,
   GameSetupPlayerView,
+  GameSetupPlayerViewFor,
   GamePlayersPlayerView,
   GameEventsPlayerView,
+  GameEventPlayerView,
+  EffectSourcePlayerView,
   GameTurnPlayerView,
   GenericBoardPlayerView,
   GenericGamePlayerView,
@@ -99,8 +101,10 @@ export type {
 export {
   defineConfiguration,
   GAME_CONFIGURE_ACTION,
+  overrideConfiguration,
 } from './configuration-kit';
 export type {
+  ConfigurationValuesOf,
   GameConfigurationDefinition,
   GameConfigurationState,
   GameConfigurationUi,
@@ -180,6 +184,7 @@ export {
 } from './action-conditions';
 export type { ActionCondition, ActionValidator } from './action-conditions';
 export { cards } from './cards-kit';
+export { defineCardsSchema } from './typed-cards';
 export type {
   CardDefinition,
   CardInstance,
@@ -189,6 +194,14 @@ export type {
   DeckDefinition,
   HandsDefinition,
 } from './cards-kit';
+export type {
+  CardDeckMap,
+  CardHandMap,
+  CardOfDeck,
+  TypedCardsKitState,
+  TypedCardsRuntime,
+  TypedHandDefinition,
+} from './typed-cards';
 export { inventory } from './inventory-kit';
 export type { InventoryDefinition, InventoryKitState } from './inventory-kit';
 export { collection } from './collection-view';
@@ -227,7 +240,7 @@ export { grid, scanGridWinner } from './grid-kit';
 export type { GridDefinition, GridPosition } from './grid-kit';
 export { quiz } from './quiz-kit';
 export type { QuizDefinition, QuizQuestion } from './quiz-kit';
-export { defineEffect, gameEffects } from './effects-kit';
+export { defineEffect, defineEffectRecipe, gameEffects } from './effects-kit';
 export type {
   EffectEngineState,
   EffectCondition,
@@ -235,6 +248,7 @@ export type {
   GameEffectInstruction,
   EffectSource,
   GameEffectResolver,
+  DefinedGameEffectResolver,
   GameEffectResolverShape,
 } from './effects-kit';
 export type { EffectEngineDebugSnapshot } from './effect-engine';

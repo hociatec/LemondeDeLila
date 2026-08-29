@@ -8,7 +8,7 @@ import {
   pawns,
   quizRace,
   when,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   PANIER_EVENTS,
   PANIER_EXCHANGES,

@@ -11,8 +11,8 @@ export class AdminBugReportCommentsService {
     private readonly countBugReportComments: CountBugReportCommentsService,
   ) {}
 
-  list(reportId: string) {
-    return this.listBugReportComments.execute(reportId);
+  list(reportId: string, options: { offset?: number; limit?: number } = {}) {
+    return this.listBugReportComments.execute(reportId, options);
   }
 
   async add(input: {

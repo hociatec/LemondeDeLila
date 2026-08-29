@@ -6,7 +6,7 @@ import type {
 } from '../application/models/game-state.model';
 import { DeclarativeGameRuntime } from '../application/runtime/declarative-game.runtime';
 import type {
-  DeclarativeGameDefinition,
+  CompiledGameDefinition,
   GameActionDefinition,
   GameActionMap,
 } from '../application/runtime/game-definition';
@@ -44,14 +44,12 @@ const DEFAULT_NAMES = ['alice', 'bob', 'charlie', 'diana', 'eve', 'frank'];
 export class GameTestKit<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
-  TExtras extends object = object,
-  TBoard extends object = object,
+  TViewExtension extends object,
 > {
   private readonly adapter: DeclarativeGameRuntime<
     TState,
     TActions,
-    TPlayerView
+    TViewExtension
   >;
   private readonly execution = new GameExecutionScopeService();
   private readonly executor = new GameCommandExecutorService(this.execution);
@@ -66,12 +64,10 @@ export class GameTestKit<
   private current: GameStateEntity | null = null;
 
   constructor(
-    private readonly definition: DeclarativeGameDefinition<
+    private readonly definition: CompiledGameDefinition<
       TState,
       TActions,
-      TPlayerView,
-      TExtras,
-      TBoard
+      TViewExtension
     >,
   ) {
     this.adapter = new DeclarativeGameRuntime(definition);
@@ -109,7 +105,7 @@ export class GameTestKit<
 
   as(
     player: string | number,
-  ): GameActorTestDriver<TState, TActions, TPlayerView, TExtras, TBoard> {
+  ): GameActorTestDriver<TState, TActions, TViewExtension> {
     return new GameActorTestDriver(this, this.playerId(player));
   }
 
@@ -156,15 +152,16 @@ export class GameTestKit<
     );
   }
 
-  view(player: string | number): TPlayerView & TExtras & LegacyGameTestView {
+  view(player: string | number): TViewExtension & LegacyGameTestView {
     const playerId = this.playerId(player);
     const exposed = this.adapter.exposeStateForUser(
       this.requireState(),
       playerId,
     );
+    const { game, ...genericView } = exposed;
     return structuredClone({
-      ...(exposed.game as TPlayerView),
-      ...(exposed.extras as TExtras),
+      ...(game as TViewExtension),
+      ...genericView,
       ...this.legacyView(playerId),
     });
   }
@@ -379,25 +376,17 @@ export class GameTestKit<
 export class GameActorTestDriver<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
-  TExtras extends object = object,
-  TBoard extends object = object,
+  TViewExtension extends object,
 > {
   constructor(
-    private readonly game: GameTestKit<
-      TState,
-      TActions,
-      TPlayerView,
-      TExtras,
-      TBoard
-    >,
+    private readonly game: GameTestKit<TState, TActions, TViewExtension>,
     private readonly playerId: number,
   ) {}
 
   do<K extends (keyof TActions & string) | EngineActionType>(
     type: K,
     payload: DriverActionInput<TActions, K>,
-  ): Promise<GameTestKit<TState, TActions, TPlayerView, TExtras, TBoard>> {
+  ): Promise<GameTestKit<TState, TActions, TViewExtension>> {
     if (type === 'game.configure' || type.startsWith('choice.')) {
       return this.game.executeEngineAction(
         this.playerId,
@@ -423,17 +412,9 @@ export class GameActorTestDriver<
 export function testGame<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
-  TExtras extends object = object,
-  TBoard extends object = object,
+  TViewExtension extends object,
 >(
-  definition: DeclarativeGameDefinition<
-    TState,
-    TActions,
-    TPlayerView,
-    TExtras,
-    TBoard
-  >,
-): GameTestKit<TState, TActions, TPlayerView, TExtras, TBoard> {
+  definition: CompiledGameDefinition<TState, TActions, TViewExtension>,
+): GameTestKit<TState, TActions, TViewExtension> {
   return new GameTestKit(definition);
 }

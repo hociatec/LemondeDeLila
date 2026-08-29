@@ -3,9 +3,11 @@ import {
   defineAction,
   gameInput,
   setupPlayingPhases,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
-import type { MnemoGameConfig, MnemoState } from './state';
+} from '../../../engine/sdk/public-api';
+import type { GameContext, NoGameState } from '../../../engine/sdk/public-api';
+import type { MnemoGameConfig } from './config';
+
+type MnemoState = NoGameState;
 
 type RuleContext = GameContext<MnemoState>;
 export const MNEMO_PHASES = setupPlayingPhases<MnemoState>();

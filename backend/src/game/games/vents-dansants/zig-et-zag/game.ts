@@ -2,7 +2,7 @@ import {
   cardGame,
   defineGame,
   defineGameContent,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { ZIG_ET_ZAG_DECK } from './content';
 import {
   createRound,
@@ -50,7 +50,7 @@ export default defineGame<
   initialPhase: ZIG_ET_ZAG_PHASES.initialPhase,
   phases: ZIG_ET_ZAG_PHASES.phases,
   actions: ZIG_ET_ZAG_ACTIONS,
-  viewFragment: ({ state, ctx }) => {
+  viewExtension: ({ state, ctx }) => {
     const summary = state.lastRound;
     const lastRound = summary
       ? {

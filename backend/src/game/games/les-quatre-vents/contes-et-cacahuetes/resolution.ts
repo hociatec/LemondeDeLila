@@ -2,11 +2,11 @@ import {
   drawAndResolve,
   gameEffects,
   rejectRule,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import type {
   GameContext,
   GameEffectInstruction,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   CONTES_DECKS,
   CONTES_TILES,

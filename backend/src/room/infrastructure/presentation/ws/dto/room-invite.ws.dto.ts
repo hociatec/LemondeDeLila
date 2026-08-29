@@ -3,6 +3,8 @@ import {
   IsInt,
   IsPositive,
   IsString,
+  Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 
@@ -19,6 +21,8 @@ export class RoomInviteSendDto {
 export class RoomInviteRespondDto {
   @IsString()
   @MinLength(10)
+  @MaxLength(64)
+  @Matches(/^[A-Za-z0-9_-]+$/)
   invitationId!: string;
 
   @IsBoolean()

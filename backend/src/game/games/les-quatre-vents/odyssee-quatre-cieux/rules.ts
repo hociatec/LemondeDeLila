@@ -1,8 +1,8 @@
-import { defineAction, gameInput } from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
-import type { PawnMove } from '../../../core/application/public-api';
+import { defineAction, gameInput } from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
+import type { PawnMove } from '../../../engine/sdk/public-api';
 import { ODYSSEE_CONTENT } from './content';
-import type { OdysseeState } from './state';
+import type { NoGameState as OdysseeState } from '../../../engine/sdk/public-api';
 
 type RuleContext = GameContext<OdysseeState>;
 
