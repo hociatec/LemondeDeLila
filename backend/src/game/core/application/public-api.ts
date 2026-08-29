@@ -16,6 +16,11 @@ export {
   GAME_ROOM_COORDINATION_STRATEGY,
   GameRoomCommandQueueService,
 } from './services/game-room-command-queue.service';
+export {
+  GAME_ROOM_LOCK,
+  GameRoomLockUnavailableError,
+  type GameRoomLock,
+} from './ports/game-room-lock.port';
 export type { GameStateEntity } from './models/game-state.model';
 export type {
   EventVisibility,

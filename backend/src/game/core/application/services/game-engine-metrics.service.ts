@@ -10,6 +10,15 @@ export type GameEngineMetricSnapshot = {
   commits: number;
   latestStateBytes: number;
   largestStateBytes: number;
+  timers: {
+    scheduled: number;
+    executed: number;
+    cancelled: number;
+    retried: number;
+    deadLettered: number;
+    totalLagMs: number;
+    maxLagMs: number;
+  };
 };
 
 @Injectable()
@@ -40,6 +49,27 @@ export class GameEngineMetricsService {
     metric.largestStateBytes = Math.max(metric.largestStateBytes, stateBytes);
   }
 
+  recordTimerScheduled(gameType: string): void {
+    this.forGame(gameType).timers.scheduled += 1;
+  }
+
+  recordTimerExecution(gameType: string, lagMs: number): void {
+    const timers = this.forGame(gameType).timers;
+    timers.executed += 1;
+    timers.totalLagMs += lagMs;
+    timers.maxLagMs = Math.max(timers.maxLagMs, lagMs);
+  }
+
+  recordTimerCancelled(gameType: string): void {
+    this.forGame(gameType).timers.cancelled += 1;
+  }
+
+  recordTimerFailure(gameType: string, terminal: boolean): void {
+    const timers = this.forGame(gameType).timers;
+    if (terminal) timers.deadLettered += 1;
+    else timers.retried += 1;
+  }
+
   snapshot(gameType?: string): GameEngineMetricSnapshot[] {
     const values = gameType
       ? [this.forGame(gameType)]
@@ -62,6 +92,15 @@ export class GameEngineMetricsService {
         commits: 0,
         latestStateBytes: 0,
         largestStateBytes: 0,
+        timers: {
+          scheduled: 0,
+          executed: 0,
+          cancelled: 0,
+          retried: 0,
+          deadLettered: 0,
+          totalLagMs: 0,
+          maxLagMs: 0,
+        },
       };
       this.metrics.set(gameType, metric);
     }

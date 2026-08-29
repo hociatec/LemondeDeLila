@@ -4,7 +4,7 @@ import {
   defineGame,
   defineGameContent,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { VILLAGE_TILES, VILLAGE_ZONES } from './content';
 import { deckForZone, MON_VILLAGE_ACTIONS } from './rules';
 import type { MonVillageState } from './state';
@@ -43,7 +43,6 @@ export default defineGame<MonVillageState, typeof MON_VILLAGE_ACTIONS>({
     { key: 'P', type: 'interface', id: 'position' },
     { key: 'S', type: 'interface', id: 'score' },
   ],
-  setup: () => ({}),
   actions: MON_VILLAGE_ACTIONS,
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

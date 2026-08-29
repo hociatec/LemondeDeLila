@@ -3,11 +3,8 @@ import {
   defineAction,
   defineEvent,
   gameInput,
-} from '../../../core/application/public-api';
-import type {
-  GameContext,
-  PlayerMap,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext, PlayerMap } from '../../../engine/sdk/public-api';
 import { NAWAK_CHALLENGES } from './content';
 import type { NawakRoundState, NawakStage, NawakState } from './state';
 

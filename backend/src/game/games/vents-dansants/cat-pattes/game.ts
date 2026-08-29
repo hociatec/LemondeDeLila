@@ -5,9 +5,10 @@ import {
   defineGameContent,
   gameInput,
   movement,
+  type NoGameState,
   roundScoring,
   setupPlayingPhases,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   CAT_PATTES_DECK,
   CAT_PATTES_DEFAULT_ROUNDS,
@@ -21,17 +22,18 @@ import {
   scoreCatPattesRound,
 } from './rules';
 import { CAT_PATTES_EFFECTS } from './effects';
-import type { CatPattesPlayerView, CatPattesState } from './state';
 
-const scoring = roundScoring<CatPattesState>({
+type CatPattesViewExtension = ReturnType<typeof catPattesPlayerState>;
+
+const scoring = roundScoring<NoGameState>({
   score: ({ state, ctx }) => scoreCatPattesRound(state, ctx),
 });
-const CAT_PATTES_PHASES = setupPlayingPhases<CatPattesState>();
+const CAT_PATTES_PHASES = setupPlayingPhases<NoGameState>();
 
 export default defineGame<
-  CatPattesState,
+  NoGameState,
   typeof CAT_PATTES_ACTIONS,
-  CatPattesPlayerView
+  CatPattesViewExtension
 >({
   id: 'cat-pattes',
   displayName: 'Cat Pattes !',
@@ -40,7 +42,7 @@ export default defineGame<
   description: 'Course féline jusqu’à 1 000 pattes.',
   players: { min: 2, max: 6 },
   content: defineGameContent('cat-pattes', { cards: CAT_PATTES_DECK }),
-  config: defineConfiguration<CatPattesState, { roundsToPlay: number }>({
+  config: defineConfiguration<NoGameState, { roundsToPlay: number }>({
     input: gameInput.object({
       roundsToPlay: gameInput.number({ integer: true, min: 1, max: 20 }),
     }),
@@ -76,7 +78,6 @@ export default defineGame<
     { key: 'Enter', type: 'action', actionType: 'play_card' },
     { key: 'D', type: 'action', actionType: 'discard_card' },
   ],
-  setup: () => ({}),
   initialPhase: CAT_PATTES_PHASES.initialPhase,
   phases: CAT_PATTES_PHASES.phases,
   lifecycle: {
@@ -85,7 +86,7 @@ export default defineGame<
   },
   actions: CAT_PATTES_ACTIONS,
   effects: CAT_PATTES_EFFECTS,
-  viewFragment: ({ ctx }) => catPattesPlayerState(ctx),
+  viewExtension: ({ ctx }) => catPattesPlayerState(ctx),
   bot: {
     choose: ({ state, actor, ctx }) => {
       if (ctx.effects.sourcePlayerId() !== actor.id) {

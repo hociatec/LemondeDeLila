@@ -104,7 +104,6 @@ export class AdminUsersController {
       password: body.password,
       roles: body.roles,
       avatar: body.avatar,
-      emailVerified: body.emailVerified,
     };
   }
 
@@ -115,7 +114,6 @@ export class AdminUsersController {
       password: body.password,
       roles: body.roles,
       avatar: body.avatar,
-      emailVerified: body.emailVerified,
       bannedUntil: body.bannedUntil,
       banReason: body.banReason,
     };

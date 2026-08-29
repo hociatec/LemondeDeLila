@@ -3,14 +3,14 @@ import {
   cardGame,
   defineGame,
   defineGameContent,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { LES_MAINS_DECK, LES_MAINS_METIER_CARDS } from './content';
 import {
   dealProfessionHands,
   LES_MAINS_ACTIONS,
   LES_MAINS_EFFECTS,
 } from './rules';
-import type { LesMainsState } from './state';
+import type { NoGameState as LesMainsState } from '../../../engine/sdk/public-api';
 
 const familySets = cards.sets({
   id: 'profession-families',

@@ -4,14 +4,14 @@ import {
   rollDice,
   sequentialPawnSelection,
   setupPlayingPhases,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   GALOPONS_TILES,
   type GaloponsCard,
   type GaloponsRegion,
 } from './content';
-import type { GaloponsState } from './state';
+import type { NoGameState as GaloponsState } from '../../../engine/sdk/public-api';
 
 type RuleContext = GameContext<GaloponsState>;
 export const GALOPONS_PHASES = setupPlayingPhases<GaloponsState>();

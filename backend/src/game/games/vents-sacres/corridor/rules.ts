@@ -4,11 +4,8 @@ import {
   gameInput,
   sequentialPawnSelection,
   setupPlayingPhases,
-} from '../../../core/application/public-api';
-import type {
-  GameContext,
-  PlayerMap,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext, PlayerMap } from '../../../engine/sdk/public-api';
 import { CORRIDOR_SIZE } from './content';
 import type {
   CorridorOrientation,

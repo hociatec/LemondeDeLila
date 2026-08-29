@@ -30,6 +30,8 @@ import { ADMIN_GAME_REGISTRY_PORT } from '../application/ports/admin-game-regist
 import { ADMIN_MAINTENANCE_CONFIG } from '../application/ports/admin-maintenance-config.port';
 import { ADMIN_LOGS_CONFIG_PORT } from '../application/ports/admin-logs-config.port';
 import { ADMIN_MAINTENANCE_RUNTIME_PORT } from '../application/ports/admin-maintenance-runtime.port';
+import { ADMIN_MAINTENANCE_LOCK } from '../application/ports/admin-maintenance-lock.port';
+import { AdminMaintenanceCoordinatorService } from '../application/services/admin-maintenance-coordinator.service';
 import { ADMIN_NOTIFICATION_PORT } from '../application/ports/admin-notification.port';
 import { ADMIN_PERF_PORT } from '../application/ports/admin-perf.port';
 import { ADMIN_PROFILE_SETTINGS_PORT } from '../application/ports/admin-profile-settings.port';
@@ -48,6 +50,7 @@ import { AdminUserTypeormRepository } from '../infrastructure/persistence/typeor
 import { RoleDefinitionTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/role-definition-typeorm.repository';
 import { AdminNotificationAdapter } from '../infrastructure/system/admin-notification.adapter';
 import { AdminMaintenanceRuntimeService } from '../infrastructure/system/admin-maintenance-runtime.service';
+import { FilesystemAdminMaintenanceLockService } from '../infrastructure/system/filesystem-admin-maintenance-lock.service';
 
 export const ADMIN_CORE_PROVIDERS = [
   AdminUserTypeormRepository,
@@ -63,6 +66,11 @@ export const ADMIN_CORE_PROVIDERS = [
   {
     provide: ADMIN_MAINTENANCE_RUNTIME_PORT,
     useExisting: AdminMaintenanceRuntimeService,
+  },
+  FilesystemAdminMaintenanceLockService,
+  {
+    provide: ADMIN_MAINTENANCE_LOCK,
+    useExisting: FilesystemAdminMaintenanceLockService,
   },
   {
     provide: ADMIN_NOTIFICATION_PORT,
@@ -126,6 +134,7 @@ export const ADMIN_CORE_PROVIDERS = [
     useFactory: createAdminMaintenanceConfig,
   },
   AdminCatalogInvalidationService,
+  AdminMaintenanceCoordinatorService,
   AdminNotificationAdapter,
   AdminRoomsAdapter,
   JwtPayloadVerifierService,

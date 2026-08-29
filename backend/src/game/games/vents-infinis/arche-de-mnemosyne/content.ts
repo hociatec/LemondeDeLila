@@ -1,9 +1,9 @@
 import {
   freezeGameContent,
   rejectContent,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import quizContent from './quiz.json';
-import type { QuizQuestion } from '../../../core/application/public-api';
+import type { QuizQuestion } from '../../../engine/sdk/public-api';
 
 export type MnemoCategory = { id: string; name: string };
 

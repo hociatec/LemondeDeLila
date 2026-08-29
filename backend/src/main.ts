@@ -1,4 +1,4 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import compression from 'compression';
@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { ServLoggerService } from './common/observability/public-api';
 import { LilaWsAdapter } from './common/ws/infrastructure/platform/lila-ws.adapter';
+import { NormalizedValidationPipe } from './common/validation/public-api';
 
 const bootstrapLogger = new Logger('bootstrap');
 
@@ -17,12 +18,9 @@ async function bootstrap() {
     abortOnError: false,
   });
   const config = app.get(ConfigService);
+  app.enableShutdownHooks(['SIGTERM', 'SIGINT']);
 
-  const nodeEnv = (
-    config.get<string>('NODE_ENV') ||
-    process.env.NODE_ENV ||
-    'development'
-  ).toLowerCase();
+  const nodeEnv = config.get<string>('NODE_ENV', 'development').toLowerCase();
 
   if (!config.get<string>('CLIENT_UPDATES_DIR') && nodeEnv === 'production') {
     console.warn(
@@ -54,7 +52,7 @@ async function bootstrap() {
 
   app.useWebSocketAdapter(new LilaWsAdapter(app));
   app.useGlobalPipes(
-    new ValidationPipe({
+    new NormalizedValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,

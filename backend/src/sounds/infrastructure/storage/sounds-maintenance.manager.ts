@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { writeFileAtomic } from '../../../common/utils/public-api';
 import {
   SOUND_KEYS,
   type SoundKey,
@@ -326,7 +327,7 @@ export class SoundsMaintenanceManager {
 
       const soundDir = path.join(this.deps.dataRoot(), soundId);
       await fs.promises.mkdir(soundDir, { recursive: true });
-      await fs.promises.writeFile(path.join(soundDir, `${sha256}.wav`), bytes);
+      await writeFileAtomic(path.join(soundDir, `${sha256}.wav`), bytes);
       await this.deps.removeUnusedFilesForSoundId(soundId, sha256);
 
       return {

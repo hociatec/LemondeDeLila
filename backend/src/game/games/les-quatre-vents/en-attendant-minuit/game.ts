@@ -7,7 +7,7 @@ import {
   pawns,
   publicField,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { MINUIT_CARDS, MINUIT_PAWNS, MINUIT_TILES } from './content';
 import {
   MINUIT_ACTIONS,

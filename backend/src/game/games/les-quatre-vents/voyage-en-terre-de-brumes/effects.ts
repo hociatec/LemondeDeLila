@@ -2,7 +2,7 @@ import {
   defineEffect,
   gameInput,
   positionOf,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   COLLECTION_KINDS,
   TRACK,
@@ -16,13 +16,6 @@ import type { VoyageCollectionKind, VoyageState } from './state';
 const TARGET_EFFECTS = ['swap-position', 'skip-turn', 'swap-card'] as const;
 
 export const VOYAGE_EFFECTS = {
-  'voyage.move': defineEffect<VoyageState, { delta: number }>({
-    input: gameInput.object({ delta: gameInput.number({ integer: true }) }),
-    apply: ({ actorPlayerId, data, ctx }) => {
-      if (actorPlayerId == null) return;
-      ctx.movement.move(TRACK, actorPlayerId, data.delta);
-    },
-  }),
   'voyage.schedule-target': defineEffect<
     VoyageState,
     { effect: VoyageTargetEffect; count: number }

@@ -5,6 +5,7 @@ import {
   verify as verifyCryptoSignature,
 } from 'crypto';
 import * as fs from 'fs';
+import { readEnvironment } from '../../../config/public-api';
 import {
   canonicalizeWxUpdateSignature,
   WX_UPDATE_ARCHITECTURE,
@@ -92,15 +93,14 @@ export class WxUpdateArtifactValidatorService {
   }
 
   verifySignature(payload: string, signature: string): boolean {
-    if ((process.env.CLIENT_WX_ALLOW_UNSIGNED || '').trim() === '1')
-      return true;
+    if (readEnvironment('CLIENT_WX_ALLOW_UNSIGNED').trim() === '1') return true;
     try {
-      const base64 = (
-        process.env.CLIENT_WX_SIGNATURE_PUBLIC_KEY_DER_BASE64 || ''
+      const base64 = readEnvironment(
+        'CLIENT_WX_SIGNATURE_PUBLIC_KEY_DER_BASE64',
       ).trim();
-      const pem = (process.env.CLIENT_WX_SIGNATURE_PUBLIC_KEY_PEM || '').trim();
-      const pemPath = (
-        process.env.CLIENT_WX_SIGNATURE_PUBLIC_KEY_PATH || ''
+      const pem = readEnvironment('CLIENT_WX_SIGNATURE_PUBLIC_KEY_PEM').trim();
+      const pemPath = readEnvironment(
+        'CLIENT_WX_SIGNATURE_PUBLIC_KEY_PATH',
       ).trim();
       const key = base64
         ? createPublicKey({

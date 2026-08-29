@@ -1,5 +1,5 @@
 import type {
-  DeclarativeGameDefinition,
+  CompiledGameDefinition,
   DeclarativeState,
   GameActionMap,
 } from './game-definition';
@@ -12,7 +12,7 @@ export class DeclarativeLifecycle<
   TPlayerView extends object,
 > {
   constructor(
-    private readonly definition: DeclarativeGameDefinition<
+    private readonly definition: CompiledGameDefinition<
       TState,
       TActions,
       TPlayerView

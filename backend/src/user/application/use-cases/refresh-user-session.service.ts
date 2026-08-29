@@ -1,4 +1,5 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { bestEffort } from '../../../common/utils/public-api';
 import {
   REFRESH_TOKEN_SERVICE,
   type RefreshTokenServicePort,
@@ -31,7 +32,7 @@ export class RefreshUserSessionService {
     }
 
     const user = await this.users.findById(rotation.userId);
-    if (!user || !user.emailVerified) {
+    if (!user) {
       await this.refreshTokens.revoke(rotation.refreshToken);
       throw new UnauthorizedException('Session invalide');
     }
@@ -39,7 +40,10 @@ export class RefreshUserSessionService {
     if (user.bannedUntil && user.bannedUntil.getTime() <= Date.now()) {
       user.bannedUntil = null;
       user.banReason = null;
-      await this.users.save(user).catch(() => undefined);
+      await bestEffort(
+        this.users.save(user),
+        `nettoyage du bannissement expiré user=${user.id}`,
+      );
     }
     if (user.bannedUntil && user.bannedUntil.getTime() > Date.now()) {
       await this.refreshTokens.revoke(rotation.refreshToken);

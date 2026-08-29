@@ -9,6 +9,7 @@ import {
 @Entity({ name: 'bug_report_comments' })
 @Index('idx_bug_report_comments_report_id', ['reportId'])
 @Index('idx_bug_report_comments_created_at', ['createdAt'])
+@Index('idx_bug_report_comments_report_created', ['reportId', 'createdAt'])
 export class BugReportCommentEntity {
   @PrimaryColumn({ type: 'varchar', length: 36 })
   id!: string;

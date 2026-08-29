@@ -40,7 +40,7 @@ type DefinitionToValidate = {
     version?: unknown;
     data?: unknown;
   };
-  effects?: Readonly<Record<string, { input?: unknown; apply?: unknown }>>;
+  effects?: Readonly<Record<string, { input?: unknown; resolveRaw?: unknown }>>;
 };
 
 export function assertGameDefinition(definition: DefinitionToValidate): void {
@@ -345,8 +345,8 @@ export function assertGameDefinition(definition: DefinitionToValidate): void {
     if (!effect.input || typeof effect.input !== 'object') {
       fail(`effects.${effectId}.input`, 'un schéma de données est requis');
     }
-    if (typeof effect.apply !== 'function') {
-      fail(`effects.${effectId}.apply`, 'un resolver est requis');
+    if (typeof effect.resolveRaw !== 'function') {
+      fail(`effects.${effectId}.resolveRaw`, 'un resolver est requis');
     }
   }
 

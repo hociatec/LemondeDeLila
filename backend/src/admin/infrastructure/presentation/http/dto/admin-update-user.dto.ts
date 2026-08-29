@@ -1,6 +1,5 @@
 import {
   IsArray,
-  IsBoolean,
   IsDateString,
   IsEmail,
   IsOptional,
@@ -9,6 +8,10 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from '../../../../../user/public-api';
 
 export class AdminUpdateUserDto {
   @IsOptional()
@@ -27,7 +30,8 @@ export class AdminUpdateUserDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(6)
+  @MinLength(PASSWORD_MIN_LENGTH)
+  @MaxLength(PASSWORD_MAX_LENGTH)
   password?: string;
 
   @IsOptional()
@@ -38,10 +42,6 @@ export class AdminUpdateUserDto {
   @IsOptional()
   @IsString()
   avatar?: string | null;
-
-  @IsOptional()
-  @IsBoolean()
-  emailVerified?: boolean;
 
   @IsOptional()
   @IsDateString()

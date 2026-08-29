@@ -4,8 +4,8 @@ import {
   gameInput,
   sequentialPawnSelection,
   setupPlayingPhases,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import { CONTES_DECKS } from './content';
 import {
   applyCard,

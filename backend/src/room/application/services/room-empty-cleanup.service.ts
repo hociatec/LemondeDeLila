@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { RemoveAllRoomBotsService } from '../../../bot/public-api';
 import { PresenceService } from '../../../presence/public-api';
+import { bestEffort } from '../../../common/utils/public-api';
 import type { RoomMembershipContext } from '../models/room-membership-context.model';
 import type { RoomRecord } from '../models/room-record.model';
 import {
@@ -50,9 +51,11 @@ export class RoomEmptyCleanupService {
       userId,
       snapshotId,
     });
-    await this.vaultSnapshots
-      .deleteOwnedSnapshot(snapshotId, userId)
-      .catch(() => undefined);
+    await bestEffort(
+      this.vaultSnapshots.deleteOwnedSnapshot(snapshotId, userId),
+      `suppression snapshot room=${room.id}`,
+      this.logger,
+    );
     await context.destroyRoom(room.id);
     return true;
   }

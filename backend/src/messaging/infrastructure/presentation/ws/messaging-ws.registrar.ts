@@ -33,8 +33,8 @@ export class MessagingWsRegistrar implements OnModuleInit {
     this.registry.register(WS_EVENTS.messaging.markRead, (session, payload) =>
       this.handler.markRead(session, payload),
     );
-    this.registry.register(WS_EVENTS.messaging.search, (_, payload) =>
-      this.handler.search(payload),
+    this.registry.register(WS_EVENTS.messaging.search, (session, payload) =>
+      this.handler.search(session, payload),
     );
   }
 }

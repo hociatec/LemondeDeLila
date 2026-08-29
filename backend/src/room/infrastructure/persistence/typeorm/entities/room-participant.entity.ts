@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -11,6 +12,12 @@ import { User } from '../../../../../user/public-api';
 import { Room } from './room.entity';
 
 @Entity({ name: 'room_participants' })
+@Index('idx_room_participants_room_active_joined', [
+  'room',
+  'leftAt',
+  'joinedAt',
+])
+@Index('idx_room_participants_user_active', ['user', 'leftAt'])
 export class RoomParticipant {
   @PrimaryGeneratedColumn()
   id!: number;

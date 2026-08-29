@@ -3,10 +3,10 @@ import {
   cardGame,
   defineGame,
   defineGameContent,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { OLYMPIA_DECKS, type OlympiaDeckType } from './content';
 import { OLYMPIA_ACTIONS, OLYMPIA_EFFECTS } from './rules';
-import type { OlympiaState } from './state';
+import type { NoGameState as OlympiaState } from '../../../engine/sdk/public-api';
 
 const DECKS: OlympiaDeckType[] = [
   'divinite',

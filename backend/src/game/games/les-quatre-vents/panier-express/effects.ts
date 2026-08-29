@@ -1,4 +1,4 @@
-import { defineEffect, gameInput } from '../../../core/application/public-api';
+import { defineEffect, gameInput } from '../../../engine/sdk/public-api';
 import {
   drawCourse,
   moveAndResolve,

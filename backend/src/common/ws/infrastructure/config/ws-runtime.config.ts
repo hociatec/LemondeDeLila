@@ -21,6 +21,9 @@ export function createWsRuntimeConfig(config: ConfigService): WsRuntimeConfig {
   const wsTicketSecret = String(
     config.get<string>('WS_TICKET_SECRET') ?? '',
   ).trim();
+  const maxBufferedBytes = Number(
+    config.get<number>('WS_MAX_BUFFERED_BYTES', 1_048_576),
+  );
 
   return {
     nodeEnv,
@@ -47,5 +50,9 @@ export function createWsRuntimeConfig(config: ConfigService): WsRuntimeConfig {
       String(config.get<string>('JWT_PUBLIC_KEY_PEM') ?? '').trim() || null,
     jwtPublicKeyPath:
       String(config.get<string>('JWT_PUBLIC_KEY_PATH') ?? '').trim() || null,
+    maxBufferedBytes:
+      Number.isInteger(maxBufferedBytes) && maxBufferedBytes >= 65_536
+        ? maxBufferedBytes
+        : 1_048_576,
   };
 }

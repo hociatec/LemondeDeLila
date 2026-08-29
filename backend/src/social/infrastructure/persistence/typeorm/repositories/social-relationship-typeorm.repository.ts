@@ -29,6 +29,7 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
         { addressee: { id: userId }, status: 'accepted' },
       ],
       order: { updatedAt: 'DESC' },
+      take: 500,
     });
     return relations.map((relation) => this.toModel(relation));
   }
@@ -50,6 +51,7 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
     const relations = await this.relationships.find({
       where,
       order: { createdAt: 'DESC' },
+      take: 500,
     });
     return relations.map((relation) => this.toModel(relation));
   }
@@ -58,6 +60,7 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
     const relations = await this.relationships.find({
       where: { requester: { id: userId }, status: 'blocked' },
       order: { updatedAt: 'DESC' },
+      take: 500,
     });
     return relations.map((relation) => this.toModel(relation));
   }
@@ -71,6 +74,7 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
         { requester: { id: userId }, addressee: { id: targetId } },
         { requester: { id: targetId }, addressee: { id: userId } },
       ],
+      take: 2,
     });
     return relations.map((relation) => this.toModel(relation));
   }

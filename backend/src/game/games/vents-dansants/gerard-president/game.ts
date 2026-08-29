@@ -3,7 +3,7 @@ import {
   cardGame,
   defineGame,
   defineGameContent,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   GERARD_PRESIDENT_NAME_CARDS,
   GERARD_PRESIDENT_SPECIAL_CARDS,
@@ -79,7 +79,7 @@ export default defineGame<GerardState, typeof GERARD_ACTIONS, GerardPlayerView>(
     phases: GERARD_PHASES.phases,
     actions: GERARD_ACTIONS,
     effects: GERARD_EFFECTS,
-    viewFragment: ({ state, actor, ctx }) => {
+    viewExtension: ({ state, actor, ctx }) => {
       const masterId = gerardMasterId(ctx);
       const themeSecretActive = ctx.counters.get(GERARD_THEME_SECRET) > 0;
       const themeHidden = themeSecretActive && actor?.id !== masterId;

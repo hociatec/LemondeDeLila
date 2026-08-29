@@ -11,6 +11,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as fs from 'fs';
 import * as os from 'os';
+import { bestEffort } from '../../../common/utils/public-api';
 
 import { WxUpdateUploadService } from '../persistence/wx-update-upload.service';
 import { UpdateUploadTokenGuard } from './update-upload-token.guard';
@@ -80,7 +81,10 @@ export class CiWxUpdateController {
         filePath,
       });
     } finally {
-      await fs.promises.rm(filePath, { force: true }).catch(() => undefined);
+      await bestEffort(
+        fs.promises.rm(filePath, { force: true }),
+        'suppression de l’upload WX temporaire',
+      );
     }
   }
 

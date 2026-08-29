@@ -1,4 +1,4 @@
-import { defineEffect, gameInput } from '../../../core/application/public-api';
+import { defineEffect, gameInput } from '../../../engine/sdk/public-api';
 import {
   CA_CONDITIONAL_EFFECTS,
   CA_GLOBAL_EFFECTS,
@@ -20,7 +20,7 @@ import {
   consumePenaltyShield,
   markWinnerIfReached,
 } from './rules';
-import type { CaDerapeState } from './state';
+import type { NoGameState as CaDerapeState } from '../../../engine/sdk/public-api';
 
 export const CA_DERAPE_EFFECTS = {
   'ca-derape.move': defineEffect<CaDerapeState, { delta: number }>({

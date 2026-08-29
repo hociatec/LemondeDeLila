@@ -4,7 +4,7 @@ import {
   defineGameContent,
   gameInput,
   pawnRace,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { ODYSSEE_CONTENT } from './content';
 import {
   endMove,
@@ -12,7 +12,7 @@ import {
   ODYSSEE_ACTIONS,
   type OdysseeMove,
 } from './rules';
-import type { OdysseeState } from './state';
+import type { NoGameState as OdysseeState } from '../../../engine/sdk/public-api';
 
 const ODYSSEE_PAWNS = Array.from({ length: 4 }, (_seat, seatIndex) =>
   ODYSSEE_CONTENT.pawnNames.map((label, pawnIndex) => ({
@@ -51,7 +51,6 @@ export default defineGame<OdysseeState, typeof ODYSSEE_ACTIONS>({
     { key: 'E', type: 'interface', id: 'stable' },
     { key: 'S', type: 'interface', id: 'score' },
   ],
-  setup: () => ({}),
   actions: ODYSSEE_ACTIONS,
   choices: {
     'odyssee.move': defineChoice<OdysseeState, OdysseeMove>({

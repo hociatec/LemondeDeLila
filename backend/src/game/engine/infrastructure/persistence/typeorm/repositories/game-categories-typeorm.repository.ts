@@ -66,6 +66,7 @@ export class GameCategoriesTypeormRepository implements GameCategoriesRepository
   async listCategories(): Promise<GameCategoryRecord[]> {
     const rows = await this.categoriesRepo.find({
       order: { name: 'ASC', id: 'ASC' },
+      take: 500,
     });
     return rows.map((row) => ({
       id: row.id,
@@ -77,6 +78,7 @@ export class GameCategoriesTypeormRepository implements GameCategoriesRepository
   async listAssignments(): Promise<GameCategoryAssignmentRecord[]> {
     const rows = await this.assignmentsRepo.find({
       order: { gameType: 'ASC' },
+      take: 500,
     });
     return rows.map((row) => ({
       gameType: row.gameType,

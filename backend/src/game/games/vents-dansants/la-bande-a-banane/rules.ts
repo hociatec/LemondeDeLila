@@ -5,15 +5,15 @@ import {
   drawCardsAtTurnStart,
   gameEffects,
   gameInput,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   BANDE_A_BANANE_CARD_BY_ID,
   type BandeABananeCardDefinition,
   type BandeABananeMonkeySpecies,
 } from './content';
 import type { BandeABananeState } from './state';
-import type { PlayerMap } from '../../../core/application/public-api';
-import type { GameEffectInstruction } from '../../../core/application/public-api';
+import type { PlayerMap } from '../../../engine/sdk/public-api';
+import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 
 const DECK = 'banana';
 const HANDS = 'players';

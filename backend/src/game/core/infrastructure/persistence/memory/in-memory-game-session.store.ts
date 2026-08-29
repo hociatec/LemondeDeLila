@@ -125,11 +125,12 @@ export class InMemoryGameSessionStore
     roomId: number,
     gameType: string,
     afterSequence = 0,
+    limit = 500,
   ): Promise<GameEvent[]> {
     return structuredClone(
-      (this.timelines.get(this.key(roomId, gameType))?.events ?? []).filter(
-        (event) => event.seq > afterSequence,
-      ),
+      (this.timelines.get(this.key(roomId, gameType))?.events ?? [])
+        .filter((event) => event.seq > afterSequence)
+        .slice(0, Math.max(1, Math.min(1_000, Math.trunc(limit)))),
     );
   }
 

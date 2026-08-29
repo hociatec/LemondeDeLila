@@ -2,7 +2,7 @@ import type { WebSocket } from 'ws';
 import type { WsAuthPayload } from '../../../../common/interfaces/public-api';
 
 export type RealtimeIncomingMessage = {
-  type?: string;
+  type: string;
   payload?: unknown;
   requestId?: string;
 };
@@ -16,4 +16,5 @@ export type RealtimeClientSession = {
   scope?: string;
   roomId?: number | null;
   gameType?: string | null;
+  rateLimit?: { windowStartedAtMs: number; count: number };
 };

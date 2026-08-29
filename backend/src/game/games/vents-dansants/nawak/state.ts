@@ -1,4 +1,4 @@
-import type { PlayerMap } from '../../../core/application/public-api';
+import type { PlayerMap } from '../../../engine/sdk/public-api';
 
 export interface NawakChallenge {
   id: string;

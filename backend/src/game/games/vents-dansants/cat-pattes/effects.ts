@@ -1,4 +1,8 @@
-import { defineEffect, gameInput } from '../../../core/application/public-api';
+import {
+  defineEffect,
+  gameInput,
+  type NoGameState,
+} from '../../../engine/sdk/public-api';
 import type { CatPattesBotType, CatPattesParadeType } from './content';
 import { CAT_PATTES_GOAL } from './content';
 import {
@@ -7,7 +11,7 @@ import {
   applyPower,
   completeCatPattesRound,
 } from './rules';
-import type { CatPattesState } from './state';
+type CatPattesState = NoGameState;
 
 const PARADES = ['croquettes', 'rayon', 'dodo', 'coussin', 'saut'] as const;
 const POWERS = [

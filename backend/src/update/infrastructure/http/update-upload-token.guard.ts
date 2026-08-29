@@ -6,12 +6,13 @@ import {
 } from '@nestjs/common';
 import { timingSafeEqual } from 'crypto';
 import type { Request } from 'express';
+import { readEnvironment } from '../../../config/public-api';
 
 @Injectable()
 export class UpdateUploadTokenGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
-    const configured = (process.env.CLIENT_UPDATES_UPLOAD_TOKEN || '').trim();
+    const configured = readEnvironment('CLIENT_UPDATES_UPLOAD_TOKEN').trim();
     const provided = String(
       request.headers['x-client-updates-upload-token'] || '',
     ).trim();

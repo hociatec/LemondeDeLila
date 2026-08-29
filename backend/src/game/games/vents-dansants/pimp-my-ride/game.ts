@@ -4,7 +4,7 @@ import {
   defineGameContent,
   inventory,
   when,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { PIMP_MY_RIDE_CAR_NAMES, PIMP_MY_RIDE_DECK } from './content';
 import {
   currentCarParts,
@@ -68,7 +68,7 @@ export default defineGame<
       ({ state, ctx }) => drawCarPart(state, ctx),
     ),
   ],
-  viewFragment: ({ state, ctx }) => {
+  viewExtension: ({ state, ctx }) => {
     const progress = ctx.players.byId((player) => {
       const carParts = currentCarParts(player.id, ctx);
       return {

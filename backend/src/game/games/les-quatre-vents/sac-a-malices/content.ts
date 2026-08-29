@@ -2,8 +2,8 @@ import {
   freezeGameContent,
   gameEffects,
   rejectContent,
-} from '../../../core/application/public-api';
-import type { GameEffectInstruction } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 import { moneyDelta, movementDelta, normalize, skipTurns } from './text-parser';
 import classicBoard from './model/content/board.json';
 import classicChance from './model/content/chance-cards.json';

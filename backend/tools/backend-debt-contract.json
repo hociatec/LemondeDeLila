@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "ceilings": {
+    "silentPromiseCatches": 0,
+    "directProcessEnv": 3
+  },
+  "requiredLocalSpecs": [
+    "user",
+    "chat",
+    "messaging",
+    "notification",
+    "bot",
+    "catalog",
+    "stats"
+  ],
+  "requiredDocuments": [
+    "docs/architecture/concurrency-and-state.md",
+    "docs/architecture/security-and-operations.md",
+    "docs/architecture/backend-definition-of-done.md",
+    "docs/architecture/adr-001-platform.md",
+    "docs/architecture/adr-002-source-layout.md",
+    "docs/architecture/realtime-resilience-test-matrix.md",
+    "docs/architecture/transaction-boundaries.md"
+  ]
+}

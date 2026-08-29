@@ -3,11 +3,8 @@ import {
   gameEffects,
   rejectRule,
   raceTurn,
-} from '../../../core/application/public-api';
-import type {
-  GameContext,
-  PlayerMap,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext, PlayerMap } from '../../../engine/sdk/public-api';
 import { VOYAGE_CONTENT } from './content';
 import type {
   VoyageCard,

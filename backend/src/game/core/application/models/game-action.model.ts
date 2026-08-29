@@ -6,7 +6,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { GameStateEntity, PendingState } from '../models/game-state.model';
+import type { PendingState } from '../models/game-state.model';
 
 export class GameSingleActionDto {
   @IsString()
@@ -34,11 +34,16 @@ export class GameActionListDto {
 
 export type GameStateResponse = GameStateWithActions;
 
-// Étend la réponse d'état pour inclure les actions/pending exposées au client générique.
-export interface GameStateWithActions extends GameStateEntity {
+/** Projection publique versionnée, distincte de l'état persistant interne. */
+export interface GameStateWithActions {
+  viewVersion: number;
+  system: Record<string, unknown>;
+  kits: Record<string, unknown>;
+  effect: Record<string, unknown>;
+  game: object;
   actions?: Array<{ type: string; label?: string; payload?: unknown }>;
   pending?: PendingState | null;
-  extras?: Record<string, unknown>;
-  catalog?: Record<string, unknown>;
+  actionCatalog?: readonly object[];
+  timers?: Record<string, unknown>;
   [key: string]: unknown;
 }

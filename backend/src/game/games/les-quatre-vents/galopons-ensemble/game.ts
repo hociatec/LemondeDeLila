@@ -7,7 +7,7 @@ import {
   gameInput,
   pawns,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { GALOPONS_CARDS, GALOPONS_PAWNS, GALOPONS_TILES } from './content';
 import {
   GALOPONS_ACTIONS,
@@ -20,7 +20,7 @@ import {
   requestPawn,
   resolvePawn,
 } from './rules';
-import type { GaloponsState } from './state';
+import type { NoGameState as GaloponsState } from '../../../engine/sdk/public-api';
 
 export default defineGame<GaloponsState, typeof GALOPONS_ACTIONS>({
   id: 'galopons-ensemble',

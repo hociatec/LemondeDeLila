@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { writeFileAtomic } from '../../../common/utils/public-api';
 import { Injectable } from '@nestjs/common';
 
 import { ClientUpdateMeta } from '../../application/models/client-update-meta.record';
@@ -55,7 +56,7 @@ export class ClientUpdatesMetaStoreService {
   async saveLatest(meta: ClientUpdateMeta): Promise<void> {
     const metaPath = this.paths.getMetaPath();
     await fs.promises.mkdir(path.dirname(metaPath), { recursive: true });
-    await fs.promises.writeFile(metaPath, JSON.stringify(meta, null, 2));
+    await writeFileAtomic(metaPath, JSON.stringify(meta, null, 2));
     this.latestMeta = meta;
     try {
       const stats = await fs.promises.stat(metaPath);

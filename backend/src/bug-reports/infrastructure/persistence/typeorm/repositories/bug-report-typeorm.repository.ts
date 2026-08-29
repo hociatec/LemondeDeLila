@@ -15,8 +15,15 @@ export class BugReportTypeormRepository implements BugReportRepository {
     private readonly repo: Repository<BugReportEntity>,
   ) {}
 
-  async list(): Promise<BugReportRecord[]> {
-    const items = await this.repo.find({ order: { createdAt: 'DESC' } });
+  async list(options: {
+    offset: number;
+    limit: number;
+  }): Promise<BugReportRecord[]> {
+    const items = await this.repo.find({
+      order: { createdAt: 'DESC' },
+      skip: options.offset,
+      take: options.limit,
+    });
     return items.map((item) => this.toRecord(item));
   }
 

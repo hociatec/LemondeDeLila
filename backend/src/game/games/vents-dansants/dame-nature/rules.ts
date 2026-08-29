@@ -3,8 +3,8 @@ import {
   defineAction,
   gameInput,
   requestCardFromPlayer,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext, NoGameState } from '../../../engine/sdk/public-api';
 import {
   DAME_NATURE_CARD_BY_ID,
   DAME_NATURE_FAMILY_CARD_DEFINITIONS,
@@ -13,7 +13,7 @@ import type {
   DameNatureFamilyCardDefinition,
   DameNatureNatureCardDefinition,
 } from './content';
-import type { DameNatureState } from './state';
+type DameNatureState = NoGameState;
 
 const DECK = 'nature';
 const HANDS = 'players';

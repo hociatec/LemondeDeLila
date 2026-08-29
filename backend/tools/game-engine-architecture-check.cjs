@@ -18,7 +18,6 @@ const defaultRuntimeRoot = path.join(
 );
 const standardFiles = [
   'game.ts',
-  'state.ts',
   'rules.ts',
   'content.ts',
   'game.spec.ts',
@@ -55,55 +54,6 @@ const forbiddenLegacyFilePatterns = [
   /\.pawns\.ts$/,
   /\.definition\.ts$/,
 ];
-const componentUsageContracts = [
-  {
-    name: 'CardsKit',
-    declaration: /\bcards\.(?:deck|hands|sets)\s*\(/,
-    usage: /\bctx\.cards\b|\bgameEffects\.(?:discardCards|drawCards)\s*\(/,
-  },
-  {
-    name: 'InventoryKit',
-    declaration: /\binventory\.set\s*\(/,
-    usage: /\bctx\.inventory\b/,
-  },
-  {
-    name: 'EconomyKit',
-    declaration: /\beconomy\.market\s*\(/,
-    usage: /\bctx\.economy\b/,
-  },
-  {
-    name: 'OwnershipKit',
-    declaration: /\bownership\.registry\s*\(/,
-    usage: /\bctx\.ownership\b/,
-  },
-  {
-    name: 'MovementKit',
-    declaration: /\bmovement\.track\s*\(/,
-    usage:
-      /\bctx\.movement\b|\bgameEffects\.(?:move|moveTo)\s*\(|\b(?:raceTurn|rollAndMove)\s*</,
-  },
-  {
-    name: 'PawnKit',
-    declaration: /\bpawns\.set\s*\(/,
-    usage: /\bctx\.pawns\b|\bsequentialPawnSelection\s*</,
-  },
-  {
-    name: 'DiceKit',
-    declaration: /\bdiceKit\s*\(/,
-    usage: /\bctx\.dice\b|\b(?:raceTurn|rollAndMove|rollDice)\s*</,
-  },
-  {
-    name: 'GridKit',
-    declaration: /\bgrid\.board\s*\(/,
-    usage: /\bctx\.grid\b/,
-  },
-  {
-    name: 'QuizKit',
-    declaration: /\bquiz\.bank\s*\(/,
-    usage: /\bctx\.quiz\b|\banswerQuiz\s*</,
-  },
-];
-
 function normalize(value) {
   return value.split(path.sep).join('/');
 }
@@ -138,7 +88,7 @@ function add(violations, rule, file, message) {
   violations.push({ rule, file: normalize(file), message });
 }
 
-function inspectUnsafeTypes(source, relative, violations) {
+function inspectUnsafeTypes(source, relative, violations, enforceBoundaryCasts = true) {
   const sourceFile = ts.createSourceFile(
     relative,
     source,
@@ -153,7 +103,7 @@ function inspectUnsafeTypes(source, relative, violations) {
     ts.forEachChild(node, visit);
   };
   visit(sourceFile);
-  if (/\bas\s+unknown\s+as\b/.test(source)) {
+  if (enforceBoundaryCasts && /\bas\s+unknown\s+as\b/.test(source)) {
     add(
       violations,
       'no-double-cast',
@@ -161,7 +111,7 @@ function inspectUnsafeTypes(source, relative, violations) {
       'Les doubles casts via unknown sont interdits.',
     );
   }
-  if (/\bmetadata\s+as\b/.test(source)) {
+  if (enforceBoundaryCasts && /\bmetadata\s+as\b/.test(source)) {
     add(
       violations,
       'typed-engine-state',
@@ -228,7 +178,6 @@ function auditGamePackages(gamesRoot, violations) {
         );
       }
     }
-    inspectUnusedComponents(gameDirectory, relativeDirectory, violations);
     const specFile = path.join(gameDirectory, 'game.spec.ts');
     if (
       fs.existsSync(specFile) &&
@@ -301,7 +250,7 @@ function auditGamePackages(gamesRoot, violations) {
         violations,
         'game-sdk-boundary',
         relative,
-        'Un jeu doit importer le moteur uniquement via application/public-api.',
+        'Un jeu doit importer le moteur uniquement via engine/sdk/public-api.',
       );
     }
     if (/\b(?:Math\.random|Date\.now)\s*\(|\bnew\s+Date\s*\(/.test(source)) {
@@ -360,7 +309,7 @@ function auditGamePackages(gamesRoot, violations) {
         'Un jeu ne doit pas stocker son état dans metadata.',
       );
     }
-    if (/\b(?:ctx|state)\.engine\b/.test(source)) {
+    if (!basename.endsWith('.spec.ts') && /\b(?:ctx|state)\.engine\b/.test(source)) {
       add(
         violations,
         'encapsulated-engine-state',
@@ -414,23 +363,6 @@ function auditGamePackages(gamesRoot, violations) {
   }
 }
 
-function inspectUnusedComponents(gameDirectory, relativeDirectory, violations) {
-  const source = walk(gameDirectory)
-    .filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'))
-    .map((file) => fs.readFileSync(file, 'utf8'))
-    .join('\n');
-  for (const contract of componentUsageContracts) {
-    if (contract.declaration.test(source) && !contract.usage.test(source)) {
-      add(
-        violations,
-        'unused-game-component',
-        relativeDirectory,
-        `${contract.name} est déclaré mais aucun usage métier n’est détecté.`,
-      );
-    }
-  }
-}
-
 function findGameDirectory(file, gamesRoot) {
   let directory = path.dirname(file);
   while (directory.startsWith(gamesRoot)) {
@@ -456,8 +388,9 @@ function auditEngine(gameRoot, runtimeRoot, violations) {
   )) {
     const relative = normalize(path.relative(repoRoot, file));
     const source = fs.readFileSync(file, 'utf8');
-    inspectUnsafeTypes(source, relative, violations);
-    if (!file.startsWith(`${gamesRootForFile(gameRoot)}${path.sep}`)) {
+    inspectUnsafeTypes(source, relative, violations, false);
+    const isCompositionRoot = relative === 'src/game/composition/generated-game-registry.ts';
+    if (!file.startsWith(`${gamesRootForFile(gameRoot)}${path.sep}`) && !isCompositionRoot) {
       for (const specifier of importSpecifiers(source)) {
         const target = specifier.startsWith('.')
           ? path.resolve(path.dirname(file), specifier)

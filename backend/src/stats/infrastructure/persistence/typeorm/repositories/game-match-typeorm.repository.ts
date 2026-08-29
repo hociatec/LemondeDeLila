@@ -31,6 +31,60 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     private readonly players: Repository<GameMatchPlayerEntity>,
   ) {}
 
+  async createMatchWithPlayers(data: {
+    match: {
+      roomId: number;
+      gameType: string;
+      withBots: boolean;
+      botsCount: number;
+      humansCount: number;
+    };
+    players: Array<{ userId: number; username: string }>;
+  }): Promise<GameMatchRecord> {
+    return this.matches.manager.transaction(async (manager) => {
+      const matches = manager.getRepository(GameMatchEntity);
+      const players = manager.getRepository(GameMatchPlayerEntity);
+      const match = await matches.save(
+        matches.create({
+          ...data.match,
+          endedAt: null,
+          endedReason: null,
+          winnerUser: null,
+        }),
+      );
+      if (data.players.length > 0) {
+        await players.save(
+          data.players.map((player) =>
+            players.create({
+              match,
+              user: { id: player.userId },
+              username: player.username,
+              outcome: 'unknown',
+              leftAt: null,
+            }),
+          ),
+        );
+      }
+      return this.toMatchModel(match);
+    });
+  }
+
+  async saveMatchWithPlayers(
+    match: GameMatchRecord,
+    players: GameMatchPlayerRecord[],
+  ): Promise<void> {
+    await this.matches.manager.transaction(async (manager) => {
+      const matches = manager.getRepository(GameMatchEntity);
+      const playerRows = manager.getRepository(GameMatchPlayerEntity);
+      await matches.save(this.matchEntity(matches, match));
+      if (players.length > 0) {
+        await playerRows.save(
+          players.map((player) => this.playerEntity(playerRows, player)),
+        );
+      }
+    });
+  }
+
   async createMatch(data: {
     roomId: number;
     gameType: string;
@@ -55,19 +109,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
 
   async saveMatch(match: GameMatchRecord): Promise<GameMatchRecord> {
     const saved = await this.matches.save(
-      this.matches.create({
-        id: match.id,
-        roomId: match.roomId,
-        gameType: match.gameType,
-        withBots: match.withBots,
-        botsCount: match.botsCount,
-        humansCount: match.humansCount,
-        startedAt: match.startedAt,
-        endedAt: match.endedAt,
-        endedReason: match.endedReason,
-        winnerUser:
-          match.winnerUserId != null ? { id: match.winnerUserId } : null,
-      }),
+      this.matchEntity(this.matches, match),
     );
     return this.toMatchModel(saved);
   }
@@ -89,6 +131,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     const rows = await this.players.find({
       where: { match: { id: matchId } },
       relations: { match: true },
+      take: 100,
     });
     return rows.map((row) => this.toPlayerModel(row));
   }
@@ -132,6 +175,29 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     return this.toPlayerModel(hydrated);
   }
 
+  async createPlayers(
+    data: Array<{
+      matchId: number;
+      userId: number;
+      username: string;
+      outcome: GameMatchOutcome;
+      leftAt: Date | null;
+    }>,
+  ): Promise<void> {
+    if (data.length === 0) return;
+    await this.players.save(
+      data.map((player) =>
+        this.players.create({
+          match: { id: player.matchId } as GameMatchEntity,
+          user: { id: player.userId },
+          username: player.username,
+          outcome: player.outcome,
+          leftAt: player.leftAt,
+        }),
+      ),
+    );
+  }
+
   async savePlayer(
     player: GameMatchPlayerRecord,
   ): Promise<GameMatchPlayerRecord> {
@@ -157,10 +223,18 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     return this.toPlayerModel(hydrated);
   }
 
+  async savePlayers(players: GameMatchPlayerRecord[]): Promise<void> {
+    if (players.length === 0) return;
+    await this.players.save(
+      players.map((player) => this.playerEntity(this.players, player)),
+    );
+  }
+
   async findPlayersByUserId(userId: number): Promise<GameMatchPlayerRecord[]> {
     const rows = await this.players.find({
       where: { user: { id: userId } },
       relations: { match: true },
+      take: 5_000,
     });
     return rows.map((row) => this.toPlayerModel(row));
   }
@@ -250,6 +324,39 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
       endedReason: match.endedReason ?? null,
       winnerUserId: match.winnerUser?.id ?? null,
     };
+  }
+
+  private matchEntity(
+    repository: Repository<GameMatchEntity>,
+    match: GameMatchRecord,
+  ): GameMatchEntity {
+    return repository.create({
+      id: match.id,
+      roomId: match.roomId,
+      gameType: match.gameType,
+      withBots: match.withBots,
+      botsCount: match.botsCount,
+      humansCount: match.humansCount,
+      startedAt: match.startedAt,
+      endedAt: match.endedAt,
+      endedReason: match.endedReason,
+      winnerUser:
+        match.winnerUserId != null ? { id: match.winnerUserId } : null,
+    });
+  }
+
+  private playerEntity(
+    repository: Repository<GameMatchPlayerEntity>,
+    player: GameMatchPlayerRecord,
+  ): GameMatchPlayerEntity {
+    return repository.create({
+      id: player.id,
+      match: { id: player.matchId } as GameMatchEntity,
+      user: { id: player.userId },
+      username: player.username,
+      outcome: player.outcome,
+      leftAt: player.leftAt,
+    });
   }
 
   private toPlayerModel(player: GameMatchPlayerEntity): GameMatchPlayerRecord {

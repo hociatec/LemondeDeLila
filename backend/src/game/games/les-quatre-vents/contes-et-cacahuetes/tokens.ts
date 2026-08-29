@@ -1,4 +1,4 @@
-import type { GameContext } from '../../../core/application/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import { CONTES_RESOURCES, CONTES_STATUSES } from './constants';
 import type { ContesState } from './state';
 

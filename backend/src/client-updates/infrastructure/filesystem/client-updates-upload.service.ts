@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -10,9 +11,15 @@ import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { Inject } from '@nestjs/common';
 import {
+  assertPathInside,
+  assertStorageCapacity,
+  bestEffort,
   getErrorMessage,
   parseVersion,
+  writeFileAtomic,
+  StorageCapacityError,
 } from '../../../common/utils/public-api';
+import { readEnvironment } from '../../../config/public-api';
 import {
   CLIENT_UPDATES_UPLOAD_STORE_PORT,
   type ClientUpdatesUploadStorePort,
@@ -27,6 +34,8 @@ import { decodeUploadMetaFile } from './client-update-meta.decoder';
 
 @Injectable()
 export class ClientUpdatesUploadService {
+  private static readonly MAX_TOTAL_BYTES = 600 * 1024 * 1024;
+  private static readonly MAX_CHUNKS = 10_000;
   private readonly logger = new Logger(ClientUpdatesUploadService.name);
 
   constructor(
@@ -42,29 +51,6 @@ export class ClientUpdatesUploadService {
       targetDir: this.updates.getTargetDir(),
       publicUrl: this.updates.getPublicUrl(),
     };
-  }
-
-  private normalizeVersion(input: unknown): string | null {
-    const v = typeof input === 'string' ? input.trim() : '';
-    if (!v) return null;
-    if (parseVersion(v) == null) {
-      throw new BadRequestException('Version invalide');
-    }
-    return v;
-  }
-
-  private normalizeMinRequiredVersion(input: unknown): string | null {
-    const v = typeof input === 'string' ? input.trim() : '';
-    if (!v) return null;
-    if (parseVersion(v) == null) {
-      throw new BadRequestException('minRequiredVersion invalide');
-    }
-    return v;
-  }
-
-  private normalizeMessage(input: unknown): string | null {
-    const m = typeof input === 'string' ? input.trim() : '';
-    return m ? m : null;
   }
 
   private async saveAndApplyZip(zipPath: string, meta: ClientUpdateMeta) {
@@ -98,11 +84,15 @@ export class ClientUpdatesUploadService {
     if (!zipPath || !fs.existsSync(zipPath)) {
       throw new BadRequestException('Fichier upload introuvable.');
     }
+    await this.ensureStorageCapacity(
+      this.updates.getTargetDir(),
+      (await fs.promises.stat(zipPath)).size,
+    );
 
     const version =
-      this.normalizeVersion(params.version) ?? `uploaded-${Date.now()}`;
-    const message = this.normalizeMessage(params.message);
-    const minRequiredVersion = this.normalizeMinRequiredVersion(
+      normalizeVersion(params.version) ?? `uploaded-${Date.now()}`;
+    const message = normalizeMessage(params.message);
+    const minRequiredVersion = normalizeMinRequiredVersion(
       params.minRequiredVersion,
     );
 
@@ -131,21 +121,17 @@ export class ClientUpdatesUploadService {
 
     const meta: UploadMetaFile = {
       uploadId,
-      version: this.normalizeVersion(params.version),
-      message: this.normalizeMessage(params.message),
-      minRequiredVersion: this.normalizeMinRequiredVersion(
+      version: normalizeVersion(params.version),
+      message: normalizeMessage(params.message),
+      minRequiredVersion: normalizeMinRequiredVersion(
         params.minRequiredVersion,
       ),
-      totalBytes:
-        typeof params.totalBytes === 'number' &&
-        Number.isFinite(params.totalBytes)
-          ? params.totalBytes
-          : null,
+      totalBytes: this.normalizeTotalBytes(params.totalBytes),
       createdAt: new Date().toISOString(),
       completedAt: null,
     };
 
-    await fs.promises.writeFile(
+    await writeFileAtomic(
       path.join(dir, 'meta.json'),
       JSON.stringify(meta, null, 2),
     );
@@ -158,16 +144,21 @@ export class ClientUpdatesUploadService {
     index: number;
     filePath: string;
   }) {
-    const uploadId = (params.uploadId || '').trim();
+    const uploadId = this.normalizeUploadId(params.uploadId);
     const index = params.index;
-    if (!uploadId || !Number.isFinite(index) || index < 0) {
+    if (
+      !Number.isSafeInteger(index) ||
+      index < 0 ||
+      index >= ClientUpdatesUploadService.MAX_CHUNKS
+    ) {
       throw new BadRequestException('uploadId/index invalides.');
     }
     if (!params.filePath || !fs.existsSync(params.filePath)) {
       throw new BadRequestException('Chunk manquant (champ "file").');
     }
 
-    const dir = path.join(this.uploadStore.getUploadsRoot(), uploadId);
+    const root = this.uploadStore.getUploadsRoot();
+    const dir = assertPathInside(root, path.join(root, uploadId));
     const metaPath = path.join(dir, 'meta.json');
     if (!fs.existsSync(metaPath)) {
       throw new BadRequestException(
@@ -179,16 +170,30 @@ export class ClientUpdatesUploadService {
     if (fs.existsSync(partPath)) {
       return { ok: true, duplicate: true };
     }
-    await fs.promises.rename(params.filePath, partPath);
+    await this.ensureStorageCapacity(
+      root,
+      (await fs.promises.stat(params.filePath)).size,
+    );
+    try {
+      await fs.promises.copyFile(
+        params.filePath,
+        partPath,
+        fs.constants.COPYFILE_EXCL,
+      );
+    } catch (error) {
+      if (isNodeError(error) && error.code === 'EEXIST') {
+        return { ok: true, duplicate: true };
+      }
+      throw this.storageError(error);
+    }
+    await fs.promises.rm(params.filePath, { force: true });
     return { ok: true };
   }
 
   async uploadComplete(params: { uploadId: string }) {
-    const uploadId = (params.uploadId || '').trim();
-    if (!uploadId) {
-      throw new BadRequestException('uploadId manquant.');
-    }
-    const dir = path.join(this.uploadStore.getUploadsRoot(), uploadId);
+    const uploadId = this.normalizeUploadId(params.uploadId);
+    const root = this.uploadStore.getUploadsRoot();
+    const dir = assertPathInside(root, path.join(root, uploadId));
     const metaPath = path.join(dir, 'meta.json');
     const completedMarker =
       await this.uploadStore.readCompletedMarker(uploadId);
@@ -210,8 +215,16 @@ export class ClientUpdatesUploadService {
         completedMarker,
       );
     } finally {
-      await lockFd.close().catch(() => undefined);
-      fs.promises.rm(lockPath, { force: true }).catch(() => undefined);
+      await bestEffort(
+        lockFd.close(),
+        'fermeture du verrou upload client',
+        this.logger,
+      );
+      void bestEffort(
+        fs.promises.rm(lockPath, { force: true }),
+        'suppression du verrou upload client',
+        this.logger,
+      );
     }
   }
 
@@ -244,9 +257,10 @@ export class ClientUpdatesUploadService {
     let markerWritten = false;
     try {
       await this.assembleArchive(dir, parts, zipPath);
+      await this.assertArchiveSize(zipPath, meta.totalBytes);
       const saved = this.toPublishedMeta(meta);
       await this.saveAndApplyZip(zipPath, saved);
-      await fs.promises.writeFile(
+      await writeFileAtomic(
         metaPath,
         JSON.stringify(
           { ...meta, completedAt: new Date().toISOString() },
@@ -258,11 +272,17 @@ export class ClientUpdatesUploadService {
       markerWritten = await this.writeCompletionMarker(uploadId, saved);
       return { ok: true, meta: saved };
     } finally {
-      fs.promises.rm(zipPath, { force: true }).catch(() => undefined);
+      void bestEffort(
+        fs.promises.rm(zipPath, { force: true }),
+        'suppression de l’archive client temporaire',
+        this.logger,
+      );
       if (published && markerWritten) {
-        fs.promises
-          .rm(dir, { recursive: true, force: true })
-          .catch(() => undefined);
+        void bestEffort(
+          fs.promises.rm(dir, { recursive: true, force: true }),
+          'suppression des chunks client finalisés',
+          this.logger,
+        );
       }
     }
   }
@@ -275,6 +295,71 @@ export class ClientUpdatesUploadService {
       throw new BadRequestException('Métadonnées d’upload invalides.');
     }
     return meta;
+  }
+
+  private normalizeUploadId(input: unknown): string {
+    const uploadId = typeof input === 'string' ? input.trim() : '';
+    if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(uploadId)) {
+      throw new BadRequestException('uploadId invalide.');
+    }
+    return uploadId;
+  }
+
+  private normalizeTotalBytes(input: number | null | undefined): number | null {
+    if (input == null) return null;
+    if (
+      !Number.isSafeInteger(input) ||
+      input <= 0 ||
+      input > ClientUpdatesUploadService.MAX_TOTAL_BYTES
+    ) {
+      throw new BadRequestException('totalBytes invalide.');
+    }
+    return input;
+  }
+
+  private async ensureStorageCapacity(
+    root: string,
+    incomingBytes: number,
+  ): Promise<void> {
+    try {
+      await assertStorageCapacity({
+        root,
+        incomingBytes,
+        maxTotalBytes: this.environmentBytes(
+          'CLIENT_UPDATES_STORAGE_QUOTA_BYTES',
+          4 * 1024 * 1024 * 1024,
+        ),
+        minFreeBytes: this.environmentBytes(
+          'STORAGE_MIN_FREE_BYTES',
+          512 * 1024 * 1024,
+        ),
+      });
+    } catch (error) {
+      throw this.storageError(error);
+    }
+  }
+
+  private storageError(error: unknown): unknown {
+    if (
+      error instanceof StorageCapacityError ||
+      (isNodeError(error) && error.code === 'ENOSPC')
+    ) {
+      return new HttpException(
+        error instanceof Error ? error.message : 'Espace disque insuffisant.',
+        507,
+      );
+    }
+    return error;
+  }
+
+  private environmentBytes(
+    key: 'CLIENT_UPDATES_STORAGE_QUOTA_BYTES' | 'STORAGE_MIN_FREE_BYTES',
+    fallback: number,
+  ): number {
+    const raw = readEnvironment(key).trim();
+    if (!raw) return fallback;
+    const parsed = Number(raw);
+    return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : fallback;
   }
 
   private completedResult(
@@ -345,6 +430,21 @@ export class ClientUpdatesUploadService {
     }
   }
 
+  private async assertArchiveSize(
+    zipPath: string,
+    expectedBytes: number | null,
+  ): Promise<void> {
+    const { size } = await fs.promises.stat(zipPath);
+    if (size > ClientUpdatesUploadService.MAX_TOTAL_BYTES) {
+      throw new BadRequestException('Archive trop volumineuse.');
+    }
+    if (expectedBytes != null && size !== expectedBytes) {
+      throw new BadRequestException(
+        `Taille archive invalide (attendu ${expectedBytes}, reçu ${size}).`,
+      );
+    }
+  }
+
   private toPublishedMeta(meta: UploadMetaFile): ClientUpdateMeta {
     return {
       version: meta.version || `uploaded-${Date.now()}`,
@@ -369,4 +469,31 @@ export class ClientUpdatesUploadService {
       return false;
     }
   }
+}
+
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return typeof error === 'object' && error !== null && 'code' in error;
+}
+
+function normalizeVersion(input: unknown): string | null {
+  const value = typeof input === 'string' ? input.trim() : '';
+  if (!value) return null;
+  if (parseVersion(value) == null) {
+    throw new BadRequestException('Version invalide');
+  }
+  return value;
+}
+
+function normalizeMinRequiredVersion(input: unknown): string | null {
+  const value = typeof input === 'string' ? input.trim() : '';
+  if (!value) return null;
+  if (parseVersion(value) == null) {
+    throw new BadRequestException('minRequiredVersion invalide');
+  }
+  return value;
+}
+
+function normalizeMessage(input: unknown): string | null {
+  const message = typeof input === 'string' ? input.trim() : '';
+  return message || null;
 }

@@ -5,10 +5,10 @@ import {
   defineGame,
   defineGameContent,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { TAXI_CLIENTS, TAXI_EVENTS, TAXI_TILES } from './content';
 import { TAXI_ACTIONS } from './rules';
-import type { TaxiState } from './state';
+import type { NoGameState as TaxiState } from '../../../engine/sdk/public-api';
 
 const TAXI_PHASES = defineGamePhases<TaxiState>()({
   initialPhase: 'playing',
@@ -37,7 +37,6 @@ export default defineGame<TaxiState, typeof TAXI_ACTIONS>({
   ],
   components: [cards.deck({ id: 'events', cards: TAXI_EVENTS, shuffle: true })],
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
-  setup: () => ({}),
   initialPhase: TAXI_PHASES.initialPhase,
   phases: TAXI_PHASES.phases,
   actions: TAXI_ACTIONS,

@@ -338,7 +338,13 @@ function analyzeArchitecture({
   root = srcRoot,
   contract = loadContract(),
 } = {}) {
-  const files = walk(root);
+  const ignoredRootDirectories = new Set(
+    contract.ignoredRootDirectories ?? [],
+  );
+  const files = walk(root).filter((filePath) => {
+    const [rootDirectory] = toSrcRelative(filePath, root).split('/');
+    return !ignoredRootDirectories.has(rootDirectory);
+  });
   const violations = [];
   const graph = new Map();
   const componentNames = new Set();

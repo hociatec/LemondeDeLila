@@ -1,5 +1,5 @@
-import { drawAndResolve, raceTurn } from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+import { drawAndResolve, raceTurn } from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import { PIRATES_CONTENT } from './content';
 import type { PirateCard, PiratesState } from './state';
 

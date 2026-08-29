@@ -1,7 +1,7 @@
 import {
   freezeGameContent,
   rejectContent,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import boardContent from './content/board.json';
 import clientsContent from './content/clients.json';
 import eventsContent from './content/events.json';

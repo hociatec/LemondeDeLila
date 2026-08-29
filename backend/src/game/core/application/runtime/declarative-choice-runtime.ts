@@ -2,7 +2,7 @@ import type { GameSingleActionDto } from '../models/game-action.model';
 import type { PlayerStateEntity } from '../models/game-state.model';
 import { GameActionRejectedError } from '../../domain/errors/game-domain.errors';
 import type {
-  DeclarativeGameDefinition,
+  CompiledGameDefinition,
   DeclarativeState,
   GameActionMap,
 } from './game-definition';
@@ -15,7 +15,7 @@ export class DeclarativeChoiceRuntime<
   TPlayerView extends object,
 > {
   constructor(
-    private readonly definition: DeclarativeGameDefinition<
+    private readonly definition: CompiledGameDefinition<
       TState,
       TActions,
       TPlayerView

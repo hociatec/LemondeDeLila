@@ -88,7 +88,6 @@ export class GameWsRealtimeStateService {
       gameType,
       handler,
       state,
-      commit: (previous, next) => this.commit(roomId, resolved, previous, next),
     });
   }
 

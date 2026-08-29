@@ -9,7 +9,7 @@ import {
   ownership,
   raceGame,
   setupPlayingPhases,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { SAC_VARIANTS, type SacVariantId } from './content';
 import { SAC_ACTIONS } from './actions';
 import { SAC_POT } from './economy';
@@ -102,7 +102,7 @@ export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
       resolve: ({ state, value, ctx }) => resolveManagement(state, value, ctx),
     }),
   },
-  viewFragment: ({ state }) => ({
+  viewExtension: ({ state }) => ({
     buildings: structuredClone(state.buildings),
   }),
   bot: {

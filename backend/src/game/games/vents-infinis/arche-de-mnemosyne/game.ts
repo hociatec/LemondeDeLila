@@ -2,10 +2,12 @@ import {
   defineConfiguration,
   defineEvent,
   defineGame,
+  defineGameContent,
   gameInput,
+  type NoGameState,
   quiz,
   simultaneousAnswers,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { MNEMO_BANKS, MNEMO_CATEGORIES } from './content';
 import {
   MNEMO_ACTIONS,
@@ -14,7 +16,20 @@ import {
   MNEMO_QUESTION_TIMER,
   MNEMO_SESSION,
 } from './rules';
-import type { MnemoGameConfig, MnemoPlayerView, MnemoState } from './state';
+import type { MnemoGameConfig } from './config';
+
+interface MnemoViewExtension {
+  currentQuestion: {
+    id: string;
+    prompt: string;
+    choices: readonly string[];
+  } | null;
+  answeredPlayerIds: number[];
+  notBeforeMs: number | null;
+  questionLeaderId: number;
+  remainingMilliseconds: number | null;
+  categories: typeof MNEMO_CATEGORIES;
+}
 
 const MNEMO_DEFAULT_CONFIG: MnemoGameConfig = {
   categoryId: 'all',
@@ -33,15 +48,23 @@ const QUIZ_STARTED = defineEvent({
   data: gameInput.object({ categoryId: gameInput.enum(MNEMO_CATEGORY_IDS) }),
 });
 
-export default defineGame<MnemoState, typeof MNEMO_ACTIONS, MnemoPlayerView>({
+export default defineGame<
+  NoGameState,
+  typeof MNEMO_ACTIONS,
+  MnemoViewExtension
+>({
   id: 'arche-de-mnemosyne',
   displayName: "L'Arche de Mnémosyne",
   category: 'Quiz',
   subcategory: 'VentsInfinis',
   description: 'Quiz simultané par catégories aux réponses mélangées.',
+  content: defineGameContent('arche-de-mnemosyne', {
+    categories: MNEMO_CATEGORIES,
+    quizBanks: MNEMO_BANKS,
+  }),
   players: { min: 1, max: 8 },
   patterns: [simultaneousAnswers()],
-  config: defineConfiguration<MnemoState, MnemoGameConfig>({
+  config: defineConfiguration<NoGameState, MnemoGameConfig>({
     input: gameInput.object({
       categoryId: gameInput.enum(MNEMO_CATEGORY_IDS),
       targetPoints: gameInput.number({ integer: true, min: 1, max: 200 }),
@@ -82,11 +105,10 @@ export default defineGame<MnemoState, typeof MNEMO_ACTIONS, MnemoPlayerView>({
     quiz.bank({ id: bank.id, questions: bank.questions, shuffle: true }),
   ),
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'draw' }],
-  setup: () => ({}),
   initialPhase: MNEMO_PHASES.initialPhase,
   phases: MNEMO_PHASES.phases,
   actions: MNEMO_ACTIONS,
-  viewFragment: ({ ctx }) => {
+  viewExtension: ({ ctx }) => {
     const session = ctx.quiz.session(MNEMO_SESSION);
     const currentSession = session?.phase === 'closed' ? null : session;
     const answeredPlayerIds = Object.keys(currentSession?.answers ?? {}).map(

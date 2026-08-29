@@ -2,11 +2,8 @@ import {
   rejectRule,
   defineGamePhases,
   rollDice,
-} from '../../../core/application/public-api';
-import type {
-  GameContext,
-  PawnMove,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext, PawnMove } from '../../../engine/sdk/public-api';
 import { FOULEES_BOARD, FOULEES_FAMILIES } from './content';
 import type { FouleesPawn, FouleesPendingMove, FouleesState } from './state';
 

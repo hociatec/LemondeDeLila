@@ -25,6 +25,7 @@ export class NotificationFriendshipTypeormRepository implements NotificationFrie
         { requester: { id: userId }, status: 'accepted' },
         { addressee: { id: userId }, status: 'accepted' },
       ],
+      take: 500,
     });
 
     return relations

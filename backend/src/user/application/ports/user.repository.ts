@@ -6,7 +6,6 @@ export type CreateUserRecord = {
   username: string;
   avatar: string | null;
   preferences: Record<string, unknown> | null;
-  emailVerified: boolean;
   bannedUntil: Date | null;
   banReason: string | null;
   chatBannedUntil: Date | null;
@@ -15,7 +14,7 @@ export type CreateUserRecord = {
 };
 
 export interface UserRepository {
-  listPublic(): Promise<UserModel[]>;
+  listPublic(options: { offset: number; limit: number }): Promise<UserModel[]>;
   listStaff(): Promise<UserModel[]>;
   findPublicById(id: number): Promise<UserModel | null>;
   findById(id: number): Promise<UserModel | null>;

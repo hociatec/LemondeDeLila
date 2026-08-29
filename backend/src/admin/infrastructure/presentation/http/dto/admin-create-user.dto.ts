@@ -1,6 +1,5 @@
 import {
   IsArray,
-  IsBoolean,
   IsEmail,
   IsOptional,
   IsString,
@@ -8,6 +7,10 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from '../../../../../user/public-api';
 
 export class AdminCreateUserDto {
   @IsEmail()
@@ -24,7 +27,8 @@ export class AdminCreateUserDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(6)
+  @MinLength(PASSWORD_MIN_LENGTH)
+  @MaxLength(PASSWORD_MAX_LENGTH)
   password?: string;
 
   @IsOptional()
@@ -35,8 +39,4 @@ export class AdminCreateUserDto {
   @IsOptional()
   @IsString()
   avatar?: string | null;
-
-  @IsOptional()
-  @IsBoolean()
-  emailVerified?: boolean;
 }

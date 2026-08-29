@@ -3,10 +3,10 @@ import {
   discardCard as discardCardAction,
   drawCardsAtTurnStart,
   gameInput,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { CERCLES_SACRES_CARD_BY_ID, type CerclesSacresTheme } from './content';
 import type { CerclesSacresCircle, CerclesSacresState } from './state';
-import type { PlayerMap } from '../../../core/application/public-api';
+import type { PlayerMap } from '../../../engine/sdk/public-api';
 
 export const CERCLES_SACRES_GOAL = 3;
 export const CERCLES_SACRES_HAND_MIN = 6;

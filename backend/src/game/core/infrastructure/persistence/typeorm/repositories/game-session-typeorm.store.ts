@@ -1,6 +1,6 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { Repository } from 'typeorm';
+import { MoreThan, type EntityManager, type Repository } from 'typeorm';
 import {
   DEFAULT_GAME_SNAPSHOT_POLICY,
   GAME_SNAPSHOT_POLICY,
@@ -25,14 +25,17 @@ import {
   replayTimeline,
 } from '../../../../application/services/game-event-log.helper';
 import { GameSessionEntity } from '../entities/game-session.entity';
+import { GameSessionEventEntity } from '../entities/game-session-event.entity';
+import { GameSessionSnapshotEntity } from '../entities/game-session-snapshot.entity';
 
 /**
- * Production session store. State, events and snapshots live in the same row
- * and are replaced under a database write lock, making a command commit one
- * atomic unit across application instances.
+ * Production session store. Current state, events and snapshots use separate
+ * tables and are committed in one transaction under the session row lock.
  */
 @Injectable()
 export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
+  private static readonly maxTimelineEvents = 10_000;
+  private static readonly maxTimelineSnapshots = 1_000;
   private readonly snapshotPolicy: Readonly<GameSnapshotPolicy>;
 
   constructor(
@@ -63,15 +66,23 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
   ): Promise<void> {
     const restored = structuredClone(state);
     assertGameStateSize(restored, this.snapshotPolicy.maxStateBytes);
-    await this.repository.save(
-      this.repository.create({
+    await this.repository.manager.transaction(async (manager) => {
+      await this.clearTimeline(manager, roomId, gameType);
+      await manager.getRepository(GameSessionEntity).save({
         roomId,
         gameType,
         version: restored.version ?? 1,
         state: restored,
-        timeline: createGameTimeline(restored),
-      }),
-    );
+      });
+      const initial = createGameTimeline(restored).initial;
+      await manager.getRepository(GameSessionSnapshotEntity).save({
+        roomId,
+        gameType,
+        seq: initial.seq,
+        version: initial.version,
+        state: initial.state,
+      });
+    });
   }
 
   async compareAndSet(commit: GameStateCommit): Promise<GameStateCommitResult> {
@@ -91,8 +102,14 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
 
       const next = structuredClone(commit.next);
       next.version = commit.expectedVersion + 1;
+      const previousTimeline = await this.timeline(
+        manager,
+        commit.roomId,
+        commit.gameType,
+        row.state,
+      );
       const timeline = appendGameTimelineCommit({
-        timeline: this.timeline(row),
+        timeline: previousTimeline,
         previous: row.state,
         next,
         pendingEvents: commit.pendingEvents,
@@ -101,8 +118,42 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
       });
       row.version = next.version;
       row.state = next;
-      row.timeline = timeline;
       await repository.save(row);
+      const previousSequence = previousTimeline.events.at(-1)?.seq ?? 0;
+      const addedEvents = timeline.events.filter(
+        (event) => event.seq > previousSequence,
+      );
+      if (addedEvents.length > 0) {
+        await manager.getRepository(GameSessionEventEntity).save(
+          addedEvents.map((event) =>
+            Object.assign(new GameSessionEventEntity(), {
+              roomId: commit.roomId,
+              gameType: commit.gameType,
+              seq: event.seq,
+              version: event.version,
+              event,
+            }),
+          ),
+        );
+      }
+      const previousSnapshotSequence =
+        previousTimeline.snapshots.at(-1)?.seq ?? -1;
+      const addedSnapshots = timeline.snapshots.filter(
+        (snapshot) => snapshot.seq > previousSnapshotSequence,
+      );
+      if (addedSnapshots.length > 0) {
+        await manager.getRepository(GameSessionSnapshotEntity).save(
+          addedSnapshots.map((snapshot) =>
+            Object.assign(new GameSessionSnapshotEntity(), {
+              roomId: commit.roomId,
+              gameType: commit.gameType,
+              seq: snapshot.seq,
+              version: snapshot.version,
+              state: snapshot.state,
+            }),
+          ),
+        );
+      }
       return {
         committed: true,
         version: next.version,
@@ -112,7 +163,12 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
   }
 
   async clear(roomId: number, gameType: string): Promise<void> {
-    await this.repository.delete({ roomId, gameType });
+    await this.repository.manager.transaction(async (manager) => {
+      await this.clearTimeline(manager, roomId, gameType);
+      await manager
+        .getRepository(GameSessionEntity)
+        .delete({ roomId, gameType });
+    });
   }
 
   async clearIfVersion(
@@ -120,39 +176,55 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     gameType: string,
     expectedVersion: number,
   ): Promise<void> {
-    await this.repository.delete({
-      roomId,
-      gameType,
-      version: expectedVersion,
+    await this.repository.manager.transaction(async (manager) => {
+      const result = await manager.getRepository(GameSessionEntity).delete({
+        roomId,
+        gameType,
+        version: expectedVersion,
+      });
+      if (result.affected) {
+        await this.clearTimeline(manager, roomId, gameType);
+      }
     });
   }
 
   async clearRoom(roomId: number): Promise<void> {
-    await this.repository.delete({ roomId });
+    await this.repository.manager.transaction(async (manager) => {
+      await manager.getRepository(GameSessionEventEntity).delete({ roomId });
+      await manager.getRepository(GameSessionSnapshotEntity).delete({ roomId });
+      await manager.getRepository(GameSessionEntity).delete({ roomId });
+    });
   }
 
   async listEvents(
     roomId: number,
     gameType: string,
     afterSequence = 0,
+    limit = 500,
   ): Promise<GameEvent[]> {
-    const row = await this.repository.findOne({ where: { roomId, gameType } });
-    return row
-      ? structuredClone(
-          this.timeline(row).events.filter(
-            (event) => event.seq > afterSequence,
-          ),
-        )
-      : [];
+    const rows = await this.repository.manager
+      .getRepository(GameSessionEventEntity)
+      .find({
+        where: { roomId, gameType, seq: MoreThan(afterSequence) },
+        order: { seq: 'ASC' },
+        take: Math.max(1, Math.min(1_000, Math.trunc(limit))),
+      });
+    return rows.map((row) => structuredClone(row.event));
   }
 
   async latestSnapshot(
     roomId: number,
     gameType: string,
   ): Promise<GameSnapshot | null> {
-    const row = await this.repository.findOne({ where: { roomId, gameType } });
+    const row = await this.repository.manager
+      .getRepository(GameSessionSnapshotEntity)
+      .findOne({ where: { roomId, gameType }, order: { seq: 'DESC' } });
     return row
-      ? structuredClone(this.timeline(row).snapshots.at(-1) ?? null)
+      ? {
+          seq: row.seq,
+          version: row.version,
+          state: structuredClone(row.state),
+        }
       : null;
   }
 
@@ -163,17 +235,59 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
   ): Promise<GameStateEntity | null> {
     const row = await this.repository.findOne({ where: { roomId, gameType } });
     return row
-      ? replayTimeline(structuredClone(this.timeline(row)), untilSequence)
+      ? replayTimeline(
+          await this.timeline(
+            this.repository.manager,
+            roomId,
+            gameType,
+            row.state,
+          ),
+          untilSequence,
+        )
       : null;
   }
 
-  private timeline(row: GameSessionEntity): GameTimeline {
-    const timeline = row.timeline;
-    return timeline &&
-      typeof timeline === 'object' &&
-      Array.isArray(timeline.events) &&
-      Array.isArray(timeline.snapshots)
-      ? timeline
-      : createGameTimeline(row.state);
+  private async timeline(
+    manager: EntityManager,
+    roomId: number,
+    gameType: string,
+    fallbackState: GameStateEntity,
+  ): Promise<GameTimeline> {
+    const [eventRows, snapshotRows] = await Promise.all([
+      manager.getRepository(GameSessionEventEntity).find({
+        where: { roomId, gameType },
+        order: { seq: 'ASC' },
+        take: GameSessionTypeormStore.maxTimelineEvents,
+      }),
+      manager.getRepository(GameSessionSnapshotEntity).find({
+        where: { roomId, gameType },
+        order: { seq: 'ASC' },
+        take: GameSessionTypeormStore.maxTimelineSnapshots,
+      }),
+    ]);
+    const snapshots = snapshotRows.map((row) => ({
+      seq: row.seq,
+      version: row.version,
+      state: structuredClone(row.state),
+    }));
+    const initial = snapshots[0] ?? createGameTimeline(fallbackState).initial;
+    return {
+      initial,
+      events: eventRows.map((row) => structuredClone(row.event)),
+      snapshots: snapshots.length > 0 ? snapshots : [initial],
+    };
+  }
+
+  private async clearTimeline(
+    manager: EntityManager,
+    roomId: number,
+    gameType: string,
+  ): Promise<void> {
+    await manager
+      .getRepository(GameSessionEventEntity)
+      .delete({ roomId, gameType });
+    await manager
+      .getRepository(GameSessionSnapshotEntity)
+      .delete({ roomId, gameType });
   }
 }

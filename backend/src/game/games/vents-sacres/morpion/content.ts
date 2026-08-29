@@ -1,4 +1,4 @@
-import { freezeGameContent } from '../../../core/application/public-api';
+import { freezeGameContent } from '../../../engine/sdk/public-api';
 
 export type MorpionPawn = {
   id: string;

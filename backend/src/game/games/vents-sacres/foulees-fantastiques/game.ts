@@ -4,7 +4,7 @@ import {
   defineGameContent,
   gameInput,
   pawnRace,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { FOULEES_BOARD, FOULEES_FAMILIES, FOULEES_PAWNS } from './content';
 import {
   FOULEES_ACTIONS,

@@ -13,7 +13,7 @@ import {
 import { PerfMetricsService } from '../../../../common/observability/public-api';
 import { RoomStateService } from '../../../application/services/room-state.service';
 import { RoomWsNoBotToRemoveError } from '../../../domain/errors/room-ws.errors';
-import type { ActionsContext } from './room-gateway-actions.service';
+import type { ActionsContext } from './room-gateway-actions.types';
 import { extractTraceMeta } from './room-command.helpers';
 import { RoomGatewayPresenter } from './room-gateway.presenter';
 import type { AuthedClient } from './room-gateway.types';

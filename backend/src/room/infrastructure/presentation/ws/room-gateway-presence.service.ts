@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
+import { bestEffort } from '@common/utils/public-api';
 import { RoomMembershipFacadeService } from '../../../application/services/room-membership-facade.service';
 import { RoomStateService } from '../../../application/services/room-state.service';
 import type { ClientMeta, ClientRole } from './room-gateway.types';
@@ -48,6 +49,8 @@ export class RoomGatewayPresenceService {
 
     for (const socket of socketSet) {
       ctx.clearRealtimeSocket(socket);
+      ctx.stopHeartbeat(socket);
+      ctx.deleteMessageQueue(socket);
       ctx.clients.delete(socket);
       targets?.delete(socket);
       silentTargets?.delete(socket);
@@ -111,14 +114,16 @@ export class RoomGatewayPresenceService {
       ctx.pendingParticipantLeaves.delete(key);
       if (this.hasUserConnections(ctx, roomId, userId)) return;
 
-      this.membership
-        .leaveRoom(roomId, userId, {
-          preserveRoom: false,
-          disconnectOnly: false,
-          replaceWithBot: false,
-        })
-        .then(() => ctx.sendRoomState(roomId))
-        .catch(() => {});
+      void bestEffort(
+        this.membership
+          .leaveRoom(roomId, userId, {
+            preserveRoom: false,
+            disconnectOnly: false,
+            replaceWithBot: false,
+          })
+          .then(() => ctx.sendRoomState(roomId)),
+        `départ différé room=${roomId} user=${userId}`,
+      );
     }, ctx.participantDisconnectGraceMs);
 
     ctx.pendingParticipantLeaves.set(key, timeout);
@@ -191,36 +196,41 @@ export class RoomGatewayPresenceService {
 
     if (meta.role === 'participant') {
       if (!userStillConnected) {
-        this.membership
-          .leaveRoom(meta.roomId, meta.userId, {
+        void bestEffort(
+          this.membership.leaveRoom(meta.roomId, meta.userId, {
             preserveRoom: true,
             disconnectOnly: true,
-          })
-          .catch(() => {});
+          }),
+          `déconnexion participant room=${meta.roomId} user=${meta.userId}`,
+        );
         this.scheduleDelayedParticipantLeave(ctx, meta.roomId, meta.userId);
       }
     } else {
       if (!userStillConnected && ownerId === meta.userId) {
-        this.membership
-          .transferOwnerIfCurrent(meta.roomId, meta.userId)
-          .catch(() => {});
+        void bestEffort(
+          this.membership.transferOwnerIfCurrent(meta.roomId, meta.userId),
+          `transfert propriétaire room=${meta.roomId} user=${meta.userId}`,
+        );
       }
 
       if (remainingTotalConnections === 0) {
-        this.membership
-          .leaveRoom(meta.roomId, meta.userId, {
+        void bestEffort(
+          this.membership.leaveRoom(meta.roomId, meta.userId, {
             preserveRoom: false,
             disconnectOnly: false,
-          })
-          .catch(() => {});
+          }),
+          `nettoyage dernière connexion room=${meta.roomId} user=${meta.userId}`,
+        );
       }
     }
 
     if (meta.roomId > 0 && meta.silent !== true) {
-      this.roomState
-        .getRoomPayload(meta.roomId)
-        .then(() => ctx.sendRoomState(meta.roomId))
-        .catch(() => {});
+      void bestEffort(
+        this.roomState
+          .getRoomPayload(meta.roomId)
+          .then(() => ctx.sendRoomState(meta.roomId)),
+        `rafraîchissement après déconnexion room=${meta.roomId}`,
+      );
     }
   }
 

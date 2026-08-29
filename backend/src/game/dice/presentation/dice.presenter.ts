@@ -1,7 +1,7 @@
 type StateWithDice = {
-  turn?: { turnNumber?: number };
+  system?: { turn?: { number?: number } };
+  kits?: { dice?: unknown };
   actions?: unknown;
-  extras?: unknown;
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -16,8 +16,7 @@ function positiveInteger(value: unknown): number | null {
 }
 
 export function withDicePresentation<T extends StateWithDice>(state: T): T {
-  const extras = asRecord(state.extras);
-  const current = asRecord(extras.dice);
+  const current = asRecord(state.kits?.dice);
   const actions = Array.isArray(state.actions) ? state.actions : [];
   const rollActionIndex = actions.findIndex((action) =>
     isRollAction(asRecord(action).type),
@@ -42,12 +41,12 @@ export function withDicePresentation<T extends StateWithDice>(state: T): T {
             },
           ]
         : [];
-  const turnIndex = state.turn?.turnNumber ?? 0;
+  const turnIndex = state.system?.turn?.number ?? 0;
 
   return {
     ...state,
-    extras: {
-      ...extras,
+    kits: {
+      ...(state.kits ?? {}),
       dice: {
         ...current,
         label:

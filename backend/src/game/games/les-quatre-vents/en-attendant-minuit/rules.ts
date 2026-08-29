@@ -7,8 +7,8 @@ import {
   rejectRule,
   sequentialPawnSelection,
   setupPlayingPhases,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import { MINUIT_CARDS, MINUIT_TILES, type MinuitCard } from './content';
 import type { MinuitPending, MinuitState } from './state';
 

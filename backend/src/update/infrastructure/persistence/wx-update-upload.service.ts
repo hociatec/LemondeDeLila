@@ -1,11 +1,19 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import {
+  assertStorageCapacity,
+  bestEffort,
+  StorageCapacityError,
+  writeFileAtomic,
+} from '../../../common/utils/public-api';
+import { readEnvironment } from '../../../config/public-api';
 
 import { WxUpdateReleaseService } from './wx-update-release.service';
 
@@ -140,6 +148,9 @@ export class WxUpdateUploadService {
       await fs.promises.rm(input.filePath, { force: true });
       return { ok: true, duplicate: true };
     }
+    await this.ensureStorageCapacity(
+      (await fs.promises.stat(input.filePath)).size,
+    );
     try {
       await fs.promises.copyFile(
         input.filePath,
@@ -149,6 +160,17 @@ export class WxUpdateUploadService {
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code;
       if (code === 'EEXIST') return { ok: true, duplicate: true };
+      if (
+        error instanceof StorageCapacityError ||
+        (error as NodeJS.ErrnoException).code === 'ENOSPC'
+      ) {
+        throw new HttpException(
+          error instanceof Error
+            ? error.message
+            : 'Espace disque WX insuffisant.',
+          507,
+        );
+      }
       throw error;
     } finally {
       await fs.promises.rm(input.filePath, { force: true });
@@ -219,14 +241,54 @@ export class WxUpdateUploadService {
       });
       meta.completedAt = new Date().toISOString();
       await this.writeJsonAtomic(metaPath, meta);
-      await this.removeUploadedParts(dir).catch(() => undefined);
+      await bestEffort(
+        this.removeUploadedParts(dir),
+        `suppression des chunks WX upload=${uploadId}`,
+      );
       return { ok: true, manifest };
     } finally {
-      await lock.close().catch(() => undefined);
+      await bestEffort(
+        lock.close(),
+        `fermeture du verrou WX upload=${uploadId}`,
+      );
       await fs.promises.rm(lockPath, { force: true });
       await fs.promises.rm(combinedPath, { force: true });
       await fs.promises.rm(installerPath, { force: true });
     }
+  }
+
+  private async ensureStorageCapacity(incomingBytes: number): Promise<void> {
+    const quota = this.environmentBytes(
+      'CLIENT_WX_STORAGE_QUOTA_BYTES',
+      8 * 1024 * 1024 * 1024,
+    );
+    const reserve = this.environmentBytes(
+      'STORAGE_MIN_FREE_BYTES',
+      512 * 1024 * 1024,
+    );
+    try {
+      await assertStorageCapacity({
+        root: this.updates.getTargetDir(),
+        incomingBytes,
+        maxTotalBytes: quota,
+        minFreeBytes: reserve,
+      });
+    } catch (error) {
+      if (error instanceof StorageCapacityError) {
+        throw new HttpException(error.message, 507);
+      }
+      throw error;
+    }
+  }
+
+  private environmentBytes(
+    key: 'CLIENT_WX_STORAGE_QUOTA_BYTES' | 'STORAGE_MIN_FREE_BYTES',
+    fallback: number,
+  ): number {
+    const raw = readEnvironment(key).trim();
+    if (!raw) return fallback;
+    const parsed = Number(raw);
+    return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : fallback;
   }
 
   private async combineParts(input: {
@@ -319,13 +381,7 @@ export class WxUpdateUploadService {
     filePath: string,
     value: unknown,
   ): Promise<void> {
-    await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-    const temporary = `${filePath}.${randomUUID()}.tmp`;
-    await fs.promises.writeFile(temporary, JSON.stringify(value, null, 2));
-    await fs.promises.rename(temporary, filePath).catch(async () => {
-      await fs.promises.rm(filePath, { force: true });
-      await fs.promises.rename(temporary, filePath);
-    });
+    await writeFileAtomic(filePath, JSON.stringify(value, null, 2));
   }
 
   private async removeUploadedParts(dir: string): Promise<void> {

@@ -10,7 +10,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ length: 180, unique: true })
+  @Column({ length: 180, unique: true, collation: 'utf8mb4_unicode_ci' })
   email!: string;
 
   @Column({ type: 'json' })
@@ -19,7 +19,7 @@ export class User {
   @Column()
   password!: string;
 
-  @Column({ length: 100, unique: true })
+  @Column({ length: 100, unique: true, collation: 'utf8mb4_unicode_ci' })
   username!: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -27,9 +27,6 @@ export class User {
 
   @Column({ type: 'json', nullable: true })
   preferences?: Record<string, unknown> | null;
-
-  @Column({ name: 'email_verified', type: 'boolean', default: false })
-  emailVerified!: boolean;
 
   @Column({ name: 'banned_until', type: 'datetime', nullable: true })
   bannedUntil?: Date | null;

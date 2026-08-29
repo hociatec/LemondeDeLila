@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { Injectable, type OnModuleInit } from '@nestjs/common';
+import { readEnvironment } from '../../../config/public-api';
 import type {
   MnemoQuestionStatus,
   MnemoQuizCategory,
@@ -189,13 +190,13 @@ export class MnemoQuizStoreService
 }
 
 function resolveStoragePath(): string {
-  const configured = String(process.env.MNEMO_QUIZ_PATH ?? '').trim();
+  const configured = readEnvironment('MNEMO_QUIZ_PATH').trim();
   if (configured) return path.resolve(configured);
   const projectData = path.resolve(
     process.cwd(),
     'src/game/games/vents-infinis/arche-de-mnemosyne/quiz.json',
   );
-  if (String(process.env.NODE_ENV).toLowerCase() !== 'production')
+  if (readEnvironment('NODE_ENV').toLowerCase() !== 'production')
     return projectData;
   const persistent = path.join(
     os.homedir(),

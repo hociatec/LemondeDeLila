@@ -3,7 +3,7 @@ import {
   defineGame,
   marketGame,
   publicField,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   GOOD_LABELS,
   INITIAL_PRICES,
@@ -50,7 +50,6 @@ export default defineGame<WonderMarketState, typeof MARKET_ACTIONS>({
     { key: 'V', type: 'action', actionType: 'steal_deal' },
     { key: 'O', type: 'action', actionType: 'pass' },
   ],
-  setup: () => ({}),
   actions: MARKET_ACTIONS,
   bot: {
     choose: ({ actor, ctx }) => {

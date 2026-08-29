@@ -39,6 +39,7 @@ export class SocialProfileTypeormRepository implements SocialProfileRepository {
       where: {
         userId: In(userIds),
       },
+      take: Math.min(1_000, userIds.length),
     });
 
     return rows.map((row) => ({

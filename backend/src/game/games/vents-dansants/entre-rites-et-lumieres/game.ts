@@ -6,7 +6,7 @@ import {
   defineGameContent,
   gameInput,
   inventory,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { ENTRE_RITES_DECK } from './content';
 import {
   dealFamilyHands,

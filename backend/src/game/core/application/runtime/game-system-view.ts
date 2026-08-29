@@ -19,13 +19,18 @@ import type {
 } from './match-kit';
 import {
   projectPlayerValues,
-  projectStatusesByPlayer,
+  projectStatusViews,
   type PlayerStatus,
   type PlayerValuesVisibility,
   type ScorePlayerView,
 } from './player-values-kit';
 import type { RoundKitState } from './round-kit';
 import type { EffectSource } from './effects-kit';
+import type {
+  EventVisibility,
+  GamePendingEvent,
+} from '../models/game-event.model';
+import type { EngineEventMap } from './engine-event-registry';
 import {
   projectSubmissions,
   type SubmissionPlayerView,
@@ -59,7 +64,6 @@ export type RoundPlayerView = {
 };
 
 export type StableGameSystemView = {
-  version: typeof GAME_SYSTEM_VIEW_VERSION;
   match: MatchPlayerView;
   round: RoundPlayerView;
   turn: GameTurnPlayerView;
@@ -68,26 +72,28 @@ export type StableGameSystemView = {
   events: GameEventsPlayerView;
 };
 
-export type GameEventsPlayerView = {
-  latestByType: Record<
-    string,
-    {
-      type: string;
-      data: Record<string, unknown>;
-      actorId: number | null;
-      occurredAtMs: number;
-    }
-  >;
+export type GameEventPlayerView<TType extends string, TData> = {
+  type: TType;
+  data: TData;
+  actorId: number | null;
+  occurredAtMs: number;
+};
+
+export type GameEventsPlayerView<TEvents extends object = EngineEventMap> = {
+  latestByType: Partial<{
+    [TType in keyof TEvents & string]: GameEventPlayerView<
+      TType,
+      TEvents[TType]
+    >;
+  }> &
+    Record<
+      string,
+      GameEventPlayerView<string, Record<string, unknown>> | undefined
+    >;
 };
 
 export type GamePlayersPlayerView = {
   all: Array<{ id: number; username: string; isBot: boolean; alive: boolean }>;
-  current: {
-    id: number;
-    username: string;
-    isBot: boolean;
-    alive: boolean;
-  } | null;
 };
 
 export type StableGameKitsView = {
@@ -122,12 +128,18 @@ export type GameTurnPlayerView = {
   waitingPlayerIds: number[];
 };
 
-export type GameSetupPlayerView = {
+export type GameSetupPlayerView<
+  TValues extends object = Record<string, unknown>,
+> = {
   complete: boolean;
   phase: string;
   ownerPlayerId: number | null;
-  values: Record<string, unknown>;
+  values: Readonly<TValues>;
 };
+
+export type GameSetupPlayerViewFor<TDefinition> = GameSetupPlayerView<
+  import('./configuration-kit').ConfigurationValuesOf<TDefinition>
+>;
 
 export type GenericBoardPlayerView = {
   movement: MovementPlayerView | null;
@@ -136,8 +148,6 @@ export type GenericBoardPlayerView = {
 };
 
 export type GameStatusPlayerView = {
-  viewer: PlayerStatus[];
-  byPlayer: Record<string, PlayerStatus[]>;
   /** Public statuses indexed by status id then player id. */
   byId: Record<string, Record<string, PlayerStatus>>;
 };
@@ -146,7 +156,15 @@ export type GenericGamePlayerView = {
   viewVersion: typeof GAME_SYSTEM_VIEW_VERSION;
   system: StableGameSystemView;
   kits: StableGameKitsView;
-  effect: { source: EffectSource | null };
+  effect: { source: EffectSourcePlayerView | null };
+};
+
+/** Stable public projection; deliberately decoupled from EffectSource internals. */
+export type EffectSourcePlayerView = {
+  playerId: number | null;
+  cardId?: string | number;
+  deckId?: string;
+  tileId?: string | number;
 };
 
 export function projectGameSystemView<TState extends object>(input: {
@@ -180,26 +198,19 @@ export function projectGameSystemView<TState extends object>(input: {
     runtime.engine.configuration,
     input.hasConfiguration ?? false,
   );
-  const players = projectPlayers(runtime.players ?? [], turn.currentPlayerId);
-  const events = projectEvents(runtime.engine.pendingEvents ?? []);
+  const players = projectPlayers(runtime.players ?? []);
+  const events = projectEventsForPlayer(
+    runtime.engine.pendingEvents ?? [],
+    viewerPlayerId,
+  );
   const cards = kits.cards ?? null;
   const dice = kits.dice ?? null;
   const score = values.scoring;
-  const status: GameStatusPlayerView = {
-    viewer: values.statuses,
-    byPlayer: projectStatusesByPlayer(
-      runtime.engine.playerValues.statuses,
-      viewerPlayerId,
-      input.playerValuesVisibility?.statuses,
-    ),
-    byId: {},
-  };
-  for (const [playerId, statuses] of Object.entries(status.byPlayer)) {
-    for (const playerStatus of statuses) {
-      (status.byId[playerStatus.id] ??= {})[playerId] =
-        structuredClone(playerStatus);
-    }
-  }
+  const status: GameStatusPlayerView = projectStatusViews(
+    runtime.engine.playerValues.statuses,
+    viewerPlayerId,
+    input.playerValuesVisibility?.statuses,
+  );
   const board = {
     movement: kits.movement ?? null,
     pawns: kits.pawns ?? null,
@@ -217,7 +228,6 @@ export function projectGameSystemView<TState extends object>(input: {
   return {
     viewVersion: GAME_SYSTEM_VIEW_VERSION,
     system: {
-      version: GAME_SYSTEM_VIEW_VERSION,
       match,
       round,
       turn,
@@ -246,26 +256,25 @@ export function projectGameSystemView<TState extends object>(input: {
       collections,
     },
     effect: {
-      source: runtime.engine.effects.source
-        ? structuredClone(runtime.engine.effects.source)
-        : null,
+      source: projectEffectSource(runtime.engine.effects.source),
     },
   };
 }
 
-function projectEvents(
-  events: readonly {
-    type: string;
-    data: Record<string, unknown>;
-    actorId: number | null;
-    occurredAtMs: number;
-  }[],
+export function projectEventsForPlayer(
+  events: readonly GamePendingEvent[],
+  viewerPlayerId: number | null,
 ): GameEventsPlayerView {
-  const latestByType: GameEventsPlayerView['latestByType'] = {};
+  const latestByType: Record<
+    string,
+    GameEventPlayerView<string, Record<string, unknown>>
+  > = {};
   for (const event of events) {
+    const data = projectEventData(event.visibility, event.data, viewerPlayerId);
+    if (data == null) continue;
     latestByType[event.type] = {
       type: event.type,
-      data: structuredClone(event.data),
+      data,
       actorId: event.actorId,
       occurredAtMs: event.occurredAtMs,
     };
@@ -273,9 +282,42 @@ function projectEvents(
   return { latestByType };
 }
 
+function projectEventData(
+  visibility: EventVisibility,
+  data: Record<string, unknown>,
+  viewerPlayerId: number | null,
+): Record<string, unknown> | null {
+  if (visibility.kind === 'internal') return null;
+  if (visibility.kind === 'private') {
+    return viewerPlayerId != null &&
+      visibility.playerIds.includes(viewerPlayerId)
+      ? structuredClone(data)
+      : null;
+  }
+  if (visibility.kind === 'split') {
+    const privateData =
+      viewerPlayerId == null
+        ? undefined
+        : visibility.privateDataByPlayer[String(viewerPlayerId)];
+    return structuredClone({ ...data, ...(privateData ?? {}) });
+  }
+  return structuredClone(data);
+}
+
+function projectEffectSource(
+  source: EffectSource | null | undefined,
+): EffectSourcePlayerView | null {
+  if (!source) return null;
+  return {
+    playerId: source.playerId,
+    ...(source.cardId == null ? {} : { cardId: source.cardId }),
+    ...(source.deckId == null ? {} : { deckId: source.deckId }),
+    ...(source.tileId == null ? {} : { tileId: source.tileId }),
+  };
+}
+
 function projectPlayers(
   players: readonly PlayerStateEntity[],
-  currentPlayerId: number | null,
 ): GamePlayersPlayerView {
   const all = players.map((player) => ({
     id: player.id,
@@ -283,10 +325,7 @@ function projectPlayers(
     isBot: player.isBot === true,
     alive: player.alive !== false,
   }));
-  return {
-    all,
-    current: all.find((player) => player.id === currentPlayerId) ?? null,
-  };
+  return { all };
 }
 
 function projectMatch(match: MatchKitState): MatchPlayerView {

@@ -6,6 +6,7 @@ import {
   IsString,
   Max,
   MaxLength,
+  Matches,
   Min,
   MinLength,
 } from 'class-validator';
@@ -66,6 +67,7 @@ export class MessagingMarkReadDto {
   @IsString()
   @MinLength(1)
   @MaxLength(64)
+  @Matches(/^[A-Za-z0-9_-]+$/)
   messageId!: string;
 }
 
@@ -73,5 +75,6 @@ export class MessagingMessageActionDto {
   @IsString()
   @MinLength(1)
   @MaxLength(64)
+  @Matches(/^[A-Za-z0-9_-]+$/)
   messageId!: string;
 }

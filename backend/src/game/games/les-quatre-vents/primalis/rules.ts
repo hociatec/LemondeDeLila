@@ -5,7 +5,7 @@ import {
   rollDice,
   type GameContext,
   type PlayerMap,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import type { PrimalisFace, PrimalisResources, PrimalisState } from './state';
 
 const TRACK = 'comet';

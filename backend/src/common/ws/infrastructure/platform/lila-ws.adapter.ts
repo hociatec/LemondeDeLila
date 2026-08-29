@@ -1,4 +1,5 @@
 import { WsAdapter } from '@nestjs/platform-ws';
+import { readEnvironmentBoolean } from '../../../../config/public-api';
 
 type BaseCreateOptions = Parameters<WsAdapter['create']>[1];
 type BaseCreateReturn = ReturnType<WsAdapter['create']>;
@@ -18,7 +19,7 @@ export class LilaWsAdapter extends WsAdapter {
       ...(options ?? {}),
       perMessageDeflate:
         options?.perMessageDeflate ??
-        (process.env.WS_PERMESSAGE_DEFLATE || 'true').toLowerCase() === 'true',
+        readEnvironmentBoolean('WS_PERMESSAGE_DEFLATE', true),
     };
     return super.create(port, merged);
   }

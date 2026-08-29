@@ -10,7 +10,6 @@ function makeUser(id: number, username: string): User {
     email: `${username}@example.test`,
     roles: [],
     password: 'x',
-    emailVerified: true,
     createdAt: new Date(),
   };
 }

@@ -43,6 +43,7 @@ export class PresenceRoomParticipantTypeormRepository implements PresenceRoomPar
       } as FindOptionsWhere<PresenceRoomParticipantRow>,
       relations: { room: true, user: true },
       order: { joinedAt: 'DESC' },
+      take: Math.min(1_000, normalizedUserIds.length * 10),
     });
 
     return participants.map((participant) => ({

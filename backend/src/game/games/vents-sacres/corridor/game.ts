@@ -6,7 +6,7 @@ import {
   gameInput,
   gridGame,
   pawns,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   CORRIDOR_DEFAULT_WALLS,
   CORRIDOR_PAWNS,
@@ -90,7 +90,7 @@ export default defineGame<
       resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
     }),
   },
-  viewFragment: ({ state }) => ({ walls: structuredClone(state.walls) }),
+  viewExtension: ({ state }) => ({ walls: structuredClone(state.walls) }),
   bot: {
     choose: ({ state, actor, ctx }) => {
       const move = legalMoves(state, actor.id, ctx)[0];

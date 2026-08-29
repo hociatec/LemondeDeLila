@@ -1,7 +1,7 @@
 import {
   testGame,
   type StableGameKitsView,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { VILLAGE_ZONES } from './content';
 import gameDefinition from './game';
 

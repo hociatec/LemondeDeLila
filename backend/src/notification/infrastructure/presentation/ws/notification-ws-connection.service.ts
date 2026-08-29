@@ -9,6 +9,7 @@ import {
 import { UpdatePolicyService } from '../../../../update/public-api';
 import { NotificationWsHandler } from './notification-ws.handler';
 import { NotificationWsSessionService } from './notification-ws-session.service';
+import { operationalPolicy } from '../../../../config/public-api';
 
 @Injectable()
 export class NotificationWsConnectionService {
@@ -58,7 +59,9 @@ export class NotificationWsConnectionService {
               url: notice.url,
             },
           });
-          await new Promise((resolve) => setTimeout(resolve, 300));
+          await new Promise((resolve) =>
+            setTimeout(resolve, operationalPolicy.wsReconnectBackoffMs),
+          );
           client.close(4406, 'update required');
           return;
         }

@@ -4,8 +4,8 @@ import {
   drawAndResolve,
   gameEffects,
   gameInput,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import { MAMAN_CONTENT } from './content';
 import type { MamanCard, MamanTileType, ToutPresDeMamanState } from './state';
 

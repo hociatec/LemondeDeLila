@@ -24,6 +24,7 @@ const config = (sharedSecret: string | null): WsRuntimeConfig => ({
   jwtPrivateKeyPath: null,
   jwtPublicKeyPem: null,
   jwtPublicKeyPath: null,
+  maxBufferedBytes: 1_048_576,
 });
 
 describe('WsSignatureService', () => {

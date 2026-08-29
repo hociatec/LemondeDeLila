@@ -21,6 +21,7 @@ import {
 } from '../ports/vault-user-notifier.port';
 import { remapVaultGameState } from './vault-game-state-remapper';
 import { decodeVaultRoomSnapshot } from './vault-snapshot.decoder';
+import { bestEffort } from '../../../common/utils/public-api';
 
 type RosterUser = { id: number; username: string };
 type RestoredBots = {
@@ -96,11 +97,19 @@ export class VaultSnapshotRestoreService {
     }
     await this.ensureRosterAvailable(ownerUserId, snapshot, humans);
     const room = await this.createRoom(ownerUserId, id, snapshot, humans);
-    const restoredBots = await this.restoreBots(room.id, snapshot);
-    await this.restoreAmbience(room.id, ownerUserId, snapshot);
-    await this.restoreGame(room.id, ownerUserId, snapshot, restoredBots);
-    await this.notifyPlayers(room.id, ownerUserId, snapshot, humans);
-    return { roomId: room.id };
+    try {
+      const restoredBots = await this.restoreBots(room.id, snapshot);
+      await this.restoreAmbience(room.id, ownerUserId, snapshot);
+      await this.restoreGame(room.id, ownerUserId, snapshot, restoredBots);
+      await this.notifyPlayers(room.id, ownerUserId, snapshot, humans);
+      return { roomId: room.id };
+    } catch (error) {
+      await bestEffort(
+        this.rooms.adminDestroyRoom(room.id),
+        `compensation restauration vault room=${room.id}`,
+      );
+      throw error;
+    }
   }
 
   private async ensureRosterAvailable(

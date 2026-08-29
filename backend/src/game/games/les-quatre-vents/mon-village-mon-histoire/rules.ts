@@ -5,7 +5,7 @@ import {
   raceTurn,
   type GameContext,
   type PlayerMap,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { VILLAGE_TILES } from './content';
 import type { MonVillageState, VillageCard, VillageCollection } from './state';
 

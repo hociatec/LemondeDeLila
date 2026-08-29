@@ -36,10 +36,15 @@ export class BugReportCommentTypeormRepository implements BugReportCommentReposi
     return output;
   }
 
-  async listByReportId(reportId: string): Promise<BugReportCommentRecord[]> {
+  async listByReportId(
+    reportId: string,
+    options: { offset: number; limit: number },
+  ): Promise<BugReportCommentRecord[]> {
     const items = await this.repo.find({
       where: { reportId },
       order: { createdAt: 'ASC' },
+      skip: options.offset,
+      take: options.limit,
     });
     return items.map((item) => this.toRecord(item));
   }

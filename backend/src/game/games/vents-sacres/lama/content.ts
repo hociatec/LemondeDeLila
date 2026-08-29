@@ -1,4 +1,4 @@
-import { freezeGameContent } from '../../../core/application/public-api';
+import { freezeGameContent } from '../../../engine/sdk/public-api';
 
 export type LamaCard = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 

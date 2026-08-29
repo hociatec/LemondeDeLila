@@ -4,11 +4,11 @@ import {
   drawEvent,
   gameEffects,
   gameInput,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import type {
   GameContext,
   GameEffectInstruction,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import {
   ENTRE_RITES_CARD_BY_ID,
   ENTRE_RITES_FAMILY_CARDS,

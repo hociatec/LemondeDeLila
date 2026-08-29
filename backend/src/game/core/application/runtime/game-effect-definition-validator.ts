@@ -324,6 +324,7 @@ function validateEffectTarget(
       'self',
       'player',
       'next',
+      'all-players',
       'all-opponents',
       'random-opponent',
       'chosen-opponent',

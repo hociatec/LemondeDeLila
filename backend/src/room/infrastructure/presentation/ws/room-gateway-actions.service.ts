@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { PerfMetricsService } from '../../../../common/observability/public-api';
-import type { RoomIntent } from './dto/room-intent.ws.dto';
-import type { RoomPayload } from '../../../application/models/room-payload.model';
 import { RoomAdminPolicyService } from '../../../application/services/room-admin-policy.service';
 import { RoomAccessService } from '../../../application/services/room-access.service';
 import { RoomMembershipFacadeService } from '../../../application/services/room-membership-facade.service';
@@ -20,29 +18,7 @@ import {
 import { resolveSpectatorIntent } from './room-role.helpers';
 import { RoomGatewayPresenter } from './room-gateway.presenter';
 import type { AuthedClient, ClientMeta } from './room-gateway.types';
-import type { Server } from 'ws';
-import { RoomGatewayBotActionsService } from './room-gateway-bot-actions.service';
-
-export type ActionsContext = {
-  server: Server<typeof WebSocket>;
-  rooms: Map<number, Set<WebSocket>>;
-  silentRooms: Map<number, Set<WebSocket>>;
-  clients: Map<WebSocket, ClientMeta>;
-  broadcast: (roomId: number, type: string, payload: unknown) => Promise<void>;
-  broadcastRoomIntent: (roomId: number, payload: RoomIntent) => Promise<void>;
-  sendRoomState: (roomId: number) => Promise<void>;
-  tryUpdateRoomPayload: (
-    roomId: number,
-    updater: (payload: RoomPayload) => RoomPayload | null,
-  ) => Promise<boolean>;
-  sendError: (client: WebSocket, message: string) => Promise<void>;
-  safeSend: (client: WebSocket, payload: unknown) => void;
-  sendRoomError: (client: WebSocket, roomId: number, message: string) => void;
-  sendRoomLeftOrDeleted: (socket: WebSocket, roomId: number) => Promise<void>;
-  hasUserConnections: (roomId: number, userId: number) => boolean;
-  resetClientRoomState: (meta: ClientMeta) => void;
-  asRecord: (value: unknown) => Record<string, unknown>;
-};
+import type { ActionsContext } from './room-gateway-actions.types';
 
 @Injectable()
 export class RoomGatewayActionsService {
@@ -54,26 +30,7 @@ export class RoomGatewayActionsService {
     private readonly perf: PerfMetricsService,
     private readonly realtimeTracker: RoomRealtimeTrackerService,
     private readonly presenter: RoomGatewayPresenter,
-    private readonly botActions: RoomGatewayBotActionsService,
   ) {}
-
-  async handleBotAdd(
-    ctx: ActionsContext,
-    meta: AuthedClient,
-    payload: unknown,
-    receivedAtMs: number,
-  ): Promise<void> {
-    return this.botActions.add(ctx, meta, payload, receivedAtMs);
-  }
-
-  async handleBotRemove(
-    ctx: ActionsContext,
-    meta: AuthedClient,
-    payload: unknown,
-    receivedAtMs: number,
-  ): Promise<void> {
-    return this.botActions.remove(ctx, meta, payload, receivedAtMs);
-  }
 
   async handleSetRole(
     ctx: ActionsContext,

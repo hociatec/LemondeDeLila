@@ -1,7 +1,7 @@
 import {
   testGame,
   type StableGameKitsView,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { TAXI_CLIENTS, TAXI_EVENTS, TAXI_TILES } from './content';
 import gameDefinition from './game';
 

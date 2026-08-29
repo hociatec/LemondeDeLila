@@ -10,6 +10,8 @@ import { NOTIFICATION_INBOX_REPOSITORY } from '../application/ports/notification
 import { NOTIFICATION_UNREAD_MESSAGE_COUNTER } from '../application/ports/notification-unread-message-counter.port';
 import { AdminContactService } from '../application/services/admin-contact.service';
 import { AdminContactDeliveryService } from '../application/services/admin-contact-delivery.service';
+import { AdminContactQueryService } from '../application/services/admin-contact-query.service';
+import { AdminContactWorkflowService } from '../application/services/admin-contact-workflow.service';
 import { NotificationFriendPresenceService } from '../application/services/notification-friend-presence.service';
 import {
   NotificationTransport,
@@ -77,6 +79,8 @@ export const NOTIFICATION_CORE_PROVIDERS = [
   NotificationDispatchService,
   UserBadgeCountsService,
   AdminContactDeliveryService,
+  AdminContactQueryService,
+  AdminContactWorkflowService,
   AdminContactService,
   NotificationFriendPresenceService,
 ];

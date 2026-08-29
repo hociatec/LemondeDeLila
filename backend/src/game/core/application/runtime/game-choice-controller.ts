@@ -166,16 +166,6 @@ export class GameChoiceController {
     return data;
   }
 
-  /** @deprecated Utiliser `continuation()`: ces données appartiennent au workflow. */
-  data<TData extends object>(): TData | null {
-    return this.continuation<TData>();
-  }
-
-  /** @deprecated Utiliser `consumeContinuation()`. */
-  consumeData<TData extends object>(): TData | null {
-    return this.consumeContinuation<TData>();
-  }
-
   clear(): void {
     this.promoteQueue();
   }

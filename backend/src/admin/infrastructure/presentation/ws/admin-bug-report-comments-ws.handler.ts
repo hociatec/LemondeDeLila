@@ -22,7 +22,7 @@ export class AdminBugReportCommentsWsHandler {
       AdminBugReportCommentsListWsDto,
       payload,
     );
-    const items = await this.comments.list(dto.reportId);
+    const items = await this.comments.list(dto.reportId, dto);
     return {
       type: WS_EVENTS.admin.bugReports.commentsList,
       payload: { items },

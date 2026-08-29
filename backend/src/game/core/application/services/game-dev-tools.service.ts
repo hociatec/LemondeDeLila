@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { readEnvironment } from '../../../../config/public-api';
 import type { GameEvent, GameSnapshot } from '../models/game-event.model';
 import type { GameStateEntity } from '../models/game-state.model';
+import type { GameStateWithActions } from '../models/game-action.model';
 import { GameConfigurationError } from '../../domain/errors/game-domain.errors';
 import { GameEngineService } from './game-engine.service';
 import { GameRegistryService } from './game-registry.service';
@@ -9,7 +11,7 @@ export type GameDevToolsInspection = {
   roomId: number;
   gameType: string;
   internalState: GameStateEntity;
-  playerView: GameStateEntity | null;
+  playerView: GameStateWithActions | null;
   events: GameEvent[];
   latestSnapshot: GameSnapshot | null;
   runtime: {
@@ -118,8 +120,8 @@ export class GameDevToolsService {
 
   private assertEnabled(): void {
     if (
-      process.env.NODE_ENV === 'production' &&
-      process.env.GAME_DEVTOOLS_ENABLED !== 'true'
+      readEnvironment('NODE_ENV') === 'production' &&
+      readEnvironment('GAME_DEVTOOLS_ENABLED') !== 'true'
     ) {
       throw new GameConfigurationError(
         'Les Game DevTools sont désactivés en production',

@@ -5,6 +5,10 @@ import {
   Injectable,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import {
+  readEnvironment,
+  readEnvironmentBoolean,
+} from '../../../../../config/public-api';
 
 @Injectable()
 export class AdminMaintenanceGuard implements CanActivate {
@@ -18,7 +22,7 @@ export class AdminMaintenanceGuard implements CanActivate {
       const token = String(
         request?.headers?.['x-admin-maintenance-token'] || '',
       ).trim();
-      const expected = String(process.env.ADMIN_MAINTENANCE_TOKEN || '').trim();
+      const expected = readEnvironment('ADMIN_MAINTENANCE_TOKEN').trim();
 
       if (!expected) {
         throw new ForbiddenException(
@@ -43,22 +47,15 @@ export class AdminMaintenanceGuard implements CanActivate {
   }
 
   private isEnabled(): boolean {
-    const raw = String(process.env.ADMIN_MAINTENANCE_ENABLED || '')
-      .trim()
-      .toLowerCase();
-    return raw === '1' || raw === 'true' || raw === 'yes';
+    return readEnvironmentBoolean('ADMIN_MAINTENANCE_ENABLED', false);
   }
 
   private isTokenRequired(): boolean {
-    const raw = String(process.env.ADMIN_MAINTENANCE_REQUIRE_TOKEN || '')
-      .trim()
-      .toLowerCase();
-    if (!raw) return true; // default: required
-    return !(raw === '0' || raw === 'false' || raw === 'no');
+    return readEnvironmentBoolean('ADMIN_MAINTENANCE_REQUIRE_TOKEN', true);
   }
 
   private getIpAllowlist(): string[] {
-    const raw = String(process.env.ADMIN_MAINTENANCE_ALLOWED_IPS || '').trim();
+    const raw = readEnvironment('ADMIN_MAINTENANCE_ALLOWED_IPS').trim();
     if (!raw) return [];
     return raw
       .split(',')

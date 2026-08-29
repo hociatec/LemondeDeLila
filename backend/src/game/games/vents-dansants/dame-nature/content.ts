@@ -1,5 +1,5 @@
 import data from './content-data.json';
-import { freezeGameContent } from '../../../core/application/public-api';
+import { freezeGameContent } from '../../../engine/sdk/public-api';
 
 export interface DameNatureFamilyCardDefinition {
   id: string;

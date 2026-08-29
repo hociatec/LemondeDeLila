@@ -1,23 +1,12 @@
-import type {
-  GameRuntime,
-  GameActionCandidatePage,
-  GameActionCandidateQuery,
-  GameRuntimeDescriptor,
-} from '../contracts/game-runtime.interface';
+import type { GameRuntime } from '../contracts/game-runtime.interface';
 import {
   StateGameRng,
   SystemGameClock,
   type GameExecutionContext,
 } from '../models/game-execution-context.model';
-import type {
-  GameSingleActionDto,
-  GameStateWithActions,
-} from '../models/game-action.model';
-import type {
-  GameStateEntity,
-  PendingState,
-  PlayerStateEntity,
-} from '../models/game-state.model';
+import type { GameSingleActionDto } from '../models/game-action.model';
+import type { GameStateEntity } from '../models/game-state.model';
+import type { PlayerStateEntity } from '../models/game-state.model';
 import {
   GameActionRejectedError,
   GameActorRequiredError,
@@ -26,26 +15,18 @@ import {
 import { DeclarativeChoiceRuntime } from './declarative-choice-runtime';
 import { DeclarativeLifecycle } from './declarative-lifecycle';
 import type {
-  DeclarativeGameDefinition,
+  CompiledGameDefinition,
   DeclarativeState,
   GameActionShape,
   GameActionMap,
 } from './game-definition';
-import { playerView } from './game-definition';
 import { GameContext } from './game-rule-context';
 import {
   initializeGameComponents,
   installGameComponents,
 } from './component-kit';
-import { standardTurn, type TurnPolicy } from './turn-kit';
-import { projectGameSystemView } from './game-system-view';
-import { asRecord } from './runtime-game-action';
-import {
-  deriveGameShortcuts,
-  describeGameDefinition,
-} from './runtime-descriptor';
+import { standardTurn } from './turn-kit';
 import { createDeclarativeState } from './declarative-state.factory';
-import { randomLegalAction } from './bot-kit';
 import { migrateDeclarativeState } from './game-state-migration';
 import { assertValidGameSession } from './game-session-contracts';
 import {
@@ -54,13 +35,16 @@ import {
   GAME_CONFIGURE_ACTION,
   parseGameConfiguration,
 } from './configuration-kit';
-import { nextScheduledAction, projectScheduler } from './scheduler-kit';
+import { DeclarativeGameQueries } from './declarative-game-queries';
 
 export class DeclarativeGameRuntime<
   TState extends object,
   TActions extends GameActionMap<TState>,
   TPlayerView extends object,
-> implements GameRuntime {
+>
+  extends DeclarativeGameQueries<TState, TActions, TPlayerView>
+  implements GameRuntime
+{
   readonly gameType: string;
   readonly displayName: string;
   readonly category: string;
@@ -68,7 +52,7 @@ export class DeclarativeGameRuntime<
   readonly description?: string;
   readonly minPlayers: number;
   readonly maxPlayers: number;
-  private readonly choices: DeclarativeChoiceRuntime<
+  protected readonly choices: DeclarativeChoiceRuntime<
     TState,
     TActions,
     TPlayerView
@@ -80,12 +64,13 @@ export class DeclarativeGameRuntime<
   >;
 
   constructor(
-    readonly definition: DeclarativeGameDefinition<
+    protected readonly definition: CompiledGameDefinition<
       TState,
       TActions,
       TPlayerView
     >,
   ) {
+    super();
     this.gameType = definition.id;
     this.displayName = definition.displayName;
     this.category = definition.category;
@@ -237,310 +222,9 @@ export class DeclarativeGameRuntime<
       return runtime.pending.playerId === actor.id;
     }
     return (
-      this.turnPolicy().kind === 'simultaneous' ||
+      (this.definition.turn ?? standardTurn()).kind === 'simultaneous' ||
       runtime.turn?.currentPlayerId === actor.id
     );
-  }
-
-  getAvailableActions(
-    state: GameStateEntity,
-    playerId: number,
-  ): GameSingleActionDto[] {
-    const runtime = this.runtimeState(state);
-    const actor = (runtime.players ?? []).find(
-      (player) => player.id === playerId,
-    );
-    if (!actor || String(runtime.status).toLowerCase() === 'finished')
-      return [];
-    if (runtime.pending) return this.choices.actions(runtime, actor);
-    const context = this.context(runtime, actor.id);
-    if (this.definition.config && !runtime.engine.configuration.complete) {
-      return canConfigureGame(
-        this.definition.config,
-        runtime.engine.configuration,
-        actor,
-        context,
-      )
-        ? [{ type: GAME_CONFIGURE_ACTION, payload: {} }]
-        : [];
-    }
-    return Object.entries(this.definition.actions).flatMap(
-      ([type, definition]) => {
-        if (!this.isActionAvailable(runtime, actor, type, context)) return [];
-        const inputs = definition.enumerateCandidateInputs
-          ? definition.enumerateCandidateInputs({
-              state: runtime.game,
-              actor,
-              ctx: context,
-              query: {},
-              offset: 0,
-              limit: 50,
-            })
-          : definition.enumerateInputs?.({
-              state: runtime.game,
-              actor,
-              ctx: context,
-            });
-        return (inputs ?? [{}]).map((payload) => ({
-          type,
-          payload: payload as Record<string, unknown>,
-        }));
-      },
-    );
-  }
-
-  getActionCandidates(
-    state: GameStateEntity,
-    playerId: number,
-    actionType: string,
-    options: GameActionCandidateQuery = {},
-  ): GameActionCandidatePage {
-    const runtime = this.runtimeState(state);
-    const actor = this.requireActor(runtime, playerId);
-    const context = this.context(runtime, actor.id);
-    const definition = this.actionDefinition(actionType);
-    const offset = Math.max(0, Math.trunc(options.offset ?? 0));
-    const limit = Math.max(1, Math.min(200, Math.trunc(options.limit ?? 50)));
-    if (!this.isActionAvailable(runtime, actor, actionType, context)) {
-      return { actionType, items: [], offset, limit, nextOffset: null };
-    }
-    const requested = limit + 1;
-    const candidates = definition.enumerateCandidateInputs
-      ? definition.enumerateCandidateInputs({
-          state: runtime.game,
-          actor,
-          ctx: context,
-          query: options.query ?? {},
-          offset,
-          limit: requested,
-        })
-      : (
-          definition.enumerateInputs?.({
-            state: runtime.game,
-            actor,
-            ctx: context,
-          }) ?? [{}]
-        ).slice(offset, offset + requested);
-    const hasMore = candidates.length > limit;
-    return {
-      actionType,
-      items: candidates.slice(0, limit).map((payload) => ({
-        type: actionType,
-        payload: payload as Record<string, unknown>,
-      })),
-      offset,
-      limit,
-      nextOffset: hasMore ? offset + limit : null,
-    };
-  }
-
-  exposeStateForUser(
-    state: GameStateEntity,
-    userId: number | null,
-  ): GameStateWithActions {
-    const runtime = this.runtimeState(state);
-    const actor =
-      (runtime.players ?? []).find((player) => player.id === userId) ?? null;
-    const context = this.context(runtime, actor?.id ?? null);
-    const projection = this.definition.view
-      ? this.definition.view({ state: runtime.game, actor, ctx: context })
-      : playerView({
-          game: this.definition.viewFragment
-            ? this.definition.viewFragment({
-                state: runtime.game,
-                actor,
-                ctx: context,
-              })
-            : ({} as TPlayerView),
-        });
-    const {
-      engine: _engine,
-      game: _game,
-      metadata: _metadata,
-      ...publicState
-    } = runtime;
-    const pending = projectPending(runtime.pending, actor?.id ?? null);
-    const system = projectGameSystemView({
-      runtime,
-      viewerPlayerId: actor?.id ?? null,
-      components: this.definition.components,
-      hasConfiguration: this.definition.config != null,
-      playerValuesVisibility: this.definition.playerValuesVisibility,
-    });
-    return {
-      ...publicState,
-      phase:
-        this.definition.phases?.[runtime.phase]?.visibility === 'hidden'
-          ? 'hidden'
-          : runtime.phase,
-      game: projection.game,
-      extras: {
-        ...(publicState.extras ?? {}),
-        ...system,
-        actionCatalog: describeGameDefinition(this.definition).actions,
-        timers: projectScheduler(
-          runtime.engine.scheduler,
-          actor?.id ?? null,
-          context.clock.nowMs(),
-        ),
-        ...(system.system.match.result
-          ? {
-              victory: {
-                ...system.system.match.result,
-                ranking:
-                  system.system.match.result.ranking ??
-                  system.kits.score.leaderboard
-                    .reduce<number[][]>((tiers, entry) => {
-                      (tiers[entry.rank - 1] ??= []).push(entry.playerId);
-                      return tiers;
-                    }, [])
-                    .filter((tier) => tier.length > 0),
-                finalScores: structuredClone(system.kits.score.byPlayer),
-              },
-            }
-          : {}),
-        ...(projection.extras ?? {}),
-      },
-      board: projection.board ?? publicState.board,
-      metadata: {},
-      actions: userId == null ? [] : this.getAvailableActions(runtime, userId),
-      pending,
-    };
-  }
-
-  getBotActions(
-    state: GameStateEntity,
-    botPlayerId: number,
-  ): GameSingleActionDto[] | null {
-    const runtime = this.runtimeState(state);
-    const actor = (runtime.players ?? []).find(
-      (player) => player.id === botPlayerId && player.isBot,
-    );
-    if (!actor) return null;
-    const decisionRuntime = structuredClone(runtime);
-    const decisionActor = this.requireActor(decisionRuntime, botPlayerId);
-    const context = this.context(decisionRuntime, botPlayerId);
-    const pending = this.choices.actions(decisionRuntime, decisionActor);
-    if (pending.length > 0) {
-      const selected = randomLegalAction(pending, context.random);
-      return selected ? [selected] : null;
-    }
-    const available = this.getAvailableActions(runtime, botPlayerId);
-    if (available.length === 0) return null;
-    if (
-      available.length === 1 &&
-      available[0]?.type === GAME_CONFIGURE_ACTION
-    ) {
-      return [
-        this.validateAction(
-          runtime,
-          { type: GAME_CONFIGURE_ACTION, payload: {} },
-          botPlayerId,
-        ),
-      ];
-    }
-    if (!this.definition.bot) {
-      const selected = randomLegalAction(available, context.random);
-      return selected
-        ? [
-            this.validateAction(
-              runtime,
-              { ...selected, meta: { actorId: botPlayerId } },
-              botPlayerId,
-            ),
-          ]
-        : null;
-    }
-    const selected = this.definition.bot.choose({
-      state: decisionRuntime.game,
-      actor: decisionActor,
-      availableActions: available.map(
-        (action) => action.type as keyof TActions & string,
-      ),
-      legalActions: structuredClone(available),
-      ctx: context,
-    });
-    if (!selected) return null;
-    const selectedAction: GameSingleActionDto = {
-      type: selected.type,
-      ...(selected.payload === undefined
-        ? {}
-        : { payload: selected.payload as Record<string, unknown> }),
-      meta: { actorId: botPlayerId },
-    };
-    return [this.validateAction(runtime, selectedAction, botPlayerId)];
-  }
-
-  getAutomaticActions(state: GameStateEntity) {
-    const runtime = this.runtimeState(state);
-    const data = asRecord(runtime.pending?.data);
-    const rawChoiceDeadline = data.deadlineMs;
-    const choiceDeadline =
-      typeof rawChoiceDeadline === 'number' &&
-      Number.isFinite(rawChoiceDeadline)
-        ? rawChoiceDeadline
-        : null;
-    const unresolvedChoicePlayerId = runtime.pending?.playerIds?.find(
-      (playerId) =>
-        !(runtime.pending?.resolvedPlayerIds ?? []).includes(playerId),
-    );
-    const rawChoiceId = data.choiceId;
-    const choiceId =
-      typeof rawChoiceId === 'string' || typeof rawChoiceId === 'number'
-        ? String(rawChoiceId)
-        : '';
-    const choicePlan =
-      runtime.pending && choiceDeadline != null
-        ? {
-            key: `choice-timeout:${choiceId}:${choiceDeadline}`,
-            executeAtMs: choiceDeadline,
-            actions: [
-              {
-                type: 'choice.timeout',
-                payload: {},
-                meta: {
-                  actorId:
-                    unresolvedChoicePlayerId ??
-                    runtime.pending.playerId ??
-                    null,
-                },
-              },
-            ],
-          }
-        : null;
-    const scheduled = nextScheduledAction(runtime.engine.scheduler);
-    const scheduledPlan = scheduled?.action
-      ? {
-          key: `scheduler:${scheduled.id}:${scheduled.dueAtMs}`,
-          executeAtMs: scheduled.dueAtMs,
-          actions: [
-            {
-              ...scheduled.action,
-              meta: {
-                ...(scheduled.action.meta ?? {}),
-                actorId:
-                  scheduled.action.meta?.actorId ??
-                  runtime.turn?.currentPlayerId ??
-                  null,
-                schedulerId: scheduled.id,
-              },
-            },
-          ],
-        }
-      : null;
-    if (!choicePlan) return scheduledPlan;
-    if (!scheduledPlan) return choicePlan;
-    return choicePlan.executeAtMs <= scheduledPlan.executeAtMs
-      ? choicePlan
-      : scheduledPlan;
-  }
-
-  getShortcuts() {
-    return deriveGameShortcuts(this.definition);
-  }
-
-  getDescriptor(): GameRuntimeDescriptor {
-    return describeGameDefinition(this.definition);
   }
 
   private applyOne(
@@ -660,7 +344,9 @@ export class DeclarativeGameRuntime<
     base: GameStateEntity,
     clock = new SystemGameClock(),
   ): DeclarativeState<TState> {
-    const turn = this.turnPolicy().initialize(base.players ?? []);
+    const turn = (this.definition.turn ?? standardTurn()).initialize(
+      base.players ?? [],
+    );
     const phase =
       this.definition.initialPhase ??
       Object.keys(this.definition.phases ?? {})[0] ??
@@ -677,7 +363,7 @@ export class DeclarativeGameRuntime<
     );
   }
 
-  private context(
+  protected context(
     runtime: DeclarativeState<TState>,
     actorId: number | null,
     execution?: Pick<GameExecutionContext, 'clock' | 'commandId'>,
@@ -693,7 +379,7 @@ export class DeclarativeGameRuntime<
         rng: new StateGameRng(runtime),
         clock: execution?.clock ?? new SystemGameClock(),
       },
-      this.turnPolicy(),
+      this.definition.turn ?? standardTurn(),
       this.definition.phases ?? {},
       this.definition.lifecycle,
       this.definition.components ?? [],
@@ -701,7 +387,7 @@ export class DeclarativeGameRuntime<
     );
   }
 
-  private runtimeState(state: GameStateEntity): DeclarativeState<TState> {
+  protected runtimeState(state: GameStateEntity): DeclarativeState<TState> {
     return migrateDeclarativeState(
       state,
       this.definition.id,
@@ -714,11 +400,7 @@ export class DeclarativeGameRuntime<
     );
   }
 
-  private turnPolicy(): TurnPolicy {
-    return this.definition.turn ?? standardTurn();
-  }
-
-  private actionDefinition(type: string): GameActionShape<TState> {
+  protected actionDefinition(type: string): GameActionShape<TState> {
     const action = this.definition.actions[type];
     if (!action) throw new GameUnknownActionError(`Action inconnue: ${type}`);
     return action;
@@ -731,7 +413,7 @@ export class DeclarativeGameRuntime<
     return this.definition.config;
   }
 
-  private requireActor(
+  protected requireActor(
     runtime: DeclarativeState<TState>,
     actorId: number | null,
   ): PlayerStateEntity {
@@ -776,7 +458,7 @@ export class DeclarativeGameRuntime<
     return true;
   }
 
-  private isActionAvailable(
+  protected isActionAvailable(
     runtime: DeclarativeState<TState>,
     actor: PlayerStateEntity,
     type: string,
@@ -814,41 +496,4 @@ export class DeclarativeGameRuntime<
       })),
     ];
   }
-}
-
-function projectPending(
-  pending: PendingState | null | undefined,
-  viewerPlayerId: number | null,
-): PendingState | null {
-  if (!pending) return null;
-  const expected =
-    viewerPlayerId != null &&
-    (pending.playerIds?.length
-      ? pending.playerIds.includes(viewerPlayerId) &&
-        !(pending.resolvedPlayerIds ?? []).includes(viewerPlayerId)
-      : pending.playerId == null || pending.playerId === viewerPlayerId);
-  const common: PendingState = {
-    type: pending.type,
-    choiceId:
-      typeof pending.data?.choiceId === 'string'
-        ? pending.data.choiceId
-        : undefined,
-    workflowKind:
-      typeof pending.data?.kind === 'string' ? pending.data.kind : undefined,
-    label: pending.label,
-    playerId: pending.playerId,
-    playerIds: pending.playerIds ? [...pending.playerIds] : undefined,
-    resolvedPlayerIds: pending.resolvedPlayerIds
-      ? [...pending.resolvedPlayerIds]
-      : undefined,
-    targetPlayerId: pending.targetPlayerId,
-    blocking: pending.blocking,
-  };
-  if (!expected) return common;
-  return {
-    ...common,
-    question: pending.question,
-    choices: pending.choices ? [...pending.choices] : undefined,
-    data: pending.data ? structuredClone(pending.data) : undefined,
-  };
 }

@@ -1,9 +1,10 @@
 import {
+  defineEffectRecipe,
   freezeGameContent,
   gameEffects,
   rejectContent,
-} from '../../../core/application/public-api';
-import type { GameEffectInstruction } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { MamanCard, MamanTile } from './state';
@@ -86,14 +87,14 @@ const target = (effectId: string): readonly GameEffectInstruction[] => [
   gameEffects.custom(effectId, {}, gameEffects.target.chosenOpponent(effectId)),
   gameEffects.completeTurn(),
 ];
-const allMove = (delta: number): readonly GameEffectInstruction[] => [
+const allMove = defineEffectRecipe((delta: number) => [
   gameEffects.custom('maman.move', { delta }, gameEffects.target.self()),
   gameEffects.custom(
     'maman.move',
     { delta },
     gameEffects.target.allOpponents(),
   ),
-];
+]);
 
 const MAMAN_CARD_EFFECTS: Readonly<
   Record<number, readonly GameEffectInstruction[]>

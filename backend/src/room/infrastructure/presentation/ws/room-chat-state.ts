@@ -16,6 +16,10 @@ type RoomChatState = {
 export class RoomChatStore {
   private readonly lastChatSentAt = new WeakMap<WebSocket, number>();
   private readonly roomChat = new Map<number, RoomChatState>();
+
+  clear(): void {
+    this.roomChat.clear();
+  }
   private readonly roomChatLimit = 120;
   private readonly chatCooldownMs = 350;
   private readonly chatMaxLength = 300;

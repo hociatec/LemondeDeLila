@@ -22,6 +22,7 @@ export interface GameEventStore {
     roomId: number,
     gameType: string,
     afterSequence?: number,
+    limit?: number,
   ): Promise<GameEvent[]>;
   latestSnapshot(
     roomId: number,

@@ -3,8 +3,8 @@ import {
   discardCard as discardCardAction,
   drawForPlayer,
   gameInput,
-} from '../../../core/application/public-api';
-import type { GameContext } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   PIMP_MY_RIDE_CARD_BY_ID,
   PIMP_MY_RIDE_CAR_NAMES,

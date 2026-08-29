@@ -115,8 +115,9 @@ export class GameEngineService {
     roomId: number,
     gameType: string,
     afterSequence = 0,
+    limit = 500,
   ): Promise<GameEvent[]> {
-    return this.events.listEvents(roomId, gameType, afterSequence);
+    return this.events.listEvents(roomId, gameType, afterSequence, limit);
   }
 
   async listEventsForPlayer(
@@ -124,8 +125,14 @@ export class GameEngineService {
     gameType: string,
     viewerPlayerId: number | null,
     afterSequence = 0,
+    limit = 500,
   ): Promise<ProjectedGameEvent[]> {
-    const events = await this.listEvents(roomId, gameType, afterSequence);
+    const events = await this.listEvents(
+      roomId,
+      gameType,
+      afterSequence,
+      limit,
+    );
     return events.flatMap((event) => {
       const projected = projectGameEvent(event, viewerPlayerId);
       return projected ? [projected] : [];

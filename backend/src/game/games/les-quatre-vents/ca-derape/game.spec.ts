@@ -1,7 +1,7 @@
 import {
   testGame,
   type StableGameKitsView,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { CA_DERAPE_CARDS } from './content';
 import gameDefinition from './game';
 

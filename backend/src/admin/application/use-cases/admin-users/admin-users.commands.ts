@@ -14,7 +14,6 @@ export interface CreateAdminUserCommand {
   password?: string;
   roles?: string[];
   avatar?: string | null;
-  emailVerified?: boolean;
 }
 
 export interface UpdateAdminUserCommand {
@@ -23,7 +22,6 @@ export interface UpdateAdminUserCommand {
   password?: string;
   roles?: string[];
   avatar?: string | null;
-  emailVerified?: boolean;
   bannedUntil?: string | null;
   banReason?: string | null;
 }

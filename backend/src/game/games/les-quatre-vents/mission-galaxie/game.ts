@@ -5,7 +5,7 @@ import {
   defineGame,
   gameInput,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { MISSION_GALAXIE_CONTENT } from './content';
 import {
   MISSION_GALAXIE_ACTIONS,
@@ -53,7 +53,6 @@ export default defineGame<MissionGalaxieState, typeof MISSION_GALAXIE_ACTIONS>({
     { key: 'D', type: 'action', actionType: 'roll' },
     { key: 'P', type: 'interface', id: 'position' },
   ],
-  setup: () => ({}),
   actions: MISSION_GALAXIE_ACTIONS,
   effects: MISSION_GALAXIE_EFFECTS,
   choices: {

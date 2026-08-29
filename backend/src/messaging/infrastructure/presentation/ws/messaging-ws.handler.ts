@@ -97,7 +97,8 @@ export class MessagingWsHandler {
     };
   }
 
-  async search(payload: unknown) {
+  async search(session: WsSession, payload: unknown) {
+    requireUser(session);
     const dto = this.validator.validate(MessagingSearchDto, payload);
     const username = dto.username ?? dto.query ?? '';
     const user = await this.messaging.lookupUser(username);

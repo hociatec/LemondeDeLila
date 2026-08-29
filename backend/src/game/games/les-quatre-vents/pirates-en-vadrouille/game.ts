@@ -7,7 +7,7 @@ import {
   gameInput,
   inventory,
   raceGame,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { PIRATES_CONTENT } from './content';
 import { PIRATES_ACTIONS, stealTreasure } from './rules';
 import type { PiratesState } from './state';
@@ -55,7 +55,6 @@ export default defineGame<PiratesState, typeof PIRATES_ACTIONS>({
     { key: 'P', type: 'interface', id: 'position' },
     { key: 'S', type: 'interface', id: 'score' },
   ],
-  setup: () => ({}),
   actions: PIRATES_ACTIONS,
   effects: {
     'pirates.steal-treasure': defineEffect<PiratesState, Record<string, never>>(

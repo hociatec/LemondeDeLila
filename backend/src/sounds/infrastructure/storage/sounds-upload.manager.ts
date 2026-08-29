@@ -5,6 +5,7 @@ import {
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { bestEffort, writeFileAtomic } from '../../../common/utils/public-api';
 import type {
   SoundKey,
   SoundManifest,
@@ -29,6 +30,7 @@ type SoundsUploadDependencies = {
     updatedAt: string,
   ) => Promise<void>;
   storageError: (action: string, error: unknown) => Error;
+  ensureStorageCapacity: (incomingBytes: number) => Promise<void>;
   warn: (message: string) => void;
 };
 
@@ -110,9 +112,10 @@ export class SoundsUploadManager {
       return { bytes, sha256, encodedSize };
     } finally {
       if (tempDir) {
-        await fs.promises
-          .rm(tempDir, { recursive: true, force: true })
-          .catch(() => undefined);
+        await bestEffort(
+          fs.promises.rm(tempDir, { recursive: true, force: true }),
+          'nettoyage du transcodage audio temporaire',
+        );
       }
     }
   }
@@ -161,8 +164,9 @@ export class SoundsUploadManager {
   ): Promise<SoundManifestEntry> {
     const soundDir = path.join(this.dependencies.dataRoot, soundId);
     try {
+      await this.dependencies.ensureStorageCapacity(encoded.bytes.length);
       await fs.promises.mkdir(soundDir, { recursive: true });
-      await fs.promises.writeFile(
+      await writeFileAtomic(
         path.join(soundDir, `${encoded.sha256}.wav`),
         encoded.bytes,
       );

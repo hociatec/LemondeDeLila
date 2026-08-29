@@ -68,7 +68,10 @@ export class BotRoomTypeormRepository implements BotRoomRepository {
   }
 
   async listBotsForRoom(roomId: number): Promise<BotRoomRecord[]> {
-    const rows = await this.bots.find({ where: { room: { id: roomId } } });
+    const rows = await this.bots.find({
+      where: { room: { id: roomId } },
+      take: 100,
+    });
     return rows.map((row) => this.toBotRecord(row));
   }
 

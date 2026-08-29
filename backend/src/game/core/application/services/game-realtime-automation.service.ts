@@ -1,129 +1,158 @@
-import { Injectable, Optional } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleInit,
+  Optional,
+} from '@nestjs/common';
 import type { GameRuntime } from '../contracts/game-runtime.interface';
 import type { GameSingleActionDto } from '../models/game-action.model';
 import type { GameStateEntity } from '../models/game-state.model';
+import {
+  GAME_TASK_SCHEDULER,
+  type GameScheduledTask,
+  type GameTaskScheduler,
+} from '../ports/game-task-scheduler.port';
+import { GameStateConflictError } from '../../domain/errors/game-domain.errors';
 import { BotRunnerService } from './bot-runner.service';
-import { BotSchedulerService } from './bot-scheduler.service';
 import { BotSettingsService } from './bot-settings.service';
-import { GameEngineService } from './game-engine.service';
 import { GameCommandExecutorService } from './game-command-executor.service';
-import { gameNowMs } from './game-execution-scope.service';
+import { GameEngineService } from './game-engine.service';
 import { GameEngineMetricsService } from './game-engine-metrics.service';
-
-type AutomationCommit = (
-  previous: GameStateEntity,
-  next: GameStateEntity,
-) => Promise<void>;
+import { gameNowMs } from './game-execution-scope.service';
+import { GameRegistryService } from './game-registry.service';
 
 type AutomationPlan = {
   signature: string;
-  delayMs: number;
+  dueAtMs: number;
   actions: GameSingleActionDto[];
 };
 
 @Injectable()
-export class GameRealtimeAutomationService {
-  private readonly scheduledSignatures = new Map<string, string>();
-  private readonly generations = new Map<string, number>();
+export class GameRealtimeAutomationService implements OnModuleInit {
+  private readonly logger = new Logger(GameRealtimeAutomationService.name);
 
   constructor(
     private readonly engine: GameEngineService,
     private readonly botRunner: BotRunnerService,
-    private readonly botScheduler: BotSchedulerService,
+    @Inject(GAME_TASK_SCHEDULER)
+    private readonly scheduler: GameTaskScheduler,
     private readonly botSettings: BotSettingsService,
     private readonly executor: GameCommandExecutorService,
     @Optional() private readonly metrics?: GameEngineMetricsService,
+    @Optional() private readonly registry?: GameRegistryService,
   ) {}
+
+  onModuleInit(): void {
+    this.scheduler.registerProcessor((task) => this.executeTask(task));
+  }
 
   schedule(input: {
     roomId: number;
     gameType: string;
     handler: GameRuntime;
     state: GameStateEntity;
-    commit: AutomationCommit;
   }): void {
-    const timerKey = this.timerKey(input.roomId, input.gameType);
+    const key = this.taskKey(input.roomId, input.gameType);
     const plan = this.resolvePlan(input.handler, input.state);
-    if (!plan) {
-      this.clear(input.roomId, input.gameType);
+    if (!plan || String(input.state.status).toLowerCase() === 'finished') {
+      void this.cancel(key, input.gameType);
       return;
     }
-    if (
-      this.scheduledSignatures.get(timerKey) === plan.signature &&
-      this.botScheduler.has(timerKey)
-    ) {
-      return;
-    }
-
-    this.botScheduler.clear(timerKey);
-    this.scheduledSignatures.set(timerKey, plan.signature);
-    const generation = this.generations.get(timerKey) ?? 0;
-    this.generations.set(timerKey, generation);
-
-    this.botScheduler.schedule({
-      key: timerKey,
-      delayMs: plan.delayMs,
+    const task: GameScheduledTask = {
+      key,
       roomId: input.roomId,
       gameType: input.gameType,
-      run: async () => {
-        if ((this.generations.get(timerKey) ?? 0) !== generation) return;
-        if (this.scheduledSignatures.get(timerKey) !== plan.signature) return;
-        this.scheduledSignatures.delete(timerKey);
-        const current = await this.engine.exportInternalState(
-          input.roomId,
-          input.gameType,
-        );
-        if ((this.generations.get(timerKey) ?? 0) !== generation) return;
-        if (!current) return;
-        const currentPlan = this.resolvePlan(input.handler, current);
-        if (!currentPlan) return;
-        if (currentPlan.signature !== plan.signature) {
-          this.schedule({ ...input, state: current });
-          return;
-        }
-        const next = this.executor.execute({
-          handler: input.handler,
-          state: current,
-          actions: currentPlan.actions,
-          actorId: null,
-          roomId: input.roomId,
-        });
-        this.metrics?.recordAutomaticActions(
-          input.gameType,
-          currentPlan.actions.length,
-        );
-        if ((this.generations.get(timerKey) ?? 0) !== generation) return;
-        await input.commit(current, next);
-        if ((this.generations.get(timerKey) ?? 0) !== generation) {
-          await this.engine.clearInternalStateIf(
-            input.roomId,
-            input.gameType,
-            next,
-          );
-        }
-      },
+      signature: plan.signature,
+      generation: Number(input.state.version ?? 0),
+      dueAtMs: plan.dueAtMs,
+    };
+    void this.scheduler.schedule(task).catch((error: unknown) => {
+      this.logger.error(
+        this.errorLog('game.task.schedule.failed', task, error),
+      );
     });
   }
 
   clear(roomId: number, gameType: string): void {
-    const timerKey = this.timerKey(roomId, gameType);
-    this.generations.set(timerKey, (this.generations.get(timerKey) ?? 0) + 1);
-    this.scheduledSignatures.delete(timerKey);
-    this.botScheduler.clear(timerKey);
+    void this.cancel(this.taskKey(roomId, gameType), gameType);
   }
 
   clearRoom(roomId: number): void {
-    const prefix = `game-realtime:${roomId}:`;
-    const keys = new Set([
-      ...this.scheduledSignatures.keys(),
-      ...this.generations.keys(),
-    ]);
-    for (const key of keys) {
-      if (!key.startsWith(prefix)) continue;
-      this.generations.set(key, (this.generations.get(key) ?? 0) + 1);
-      this.scheduledSignatures.delete(key);
-      this.botScheduler.clear(key);
+    void this.scheduler.cancelRoom(roomId).catch((error: unknown) => {
+      this.logger.error(
+        JSON.stringify({
+          event: 'game.task.cancel-room.failed',
+          roomId,
+          message: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    });
+  }
+
+  async executeTask(task: GameScheduledTask): Promise<void> {
+    const handler = this.registry?.getHandler(task.gameType);
+    if (!handler)
+      throw new Error(`Runtime de jeu indisponible: ${task.gameType}`);
+    const current = await this.engine.exportInternalState(
+      task.roomId,
+      task.gameType,
+    );
+    if (!current || String(current.status).toLowerCase() === 'finished') return;
+    const currentPlan = this.resolvePlan(handler, current);
+    if (!currentPlan) return;
+
+    // Redis only wakes the engine; persisted state decides whether delivery is valid.
+    if (
+      Number(current.version ?? 0) !== task.generation ||
+      currentPlan.signature !== task.signature
+    ) {
+      this.schedule({
+        roomId: task.roomId,
+        gameType: task.gameType,
+        handler,
+        state: current,
+      });
+      return;
     }
+    if (currentPlan.dueAtMs > gameNowMs()) {
+      this.schedule({
+        roomId: task.roomId,
+        gameType: task.gameType,
+        handler,
+        state: current,
+      });
+      return;
+    }
+
+    const actions = currentPlan.actions.map((action, index) => ({
+      ...action,
+      meta: {
+        ...(action.meta ?? {}),
+        commandId: `${task.key}:${task.signature}:${index}`,
+      },
+    }));
+    const next = this.executor.execute({
+      handler,
+      state: current,
+      actions,
+      actorId: null,
+      roomId: task.roomId,
+    });
+    this.metrics?.recordAutomaticActions(task.gameType, actions.length);
+    const result = await this.engine.compareAndSetInternalState(
+      task.roomId,
+      task.gameType,
+      Number(current.version ?? 0),
+      next,
+    );
+    if (!result.committed) throw new GameStateConflictError();
+    this.schedule({
+      roomId: task.roomId,
+      gameType: task.gameType,
+      handler,
+      state: result.state,
+    });
   }
 
   private resolvePlan(
@@ -132,14 +161,13 @@ export class GameRealtimeAutomationService {
   ): AutomationPlan | null {
     const automatic = handler.getAutomaticActions(state);
     if (automatic?.actions?.length) {
-      const executeAtMs = Number(automatic.executeAtMs ?? gameNowMs());
+      const dueAtMs = Number(automatic.executeAtMs ?? gameNowMs());
       return {
         signature: `automatic:${automatic.key}:${Number(state.turn?.turnNumber ?? 0)}`,
-        delayMs: Math.max(0, executeAtMs - gameNowMs()),
+        dueAtMs,
         actions: automatic.actions,
       };
     }
-
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
     const currentPlayer = (state.players ?? []).find(
       (player) => player.id === currentPlayerId,
@@ -148,18 +176,46 @@ export class GameRealtimeAutomationService {
     const suggested =
       this.botRunner.suggestForHandler(handler, state, currentPlayerId) ?? [];
     if (suggested.length === 0) return null;
-    const actions = suggested.map((action) => ({
-      ...action,
-      meta: { ...(action.meta ?? {}), actorId: currentPlayerId },
-    }));
     return {
       signature: `bot:${currentPlayerId}:${Number(state.turn?.turnNumber ?? 0)}`,
-      delayMs: this.botSettings.getBotTurnDelayMs(),
-      actions,
+      dueAtMs: gameNowMs() + this.botSettings.getBotTurnDelayMs(),
+      actions: suggested.map((action) => ({
+        ...action,
+        meta: { ...(action.meta ?? {}), actorId: currentPlayerId },
+      })),
     };
   }
 
-  private timerKey(roomId: number, gameType: string): string {
+  private taskKey(roomId: number, gameType: string): string {
     return `game-realtime:${roomId}:${gameType}`;
+  }
+
+  private async cancel(key: string, gameType: string): Promise<void> {
+    try {
+      await this.scheduler.cancel(key);
+    } catch (error) {
+      this.logger.error(
+        JSON.stringify({
+          event: 'game.task.cancel.failed',
+          key,
+          gameType,
+          message: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    }
+  }
+
+  private errorLog(
+    event: string,
+    task: GameScheduledTask,
+    error: unknown,
+  ): string {
+    return JSON.stringify({
+      event,
+      key: task.key,
+      roomId: task.roomId,
+      gameType: task.gameType,
+      message: error instanceof Error ? error.message : String(error),
+    });
   }
 }

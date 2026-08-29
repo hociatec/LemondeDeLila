@@ -1,9 +1,10 @@
 import {
+  defineEffectRecipe,
   freezeGameContent,
   gameEffects,
   rejectContent,
-} from '../../../core/application/public-api';
-import type { GameEffectInstruction } from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
+import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 import data from './content-data.json';
 
 export type LaGrandeMineCategory =
@@ -34,6 +35,15 @@ function category(value: string): LaGrandeMineCategory {
   return found;
 }
 
+const drawPassiveAndSteal = defineEffectRecipe((count: number) => [
+  gameEffects.custom('mine.draw-passive', { count }),
+  gameEffects.stealCard({
+    handId: 'players',
+    from: gameEffects.target.self(),
+    to: gameEffects.target.randomOpponent(),
+  }),
+]);
+
 const EVENT_EFFECTS: Readonly<
   Record<string, readonly GameEffectInstruction[]>
 > = {
@@ -52,7 +62,13 @@ const EVENT_EFFECTS: Readonly<
     }),
   ],
   'barbak-event-9': [gameEffects.skipTurn(1)],
-  'barbak-event-10': [gameEffects.custom('mine.give-random-next')],
+  'barbak-event-10': [
+    gameEffects.stealCard({
+      handId: 'players',
+      from: gameEffects.target.self(),
+      to: gameEffects.target.next(),
+    }),
+  ],
   'barbak-event-11': [
     gameEffects.custom('mine.remove-treasure-all', { count: 1 }),
   ],
@@ -64,7 +80,7 @@ const EVENT_EFFECTS: Readonly<
       gameEffects.target.allOpponents(),
     ),
   ],
-  'barbak-event-14': [gameEffects.custom('mine.draw-and-give')],
+  'barbak-event-14': drawPassiveAndSteal(2),
   'barbak-event-15': [
     gameEffects.addStatus({
       status: 'mine.discard-next-draw',
@@ -89,7 +105,14 @@ const EVENT_EFFECTS: Readonly<
 const COLLAPSE_EFFECTS: Readonly<
   Record<string, readonly GameEffectInstruction[]>
 > = {
-  'barbak-collapse-1': [gameEffects.custom('mine.discard-hand-all')],
+  'barbak-collapse-1': [
+    gameEffects.discardCards({
+      deckId: 'mine',
+      handId: 'players',
+      count: 1,
+      target: gameEffects.target.allPlayers(),
+    }),
+  ],
   'barbak-collapse-2': [
     gameEffects.custom('mine.remove-treasure-all', { count: 2 }),
   ],

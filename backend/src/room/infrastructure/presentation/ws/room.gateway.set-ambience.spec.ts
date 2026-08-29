@@ -1,5 +1,4 @@
 import { RoomGatewayActionsService } from './room-gateway-actions.service';
-import { RoomGatewayBotActionsService } from './room-gateway-bot-actions.service';
 import { RoomAdminPolicyService } from '../../../application/services/room-admin-policy.service';
 import { RoomGatewayPresenter } from './room-gateway.presenter';
 
@@ -17,9 +16,6 @@ function createGateway() {
     notifyRoomStateUpdated: jest.fn().mockResolvedValue(undefined),
     primeRoomPayloadCache: jest.fn().mockResolvedValue(undefined),
   };
-  const addBotToRoom: any = { execute: jest.fn() };
-  const getLastRoomBot: any = { execute: jest.fn() };
-  const removeBotFromRoom: any = { execute: jest.fn() };
   const perf: any = {
     measure: jest
       .fn()
@@ -36,14 +32,6 @@ function createGateway() {
   };
   const adminPolicy = new RoomAdminPolicyService();
   const gatewayPresenter = new RoomGatewayPresenter();
-  const botActions = new RoomGatewayBotActionsService(
-    addBotToRoom,
-    getLastRoomBot,
-    removeBotFromRoom,
-    perf,
-    roomState,
-    gatewayPresenter,
-  ) as any;
   const actions = new RoomGatewayActionsService(
     roomsService,
     roomsService,
@@ -52,7 +40,6 @@ function createGateway() {
     perf,
     realtimeTracker,
     gatewayPresenter,
-    botActions,
   ) as any;
   const gateway: any = {
     sendError: jest.fn().mockResolvedValue(undefined),
