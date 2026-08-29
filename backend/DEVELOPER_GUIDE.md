@@ -93,29 +93,35 @@ Ce guide décrit l'architecture du moteur de jeux et explique comment créer de 
 ### Composants Principaux
 
 #### 1. **GameEngineService**
+
 - Point d'entrée principal pour toutes les opérations de jeu
 - Gère l'application des actions et le déclenchement des bots
 - Sauvegarde l'état et broadcast aux clients
 
 #### 2. **GameRegistryService**
+
 - Enregistre tous les jeux disponibles
 - Fournit l'accès aux adaptateurs de règles
 
 #### 3. **GameRulesAdapter**
+
 - Interface que chaque jeu doit implémenter
 - Méthodes clés : `hydrateInitialState()`, `applyActions()`, `exposeState()`
 
 #### 4. **AbstractGameService**
+
 - Classe de base pour tous les jeux
 - Fournit des méthodes communes (template method pattern)
 - Méthodes : `extractActorId()`, `isPlayerBot()`, `findPlayer()`, etc.
 
 #### 5. **BasePresenterService**
+
 - Classe de base pour les presenters
 - Gère l'exposition de l'état au client
 - Template methods pour personnalisation
 
 #### 6. **ActionDispatcherService**
+
 - Registry pattern pour les handlers d'actions
 - Remplace les switch/case par un système extensible
 
@@ -293,7 +299,10 @@ import { Injectable } from '@nestjs/common';
 import { AbstractGameService } from '../../../engine/abstract/abstract-game.service';
 import { GameRegistryService } from '../../../engine/services/game-registry.service';
 import type { GameStateEntity } from '../../../core/entities/game-state.entity';
-import type { GameSingleActionDto, GameStateWithActions } from '../../../engine/dto/game-action.dto';
+import type {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../../../engine/dto/game-action.dto';
 import { ActionDispatcherService } from '../../../engine/services/action-dispatcher.service';
 import { MyGameSetupService } from './setup/my-game-setup.service';
 import { MyGamePresenterService } from './presenter/my-game-presenter.service';
@@ -307,7 +316,8 @@ export class MyGameService extends AbstractGameService {
   readonly minPlayers = 2;
   readonly maxPlayers = 4;
 
-  private readonly dispatcher: ActionDispatcherService = new ActionDispatcherService();
+  private readonly dispatcher: ActionDispatcherService =
+    new ActionDispatcherService();
 
   constructor(
     registry: GameRegistryService,
@@ -360,7 +370,10 @@ export class MyGameService extends AbstractGameService {
     return next;
   }
 
-  getAvailableActions(state: GameStateEntity, playerId: number): GameSingleActionDto[] {
+  getAvailableActions(
+    state: GameStateEntity,
+    playerId: number,
+  ): GameSingleActionDto[] {
     return MyGameRulebook.getAvailableActions(state, playerId);
   }
 
@@ -376,7 +389,10 @@ export class MyGameService extends AbstractGameService {
     return this.presenter.exposeState(state);
   }
 
-  exposeStateForUser(state: GameStateEntity, userId: number): GameStateWithActions {
+  exposeStateForUser(
+    state: GameStateEntity,
+    userId: number,
+  ): GameStateWithActions {
     return this.presenter.exposeStateForUser(state, userId);
   }
 }
@@ -402,8 +418,11 @@ export class MyGameSetupService {
     };
   }
 
-  initializePlayers(baseState: GameStateEntity, metadata: MyGameMetadata): any[] {
-    return (baseState.players ?? []).map(p => ({
+  initializePlayers(
+    baseState: GameStateEntity,
+    metadata: MyGameMetadata,
+  ): any[] {
+    return (baseState.players ?? []).map((p) => ({
       id: p.id,
       username: p.username,
       isBot: (p as any).isBot ?? false,
@@ -429,7 +448,7 @@ import { MY_GAME_VICTORY } from '../definitions/victory.definition';
 export class MyGamePresenterService extends BasePresenterService {
   protected buildCatalog(): { phases: string[]; victory: any } {
     return {
-      phases: MY_GAME_PHASES.map(p => p.id),
+      phases: MY_GAME_PHASES.map((p) => p.id),
       victory: MY_GAME_VICTORY,
     };
   }
@@ -469,11 +488,7 @@ import { MyGameSetupService } from './setup/my-game-setup.service';
 import { MyGamePresenterService } from './presenter/my-game-presenter.service';
 
 @Module({
-  providers: [
-    MyGameService,
-    MyGameSetupService,
-    MyGamePresenterService,
-  ],
+  providers: [MyGameService, MyGameSetupService, MyGamePresenterService],
   exports: [MyGameService],
 })
 export class MyGameModule {}
@@ -641,7 +656,7 @@ export const MY_GAME_PHASES: PhaseDefinition<MyGameMetadata>[] = [
       return {
         ...state,
         metadata: {
-          ...state.metadata as MyGameMetadata,
+          ...(state.metadata as MyGameMetadata),
           phase: 'setup',
         },
       };
@@ -657,7 +672,7 @@ export const MY_GAME_PHASES: PhaseDefinition<MyGameMetadata>[] = [
       return {
         ...state,
         metadata: {
-          ...state.metadata as MyGameMetadata,
+          ...(state.metadata as MyGameMetadata),
           phase: 'playing',
         },
       };
@@ -675,7 +690,7 @@ export const MY_GAME_PHASES: PhaseDefinition<MyGameMetadata>[] = [
         ...state,
         status: 'finished',
         metadata: {
-          ...state.metadata as MyGameMetadata,
+          ...(state.metadata as MyGameMetadata),
           phase: 'finished',
         },
       };
@@ -697,9 +712,7 @@ import { MY_GAME_PHASES } from '../definitions/rules.definition';
 
 @Injectable()
 export class MyGamePhaseService {
-  constructor(
-    private readonly phases: PhaseEngineService<MyGameMetadata>,
-  ) {}
+  constructor(private readonly phases: PhaseEngineService<MyGameMetadata>) {}
 
   advance(state: GameStateEntity): GameStateEntity {
     return this.phases.tryAdvance(state, MY_GAME_PHASES);
@@ -740,9 +753,8 @@ export class MyGameBotService {
     }
 
     // Stratégie simple : choisir une action au hasard
-    const randomAction = availableActions[
-      Math.floor(Math.random() * availableActions.length)
-    ];
+    const randomAction =
+      availableActions[Math.floor(Math.random() * availableActions.length)];
 
     return [randomAction];
   }
@@ -818,7 +830,7 @@ export class MyGameBotStrategy implements BotStrategy {
 #### Via les Logs
 
 ```typescript
-import { playingLog } from '../../../../../common/utils/playing-logger';
+import { playingLog } from '@shared/utils/public-api';
 
 private log(label: string, state: GameStateEntity, payload: Record<string, unknown>): void {
   const meta = state.metadata as MyGameMetadata;
@@ -851,8 +863,8 @@ console.log('Current state:', JSON.stringify(state, null, 2));
 
 ```typescript
 // Dans le client Java
-socket.on("game:state:update", (data) => {
-  System.out.println("State: " + data);
+socket.on('game:state:update', (data) => {
+  System.out.println('State: ' + data);
 });
 ```
 
@@ -960,9 +972,7 @@ describe('MyGameService', () => {
 
   describe('applyActions', () => {
     it('should apply action correctly', () => {
-      const state = {
-        /* ... */
-      };
+      const state = {/* ... */};
       const actions = [{ type: 'my_action', payload: {} }];
 
       const result = service.applyActions(state as any, actions);
@@ -987,9 +997,7 @@ describe('MyGameService - Scenarios', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        /* providers */
-      ],
+      providers: [/* providers */],
     }).compile();
 
     service = module.get<MyGameService>(MyGameService);
@@ -1035,10 +1043,10 @@ describe('MyGameService - Scenarios', () => {
 describe('MyActionHandler', () => {
   it('should handle action correctly', () => {
     const handler = new MyActionHandler((state, action, actorId) => {
-      return { ...state, /* modifications */ };
+      return { ...state /* modifications */ };
     });
 
-    const state = { /* ... */ };
+    const state = {/* ... */};
     const action = { type: 'my_action', payload: {} };
 
     const result = handler.handle(state as any, action, 1);
@@ -1100,14 +1108,20 @@ Utilisé dans `AbstractGameService` et `BasePresenterService` :
 // Classe de base définit le squelette
 abstract class AbstractGameService {
   // Méthode template
-  protected processAction(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity {
+  protected processAction(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity {
     const validated = this.validateAction(state, action);
     const applied = this.applyAction(state, validated);
     return this.postProcess(applied);
   }
 
   // Méthodes abstraites à implémenter
-  protected abstract applyAction(state: GameStateEntity, action: GameSingleActionDto): GameStateEntity;
+  protected abstract applyAction(
+    state: GameStateEntity,
+    action: GameSingleActionDto,
+  ): GameStateEntity;
 
   // Méthodes avec implémentation par défaut
   protected postProcess(state: GameStateEntity): GameStateEntity {
@@ -1184,19 +1198,19 @@ function updateState(state: GameStateEntity): GameStateEntity {
 
 ```typescript
 // 1. Validation générique (moteur)
-GameEngineService.validateAction()
+GameEngineService.validateAction();
 
 // 2. Validation spécifique au jeu (rulebook)
-MyGameRulebook.validateAction()
+MyGameRulebook.validateAction();
 
 // 3. Validation du handler (action-specific)
-MyActionHandler.handle() // Vérifications finales
+MyActionHandler.handle(); // Vérifications finales
 ```
 
 ### 6. Erreurs Typées
 
 ```typescript
-import { GameValidationError, PlayerActionError } from '../../../common/errors/game-errors';
+import { GameValidationError } from '@game/core/domain/errors/public-api';
 
 // Utiliser des erreurs avec contexte
 throw new GameValidationError('Invalid action', {
@@ -1216,7 +1230,7 @@ myGameLog('action.my_action', {
   roomId: 123,
   actorId: 456,
   action: 'my_action',
-  payload: { /* ... */ },
+  payload: {/* ... */},
 });
 ```
 
@@ -1240,5 +1254,3 @@ myGameLog('action.my_action', {
 ---
 
 **Fin du Guide Développeur**
-
-

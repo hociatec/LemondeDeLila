@@ -5,7 +5,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext, PawnMove } from '../../../engine/sdk/public-api';
 import { FOULEES_BOARD, FOULEES_FAMILIES } from './content';
-import type { FouleesPawn, FouleesPendingMove, FouleesState } from './state';
+import type { FouleesPawn, FouleesPendingMove, FouleesState } from './types';
 
 type RuleContext = GameContext<FouleesState>;
 export const FOULEES_PHASES = defineGamePhases<FouleesState>()({

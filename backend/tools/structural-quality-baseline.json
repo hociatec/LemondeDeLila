@@ -1,40 +1,8 @@
 {
   "schemaVersion": 1,
   "contractVersion": 1,
-  "generatedAt": "2026-08-28T23:13:11.016Z",
+  "generatedAt": "2026-08-29T04:25:17.746Z",
   "violations": [
-    {
-      "rule": "class-lines",
-      "file": "game/core/application/runtime/cards-kit.ts",
-      "subject": "GameCardsController",
-      "line": 130,
-      "actual": 709,
-      "limit": 500
-    },
-    {
-      "rule": "class-lines",
-      "file": "game/core/application/runtime/declarative-game.runtime.ts",
-      "subject": "DeclarativeGameRuntime",
-      "line": 59,
-      "actual": 759,
-      "limit": 500
-    },
-    {
-      "rule": "class-lines",
-      "file": "game/core/application/runtime/effect-engine.ts",
-      "subject": "GameEffectEngineController",
-      "line": 104,
-      "actual": 640,
-      "limit": 500
-    },
-    {
-      "rule": "class-lines",
-      "file": "game/core/application/runtime/game-rule-context.ts",
-      "subject": "GameContext",
-      "line": 113,
-      "actual": 859,
-      "limit": 500
-    },
     {
       "rule": "constructor-dependencies",
       "file": "game/core/infrastructure/presentation/ws/game-ws.handler.ts",
@@ -44,96 +12,16 @@
       "limit": 8
     },
     {
-      "rule": "file-lines",
-      "file": "game/core/application/runtime/cards-kit.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 947,
-      "limit": 500
-    },
-    {
-      "rule": "file-lines",
-      "file": "game/core/application/runtime/declarative-game.runtime.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 855,
-      "limit": 500
-    },
-    {
-      "rule": "file-lines",
-      "file": "game/core/application/runtime/effect-engine.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 744,
-      "limit": 500
-    },
-    {
-      "rule": "file-lines",
-      "file": "game/core/application/runtime/effects-kit.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 611,
-      "limit": 500
-    },
-    {
-      "rule": "file-lines",
-      "file": "game/core/application/runtime/game-definition.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 941,
-      "limit": 500
-    },
-    {
-      "rule": "file-lines",
-      "file": "game/core/application/runtime/game-rule-context.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 972,
-      "limit": 500
-    },
-    {
-      "rule": "file-lines",
-      "file": "game/core/application/runtime/gameplay-patterns.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 824,
-      "limit": 500
-    },
-    {
-      "rule": "file-lines",
-      "file": "game/core/application/runtime/gameplay-recipes.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 1290,
-      "limit": 500
-    },
-    {
-      "rule": "file-lines",
-      "file": "game/core/application/runtime/submission-kit.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 617,
-      "limit": 500
-    },
-    {
-      "rule": "file-lines",
-      "file": "game/games/les-quatre-vents/a-fond-les-ballons/content.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 514,
-      "limit": 500
-    },
-    {
-      "rule": "file-lines",
-      "file": "game/games/les-quatre-vents/en-attendant-minuit/content.ts",
-      "subject": null,
-      "line": 1,
-      "actual": 519,
-      "limit": 500
+      "rule": "function-lines",
+      "file": "game/core/application/runtime/content/game-state-migration.ts",
+      "subject": "migrateDeclarativeState",
+      "line": 17,
+      "actual": 125,
+      "limit": 80
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/game-definition-validator.ts",
+      "file": "game/core/application/runtime/definitions/game-definition-validator.ts",
       "subject": "assertGameDefinition",
       "line": 46,
       "actual": 368,
@@ -141,15 +29,15 @@
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/game-definition.ts",
-      "subject": "describeCompiledGameDefinition",
-      "line": 512,
-      "actual": 96,
+      "file": "game/core/application/runtime/definitions/runtime-descriptor.ts",
+      "subject": "describeGameDefinition",
+      "line": 7,
+      "actual": 91,
       "limit": 80
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/game-effect-definition-validator.ts",
+      "file": "game/core/application/runtime/effects/game-effect-definition-validator.ts",
       "subject": "assertEffectInstructions",
       "line": 18,
       "actual": 246,
@@ -157,73 +45,33 @@
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/game-kit-view.ts",
+      "file": "game/core/application/runtime/projection/game-kit-view.ts",
       "subject": "projectGameKits",
-      "line": 88,
-      "actual": 203,
+      "line": 94,
+      "actual": 204,
       "limit": 80
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/game-session-contracts.ts",
-      "subject": "assertValidEngineKits",
-      "line": 65,
-      "actual": 178,
-      "limit": 80
-    },
-    {
-      "rule": "function-lines",
-      "file": "game/core/application/runtime/game-state-migration.ts",
-      "subject": "migrateDeclarativeState",
-      "line": 17,
-      "actual": 122,
-      "limit": 80
-    },
-    {
-      "rule": "function-lines",
-      "file": "game/core/application/runtime/game-system-view.ts",
+      "file": "game/core/application/runtime/projection/game-system-view.ts",
       "subject": "projectGameSystemView",
-      "line": 152,
-      "actual": 103,
+      "line": 173,
+      "actual": 93,
       "limit": 80
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/gameplay-patterns.ts",
-      "subject": "assertComposablePatterns",
-      "line": 649,
-      "actual": 81,
-      "limit": 80
-    },
-    {
-      "rule": "function-lines",
-      "file": "game/core/application/runtime/gameplay-recipes.ts",
-      "subject": "answerQuiz",
-      "line": 923,
-      "actual": 82,
-      "limit": 80
-    },
-    {
-      "rule": "function-lines",
-      "file": "game/core/application/runtime/gameplay-recipes.ts",
-      "subject": "requestCardFromPlayer",
-      "line": 627,
-      "actual": 83,
-      "limit": 80
-    },
-    {
-      "rule": "function-lines",
-      "file": "game/core/application/runtime/runtime-descriptor.ts",
-      "subject": "describeGameDefinition",
-      "line": 10,
-      "actual": 91,
+      "file": "game/core/application/runtime/state/game-session-contracts.ts",
+      "subject": "assertValidEngineKits",
+      "line": 68,
+      "actual": 178,
       "limit": 80
     },
     {
       "rule": "function-lines",
       "file": "game/games/les-quatre-vents/en-attendant-minuit/content.ts",
       "subject": "standardInstructions",
-      "line": 418,
+      "line": 353,
       "actual": 88,
       "limit": 80
     },
@@ -250,30 +98,6 @@
       "line": 50,
       "actual": 89,
       "limit": 80
-    },
-    {
-      "rule": "methods-per-class",
-      "file": "game/core/application/runtime/cards-kit.ts",
-      "subject": "GameCardsController",
-      "line": 130,
-      "actual": 51,
-      "limit": 20
-    },
-    {
-      "rule": "methods-per-class",
-      "file": "game/core/application/runtime/declarative-game.runtime.ts",
-      "subject": "DeclarativeGameRuntime",
-      "line": 59,
-      "actual": 25,
-      "limit": 20
-    },
-    {
-      "rule": "methods-per-class",
-      "file": "game/core/application/runtime/game-rule-context.ts",
-      "subject": "GameContext",
-      "line": 113,
-      "actual": 29,
-      "limit": 20
     },
     {
       "rule": "methods-per-class",

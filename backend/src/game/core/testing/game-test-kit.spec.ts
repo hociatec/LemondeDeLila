@@ -1,8 +1,8 @@
 import {
   defineAction,
   defineGame,
-} from '../application/runtime/game-definition';
-import { gameInput } from '../application/runtime/game-input-schema';
+} from '../application/runtime/definitions/game-definition';
+import { gameInput } from '../application/runtime/actions/game-input-schema';
 import { testGame } from './game-test-kit';
 
 type RaceState = Record<string, never>;

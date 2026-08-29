@@ -23,7 +23,7 @@ import {
   rollDie,
   transferToken,
 } from './resolution';
-import type { ContesState } from './state';
+import type { ContesState } from './types';
 
 type RuleContext = GameContext<ContesState>;
 export const CONTES_PHASES = setupPlayingPhases<ContesState>();

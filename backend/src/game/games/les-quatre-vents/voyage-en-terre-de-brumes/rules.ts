@@ -13,7 +13,7 @@ import type {
   VoyagePendingChoice,
   VoyageState,
   VoyageTileType,
-} from './state';
+} from './types';
 
 type RuleContext = GameContext<VoyageState>;
 export const TRACK = 'ireland';

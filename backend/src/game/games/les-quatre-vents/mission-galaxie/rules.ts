@@ -11,7 +11,7 @@ import type {
   MissionGalaxieChoiceCard,
   MissionGalaxieEventCard,
   MissionGalaxieState,
-} from './state';
+} from './types';
 
 type RuleContext = GameContext<MissionGalaxieState>;
 const TRACK = 'galaxy';
@@ -33,7 +33,7 @@ export function resolveMissionAnswer(
   ctx: RuleContext,
 ): void {
   const pending =
-    ctx.choice.consumeContinuation<import('./state').MissionGalaxiePending>();
+    ctx.choice.consumeContinuation<import('./types').MissionGalaxiePending>();
   if (!pending || pending.kind !== 'answer') {
     rejectRule('Réponse Mission Galaxie introuvable');
   }
@@ -53,7 +53,7 @@ export function resolveMissionEventMove(
   ctx: RuleContext,
 ): void {
   const pending =
-    ctx.choice.consumeContinuation<import('./state').MissionGalaxiePending>();
+    ctx.choice.consumeContinuation<import('./types').MissionGalaxiePending>();
   if (!pending || pending.kind !== 'event-move') {
     rejectRule('Événement Mission Galaxie introuvable');
   }

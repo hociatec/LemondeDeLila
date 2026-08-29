@@ -1,18 +1,39 @@
 {
-  "version": 3,
-  "ignoredRootDirectories": ["architecture-tests"],
+  "version": 4,
+  "ignoredRootDirectories": [],
   "components": {
-    "common": [
+    "modules": [
+      "admin",
+      "bot",
+      "bug-reports",
+      "catalog",
+      "chat",
+      "client-updates",
+      "health",
+      "messaging",
+      "notification",
+      "presence",
+      "room",
+      "social",
+      "sounds",
+      "stats",
+      "update",
+      "user",
+      "vault"
+    ],
+    "platform": [
       "auth",
-      "interfaces",
+      "config",
+      "database",
       "observability",
       "pubsub",
+      "realtime",
       "redis",
       "session",
-      "utils",
       "validation",
       "ws"
     ],
+    "shared": ["interfaces", "types", "utils"],
     "gameFamilies": [
       "les-quatre-vents",
       "vents-dansants",
@@ -27,47 +48,35 @@
     "module": ["module"]
   },
   "aliases": {
-    "@common": "common"
+    "@modules": "modules",
+    "@game": "game",
+    "@platform": "platform",
+    "@shared": "shared"
   },
   "publicEntryFiles": ["public-api.ts", "index.ts"],
   "composition": {
-    "rootComponents": ["root", "database", "migrations"],
+    "rootComponents": ["root", "platform.database"],
     "rootFiles": ["app.module.ts", "data-source.ts"],
     "layers": ["module"],
     "fileSuffixes": [".module.ts"]
   },
   "boundaries": {
-    "exemptSourceComponents": ["root", "database", "migrations"],
+    "exemptSourceComponents": ["root", "platform.database"],
     "exemptSourceFiles": ["app.module.ts", "data-source.ts"],
     "allowCompositionDeepImports": true,
     "allowCompositionTypeOrmEntities": true,
     "allowedDeepImports": [
-      {
-        "source": "game.games.*",
-        "target": "game"
-      },
-      {
-        "source": "game",
-        "target": "game.games.*"
-      },
-      {
-        "source": "game",
-        "target": "game.engine"
-      },
-      {
-        "source": "game.engine",
-        "target": "game"
-      },
-      {
-        "source": "game.games.*",
-        "target": "game.engine"
-      }
+      { "source": "game.games.*", "target": "game" },
+      { "source": "game", "target": "game.games.*" },
+      { "source": "game", "target": "game.engine" },
+      { "source": "game.engine", "target": "game" },
+      { "source": "game.games.*", "target": "game.engine" }
     ]
   },
   "dependencies": {
     "allowed": [
-      { "source": "*", "target": "config" },
-      { "source": "*", "target": "common.*" },
+      { "source": "*", "target": "shared.*" },
+      { "source": "*", "target": "platform.*" },
       { "source": "admin", "target": "bot" },
       { "source": "admin", "target": "bug-reports" },
       { "source": "admin", "target": "game" },
@@ -76,62 +85,49 @@
         "target": "game.games.vents-infinis.arche-de-mnemosyne"
       },
       { "source": "admin", "target": "notification" },
-      { "source": "admin", "target": "realtime" },
       { "source": "admin", "target": "room" },
       { "source": "admin", "target": "user" },
       { "source": "bot", "target": "room" },
       { "source": "catalog", "target": "game" },
-      { "source": "catalog", "target": "realtime" },
       { "source": "chat", "target": "user" },
       { "source": "game", "target": "game.engine" },
       { "source": "game.engine", "target": "game" },
       { "source": "game", "target": "game.games.*" },
       { "source": "game.games.*", "target": "game" },
       { "source": "game.games.*", "target": "game.engine" },
-      { "source": "game", "target": "realtime" },
       { "source": "game", "target": "room" },
       { "source": "messaging", "target": "notification" },
-      { "source": "messaging", "target": "realtime" },
       { "source": "messaging", "target": "user" },
       { "source": "notification", "target": "client-updates" },
       { "source": "notification", "target": "update" },
       { "source": "notification", "target": "messaging" },
-      { "source": "notification", "target": "realtime" },
       { "source": "notification", "target": "social" },
       { "source": "notification", "target": "user" },
       { "source": "presence", "target": "chat" },
-      { "source": "presence", "target": "realtime" },
       { "source": "presence", "target": "room" },
       { "source": "presence", "target": "update" },
       { "source": "presence", "target": "user" },
-      { "source": "realtime", "target": "client-updates" },
-      { "source": "realtime", "target": "update" },
       { "source": "room", "target": "bot" },
       { "source": "room", "target": "catalog" },
       { "source": "room", "target": "client-updates" },
       { "source": "room", "target": "notification" },
       { "source": "room", "target": "presence" },
-      { "source": "room", "target": "realtime" },
       { "source": "room", "target": "sounds" },
       { "source": "room", "target": "stats" },
       { "source": "room", "target": "update" },
       { "source": "room", "target": "user" },
       { "source": "room", "target": "vault" },
       { "source": "social", "target": "notification" },
-      { "source": "social", "target": "realtime" },
       { "source": "social", "target": "user" },
       { "source": "sounds", "target": "notification" },
       { "source": "stats", "target": "catalog" },
       { "source": "stats", "target": "game" },
-      { "source": "stats", "target": "realtime" },
       { "source": "stats", "target": "social" },
       { "source": "update", "target": "client-updates" },
-      { "source": "user", "target": "realtime" },
       { "source": "vault", "target": "bot" },
       { "source": "vault", "target": "game" },
       { "source": "vault", "target": "notification" },
       { "source": "vault", "target": "presence" },
-      { "source": "vault", "target": "realtime" },
       { "source": "vault", "target": "room" }
     ]
   },
@@ -139,7 +135,8 @@
     "aggregate": [
       { "source": "game.games.*", "target": "game" },
       { "source": "game.engine", "target": "game" },
-      { "source": "common.*", "target": "common" }
+      { "source": "platform.*", "target": "platform" },
+      { "source": "shared.*", "target": "shared" }
     ]
   },
   "legacyRootDirectories": ["dto", "entities", "gateways", "services", "ws"]

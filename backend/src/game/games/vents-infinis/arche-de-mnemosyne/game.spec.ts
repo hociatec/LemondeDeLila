@@ -1,5 +1,6 @@
 import { testGame } from '../../../engine/sdk/public-api';
 import gameDefinition from './game';
+import { MNEMO_SESSION } from './rules';
 
 describe('Arche de Mnémosyne declarative game', () => {
   it('keeps correctness private and resolves simultaneous answers deterministically', async () => {
@@ -21,7 +22,11 @@ describe('Arche de Mnémosyne declarative game', () => {
     await game.as(2).do('answer', { answerIndex: 1 });
     expect('correctnessByPlayerId' in game.view(1)).toBe(false);
     expect('deadlineMs' in game.view(1)).toBe(false);
-    expect(game.view(1).currentQuestion).toBeNull();
+    const view = game.view(1) as unknown as {
+      kits: { quiz: { sessions: Record<string, { phase: string }> } };
+    };
+    expect('currentQuestion' in game.view(1)).toBe(false);
+    expect(view.kits.quiz.sessions[MNEMO_SESSION]?.phase).toBe('closed');
     expect(await game.replay()).toEqual(game.state());
   });
 });

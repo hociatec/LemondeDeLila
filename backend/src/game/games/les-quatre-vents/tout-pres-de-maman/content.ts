@@ -7,7 +7,7 @@ import {
 import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { MamanCard, MamanTile } from './state';
+import type { MamanCard, MamanTile } from './types';
 
 type RawMamanCard = Omit<MamanCard, 'effects'>;
 

@@ -7,75 +7,81 @@ import {
   type CardSetsDefinition,
   type DeckDefinition,
   type HandsDefinition,
-} from './cards-kit';
+} from './cards/cards-kit';
 import {
   createInventoryKitState,
   GameInventoryController,
   type InventoryDefinition,
-} from './inventory-kit';
+} from './kits/inventory-kit';
 import {
   createEconomyKitState,
   GameEconomyController,
   type MarketDefinition,
-} from './economy-kit';
+} from './kits/economy-kit';
 import {
   createOwnershipKitState,
   GameOwnershipController,
   type OwnershipDefinition,
-} from './ownership-kit';
-import { GameRankingController } from './ranking-kit';
-import type { DeclarativeState } from './game-definition';
-import { GameChoiceController } from './game-choice-controller';
-import { createMovementKitState, GameMovementController } from './movement-kit';
+} from './kits/ownership-kit';
+import { GameRankingController } from './kits/ranking-kit';
+import type { DeclarativeState } from './definitions/game-definition';
+import { GameChoiceController } from './choices/game-choice-controller';
+import {
+  createMovementKitState,
+  GameMovementController,
+} from './kits/movement-kit';
 import {
   createPawnKitState,
   GamePawnController,
   type PawnSetDefinition,
-} from './pawn-kit';
-import type { TurnPolicy } from './turn-kit';
-import { GameTurnController } from './game-turn-controller';
+} from './kits/pawn-kit';
+import type { TurnPolicy } from './kits/turn-kit';
+import { GameTurnController } from './lifecycle/game-turn-controller';
 import {
   createDiceKitState,
   GameDiceController,
   type DiceDefinition,
-} from './dice-kit';
+} from './kits/dice-kit';
 import {
   createGridKitState,
   GameGridController,
   type GridDefinition,
-} from './grid-kit';
-import { createQuizKitState, GameQuizController } from './quiz-kit';
-import { GameMatchController } from './match-kit';
-import { GameRoundController } from './round-kit';
+} from './kits/grid-kit';
+import { createQuizKitState, GameQuizController } from './kits/quiz-kit';
+import { GameMatchController } from './kits/match-kit';
+import { GameRoundController } from './kits/round-kit';
 import {
   GameCountersController,
   GameResourcesController,
   GameScoreController,
   GameStatusController,
-} from './player-values-kit';
+} from './kits/player-values-kit';
 import { GameRuleViolationError } from '../../domain/errors/game-domain.errors';
-import type { GameLifecycleHooks } from './game-lifecycle-hooks';
-import { GameConfigurationController } from './configuration-kit';
+import type { GameLifecycleHooks } from './lifecycle/game-lifecycle-hooks';
+import { GameConfigurationController } from './configuration/configuration-kit';
 import {
   resetGameComponents,
   type GameComponentDefinition,
-} from './component-kit';
-import type { QuizDefinition } from './quiz-kit';
-import { GameEffectEngineController } from './effect-engine';
-import type { GameEffectResolverShape } from './effects-kit';
+} from './definitions/component-kit';
+import type { QuizDefinition } from './kits/quiz-kit';
+import { GameEffectEngineController } from './effects/effect-engine';
+import type { GameEffectResolverShape } from './effects/effects-kit';
 import {
   GameSubmissionController,
   GameSubmissionFlowController,
   GameJudgeController,
   GameVotingController,
-} from './submission-kit';
-import { GameContextEvents, type DomainEvent } from './game-context-events';
-import { GameSchedulerController } from './scheduler-kit';
-import type { PhaseConfiguration } from './phase-kit';
+} from './submissions/submission-kit';
+import {
+  GameContextEvents,
+  type DomainEvent,
+} from './events/game-context-events';
+import { GameSchedulerController } from './automation/scheduler-kit';
+import type { PhaseConfiguration } from './kits/phase-kit';
 import type { PlayerMap } from './game-identifiers';
 
-export type { EventDataMap, DomainEvent } from './game-context-events';
-export type { EngineEventMap } from './engine-event-registry';
+export type { EventDataMap, DomainEvent } from './events/game-context-events';
+export type { EngineEventMap } from './events/engine-event-registry';
 export type { EventVisibility } from '../models/game-event.model';
 
 export class GameContext<TState extends object> {
@@ -179,7 +185,7 @@ export class GameContext<TState extends object> {
         ): component is (
           DeckDefinition<unknown> | HandsDefinition | CardSetsDefinition
         ) & {
-          readonly scope?: import('./component-kit').GameComponentScope;
+          readonly scope?: import('./definitions/component-kit').GameComponentScope;
         } => component.component.startsWith('cards.'),
       ),
     ));
@@ -228,8 +234,8 @@ export class GameContext<TState extends object> {
       this.components.filter(
         (
           component,
-        ): component is import('./movement-kit').TrackDefinition & {
-          readonly scope?: import('./component-kit').GameComponentScope;
+        ): component is import('./kits/movement-kit').TrackDefinition & {
+          readonly scope?: import('./definitions/component-kit').GameComponentScope;
         } => component.component === 'movement.track',
       ),
       (...effects) => this.effects.schedule(...effects),
@@ -279,7 +285,7 @@ export class GameContext<TState extends object> {
         (
           component,
         ): component is QuizDefinition & {
-          readonly scope?: import('./component-kit').GameComponentScope;
+          readonly scope?: import('./definitions/component-kit').GameComponentScope;
         } => component.component === 'quiz.bank',
       ),
       this.emitDomainEvent,

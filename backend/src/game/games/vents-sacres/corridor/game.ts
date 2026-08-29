@@ -5,6 +5,7 @@ import {
   defineGameContent,
   gameInput,
   gridGame,
+  type NoGameState,
   pawns,
 } from '../../../engine/sdk/public-api';
 import {
@@ -20,13 +21,9 @@ import {
   resolvePawn,
   startCorridorSetup,
 } from './rules';
-import type { CorridorPlayerView, CorridorState } from './state';
+import type { CorridorPosition } from './types';
 
-export default defineGame<
-  CorridorState,
-  typeof CORRIDOR_ACTIONS,
-  CorridorPlayerView
->({
+export default defineGame<NoGameState, typeof CORRIDOR_ACTIONS>({
   id: 'corridor',
   displayName: 'Le Corridor',
   category: 'JeuxDePlateaux',
@@ -45,7 +42,7 @@ export default defineGame<
       height: CORRIDOR_SIZE,
     }),
   ],
-  config: defineConfiguration<CorridorState, { wallsPerPlayer: number }>({
+  config: defineConfiguration<NoGameState, { wallsPerPlayer: number }>({
     input: gameInput.object({
       wallsPerPlayer: gameInput.number({ integer: true, min: 0, max: 20 }),
     }),
@@ -76,24 +73,22 @@ export default defineGame<
       { x: center, y: CORRIDOR_SIZE - 1 },
       players[1].id,
     );
-    const state: CorridorState = {
-      walls: [],
-    };
-    return state;
+    ctx.grid.setOverlays('corridor', 'walls', []);
+    return {};
   },
   initialPhase: CORRIDOR_PHASES.initialPhase,
   phases: CORRIDOR_PHASES.phases,
   actions: CORRIDOR_ACTIONS,
   choices: {
-    'corridor.pawn': defineChoice<CorridorState, string>({
+    'corridor.pawn': defineChoice<NoGameState, string>({
       input: gameInput.string({ min: 1, max: 128 }),
       resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
     }),
   },
-  viewExtension: ({ state }) => ({ walls: structuredClone(state.walls) }),
   bot: {
     choose: ({ state, actor, ctx }) => {
-      const move = legalMoves(state, actor.id, ctx)[0];
+      const move = legalMoves(state, actor.id, ctx)[0] as
+        CorridorPosition | undefined;
       return move
         ? { type: 'corridor_move', payload: { x: move.x, y: move.y } }
         : null;

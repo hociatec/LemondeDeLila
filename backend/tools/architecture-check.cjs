@@ -88,11 +88,31 @@ function describeComponent(srcRelative, contract) {
     };
   }
 
-  const commonComponents = new Set(contract.components?.common ?? []);
-  if (parts[0] === 'common' && commonComponents.has(parts[1])) {
+  const modules = new Set(contract.components?.modules ?? []);
+  if (parts[0] === 'modules' && modules.has(parts[1])) {
     return {
-      name: `common.${parts[1]}`,
-      root: `common/${parts[1]}`,
+      name: parts[1],
+      root: `modules/${parts[1]}`,
+      depth: 2,
+      kind: 'domain',
+    };
+  }
+
+  const platform = new Set(contract.components?.platform ?? []);
+  if (parts[0] === 'platform' && platform.has(parts[1])) {
+    return {
+      name: `platform.${parts[1]}`,
+      root: `platform/${parts[1]}`,
+      depth: 2,
+      kind: 'platform',
+    };
+  }
+
+  const shared = new Set(contract.components?.shared ?? []);
+  if (parts[0] === 'shared' && shared.has(parts[1])) {
+    return {
+      name: `shared.${parts[1]}`,
+      root: `shared/${parts[1]}`,
       depth: 2,
       kind: 'shared',
     };
@@ -219,8 +239,12 @@ function isComponentPublicEntry(fileInfo, contract) {
 function isCompositionSource(fileInfo, contract) {
   if (!fileInfo.component) return true;
   if (fileInfo.component.kind === 'composition') return true;
-  const first = fileInfo.relative.split('/')[0];
-  if ((contract.composition?.rootComponents ?? []).includes(first)) return true;
+  if (
+    (contract.composition?.rootComponents ?? []).includes(
+      fileInfo.component.name,
+    )
+  )
+    return true;
   if ((contract.composition?.rootFiles ?? []).includes(fileInfo.relative))
     return true;
   if ((contract.composition?.layers ?? ['module']).includes(fileInfo.layer))
@@ -231,9 +255,10 @@ function isCompositionSource(fileInfo, contract) {
 }
 
 function isBoundaryExemptSource(fileInfo, contract) {
-  const first = fileInfo.relative.split('/')[0];
   return (
-    (contract.boundaries?.exemptSourceComponents ?? []).includes(first) ||
+    (contract.boundaries?.exemptSourceComponents ?? []).includes(
+      fileInfo.component?.name,
+    ) ||
     (contract.boundaries?.exemptSourceFiles ?? []).includes(fileInfo.relative)
   );
 }
@@ -359,7 +384,7 @@ function analyzeArchitecture({
     const relativeParts = sourceInfo.relative.split('/');
     const legacyDir = relativeParts[sourceInfo.component.depth];
     if (
-      sourceInfo.component.depth === 1 &&
+      sourceInfo.component.kind === 'domain' &&
       (contract.legacyRootDirectories ?? []).includes(legacyDir)
     ) {
       violations.push(
@@ -455,6 +480,36 @@ function analyzeArchitecture({
       }
 
       if (sameComponent) continue;
+
+      if (
+        sourceInfo.component.kind === 'shared' &&
+        targetInfo.component.kind !== 'shared'
+      ) {
+        violations.push(
+          makeViolation(
+            'shared-dependency-direction',
+            sourceInfo,
+            targetInfo,
+            null,
+            `shared cannot depend on ${targetInfo.component.name}`,
+          ),
+        );
+      }
+      if (
+        sourceInfo.component.kind === 'platform' &&
+        ['domain', 'game', 'engine'].includes(targetInfo.component.kind) &&
+        !isBoundaryExemptSource(sourceInfo, contract)
+      ) {
+        violations.push(
+          makeViolation(
+            'platform-dependency-direction',
+            sourceInfo,
+            targetInfo,
+            null,
+            `platform cannot depend on ${targetInfo.component.name}`,
+          ),
+        );
+      }
 
       if (!compositionSource) {
         const graphSource = graphComponentName(sourceInfo.component, contract);

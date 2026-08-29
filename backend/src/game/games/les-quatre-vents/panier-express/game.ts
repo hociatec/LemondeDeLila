@@ -30,7 +30,7 @@ import {
   PANIER_REVERSED,
 } from './rules';
 import { PANIER_EFFECTS } from './effects';
-import type { PanierState } from './state';
+import type { PanierState } from './types';
 
 export default defineGame<PanierState, typeof PANIER_ACTIONS>({
   id: 'panier-express',

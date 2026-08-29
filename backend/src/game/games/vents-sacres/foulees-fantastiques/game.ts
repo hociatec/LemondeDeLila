@@ -13,7 +13,7 @@ import {
   resolveFamilyChoice,
   resolvePawnChoice,
 } from './rules';
-import type { FouleesState } from './state';
+import type { FouleesState } from './types';
 
 const COLORS = ['Rouge', 'Bleu', 'Vert', 'Jaune'] as const;
 

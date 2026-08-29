@@ -11,7 +11,7 @@ import {
   scheduleTargetEffect,
   type VoyageTargetEffect,
 } from './rules';
-import type { VoyageCollectionKind, VoyageState } from './state';
+import type { VoyageCollectionKind, VoyageState } from './types';
 
 const TARGET_EFFECTS = ['swap-position', 'skip-turn', 'swap-card'] as const;
 

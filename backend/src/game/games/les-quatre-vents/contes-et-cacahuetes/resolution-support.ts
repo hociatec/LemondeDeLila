@@ -2,7 +2,7 @@ import { rejectRule } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import { CONTES_DECKS, CONTES_TILES } from './content';
 import { CONTES_STATUSES } from './constants';
-import type { ContesPendingEffect, ContesState } from './state';
+import type { ContesPendingEffect, ContesState } from './types';
 
 type RuleContext = GameContext<ContesState>;
 const TRACK = 'story-road';

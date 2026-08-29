@@ -9,8 +9,8 @@ import type {
   CompiledGameDefinition,
   GameActionDefinition,
   GameActionMap,
-} from '../application/runtime/game-definition';
-import type { MatchResult } from '../application/runtime/match-kit';
+} from '../application/runtime/definitions/game-definition';
+import type { MatchResult } from '../application/runtime/kits/match-kit';
 import { GameCommandExecutorService } from '../application/services/game-command-executor.service';
 import { GameEngineService } from '../application/services/game-engine.service';
 import { GameExecutionScopeService } from '../application/services/game-execution-scope.service';

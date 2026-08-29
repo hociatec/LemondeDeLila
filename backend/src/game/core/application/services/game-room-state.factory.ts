@@ -7,7 +7,7 @@ import type {
 import {
   ensureSeededRng,
   seededShuffle,
-} from '../../../../common/utils/public-api';
+} from '../../../../shared/utils/public-api';
 import { resolveGameStateRunId } from '../helpers/game-room-run-id.helper';
 import { gameNowIso } from './game-execution-scope.service';
 

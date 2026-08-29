@@ -15,7 +15,10 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@common/*": ["src/common/*"]
+      "@modules/*": ["src/modules/*"],
+      "@game/*": ["src/game/*"],
+      "@platform/*": ["src/platform/*"],
+      "@shared/*": ["src/shared/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

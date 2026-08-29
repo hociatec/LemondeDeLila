@@ -25,7 +25,9 @@ async function main() {
     username: user,
     password,
     database,
-    migrations: [path.join(__dirname, '../src/migrations/*.ts')],
+    migrations: [
+      path.join(__dirname, '../src/platform/database/migrations/*.ts'),
+    ],
     entities: [path.join(__dirname, '../src/**/*.entity.ts')],
     synchronize: false,
     logging: false,

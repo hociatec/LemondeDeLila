@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { readEnvironment } from '../../../../config/public-api';
+import { readEnvironment } from '../../../../platform/config/public-api';
 import type { GameEvent, GameSnapshot } from '../models/game-event.model';
 import type { GameStateEntity } from '../models/game-state.model';
 import type { GameStateWithActions } from '../models/game-action.model';

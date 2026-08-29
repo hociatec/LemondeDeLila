@@ -10,7 +10,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import { MINUIT_CARDS, MINUIT_TILES, type MinuitCard } from './content';
-import type { MinuitPending, MinuitState } from './state';
+import type { MinuitPending, MinuitState } from './types';
 
 type RuleContext = GameContext<MinuitState>;
 export const MINUIT_PHASES = setupPlayingPhases<MinuitState>();

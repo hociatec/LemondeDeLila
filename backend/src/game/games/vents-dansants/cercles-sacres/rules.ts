@@ -5,7 +5,7 @@ import {
   gameInput,
 } from '../../../engine/sdk/public-api';
 import { CERCLES_SACRES_CARD_BY_ID, type CerclesSacresTheme } from './content';
-import type { CerclesSacresCircle, CerclesSacresState } from './state';
+import type { CerclesSacresCircle, CerclesSacresState } from './types';
 import type { PlayerMap } from '../../../engine/sdk/public-api';
 
 export const CERCLES_SACRES_GOAL = 3;

@@ -1,5 +1,5 @@
 import { defineEffect, gameInput } from '../../../engine/sdk/public-api';
-import type { GrandeMineState } from './state';
+import type { GrandeMineState } from './types';
 import {
   discardRandomHand,
   drawPassive,

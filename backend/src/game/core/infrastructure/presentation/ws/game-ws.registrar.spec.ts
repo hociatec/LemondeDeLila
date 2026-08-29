@@ -1,4 +1,4 @@
-import { WsRouteRegistry } from '../../../../../realtime/public-api';
+import { WsRouteRegistry } from '../../../../../platform/realtime/public-api';
 import { GameWsRegistrar } from './game-ws.registrar';
 
 describe('GameWsRegistrar', () => {

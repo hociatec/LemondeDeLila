@@ -12,7 +12,7 @@ import {
   MINE_DOMAINS,
 } from './rules';
 import { GRANDE_MINE_EFFECTS } from './effects';
-import type { GrandeMineState } from './state';
+import type { GrandeMineState } from './types';
 
 export default defineGame<GrandeMineState, typeof GRANDE_MINE_ACTIONS>({
   id: 'la-grande-mine-de-barbak',

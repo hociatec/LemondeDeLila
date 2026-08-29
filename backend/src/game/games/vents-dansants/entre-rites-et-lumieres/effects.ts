@@ -8,7 +8,7 @@ import {
   resurrectionChoice,
   stealChoice,
 } from './rules';
-import type { EntreRitesState } from './state';
+import type { EntreRitesState } from './types';
 
 export const ENTRE_RITES_EFFECTS = {
   'rites.draw-two': defineEffect<EntreRitesState, Record<string, never>>({

@@ -7,7 +7,7 @@ import {
   type PlayerMap,
 } from '../../../engine/sdk/public-api';
 import { VILLAGE_TILES } from './content';
-import type { MonVillageState, VillageCard, VillageCollection } from './state';
+import type { MonVillageState, VillageCard, VillageCollection } from './types';
 
 const TRACK = 'village';
 const ZONE_RANGES = [

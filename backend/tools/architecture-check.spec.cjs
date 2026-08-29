@@ -48,14 +48,14 @@ test('compares semantic counts so moving a file is not a regression', () => {
   const base = {
     rule: 'cross-component-deep-import',
     source: 'room',
-    target: 'common.redis',
+    target: 'platform.redis',
     subject: null,
   };
   const baseline = groupViolations([
-    { ...base, file: 'room/old.ts', detail: 'imports common/redis/old.ts' },
+    { ...base, file: 'modules/room/old.ts', detail: 'imports platform/redis/old.ts' },
   ]);
   const current = groupViolations([
-    { ...base, file: 'room/new.ts', detail: 'imports common/redis/new.ts' },
+    { ...base, file: 'modules/room/new.ts', detail: 'imports platform/redis/new.ts' },
   ]);
   assert.deepEqual(compareGroups(current, baseline).regressions, []);
 });
@@ -74,19 +74,21 @@ test('deduplicates graph cycles into one strongly connected component', () => {
 test('keeps public API dependencies in the component graph model', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-architecture-'));
   try {
-    fs.mkdirSync(path.join(root, 'room', 'application'), { recursive: true });
-    fs.mkdirSync(path.join(root, 'common', 'utils'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'modules', 'room', 'application'), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(root, 'shared', 'utils'), { recursive: true });
     fs.writeFileSync(
-      path.join(root, 'room', 'application', 'service.ts'),
-      "import { helper } from '../../common/utils/public-api';\nvoid helper;\n",
+      path.join(root, 'modules', 'room', 'application', 'service.ts'),
+      "import { helper } from '../../../shared/utils/public-api';\nvoid helper;\n",
     );
     fs.writeFileSync(
-      path.join(root, 'common', 'utils', 'public-api.ts'),
+      path.join(root, 'shared', 'utils', 'public-api.ts'),
       'export const helper = true;\n',
     );
 
     const analysis = analyzeArchitecture({ root, contract });
-    assert.equal(analysis.graph.get('room').has('common'), true);
+    assert.equal(analysis.graph.get('room').has('shared'), true);
     assert.equal(
       analysis.violations.some(
         (entry) => entry.rule === 'cross-component-deep-import',
@@ -102,7 +104,7 @@ test('allows only component dependencies declared by the contract', () => {
   assert.equal(
     isAllowedDependency(
       { name: 'room' },
-      { name: 'common.redis' },
+      { name: 'platform.redis' },
       contract,
     ),
     true,
@@ -116,14 +118,16 @@ test('allows only component dependencies declared by the contract', () => {
 test('reports an undeclared dependency even when it uses a public API', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-architecture-'));
   try {
-    fs.mkdirSync(path.join(root, 'user', 'application'), { recursive: true });
-    fs.mkdirSync(path.join(root, 'vault'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'modules', 'user', 'application'), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(root, 'modules', 'vault'), { recursive: true });
     fs.writeFileSync(
-      path.join(root, 'user', 'application', 'service.ts'),
+      path.join(root, 'modules', 'user', 'application', 'service.ts'),
       "import { vaultApi } from '../../vault/public-api';\nvoid vaultApi;\n",
     );
     fs.writeFileSync(
-      path.join(root, 'vault', 'public-api.ts'),
+      path.join(root, 'modules', 'vault', 'public-api.ts'),
       'export const vaultApi = true;\n',
     );
 
@@ -144,14 +148,17 @@ test('lets composition modules wire another component entity without opening rep
   try {
     const entityDir = path.join(
       root,
+      'modules',
       'vault',
       'infrastructure',
       'persistence',
       'typeorm',
       'entities',
     );
-    fs.mkdirSync(path.join(root, 'room', 'module'), { recursive: true });
-    fs.mkdirSync(path.join(root, 'room', 'infrastructure', 'persistence'), {
+    fs.mkdirSync(path.join(root, 'modules', 'room', 'module'), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(root, 'modules', 'room', 'infrastructure', 'persistence'), {
       recursive: true,
     });
     fs.mkdirSync(entityDir, { recursive: true });
@@ -160,11 +167,11 @@ test('lets composition modules wire another component entity without opening rep
       'export class SnapshotEntity {}\n',
     );
     fs.writeFileSync(
-      path.join(root, 'room', 'module', 'room.module.ts'),
+      path.join(root, 'modules', 'room', 'module', 'room.module.ts'),
       "import { SnapshotEntity } from '../../vault/infrastructure/persistence/typeorm/entities/snapshot.entity';\nvoid SnapshotEntity;\n",
     );
     fs.writeFileSync(
-      path.join(root, 'room', 'infrastructure', 'persistence', 'repository.ts'),
+      path.join(root, 'modules', 'room', 'infrastructure', 'persistence', 'repository.ts'),
       "import { SnapshotEntity } from '../../../vault/infrastructure/persistence/typeorm/entities/snapshot.entity';\nvoid SnapshotEntity;\n",
     );
 

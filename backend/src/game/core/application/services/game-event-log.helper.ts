@@ -7,7 +7,7 @@ import type {
 } from '../models/game-event.model';
 import type { GameStateEntity } from '../models/game-state.model';
 import type { GameSnapshotPolicy } from '../ports/game-event-store.port';
-import { sameSerializableValue } from '../runtime/serializable-value';
+import { sameSerializableValue } from '../runtime/state/serializable-value';
 import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
 
 type StateWithEventBuffer = GameStateEntity & {

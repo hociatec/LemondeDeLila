@@ -6,7 +6,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import type { PendingState } from '../models/game-state.model';
+import type { PendingState } from './game-state.model';
 
 export class GameSingleActionDto {
   @IsString()

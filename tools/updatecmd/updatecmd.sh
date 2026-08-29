@@ -185,7 +185,7 @@ create_source_snapshot "$SOURCE_ROOT" "$SNAPSHOT_DIR"
 BACKEND_SOURCE_ID="$(tree_digest "$SNAPSHOT_DIR/backend")"
 WX_SOURCE_ID="$({
   printf 'client-wx %s\n' "$(tree_digest "$SNAPSHOT_DIR/client-wx")"
-  printf 'ws-events %s\n' "$(sha256_file "$SNAPSHOT_DIR/backend/src/realtime/infrastructure/presentation/ws/ws-events.ts")"
+  printf 'ws-events %s\n' "$(sha256_file "$SNAPSHOT_DIR/backend/src/platform/realtime/infrastructure/presentation/ws/ws-events.ts")"
   printf 'fields %s\n' "$(sha256_file "$SNAPSHOT_DIR/backend/contracts/client-wx-fields.json")"
   if [[ -d "$SNAPSHOT_DIR/client-win" ]]; then
     printf 'client-win %s\n' "$(tree_digest "$SNAPSHOT_DIR/client-win")"

@@ -1,5 +1,5 @@
 import { freezeGameContent } from '../../../engine/sdk/public-api';
-import type { CorridorPawn } from './state';
+import type { CorridorPawn } from './types';
 
 export const CORRIDOR_PAWNS: CorridorPawn[] = [
   {

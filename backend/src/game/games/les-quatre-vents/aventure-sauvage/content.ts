@@ -10,7 +10,7 @@ import type {
   AventurePawn,
   AventureTile,
   AventureTileType,
-} from './state';
+} from './types';
 
 const TILE_TYPES: AventureTileType[] = [
   'neutral',

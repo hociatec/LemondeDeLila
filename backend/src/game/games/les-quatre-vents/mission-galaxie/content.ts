@@ -11,7 +11,7 @@ import type {
   MissionGalaxieEventEffect,
   MissionGalaxieTile,
   MissionGalaxieTileType,
-} from './state';
+} from './types';
 
 export const MISSION_GALAXIE_CONTENT = loadContent();
 

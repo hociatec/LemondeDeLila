@@ -4,7 +4,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { FouleesFamily } from './state';
+import type { FouleesFamily } from './types';
 
 type Board = {
   trackLength: number;

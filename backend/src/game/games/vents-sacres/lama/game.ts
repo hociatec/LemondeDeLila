@@ -5,7 +5,6 @@ import {
   defineGameContent,
   gameInput,
   type NoGameState,
-  type PlayerMap,
   roundScoring,
   when,
 } from '../../../engine/sdk/public-api';
@@ -22,20 +21,11 @@ import {
 import { LAMA_CONFIGURATION } from './configuration';
 
 type LamaState = NoGameState;
-type LamaStep = 'setup' | 'turn' | 'return' | 'pause';
-interface LamaViewExtension {
-  step: LamaStep;
-  droppedOut: PlayerMap<boolean>;
-  drawnThisTurn: boolean;
-  roundStarterIndex: number;
-  topCard: LamaCard | null;
-}
-
 const scoring = roundScoring<LamaState>({
   score: ({ state, ctx }) => scoreLamaRound(state, ctx),
 });
 
-export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaViewExtension>({
+export default defineGame<LamaState, typeof LAMA_ACTIONS>({
   id: 'lama',
   displayName: 'LAMA',
   category: 'JeuxDeCartes',
@@ -82,23 +72,6 @@ export default defineGame<LamaState, typeof LAMA_ACTIONS, LamaViewExtension>({
       ({ state, ctx }) => skipInactiveLamaPlayer(state, ctx),
     ),
   ],
-  viewExtension: ({ ctx }) => {
-    const discard = ctx.cards.discardPile<LamaCard>('lama');
-    return {
-      step: LAMA_PHASES.current(ctx),
-      droppedOut: ctx.players.byId((player) =>
-        ctx.round.leftPlayers().includes(player.id),
-      ),
-      drawnThisTurn: ctx.turn.flags.get<boolean>('lama.drawn') === true,
-      roundStarterIndex: Math.max(
-        0,
-        ctx.players
-          .all()
-          .findIndex((player) => player.id === ctx.round.starter()),
-      ),
-      topCard: discard.at(-1) ?? null,
-    };
-  },
   bot: {
     choose: ({ state: _state, actor, availableActions, ctx }) => {
       if (availableActions.includes('lama_play')) {

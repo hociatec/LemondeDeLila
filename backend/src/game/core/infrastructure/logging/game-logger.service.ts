@@ -6,7 +6,7 @@ import * as winston from 'winston';
 import {
   sanitizeLogText,
   sanitizeLogValue,
-} from '../../../../common/observability/public-api';
+} from '../../../../platform/observability/public-api';
 
 import { GameError } from '../../domain/errors/game-errors';
 

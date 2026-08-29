@@ -1,10 +1,10 @@
 import { DataSource } from 'typeorm';
-import { ORM_ENTITIES } from './database/entities';
+import { join } from 'node:path';
+import { ORM_ENTITIES } from './platform/database/entities';
 import {
   getProcessEnvironment,
-  readEnvironment,
   readEnvironmentBoolean,
-} from './config/public-api';
+} from './platform/config/public-api';
 
 const shouldIgnoreEnvFile = readEnvironmentBoolean('IGNORE_ENV_FILE', false);
 if (!shouldIgnoreEnvFile) {
@@ -23,7 +23,6 @@ const {
   DB_NAME = 'le_monde_de_lila',
 } = getProcessEnvironment();
 
-const isProd = readEnvironment('NODE_ENV') === 'production';
 const base = DATABASE_URL
   ? {
       type: 'mysql' as const,
@@ -38,7 +37,13 @@ const base = DATABASE_URL
       database: DB_NAME,
     };
 
-const migrations = [isProd ? 'dist/migrations/*.js' : 'src/migrations/*.ts'];
+const migrationExtension = __filename.endsWith('.js') ? 'js' : 'ts';
+const migrations = [
+  join(
+    __dirname,
+    `platform/database/migrations/[0-9]*-*.${migrationExtension}`,
+  ),
+];
 
 export default new DataSource({
   ...base,

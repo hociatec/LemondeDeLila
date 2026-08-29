@@ -6,7 +6,7 @@ import {
   type GameContext,
   type PlayerMap,
 } from '../../../engine/sdk/public-api';
-import type { PrimalisFace, PrimalisResources, PrimalisState } from './state';
+import type { PrimalisFace, PrimalisResources, PrimalisState } from './types';
 
 const TRACK = 'comet';
 export const PRIMALIS_DANGER_AMPLIFIED = 'primalis.danger-amplified';

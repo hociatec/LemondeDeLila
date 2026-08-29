@@ -16,25 +16,18 @@ import {
 } from './content';
 import {
   CAT_PATTES_ACTIONS,
-  catPattesPlayerState,
   playableInputs,
   resetCatPattesRound,
   scoreCatPattesRound,
 } from './rules';
 import { CAT_PATTES_EFFECTS } from './effects';
 
-type CatPattesViewExtension = ReturnType<typeof catPattesPlayerState>;
-
 const scoring = roundScoring<NoGameState>({
   score: ({ state, ctx }) => scoreCatPattesRound(state, ctx),
 });
 const CAT_PATTES_PHASES = setupPlayingPhases<NoGameState>();
 
-export default defineGame<
-  NoGameState,
-  typeof CAT_PATTES_ACTIONS,
-  CatPattesViewExtension
->({
+export default defineGame<NoGameState, typeof CAT_PATTES_ACTIONS>({
   id: 'cat-pattes',
   displayName: 'Cat Pattes !',
   category: 'JeuxDePlateaux',
@@ -86,7 +79,6 @@ export default defineGame<
   },
   actions: CAT_PATTES_ACTIONS,
   effects: CAT_PATTES_EFFECTS,
-  viewExtension: ({ ctx }) => catPattesPlayerState(ctx),
   bot: {
     choose: ({ state, actor, ctx }) => {
       if (ctx.effects.sourcePlayerId() !== actor.id) {

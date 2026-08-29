@@ -5,7 +5,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext, PlayerMap } from '../../../engine/sdk/public-api';
 import { LA_GRANDE_MINE_CARD_BY_ID, type LaGrandeMineCard } from './content';
-import type { GrandeMineState, MineDomain } from './state';
+import type { GrandeMineState, MineDomain } from './types';
 
 const DECK = 'mine';
 const HANDS = 'players';

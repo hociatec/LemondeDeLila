@@ -11,7 +11,7 @@ import {
   type BandeABananeCardDefinition,
   type BandeABananeMonkeySpecies,
 } from './content';
-import type { BandeABananeState } from './state';
+import type { BandeABananeState } from './types';
 import type { PlayerMap } from '../../../engine/sdk/public-api';
 import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 
@@ -214,14 +214,14 @@ function speciesCount(
 
 export function bananaTroops(
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): PlayerMap<import('./state').BandeABananeTroopEntry[]> {
+): PlayerMap<import('./types').BandeABananeTroopEntry[]> {
   return ctx.players.byId((player) => troops(player.id, ctx));
 }
 
 function troops(
   playerId: number,
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): import('./state').BandeABananeTroopEntry[] {
+): import('./types').BandeABananeTroopEntry[] {
   return ctx.inventory.items(TROOPS, playerId).flatMap((itemId) => {
     const separator = itemId.lastIndexOf(':');
     const cardId = itemId.slice(0, separator);

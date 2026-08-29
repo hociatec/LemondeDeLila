@@ -5,7 +5,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { PirateCard, PirateTile } from './state';
+import type { PirateCard, PirateTile } from './types';
 
 type PirateContent = {
   tiles: PirateTile[];

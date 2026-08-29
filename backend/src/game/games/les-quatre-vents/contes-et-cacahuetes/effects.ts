@@ -18,7 +18,7 @@ import {
 } from './resolution';
 import { CONTES_STATUSES } from './constants';
 import type { ContesCardType } from './content';
-import type { ContesState, ContesTargetEffect } from './state';
+import type { ContesState, ContesTargetEffect } from './types';
 
 export const CONTES_EFFECTS = {
   'contes.move': defineEffect<ContesState, { delta: number }>({

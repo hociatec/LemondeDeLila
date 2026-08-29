@@ -21,7 +21,7 @@ import {
   type RitesStealChoice,
 } from './rules';
 import { ENTRE_RITES_EFFECTS } from './effects';
-import type { EntreRitesState } from './state';
+import type { EntreRitesState } from './types';
 
 const familySets = cards.sets({
   id: 'rite-families',

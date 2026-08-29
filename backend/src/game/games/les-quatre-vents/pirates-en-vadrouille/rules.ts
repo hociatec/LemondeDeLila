@@ -1,7 +1,7 @@
 import { drawAndResolve, raceTurn } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import { PIRATES_CONTENT } from './content';
-import type { PirateCard, PiratesState } from './state';
+import type { PirateCard, PiratesState } from './types';
 
 type DeckName = 'bonus' | 'treasure' | 'obstacle';
 type RuleContext = GameContext<PiratesState>;
@@ -138,7 +138,7 @@ function finishOrRetreat(playerId: number, ctx: RuleContext): void {
 export function pirateCollectionIds(
   playerId: number,
   ctx: RuleContext,
-): import('./state').PirateCollectionState {
+): import('./types').PirateCollectionState {
   const ids = (kind: DeckName) =>
     ctx.inventory
       .items(PIRATE_INVENTORIES[kind], playerId)

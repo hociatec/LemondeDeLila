@@ -6,11 +6,7 @@ import {
   gameEffects,
   gameInput,
 } from '../../../engine/sdk/public-api';
-import type {
-  GameContext,
-  NoGameState,
-  PlayerMap,
-} from '../../../engine/sdk/public-api';
+import type { GameContext, NoGameState } from '../../../engine/sdk/public-api';
 import {
   CAT_PATTES_CARD_BY_ID,
   CAT_PATTES_DECK,
@@ -434,32 +430,6 @@ function addRoundStatus(
   ctx: RuleContext,
 ): void {
   ctx.status.add(playerId, statusId, { scope: 'round' });
-}
-
-export function catPattesPlayerState(ctx: RuleContext): {
-  obstacles: PlayerMap<CatPattesObstacleType | null>;
-  powers: PlayerMap<CatPattesBotType[]>;
-  turboPlayed: PlayerMap<number>;
-  hasSun: PlayerMap<boolean>;
-  sunReady: PlayerMap<boolean>;
-  obstacleLock: PlayerMap<boolean>;
-} {
-  return {
-    obstacles: ctx.players.byId((player) => currentObstacle(player.id, ctx)),
-    powers: ctx.players.byId((player) => powers(player.id, ctx)),
-    turboPlayed: ctx.players.byId((player) =>
-      ctx.resources.get(player.id, CAT_TURBO_PLAYED),
-    ),
-    hasSun: ctx.players.byId((player) =>
-      ctx.status.has(player.id, CAT_HAS_SUN),
-    ),
-    sunReady: ctx.players.byId(
-      (player) => !ctx.status.has(player.id, CAT_SUN_NOT_READY),
-    ),
-    obstacleLock: ctx.players.byId((player) =>
-      ctx.status.has(player.id, CAT_OBSTACLE_LOCK),
-    ),
-  };
 }
 
 function powerIgnoresObstacle(

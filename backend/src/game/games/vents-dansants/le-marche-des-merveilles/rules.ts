@@ -5,7 +5,7 @@ import {
   type GameContext,
 } from '../../../engine/sdk/public-api';
 import { MARKET_RULES, WONDER_GOODS } from './content';
-import type { WonderGood, WonderMarketState } from './state';
+import type { WonderGood, WonderMarketState } from './types';
 
 const goodSchema = gameInput.enum(WONDER_GOODS);
 const MARKET = 'wonders';

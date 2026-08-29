@@ -1,114 +1,91 @@
 # Contrat d'architecture du backend
 
-## Règles v3 issues de la restructuration
+## Frontières racine
 
-Le contrat v3 distingue trois situations : le code interne d'un composant, le
-câblage technique et les collaborations entre composants métier.
+Le dossier `src` possède exactement quatre frontières de code :
 
-1. À l'intérieur d'un composant, les imports sont libres tant que les règles de
-   couches restent respectées.
-2. `common/*` constitue le socle partagé. Tous les composants peuvent en
-   dépendre, mais `common/*` ne dépend jamais d'un composant métier.
-3. `game`, `game/engine` et `game/games/*` appartiennent au même contexte de
-   plateforme de jeu. Leurs dépendances internes sont autorisées explicitement.
-   Deux jeux distincts restent isolés et ne peuvent pas s'importer.
-4. Une dépendance entre composants métier doit être déclarée dans
-   `dependencies.allowed` et passer par le `public-api.ts` du composant cible.
-   Une nouvelle relation non déclarée échoue même si elle utilise une API
-   publique.
-5. Les fichiers de composition (`module/*`, `*.module.ts` et fichiers à la
-   racine de `src`) peuvent importer directement les adaptateurs et entités
-   nécessaires au câblage NestJS/TypeORM. Cette permission ne s'applique pas
-   aux services, handlers ou repositories.
-6. Un repository ne peut pas utiliser directement l'entité TypeORM d'un autre
-   composant. La collaboration passe par un port, un service public ou un DTO.
-7. Une API publique ne réexporte pas d'entité TypeORM.
-8. Les cycles entre composants métier restent interdits, y compris lorsque
-   chacune des relations qui compose le cycle est individuellement autorisée.
+```text
+src/
+├── modules/   capacités métier et applicatives
+├── game/      moteur, SDK, composition et jeux
+├── platform/  adapters et services techniques transversaux
+└── shared/    primitives pures et types sans technologie applicative
+```
 
-La liste directionnelle complète des collaborations actuellement reconnues se
-trouve dans `tools/architecture-contract.json`. Elle constitue une liste
-fermée : toute nouvelle dépendance doit être justifiée et ajoutée lors d'une
-revue d'architecture, pas automatiquement ajoutée à la baseline.
+`main.ts`, `app.module.ts` et `data-source.ts` sont les seuls points de
+composition conservés directement à la racine.
 
-Ce document décrit les règles vérifiées automatiquement par
-`tools/architecture-check.cjs`. Le backend est un monolithe modulaire : les
-frontières servent à limiter le couplage, pas à interdire toute collaboration
-entre modules.
+La direction générale est fermée et contrôlée :
 
-## Composants
+```text
+modules ─┬─> game (relations déclarées uniquement)
+         ├─> platform
+         └─> shared
 
-- Chaque dossier directement sous `src/` est un composant métier principal.
-- Chaque dossier `src/common/<nom>` est un composant partagé autonome.
-- `src/game/engine` est le composant du moteur de jeu.
-- Chaque dossier `src/game/games/<famille>/<jeu>` est un sous-contexte de jeu.
-- `database`, `migrations`, `app.module.ts`, `data-source.ts`, les couches
-  `module` et les fichiers `*.module.ts` sont des points de composition. Leurs
-  imports ne créent pas de dépendance métier dans le graphe des cycles.
+game ────┬─> platform
+         └─> shared
 
-La liste des familles et composants partagés reconnus se trouve dans
-`tools/architecture-contract.json` afin que le contrat puisse évoluer sans
-modifier l'algorithme.
+platform ─> shared
+shared ───> aucune frontière supérieure
+```
 
-Les jeux peuvent importer les abstractions et services partagés du socle
-`game`. Cette relation enfant vers parent est intentionnelle et n'exige pas une
-façade pour chaque helper interne. En revanche, un jeu ne peut pas importer un
-autre jeu.
+`platform/database` constitue le point de composition TypeORM : son registre
+d'entités et ses migrations peuvent connaître les adapters de persistance des
+modules et de `game`. Cette exception ne s'étend à aucun autre composant de
+plateforme.
 
-Le socle `game` peut charger directement les modules et handlers des jeux dans
-son registre de plugins. Cette relation parent vers plugin est une relation de
-composition, pas une autorisation donnée à un jeu de connaître ses voisins.
+## Modules métier
 
-## Couches
+Chaque capacité sous `src/modules/<capacité>` expose un `public-api.ts` et suit
+les couches utiles parmi `domain`, `application`, `infrastructure` et `module`.
+Une dépendance entre capacités doit être déclarée dans
+`tools/architecture-contract.json` et passer par l'API publique cible. Les
+imports profonds, les entités TypeORM partagées et les cycles sont interdits
+hors fichiers de composition Nest.
 
-- `domain`, `model` et `rulebook` représentent le domaine pur. Ils ne doivent
-  dépendre ni de NestJS, ni de TypeORM, ni d'une infrastructure.
-- `application` orchestre les cas d'usage et dépend d'abstractions. Elle ne
-  doit pas importer TypeORM ou une couche `infrastructure`.
-- `infrastructure` contient les adaptateurs techniques, transports et dépôts.
-- `module` assemble les fournisseurs NestJS et constitue une couche de
-  composition.
+La présentation est un adapter entrant et reste sous
+`infrastructure/presentation`. L'application et le domaine n'importent jamais
+l'infrastructure. Le domaine n'importe ni NestJS ni TypeORM.
 
-La détection cherche ces segments après la racine du composant. Elle fonctionne
-donc aussi dans les jeux imbriqués.
+## Game
 
-## Frontières publiques
+`src/game` est un contexte spécialisé distinct des modules applicatifs :
 
-Hors point de composition, un import entre deux composants passe par le
-`public-api.ts` ou l'`index.ts` à la racine du composant cible. Les imports
-directs d'entités TypeORM appartenant à un autre composant restent signalés
-dans les services, handlers et repositories.
+- `engine/sdk/public-api.ts` est la surface autorisée pour les jeux concrets ;
+- `core` contient l'implémentation privée du runtime ;
+- `composition` découvre et câble les jeux ;
+- `games/<famille>/<jeu>` isole chaque jeu de ses voisins ;
+- `testing/architecture-tests` contient les contrats transversaux du moteur.
 
-Une API publique ne supprime pas une dépendance : toute dépendance entre
-composants alimente le graphe, même lorsqu'elle passe correctement par
-`public-api.ts`. Le contrôle peut donc encore détecter un cycle. Une API
-publique qui réexporte directement une entité TypeORM est également signalée.
+Deux jeux ne s'importent jamais directement. Les dépendances internes
+`game`, `game.engine` et `game.games.*` sont déclarées explicitement.
 
-Deux jeux distincts ne doivent pas dépendre l'un de l'autre. Ils partagent du
-comportement via le moteur ou une abstraction commune.
+## Platform et Shared
 
-## Baseline
+`src/platform` contient `auth`, `config`, `database`, `observability`,
+`pubsub`, `realtime`, `redis`, `session`, `validation` et `ws`. Ces composants
+ne portent aucune règle métier. Lorsqu'une décision métier est nécessaire,
+ils définissent un port et la composition racine injecte l'implémentation d'un
+module. `platform/realtime` utilise ainsi un port de politique de version au
+lieu d'importer `modules/update`.
 
-La baseline version 2 agrège les occurrences par règle et relation sémantique
-(`source -> cible`). Déplacer ou renommer un fichier sans augmenter le nombre
-d'occurrences ne crée plus de fausse régression. Une augmentation échoue ; une
-diminution est signalée et permet ensuite de rafraîchir la baseline après
-revue.
+`src/shared` contient uniquement les interfaces de données, déclarations de
+types et utilitaires génériques. Il ne dépend ni de `platform`, ni de `modules`,
+ni de `game`. Une primitive qui lit la configuration, journalise ou utilise un
+adapter technique appartient à `platform`.
 
-Les cycles sont calculés sous forme de composantes fortement connexes : un
-groupe cyclique n'est rapporté qu'une fois, sans compter toutes ses rotations.
-Pour ce graphe, les jeux et `game/engine` sont agrégés sous `game`, et les
-composants `common/*` sous `common`. Les frontières détaillées restent vérifiées
-séparément, mais les cycles représentent ainsi les domaines fonctionnels plutôt
-que chaque dossier interne.
+## Contrôles
 
-Commandes :
+`tools/architecture-check.cjs` vérifie les couches, APIs publiques, directions,
+cycles et relations autorisées. `tools/layout-architecture-audit.cjs` verrouille
+les quatre racines et leur inventaire. La baseline est vide : toute violation
+future est donc une régression immédiate.
 
 ```bash
 npm run architecture:test
 npm run architecture:check
-npm run architecture:baseline:update
+npm run layout:audit
 ```
 
-La baseline ne doit être régénérée qu'après validation d'un changement du
-contrat ou remboursement volontaire d'une dette existante.
+La baseline ne doit être régénérée qu'après une modification volontaire et
+revue du contrat, jamais pour accepter automatiquement une violation.
