@@ -36,7 +36,7 @@ void GamePlayPanel::RebuildInfoPanelChoices()
     append("setup", L"Configuration");
     for (const auto& [id, label] : Capabilities)
         if (state_.kits.Has(id)) append(id, label);
-    if (!state_.effect.empty()) append("effect", L"Effet courant");
+    if (state_.effect) append("effect", L"Effet courant");
     if (!state_.timers.empty()) append("timers", L"Minuteries");
     if (!state_.game.empty()) append("specific", L"Informations spécifiques");
     const auto selected = std::find(infoPanelIds_.begin(), infoPanelIds_.end(), activeInfoPanel_);

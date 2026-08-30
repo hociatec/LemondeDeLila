@@ -3,8 +3,11 @@
 #include <string>
 #include <vector>
 
-#include <nlohmann/json_fwd.hpp>
 #include <wx/panel.h>
+
+#include "modules/gameplay/actions/domain/GameAction.h"
+#include "modules/gameplay/state/domain/GameCapabilities.h"
+#include "modules/gameplay/state/domain/GameSystem.h"
 
 class wxKeyEvent;
 class wxListBox;
@@ -15,11 +18,15 @@ class GameGridPanel final : public wxPanel
 {
 public:
     explicit GameGridPanel(wxWindow* parent);
-    void Apply(const nlohmann::json& gridKit);
+    void Apply(const domain::GameGridView* grid,
+        const std::vector<domain::GameAction>& actions,
+        const std::vector<domain::GamePlayer>& players);
     void Clear();
     [[nodiscard]] bool HandleKey(wxKeyEvent& event);
     [[nodiscard]] std::string SelectedCellId() const;
     [[nodiscard]] std::string SelectedBoardId() const;
+    [[nodiscard]] int SelectedX() const;
+    [[nodiscard]] int SelectedY() const;
     [[nodiscard]] wxWindow* NavigationTarget() const;
 
 private:

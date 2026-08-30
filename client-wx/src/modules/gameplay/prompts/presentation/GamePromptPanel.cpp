@@ -6,13 +6,16 @@
 
 #include <wx/button.h>
 #include <wx/checkbox.h>
+#include <wx/checklst.h>
 #include <wx/choice.h>
 #include <wx/event.h>
 #include <wx/sizer.h>
+#include <wx/rearrangectrl.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
+#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/accessibility/application/NavigationController.h"
 #include "shared/accessibility/presentation/ModalNavigation.h"
@@ -69,7 +72,10 @@ std::string GamePromptPanel::BuildSignature(const domain::GamePrompt& prompt)
     signature << prompt.actionType;
     for (const auto& field : prompt.fields)
         signature << '|' << field.key << ':' << field.kind << ':' << field.initialText
-                  << ':' << nlohmann::json(field.choices).dump();
+                  << ':' << field.multiple << ':' << field.ordering;
+    for (const auto& field : prompt.fields)
+        for (const auto& choice : field.choices)
+            signature << ':' << infrastructure::EncodeGameValue(choice).dump();
     return signature.str();
 }
 
@@ -110,20 +116,59 @@ void GamePromptPanel::RebuildFields(const domain::GamePrompt& prompt)
             fieldsSizer_->Add(label, 0, wxEXPAND | wxBOTTOM, 3);
             wxArrayString labels;
             for (const auto& choice : field.choices)
-                labels.Add(FromUtf8(choice.is_string() ? choice.get<std::string>() : choice.dump()));
-            control.choice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, labels);
-            control.choice->SetSelection(0);
-            control.choice->SetName(FromUtf8(field.label));
-            fieldsSizer_->Add(control.choice, 0, wxEXPAND | wxBOTTOM, 8);
+            {
+                const auto encoded = infrastructure::EncodeGameValue(choice);
+                labels.Add(FromUtf8(encoded.is_string()
+                    ? encoded.get<std::string>() : encoded.dump()));
+            }
+            if (field.ordering)
+            {
+                wxArrayInt order;
+                for (std::size_t index = 0; index < field.choices.size(); ++index)
+                    order.Add(static_cast<int>(index));
+                control.ordering = new wxRearrangeCtrl(this, wxID_ANY,
+                    wxDefaultPosition, wxDefaultSize, order, labels);
+                control.ordering->SetName(FromUtf8(field.label +
+                    ". Réorganisez avec les boutons haut et bas."));
+                fieldsSizer_->Add(control.ordering, 0, wxEXPAND | wxBOTTOM, 8);
+            }
+            else if (field.multiple)
+            {
+                control.multipleChoice = new wxCheckListBox(this, wxID_ANY,
+                    wxDefaultPosition, wxDefaultSize, labels);
+                control.multipleChoice->SetName(FromUtf8(field.label + ". Choix multiples."));
+                fieldsSizer_->Add(control.multipleChoice, 0, wxEXPAND | wxBOTTOM, 8);
+            }
+            else
+            {
+                if (field.optional) labels.Insert(wxString(L"Non renseigné"), 0);
+                control.choice = new wxChoice(this, wxID_ANY,
+                    wxDefaultPosition, wxDefaultSize, labels);
+                control.choice->SetSelection(0);
+                control.choice->SetName(FromUtf8(field.label));
+                fieldsSizer_->Add(control.choice, 0, wxEXPAND | wxBOTTOM, 8);
+            }
         }
         else if (kind == "boolean" || kind == "bool")
         {
-            control.checkbox = new wxCheckBox(this, wxID_ANY, FromUtf8(field.label));
-            const auto parsed = application::GamePromptInputCodec::Parse(field, field.initialText);
-            control.checkbox->SetValue(
-                parsed.valid && parsed.value.is_boolean() && parsed.value.get<bool>());
-            control.checkbox->SetName(FromUtf8(field.label));
-            fieldsSizer_->Add(control.checkbox, 0, wxEXPAND | wxBOTTOM, 8);
+            if (field.optional)
+            {
+                control.field.choices = {domain::GameValue{true}, domain::GameValue{false}};
+                control.choice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                    wxArrayString{wxString(L"Non renseigné"), wxString(L"Oui"), wxString(L"Non")});
+                control.choice->SetSelection(0);
+                control.choice->SetName(FromUtf8(field.label));
+                fieldsSizer_->Add(control.choice, 0, wxEXPAND | wxBOTTOM, 8);
+            }
+            else
+            {
+                control.checkbox = new wxCheckBox(this, wxID_ANY, FromUtf8(field.label));
+                const auto parsed = application::GamePromptInputCodec::Parse(field, field.initialText);
+                control.checkbox->SetValue(
+                    parsed.valid && parsed.value.is_boolean() && parsed.value.get<bool>());
+                control.checkbox->SetName(FromUtf8(field.label));
+                fieldsSizer_->Add(control.checkbox, 0, wxEXPAND | wxBOTTOM, 8);
+            }
         }
         else
         {
@@ -139,41 +184,6 @@ void GamePromptPanel::RebuildFields(const domain::GamePrompt& prompt)
         }
         fields_.push_back(std::move(control));
     }
-}
-
-void GamePromptPanel::Submit()
-{
-    if (!IsActive() || !action_) return;
-    auto action = *action_;
-    for (const auto& control : fields_)
-    {
-        if (control.choice != nullptr)
-        {
-            const int selected = control.choice->GetSelection();
-            if (selected < 0 || static_cast<std::size_t>(selected) >= control.field.choices.size())
-                return;
-            action.payload[control.field.key] =
-                control.field.choices[static_cast<std::size_t>(selected)];
-            continue;
-        }
-        const std::string raw = control.checkbox != nullptr
-            ? (control.checkbox->GetValue() ? "oui" : "non")
-            : std::string(control.text->GetValue().ToUTF8().data());
-        auto parsed = application::GamePromptInputCodec::Parse(control.field, raw);
-        if (!parsed.valid)
-        {
-            auto* target = control.checkbox != nullptr
-                ? static_cast<wxWindow*>(control.checkbox)
-                : static_cast<wxWindow*>(control.text);
-            if (onValidationError_)
-                onValidationError_(FromUtf8(control.field.label + " : " + parsed.error), target);
-            lila::shared::accessibility::NavigationController::Focus(target);
-            return;
-        }
-        action.payload[control.field.key] = std::move(parsed.value);
-    }
-    HidePrompt();
-    if (onSubmit_) onSubmit_(std::move(action));
 }
 
 void GamePromptPanel::Cancel()
@@ -199,7 +209,9 @@ std::vector<wxWindow*> GamePromptPanel::TabTargets() const
     std::vector<wxWindow*> controls;
     controls.reserve(fields_.size() + 2);
     for (const auto& field : fields_)
-        controls.push_back(field.choice != nullptr ? static_cast<wxWindow*>(field.choice)
+        controls.push_back(field.ordering != nullptr ? static_cast<wxWindow*>(field.ordering)
+            : field.multipleChoice != nullptr ? static_cast<wxWindow*>(field.multipleChoice)
+            : field.choice != nullptr ? static_cast<wxWindow*>(field.choice)
             : field.checkbox != nullptr ? static_cast<wxWindow*>(field.checkbox)
                                         : static_cast<wxWindow*>(field.text));
     controls.push_back(cancelButton_);

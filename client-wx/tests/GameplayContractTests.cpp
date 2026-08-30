@@ -14,12 +14,14 @@
 #include "modules/gameplay/dice/application/GameDiceTextBuilder.h"
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
+#include "modules/gameplay/actions/infrastructure/GameActionCatalogDecoder.h"
 #include "modules/gameplay/session/application/GameStartConfigurationFlow.h"
 #include "modules/gameplay/session/infrastructure/GameEventPayloadCodec.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
 #include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
+#include "modules/gameplay/grid/application/GameGridActionResolver.h"
 
 namespace
 {
@@ -76,6 +78,7 @@ nlohmann::json V2Payload(const nlohmann::json& legacy)
 #include "gameplay/PawnAndStateTests.inc"
 #include "gameplay/StartConfigurationFlowTests.inc"
 #include "gameplay/ActionSubmissionGuardTests.inc"
+#include "gameplay/TypedCapabilityTests.inc"
 
 int main()
 {
@@ -106,6 +109,10 @@ int main()
         TestCommandSubmissionGuardSerializesGameplayCommands();
         TestStructuredGameAcknowledgements();
         TestCapabilityInformationIsInspectable();
+        TestKnownCapabilitiesAreTyped();
+        TestPendingMultipleWorkflowsUseOneExplicitAction();
+        TestEventsHaveStableIdentityAndAccessibleText();
+        TestGridActionResolutionUsesBoardAndCell();
         std::cout << "Gameplay contract tests passed.\n";
         return 0;
     }

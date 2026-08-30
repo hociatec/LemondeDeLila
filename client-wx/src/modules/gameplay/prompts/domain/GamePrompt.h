@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include <nlohmann/json.hpp>
+#include "modules/gameplay/state/domain/GameValue.h"
 
 namespace lila::modules::gameplay::domain
 {
@@ -16,9 +16,13 @@ struct GamePromptField final
     std::string initialText;
     std::optional<double> minimum;
     std::optional<double> maximum;
+    bool optional = false;
     bool integer = false;
-    std::vector<nlohmann::json> choices;
-    nlohmann::json schema = nlohmann::json::object();
+    bool multiple = false;
+    bool ordering = false;
+    int minimumSelections = 0;
+    int maximumSelections = 0;
+    std::vector<GameValue> choices;
 };
 
 struct GamePrompt final

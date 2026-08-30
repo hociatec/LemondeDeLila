@@ -43,13 +43,15 @@ private:
 
     [[nodiscard]] static bool IsActiveRound(const domain::GameState& state)
     {
-        return Normalize(state.status) == "started" || Normalize(state.phase) == "round" ||
-            !state.hand.empty();
+        return Normalize(state.system.match.status) == "started" ||
+            Normalize(state.system.setup.phase) == "round" ||
+            !state.kits.VisibleHand().empty();
     }
 
     [[nodiscard]] static bool IsSetup(const domain::GameState& state)
     {
-        return Normalize(state.status) == "setup" || Normalize(state.phase) == "setup";
+        return Normalize(state.system.match.status) == "setup" ||
+            Normalize(state.system.setup.phase) == "setup";
     }
 };
 }

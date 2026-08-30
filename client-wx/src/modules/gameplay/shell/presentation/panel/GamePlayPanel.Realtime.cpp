@@ -20,9 +20,9 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
             lila::shared::logging::LogInfo(
                 "GameInput",
                 "State received: version=" + std::to_string(event.state->version) +
-                    ", status=" + event.state->status +
-                    ", phase=" + event.state->phase +
-                    ", hand=" + std::to_string(event.state->hand.size()) +
+                    ", status=" + event.state->system.match.status +
+                    ", phase=" + event.state->system.setup.phase +
+                    ", hand=" + std::to_string(event.state->kits.VisibleHand().size()) +
                     ", actions=" + std::to_string(event.state->actions.size()));
             ApplyState(std::move(*event.state));
         }

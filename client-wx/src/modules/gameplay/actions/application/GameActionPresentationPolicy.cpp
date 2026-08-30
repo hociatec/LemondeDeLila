@@ -21,23 +21,24 @@ std::vector<domain::GameLine> GameActionPresentationPolicy::GenericLines(
     const domain::GameState& state)
 {
     std::vector<bool> represented(state.actions.size(), false);
-    for (std::size_t index = 0; index < state.hand.size(); ++index)
+    const auto& hand = state.kits.VisibleHand();
+    for (std::size_t index = 0; index < hand.size(); ++index)
     {
         Mark(
             represented,
             cards::GameCardActionResolver::ResolveIndex(
-                state.hand, state.actions, index));
+                hand, state.actions, index));
     }
 
-    if (state.dice.has_value())
+    if (const auto* diceState = state.kits.Dice())
     {
-        const auto count = state.dice->dice.empty()
+        const auto count = diceState->dice.empty()
             ? std::size_t{1}
-            : state.dice->dice.size();
+            : diceState->dice.size();
         for (std::size_t index = 0; index < count; ++index)
         {
             const auto actionIndex = dice::GameDiceActionResolver::ResolveIndex(
-                *state.dice, state.actions, index);
+                *diceState, state.actions, index);
             Mark(represented, actionIndex);
         }
     }

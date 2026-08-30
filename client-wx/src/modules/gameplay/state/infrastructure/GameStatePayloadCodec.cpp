@@ -1,15 +1,23 @@
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 
+#include <algorithm>
 #include <stdexcept>
 #include <utility>
 
 #include "modules/gameplay/cards/infrastructure/GameCardDecoder.h"
 #include "modules/gameplay/dice/infrastructure/GameDiceDecoder.h"
+#include "modules/gameplay/actions/infrastructure/GameActionCatalogDecoder.h"
+#include "modules/gameplay/events/presentation/GameEventPresenter.h"
 #include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
+#include "modules/gameplay/state/infrastructure/GameAssetCapabilitiesDecoder.h"
+#include "modules/gameplay/state/infrastructure/GameBoardCapabilitiesDecoder.h"
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
 #include "modules/gameplay/state/infrastructure/GamePendingDecoder.h"
+#include "modules/gameplay/state/infrastructure/GamePlayerValuesDecoder.h"
 #include "modules/gameplay/state/infrastructure/GameStateSectionsDecoder.h"
 #include "modules/gameplay/state/infrastructure/GameSystemDecoder.h"
+#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
+#include "modules/gameplay/state/infrastructure/GameWorkflowCapabilitiesDecoder.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -24,21 +32,39 @@ nlohmann::json Section(const nlohmann::json& payload, const char* key)
 
 void DecodeKits(const nlohmann::json& raw, domain::GameKits& kits)
 {
-    kits.cards = Section(raw, "cards");
-    kits.dice = Section(raw, "dice");
-    kits.grid = Section(raw, "grid");
-    kits.movement = Section(raw, "movement");
-    kits.pawns = Section(raw, "pawns");
-    kits.score = Section(raw, "score");
-    kits.resources = Section(raw, "resources");
-    kits.counters = Section(raw, "counters");
-    kits.status = Section(raw, "status");
-    kits.inventory = Section(raw, "inventory");
-    kits.economy = Section(raw, "economy");
-    kits.ownership = Section(raw, "ownership");
-    kits.collections = Section(raw, "collections");
-    kits.quiz = Section(raw, "quiz");
-    kits.submissions = Section(raw, "submissions");
+    const auto cards = Section(raw, "cards");
+    if (!cards.empty())
+    {
+        domain::GameCardsView view;
+        view.visibleHand = GameCardDecoder::DecodeVisibleHands(cards);
+        view.decks = DecodeGameValue(cards.value("decks", nlohmann::json::object()));
+        view.discards = DecodeGameValue(cards.value("discards", nlohmann::json::object()));
+        view.hands = DecodeGameValue(cards.value("hands", nlohmann::json::object()));
+        view.zones = DecodeGameValue(cards.value("zones", nlohmann::json::object()));
+        kits.cards = std::move(view);
+    }
+    const auto dice = Section(raw, "dice");
+    if (!dice.empty()) kits.dice = GameDiceDecoder::Decode(dice);
+    kits.grid = GameBoardCapabilitiesDecoder::Grid(Section(raw, "grid"));
+    kits.movement = GameBoardCapabilitiesDecoder::Movement(Section(raw, "movement"));
+    kits.pawns = GameBoardCapabilitiesDecoder::Pawns(Section(raw, "pawns"));
+    kits.score = GamePlayerValuesDecoder::Score(Section(raw, "score"));
+    kits.resources = GamePlayerValuesDecoder::Resources(Section(raw, "resources"));
+    kits.counters = GamePlayerValuesDecoder::Counters(Section(raw, "counters"));
+    kits.status = GamePlayerValuesDecoder::Status(Section(raw, "status"));
+    kits.inventory = GameAssetCapabilitiesDecoder::Inventory(Section(raw, "inventory"));
+    kits.economy = GameAssetCapabilitiesDecoder::Economy(Section(raw, "economy"));
+    kits.ownership = GameAssetCapabilitiesDecoder::Ownership(Section(raw, "ownership"));
+    kits.collections = GameAssetCapabilitiesDecoder::Collections(Section(raw, "collections"));
+    kits.quiz = GameWorkflowCapabilitiesDecoder::Quiz(Section(raw, "quiz"));
+    kits.submissions = GameWorkflowCapabilitiesDecoder::Submissions(Section(raw, "submissions"));
+    static const std::vector<std::string> known{
+        "cards", "dice", "grid", "movement", "pawns", "score", "resources",
+        "counters", "status", "inventory", "economy", "ownership", "collections",
+        "quiz", "submissions"};
+    for (const auto& item : raw.items())
+        if (std::find(known.begin(), known.end(), item.key()) == known.end())
+            kits.unknownCapabilities.emplace(item.key(), DecodeGameValue(item.value()));
 }
 
 std::string PlayerName(const domain::GameSystem& system, int playerId)
@@ -54,29 +80,25 @@ std::vector<std::string> EventMessages(const domain::GameSystem& system)
     messages.reserve(system.events.size());
     for (const auto& event : system.events)
     {
-        std::string message = event.type;
-        const auto explicitMessage = event.data.find("message");
-        if (explicitMessage != event.data.end() && explicitMessage->is_string())
-            message = explicitMessage->get<std::string>();
-        else if (!event.data.empty()) message += " : " + event.data.dump();
-        messages.push_back(std::to_string(event.occurredAtMs) + "|" + message);
+        const auto message = presentation::events::GameEventPresenter::Present(
+            event, system.players);
+        if (!message.empty()) messages.push_back(event.Identity() + "|" + message);
     }
     return messages;
 }
 
 void ApplyCatalogLabels(
     std::vector<domain::GameAction>& actions,
-    const nlohmann::json& catalog)
+    const std::vector<domain::GameActionDescriptor>& catalog)
 {
-    if (!catalog.is_array()) return;
     for (auto& action : actions)
         for (const auto& descriptor : catalog)
         {
-            if (!descriptor.is_object() ||
-                detail::ReadString(descriptor, "type") != action.type) continue;
-            const auto ui = Section(descriptor, "ui");
-            if (action.label.empty()) action.label = detail::ReadString(ui, "label");
-            action.documentation = detail::ReadString(descriptor, "documentation");
+            if (descriptor.type != action.type) continue;
+            if (action.label.empty()) action.label = descriptor.label;
+            action.documentation = descriptor.documentation.empty()
+                ? descriptor.description : descriptor.documentation;
+            action.confirm = action.confirm || descriptor.confirm;
             break;
         }
 }
@@ -99,27 +121,22 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
         throw std::runtime_error("Projection de jeu V2 incomplete.");
     state.system = GameSystemDecoder::Decode(system);
     DecodeKits(kits, state.kits);
-    state.effect = Section(payload, "effect");
+    state.effect = GameWorkflowCapabilitiesDecoder::Effect(Section(payload, "effect"));
     state.game = Section(payload, "game");
-    state.actionCatalog = payload.value("actionCatalog", nlohmann::json::array());
-    if (!state.actionCatalog.is_array()) state.actionCatalog = nlohmann::json::array();
-    state.timers = Section(payload, "timers");
+    state.actionCatalog = GameActionCatalogDecoder::Decode(
+        payload.value("actionCatalog", nlohmann::json::array()));
+    state.timers = GameWorkflowCapabilitiesDecoder::Timers(Section(payload, "timers"));
     state.actions = DecodeActions(payload);
     ApplyCatalogLabels(state.actions, state.actionCatalog);
     state.shortcuts = DecodeShortcuts(system);
-    state.hand = GameCardDecoder::DecodeVisibleHands(state.kits.cards);
-    state.dice = GameDiceDecoder::Decode(state.kits.dice);
     const auto pending = payload.find("pending");
     if (pending != payload.end() && pending->is_object())
         state.pending = GamePendingDecoder::Decode(*pending, state.actions);
     state.prompt = DecodePrompt(payload);
-    state.pawnSelection = PawnSelectionDecoder::Decode(payload, state.actions, state.kits.pawns);
+    state.pawnSelection = PawnSelectionDecoder::Decode(
+        payload, state.actions, Section(kits, "pawns"));
     state.lines = BuildLines(state.actions);
     state.logMessages = EventMessages(state.system);
-    state.round = state.system.round.number;
-    state.turnIndex = state.system.turn.number;
-    state.status = state.system.match.status;
-    state.phase = state.system.setup.phase;
     if (state.system.turn.currentPlayerId)
         state.currentPlayerLabel = PlayerName(state.system, *state.system.turn.currentPlayerId);
     state.turnLabel = state.currentPlayerLabel.empty()

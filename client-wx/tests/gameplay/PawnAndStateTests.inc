@@ -85,11 +85,13 @@ void TestOlderGameStateCannotRestoreSetupPrompt()
     roundState.gameType = "server-driven-game";
     roundState.version = 8;
     roundState.runId = 4;
-    roundState.phase = "round";
+    roundState.system.setup.phase = "round";
+    roundState.system.match.status = "started";
 
     auto staleSetupState = roundState;
     staleSetupState.version = 7;
-    staleSetupState.phase = "setup";
+    staleSetupState.system.setup.phase = "setup";
+    staleSetupState.system.match.status = "setup";
     Expect(!GameStateUpdatePolicy::ShouldApply(roundState, staleSetupState),
         "Un ancien etat de configuration ne doit pas remplacer la manche courante.");
 
@@ -120,8 +122,8 @@ void TestOlderGameStateCannotRestoreSetupPrompt()
     auto newRunState = roundState;
     newRunState.runId = 5;
     newRunState.version = 1;
-    newRunState.status = "setup";
-    newRunState.phase = "setup";
+    newRunState.system.match.status = "setup";
+    newRunState.system.setup.phase = "setup";
     Expect(GameStateUpdatePolicy::ShouldApply(roundState, newRunState),
         "Une nouvelle execution doit accepter une version remise a un.");
 }
@@ -137,11 +139,13 @@ void TestCapabilityInformationIsInspectable()
     state.system.setup.complete = false;
     state.system.setup.phase = "setup";
     state.system.setup.ownerPlayerId = 7;
-    state.kits.resources = {{"7", {{"coins", 3}}}};
-    Expect(GameCapabilityTextBuilder::Build(state, "match").find("playing") != std::string::npos,
+    lila::modules::gameplay::domain::GameResourcesView resources;
+    resources.players.push_back({7, {{"coins", 3}}});
+    state.kits.resources = std::move(resources);
+    Expect(GameCapabilityTextBuilder::Build(state, "match").find("En cours") != std::string::npos,
         "L'état du match doit être inspectable.");
     Expect(GameCapabilityTextBuilder::Build(state, "setup").find("Lila") != std::string::npos,
         "La configuration doit nommer son propriétaire.");
-    Expect(GameCapabilityTextBuilder::Build(state, "resources").find("coins") != std::string::npos,
+    Expect(GameCapabilityTextBuilder::Build(state, "resources").find("Pièces") != std::string::npos,
         "Chaque capability doit conserver une présentation générique.");
 }

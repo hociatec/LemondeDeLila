@@ -1,10 +1,10 @@
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
 
 #include <algorithm>
-#include <charconv>
 #include <cctype>
 #include <cmath>
-#include <system_error>
+#include <locale>
+#include <sstream>
 
 namespace lila::modules::gameplay::application
 {
@@ -36,13 +36,17 @@ GamePromptInputResult GamePromptInputCodec::Parse(
     std::string rawValue)
 {
     const auto kind = ToLower(Trim(field.kind));
+    if (field.optional && Trim(rawValue).empty())
+        return {true, nullptr, {}};
     if (kind == "number")
     {
         const auto text = Trim(std::move(rawValue));
         double value = 0.0;
-        const auto parsed = std::from_chars(text.data(), text.data() + text.size(), value);
-        if (text.empty() || parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size() ||
-            !std::isfinite(value)) return Invalid("Saisissez un nombre.");
+        std::istringstream input(text);
+        input.imbue(std::locale::classic());
+        input >> std::noskipws >> value;
+        if (text.empty() || input.fail() || !input.eof() || !std::isfinite(value))
+            return Invalid("Saisissez un nombre.");
         if (field.integer && std::trunc(value) != value)
             return Invalid("Saisissez un nombre entier.");
         if (field.minimum && value < *field.minimum)

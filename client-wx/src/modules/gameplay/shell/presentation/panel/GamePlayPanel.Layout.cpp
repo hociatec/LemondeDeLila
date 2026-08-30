@@ -1,6 +1,7 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
 #include <wx/listbox.h>
+#include <wx/rearrangectrl.h>
 #include <wx/choice.h>
 #include <wx/scrolwin.h>
 #include <wx/sizer.h>
@@ -11,6 +12,9 @@
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
+#include "modules/gameplay/movement/presentation/GameMovementPanel.h"
+#include "modules/gameplay/resources/presentation/GameResourcesPanel.h"
+#include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -72,6 +76,15 @@ void GamePlayPanel::BuildLayout()
     gridPanel_ = new grid::GameGridPanel(contentPanel_);
     content->Add(gridPanel_, 1, wxEXPAND | wxBOTTOM, 8);
 
+    movementPanel_ = new movement::GameMovementPanel(contentPanel_);
+    content->Add(movementPanel_, 1, wxEXPAND | wxBOTTOM, 8);
+
+    resourcesPanel_ = new resources::GameResourcesPanel(contentPanel_);
+    content->Add(resourcesPanel_, 1, wxEXPAND | wxBOTTOM, 8);
+
+    workflowPanel_ = new workflows::GameWorkflowPanel(contentPanel_);
+    content->Add(workflowPanel_, 1, wxEXPAND | wxBOTTOM, 8);
+
     actionsLabel_ = new wxStaticText(contentPanel_, wxID_ANY, wxString(L"Actions disponibles"));
     actionsLabel_->SetForegroundColour(lila::shared::ui::Theme::Accent());
     content->Add(actionsLabel_, 0, wxEXPAND | wxBOTTOM, 4);
@@ -89,6 +102,14 @@ void GamePlayPanel::BuildLayout()
     choicesList_->SetName(wxString(L"Choix de jeu"));
     choicesList_->SetMinSize(wxSize(260, 90));
     content->Add(choicesList_, 1, wxEXPAND | wxBOTTOM, 8);
+    orderingChoices_ = new wxRearrangeCtrl(
+        contentPanel_, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+        wxArrayInt{}, wxArrayString{});
+    orderingChoices_->SetName(wxString(
+        L"Ordre des choix. Réorganisez avec les boutons haut et bas."));
+    orderingChoices_->SetMinSize(wxSize(260, 110));
+    orderingChoices_->Hide();
+    content->Add(orderingChoices_, 1, wxEXPAND | wxBOTTOM, 8);
 
     shortcutsLabel_ = new wxStaticText(contentPanel_, wxID_ANY, wxString{});
     shortcutsLabel_->SetForegroundColour(lila::shared::ui::Theme::TextMuted());

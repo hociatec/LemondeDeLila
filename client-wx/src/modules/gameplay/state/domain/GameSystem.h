@@ -70,10 +70,14 @@ struct GameSetup final
 
 struct GameEngineEvent final
 {
+    std::string id;
     std::string type;
     nlohmann::json data = nlohmann::json::object();
     std::optional<int> actorId;
     std::int64_t occurredAtMs = 0;
+    std::optional<std::int64_t> sequence;
+
+    [[nodiscard]] std::string Identity() const;
 };
 
 struct GameSystem final

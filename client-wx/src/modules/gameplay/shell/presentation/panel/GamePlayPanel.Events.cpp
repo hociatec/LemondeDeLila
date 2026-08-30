@@ -15,6 +15,7 @@
 #include "modules/gameplay/dice/application/GameDiceActionResolver.h"
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
+#include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
@@ -138,21 +139,22 @@ bool GamePlayPanel::HandleZoneActivation()
 
 bool GamePlayPanel::ActivateSelectedHandCard()
 {
+    const auto& hand = state_.kits.VisibleHand();
     const int selected = handPanel_->SelectedIndex();
     if (selected < 0)
     {
         lila::shared::logging::LogWarning("GameInput", "Card activation has no selection.");
         return false;
     }
-    if (static_cast<std::size_t>(selected) >= state_.hand.size()) return false;
-    if (state_.hand[static_cast<std::size_t>(selected)].disabled)
+    if (static_cast<std::size_t>(selected) >= hand.size()) return false;
+    if (hand[static_cast<std::size_t>(selected)].disabled)
     {
         // WPF consumes Enter silently on an unplayable card: it must not fall
         // through to a global ENTER shortcut or announce a misleading error.
         return true;
     }
     auto action = application::cards::GameCardActionResolver::Resolve(
-        state_.hand, state_.actions, static_cast<std::size_t>(selected));
+        hand, state_.actions, static_cast<std::size_t>(selected));
     if (!action)
     {
         lila::shared::logging::LogWarning(
@@ -168,11 +170,12 @@ bool GamePlayPanel::ActivateSelectedHandCard()
 
 bool GamePlayPanel::ActivateSelectedDie()
 {
-    if (!state_.dice) return false;
+    const auto* dice = state_.kits.Dice();
+    if (dice == nullptr) return false;
     const int selected = dicePanel_->SelectedIndex();
     const auto index = selected >= 0 ? static_cast<std::size_t>(selected) : std::size_t{0};
     auto action = application::dice::GameDiceActionResolver::Resolve(
-        *state_.dice, state_.actions, index);
+        *dice, state_.actions, index);
     if (!action) return false;
     PrepareAndExecuteAction(std::move(*action));
     return true;
@@ -183,31 +186,10 @@ bool GamePlayPanel::ActivateSelectedGridCell()
     const auto cellId = gridPanel_->SelectedCellId();
     const auto boardId = gridPanel_->SelectedBoardId();
     if (cellId.empty()) return false;
-    const auto action = std::find_if(
-        state_.actions.begin(), state_.actions.end(),
-        [&cellId, &boardId](const domain::GameAction& candidate)
-        {
-            if (candidate.disabled || !candidate.payload.is_object()) return false;
-            const auto targetBoard = candidate.payload.find("boardId");
-            if (targetBoard != candidate.payload.end() && targetBoard->is_string() &&
-                targetBoard->get<std::string>() != boardId) return false;
-            for (const char* key : {"cellId", "tileId", "position"})
-            {
-                const auto value = candidate.payload.find(key);
-                if (value == candidate.payload.end()) continue;
-                if (value->is_string() && value->get<std::string>() == cellId) return true;
-                if (value->is_number_integer() && std::to_string(value->get<long long>()) == cellId)
-                    return true;
-                if (value->is_object())
-                {
-                    const auto encoded = std::to_string(value->value("x", -1)) + "," +
-                        std::to_string(value->value("y", -1));
-                    if (encoded == cellId) return true;
-                }
-            }
-            return false;
-        });
-    if (action == state_.actions.end())
+    const auto action = application::grid::GameGridActionResolver::Resolve(
+        state_.actions,
+        {boardId, cellId, gridPanel_->SelectedX(), gridPanel_->SelectedY()});
+    if (!action)
     {
         UpdateStatus(wxString(L"Aucune action disponible pour cette case."), false, true);
         return true;

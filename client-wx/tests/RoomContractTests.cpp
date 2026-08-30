@@ -21,13 +21,13 @@ int main()
     domain::RoomState room;
     room.allowedActions = {
         "room.toggle-privacy", "room.set-role", "room.snapshot.save",
-        "room.set-ambience", "room.tableAmbienceVolume", "room.invite",
+        "room.set-ambience", "room.invite",
         "room.kick", "room.ban", "room.set-owner", "bot.add", "bot.remove",
-        "room.players", "room.info", "room.rules", "room.reset", "room.leave"};
+        "room.reset", "room.leave"};
     Expect(presentation::RoomShortcutPolicy::Resolve('A', true, false, false, false, room) ==
         "room:ambience", "Ctrl+A doit dépendre de room.set-ambience.");
     Expect(presentation::RoomShortcutPolicy::Resolve('V', true, false, false, false, room) ==
-        "room:ambience-volume", "Ctrl+V doit dépendre de room.tableAmbienceVolume.");
+        "room:ambience-volume", "Ctrl+V doit rester une action d'interface locale.");
     Expect(presentation::RoomShortcutPolicy::Resolve('I', true, false, false, false, room) ==
         "room:invite", "Ctrl+I doit dépendre de room.invite.");
     Expect(presentation::RoomShortcutPolicy::Resolve('K', true, false, false, false, room) ==
@@ -57,6 +57,16 @@ int main()
     Expect(presentation::RoomShortcutPolicy::Resolve('Q', false, false, false, false, room) ==
         "room:leave", "Q doit continuer à quitter la table.");
     domain::RoomState forbiddenRoom;
+    Expect(presentation::RoomShortcutPolicy::Resolve('V', true, false, false, false,
+        forbiddenRoom) == "room:ambience-volume",
+        "Le volume local ne doit pas dépendre des permissions serveur.");
+    Expect(presentation::RoomShortcutPolicy::Resolve('W', false, false, false, false,
+        forbiddenRoom) == "room:players" &&
+        presentation::RoomShortcutPolicy::Resolve('I', false, false, false, false,
+            forbiddenRoom) == "room:info" &&
+        presentation::RoomShortcutPolicy::Resolve('R', false, false, false, false,
+            forbiddenRoom) == "room:rules",
+        "Les écrans locaux ne doivent pas dépendre des permissions serveur.");
     Expect(presentation::RoomShortcutPolicy::Resolve('K', true, false, false, false,
         forbiddenRoom).empty(), "Sans allowedActions, Ctrl+K doit être désactivé.");
     Expect(infrastructure::command_protocol::Type(domain::RoomCommand::SetAmbience) ==

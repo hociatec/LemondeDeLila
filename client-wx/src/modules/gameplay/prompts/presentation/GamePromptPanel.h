@@ -12,12 +12,14 @@
 
 class wxButton;
 class wxCheckBox;
+class wxCheckListBox;
 class wxChoice;
 class wxKeyEvent;
 class wxSizer;
 class wxStaticText;
 class wxTextCtrl;
 class wxWindow;
+class wxRearrangeCtrl;
 
 namespace lila::modules::gameplay::presentation::prompt
 {
@@ -49,6 +51,8 @@ private:
         wxTextCtrl* text = nullptr;
         wxCheckBox* checkbox = nullptr;
         wxChoice* choice = nullptr;
+        wxCheckListBox* multipleChoice = nullptr;
+        wxRearrangeCtrl* ordering = nullptr;
     };
 
     void BuildLayout();
