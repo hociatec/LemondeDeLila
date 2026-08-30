@@ -31,4 +31,19 @@ describe('RoomAutoCleanupService durability policy', () => {
       expect.objectContaining({ dryRun: false, excludeActivePlayers: true }),
     );
   });
+
+  it('releases both recurring and initial timers during shutdown', () => {
+    jest.useFakeTimers();
+    try {
+      const service = createService(jest.fn());
+      service.onModuleInit();
+      expect(jest.getTimerCount()).toBe(2);
+
+      void service.onModuleDestroy();
+
+      expect(jest.getTimerCount()).toBe(0);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 });

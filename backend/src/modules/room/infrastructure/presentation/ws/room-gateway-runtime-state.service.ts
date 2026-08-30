@@ -50,6 +50,23 @@ export class RoomGatewayRuntimeStateService implements OnModuleDestroy {
 
   onModuleDestroy(): void {
     this.heartbeat.stopAll();
+    const sockets = new Set([
+      ...this.clients.keys(),
+      ...(this.server?.clients ?? []),
+    ]);
+    for (const socket of sockets) {
+      try {
+        socket.close(1001, 'Server shutdown');
+      } catch {
+        socket.terminate();
+      }
+    }
+    const termination = setTimeout(() => {
+      for (const socket of sockets) {
+        if (socket.readyState !== WebSocket.CLOSED) socket.terminate();
+      }
+    }, 1_000);
+    termination.unref();
     for (const timeout of this.pendingParticipantLeaves.values()) {
       clearTimeout(timeout);
     }

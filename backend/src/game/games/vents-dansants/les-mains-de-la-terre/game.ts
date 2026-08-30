@@ -1,6 +1,7 @@
 import {
   cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
 } from '../../../engine/sdk/public-api';
@@ -25,6 +26,24 @@ const familySets = cards.sets({
     {},
   ),
 });
+const cardSchema = defineCardsSchema({
+  decks: {
+    professions: cards.deck({
+      id: 'professions',
+      cards: LES_MAINS_DECK.map((card) => card.id),
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'professions',
+      initial: 0,
+      visibility: 'owner',
+    }),
+  },
+});
 
 export default defineGame<LesMainsState>()({
   id: 'les-mains-de-la-terre',
@@ -38,9 +57,9 @@ export default defineGame<LesMainsState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'professions',
       handId: 'players',
-      cards: LES_MAINS_DECK.map((card) => card.id),
     }),
   ],
   components: [familySets],

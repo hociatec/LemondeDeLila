@@ -69,7 +69,7 @@ export class NotificationWsSessionService {
     try {
       const payload = await this.counts.getCounts(userId);
       this.logger.log(
-        `notify.counts initial push for user ${userId}: ${JSON.stringify(payload)}`,
+        `notify.counts initial push for user ${userId} notifications=${payload.unreadNotifications} messages=${payload.unreadMessages}`,
       );
       this.safeSend(client, { type: WS_EVENTS.notify.counts, payload });
     } catch {

@@ -1,5 +1,6 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import { cards } from '../cards/cards-kit';
+import { defineCardsSchema } from '../cards/typed-cards';
 import {
   definePattern,
   composePatterns,
@@ -21,8 +22,16 @@ import { defineAction, defineGame } from '../definitions/game-definition';
 describe('gameplay pattern composition', () => {
   it('keeps configured pattern instances uniquely identifiable', () => {
     const composed = composePatterns(
-      cardGame({ deckId: 'names', handId: 'names', cards: ['a'] }),
-      cardGame({ deckId: 'specials', handId: 'specials', cards: ['b'] }),
+      cardGame({
+        schema: testCardSchema('names', 'names', ['a']),
+        deckId: 'names',
+        handId: 'names',
+      }),
+      cardGame({
+        schema: testCardSchema('specials', 'specials', ['b']),
+        deckId: 'specials',
+        handId: 'specials',
+      }),
     );
 
     expect(composed.ids).toEqual([
@@ -156,7 +165,11 @@ describe('gameplay pattern composition', () => {
   it('defines independent contracts for the major reusable patterns', () => {
     const patterns = [
       raceGame({ trackId: 'race', spaces: 8 }),
-      cardGame({ deckId: 'deck', handId: 'hand', cards: ['a'] }),
+      cardGame({
+        schema: testCardSchema('deck', 'hand', ['a']),
+        deckId: 'deck',
+        handId: 'hand',
+      }),
       eventTrackGame({
         trackId: 'events',
         tiles: [{ id: 0, type: 'start' }],
@@ -182,3 +195,23 @@ describe('gameplay pattern composition', () => {
     }
   });
 });
+
+function testCardSchema(
+  deckId: string,
+  handId: string,
+  values: readonly string[],
+) {
+  return defineCardsSchema({
+    decks: {
+      [deckId]: cards.deck({ id: deckId, cards: values }),
+    },
+    hands: {
+      [handId]: cards.hands({
+        id: handId,
+        deck: deckId,
+        initial: 0,
+        visibility: 'owner',
+      }),
+    },
+  });
+}

@@ -29,7 +29,14 @@ describe('room realtime resource cleanup', () => {
     >[0];
     const runtime = new RoomGatewayRuntimeStateService(presenter);
     const socket = new EventEmitter() as unknown as WebSocket;
-    Object.assign(socket, { readyState: WebSocket.OPEN, ping: jest.fn() });
+    const close = jest.fn();
+    const terminate = jest.fn();
+    Object.assign(socket, {
+      readyState: WebSocket.OPEN,
+      ping: jest.fn(),
+      close,
+      terminate,
+    });
     runtime.clients.set(socket, {} as never);
     runtime.rooms.set(1, new Set([socket]));
     runtime.heartbeat.start(socket);
@@ -45,6 +52,9 @@ describe('room realtime resource cleanup', () => {
     expect(runtime.pendingParticipantLeaves.size).toBe(0);
     expect(runtime.heartbeat.size).toBe(0);
     expect((socket as unknown as EventEmitter).listenerCount('pong')).toBe(0);
+    expect(close).toHaveBeenCalledWith(1001, 'Server shutdown');
+    jest.advanceTimersByTime(1_000);
+    expect(terminate).toHaveBeenCalledTimes(1);
     expect(jest.getTimerCount()).toBe(0);
   });
 });

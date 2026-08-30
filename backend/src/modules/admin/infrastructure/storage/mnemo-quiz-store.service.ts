@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { readEnvironment } from '../../../../platform/config/public-api';
+import { writeFileAtomicSync } from '../../../../shared/utils/public-api';
 import type {
   MnemoQuestionStatus,
   MnemoQuizCategory,
@@ -151,14 +152,10 @@ export class MnemoQuizStoreService
   }
 
   private persist(): void {
-    fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
-    const temporaryPath = `${this.filePath}.tmp`;
-    fs.writeFileSync(
-      temporaryPath,
+    writeFileAtomicSync(
+      this.filePath,
       `${JSON.stringify(this.data, null, 2)}\n`,
-      'utf8',
     );
-    fs.renameSync(temporaryPath, this.filePath);
   }
 
   private requireCategory(categoryId: string): MnemoQuizCategory {

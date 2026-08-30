@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..', 'src');
+const backendRoot = path.resolve(__dirname, '..');
 const contracts = [
   [
     'main.ts',
@@ -16,6 +17,31 @@ const contracts = [
     'platform/observability/infrastructure/logging/serv-logger.service.ts',
     /currentCorrelationId/,
     'correlation logs',
+  ],
+  [
+    'platform/realtime/infrastructure/presentation/ws/realtime-api-handler.service.ts',
+    /runWithCorrelationId/,
+    'correlation WS API',
+  ],
+  [
+    'modules/room/infrastructure/presentation/ws/room-gateway-command.service.ts',
+    /runWithCorrelationId/,
+    'correlation WS Room',
+  ],
+  [
+    'modules/room/application/services/lifecycle/room-auto-cleanup.service.ts',
+    /clearTimeout\(this\.initialTimer\)/,
+    'Room initial cleanup shutdown',
+  ],
+  [
+    'game/core/infrastructure/scheduling/bullmq-game-task-scheduler.service.ts',
+    /correlationId[\s\S]*runWithCorrelationId|runWithCorrelationId[\s\S]*correlationId/,
+    'correlation BullMQ',
+  ],
+  [
+    'platform/pubsub/redis-pubsub.transport.ts',
+    /CorrelatedPubSubEnvelope[\s\S]*runWithCorrelationId/,
+    'correlation Redis PubSub',
   ],
   [
     'modules/health/infrastructure/presentation/http/controllers/health.controller.ts',
@@ -59,8 +85,13 @@ const contracts = [
   ],
   [
     'platform/ws/application/services/ws-api-hub.service.ts',
-    /onModuleDestroy/,
+    /onModuleDestroy[\s\S]*terminate/,
     'WS graceful shutdown',
+  ],
+  [
+    'modules/room/infrastructure/presentation/ws/room-gateway-runtime-state.service.ts',
+    /onModuleDestroy[\s\S]*socket\.close\(1001[\s\S]*socket\.terminate/,
+    'Room WS graceful shutdown',
   ],
   [
     'game/core/infrastructure/scheduling/bullmq-game-task-scheduler.service.ts',
@@ -73,6 +104,25 @@ const violations = [];
 for (const [name, pattern, label] of contracts) {
   const source = fs.readFileSync(path.join(root, name), 'utf8');
   if (!pattern.test(source)) violations.push(`${name}: ${label} absent`);
+}
+const integrationSource = fs.readFileSync(
+  path.join(backendRoot, 'tools/two-instance-real-e2e.cjs'),
+  'utf8',
+);
+for (const [pattern, label] of [
+  [/stopBackendsGracefully[\s\S]*SIGTERM/, 'test réel du graceful shutdown'],
+  [
+    /room\.toggle-privacy[\s\S]*room\.toggle-privacy/,
+    'commandes Room concurrentes multi-instance',
+  ],
+  [
+    /SELECT is_private AS isPrivate FROM rooms/,
+    'assertion MySQL Room multi-instance',
+  ],
+]) {
+  if (!pattern.test(integrationSource)) {
+    violations.push(`tools/two-instance-real-e2e.cjs: ${label} absent`);
+  }
 }
 if (violations.length) {
   console.error(`operability-audit: ${violations.length} violation(s)`);

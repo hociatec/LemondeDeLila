@@ -1,5 +1,7 @@
 import {
+  cards,
   cardGame,
+  defineCardsSchema,
   defineConfiguration,
   defineGame,
   defineGameContent,
@@ -22,6 +24,24 @@ const scoring = roundScoring<NoGameState>({
   score: ({ state, ctx }) => scoreCatPattesRound(state, ctx),
 });
 const CAT_PATTES_PHASES = setupPlayingPhases<NoGameState>();
+const cardSchema = defineCardsSchema({
+  decks: {
+    'cat-pattes': cards.deck({
+      id: 'cat-pattes',
+      cards: CAT_PATTES_DECK.map((card) => card.id),
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'cat-pattes',
+      initial: 6,
+      visibility: 'owner',
+    }),
+  },
+});
 
 export default defineGame<NoGameState>()({
   id: 'cat-pattes',
@@ -53,10 +73,9 @@ export default defineGame<NoGameState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'cat-pattes',
       handId: 'players',
-      cards: CAT_PATTES_DECK.map((card) => card.id),
-      initialHandSize: 6,
     }),
   ],
   components: [

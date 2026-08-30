@@ -1,6 +1,7 @@
 import {
   cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
   type NoGameState,
@@ -27,6 +28,24 @@ const familySets = cards.sets({
     {},
   ),
 });
+const cardSchema = defineCardsSchema({
+  decks: {
+    nature: cards.deck({
+      id: 'nature',
+      cards: DAME_NATURE_FAMILY_CARD_IDS,
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'nature',
+      initial: 5,
+      visibility: 'owner',
+    }),
+  },
+});
 
 export default defineGame<NoGameState>()({
   id: 'dame-nature',
@@ -40,10 +59,9 @@ export default defineGame<NoGameState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'nature',
       handId: 'players',
-      cards: DAME_NATURE_FAMILY_CARD_IDS,
-      initialHandSize: 5,
     }),
   ],
   components: [familySets],

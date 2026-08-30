@@ -2,7 +2,10 @@ import type {
   GameStateEntity,
   PlayerStateEntity,
 } from '../../../core/application/contracts/game-state.model';
-import type { GameInputSchema } from '../actions/game-input-schema';
+import type {
+  GameInputDescriptor,
+  GameInputSchema,
+} from '../actions/game-input-schema';
 import type { GameContext } from '../game-rule-context';
 import type { PhaseConfiguration } from '../kits/phase-kit';
 import type { TurnPolicy } from '../kits/turn-kit';
@@ -181,7 +184,7 @@ export type RawChoiceResolution<TState extends object> = {
 };
 
 export interface ChoiceResolverShape<TState extends object> {
-  input: Pick<GameInputSchema<never>, 'describe'>;
+  input: GameInputDescriptor;
   documentation?: string;
   ui?: GameChoiceUiHint;
   resolveRaw(input: RawChoiceResolution<TState>): void;

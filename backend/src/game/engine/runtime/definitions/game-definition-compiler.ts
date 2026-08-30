@@ -26,7 +26,11 @@ import type {
   VictoryRule,
 } from './game-definition-contracts';
 import type { GameEventDefinition } from '../events/game-event-definition';
-import { describeCompiledGameDefinition } from './compiled-game-diagnostics';
+import {
+  describeCompiledGameDefinition,
+  type CompiledDescriptorInput,
+} from './compiled-game-diagnostics';
+import type { DefinitionToValidate } from './game-definition-validator';
 
 type GameDefinitionBuilder<TState extends object> = <
   const TActions extends GameActionMap<TState>,
@@ -104,13 +108,8 @@ function compileGameDefinition<
   TEvents,
   TPatterns
 > {
-  const { patterns, components, content } = prepareDefinitionComposition(
-    definition as unknown as GameDefinitionInput<
-      TState,
-      GameActionMap<TState>,
-      object
-    >,
-  );
+  const { patterns, components, content } =
+    prepareDefinitionComposition(definition);
   const normalizedBase = {
     stateVersion: 1,
     rulesVersion: '1',
@@ -151,8 +150,22 @@ function compileGameDefinition<
   >;
 }
 
-function prepareDefinitionComposition<TState extends object>(
-  definition: GameDefinitionInput<TState, GameActionMap<TState>, object>,
+function prepareDefinitionComposition<
+  TState extends object,
+  TActions extends GameActionMap<TState>,
+  TViewExtension extends object,
+  TInitialization extends GameInitialization,
+  TEvents extends readonly GameEventDefinition<string, object>[],
+  TPatterns extends readonly GamePattern<TState>[],
+>(
+  definition: GameDefinitionInput<
+    TState,
+    TActions,
+    TViewExtension,
+    TInitialization,
+    TEvents,
+    TPatterns
+  >,
 ) {
   const patterns = composePatterns(...(definition.patterns ?? []));
   assertNoImplicitComponentOverrides(
@@ -175,19 +188,14 @@ function prepareDefinitionComposition<TState extends object>(
   return { patterns, components, content };
 }
 
-function finalizeCompiledDefinition(normalizedBase: object): unknown {
-  const descriptor = normalizedBase as CompiledGameDefinition<
-    object,
-    GameActionMap<object>,
-    object
-  >;
+function finalizeCompiledDefinition<TState extends object>(
+  normalizedBase: DefinitionToValidate & CompiledDescriptorInput<TState>,
+): unknown {
   const normalized = {
     ...normalizedBase,
-    compiled: describeCompiledGameDefinition(descriptor),
+    compiled: describeCompiledGameDefinition(normalizedBase),
   };
-  assertGameDefinition(
-    normalized as unknown as Parameters<typeof assertGameDefinition>[0],
-  );
+  assertGameDefinition(normalized);
   return deepFreeze({ ...normalized, kind: GAME_DEFINITION_KIND });
 }
 

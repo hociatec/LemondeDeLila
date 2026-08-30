@@ -5,6 +5,7 @@ import type {
   GamePlayerViewFor,
   GameSetupPlayerViewFor,
 } from './projection/game-system-view';
+import type { GameContextFor } from './game-rule-context';
 import type { PlayerValuesKitState } from './kits/player-values-kit';
 import { defineCardsSchema, type CardOfDeck } from './cards/typed-cards';
 import { defineAction } from './definitions/game-definition-builders';
@@ -59,7 +60,7 @@ describe('typed game contracts', () => {
         deck: 'main',
         initial: 1,
         visibility: 'owner',
-      }) as ReturnType<typeof cards.hands> & { readonly deck: 'main' },
+      }),
     },
     zones: {
       table: { deck: 'main', visibility: 'public' },
@@ -127,6 +128,16 @@ describe('typed game contracts', () => {
       actorId: 1,
       occurredAtMs: 10,
     };
+    type Context = GameContextFor<typeof typedDefinition>;
+    const assertTypedValueIds = (context: Context): void => {
+      context.resources.get(1, 'energy');
+      context.counters.get('round');
+      // @ts-expect-error an undeclared resource id must be rejected
+      context.resources.get(1, 'unknown');
+      // @ts-expect-error an undeclared counter id must be rejected
+      context.counters.get('unknown');
+    };
+    void assertTypedValueIds;
 
     expect(resources.energy).toBe(2);
     expect(resources.coins).toBe(3);

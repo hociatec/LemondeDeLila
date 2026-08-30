@@ -1,4 +1,7 @@
-import { isUniqueConstraintViolation } from './database-error-classifier';
+import {
+  isUniqueConstraintViolation,
+  mapUniqueConstraintViolation,
+} from './database-error-classifier';
 
 describe('database error classifier', () => {
   it.each([
@@ -13,4 +16,24 @@ describe('database error classifier', () => {
     'does not misclassify unrelated failures',
     (error) => expect(isUniqueConstraintViolation(error)).toBe(false),
   );
+
+  it('maps only uniqueness failures to the domain-facing error', async () => {
+    const conflict = new Error('identity conflict');
+    const duplicate = Object.assign(new Error('duplicate identity'), {
+      code: 'ER_DUP_ENTRY',
+    });
+    await expect(
+      mapUniqueConstraintViolation(
+        async () => Promise.reject(duplicate),
+        () => conflict,
+      ),
+    ).rejects.toBe(conflict);
+    const unavailable = new Error('database unavailable');
+    await expect(
+      mapUniqueConstraintViolation(
+        async () => Promise.reject(unavailable),
+        () => conflict,
+      ),
+    ).rejects.toBe(unavailable);
+  });
 });

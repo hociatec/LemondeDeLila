@@ -18,14 +18,34 @@ const DECKS: OlympiaDeckType[] = [
   'attaques',
   'evenements',
 ];
-const extraCards = defineCardsSchema({
+const cardSchema = defineCardsSchema({
   decks: Object.fromEntries(
-    DECKS.filter((id) => id !== 'heros' && id !== 'divinite').map((id) => [
+    DECKS.map((id) => [
       id,
-      cards.deck({ id, cards: OLYMPIA_DECKS[id], shuffle: true }),
+      cards.deck({
+        id,
+        cards: OLYMPIA_DECKS[id],
+        shuffle: true,
+        ...(id === 'heros' || id === 'divinite'
+          ? { empty: 'recycle' as const }
+          : {}),
+      }),
     ]),
   ),
-  hands: {},
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'heros',
+      initial: 0,
+      visibility: 'owner',
+    }),
+    divinities: cards.hands({
+      id: 'divinities',
+      deck: 'divinite',
+      initial: 0,
+      visibility: 'public',
+    }),
+  },
 });
 
 export default defineGame<OlympiaState>()({
@@ -38,18 +58,11 @@ export default defineGame<OlympiaState>()({
   content: defineGameContent('olympia', { decks: OLYMPIA_DECKS }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'heros',
       handId: 'players',
-      cards: OLYMPIA_DECKS.heros,
-    }),
-    cardGame({
-      deckId: 'divinite',
-      handId: 'divinities',
-      cards: OLYMPIA_DECKS.divinite,
-      visibility: 'public',
     }),
   ],
-  components: [...extraCards.components],
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'P', type: 'action', actionType: 'pass' },

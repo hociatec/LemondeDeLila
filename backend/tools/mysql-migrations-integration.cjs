@@ -17,7 +17,9 @@ async function main() {
   if (!/^lmdl_migration_test_\d+_\d+$/.test(database)) {
     throw new Error('Nom de base temporaire invalide');
   }
-  await admin.query(`CREATE DATABASE \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+  await admin.query(
+    `CREATE DATABASE \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+  );
   const source = new DataSource({
     type: 'mysql',
     host,
@@ -45,6 +47,7 @@ async function main() {
     await verifyNamedLocks();
     await verifyGameSessionInvariants(source);
     await verifyConcurrentUniqueness(source);
+    await verifyUserIdentityUniqueness(source);
     await verifyRecentMigrationsWithExistingData(source);
     console.log(
       `mysql-migrations-integration: OK (${applied.length} migrations, plans SQL, historique, unicité et transactions vérifiés)`,
@@ -62,10 +65,9 @@ async function verifyNamedLocks() {
   const second = await mysql.createConnection(options);
   const lockName = `lmdl:integration-lock:${process.pid}`;
   try {
-    const [[initial]] = await first.query(
-      'SELECT GET_LOCK(?, 0) AS acquired',
-      [lockName],
-    );
+    const [[initial]] = await first.query('SELECT GET_LOCK(?, 0) AS acquired', [
+      lockName,
+    ]);
     const [[contended]] = await second.query(
       'SELECT GET_LOCK(?, 0) AS acquired',
       [lockName],
@@ -88,29 +90,23 @@ async function verifyNamedLocks() {
 }
 
 const CRITICAL_INDEXES = [
-  ['messaging_private_messages', 'idx_messaging_private_messages_sender_created'],
+  [
+    'messaging_private_messages',
+    'idx_messaging_private_messages_sender_created',
+  ],
   [
     'messaging_private_messages',
     'idx_messaging_private_messages_recipient_created',
   ],
-  [
-    'social_relationships',
-    'idx_social_relationship_requester_status_updated',
-  ],
-  [
-    'social_relationships',
-    'idx_social_relationship_addressee_status_updated',
-  ],
+  ['social_relationships', 'idx_social_relationship_requester_status_updated'],
+  ['social_relationships', 'idx_social_relationship_addressee_status_updated'],
   ['room_participants', 'idx_room_participants_room_active_joined'],
   ['room_participants', 'idx_room_participants_user_active'],
   ['rooms', 'idx_rooms_lobby_status_privacy_created'],
   ['game_matches', 'idx_game_matches_room_ended'],
   ['game_matches', 'idx_game_matches_type_ended'],
   ['bug_report_comments', 'idx_bug_report_comments_report_created'],
-  [
-    'notification_inbox_items',
-    'idx_notification_inbox_user_deleted_created',
-  ],
+  ['notification_inbox_items', 'idx_notification_inbox_user_deleted_created'],
 ];
 
 async function verifyCriticalIndexes(source) {
@@ -118,7 +114,9 @@ async function verifyCriticalIndexes(source) {
     'SELECT TABLE_NAME AS tableName, INDEX_NAME AS indexName FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = ?',
     [database],
   );
-  const actual = new Set(rows.map((row) => `${row.tableName}:${row.indexName}`));
+  const actual = new Set(
+    rows.map((row) => `${row.tableName}:${row.indexName}`),
+  );
   for (const [table, index] of CRITICAL_INDEXES) {
     if (!actual.has(`${table}:${index}`)) {
       throw new Error(`Index critique absent: ${table}.${index}`);
@@ -233,7 +231,12 @@ async function verifyConcurrentUniqueness(source) {
     101,
     'integration-unique',
     1,
-    JSON.stringify({ version: 1, status: 'started', phase: 'playing', log: [] }),
+    JSON.stringify({
+      version: 1,
+      status: 'started',
+      phase: 'playing',
+      log: [],
+    }),
   ];
   const results = await Promise.allSettled([
     source.query(
@@ -255,6 +258,38 @@ async function verifyConcurrentUniqueness(source) {
   }
 }
 
+async function verifyUserIdentityUniqueness(source) {
+  const insert = (email, username) =>
+    source.query(
+      'INSERT INTO users (email, roles, password, username) VALUES (?, ?, ?, ?)',
+      [email, JSON.stringify(['ROLE_USER']), 'integration-hash', username],
+    );
+  const emailResults = await Promise.allSettled([
+    insert('unique@example.test', 'unique_email_left'),
+    insert('UNIQUE@example.test', 'unique_email_right'),
+  ]);
+  assertSingleDuplicate(emailResults, 'email insensible à la casse');
+
+  const usernameResults = await Promise.allSettled([
+    insert('unique-user-left@example.test', 'ConcurrentUser'),
+    insert('unique-user-right@example.test', 'concurrentuser'),
+  ]);
+  assertSingleDuplicate(usernameResults, 'username insensible à la casse');
+}
+
+function assertSingleDuplicate(results, label) {
+  if (results.filter((result) => result.status === 'fulfilled').length !== 1) {
+    throw new Error(`Contrainte unique concurrente invalide: ${label}`);
+  }
+  const rejected = results.find((result) => result.status === 'rejected');
+  if (
+    rejected?.reason?.code !== 'ER_DUP_ENTRY' &&
+    rejected?.reason?.errno !== 1062
+  ) {
+    throw new Error(`Erreur DB non standard pour ${label}`);
+  }
+}
+
 async function verifyRecentMigrationsWithExistingData(source) {
   const before = await source.query(
     'SELECT COUNT(*) AS count FROM game_sessions WHERE room_id IN (99, 101)',
@@ -264,13 +299,17 @@ async function verifyRecentMigrationsWithExistingData(source) {
   }
   const reapplied = await source.runMigrations({ transaction: 'each' });
   if (reapplied.length !== 5) {
-    throw new Error(`Cycle historique incomplet: ${reapplied.length}/5 migrations`);
+    throw new Error(
+      `Cycle historique incomplet: ${reapplied.length}/5 migrations`,
+    );
   }
   const after = await source.query(
     'SELECT COUNT(*) AS count FROM game_sessions WHERE room_id IN (99, 101)',
   );
   if (Number(before[0]?.count) !== Number(after[0]?.count)) {
-    throw new Error('Données existantes perdues pendant le cycle de migrations');
+    throw new Error(
+      'Données existantes perdues pendant le cycle de migrations',
+    );
   }
   await verifyCriticalIndexes(source);
 }

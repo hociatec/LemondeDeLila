@@ -1,7 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Injectable, Logger } from '@nestjs/common';
-import { parseVersion } from '../../../../shared/utils/public-api';
+import {
+  parseVersion,
+  writeFileAtomic,
+} from '../../../../shared/utils/public-api';
 import {
   readEnvironmentBoolean,
   readEnvironment,
@@ -99,11 +102,7 @@ a.btn.secondary { background: #2b2b2b; }</style></head><body>
 <h1>Mise à jour du client</h1><div class="muted">Téléchargez la dernière version du client Windows.</div>
 <div class="card">${linkMarkup}<div class="note" style="margin-top: 16px;">Si l'application vous indique qu'une mise à jour est requise, installez la dernière version puis relancez.</div></div>
 </body></html>`;
-    await fs.promises.writeFile(
-      path.join(targetDir, 'index.html'),
-      html,
-      'utf-8',
-    );
+    await writeFileAtomic(path.join(targetDir, 'index.html'), html);
   }
 
   async getMinRequiredVersion(): Promise<string | null> {

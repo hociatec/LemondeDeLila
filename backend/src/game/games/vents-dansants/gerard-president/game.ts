@@ -28,21 +28,45 @@ type GerardPlayerView = {
   secondTheme: string | null;
 };
 
-const themeCards = defineCardsSchema({
+const specialCards = GERARD_PRESIDENT_SPECIAL_CARDS.flatMap((card) => [
+  card.id,
+  card.id,
+]);
+const cardSchema = defineCardsSchema({
   decks: {
     themes: cards.deck({
       id: 'themes',
       cards: GERARD_PRESIDENT_THEME_CARDS,
       shuffle: true,
     }),
+    names: cards.deck({
+      id: 'names',
+      cards: GERARD_PRESIDENT_NAME_CARDS,
+      shuffle: true,
+      empty: 'recycle',
+    }),
+    specials: cards.deck({
+      id: 'specials',
+      cards: specialCards,
+      shuffle: true,
+      empty: 'recycle',
+    }),
   },
-  hands: {},
+  hands: {
+    names: cards.hands({
+      id: 'names',
+      deck: 'names',
+      initial: 10,
+      visibility: 'owner',
+    }),
+    specials: cards.hands({
+      id: 'specials',
+      deck: 'specials',
+      initial: 2,
+      visibility: 'owner',
+    }),
+  },
 });
-
-const specialCards = GERARD_PRESIDENT_SPECIAL_CARDS.flatMap((card) => [
-  card.id,
-  card.id,
-]);
 
 export default defineGame<GerardState>()({
   id: 'gerard-president',
@@ -58,19 +82,11 @@ export default defineGame<GerardState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'names',
       handId: 'names',
-      cards: GERARD_PRESIDENT_NAME_CARDS,
-      initialHandSize: 10,
-    }),
-    cardGame({
-      deckId: 'specials',
-      handId: 'specials',
-      cards: specialCards,
-      initialHandSize: 2,
     }),
   ],
-  components: [...themeCards.components],
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_name' },
     { key: 'S', type: 'action', actionType: 'play_special' },

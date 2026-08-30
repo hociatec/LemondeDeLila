@@ -17,11 +17,24 @@ import {
 } from './rules';
 import type { NoGameState as AbsurdissimesState } from '../../../engine/sdk/public-api';
 
-const whiteCards = defineCardsSchema({
+const cardSchema = defineCardsSchema({
   decks: {
     white: cards.deck({ id: 'white', cards: WHITE_CARDS, shuffle: true }),
+    black: cards.deck({
+      id: 'black',
+      cards: BLACK_CARDS,
+      shuffle: true,
+      empty: 'recycle',
+    }),
   },
-  hands: {},
+  hands: {
+    answers: cards.hands({
+      id: 'answers',
+      deck: 'black',
+      initial: 10,
+      visibility: 'owner',
+    }),
+  },
 });
 export default defineGame<AbsurdissimesState>()({
   id: 'les-absurdissimes',
@@ -37,13 +50,11 @@ export default defineGame<AbsurdissimesState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'black',
       handId: 'answers',
-      cards: BLACK_CARDS,
-      initialHandSize: 10,
     }),
   ],
-  components: [...whiteCards.components],
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'J', type: 'action', actionType: 'judge_pick' },

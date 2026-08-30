@@ -52,19 +52,23 @@ export function overrideComponent<TComponent extends GameComponentDefinition>(
 export function roundScoped<TComponent extends GameComponent>(
   component: TComponent,
 ): TComponent & { readonly scope: 'round' } {
-  return Object.freeze({
+  const scoped: TComponent & { readonly scope: 'round' } = {
     ...component,
     scope: 'round',
-  }) as unknown as TComponent & { readonly scope: 'round' };
+  };
+  Object.freeze(scoped);
+  return scoped;
 }
 
 export function matchScoped<TComponent extends GameComponent>(
   component: TComponent,
 ): TComponent & { readonly scope: 'match' } {
-  return Object.freeze({
+  const scoped: TComponent & { readonly scope: 'match' } = {
     ...component,
     scope: 'match',
-  }) as unknown as TComponent & { readonly scope: 'match' };
+  };
+  Object.freeze(scoped);
+  return scoped;
 }
 
 export type PerPlayerInitialValue = number | Readonly<Record<string, number>>;

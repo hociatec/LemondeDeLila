@@ -24,7 +24,11 @@ export {
   getErrorPayload,
   type PresentedErrorPayload,
 } from './error-payload.utils';
-export { assertPathInside, writeFileAtomic } from './atomic-file.utils';
+export {
+  assertPathInside,
+  writeFileAtomic,
+  writeFileAtomicSync,
+} from './atomic-file.utils';
 export { bestEffort } from './best-effort.utils';
 export {
   assertStorageCapacity,

@@ -1,6 +1,7 @@
 import {
   cards,
   cardGame,
+  defineCardsSchema,
   defineChoice,
   defineGame,
   defineGameContent,
@@ -33,6 +34,24 @@ const familySets = cards.sets({
     return sets;
   }, {}),
 });
+const cardSchema = defineCardsSchema({
+  decks: {
+    rites: cards.deck({
+      id: 'rites',
+      cards: ENTRE_RITES_DECK.map((card) => card.id),
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'rites',
+      initial: 0,
+      visibility: 'owner',
+    }),
+  },
+});
 
 export default defineGame<EntreRitesState>()({
   id: 'entre-rites-et-lumieres',
@@ -46,9 +65,9 @@ export default defineGame<EntreRitesState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'rites',
       handId: 'players',
-      cards: ENTRE_RITES_DECK.map((card) => card.id),
     }),
   ],
   components: [

@@ -29,7 +29,7 @@ export function rollDie(ctx: RuleContext): number {
   return ctx.dice.roll('main').total;
 }
 
-export function position(playerId: number, ctx: RuleContext): number {
+export function contesPosition(playerId: number, ctx: RuleContext): number {
   return ctx.movement.position(TRACK, playerId);
 }
 

@@ -15,6 +15,9 @@ export interface GameInputSchema<T> {
   describe(): Record<string, unknown>;
 }
 
+/** Non-generic schema surface retained by existential runtime registries. */
+export type GameInputDescriptor = Pick<GameInputSchema<unknown>, 'describe'>;
+
 type Shape = Record<string, GameInputSchema<unknown>>;
 type InferShape<TShape extends Shape> = {
   [TKey in keyof TShape]: TShape[TKey] extends GameInputSchema<infer TValue>

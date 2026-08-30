@@ -14,6 +14,7 @@ import { operationalPolicy } from '../../../../../platform/config/public-api';
 export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RoomAutoCleanupService.name);
   private timer: NodeJS.Timeout | null = null;
+  private initialTimer: NodeJS.Timeout | null = null;
   private lastRunAtMs = 0;
 
   constructor(
@@ -31,7 +32,8 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
         this.logger,
       );
     }, operationalPolicy.roomCleanupTickMs);
-    setTimeout(() => {
+    this.initialTimer = setTimeout(() => {
+      this.initialTimer = null;
       void bestEffort(
         this.tick(),
         'nettoyage automatique initial des rooms',
@@ -44,6 +46,10 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
+    }
+    if (this.initialTimer) {
+      clearTimeout(this.initialTimer);
+      this.initialTimer = null;
     }
   }
 

@@ -18,14 +18,14 @@ import type {
   ContesState,
   ContesTargetEffect,
 } from './types';
-import { blockedPosition, moveTo, position } from './resolution-support';
+import { blockedPosition, contesPosition, moveTo } from './resolution-support';
 import { CONTES_RESOURCES, CONTES_STATUSES } from './constants';
 import { listTokens } from './tokens';
 
 export {
   CONTES_CONTENT_COUNTS,
   blockedPosition,
-  position,
+  contesPosition,
   requirePending,
   rollDie,
 } from './resolution-support';
@@ -176,7 +176,7 @@ export function applyTarget(
   else if (effect === 'steal-token' || effect === 'song-steal')
     requestToken(state, actorId, targetId, ctx);
   else if (effect === 'travelling-book') {
-    const actorPosition = position(actorId, ctx);
+    const actorPosition = contesPosition(actorId, ctx);
     moveTo(targetId, actorPosition, ctx);
     moveContesAndResolve(state, targetId, 1, 0, ctx);
   } else requestOption(state, actorId, 'gold-key-type', ctx, targetId);
@@ -375,20 +375,24 @@ export function previousMalus(
   depth: number,
   ctx: RuleContext,
 ): void {
-  let target = position(playerId, ctx) - 1;
+  let target = contesPosition(playerId, ctx) - 1;
   while (target > 0 && CONTES_TILES[target].type !== 'malus') target -= 1;
   moveTo(playerId, Math.max(0, target), ctx);
   if (target > 0) drawContesCard(state, playerId, 'malus', depth, ctx);
 }
 
 export function swapClosestBehind(playerId: number, ctx: RuleContext): void {
-  const own = position(playerId, ctx);
+  const own = contesPosition(playerId, ctx);
   const target = ctx.players
     .all()
     .filter(
-      (player) => player.id !== playerId && position(player.id, ctx) < own,
+      (player) =>
+        player.id !== playerId && contesPosition(player.id, ctx) < own,
     )
-    .sort((left, right) => position(right.id, ctx) - position(left.id, ctx))[0];
+    .sort(
+      (left, right) =>
+        contesPosition(right.id, ctx) - contesPosition(left.id, ctx),
+    )[0];
   if (target) ctx.movement.swap('story-road', playerId, target.id);
 }
 
@@ -397,7 +401,7 @@ export function releaseBlockedPlayers(
   moverId: number,
   ctx: RuleContext,
 ): void {
-  const reached = position(moverId, ctx);
+  const reached = contesPosition(moverId, ctx);
   for (const player of ctx.players.all()) {
     const blocked = blockedPosition(ctx, player.id);
     if (player.id !== moverId && blocked != null && reached >= blocked)

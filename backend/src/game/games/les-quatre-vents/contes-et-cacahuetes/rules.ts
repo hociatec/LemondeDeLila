@@ -16,7 +16,7 @@ import {
   drainResolution,
   drawContesCard,
   moveContesAndResolve,
-  position,
+  contesPosition,
   requestNumber,
   scheduleContesTarget,
   requirePending,
@@ -223,7 +223,7 @@ export function unblockPassedPlayers(
     .all()
     .some(
       (player) =>
-        player.id !== current.id && position(player.id, ctx) >= blocker,
+        player.id !== current.id && contesPosition(player.id, ctx) >= blocker,
     );
   if (passed) ctx.status.remove(current.id, CONTES_STATUSES.blocked);
 }

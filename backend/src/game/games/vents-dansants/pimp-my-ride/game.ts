@@ -1,5 +1,7 @@
 import {
+  cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
   inventory,
@@ -27,6 +29,25 @@ type PimpMyRidePlayerView = {
   >;
 };
 
+const cardSchema = defineCardsSchema({
+  decks: {
+    'car-parts': cards.deck({
+      id: 'car-parts',
+      cards: PIMP_MY_RIDE_DECK.map((card) => card.id),
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'car-parts',
+      initial: 3,
+      visibility: 'owner',
+    }),
+  },
+});
+
 export default defineGame<PimpMyRideState>()({
   id: 'pimp-my-ride',
   displayName: 'Pimp My Ride',
@@ -40,10 +61,9 @@ export default defineGame<PimpMyRideState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'car-parts',
       handId: 'players',
-      cards: PIMP_MY_RIDE_DECK.map((card) => card.id),
-      initialHandSize: 3,
     }),
   ],
   components: [

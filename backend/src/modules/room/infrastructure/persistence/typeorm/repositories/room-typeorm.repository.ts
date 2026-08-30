@@ -98,6 +98,33 @@ export class RoomTypeormRepository implements RoomRepository {
     );
   }
 
+  async togglePrivacyOwned(
+    roomId: number,
+    ownerUserId: number,
+  ): Promise<RoomRecord | null> {
+    return this.rooms.manager.transaction(async (manager) => {
+      const repository = manager.getRepository(Room);
+      const room = await repository.findOne({
+        where: { id: roomId },
+        relations: { owner: true },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!room || Number(room.owner?.id) !== ownerUserId) return null;
+      room.isPrivate = !room.isPrivate;
+      await repository.save(room);
+      return toRoomRecord(
+        await repository.findOne({
+          where: { id: roomId },
+          relations: {
+            owner: true,
+            participants: { user: true },
+            bots: true,
+          },
+        }),
+      );
+    });
+  }
+
   async listForAdmin(filters: ListRoomsFilters): Promise<RoomRecord[]> {
     const qb = this.rooms
       .createQueryBuilder('room')

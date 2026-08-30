@@ -3,6 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { Job, Queue, Worker } from 'bullmq';
 import Redis from 'ioredis';
 import { createHash } from 'node:crypto';
+import {
+  currentCorrelationId,
+  normalizeCorrelationId,
+  runWithCorrelationId,
+} from '../../../../platform/observability/public-api';
 import type {
   GameScheduledTask,
   GameTaskProcessor,
@@ -71,7 +76,10 @@ export class BullmqGameTaskSchedulerService
           job.data.gameType,
           Math.max(0, startedAtMs - job.data.dueAtMs),
         );
-        await processor(job.data);
+        await runWithCorrelationId(
+          normalizeCorrelationId(job.data.correlationId),
+          () => processor(job.data),
+        );
       },
       { connection: this.connection, concurrency: 16 },
     );
@@ -102,15 +110,22 @@ export class BullmqGameTaskSchedulerService
 
   async schedule(task: GameScheduledTask): Promise<void> {
     if (!this.queue) return;
-    const jobId = this.jobId(task);
+    const correlatedTask = {
+      ...task,
+      correlationId:
+        task.correlationId ??
+        currentCorrelationId() ??
+        normalizeCorrelationId(undefined),
+    };
+    const jobId = this.jobId(correlatedTask);
     const existing = await this.queue.getJob(jobId);
     if (existing) return;
-    await this.removeSuperseded(task);
-    await this.queue.add('execute', task, {
+    await this.removeSuperseded(correlatedTask);
+    await this.queue.add('execute', correlatedTask, {
       jobId,
-      delay: Math.max(0, task.dueAtMs - Date.now()),
+      delay: Math.max(0, correlatedTask.dueAtMs - Date.now()),
     });
-    this.metrics.recordTimerScheduled(task.gameType);
+    this.metrics.recordTimerScheduled(correlatedTask.gameType);
   }
 
   async cancel(key: string): Promise<void> {

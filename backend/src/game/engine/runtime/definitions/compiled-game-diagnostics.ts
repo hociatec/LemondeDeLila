@@ -6,8 +6,8 @@ import type {
   GameActionMap,
 } from './game-definition-contracts';
 
-type CompiledDescriptorInput = Pick<
-  CompiledGameDefinition<object, GameActionMap<object>, object>,
+export type CompiledDescriptorInput<TState extends object = object> = Pick<
+  CompiledGameDefinition<TState, GameActionMap<TState>, object>,
   | 'id'
   | 'patterns'
   | 'components'
@@ -27,8 +27,8 @@ type CompiledDescriptorInput = Pick<
 >;
 
 /** Builds the immutable authoring diagnostics exposed by a compiled game. */
-export function describeCompiledGameDefinition(
-  definition: CompiledDescriptorInput,
+export function describeCompiledGameDefinition<TState extends object>(
+  definition: CompiledDescriptorInput<TState>,
 ): CompiledGameDiagnostics {
   return {
     compiledAt: 'defineGame',
@@ -103,9 +103,9 @@ export function describeCompiledGameDefinition(
   };
 }
 
-function actionSources(
+function actionSources<TState extends object>(
   definition: Pick<
-    CompiledGameDefinition<object, GameActionMap<object>, object>,
+    CompiledGameDefinition<TState, GameActionMap<TState>, object>,
     'patterns' | 'actions'
   >,
 ): Record<string, string> {
@@ -123,9 +123,9 @@ function actionSources(
   return sources;
 }
 
-function componentSources(
+function componentSources<TState extends object>(
   definition: Pick<
-    CompiledGameDefinition<object, GameActionMap<object>, object>,
+    CompiledGameDefinition<TState, GameActionMap<TState>, object>,
     'patterns' | 'components'
   >,
 ): Record<string, string> {

@@ -11,7 +11,6 @@ import {
 } from './content';
 import {
   CA_MIRROR_ROLL,
-  TRACK,
   applyConditional,
   applyGlobal,
   applyPenaltyAwareMove,
@@ -81,14 +80,6 @@ export const CA_DERAPE_EFFECTS = {
   'ca-derape.mark-winner': defineEffect<CaDerapeState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ ctx }) => markWinnerIfReached(ctx),
-  }),
-  'ca-derape.swap': defineEffect<CaDerapeState, Record<string, never>>({
-    input: gameInput.object({}),
-    apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
-      const targetId = targetPlayerIds[0];
-      if (actorPlayerId == null || targetId == null) return;
-      ctx.movement.swap(TRACK, actorPlayerId, targetId);
-    },
   }),
   'ca-derape.next-player': defineEffect<CaDerapeState, Record<string, never>>({
     input: gameInput.object({}),

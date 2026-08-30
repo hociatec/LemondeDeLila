@@ -278,7 +278,7 @@ export function isOwnable(tile: SacTile): boolean {
   );
 }
 
-export function position(playerId: number, ctx: RuleContext): number {
+export function sacBoardPosition(playerId: number, ctx: RuleContext): number {
   return ctx.movement.position(TRACK, playerId);
 }
 

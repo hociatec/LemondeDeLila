@@ -5,7 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { isUniqueConstraintViolation } from '../../../../../platform/database/public-api';
+import { mapUniqueConstraintViolation } from '../../../../../platform/database/public-api';
 import {
   ADMIN_USER_REPOSITORY,
   type AdminUserRepository,
@@ -171,13 +171,9 @@ export class AdminUsersCommandService {
   private async mapUniquenessConflict<T>(
     operation: () => Promise<T>,
   ): Promise<T> {
-    try {
-      return await operation();
-    } catch (error) {
-      if (isUniqueConstraintViolation(error)) {
-        throw new ConflictException('Email ou nom utilisateur déjà utilisé');
-      }
-      throw error;
-    }
+    return mapUniqueConstraintViolation(
+      operation,
+      () => new ConflictException('Email ou nom utilisateur déjà utilisé'),
+    );
   }
 }

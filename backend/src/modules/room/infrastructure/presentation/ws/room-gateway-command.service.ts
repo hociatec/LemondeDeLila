@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import {
+  normalizeCorrelationId,
+  runWithCorrelationId,
+} from '../../../../../platform/observability/public-api';
+import {
   extractTraceMeta,
   isImmediateAckAction,
   mapIntentToLegacyCommand,
@@ -163,14 +167,31 @@ export class RoomGatewayCommandService {
     const type = payload?.type;
     const data = payload?.payload ?? {};
     const receivedAtMs = Date.now();
+    const trace = extractTraceMeta(ctx.asRecord(data), receivedAtMs);
+    await runWithCorrelationId(
+      normalizeCorrelationId(trace.traceId),
+      async () => {
+        if (type === 'room.intent.execute') {
+          await this.handleRoomIntentExecute(
+            ctx,
+            client,
+            meta,
+            data,
+            receivedAtMs,
+          );
+          return;
+        }
 
-    if (type === 'room.intent.execute') {
-      await this.handleRoomIntentExecute(ctx, client, meta, data, receivedAtMs);
-      return;
-    }
-
-    ctx.sendImmediateAckIfNeeded(client, meta, type, data, receivedAtMs);
-    await ctx.executeLegacyRoomCommand(client, meta, type, data, receivedAtMs);
+        ctx.sendImmediateAckIfNeeded(client, meta, type, data, receivedAtMs);
+        await ctx.executeLegacyRoomCommand(
+          client,
+          meta,
+          type,
+          data,
+          receivedAtMs,
+        );
+      },
+    );
   }
 
   async handleRoomIntentExecute(

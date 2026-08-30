@@ -37,7 +37,7 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
     opts?: { cwd?: string; delayMs?: number },
   ): void {
     const delayMs = typeof opts?.delayMs === 'number' ? opts.delayMs : 0;
-    setTimeout(
+    const timer = setTimeout(
       () => {
         try {
           const [cmd, ...args] = argv;
@@ -55,6 +55,7 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
       },
       Math.max(0, delayMs),
     );
+    timer.unref();
   }
 
   async httpGet(

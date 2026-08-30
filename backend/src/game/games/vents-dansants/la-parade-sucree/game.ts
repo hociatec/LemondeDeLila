@@ -1,5 +1,7 @@
 import {
+  cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
   victoryWhen,
@@ -7,6 +9,25 @@ import {
 import { PARADE_CARD_BY_ID, PARADE_CARDS, PARADE_SEQUENCE } from './content';
 import { PARADE_ACTIONS, sequenceIndex, winners } from './rules';
 import type { LaParadeSucreeState } from './types';
+
+const cardSchema = defineCardsSchema({
+  decks: {
+    parade: cards.deck({
+      id: 'parade',
+      cards: PARADE_CARDS.map((card) => card.id),
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'parade',
+      initial: 0,
+      visibility: 'owner',
+    }),
+  },
+});
 
 export default defineGame<LaParadeSucreeState>()({
   id: 'la-parade-sucree',
@@ -21,9 +42,9 @@ export default defineGame<LaParadeSucreeState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'parade',
       handId: 'players',
-      cards: PARADE_CARDS.map((card) => card.id),
     }),
   ],
   shortcuts: [

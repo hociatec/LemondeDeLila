@@ -1,5 +1,7 @@
 import {
+  cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
 } from '../../../engine/sdk/public-api';
@@ -23,6 +25,24 @@ type ZigEtZagPlayerView = {
 };
 
 const INITIAL_HAND_SIZE = 27;
+const cardSchema = defineCardsSchema({
+  decks: {
+    battle: cards.deck({
+      id: 'battle',
+      cards: ZIG_ET_ZAG_DECK.map((card) => card.id),
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'battle',
+      initial: INITIAL_HAND_SIZE,
+      visibility: 'owner',
+    }),
+  },
+});
 
 export default defineGame<ZigEtZagState>()({
   id: 'zig-et-zag',
@@ -34,10 +54,9 @@ export default defineGame<ZigEtZagState>()({
   content: defineGameContent('zig-et-zag', { cards: ZIG_ET_ZAG_DECK }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'battle',
       handId: 'players',
-      cards: ZIG_ET_ZAG_DECK.map((card) => card.id),
-      initialHandSize: INITIAL_HAND_SIZE,
     }),
   ],
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'draw_card' }],

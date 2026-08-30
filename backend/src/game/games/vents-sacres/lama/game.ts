@@ -1,5 +1,7 @@
 import {
+  cards,
   cardGame,
+  defineCardsSchema,
   defineChoice,
   defineGame,
   defineGameContent,
@@ -24,6 +26,24 @@ type LamaState = NoGameState;
 const scoring = roundScoring<LamaState>({
   score: ({ state, ctx }) => scoreLamaRound(state, ctx),
 });
+const cardSchema = defineCardsSchema({
+  decks: {
+    lama: cards.deck({
+      id: 'lama',
+      cards: LAMA_MAX_DECK,
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    'lama-hands': cards.hands({
+      id: 'lama-hands',
+      deck: 'lama',
+      initial: 0,
+      visibility: 'owner',
+    }),
+  },
+});
 
 export default defineGame<LamaState>()({
   id: 'lama',
@@ -37,9 +57,9 @@ export default defineGame<LamaState>()({
   config: LAMA_CONFIGURATION,
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'lama',
       handId: 'lama-hands',
-      cards: LAMA_MAX_DECK,
     }),
   ],
   initialPhase: LAMA_PHASES.initialPhase,

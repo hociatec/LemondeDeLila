@@ -30,11 +30,16 @@ export class ClientUpdatesArchivePublisher {
     try {
       await this.extractAndValidate(zipPath, stagingDir);
       const targetDir = this.paths.getTargetDir();
-      const releasesDir = await this.prepareReleasesDirectory(targetDir);
-      const swapped = releasesDir
-        ? await this.tryDirectorySwap(stagingDir, targetDir, releasesDir)
-        : false;
-      if (!swapped) await this.replaceDirectoryContents(stagingDir, targetDir);
+      const targetExists = await this.assertSafeTarget(targetDir);
+      const releasesDir = targetExists
+        ? await this.prepareReleasesDirectory(targetDir)
+        : null;
+      if (releasesDir) {
+        await this.swapDirectory(stagingDir, targetDir, releasesDir);
+      } else {
+        await fs.promises.mkdir(path.dirname(targetDir), { recursive: true });
+        await fs.promises.rename(stagingDir, targetDir);
+      }
       await this.finalizePublication(zipPath, targetDir);
       await this.pruneBackups(releasesDir);
     } finally {
@@ -79,67 +84,48 @@ export class ClientUpdatesArchivePublisher {
     }
   }
 
-  private async prepareReleasesDirectory(
-    targetDir: string,
-  ): Promise<string | null> {
+  private async prepareReleasesDirectory(targetDir: string): Promise<string> {
     const releasesDir = path.join(
       path.dirname(targetDir),
       'client-win.releases',
     );
-    try {
-      await fs.promises.mkdir(releasesDir, { recursive: true });
-      return releasesDir;
-    } catch (error) {
-      const message =
-        (error as NodeJS.ErrnoException)?.message || 'erreur inconnue';
-      this.logger.warn(
-        `Impossible de preparer le dossier de backups (${releasesDir}). Fallback publication sans swap de repertoire: ${message}`,
-      );
-      return null;
-    }
+    await fs.promises.mkdir(releasesDir, { recursive: true });
+    return releasesDir;
   }
 
-  private async tryDirectorySwap(
+  private async swapDirectory(
     stagingDir: string,
     targetDir: string,
     releasesDir: string,
-  ): Promise<boolean> {
+  ): Promise<void> {
+    const backupDir = path.join(
+      releasesDir,
+      `backup.${Date.now()}.${process.pid}`,
+    );
+    await fs.promises.rename(targetDir, backupDir);
     try {
-      const existingTarget = await this.resolveExistingTarget(targetDir);
-      if (!existingTarget) return false;
-      const backupDir = path.join(releasesDir, `backup.${Date.now()}`);
-      await fs.promises.rename(existingTarget, backupDir);
       await fs.promises.rename(stagingDir, targetDir);
-      return true;
-    } catch {
-      return false;
+    } catch (error) {
+      await fs.promises.rename(backupDir, targetDir);
+      throw error;
     }
   }
 
-  private async resolveExistingTarget(
-    targetDir: string,
-  ): Promise<string | null> {
+  private async assertSafeTarget(targetDir: string): Promise<boolean> {
     try {
       const existing = await fs.promises.lstat(targetDir);
-      if (existing.isDirectory()) return targetDir;
-      if (!existing.isSymbolicLink()) return null;
-      let resolved: string | null = null;
-      try {
-        const realPath = await fs.promises.realpath(targetDir);
-        if ((await fs.promises.lstat(realPath)).isDirectory()) {
-          resolved = realPath;
-        }
-      } catch {
-        // Ignore broken or invalid symbolic link targets.
+      if (existing.isDirectory() && !existing.isSymbolicLink()) return true;
+      if (existing.isSymbolicLink()) {
+        throw new ClientUpdatesInvalidArchiveError(
+          'Publication refusée: le dossier client cible est un lien symbolique.',
+        );
       }
-      await bestEffort(
-        fs.promises.unlink(targetDir),
-        'suppression du lien client invalide',
-        this.logger,
+      throw new ClientUpdatesInvalidArchiveError(
+        'Publication refusée: la cible client existe et n’est pas un dossier.',
       );
-      return resolved;
-    } catch {
-      return null;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
+      throw error;
     }
   }
 
@@ -188,11 +174,18 @@ export class ClientUpdatesArchivePublisher {
 
   private async assertZipSafe(zipPath: string): Promise<void> {
     await this.assertUnzipAvailable();
-    const { stdout } = await execFileAsync('unzip', ['-Z1', zipPath], {
-      timeout: 60_000,
-      maxBuffer: 50 * 1024 * 1024,
-    });
-    const entries = stdout
+    const [{ stdout: names }, { stdout: listing }] = await Promise.all([
+      execFileAsync('unzip', ['-Z1', zipPath], {
+        timeout: 60_000,
+        maxBuffer: 50 * 1024 * 1024,
+      }),
+      execFileAsync('unzip', ['-Z', '-l', zipPath], {
+        timeout: 60_000,
+        maxBuffer: 50 * 1024 * 1024,
+      }),
+    ]);
+    assertNoSymlinkArchiveEntries(listing);
+    const entries = names
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean);
@@ -211,23 +204,6 @@ export class ClientUpdatesArchivePublisher {
       }
       throw error;
     }
-  }
-
-  private async replaceDirectoryContents(
-    sourceDir: string,
-    targetDir: string,
-  ): Promise<void> {
-    await fs.promises.mkdir(targetDir, { recursive: true });
-    const existing = await fs.promises.readdir(targetDir, {
-      withFileTypes: true,
-    });
-    for (const entry of existing) {
-      await fs.promises.rm(path.join(targetDir, entry.name), {
-        recursive: true,
-        force: true,
-      });
-    }
-    await copyRecursive(sourceDir, targetDir);
   }
 
   private async ensureLegacyAliases(targetDir: string): Promise<void> {
@@ -279,19 +255,14 @@ export function assertSafeClientUpdateArchiveEntries(
   }
 }
 
-async function copyRecursive(source: string, target: string): Promise<void> {
-  const stats = await fs.promises.stat(source);
-  if (stats.isDirectory()) {
-    await fs.promises.mkdir(target, { recursive: true });
-    const entries = await fs.promises.readdir(source, { withFileTypes: true });
-    for (const entry of entries) {
-      await copyRecursive(
-        path.join(source, entry.name),
-        path.join(target, entry.name),
-      );
-    }
-    return;
+export function assertNoSymlinkArchiveEntries(listing: string): void {
+  const symbolicLink = listing
+    .split(/\r?\n/)
+    .map((line) => line.trimStart())
+    .find((line) => /^l[rwx-]{9}\s/.test(line));
+  if (symbolicLink) {
+    throw new ClientUpdatesInvalidArchiveError(
+      'Archive invalide (lien symbolique interdit).',
+    );
   }
-  await fs.promises.mkdir(path.dirname(target), { recursive: true });
-  await fs.promises.copyFile(source, target);
 }

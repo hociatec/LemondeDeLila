@@ -1,6 +1,9 @@
 import type { GameContext } from '../game-rule-context';
 import { typedRuntimeHandler } from '../actions/parsed-input';
-import type { GameInputSchema } from '../actions/game-input-schema';
+import type {
+  GameInputDescriptor,
+  GameInputSchema,
+} from '../actions/game-input-schema';
 import type { StatusScope } from '../kits/player-values-kit';
 
 export type EffectTarget =
@@ -235,7 +238,7 @@ export type EffectSource = {
 };
 
 export interface GameEffectResolverShape<TState extends object> {
-  input: Pick<GameInputSchema<never>, 'describe'>;
+  input: GameInputDescriptor;
   resolveRaw(input: RawGameEffectResolution<TState>): void;
 }
 

@@ -18,7 +18,11 @@ import {
   type PresentedErrorPayload,
 } from '../../../../../shared/utils/public-api';
 import { WsRouteRegistry } from '../../../../ws/public-api';
-import { PerfMetricsService } from '../../../../observability/public-api';
+import {
+  normalizeCorrelationId,
+  PerfMetricsService,
+  runWithCorrelationId,
+} from '../../../../observability/public-api';
 import type {
   RealtimeClientSession,
   RealtimeIncomingMessage,
@@ -79,7 +83,10 @@ export class RealtimeApiHandlerService {
       return;
     }
 
-    await this.handleDecoded(client, session, decoded);
+    const correlationId = normalizeCorrelationId(decoded.requestId);
+    await runWithCorrelationId(correlationId, () =>
+      this.handleDecoded(client, session, decoded),
+    );
   }
 
   private async handleDecoded(

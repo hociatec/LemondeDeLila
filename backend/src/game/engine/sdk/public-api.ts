@@ -10,15 +10,24 @@ export type {
 } from '../runtime/definitions/game-definition';
 
 export {
+  boardContent,
+  cardContent,
   defineGameContent,
   freezeGameContent,
   loadGameContent,
+  quizContent,
+  trackContent,
 } from '../runtime/content/game-content';
 export type { GameContent } from '../runtime/content/game-content';
 export { gameInput } from '../runtime/actions/game-input-schema';
 export { defineEvent } from '../runtime/events/game-event-definition';
 export { defineConfiguration } from '../runtime/configuration/configuration-kit';
-export type { GameContext } from '../runtime/game-rule-context';
+export type {
+  GameContext,
+  GameContextFor,
+  GameCounterIdOf,
+  GameResourceIdOf,
+} from '../runtime/game-rule-context';
 
 export { commonStatuses } from '../runtime/kits/player-values-kit';
 export {

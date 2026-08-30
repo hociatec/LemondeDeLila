@@ -15,11 +15,24 @@ const TAXI_PHASES = defineGamePhases<TaxiState>()({
   initialPhase: 'playing',
   phases: { playing: {} },
 });
-const eventCards = defineCardsSchema({
+const cardSchema = defineCardsSchema({
   decks: {
     events: cards.deck({ id: 'events', cards: TAXI_EVENTS, shuffle: true }),
+    clients: cards.deck({
+      id: 'clients',
+      cards: TAXI_CLIENTS,
+      shuffle: true,
+      empty: 'recycle',
+    }),
   },
-  hands: {},
+  hands: {
+    'taxi-clients': cards.hands({
+      id: 'taxi-clients',
+      deck: 'clients',
+      initial: 0,
+      visibility: 'owner',
+    }),
+  },
 });
 
 export default defineGame<TaxiState>()({
@@ -37,12 +50,11 @@ export default defineGame<TaxiState>()({
   patterns: [
     raceGame({ trackId: 'city', spaces: TAXI_TILES.length }),
     cardGame({
+      schema: cardSchema,
       deckId: 'clients',
       handId: 'taxi-clients',
-      cards: TAXI_CLIENTS,
     }),
   ],
-  components: [...eventCards.components],
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
   initialPhase: TAXI_PHASES.initialPhase,
   phases: TAXI_PHASES.phases,

@@ -7,6 +7,7 @@ export type GameScheduledTask = {
   signature: string;
   generation: number;
   dueAtMs: number;
+  correlationId?: string;
 };
 
 export type GameTaskProcessor = (task: GameScheduledTask) => Promise<void>;

@@ -62,13 +62,17 @@ export class RoomLifecycleService {
   ): Promise<RoomRecord> {
     const room = await context.requireRoom(roomId);
     context.ensureOwner(room, userId);
-    room.isPrivate = !room.isPrivate;
-    await this.rooms.save(room);
-    if (invalidateCache) {
-      await context.invalidateRoomPayloadCache(room.id);
+    const toggled = await this.rooms.togglePrivacyOwned(roomId, userId);
+    if (!toggled) {
+      const latest = await context.requireRoom(roomId);
+      context.ensureOwner(latest, userId);
+      throw new NotFoundException('Table introuvable');
     }
-    await this.roomEvents.publishLobbyChanged(room.id, 'privacy');
-    return room;
+    if (invalidateCache) {
+      await context.invalidateRoomPayloadCache(toggled.id);
+    }
+    await this.roomEvents.publishLobbyChanged(toggled.id, 'privacy');
+    return toggled;
   }
 
   async startRoom(

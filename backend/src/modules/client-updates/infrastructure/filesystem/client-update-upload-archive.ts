@@ -65,4 +65,23 @@ export async function assertUploadArchiveSize(
       `Taille archive invalide (attendu ${expectedBytes}, reçu ${size}).`,
     );
   }
+  const handle = await fs.promises.open(archivePath, 'r');
+  try {
+    const header = Buffer.alloc(4);
+    const { bytesRead } = await handle.read(header, 0, header.length, 0);
+    const validZipHeader =
+      bytesRead === 4 &&
+      header[0] === 0x50 &&
+      header[1] === 0x4b &&
+      ((header[2] === 0x03 && header[3] === 0x04) ||
+        (header[2] === 0x05 && header[3] === 0x06) ||
+        (header[2] === 0x07 && header[3] === 0x08));
+    if (!validZipHeader) {
+      throw new BadRequestException(
+        'Type de fichier invalide: archive ZIP requise.',
+      );
+    }
+  } finally {
+    await handle.close();
+  }
 }

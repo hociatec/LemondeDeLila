@@ -6,7 +6,7 @@ import {
   drainResolution,
   extendTurnStatus,
   moveContesAndResolve,
-  position,
+  contesPosition,
   previousMalus,
   queueDraws,
   requestAbundance,
@@ -143,7 +143,7 @@ export const CONTES_EFFECTS = {
       if (playerId == null) return;
       ctx.status.add(playerId, CONTES_STATUSES.blocked, {
         scope: 'until-used',
-        data: { position: position(playerId, ctx) },
+        data: { position: contesPosition(playerId, ctx) },
       });
     },
   }),
