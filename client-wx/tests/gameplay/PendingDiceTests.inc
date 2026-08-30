@@ -29,7 +29,7 @@ void TestPendingChoicesUseOnlyExplicitServerMappings()
             state.pending->choices[1].action->type == "opaque_beta" &&
             state.pending->choices[1].action->payload.at("value") == 2,
         "Un choix doit executer uniquement son mapping explicite fourni par le serveur.");
-    Expect(state.round == 3,
+    Expect(state.system.round.number == 3,
         "Le résumé générique doit conserver la manche du contrat system.round.");
 }
 
@@ -82,15 +82,15 @@ void TestGenericDiceContract()
     };
 
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    Expect(state.dice.has_value() && state.dice->dice.size() == 2,
+    Expect(state.kits.dice.has_value() && state.kits.dice->dice.size() == 2,
         "Tous les des fournis par le serveur doivent etre conserves.");
-    Expect(state.dice->total == 8 && state.dice->dice[1].value == 5,
+    Expect(state.kits.dice->total == 8 && state.kits.dice->dice[1].value == 5,
         "Les valeurs individuelles et le total doivent etre decodes.");
-    const auto action = GameDiceActionResolver::Resolve(*state.dice, state.actions, 0);
+    const auto action = GameDiceActionResolver::Resolve(*state.kits.dice, state.actions, 0);
     Expect(action.has_value() && action->type == "server-specific-roll",
         "Le lancer doit utiliser l'index serveur sans connaitre le nom de l'action.");
     Expect(lila::modules::gameplay::application::dice::GameDiceTextBuilder::DieText(
-            state.dice->dice[0]) == "Dé rouge : 3 sur 8",
+            state.kits.dice->dice[0]) == "Dé rouge : 3 sur 8",
         "La valeur et le nombre de faces doivent former un texte accessible.");
 }
 

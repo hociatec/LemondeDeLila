@@ -1,19 +1,9 @@
 #include "modules/rooms/presentation/shortcuts/RoomShortcutPolicy.h"
 
-#include <algorithm>
+#include "modules/rooms/presentation/actions/RoomActionPolicy.h"
 
 namespace lila::modules::rooms::presentation
 {
-namespace
-{
-bool Allows(const domain::RoomState& room, std::string_view action)
-{
-    return std::find(room.allowedActions.begin(), room.allowedActions.end(), action) !=
-        room.allowedActions.end();
-}
-
-}
-
 std::string_view RoomShortcutPolicy::Resolve(
     int key,
     bool control,
@@ -27,32 +17,36 @@ std::string_view RoomShortcutPolicy::Resolve(
     if (control)
     {
         if (shift) return {};
-        if (key == 'H' && Allows(room, "room.toggle-privacy")) return "room:privacy";
-        if (key == 'M' && Allows(room, "room.set-role")) return "room:role";
-        if (key == 'S' && Allows(room, "room.snapshot.save")) return "room:save";
-        if (key == 'A' && Allows(room, "room.set-ambience")) return "room:ambience";
-        if (key == 'V' && Allows(room, "room.tableAmbienceVolume")) return "room:ambience-volume";
-        if (key == 'I' && Allows(room, "room.invite")) return "room:invite";
-        if (key == 'K' && Allows(room, "room.kick")) return "room:kick";
-        if (key == 'B' && Allows(room, "room.ban")) return "room:ban";
-        if (key == 'P' && Allows(room, "room.set-owner")) return "room:set-owner";
+        if (key == 'H' && RoomActionPolicy::AllowsServer(room, "room.toggle-privacy")) return "room:privacy";
+        if (key == 'M' && RoomActionPolicy::AllowsServer(room, "room.set-role")) return "room:role";
+        if (key == 'S' && RoomActionPolicy::AllowsServer(room, "room.snapshot.save")) return "room:save";
+        if (key == 'A' && RoomActionPolicy::AllowsServer(room, "room.set-ambience")) return "room:ambience";
+        if (key == 'V' && RoomActionPolicy::AllowsInterface(
+                RoomInterfaceAction::TableAmbienceVolume)) return "room:ambience-volume";
+        if (key == 'I' && RoomActionPolicy::AllowsServer(room, "room.invite")) return "room:invite";
+        if (key == 'K' && RoomActionPolicy::AllowsServer(room, "room.kick")) return "room:kick";
+        if (key == 'B' && RoomActionPolicy::AllowsServer(room, "room.ban")) return "room:ban";
+        if (key == 'P' && RoomActionPolicy::AllowsServer(room, "room.set-owner")) return "room:set-owner";
         return {};
     }
 
     if (key == 'B')
     {
-        if (shift && Allows(room, "bot.remove"))
+        if (shift && RoomActionPolicy::AllowsServer(room, "bot.remove"))
             return "room:remove-bot";
-        if (!shift && Allows(room, "bot.add"))
+        if (!shift && RoomActionPolicy::AllowsServer(room, "bot.add"))
             return "room:add-bot";
         return {};
     }
 
-    if (key == 'W' && Allows(room, "room.players")) return "room:players";
-    if (key == 'I' && Allows(room, "room.info")) return "room:info";
-    if (key == 'R' && Allows(room, "room.rules")) return "room:rules";
-    if (key == 'X' && Allows(room, "room.reset")) return "room:reset";
-    if (key == 'Q' && Allows(room, "room.leave")) return "room:leave";
+    if (key == 'W' && RoomActionPolicy::AllowsInterface(RoomInterfaceAction::Players))
+        return "room:players";
+    if (key == 'I' && RoomActionPolicy::AllowsInterface(RoomInterfaceAction::Information))
+        return "room:info";
+    if (key == 'R' && RoomActionPolicy::AllowsInterface(RoomInterfaceAction::Rules))
+        return "room:rules";
+    if (key == 'X' && RoomActionPolicy::AllowsServer(room, "room.reset")) return "room:reset";
+    if (key == 'Q' && RoomActionPolicy::AllowsServer(room, "room.leave")) return "room:leave";
     return {};
 }
 }

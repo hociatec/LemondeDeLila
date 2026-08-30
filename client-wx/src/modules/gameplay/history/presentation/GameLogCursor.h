@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace lila::modules::gameplay::presentation::history
@@ -14,6 +15,6 @@ public:
     void Reset() noexcept;
 
 private:
-    std::vector<std::string> publishedMessages_;
+    std::unordered_set<std::string> publishedIdentities_;
 };
 }

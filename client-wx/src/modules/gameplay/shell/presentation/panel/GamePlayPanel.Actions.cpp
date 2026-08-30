@@ -4,10 +4,12 @@
 #include <utility>
 
 #include <wx/listbox.h>
+#include <wx/rearrangectrl.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
+#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -93,6 +95,23 @@ bool GamePlayPanel::ActivateSelectedPendingChoice()
     if (!state_.pending || !state_.pending->viewerActionable) return false;
     if (state_.pending->multipleSelection)
     {
+        if (!state_.pending->selectionAction) return false;
+        auto action = *state_.pending->selectionAction;
+        action.payload["value"] = nlohmann::json::array();
+        if (state_.pending->ordering)
+        {
+            for (const int encodedIndex : orderingChoices_->GetList()->GetCurrentOrder())
+            {
+                const int index = encodedIndex < 0 ? ~encodedIndex : encodedIndex;
+                if (index >= 0 && static_cast<std::size_t>(index) < pendingChoiceIndexes_.size() &&
+                    pendingChoiceIndexes_[static_cast<std::size_t>(index)] < state_.pending->choices.size())
+                    action.payload["value"].push_back(infrastructure::EncodeGameValue(
+                        state_.pending->choices[
+                            pendingChoiceIndexes_[static_cast<std::size_t>(index)]].value));
+            }
+            PrepareAndExecuteAction(std::move(action));
+            return true;
+        }
         wxArrayInt selections;
         const auto count = choicesList_->GetSelections(selections);
         if (count < state_.pending->minimumSelections ||
@@ -104,13 +123,10 @@ bool GamePlayPanel::ActivateSelectedPendingChoice()
                 state_.pending->maximumSelections), true, true);
             return true;
         }
-        if (!state_.pending->selectionAction) return false;
-        auto action = *state_.pending->selectionAction;
-        action.payload["value"] = nlohmann::json::array();
         for (const auto selected : selections)
             if (selected >= 0 && static_cast<std::size_t>(selected) < state_.pending->choices.size())
-                action.payload["value"].push_back(
-                    state_.pending->choices[static_cast<std::size_t>(selected)].value);
+                action.payload["value"].push_back(infrastructure::EncodeGameValue(
+                    state_.pending->choices[static_cast<std::size_t>(selected)].value));
         PrepareAndExecuteAction(std::move(action));
         return true;
     }

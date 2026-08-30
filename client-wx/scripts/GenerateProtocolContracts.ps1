@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$eventsPath = Join-Path $BackendRoot 'src/realtime/infrastructure/presentation/ws/ws-events.ts'
+$eventsPath = Join-Path $BackendRoot 'src/platform/realtime/infrastructure/presentation/ws/ws-events.ts'
 $fieldsPath = Join-Path $BackendRoot 'contracts/client-wx-fields.json'
 foreach ($requiredPath in @($eventsPath, $fieldsPath)) {
     if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {

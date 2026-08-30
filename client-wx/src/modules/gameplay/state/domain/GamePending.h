@@ -4,16 +4,15 @@
 #include <string>
 #include <vector>
 
-#include <nlohmann/json.hpp>
-
 #include "modules/gameplay/actions/domain/GameAction.h"
+#include "modules/gameplay/state/domain/GameValue.h"
 
 namespace lila::modules::gameplay::domain
 {
 struct GamePendingChoice final
 {
     std::string label;
-    nlohmann::json value;
+    GameValue value;
     std::optional<GameAction> action;
 };
 
@@ -31,10 +30,11 @@ struct GamePending final
     bool blocking = false;
     bool viewerActionable = false;
     bool multipleSelection = false;
+    bool ordering = false;
     int minimumSelections = 1;
     int maximumSelections = 1;
     std::optional<GameAction> selectionAction;
     std::vector<GamePendingChoice> choices;
-    nlohmann::json data = nlohmann::json::object();
+    GameValue::Object unknownData;
 };
 }

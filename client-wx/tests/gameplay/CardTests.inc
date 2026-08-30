@@ -13,15 +13,16 @@ void TestGenericCardsContract()
     };
 
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    Expect(state.hand.size() == 3, "Toutes les cartes de la main doivent etre conservees.");
-    Expect(state.hand[0].id == "wolf" && state.hand[0].label == "Le loup",
+    const auto& hand = state.kits.VisibleHand();
+    Expect(hand.size() == 3, "Toutes les cartes de la main doivent etre conservees.");
+    Expect(hand[0].id == "wolf" && hand[0].label == "Le loup",
         "Une carte doit recevoir le libelle riche correspondant a son identifiant.");
-    Expect(state.hand[1].description == "Carte nocturne",
+    Expect(hand[1].description == "Carte nocturne",
         "La description generique d'une carte doit etre conservee.");
-    Expect(lila::modules::gameplay::application::cards::GameCardTextBuilder::AccessibleText(state.hand[1]) ==
+    Expect(lila::modules::gameplay::application::cards::GameCardTextBuilder::AccessibleText(hand[1]) ==
             "La lune. Carte nocturne",
         "La description d'une carte doit etre disponible au lecteur d'ecran.");
-    Expect(state.hand[2].label == "unknown",
+    Expect(hand[2].label == "unknown",
         "Une carte inconnue doit rester utilisable avec son identifiant comme libelle.");
 }
 
@@ -47,17 +48,17 @@ void TestCardsCarryTheirActionsAcrossGames()
         }},
     };
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    const auto first = GameCardActionResolver::Resolve(state.hand, state.actions, 0);
-    const auto second = GameCardActionResolver::Resolve(state.hand, state.actions, 1);
+    const auto first = GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 0);
+    const auto second = GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 1);
     Expect(first.has_value() && first->payload.at("cardId") == "wolf",
         "Une carte doit executer l'action explicitement associee par le serveur.");
     Expect(second.has_value() && second->type == "play",
         "Deux exemplaires d'une carte doivent conserver deux actions distinctes.");
-    Expect(!GameCardActionResolver::Resolve(state.hand, state.actions, 2).has_value(),
+    Expect(!GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 2).has_value(),
         "Une carte desactivee doit rester consultable sans etre jouable.");
-    Expect(GameCardActionResolver::Resolve(state.hand, state.actions, 3).has_value(),
+    Expect(GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 3).has_value(),
         "Une action serveur disponible doit primer sur un indicateur visuel de carte obsolete.");
-    Expect(!GameCardActionResolver::Resolve(state.hand, state.actions, 4).has_value(),
+    Expect(!GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 4).has_value(),
         "Une carte desactivee sans liaison ne doit pas recuperer une autre action par similitude de payload.");
 }
 
@@ -89,7 +90,7 @@ void TestServerDrivenKeyboardActionsSurviveTheClientContract()
     };
 
     const auto state = GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    const auto play = GameCardActionResolver::Resolve(state.hand, state.actions, 0);
+    const auto play = GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 0);
     Expect(play.has_value() && play->type == "play_card",
         "Entree sur une carte doit retrouver l'action associee par le serveur.");
     Expect(state.shortcuts.size() == 2 &&
@@ -137,11 +138,11 @@ void TestOpaqueServerDrivenHandAndShortcuts()
     };
 
     const auto state = GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    const auto play = GameCardActionResolver::Resolve(state.hand, state.actions, 0);
+    const auto play = GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 0);
     Expect(play.has_value() && play->type == "opaque_play" &&
             play->payload.at("value") == 2,
         "Entree doit jouer la carte selectionnee sans connaitre le jeu.");
-    Expect(!GameCardActionResolver::Resolve(state.hand, state.actions, 1).has_value(),
+    Expect(!GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 1).has_value(),
         "Entree ne doit pas jouer une carte desactivee.");
     Expect(state.shortcuts.size() == 3 &&
             state.shortcuts[0].normalizedKey == "SPACE" &&

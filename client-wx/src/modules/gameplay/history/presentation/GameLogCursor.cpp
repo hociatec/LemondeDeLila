@@ -1,41 +1,42 @@
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
 
-#include <algorithm>
-#include <cstddef>
-
 namespace lila::modules::gameplay::presentation::history
 {
+namespace
+{
+std::string Identity(const std::string& message)
+{
+    const auto separator = message.find('|');
+    return separator == std::string::npos ? message : message.substr(0, separator);
+}
+}
+
 std::vector<std::string> GameLogCursor::ExtractNew(
     const std::vector<std::string>& messages)
 {
-    // Some transient states omit the log. Keeping the cursor prevents the
-    // complete history from being replayed when the log returns.
-    if (messages.empty()) return {};
-
-    std::size_t overlap = std::min(publishedMessages_.size(), messages.size());
-    while (overlap > 0 && !std::equal(
-        publishedMessages_.end() - static_cast<std::ptrdiff_t>(overlap),
-        publishedMessages_.end(),
-        messages.begin()))
-    {
-        --overlap;
-    }
-
     std::vector<std::string> fresh;
-    fresh.reserve(messages.size() - overlap);
-    for (std::size_t index = overlap; index < messages.size(); ++index)
-        if (!messages[index].empty()) fresh.push_back(messages[index]);
-    publishedMessages_ = messages;
+    fresh.reserve(messages.size());
+    for (const auto& message : messages)
+    {
+        if (message.empty()) continue;
+        const auto identity = Identity(message);
+        if (!identity.empty() && publishedIdentities_.insert(identity).second)
+            fresh.push_back(message);
+    }
     return fresh;
 }
 
 void GameLogCursor::Reset() noexcept
 {
-    publishedMessages_.clear();
+    publishedIdentities_.clear();
 }
 
 void GameLogCursor::Restore(const std::vector<std::string>& messages)
 {
-    publishedMessages_ = messages;
+    for (const auto& message : messages)
+    {
+        const auto identity = Identity(message);
+        if (!identity.empty()) publishedIdentities_.insert(identity);
+    }
 }
 }

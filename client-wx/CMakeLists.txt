@@ -171,7 +171,7 @@ set(
 
 set(
     LILA_BACKEND_WS_EVENTS_FILE
-    "${LILA_BACKEND_ROOT}/src/realtime/infrastructure/presentation/ws/ws-events.ts"
+    "${LILA_BACKEND_ROOT}/src/platform/realtime/infrastructure/presentation/ws/ws-events.ts"
 )
 
 set(

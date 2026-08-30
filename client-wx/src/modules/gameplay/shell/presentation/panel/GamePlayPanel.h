@@ -17,12 +17,12 @@
 #include "modules/gameplay/session/domain/GameEvent.h"
 #include "modules/gameplay/state/domain/GameState.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
-#include "modules/gameplay/dice/application/GameDiceRollTracker.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
 
 class wxKeyEvent;
 class wxChoice;
 class wxListBox;
+class wxRearrangeCtrl;
 class wxScrolledWindow;
 class wxStaticText;
 class wxTextCtrl;
@@ -41,6 +41,9 @@ namespace lila::modules::gameplay::presentation::confirmation { class GameAction
 namespace lila::modules::gameplay::presentation::hand { class GameHandPanel; }
 namespace lila::modules::gameplay::presentation::dice { class GameDicePanel; }
 namespace lila::modules::gameplay::presentation::grid { class GameGridPanel; }
+namespace lila::modules::gameplay::presentation::movement { class GameMovementPanel; }
+namespace lila::modules::gameplay::presentation::resources { class GameResourcesPanel; }
+namespace lila::modules::gameplay::presentation::workflows { class GameWorkflowPanel; }
 namespace lila::modules::gameplay::presentation::prompt { class GamePromptPanel; }
 namespace lila::modules::gameplay::presentation::pawn_selection { class PawnSelectionPanel; }
 
@@ -52,7 +55,8 @@ public:
     using ZoneFocusRequestedHandler = std::function<void()>;
     using HistoryMessageHandler = std::function<void(const wxString&)>;
     using TableShortcutHandler = std::function<bool(wxKeyEvent&)>;
-    using DiceRolledHandler = std::function<void()>;
+    using GameSoundEventHandler = std::function<void(
+        const std::string&, const std::vector<int>& winnerPlayerIds)>;
     using RoomStartRequestedHandler = std::function<void()>;
 
     explicit GamePlayPanel(
@@ -68,7 +72,7 @@ public:
     void SetZoneFocusRequestedHandler(ZoneFocusRequestedHandler handler);
     void SetHistoryMessageHandler(HistoryMessageHandler handler);
     void SetTableShortcutHandler(TableShortcutHandler handler);
-    void SetDiceRolledHandler(DiceRolledHandler handler);
+    void SetGameSoundEventHandler(GameSoundEventHandler handler);
     void SetRoomStartRequestedHandler(RoomStartRequestedHandler handler);
     bool BeginRoomStart();
     void ShowRules();
@@ -135,10 +139,14 @@ private:
     hand::GameHandPanel* handPanel_ = nullptr;
     dice::GameDicePanel* dicePanel_ = nullptr;
     grid::GameGridPanel* gridPanel_ = nullptr;
+    movement::GameMovementPanel* movementPanel_ = nullptr;
+    resources::GameResourcesPanel* resourcesPanel_ = nullptr;
+    workflows::GameWorkflowPanel* workflowPanel_ = nullptr;
     wxStaticText* actionsLabel_ = nullptr;
     wxListBox* linesList_ = nullptr;
     wxStaticText* choicesLabel_ = nullptr;
     wxListBox* choicesList_ = nullptr;
+    wxRearrangeCtrl* orderingChoices_ = nullptr;
     wxTextCtrl* infoText_ = nullptr;
     wxChoice* infoPanelChoice_ = nullptr;
     std::vector<std::string> infoPanelIds_;
@@ -160,15 +168,16 @@ private:
     bool roomStartPending_ = false;
     application::GameStartConfigurationFlow startConfigurationFlow_;
     history::GameLogCursor logCursor_;
-    application::dice::GameDiceRollTracker diceRollTracker_;
     ZoneFocusRequestedHandler onZoneFocusRequested_;
     HistoryMessageHandler onHistoryMessage_;
     TableShortcutHandler onTableShortcut_;
-    DiceRolledHandler onDiceRolled_;
+    GameSoundEventHandler onGameSoundEvent_;
     RoomStartRequestedHandler onRoomStartRequested_;
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
     lila::shared::concurrency::AsyncRequestSlot inputRequestSlot_;
     application::GameCommandSubmissionGuard inputSubmissionGuard_;
     std::unordered_set<std::string> announcedTimers_;
+    std::unordered_set<std::string> observedEventIdentities_;
+    std::vector<std::size_t> pendingChoiceIndexes_;
 };
 }

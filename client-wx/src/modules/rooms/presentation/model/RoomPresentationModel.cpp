@@ -1,19 +1,12 @@
 #include "modules/rooms/presentation/model/RoomPresentationModel.h"
 
-#include <algorithm>
-
+#include "modules/rooms/presentation/actions/RoomActionPolicy.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation
 {
 namespace
 {
-bool Allows(const domain::RoomState& room, std::string_view action)
-{
-    return std::find(room.allowedActions.begin(), room.allowedActions.end(), action) !=
-        room.allowedActions.end();
-}
-
 bool IsStarted(const domain::RoomState& room)
 {
     return room.started || room.status == "started";
@@ -36,45 +29,45 @@ std::vector<lila::shared::ui::controls::VerticalMenuItem> RoomPresentationModel:
     const domain::RoomState& room)
 {
     using Item = lila::shared::ui::controls::VerticalMenuItem;
-    const bool canStart = Allows(room, "room.start");
+    const bool canStart = RoomActionPolicy::AllowsServer(room, "room.start");
     std::vector<Item> items{{
         canStart ? "room:start" : "room:game",
         lila::shared::text::FromUtf8(room.gameName)}};
-    if (Allows(room, "bot.add"))
+    if (RoomActionPolicy::AllowsServer(room, "bot.add"))
         items.push_back({"room:add-bot", wxString(L"Ajouter un bot")});
-    if (Allows(room, "bot.remove"))
+    if (RoomActionPolicy::AllowsServer(room, "bot.remove"))
         items.push_back({"room:remove-bot", wxString(L"Retirer un bot")});
-    if (Allows(room, "room.players"))
+    if (RoomActionPolicy::AllowsInterface(RoomInterfaceAction::Players))
         items.push_back({"room:players", wxString(L"Lister les joueurs")});
-    if (Allows(room, "room.info"))
+    if (RoomActionPolicy::AllowsInterface(RoomInterfaceAction::Information))
         items.push_back({"room:info", wxString(L"Informations sur la table")});
-    if (Allows(room, "room.rules"))
+    if (RoomActionPolicy::AllowsInterface(RoomInterfaceAction::Rules))
         items.push_back({"room:rules", wxString(L"Règles du jeu")});
-    if (Allows(room, "room.set-ambience"))
+    if (RoomActionPolicy::AllowsServer(room, "room.set-ambience"))
         items.push_back({"room:ambience", wxString(L"Choisir l’ambiance de table")});
-    if (Allows(room, "room.tableAmbienceVolume"))
+    if (RoomActionPolicy::AllowsInterface(RoomInterfaceAction::TableAmbienceVolume))
         items.push_back({"room:ambience-volume", wxString(L"Volume de l’ambiance")});
-    if (Allows(room, "room.invite"))
+    if (RoomActionPolicy::AllowsServer(room, "room.invite"))
         items.push_back({"room:invite", wxString(L"Inviter un utilisateur")});
-    if (Allows(room, "room.kick"))
+    if (RoomActionPolicy::AllowsServer(room, "room.kick"))
         items.push_back({"room:kick", wxString(L"Exclure un joueur")});
-    if (Allows(room, "room.ban"))
+    if (RoomActionPolicy::AllowsServer(room, "room.ban"))
         items.push_back({"room:ban", wxString(L"Bannir un joueur")});
-    if (Allows(room, "room.set-owner"))
+    if (RoomActionPolicy::AllowsServer(room, "room.set-owner"))
         items.push_back({"room:set-owner", wxString(L"Transférer la propriété")});
-    if (Allows(room, "room.toggle-privacy"))
+    if (RoomActionPolicy::AllowsServer(room, "room.toggle-privacy"))
         items.push_back({"room:privacy", room.isPrivate
             ? wxString(L"Rendre la table publique")
             : wxString(L"Rendre la table privée")});
-    if (Allows(room, "room.set-role"))
+    if (RoomActionPolicy::AllowsServer(room, "room.set-role"))
         items.push_back({"room:role", room.selfSpectator
             ? wxString(L"Devenir joueur")
             : wxString(L"Devenir spectateur")});
-    if (Allows(room, "room.snapshot.save"))
+    if (RoomActionPolicy::AllowsServer(room, "room.snapshot.save"))
         items.push_back({"room:save", wxString(L"Sauvegarder dans mon coffre fort")});
-    if (Allows(room, "room.reset"))
+    if (RoomActionPolicy::AllowsServer(room, "room.reset"))
         items.push_back({"room:reset", wxString(L"Réinitialiser la table")});
-    if (Allows(room, "room.leave"))
+    if (RoomActionPolicy::AllowsServer(room, "room.leave"))
         items.push_back({"room:leave", wxString(L"Quitter la table")});
     return items;
 }

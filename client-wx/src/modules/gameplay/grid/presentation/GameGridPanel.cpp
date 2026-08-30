@@ -3,59 +3,72 @@
 #include <algorithm>
 #include <sstream>
 
-#include <nlohmann/json.hpp>
 #include <wx/event.h>
 #include <wx/listbox.h>
 #include <wx/sizer.h>
 
-#include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
+#include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 
 namespace lila::modules::gameplay::presentation::grid
 {
 namespace
 {
-std::string DescribeCell(
-    const std::string& boardId,
-    const std::string& id,
-    const nlohmann::json& cell,
-    const nlohmann::json& overlays)
+std::string PlayerName(const std::vector<domain::GamePlayer>& players, int id)
+{
+    const auto player = std::find_if(players.begin(), players.end(),
+        [id](const domain::GamePlayer& value) { return value.id == id; });
+    return player == players.end() ? "joueur " + std::to_string(id) : player->username;
+}
+
+bool Touches(const domain::GameGridOverlayView& overlay, const std::string& cellId)
+{
+    return overlay.cellId == cellId || overlay.fromCellId == cellId ||
+        overlay.toCellId == cellId;
+}
+
+std::string OverlayText(const domain::GameGridOverlayView& overlay,
+    const std::vector<domain::GamePlayer>& players)
+{
+    std::string kind = overlay.kind.empty() ? overlay.layer : overlay.kind;
+    if (kind.find("wall") != std::string::npos || kind.find("mur") != std::string::npos)
+        kind = "mur";
+    else if (kind.find("pawn") != std::string::npos || kind.find("pion") != std::string::npos)
+        kind = "pion";
+    else if (kind.find("obstacle") != std::string::npos) kind = "obstacle";
+    else if (kind.find("goal") != std::string::npos || kind.find("finish") != std::string::npos)
+        kind = "objectif";
+    if (!overlay.label.empty()) kind += " " + overlay.label;
+    if (overlay.ownerId) kind += " de " + PlayerName(players, *overlay.ownerId);
+    return kind;
+}
+
+std::string Describe(const domain::GameGridCellView& cell,
+    const domain::GameGridBoardView& board,
+    const std::vector<domain::GameAction>& actions,
+    const std::vector<domain::GamePlayer>& players)
 {
     std::ostringstream out;
-    out << "Plateau " << boardId << ", case " << id;
-    if (cell.is_object())
-    {
-        if (cell.value("blocked", false)) out << ", bloquée";
-        else out << ", occupée";
-        if (cell.value("wall", false)) out << ", mur";
-        const auto occupied = cell.find("occupied");
-        if (occupied != cell.end() && occupied->is_boolean() && occupied->get<bool>())
-            out << ", occupée";
-        for (const char* key : {"entity", "entityId", "pawnId", "ownerId", "label"})
+    out << "Plateau " << board.id << ", case " << cell.id;
+    if (cell.blocked) out << ", bloquée";
+    else if (!cell.occupied) out << ", libre";
+    else out << ", occupée";
+    if (!cell.label.empty()) out << ", " << cell.label;
+    if (!cell.pawnId.empty()) out << ", pion";
+    else if (cell.kind == "wall") out << ", mur";
+    else if (cell.kind == "obstacle") out << ", obstacle";
+    else if (cell.kind == "goal") out << ", objectif";
+    if (cell.ownerId) out << " de " << PlayerName(players, *cell.ownerId);
+    for (const auto& overlay : board.overlays)
+        if (Touches(overlay, cell.id)) out << ", " << OverlayText(overlay, players);
+    bool first = true;
+    for (const auto& action : actions)
+        if (application::grid::GameGridActionResolver::Targets(action,
+            {cell.boardId, cell.id, cell.x, cell.y}))
         {
-            const auto value = cell.find(key);
-            if (value != cell.end() && value->is_primitive())
-                out << ", " << key << " " << value->dump();
-        }
-    }
-    else if (cell.is_null()) out << ", libre";
-    else out << ", occupée, " << application::info::GameCapabilityTextBuilder::JsonLines(cell);
-    if (overlays.is_object())
-        for (const auto& layer : overlays.items())
-        {
-            if (!layer.value().is_array()) continue;
-            for (const auto& overlay : layer.value())
-            {
-                if (!overlay.is_object()) continue;
-                const auto position = overlay.value("position", nlohmann::json::object());
-                const auto overlayId = overlay.value("cellId",
-                    overlay.value("tileId", std::string{}));
-                const bool matchesId = !overlayId.empty() && overlayId == id;
-                const bool matchesPosition = position.is_object() &&
-                    std::to_string(position.value("x", -1)) + "," +
-                        std::to_string(position.value("y", -1)) == id;
-                if (matchesId || matchesPosition) out << ", couche " << layer.key();
-            }
+            out << (first ? ", actions disponibles : " : ", ")
+                << (action.label.empty() ? action.type : action.label);
+            first = false;
         }
     return out.str();
 }
@@ -72,54 +85,37 @@ GameGridPanel::GameGridPanel(wxWindow* parent) : wxPanel(parent)
     Hide();
 }
 
-void GameGridPanel::Apply(const nlohmann::json& gridKit)
+void GameGridPanel::Apply(const domain::GameGridView* grid,
+    const std::vector<domain::GameAction>& actions,
+    const std::vector<domain::GamePlayer>& players)
 {
-    const auto previous = SelectedCellId();
+    const auto previousBoard = SelectedBoardId();
+    const auto previousCell = SelectedCellId();
     Clear();
-    const auto boards = gridKit.find("boards");
-    if (boards == gridKit.end() || !boards->is_object()) return;
-    for (const auto& board : boards->items())
-    {
-        if (!board.value().is_object()) continue;
-        const int width = std::max(1, board.value().value("width", 1));
-        const int height = std::max(1, board.value().value("height", 1));
-        const auto cells = board.value().find("cells");
-        if (cells == board.value().end() || !cells->is_object()) continue;
-        const auto overlays = board.value().value("overlays", nlohmann::json::object());
-        for (int y = 0; y < height; ++y)
-            for (int x = 0; x < width; ++x)
-            {
-                const auto id = std::to_string(x) + "," + std::to_string(y);
-                const auto cell = cells->find(id);
-                const auto value = cell == cells->end() ? nlohmann::json(nullptr) : *cell;
-                model_.push_back({board.key(), id,
-                    DescribeCell(board.key(), id, value, overlays), x, y});
-            }
-    }
+    if (grid == nullptr) return;
+    for (const auto& board : grid->boards)
+        for (const auto& cell : board.cells)
+            model_.push_back({board.id, cell.id, Describe(cell, board, actions, players), cell.x, cell.y});
     for (const auto& cell : model_) cells_->Append(FromUtf8(cell.description));
     if (!model_.empty())
     {
         const auto found = std::find_if(model_.begin(), model_.end(),
-            [&previous](const Cell& cell) { return cell.id == previous; });
+            [&previousBoard, &previousCell](const Cell& cell)
+            { return cell.boardId == previousBoard && cell.id == previousCell; });
         cells_->SetSelection(found == model_.end() ? 0 :
             static_cast<int>(std::distance(model_.begin(), found)));
     }
     Show(!model_.empty());
 }
 
-void GameGridPanel::Clear()
-{
-    model_.clear();
-    cells_->Clear();
-    Hide();
-}
+void GameGridPanel::Clear() { model_.clear(); cells_->Clear(); Hide(); }
 
 bool GameGridPanel::HandleKey(wxKeyEvent& event)
 {
     if (!IsShown() || wxWindow::FindFocus() != cells_ || model_.empty()) return false;
     const int current = std::max(0, cells_->GetSelection());
-    auto x = model_[static_cast<std::size_t>(current)].x;
-    auto y = model_[static_cast<std::size_t>(current)].y;
+    int x = model_[static_cast<std::size_t>(current)].x;
+    int y = model_[static_cast<std::size_t>(current)].y;
     if (event.GetKeyCode() == WXK_LEFT) --x;
     else if (event.GetKeyCode() == WXK_RIGHT) ++x;
     else if (event.GetKeyCode() == WXK_UP) --y;
@@ -146,6 +142,20 @@ std::string GameGridPanel::SelectedCellId() const
     const int selection = cells_->GetSelection();
     return selection < 0 || static_cast<std::size_t>(selection) >= model_.size()
         ? std::string{} : model_[static_cast<std::size_t>(selection)].id;
+}
+
+int GameGridPanel::SelectedX() const
+{
+    const int selection = cells_->GetSelection();
+    return selection < 0 || static_cast<std::size_t>(selection) >= model_.size()
+        ? -1 : model_[static_cast<std::size_t>(selection)].x;
+}
+
+int GameGridPanel::SelectedY() const
+{
+    const int selection = cells_->GetSelection();
+    return selection < 0 || static_cast<std::size_t>(selection) >= model_.size()
+        ? -1 : model_[static_cast<std::size_t>(selection)].y;
 }
 
 wxWindow* GameGridPanel::NavigationTarget() const { return cells_; }

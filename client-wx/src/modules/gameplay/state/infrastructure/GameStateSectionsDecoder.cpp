@@ -1,15 +1,40 @@
 #include "modules/gameplay/state/infrastructure/GameStateSectionsDecoder.h"
 
 #include <sstream>
+#include <cctype>
 #include <utility>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
+#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
 #include "shared/data/json/JsonCoercion.h"
 
 namespace lila::modules::gameplay::infrastructure::detail
 {
 namespace
 {
+std::string PayloadKey(std::string key)
+{
+    if (key == "playerId") return "Joueur";
+    if (key == "ownerId") return "Propriétaire";
+    if (key == "cardId" || key == "card") return "Carte";
+    if (key == "pawnId") return "Pion";
+    if (key == "cellId") return "Case";
+    if (key == "boardId") return "Plateau";
+    std::string label;
+    for (const char character : key)
+    {
+        if (character == '_' || character == '-' || character == '.') label += ' ';
+        else
+        {
+            if (std::isupper(static_cast<unsigned char>(character)) && !label.empty()) label += ' ';
+            label += static_cast<char>(std::tolower(static_cast<unsigned char>(character)));
+        }
+    }
+    if (!label.empty()) label[0] = static_cast<char>(std::toupper(
+        static_cast<unsigned char>(label[0])));
+    return label;
+}
+
 nlohmann::json ActionPayload(const nlohmann::json& action)
 {
     return ObjectOrEmpty(action.value("payload", nlohmann::json::object()));
@@ -24,7 +49,7 @@ std::string CompactPayloadLabel(const nlohmann::json& payload)
     {
         if (!first) out << ", ";
         first = false;
-        out << item.key() << "=";
+        out << PayloadKey(item.key()) << " : ";
         if (item.value().is_string()) out << item.value().get<std::string>();
         else if (item.value().is_number_integer()) out << item.value().get<int>();
         else if (item.value().is_boolean()) out << (item.value().get<bool>() ? "true" : "false");
@@ -35,9 +60,11 @@ std::string CompactPayloadLabel(const nlohmann::json& payload)
 
 std::string BuildActionLabel(const domain::GameAction& action)
 {
+    std::string label = action.label.empty() ? action.type : action.label;
     const auto details = CompactPayloadLabel(action.payload);
-    if (!action.label.empty()) return details.empty() ? action.label : action.label + " (" + details + ")";
-    return details.empty() ? action.type : action.type + " " + details;
+    if (!details.empty()) label += " (" + details + ")";
+    if (action.disabled) label += " — indisponible";
+    return label;
 }
 }
 
@@ -124,10 +151,17 @@ std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode)
         field.minimum = lila::shared::data::json::ReadOptionalIntegerCoerced(raw, "min");
         field.maximum = lila::shared::data::json::ReadOptionalIntegerCoerced(raw, "max");
         field.integer = ReadBool(raw, "integer");
-        field.schema = raw;
+        field.optional = ReadBool(raw, "optional");
+        field.multiple = ReadBool(raw, "multiple");
+        field.ordering = ReadBool(raw, "ordering");
+        field.minimumSelections = lila::shared::data::json::ReadOptionalIntegerCoerced(
+            raw, "minSelections").value_or(0);
+        field.maximumSelections = lila::shared::data::json::ReadOptionalIntegerCoerced(
+            raw, "maxSelections").value_or(0);
         const auto choices = raw.find("choices");
         if (choices != raw.end() && choices->is_array())
-            for (const auto& choice : *choices) field.choices.push_back(choice);
+            for (const auto& choice : *choices)
+                field.choices.push_back(DecodeGameValue(choice));
         if (field.label.empty()) field.label = field.key;
         if (!field.key.empty()) prompt.fields.push_back(std::move(field));
     }

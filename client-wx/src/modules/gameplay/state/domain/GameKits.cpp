@@ -1,38 +1,41 @@
 #include "modules/gameplay/state/domain/GameKits.h"
 
-#include <string_view>
-
 namespace lila::modules::gameplay::domain
 {
-namespace
+const std::vector<GameCard>& GameKits::VisibleHand() const noexcept
 {
-const nlohmann::json Empty;
+    static const std::vector<GameCard> empty;
+    return cards ? cards->visibleHand : empty;
 }
 
-const nlohmann::json& GameKits::Get(const char* capability) const
+const GameDiceState* GameKits::Dice() const noexcept
 {
-    const std::string_view id(capability == nullptr ? "" : capability);
-    if (id == "cards") return cards;
-    if (id == "dice") return dice;
-    if (id == "grid") return grid;
-    if (id == "movement") return movement;
-    if (id == "pawns") return pawns;
-    if (id == "score") return score;
-    if (id == "resources") return resources;
-    if (id == "counters") return counters;
-    if (id == "status") return status;
-    if (id == "inventory") return inventory;
-    if (id == "economy") return economy;
-    if (id == "ownership") return ownership;
-    if (id == "collections") return collections;
-    if (id == "quiz") return quiz;
-    if (id == "submissions") return submissions;
-    return Empty;
+    return dice ? &*dice : nullptr;
 }
 
-bool GameKits::Has(const char* capability) const
+const GameValue* GameKits::Unknown(const std::string& capability) const
 {
-    const auto& value = Get(capability);
-    return !value.is_null() && !value.empty();
+    const auto found = unknownCapabilities.find(capability);
+    return found == unknownCapabilities.end() ? nullptr : &found->second;
+}
+
+bool GameKits::Has(const std::string& capability) const
+{
+    if (capability == "cards") return cards.has_value();
+    if (capability == "dice") return dice.has_value();
+    if (capability == "grid") return grid.has_value();
+    if (capability == "movement") return movement.has_value();
+    if (capability == "pawns") return pawns.has_value();
+    if (capability == "score" || capability == "scores") return score.has_value();
+    if (capability == "resources") return resources.has_value();
+    if (capability == "counters") return counters.has_value();
+    if (capability == "status") return status.has_value();
+    if (capability == "inventory") return inventory.has_value();
+    if (capability == "economy") return economy.has_value();
+    if (capability == "ownership") return ownership.has_value();
+    if (capability == "collections") return collections.has_value();
+    if (capability == "quiz") return quiz.has_value();
+    if (capability == "submissions") return submissions.has_value();
+    return Unknown(capability) != nullptr;
 }
 }

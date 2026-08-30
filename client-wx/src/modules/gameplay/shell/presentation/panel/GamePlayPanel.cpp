@@ -3,6 +3,7 @@
 #include <utility>
 
 #include <wx/listbox.h>
+#include <wx/rearrangectrl.h>
 #include <wx/choice.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
@@ -10,6 +11,9 @@
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
+#include "modules/gameplay/movement/presentation/GameMovementPanel.h"
+#include "modules/gameplay/resources/presentation/GameResourcesPanel.h"
+#include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 
@@ -82,7 +86,7 @@ bool GamePlayPanel::IsOpen() const noexcept
 
 bool GamePlayPanel::IsFinished() const noexcept
 {
-    return state_.status == "finished";
+    return state_.system.match.status == "finished";
 }
 
 void GamePlayPanel::SetZoneFocusRequestedHandler(ZoneFocusRequestedHandler handler)
@@ -100,9 +104,9 @@ void GamePlayPanel::SetTableShortcutHandler(TableShortcutHandler handler)
     onTableShortcut_ = std::move(handler);
 }
 
-void GamePlayPanel::SetDiceRolledHandler(DiceRolledHandler handler)
+void GamePlayPanel::SetGameSoundEventHandler(GameSoundEventHandler handler)
 {
-    onDiceRolled_ = std::move(handler);
+    onGameSoundEvent_ = std::move(handler);
 }
 
 void GamePlayPanel::SetRoomStartRequestedHandler(RoomStartRequestedHandler handler)
@@ -196,8 +200,16 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
         if (auto* target = gridPanel_->NavigationTarget(); target && gridPanel_->IsShown())
             return target;
     }
+    if (movementPanel_ != nullptr)
+        if (auto* target = movementPanel_->NavigationTarget()) return target;
+    if (resourcesPanel_ != nullptr)
+        if (auto* target = resourcesPanel_->NavigationTarget()) return target;
+    if (workflowPanel_ != nullptr)
+        if (auto* target = workflowPanel_->NavigationTarget()) return target;
     if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
         return choicesList_;
+    if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
+        return orderingChoices_;
     if (linesList_ != nullptr && linesList_->IsShown() && linesList_->GetCount() > 0)
         return linesList_;
     if (infoPanelChoice_ != nullptr && infoPanelChoice_->IsShown() &&

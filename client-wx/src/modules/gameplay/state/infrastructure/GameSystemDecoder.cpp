@@ -140,11 +140,13 @@ domain::GameSystem GameSystemDecoder::Decode(const nlohmann::json& system)
         {
             if (!item.value().is_object()) continue;
             domain::GameEngineEvent event;
+            event.id = detail::ReadString(item.value(), "id");
             event.type = detail::ReadString(item.value(), "type");
             if (event.type.empty()) event.type = item.key();
             event.data = detail::ObjectOrEmpty(item.value().value("data", nlohmann::json::object()));
             event.actorId = OptionalInt(item.value(), "actorId");
             event.occurredAtMs = OptionalInt64(item.value(), "occurredAtMs").value_or(0);
+            event.sequence = OptionalInt64(item.value(), "sequence");
             result.events.push_back(std::move(event));
         }
     std::sort(result.events.begin(), result.events.end(), [](const auto& left, const auto& right)

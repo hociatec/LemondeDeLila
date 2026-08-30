@@ -14,7 +14,7 @@ wxString GamePlayPanel::BuildHeaderText() const
         if (!text.empty()) text += wxString(L" - ");
         text += FromUtf8(value);
     };
-    append(state_.phase);
+    append(state_.system.setup.phase);
     append(state_.currentPlayerLabel);
     append(state_.turnLabel);
     if (text.empty()) text = wxString(L"Partie");
@@ -23,25 +23,26 @@ wxString GamePlayPanel::BuildHeaderText() const
 
 wxString GamePlayPanel::BuildStateSummaryText() const
 {
-    const auto status = state_.status.empty() ? std::string("?") : state_.status;
-    const auto phase = state_.phase.empty() ? std::string("?") : state_.phase;
+    const auto status = state_.system.match.status.empty()
+        ? std::string("?") : state_.system.match.status;
+    const auto phase = state_.system.setup.phase.empty()
+        ? std::string("?") : state_.system.setup.phase;
     wxString text = FromUtf8(status);
     if (!state_.turnLabel.empty()) text += wxString(L" - ") + FromUtf8(state_.turnLabel);
     text += wxString::Format(
         L" (phase : %s, tour : %d, manche : %d)",
-        FromUtf8(phase), state_.turnIndex, state_.round);
-    if (state_.timers.is_object() && !state_.timers.empty())
+        FromUtf8(phase), state_.system.turn.number, state_.system.round.number);
+    if (!state_.timers.empty())
     {
         text += wxString(L" - Minuteurs : ");
         bool first = true;
-        for (const auto& timer : state_.timers.items())
+        for (const auto& timer : state_.timers)
         {
-            if (!timer.value().is_object()) continue;
-            const auto remaining = timer.value().value("remainingMs", 0LL);
             if (!first) text += wxString(L", ");
             first = false;
-            text += FromUtf8(timer.key()) + wxString::Format(
-                L" %lld s", std::max<long long>(0, remaining) / 1000);
+            text += FromUtf8(timer.label.empty() ? timer.id : timer.label) +
+                wxString::Format(L" %lld s",
+                    std::max<std::int64_t>(0, timer.remainingMs.value_or(0)) / 1000);
         }
     }
     return text;

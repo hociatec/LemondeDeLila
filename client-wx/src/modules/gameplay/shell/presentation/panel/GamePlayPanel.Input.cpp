@@ -16,6 +16,7 @@
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "shared/logging/application/Logger.h"
+#include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -75,7 +76,7 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         }
         // Match WPF: the visible hand/choice owns Enter even when focus still
         // sits on the stable game-zone anchor.
-        if (handPanel_->IsShown() && !state_.hand.empty())
+        if (handPanel_->IsShown() && !state_.kits.VisibleHand().empty())
         {
             static_cast<void>(ActivateSelectedHandCard());
             return true;
@@ -116,7 +117,8 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     if (key == "T")
     {
         const auto message = state_.turnLabel.empty()
-            ? wxString(L"Aucun tour actif.") : FromUtf8(state_.turnLabel);
+            ? wxString(L"Aucun tour actif.")
+            : lila::shared::text::FromUtf8(state_.turnLabel);
         UpdateStatus(message, false, true);
         if (onHistoryMessage_) onHistoryMessage_(message);
         return true;

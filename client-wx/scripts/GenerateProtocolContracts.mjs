@@ -13,7 +13,7 @@ const backendRoot = argument('--backend-root');
 const outputRoot = argument('--output-root');
 const eventsPath = path.join(
   backendRoot,
-  'src/realtime/infrastructure/presentation/ws/ws-events.ts',
+  'src/platform/realtime/infrastructure/presentation/ws/ws-events.ts',
 );
 const fieldsPath = path.join(backendRoot, 'contracts/client-wx-fields.json');
 

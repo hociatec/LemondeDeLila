@@ -77,7 +77,8 @@ void TestActionCatalogBuildsTypedControls()
         }}}},
         {"ui", {{"label", "Répondre"}, {"control", "form"}}},
     }});
-    const auto prompt = GameActionPromptFactory::Build(action, catalog);
+    const auto prompt = GameActionPromptFactory::Build(action,
+        lila::modules::gameplay::infrastructure::GameActionCatalogDecoder::Decode(catalog));
     Expect(prompt.has_value() && prompt->fields.size() == 3,
         "Le catalogue doit produire tous les contrôles requis.");
     const auto choice = std::find_if(prompt->fields.begin(), prompt->fields.end(),
@@ -122,7 +123,7 @@ void TestStaleSetupPromptIsIgnoredDuringRound()
         "Le client V2 doit conserver le formulaire projeté sans réinterpréter la phase.");
     Expect(state.pending.has_value(),
         "Le pending V2 doit rester la source de vérité du serveur.");
-    Expect(state.hand.size() == 1,
+    Expect(state.kits.VisibleHand().size() == 1,
         "La main de la manche doit rester disponible apres filtrage du formulaire perime.");
 }
 
