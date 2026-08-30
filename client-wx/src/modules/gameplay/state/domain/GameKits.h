@@ -5,6 +5,7 @@
 #include <string>
 
 #include "modules/gameplay/state/domain/GameCapabilities.h"
+#include "modules/gameplay/state/domain/GameValue.h"
 
 namespace lila::modules::gameplay::domain
 {

@@ -129,7 +129,7 @@ int main()
         run("CatalogPayloadCodecReadsShelfTree", TestCatalogPayloadCodecReadsShelfTree);
         run("CatalogShelfNavigatorRestoresParentSelection", TestCatalogShelfNavigatorRestoresParentSelection);
         run("RoomPayloadCodecs", TestRoomPayloadCodecs);
-        run("RoomSessionGatewayUsesWpfHandshakeContract", TestRoomSessionGatewayUsesWpfHandshakeContract);
+        run("RoomSessionGatewayUsesBackendHandshakeContract", TestRoomSessionGatewayUsesBackendHandshakeContract);
         run("AsyncRequestSlotRejectsStaleCompletion", TestAsyncRequestSlotRejectsStaleCompletion);
         run("SingleFlightCacheSharesLoadsAndSupportsInvalidation", TestSingleFlightCacheSharesLoadsAndSupportsInvalidation);
         run("RoomPresentationMatchesWpfWaitingTable", TestRoomPresentationMatchesWpfWaitingTable);

@@ -10,6 +10,7 @@
 #include "shared/network/domain/WebSocketConstants.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
+#include "shared/logging/application/Logger.h"
 
 namespace lila::modules::rooms::infrastructure
 {
@@ -24,7 +25,6 @@ void RoomSessionGateway::Connect(std::stop_token stopToken)
 {
     if (!sessionStore_.HasActiveSession()) throw std::runtime_error("Aucune session active pour la table.");
     std::scoped_lock sendLock(sendMutex_);
-    client_.Close();
     const auto connect = [this, stopToken](const std::string& token)
     {
         client_.Connect(
@@ -51,8 +51,10 @@ domain::RoomState RoomSessionGateway::Create(std::string_view gameType, std::sto
     SendJson(nlohmann::json{
         {"type", protocol::Create},
         {"payload", {{"gameType", std::string(gameType)}}}});
+    lila::shared::logging::LogInfo(
+        "Rooms", "TX room.create gameType=" + std::string(gameType));
     selfSpectator_.store(false);
-    auto state = AwaitState(stopToken);
+    auto state = AwaitState(std::nullopt, protocol::Created, stopToken);
     roomId_.store(state.id);
     return state;
 }
@@ -63,8 +65,10 @@ domain::RoomState RoomSessionGateway::Join(int roomId, bool spectator, std::stop
     Connect(stopToken);
     SendJson(nlohmann::json{{"type", protocol::Join},
         {"payload", {{"roomId", roomId}, {"spectator", spectator}, {"hidden", false}}}});
+    lila::shared::logging::LogInfo(
+        "Rooms", "TX room.join roomId=" + std::to_string(roomId));
     selfSpectator_.store(spectator);
-    auto state = AwaitState(stopToken);
+    auto state = AwaitState(roomId, {}, stopToken);
     roomId_.store(state.id);
     return state;
 }
@@ -84,7 +88,9 @@ domain::RoomState RoomSessionGateway::Reconnect(std::stop_token stopToken)
     Connect(stopToken);
     SendJson(nlohmann::json{{"type", protocol::Join},
         {"payload", {{"roomId", roomId}, {"spectator", spectator}, {"hidden", false}}}});
-    auto state = AwaitState(stopToken);
+    lila::shared::logging::LogInfo(
+        "Rooms", "TX room.join roomId=" + std::to_string(roomId) + " reconnect=true");
+    auto state = AwaitState(roomId, {}, stopToken);
     roomId_.store(state.id);
     return state;
 }

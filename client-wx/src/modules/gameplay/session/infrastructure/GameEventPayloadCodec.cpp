@@ -19,12 +19,12 @@ std::string ReadString(const nlohmann::json& value, const char* field)
         : std::string{};
 }
 
-bool ReadBoolean(const nlohmann::json& value, const char* field, bool fallback)
+bool ReadBoolean(const nlohmann::json& value, const char* field)
 {
     const auto found = value.find(field);
     return found != value.end() && found->is_boolean()
         ? found->get<bool>()
-        : fallback;
+        : false;
 }
 }
 
@@ -43,7 +43,7 @@ domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
     {
         domain::GameAcknowledgement acknowledgement;
         acknowledgement.command = ReadString(payload, "action");
-        acknowledgement.ok = ReadBoolean(payload, "ok", true);
+        acknowledgement.ok = ReadBoolean(payload, "ok");
         acknowledgement.key = ReadString(payload, "key");
         acknowledgement.panelId = ReadString(payload, "panelId");
         acknowledgement.roomOperation = ReadString(payload, "roomOp");

@@ -47,13 +47,22 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
         nextKeys.push_back(std::move(key));
         nextLabels.push_back(std::move(label));
     };
+    const auto appendSection = [&append](std::string key, std::string label)
+    {
+        append("section:" + std::move(key), "— " + std::move(label) + " —");
+    };
     if (state.kits.score)
+    {
+        appendSection("scores", "Scores");
         for (const auto& score : state.kits.score->leaderboard)
         {
             append("score:" + std::to_string(score.playerId), std::to_string(score.rank) + ". " +
                 Player(state, score.playerId) + " : " + Amount(score.score) + " points");
         }
+    }
     if (state.kits.resources)
+    {
+        appendSection("resources", "Ressources");
         for (const auto& player : state.kits.resources->players)
             for (const auto& value : player.values)
             {
@@ -61,13 +70,19 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
                     Player(state, player.playerId) + ", " +
                     application::info::HumanLabel(value.id) + " : " + Amount(value.value));
             }
+    }
     if (state.kits.counters)
+    {
+        appendSection("counters", "Compteurs");
         for (const auto& value : state.kits.counters->values)
         {
             append("counter:" + value.id, std::string("Compteur ") +
                 application::info::HumanLabel(value.id) + " : " + Amount(value.value));
         }
+    }
     if (state.kits.inventory)
+    {
+        appendSection("inventory", "Inventaires");
         for (const auto& set : state.kits.inventory->sets)
             for (const auto& player : set.players)
             {
@@ -86,7 +101,10 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
                         application::info::HumanLabel(item) + " : " + std::to_string(count));
                 }
             }
+    }
     if (state.kits.economy)
+    {
+        appendSection("economy", "Marché");
         for (const auto& market : state.kits.economy->markets)
             for (const auto& price : market.prices)
             {
@@ -94,7 +112,10 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
                     application::info::HumanLabel(price.id) + " : " + Amount(price.value) +
                     " " + application::info::HumanLabel(market.currency));
             }
+    }
     if (state.kits.collections)
+    {
+        appendSection("collections", "Collections");
         for (const auto& collection : state.kits.collections->players)
             for (const auto& group : collection.groups)
             {
@@ -114,6 +135,7 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
                 append("collection:" + collection.collectionId + ":" +
                     std::to_string(collection.playerId) + ":" + group.id, std::move(label));
             }
+    }
     if (nextKeys == rowKeys_ && nextLabels == rowLabels_) return;
     rows_->Clear();
     rowKeys_ = std::move(nextKeys);

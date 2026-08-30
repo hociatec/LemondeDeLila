@@ -6,6 +6,7 @@
 #include <wx/choice.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
+#include <wx/weakref.h>
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/application/GameActionPresentationPolicy.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
@@ -20,6 +21,7 @@
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
+#include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -27,7 +29,7 @@ namespace lila::modules::gameplay::presentation
 {
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
-    const bool hadNavigationTarget = PreferredNavigationTarget() != nullptr;
+    const wxWeakRef<wxWindow> focusedBefore(wxWindow::FindFocus());
     std::optional<domain::GameValue> previousPendingChoice;
     std::vector<domain::GameValue> previousPendingOrder;
     if (state_.pending && choicesList_->GetSelection() != wxNOT_FOUND)
@@ -141,43 +143,46 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         (!state_.pending || state_.pending->type.empty());
     actionsLabel_->Show(hasActions);
     linesList_->Show(hasActions);
-    choicesList_->Clear();
-    orderingChoices_->GetList()->Clear();
-    pendingChoiceIndexes_.clear();
-    const bool hasActionableChoices = state_.pending && state_.pending->viewerActionable &&
-        (state_.pending->selectionAction || std::any_of(
-            state_.pending->choices.begin(), state_.pending->choices.end(),
-            [](const domain::GamePendingChoice& choice) { return choice.action.has_value(); }));
+    const bool hasActionableChoices = state_.pending &&
+        application::GamePendingSelectionPolicy::HasActionableChoices(*state_.pending);
+    std::vector<std::string> nextPendingSignatures;
+    std::vector<domain::GameValue> nextPendingValues;
+    const bool pendingOrdering = hasActionableChoices && state_.pending->ordering;
     if (hasActionableChoices)
-    {
-        if (state_.pending->ordering)
+        for (const auto& choice : state_.pending->choices)
         {
-            std::vector<bool> inserted(state_.pending->choices.size(), false);
-            for (const auto& previous : previousPendingOrder)
-                for (std::size_t index = 0; index < state_.pending->choices.size(); ++index)
-                    if (!inserted[index] && state_.pending->choices[index].value == previous)
-                    {
-                        pendingChoiceIndexes_.push_back(index);
-                        inserted[index] = true;
-                        break;
-                    }
-            for (std::size_t index = 0; index < state_.pending->choices.size(); ++index)
-                if (!inserted[index]) pendingChoiceIndexes_.push_back(index);
+            std::string signature = choice.label;
+            if (choice.action)
+                signature += "\n" + choice.action->type + "\n" + choice.action->payload.dump();
+            nextPendingSignatures.push_back(std::move(signature));
+            nextPendingValues.push_back(choice.value);
+        }
+    const bool pendingControlsChanged =
+        nextPendingSignatures != pendingChoiceSignatures_ ||
+        nextPendingValues != pendingChoiceValues_ ||
+        pendingOrdering != renderedPendingOrdering_;
+    if (pendingControlsChanged)
+    {
+        choicesList_->Clear();
+        orderingChoices_->GetList()->Clear();
+        pendingChoiceIndexes_.clear();
+        pendingChoiceSignatures_ = std::move(nextPendingSignatures);
+        pendingChoiceValues_ = std::move(nextPendingValues);
+        renderedPendingOrdering_ = pendingOrdering;
+        if (pendingOrdering)
+        {
+            pendingChoiceIndexes_ = application::GamePendingSelectionPolicy::RestoreOrder(
+                state_.pending->choices, previousPendingOrder);
             for (const auto index : pendingChoiceIndexes_)
                 orderingChoices_->GetList()->Append(FromUtf8(state_.pending->choices[index].label));
         }
-        else
+        else if (hasActionableChoices)
         {
             for (const auto& choice : state_.pending->choices)
                 choicesList_->Append(FromUtf8(choice.label));
-            int selection = 0;
-            if (previousPendingChoice)
-                for (std::size_t index = 0; index < state_.pending->choices.size(); ++index)
-                    if (state_.pending->choices[index].value == *previousPendingChoice)
-                    {
-                        selection = static_cast<int>(index);
-                        break;
-                    }
+            const int selection = static_cast<int>(
+                application::GamePendingSelectionPolicy::RestoreChoiceIndex(
+                    state_.pending->choices, previousPendingChoice));
             if (choicesList_->GetCount() > 0) choicesList_->SetSelection(selection);
         }
     }
@@ -196,8 +201,9 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     SyncContentVisibility();
     Layout();
     if (GetParent()) GetParent()->Layout();
-    if (!hadNavigationTarget && PreferredNavigationTarget() != nullptr &&
-        onZoneFocusRequested_)
+    const bool focusPreserved = focusedBefore && focusedBefore->IsShownOnScreen() &&
+        focusedBefore->IsEnabled() && focusedBefore->AcceptsFocus();
+    if (!focusPreserved && PreferredNavigationTarget() != nullptr && onZoneFocusRequested_)
         onZoneFocusRequested_();
     const bool setupProjectionCompleted = startConfigurationFlow_.ObserveSetup(
         state_.system.setup);

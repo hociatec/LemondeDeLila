@@ -5,7 +5,6 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
-#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -101,8 +100,6 @@ std::optional<domain::GameStatusView> GamePlayerValuesDecoder::Status(
             const auto remaining = player.value().find("remaining");
             if (remaining != player.value().end() && remaining->is_number_integer())
                 value.remaining = remaining->get<int>();
-            const auto data = player.value().find("data");
-            if (data != player.value().end()) value.data = DecodeGameValue(*data);
             result.values.push_back(std::move(value));
         }
     }

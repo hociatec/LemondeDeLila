@@ -29,7 +29,7 @@ std::string SubmissionValue(
     if (!value.id.empty()) return application::info::HumanLabel(value.id);
     if (value.number) return std::to_string(*value.number);
     if (value.boolean) return *value.boolean ? "oui" : "non";
-    return application::info::ValueLines(value.fallback);
+    return {};
 }
 }
 
@@ -54,7 +54,13 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
         nextKeys.push_back(std::move(key));
         nextLabels.push_back(std::move(label));
     };
-    if (state.kits.quiz)
+    const auto appendSection = [&append](std::string key, std::string label)
+    {
+        append("section:" + std::move(key), "— " + std::move(label) + " —");
+    };
+    if (state.kits.quiz && !state.kits.quiz->sessions.empty())
+    {
+        appendSection("quiz", "Quiz");
         for (const auto& session : state.kits.quiz->sessions)
         {
             append("quiz:" + session.id + ":prompt", "Quiz : " + session.prompt + " — " +
@@ -66,7 +72,11 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
                     (session.correctAnswerIndex == static_cast<int>(index) ? " — réponse correcte" : ""));
             }
         }
-    if (state.kits.submissions)
+    }
+    if (state.kits.submissions &&
+        (!state.kits.submissions->sessions.empty() || !state.kits.submissions->judges.empty()))
+    {
+        appendSection("submissions", "Soumissions");
         for (const auto& session : state.kits.submissions->sessions)
         {
             append("submission:" + session.id + ":status",
@@ -93,13 +103,15 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
                     "Votre soumission : " + SubmissionValue(state, *session.ownValue));
             }
         }
-    if (state.kits.submissions)
         for (const auto& judge : state.kits.submissions->judges)
             if (judge.playerId)
             {
                 append("judge:" + judge.id, "Juge : " + Player(state, *judge.playerId));
             }
-    if (state.kits.collections)
+    }
+    if (state.kits.collections && !state.kits.collections->players.empty())
+    {
+        appendSection("collections", "Collections");
         for (const auto& collection : state.kits.collections->players)
         {
             append("collection:" + collection.collectionId + ":" +
@@ -114,6 +126,7 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
                     " : " + std::to_string(group.count));
             }
         }
+    }
     if (nextKeys == rowKeys_ && nextLabels == rowLabels_) return;
     rows_->Clear();
     rowKeys_ = std::move(nextKeys);

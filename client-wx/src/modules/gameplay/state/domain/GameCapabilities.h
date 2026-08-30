@@ -8,8 +8,6 @@
 
 #include "modules/gameplay/cards/domain/GameCard.h"
 #include "modules/gameplay/dice/domain/GameDiceState.h"
-#include "modules/gameplay/state/domain/GameValue.h"
-
 namespace lila::modules::gameplay::domain
 {
 struct GameDeckView final
@@ -95,7 +93,6 @@ struct GameStatusValue final
     int playerId = 0;
     std::optional<int> remaining;
     std::string scope;
-    GameValue data;
 };
 struct GameStatusView final { std::vector<GameStatusValue> values; };
 
@@ -184,7 +181,6 @@ struct GameSubmissionValue final
     std::optional<int> playerId;
     std::optional<double> number;
     std::optional<bool> boolean;
-    GameValue fallback;
 };
 
 struct GameSubmissionSession final
@@ -226,7 +222,6 @@ struct GameGridCellView final
     std::string pawnId;
     std::optional<int> ownerId;
     std::string label;
-    GameValue data;
 };
 struct GameGridOverlayView final
 {
@@ -257,7 +252,6 @@ struct GameEffectView final
     std::string sourceTileId;
     std::string status;
     bool resolved = false;
-    GameValue data;
 };
 struct GameTimerView final
 {

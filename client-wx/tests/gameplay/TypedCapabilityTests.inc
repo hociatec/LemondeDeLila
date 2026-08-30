@@ -1,6 +1,9 @@
 void TestKnownCapabilitiesAreTyped()
 {
     auto payload = V2Payload({{"roomId", 71}, {"runId", 9}, {"gameType", "capability-game"}});
+    payload["system"]["setup"]["values"] = {
+        {"targetScore", 25},
+        {"teams", nlohmann::json::array({"red", "blue"})}};
     payload["kits"] = {
         {"cards", {
             {"decks", {{"draw", {{"count", 12}}}}},
@@ -12,8 +15,9 @@ void TestKnownCapabilitiesAreTyped()
             {"zones", {{"river", {{"visibility", "public"}, {"cards", nlohmann::json::array({"c3"})}}}}}}},
         {"movement", {{"tracks", {{"main", {{"spaces", 20},
             {"positions", {{"pawn-a", 4}}}}}}}}},
-        {"pawns", {{"sets", {{"racers", {{"positions", {{"pawn-a", 4}}},
-            {"owners", {{"pawn-a", 7}}}}}}}}},
+        {"pawns", {{"sets", {{"racers", {{"definitions", nlohmann::json::array({
+                {{"id", "pawn-a"}, {"label", "Pion officiel"}}})},
+            {"positions", {{"pawn-a", 4}}}, {"owners", {{"pawn-a", 7}}}}}}}}},
         {"score", {{"byPlayer", {{"7", 12}}},
             {"leaderboard", nlohmann::json::array({{{"playerId", 7}, {"score", 12}, {"rank", 1}}})}}},
         {"resources", {{"coins", {{"7", 3}}}}},
@@ -39,6 +43,14 @@ void TestKnownCapabilitiesAreTyped()
 
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
     Expect(state.runId == 9, "Le runId serveur doit isoler les executions successives d'une room.");
+    Expect(state.system.setup.values.size() == 2 &&
+            std::get<double>(state.system.setup.values.at("targetScore").value) == 25 &&
+            std::get<lila::modules::gameplay::domain::GameValue::Array>(
+                state.system.setup.values.at("teams").value).size() == 2,
+        "Les valeurs de configuration doivent etre decodees dans une collection typee.");
+    Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
+            state, "setup").find("Target score : 25") != std::string::npos,
+        "La configuration typee doit rester consultable sans rendu JSON.");
     Expect(state.kits.cards && state.kits.cards->decks[0].count == 12 &&
             state.kits.cards->discards[0].cards[0].label == "Carte une" &&
             state.kits.cards->hands[0].players[1].count == 4 &&
@@ -47,8 +59,9 @@ void TestKnownCapabilitiesAreTyped()
         "Toutes les zones de cartes doivent être décodées dans des modèles explicites.");
     Expect(state.kits.movement && state.kits.movement->tracks[0].positions.at("pawn-a") == 4,
         "Movement doit être décodé dans un modèle typé.");
-    Expect(state.kits.pawns && state.kits.pawns->pawns[0].ownerId == 7,
-        "Les propriétaires de pions doivent être typés.");
+    Expect(state.kits.pawns && state.kits.pawns->pawns[0].ownerId == 7 &&
+            state.kits.pawns->pawns[0].label == "Pion officiel",
+        "Les propriétaires et labels officiels de pions doivent être typés.");
     Expect(state.kits.score && state.kits.resources && state.kits.counters && state.kits.status,
         "Les valeurs joueur connues doivent être typées.");
     Expect(state.kits.inventory && state.kits.economy && state.kits.ownership &&
@@ -64,7 +77,7 @@ void TestKnownCapabilitiesAreTyped()
     Expect(state.effect && state.timers.size() == 1,
         "Effets et minuteurs doivent être typés.");
     Expect(state.kits.Unknown("future-kit") != nullptr,
-        "Une capacité future doit rester disponible dans le fallback typé générique.");
+        "Une capacité future doit rester disponible dans l'extension typée générique.");
 }
 
 void TestPendingMultipleWorkflowsUseOneExplicitAction()
@@ -85,6 +98,43 @@ void TestPendingMultipleWorkflowsUseOneExplicitAction()
         "Les valeurs de choix ne doivent pas rester du JSON dans le domaine.");
 }
 
+void TestPendingSelectionPolicy()
+{
+    using lila::modules::gameplay::application::GamePendingSelectionPolicy;
+    using lila::modules::gameplay::domain::GamePending;
+    using lila::modules::gameplay::domain::GamePendingChoice;
+    using lila::modules::gameplay::domain::GameValue;
+
+    auto unboundedPayload = V2Payload({{"roomId", 74}, {"gameType", "choice-game"}, {"state", {
+        {"actions", nlohmann::json::array({{{"type", "choice.resolve"},
+            {"payload", {{"value", nlohmann::json::array()}}}}})},
+        {"pending", {{"type", "choice"}, {"choices", nlohmann::json::array({"A", "B", "C"})},
+            {"data", {{"kind", "many"}, {"min", 0}, {"max", nullptr},
+                {"selectionActionType", "choice.resolve"}}}}}}}});
+    const auto unbounded = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(
+        unboundedPayload);
+    Expect(unbounded.pending && unbounded.pending->maximumSelections == 3,
+        "Une borne max nulle doit autoriser tous les choix disponibles.");
+
+    GamePending passive;
+    passive.viewerActionable = false;
+    passive.selectionAction = lila::modules::gameplay::domain::GameAction{
+        "resolve", {}, {}, nlohmann::json::object(), false, false};
+    Expect(!GamePendingSelectionPolicy::HasActionableChoices(passive),
+        "Un pending vide et passif ne doit jamais devenir une cible de focus.");
+
+    const GameValue alpha{std::string("alpha")};
+    const GameValue beta{std::string("beta")};
+    const GameValue gamma{std::string("gamma")};
+    const std::vector<GamePendingChoice> choices{
+        {"Beta", beta, std::nullopt}, {"Gamma", gamma, std::nullopt}};
+    const auto order = GamePendingSelectionPolicy::RestoreOrder(choices, {alpha, beta});
+    Expect(order == std::vector<std::size_t>({0, 1}) &&
+            GamePendingSelectionPolicy::RestoreChoiceIndex(choices, alpha) == 0 &&
+            GamePendingSelectionPolicy::RestoreChoiceIndex(choices, gamma) == 1,
+        "La restauration doit ignorer les anciens choix disparus et conserver les choix présents.");
+}
+
 void TestEventsHaveStableIdentityAndAccessibleText()
 {
     auto payload = V2Payload({{"roomId", 73}, {"gameType", "event-game"}});
@@ -92,11 +142,20 @@ void TestEventsHaveStableIdentityAndAccessibleText()
         {{"id", 7}, {"username", "Lila"}}});
     payload["system"]["events"]["latestByType"] = {
         {"dice.rolled", {{"id", "42:0"}, {"type", "dice.rolled"},
-            {"actorId", 7}, {"occurredAtMs", 100}, {"data", {{"total", 8}}}}}};
+            {"actorId", 7}, {"occurredAtMs", 100}, {"sequence", 17},
+            {"data", {{"total", 8}}}}},
+        {"score.changed", {{"id", "42:1"}, {"type", "score.changed"},
+            {"occurredAtMs", 101}, {"sequence", 18},
+            {"data", {{"playerId", 7}, {"value", 12}}}}}};
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
-    Expect(state.logMessages.size() == 1 && state.logMessages[0].find("id:42:0|") == 0,
-        "L'identité backend doit précéder le message d'historique.");
+    Expect(state.system.events.size() == 2 && state.system.events[0].details.total == "8" &&
+            state.system.events[1].details.playerId == 7 &&
+            state.system.events[1].details.value == "12",
+        "Les payloads des événements connus doivent être décodés avant leur présentation.");
+    Expect(state.logMessages.size() == 2 && state.logMessages[0].find("sequence:17|") == 0,
+        "La sequence backend doit être l'identité principale du message d'historique.");
     Expect(state.logMessages[0].find("Lila lance les dés : 8") != std::string::npos &&
+            state.logMessages[1].find("Lila a maintenant 12 point(s)") != std::string::npos &&
             state.logMessages[0].find('{') == std::string::npos,
         "Un événement doit produire une phrase accessible sans dump JSON.");
 }

@@ -194,13 +194,13 @@ void TestSpecializedActionsAreNotDuplicated()
         "La liste generique doit conserver uniquement les actions sans controle specialise.");
 }
 
-void TestLegacySpecializedActionsAreNotDuplicated()
+void TestUnmappedSpecializedActionsRemainGeneric()
 {
     using lila::modules::gameplay::application::GameActionPresentationPolicy;
     using lila::modules::gameplay::infrastructure::GameStatePayloadCodec;
     const auto payload = nlohmann::json{
         {"roomId", 42},
-        {"gameType", "legacy-specialized-actions"},
+        {"gameType", "unmapped-specialized-actions"},
         {"state", {
             {"actions", nlohmann::json::array({
                 {{"type", "play"}, {"payload", {{"cardId", "moon"}}}},

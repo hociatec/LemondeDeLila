@@ -62,11 +62,11 @@ void PawnSelectionPanel::Apply(const std::optional<domain::PawnSelection>& selec
     const auto nextSignature = Signature(*selection);
     const bool changed = nextSignature != signature_;
     selection_ = *selection;
-    submitting_ = false;
     label_->SetLabel(FromUtf8(selection_.label));
     list_->SetName(FromUtf8(selection_.label));
     if (changed)
     {
+        submitting_ = false;
         signature_ = nextSignature;
         list_->Clear();
         for (const auto& choice : selection_.choices) list_->Append(FromUtf8(choice.label));

@@ -177,7 +177,6 @@ add_executable(lemonde_de_lila_wx_gameplay_tests
     src/modules/gameplay/cards/application/GameCardTextBuilder.cpp
     src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
     src/modules/gameplay/dice/application/GameDiceActionResolver.cpp
-    src/modules/gameplay/dice/application/GameDiceRollTracker.cpp
     src/modules/gameplay/dice/application/GameDiceTextBuilder.cpp
     src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp
     src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp

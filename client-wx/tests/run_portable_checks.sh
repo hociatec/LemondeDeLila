@@ -85,7 +85,6 @@ c++ "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" \
   "$ROOT/src/modules/gameplay/cards/application/GameCardTextBuilder.cpp" \
   "$ROOT/src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp" \
   "$ROOT/src/modules/gameplay/dice/application/GameDiceActionResolver.cpp" \
-  "$ROOT/src/modules/gameplay/dice/application/GameDiceRollTracker.cpp" \
   "$ROOT/src/modules/gameplay/dice/application/GameDiceTextBuilder.cpp" \
   "$ROOT/src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp" \
   "$ROOT/src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp" \

@@ -179,5 +179,8 @@ private:
     std::unordered_set<std::string> announcedTimers_;
     std::unordered_set<std::string> observedEventIdentities_;
     std::vector<std::size_t> pendingChoiceIndexes_;
+    std::vector<std::string> pendingChoiceSignatures_;
+    std::vector<domain::GameValue> pendingChoiceValues_;
+    bool renderedPendingOrdering_ = false;
 };
 }

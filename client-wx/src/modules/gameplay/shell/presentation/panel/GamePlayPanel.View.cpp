@@ -71,6 +71,9 @@ void GamePlayPanel::ClearView()
     choicesList_->Clear();
     orderingChoices_->GetList()->Clear();
     pendingChoiceIndexes_.clear();
+    pendingChoiceSignatures_.clear();
+    pendingChoiceValues_.clear();
+    renderedPendingOrdering_ = false;
     choicesLabel_->Hide();
     choicesList_->Hide();
     orderingChoices_->Hide();
@@ -94,6 +97,18 @@ void GamePlayPanel::ClearView()
 
 void GamePlayPanel::RebuildLines()
 {
+    if (linesList_->GetCount() == state_.lines.size())
+    {
+        bool unchanged = true;
+        for (std::size_t index = 0; index < state_.lines.size(); ++index)
+            if (linesList_->GetString(static_cast<unsigned int>(index)) !=
+                FromUtf8(state_.lines[index].label))
+            {
+                unchanged = false;
+                break;
+            }
+        if (unchanged) return;
+    }
     const int previousSelection = linesList_->GetSelection();
     linesList_->Clear();
     for (const auto& line : state_.lines) linesList_->Append(FromUtf8(line.label));

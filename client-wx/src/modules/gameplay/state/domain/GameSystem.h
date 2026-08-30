@@ -1,12 +1,13 @@
 #pragma once
 
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include <nlohmann/json.hpp>
+#include "modules/gameplay/state/domain/GameValue.h"
 
 namespace lila::modules::gameplay::domain
 {
@@ -65,14 +66,37 @@ struct GameSetup final
     bool complete = false;
     std::string phase;
     std::optional<int> ownerPlayerId;
-    nlohmann::json values = nlohmann::json::object();
+    std::map<std::string, GameValue> values;
+};
+
+struct GameEngineEventData final
+{
+    std::string message;
+    std::string content;
+    std::string deckId;
+    std::string resourceId;
+    std::string itemId;
+    std::string pawnId;
+    std::string total;
+    std::string value;
+    std::string amount;
+    std::string fromPosition;
+    std::string toPosition;
+    std::string position;
+    std::string number;
+    std::string count;
+    std::optional<int> playerId;
+    std::optional<int> sourcePlayerId;
+    std::optional<int> targetPlayerId;
+    std::optional<int> leftPlayerId;
+    std::optional<int> rightPlayerId;
 };
 
 struct GameEngineEvent final
 {
     std::string id;
     std::string type;
-    nlohmann::json data = nlohmann::json::object();
+    GameEngineEventData details;
     std::optional<int> actorId;
     std::int64_t occurredAtMs = 0;
     std::optional<std::int64_t> sequence;

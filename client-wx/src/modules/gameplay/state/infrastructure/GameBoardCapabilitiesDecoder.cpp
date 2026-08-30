@@ -5,7 +5,6 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
-#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -125,7 +124,6 @@ std::optional<domain::GameGridView> GameBoardCapabilitiesDecoder::Grid(
                 const auto found = rawCells.is_object() ? rawCells.find(cell.id) : rawCells.end();
                 if (rawCells.is_object() && found != rawCells.end())
                 {
-                    cell.data = DecodeGameValue(*found);
                     if (found->is_object())
                     {
                         cell.blocked = detail::ReadBool(*found, "blocked") || detail::ReadBool(*found, "wall");

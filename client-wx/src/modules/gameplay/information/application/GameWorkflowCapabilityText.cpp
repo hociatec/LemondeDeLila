@@ -35,7 +35,7 @@ std::string SubmissionValue(
     if (!value.id.empty()) return HumanLabel(value.id);
     if (value.number) return std::to_string(*value.number);
     if (value.boolean) return *value.boolean ? "oui" : "non";
-    return ValueLines(value.fallback);
+    return {};
 }
 }
 
