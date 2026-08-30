@@ -1,5 +1,5 @@
 import type { BotNameRepository } from '../../ports/bot-name.repository';
-import type { BotNameRecord } from '../../models/bot-name.record';
+import type { BotNameRecord } from '../../contracts/bot-name.record';
 
 export class ListBotNamesService {
   constructor(private readonly botNames: BotNameRepository) {}

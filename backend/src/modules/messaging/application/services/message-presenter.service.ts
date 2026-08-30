@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { MessageDto } from '../models/message.record';
-import type { PrivateMessageRecord } from '../models/private-message.model';
+import type { MessageDto } from '../contracts/message.record';
+import type { PrivateMessageRecord } from '../contracts/private-message.model';
 
 @Injectable()
 export class MessagePresenterService {

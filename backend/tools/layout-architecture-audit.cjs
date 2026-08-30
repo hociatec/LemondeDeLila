@@ -26,8 +26,8 @@ const runtimeRootFiles = new Set([
 ]);
 const allowedRoots = new Set(['modules', 'game', 'platform', 'shared']);
 const allowedFacades = new Set([
-  'modules/room/application/services/room-lifecycle-facade.service.ts',
-  'modules/room/application/services/room-membership-facade.service.ts',
+  'modules/room/application/services/lifecycle/room-lifecycle-facade.service.ts',
+  'modules/room/application/services/membership/room-membership-facade.service.ts',
 ]);
 
 function walk(directory = root) {
@@ -70,10 +70,10 @@ function audit() {
   compareDirectories('modules', moduleNames, violations);
   compareDirectories('platform', platformNames, violations);
   compareDirectories('shared', sharedNames, violations);
-  compareDirectories('game/core/application/runtime', runtimeDomains, violations);
-  for (const entry of fs.readdirSync(path.join(root, 'game/core/application/runtime'), { withFileTypes: true })) {
+  compareDirectories('game/engine/runtime', runtimeDomains, violations);
+  for (const entry of fs.readdirSync(path.join(root, 'game/engine/runtime'), { withFileTypes: true })) {
     if (entry.isFile() && !runtimeRootFiles.has(entry.name)) {
-      violations.push(`game/core/application/runtime/${entry.name}: runtime non classé par sous-domaine`);
+      violations.push(`game/engine/runtime/${entry.name}: runtime non classé par sous-domaine`);
     }
   }
   for (const presenter of [
@@ -89,17 +89,39 @@ function audit() {
     if (!fs.existsSync(path.join(root, 'modules', component, 'public-api.ts'))) {
       violations.push(`modules/${component}: public-api.ts manquant`);
     }
+    const nestModule = path.join(root, 'modules', component, 'module', `${component}.module.ts`);
+    if (!fs.existsSync(nestModule)) {
+      violations.push(`modules/${component}: module Nest principal hors module/${component}.module.ts`);
+    }
   }
 
   const files = walk().filter((file) => file.endsWith('.ts'));
   for (const file of files) {
     const name = relative(file);
     const source = fs.readFileSync(file, 'utf8');
-    if (name.includes('/application/models/') && /^models?\.ts$/.test(path.basename(name))) {
-      violations.push(`${name}: modèle applicatif sans rôle explicite`);
+    if (name.includes('/presentation/') && !name.includes('/infrastructure/presentation/')) {
+      violations.push(`${name}: adapter de présentation hors infrastructure/presentation`);
+    }
+    if (/^modules\/[^/]+\/[^/]+\.module\.ts$/.test(name)) {
+      violations.push(`${name}: module Nest principal hors dossier module`);
+    }
+    if (name.includes('/application/models/')) {
+      violations.push(`${name}: dossier application/models générique interdit; utiliser contracts`);
     }
     if (/\/infrastructure\/.*repository\.ts$/.test(name) && !name.includes('/persistence/')) {
       violations.push(`${name}: repository hors persistence`);
+    }
+    if (
+      name.includes('/application/ports/') &&
+      !/(?:\.port|\.repository|\.reader|\.writer)\.ts$/.test(name)
+    ) {
+      violations.push(`${name}: port sans rôle explicite`);
+    }
+    if (
+      name.startsWith('platform/ws/') &&
+      /from ['"][^'"]*platform\/realtime\//.test(source)
+    ) {
+      violations.push(`${name}: les primitives WS dépendent de l'orchestration realtime`);
     }
     if (
       name.startsWith('shared/') &&
@@ -127,8 +149,20 @@ function audit() {
   const roomServices = files.filter((file) =>
     relative(file).match(/^modules\/room\/application\/services\/[^/]+\.ts$/),
   );
-  if (roomServices.length > 30) {
-    violations.push(`modules/room/application/services: ${roomServices.length} fichiers (max 30)`);
+  if (roomServices.length > 0) {
+    violations.push(`modules/room/application/services: ${roomServices.length} fichier(s) hors capacité`);
+  }
+  const roomServiceCapabilities = new Set([
+    'lifecycle',
+    'lobby',
+    'maintenance',
+    'membership',
+    'state',
+  ]);
+  for (const directory of directoryNames('modules/room/application/services')) {
+    if (!roomServiceCapabilities.has(directory)) {
+      violations.push(`modules/room/application/services/${directory}: capacité inconnue`);
+    }
   }
 
   const migrations = files.filter((file) =>

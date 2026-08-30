@@ -26,7 +26,7 @@ const familySets = cards.sets({
   ),
 });
 
-export default defineGame<LesMainsState, typeof LES_MAINS_ACTIONS>({
+export default defineGame<LesMainsState>()({
   id: 'les-mains-de-la-terre',
   displayName: 'Les Mains de la Terre',
   category: 'JeuxDePlateaux',

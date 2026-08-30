@@ -3,7 +3,7 @@ import {
   BotNameAlreadyUsedError,
   BotNameRequiredError,
 } from '../../errors/bot-application.errors';
-import type { BotNameRecord } from '../../models/bot-name.record';
+import type { BotNameRecord } from '../../contracts/bot-name.record';
 import { BotNameCacheService } from './bot-name-cache.service';
 import { BotNameNormalizerService } from './bot-name-normalizer.service';
 

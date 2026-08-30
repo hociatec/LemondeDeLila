@@ -1,5 +1,5 @@
 import type { BotRoomRepository } from '../../ports/bot-room.repository';
-import type { BotRoomRecord } from '../../models/bot-room.record';
+import type { BotRoomRecord } from '../../contracts/bot-room.record';
 import { BotNameSelectionService } from '../bot-names/bot-name-selection.service';
 import { BotRoomPolicyService } from './bot-room-policy.service';
 
@@ -11,6 +11,10 @@ export class AddSystemBotToRoomService {
   ) {}
 
   async execute(roomId: number): Promise<BotRoomRecord> {
+    return this.rooms.runRoomMutation(roomId, () => this.executeLocked(roomId));
+  }
+
+  private async executeLocked(roomId: number): Promise<BotRoomRecord> {
     const room = this.policy.requireRoom(await this.rooms.findRoomById(roomId));
 
     const [humans, existingBots] = await Promise.all([

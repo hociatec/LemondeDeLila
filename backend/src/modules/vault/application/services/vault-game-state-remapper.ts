@@ -1,7 +1,7 @@
 import {
   isVaultGameState,
   type VaultGameState,
-} from '../models/vault-game-state.model';
+} from '../contracts/vault-game-state.model';
 
 export type VaultGameStateRemapOptions = {
   roomId: number;

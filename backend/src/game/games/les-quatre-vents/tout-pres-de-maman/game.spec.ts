@@ -13,7 +13,7 @@ describe('Tout près de Maman declarative game', () => {
 
     const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
     expect(kits.dice?.total).toBeGreaterThanOrEqual(1);
-    expect(game.view(1).positions[1]).toBeGreaterThanOrEqual(0);
+    expect(game.inspect.positions()[1]).toBeGreaterThanOrEqual(0);
     expect(await game.replay()).toEqual(game.state());
   });
 

@@ -1,5 +1,5 @@
 import type { VaultRoomSnapshot } from '../../vault.types';
-import { isVaultGameState } from '../models/vault-game-state.model';
+import { isVaultGameState } from '../contracts/vault-game-state.model';
 
 export function decodeVaultRoomSnapshot(
   value: unknown,

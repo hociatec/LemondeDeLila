@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { WsAuthPayload } from '../../../../shared/interfaces/public-api';
 import { getErrorMessage } from '../../../../shared/utils/public-api';
-import type { PresenceChatHistory } from '../models/presence-chat-history.model';
+import type { PresenceChatHistory } from '../contracts/presence-chat-history.model';
 import {
   PRESENCE_CHAT_PORT,
   type PresenceChatPort,

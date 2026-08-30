@@ -8,11 +8,8 @@ import {
   raceGame,
 } from '../../../engine/sdk/public-api';
 import { CA_DERAPE_CARDS, CA_DERAPE_TILES } from './content';
-import {
-  CA_DERAPE_ACTIONS,
-  CA_NEXT_PLAYER_DELTA,
-  resolveDeltaChoice,
-} from './rules';
+import { CA_NEXT_PLAYER_DELTA } from './rules';
+import { CA_DERAPE_ACTIONS, resolveDeltaChoice } from './actions';
 import { CA_DERAPE_EFFECTS } from './effects';
 import type { NoGameState as CaDerapeState } from '../../../engine/sdk/public-api';
 
@@ -21,7 +18,7 @@ const CA_DERAPE_PHASES = defineGamePhases<CaDerapeState>()({
   phases: { playing: {} },
 });
 
-export default defineGame<CaDerapeState, typeof CA_DERAPE_ACTIONS>({
+export default defineGame<CaDerapeState>()({
   id: 'ca-derape',
   displayName: 'Ça Dérape !',
   category: 'JeuxDePlateaux',

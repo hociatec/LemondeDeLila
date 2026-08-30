@@ -1,5 +1,5 @@
 import { DynamicModule, Module, type Provider } from '@nestjs/common';
-import { DeclarativeGameRuntime } from '../core/application/runtime/declarative-game.runtime';
+import { DeclarativeGameRuntime } from '../engine/runtime/declarative-game.runtime';
 import { GameRegistryService } from '../core/application/services/game-registry.service';
 import { GameRegistryModule } from '../engine/infrastructure/module/game-registry.module';
 import { discoverGameDefinitions } from './game-module-discovery';

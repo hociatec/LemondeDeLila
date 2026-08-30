@@ -1,6 +1,6 @@
 import { RoomGatewaySessionService } from './room-gateway-session.service';
 import { RoomGatewaySessionPresenter } from './room-gateway-session.presenter';
-import { RoomClientPolicyService } from '../../../application/services/room-client-policy.service';
+import { RoomClientPolicyService } from '../../../application/services/membership/room-client-policy.service';
 
 function createGateway() {
   const roomsService: any = {

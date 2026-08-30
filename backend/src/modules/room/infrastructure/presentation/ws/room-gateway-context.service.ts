@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import { RoomInviteService } from '../../../application/services/room-invite.service';
-import { RoomRealtimeTrackerService } from '../../../application/services/room-realtime-tracker.service';
+import { RoomInviteService } from '../../../application/services/membership/room-invite.service';
+import { RoomRealtimeTrackerService } from '../../../application/services/state/room-realtime-tracker.service';
 import type { RoomPayload } from '../../../public-api';
 import { RoomEventsBusService } from '../../system/room-events-bus.service';
 import type { RoomIntent } from './dto/room-intent.ws.dto';

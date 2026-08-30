@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type { GameRuntime } from '../../../../application/contracts/game-runtime.interface';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
-import type { GameStateWithActions } from '../../../../application/models/game-action.model';
+import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
+import type { GameStateWithActions } from '../../../../application/contracts/game-action.model';
 import type { GameShortcutHint } from '../../../../../shortcuts/public-api';
-import { withDicePresentation } from '../../../../../dice/public-api';
+import { projectDiceActionView } from '../../../../../engine/runtime/projection/dice-action-view';
 import { GameVisibilityService } from '../../../../application/services/game-visibility.service';
 
 type PresentStateInput = {
@@ -25,7 +25,7 @@ export class GameWsStatePresenter {
       input.state,
       input.viewerPlayerId,
     );
-    const exposed = withDicePresentation(
+    const exposed = projectDiceActionView(
       this.visibility.project(
         input.state,
         exposedByGame,

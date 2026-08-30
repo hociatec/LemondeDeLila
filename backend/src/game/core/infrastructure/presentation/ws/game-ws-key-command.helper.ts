@@ -1,4 +1,4 @@
-import type { GameSingleActionDto } from '../../../application/models/game-action.model';
+import type { GameSingleActionDto } from '../../../application/contracts/game-action.model';
 
 export type PresentedGameKeyResolution =
   | { kind: 'action'; action: GameSingleActionDto }

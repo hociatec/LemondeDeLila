@@ -2,7 +2,7 @@ import type {
   ClientUpdateMeta,
   CompletedUploadMarker,
   UploadMetaFile,
-} from '../../application/models/client-update-meta.record';
+} from '../../application/contracts/client-update-meta.record';
 
 export function decodeClientUpdateMeta(
   value: unknown,

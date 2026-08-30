@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn } from 'typeorm';
-import type { GameTimeline } from '../../../game/core/application/models/game-event.model';
+import type { GameTimeline } from '../../../game/core/application/contracts/game-event.model';
 
 type LegacySessionRow = {
   room_id: number;

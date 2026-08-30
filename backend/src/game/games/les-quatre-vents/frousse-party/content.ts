@@ -160,35 +160,8 @@ function effectInstructions(
       gameEffects.completeTurn(),
     ];
   }
-  if (effect.kind === 'replay') {
-    const modifierStatus =
-      effect.modifier === 'minus-two'
-        ? gameEffects.addStatus({
-            status: 'frousse.next-roll-malus',
-            scope: 'until-used',
-            data: { value: -2 },
-          })
-        : effect.modifier === 'keep-lowest'
-          ? gameEffects.addStatus({
-              status: 'frousse.next-roll-keep-lowest',
-              scope: 'until-used',
-            })
-          : null;
-    return [
-      gameEffects.extraTurn(),
-      ...(modifierStatus ? [modifierStatus] : []),
-    ];
-  }
-  if (effect.kind === 'shield') {
-    const status =
-      effect.category === 'trap'
-        ? 'frousse.ignore-next-trap'
-        : effect.category === 'prank'
-          ? 'frousse.ignore-next-prank'
-          : effect.category === 'ghost'
-            ? 'frousse.ignore-next-ghost'
-            : 'frousse.ignore-trap-until-next-draw';
-    return [gameEffects.addStatus({ status, scope: 'until-used' })];
+  if (effect.kind === 'replay' || effect.kind === 'shield') {
+    return replayOrShieldInstructions(effect);
   }
   if (effect.kind === 'double') {
     return [
@@ -215,6 +188,39 @@ function effectInstructions(
     ),
     gameEffects.skipTurn(effect.turns),
   ];
+}
+
+function replayOrShieldInstructions(
+  effect: Extract<FrousseCardEffect, { kind: 'replay' | 'shield' }>,
+): readonly GameEffectInstruction[] {
+  if (effect.kind === 'replay') {
+    const modifierStatus =
+      effect.modifier === 'minus-two'
+        ? gameEffects.addStatus({
+            status: 'frousse.next-roll-malus',
+            scope: 'until-used',
+            data: { value: -2 },
+          })
+        : effect.modifier === 'keep-lowest'
+          ? gameEffects.addStatus({
+              status: 'frousse.next-roll-keep-lowest',
+              scope: 'until-used',
+            })
+          : null;
+    return [
+      gameEffects.extraTurn(),
+      ...(modifierStatus ? [modifierStatus] : []),
+    ];
+  }
+  const status =
+    effect.category === 'trap'
+      ? 'frousse.ignore-next-trap'
+      : effect.category === 'prank'
+        ? 'frousse.ignore-next-prank'
+        : effect.category === 'ghost'
+          ? 'frousse.ignore-next-ghost'
+          : 'frousse.ignore-trap-until-next-draw';
+  return [gameEffects.addStatus({ status, scope: 'until-used' })];
 }
 
 function categoryOf(value: string): FrousseCategory {

@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { getErrorMessage } from '@shared/utils/public-api';
-import type { AdminContactItem } from '../models/admin-contact.model';
+import type { AdminContactItem } from '../contracts/admin-contact.model';
 import {
   NOTIFICATION_INBOX_REPOSITORY,
   type NotificationInboxRepository,

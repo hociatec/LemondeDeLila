@@ -1,6 +1,6 @@
 import type { BotNameRepository } from '../../ports/bot-name.repository';
 import { BotNotFoundError } from '../../errors/bot-application.errors';
-import type { BotNameRecord } from '../../models/bot-name.record';
+import type { BotNameRecord } from '../../contracts/bot-name.record';
 import { BotNameCacheService } from './bot-name-cache.service';
 
 export class DeleteBotNameService {

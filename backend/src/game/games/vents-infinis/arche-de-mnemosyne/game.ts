@@ -29,7 +29,7 @@ const QUIZ_STARTED = defineEvent({
   data: gameInput.object({ categoryId: gameInput.enum(MNEMO_CATEGORY_IDS) }),
 });
 
-export default defineGame<NoGameState, typeof MNEMO_ACTIONS>({
+export default defineGame<NoGameState>()({
   id: 'arche-de-mnemosyne',
   displayName: "L'Arche de Mnémosyne",
   category: 'Quiz',
@@ -40,6 +40,7 @@ export default defineGame<NoGameState, typeof MNEMO_ACTIONS>({
     quizBanks: MNEMO_BANKS,
   }),
   players: { min: 1, max: 8 },
+  events: [QUIZ_STARTED],
   patterns: [simultaneousAnswers()],
   config: defineConfiguration<NoGameState, MnemoGameConfig>({
     input: gameInput.object({

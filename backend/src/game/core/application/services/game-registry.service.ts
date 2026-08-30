@@ -8,7 +8,7 @@ import {
   GAME_CATALOG_READER,
   type GameCatalogReader,
 } from '../ports/game-catalog.reader';
-import type { GameCatalogEntryRecord } from '../models/game-catalog-entry.model';
+import type { GameCatalogEntryRecord } from '../contracts/game-catalog-entry.model';
 import { GameCatalogOverridesService } from '../../../engine/application/services/game-catalog-overrides.service';
 
 type ListGamesOptions = {

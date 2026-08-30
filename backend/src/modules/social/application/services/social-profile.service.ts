@@ -2,7 +2,7 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import {
   SocialProfileVisibility,
   type SocialProfileRecord,
-} from '../models/social-profile.model';
+} from '../contracts/social-profile.model';
 import {
   SOCIAL_PROFILE_REPOSITORY,
   type SocialProfileRepository,

@@ -11,7 +11,10 @@ type LilaWsOptions = BaseCreateOptions & {
     : unknown;
   path?: string;
   perMessageDeflate?: boolean;
+  maxPayload?: number;
 };
+
+const DEFAULT_MAX_PAYLOAD_BYTES = 256 * 1024;
 
 export class LilaWsAdapter extends WsAdapter {
   override create(port: number, options?: LilaWsOptions): BaseCreateReturn {
@@ -20,6 +23,7 @@ export class LilaWsAdapter extends WsAdapter {
       perMessageDeflate:
         options?.perMessageDeflate ??
         readEnvironmentBoolean('WS_PERMESSAGE_DEFLATE', true),
+      maxPayload: options?.maxPayload ?? DEFAULT_MAX_PAYLOAD_BYTES,
     };
     return super.create(port, merged);
   }

@@ -1,4 +1,4 @@
-import { CatalogSourceGame } from '../models/catalog-source-game.record';
+import { CatalogSourceGame } from '../contracts/catalog-source-game.record';
 
 export interface CatalogGameSourcePort {
   listGames(): Promise<CatalogSourceGame[]>;

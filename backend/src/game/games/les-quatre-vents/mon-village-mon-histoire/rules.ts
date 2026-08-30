@@ -20,7 +20,7 @@ const ZONE_RANGES = [
   { min: 37, max: 41, id: 7 },
   { min: 42, max: 42, id: 8 },
 ] as const;
-const CARD_COLLECTED = defineEvent({
+export const CARD_COLLECTED = defineEvent({
   type: 'mon-village.card.collected',
   data: gameInput.object({
     playerId: gameInput.playerId(),

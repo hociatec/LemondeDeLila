@@ -2,12 +2,12 @@ import { defineEffect, gameInput } from '../../../engine/sdk/public-api';
 import {
   collectFromOthers,
   dawnCycle,
-  drawRitesCardForPlayer,
   drawTwoChoice,
   freeFamilyChoice,
   resurrectionChoice,
   stealChoice,
-} from './rules';
+} from './ritual-effects';
+import { drawRitesCardForPlayer } from './rules';
 import type { EntreRitesState } from './types';
 
 export const ENTRE_RITES_EFFECTS = {

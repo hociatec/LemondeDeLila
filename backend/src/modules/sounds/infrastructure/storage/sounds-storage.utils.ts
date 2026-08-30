@@ -10,7 +10,7 @@ import {
   type SoundManifestEntry,
   TableAmbienceDefinition,
   TableAmbienceSoundKey,
-} from '../../application/models/sound-manifest.record';
+} from '../../application/contracts/sound-manifest.record';
 import { stringOrEmpty } from '@shared/utils/public-api';
 
 export type SoundErrorLike = {

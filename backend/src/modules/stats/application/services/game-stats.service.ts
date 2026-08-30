@@ -2,9 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { CatalogService } from '../../../catalog/public-api';
 import type { GameStateEntity } from '../../../../game/public-api';
+import { isUniqueConstraintViolation } from '../../../../platform/database/public-api';
 import { GameStatsGameTypeRequiredError } from '../../domain/errors/game-stats-domain.errors';
-import { GameMatchOutcome } from '../models/game-match-player.model';
-import type { GameMatchRecord } from '../models/game-match.model';
+import { GameMatchOutcome } from '../contracts/game-match-player.model';
+import type { GameMatchRecord } from '../contracts/game-match.model';
 import {
   GAME_MATCH_REPOSITORY,
   type GameMatchRepository,
@@ -59,19 +60,29 @@ export class GameStatsService {
     // Fermer tout match actif de la room (robustesse).
     await this.closeActiveMatch(params.roomId, 'restart');
 
-    return this.statsRepo.createMatchWithPlayers({
-      match: {
-        roomId: params.roomId,
-        gameType,
-        botsCount: params.botsCount,
-        humansCount: params.humans.length,
-        withBots: params.botsCount > 0,
-      },
-      players: params.humans.map((human) => ({
-        userId: human.id,
-        username: human.username,
-      })),
-    });
+    const humans = [
+      ...new Map(params.humans.map((human) => [human.id, human])).values(),
+    ];
+    try {
+      return await this.statsRepo.createMatchWithPlayers({
+        match: {
+          roomId: params.roomId,
+          gameType,
+          botsCount: params.botsCount,
+          humansCount: humans.length,
+          withBots: params.botsCount > 0,
+        },
+        players: humans.map((human) => ({
+          userId: human.id,
+          username: human.username,
+        })),
+      });
+    } catch (error) {
+      if (!isUniqueConstraintViolation(error)) throw error;
+      const concurrent = await this.getActiveMatch(params.roomId);
+      if (concurrent) return concurrent;
+      throw error;
+    }
   }
 
   async markQuit(roomId: number, userId: number): Promise<void> {

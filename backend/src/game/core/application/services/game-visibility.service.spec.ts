@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../models/game-state.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
 import { GameVisibilityService } from './game-visibility.service';
 
 describe('GameVisibilityService', () => {

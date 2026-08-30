@@ -16,7 +16,7 @@ const cardDecks = (['treasure', 'obstacle', 'bonus'] as const).map((id) =>
   cards.deck({ id, cards: PIRATES_CONTENT[id], shuffle: true }),
 );
 
-export default defineGame<PiratesState, typeof PIRATES_ACTIONS>({
+export default defineGame<PiratesState>()({
   id: 'pirates-en-vadrouille',
   displayName: 'Pirates en vadrouille !',
   category: 'JeuxDePlateaux',

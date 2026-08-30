@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { RoomGamePort } from '../../application/ports/room-game.port';
-import { RoomLifecycleFacadeService } from '../../application/services/room-lifecycle-facade.service';
-import { RoomMembershipFacadeService } from '../../application/services/room-membership-facade.service';
-import { RoomStateService } from '../../application/services/room-state.service';
+import { RoomLifecycleFacadeService } from '../../application/services/lifecycle/room-lifecycle-facade.service';
+import { RoomMembershipFacadeService } from '../../application/services/membership/room-membership-facade.service';
+import { RoomStateService } from '../../application/services/state/room-state.service';
 
 @Injectable()
 export class RoomGameAdapter implements RoomGamePort {

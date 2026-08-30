@@ -5,8 +5,8 @@ import {
   BotRoomNotFoundError,
   BotRoomOwnerRequiredError,
 } from '../../errors/bot-application.errors';
-import type { BotManagedRoomRecord } from '../../models/bot-room.record';
-import { OPEN_BOT_MANAGED_ROOM_STATUSES } from '../../models/bot-room-status';
+import type { BotManagedRoomRecord } from '../../contracts/bot-room.record';
+import { OPEN_BOT_MANAGED_ROOM_STATUSES } from '../../contracts/bot-room-status';
 
 export class BotRoomPolicyService {
   requireRoom(room: BotManagedRoomRecord | null): BotManagedRoomRecord {

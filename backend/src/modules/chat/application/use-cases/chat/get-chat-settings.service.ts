@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { getErrorMessage } from '@shared/utils/public-api';
 
-import { ChatSettings } from '../../models/chat-settings.record';
+import { ChatSettings } from '../../contracts/chat-settings.record';
 import {
   CHAT_SETTINGS_REPOSITORY,
   type ChatSettingsRepository,

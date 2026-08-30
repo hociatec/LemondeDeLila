@@ -41,9 +41,12 @@ async function main() {
     const pending = await source.showMigrations();
     if (pending) throw new Error('Des migrations restent en attente');
     await verifyCriticalIndexes(source);
+    await verifyCriticalQueryPlans(source);
     await verifyGameSessionInvariants(source);
+    await verifyConcurrentUniqueness(source);
+    await verifyRecentMigrationsWithExistingData(source);
     console.log(
-      `mysql-migrations-integration: OK (${applied.length} migrations, index et transactions vérifiés)`,
+      `mysql-migrations-integration: OK (${applied.length} migrations, plans SQL, historique, unicité et transactions vérifiés)`,
     );
   } finally {
     if (source.isInitialized) await source.destroy();
@@ -87,6 +90,47 @@ async function verifyCriticalIndexes(source) {
   for (const [table, index] of CRITICAL_INDEXES) {
     if (!actual.has(`${table}:${index}`)) {
       throw new Error(`Index critique absent: ${table}.${index}`);
+    }
+  }
+}
+
+const CRITICAL_QUERY_PLANS = [
+  {
+    index: 'idx_messaging_private_messages_recipient_created',
+    sql: 'SELECT id FROM messaging_private_messages WHERE recipient_id = 1 ORDER BY created_at DESC LIMIT 50',
+  },
+  {
+    index: 'idx_social_relationship_requester_status_updated',
+    sql: "SELECT id FROM social_relationships WHERE requester_id = 1 AND status = 'pending' ORDER BY updated_at DESC LIMIT 50",
+  },
+  {
+    index: 'idx_room_participants_room_active_joined',
+    sql: 'SELECT id FROM room_participants WHERE room_id = 1 AND left_at IS NULL ORDER BY joined_at ASC LIMIT 100',
+  },
+  {
+    index: 'idx_rooms_lobby_status_privacy_created',
+    sql: "SELECT id FROM rooms WHERE status = 'lobby' AND is_private = 0 ORDER BY created_at DESC LIMIT 100",
+  },
+  {
+    index: 'idx_game_matches_type_ended',
+    sql: "SELECT id FROM game_matches WHERE game_type = 'integration-test' ORDER BY ended_at DESC LIMIT 100",
+  },
+  {
+    index: 'idx_bug_report_comments_report_created',
+    sql: 'SELECT id FROM bug_report_comments WHERE report_id = 1 ORDER BY created_at ASC LIMIT 100',
+  },
+  {
+    index: 'idx_notification_inbox_user_deleted_created',
+    sql: 'SELECT id FROM notification_inbox_items WHERE user_id = 1 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 100',
+  },
+];
+
+async function verifyCriticalQueryPlans(source) {
+  for (const query of CRITICAL_QUERY_PLANS) {
+    const rows = await source.query(`EXPLAIN ${query.sql}`);
+    const possible = String(rows[0]?.possible_keys ?? '').split(',');
+    if (!possible.includes(query.index)) {
+      throw new Error(`Plan SQL sans index attendu: ${query.index}`);
     }
   }
 }
@@ -150,6 +194,53 @@ async function verifyGameSessionInvariants(source) {
   if (sessions[0]?.version !== 2 || Number(events[0]?.count) !== 0) {
     throw new Error('Rollback multi-table de session invalide');
   }
+}
+
+async function verifyConcurrentUniqueness(source) {
+  const values = [
+    101,
+    'integration-unique',
+    1,
+    JSON.stringify({ version: 1, status: 'started', phase: 'playing', log: [] }),
+  ];
+  const results = await Promise.allSettled([
+    source.query(
+      'INSERT INTO game_sessions (room_id, game_type, version, state) VALUES (?, ?, ?, ?)',
+      values,
+    ),
+    source.query(
+      'INSERT INTO game_sessions (room_id, game_type, version, state) VALUES (?, ?, ?, ?)',
+      values,
+    ),
+  ]);
+  if (results.filter((result) => result.status === 'fulfilled').length !== 1) {
+    throw new Error('Contrainte unique concurrente game_sessions non garantie');
+  }
+  const rejected = results.find((result) => result.status === 'rejected');
+  const reason = rejected?.reason;
+  if (reason?.code !== 'ER_DUP_ENTRY' && reason?.errno !== 1062) {
+    throw new Error('Erreur unique MySQL non identifiable');
+  }
+}
+
+async function verifyRecentMigrationsWithExistingData(source) {
+  const before = await source.query(
+    'SELECT COUNT(*) AS count FROM game_sessions WHERE room_id IN (99, 101)',
+  );
+  for (let index = 0; index < 5; index += 1) {
+    await source.undoLastMigration({ transaction: 'each' });
+  }
+  const reapplied = await source.runMigrations({ transaction: 'each' });
+  if (reapplied.length !== 5) {
+    throw new Error(`Cycle historique incomplet: ${reapplied.length}/5 migrations`);
+  }
+  const after = await source.query(
+    'SELECT COUNT(*) AS count FROM game_sessions WHERE room_id IN (99, 101)',
+  );
+  if (Number(before[0]?.count) !== Number(after[0]?.count)) {
+    throw new Error('Données existantes perdues pendant le cycle de migrations');
+  }
+  await verifyCriticalIndexes(source);
 }
 
 main().catch((error) => {

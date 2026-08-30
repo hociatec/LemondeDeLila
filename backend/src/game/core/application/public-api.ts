@@ -21,12 +21,12 @@ export {
   GameRoomLockUnavailableError,
   type GameRoomLock,
 } from './ports/game-room-lock.port';
-export type { GameStateEntity } from './models/game-state.model';
+export type { GameStateEntity } from './contracts/game-state.model';
 export type {
   EventVisibility,
   GameEvent,
   ProjectedGameEvent,
-} from './models/game-event.model';
+} from './contracts/game-event.model';
 export {
   GAME_STATE_STORE,
   type GameStateCommit,
@@ -40,7 +40,6 @@ export {
   type GameEventStore,
   type GameSnapshotPolicy,
 } from './ports/game-event-store.port';
-export * from './runtime/public-api';
 export * from '../testing/public-api';
 export {
   GAME_ROOM_CONTEXT_PORT,

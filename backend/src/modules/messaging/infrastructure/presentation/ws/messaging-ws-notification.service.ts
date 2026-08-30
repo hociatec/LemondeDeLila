@@ -6,7 +6,7 @@ import {
   type MessagingBadgeCountsNotifier,
   type MessagingNotificationDispatcher,
 } from '../../../application/ports/messaging-notification.port';
-import type { PrivateMessageRecord } from '../../../application/models/private-message.model';
+import type { PrivateMessageRecord } from '../../../application/contracts/private-message.model';
 import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
 import { MessagePresenterService } from '../../../application/services/message-presenter.service';
 

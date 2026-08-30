@@ -10,6 +10,8 @@ export class InitSchema1734800000000 implements MigrationInterface {
   name = 'InitSchema1734800000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Identity is created first because every historical communication row
+    // references users.
     await queryRunner.createTable(
       new Table({
         name: 'users',
@@ -79,6 +81,7 @@ export class InitSchema1734800000000 implements MigrationInterface {
       true,
     );
 
+    // Communication tables: public chat, then private messaging.
     await queryRunner.createTable(
       new Table({
         name: 'chat_messages',
@@ -215,6 +218,7 @@ export class InitSchema1734800000000 implements MigrationInterface {
       true,
     );
 
+    // Room aggregate: parent, participants and bots in FK-safe order.
     await queryRunner.createTable(
       new Table({
         name: 'rooms',
@@ -317,6 +321,7 @@ export class InitSchema1734800000000 implements MigrationInterface {
       true,
     );
 
+    // Global bot-name catalogue has no dependency on the room aggregate.
     await queryRunner.createTable(
       new Table({
         name: 'bot_names',
@@ -342,6 +347,7 @@ export class InitSchema1734800000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    // Always reverse the exact ownership order declared by `up`.
     await queryRunner.dropTable('bot_names', true);
     await queryRunner.dropTable('room_bots', true);
     await queryRunner.dropTable('room_participants', true);

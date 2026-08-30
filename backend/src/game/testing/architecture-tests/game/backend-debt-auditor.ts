@@ -3,8 +3,8 @@ import { relative } from 'node:path';
 import type {
   CompiledGameDefinition,
   GameActionShape,
-} from '../../../core/application/runtime/definitions/game-definition';
-import type { GameComponentDefinition } from '../../../core/application/runtime/definitions/component-kit';
+} from '../../../engine/runtime/definitions/game-definition';
+import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
 
 export type BackendDebtAuditViolation = {
   file?: string;

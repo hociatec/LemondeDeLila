@@ -3,7 +3,7 @@ import type {
   BugReportCommentRepository,
   BugReportRepository,
 } from '../../ports/bug-report.repository';
-import type { BugReportCommentRecord } from '../../models/bug-report-comment.record';
+import type { BugReportCommentRecord } from '../../contracts/bug-report-comment.record';
 
 export class AddBugReportCommentService {
   constructor(

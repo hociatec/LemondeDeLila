@@ -24,7 +24,7 @@ describe('Jeu de l’Oie declarative game', () => {
 
     const actor = game.state().turn?.currentPlayerId ?? 1;
     await game.as(actor).do('roll', {});
-    expect(game.view(actor).positions[actor]).toBeGreaterThan(1);
+    expect(game.inspect.positions()[actor]).toBeGreaterThan(1);
     expect(await game.replay()).toEqual(game.state());
   });
 });

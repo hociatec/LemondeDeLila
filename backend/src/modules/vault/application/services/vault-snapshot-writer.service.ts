@@ -11,8 +11,8 @@ import {
   type RoomPayload,
   type RoomVaultPort,
 } from '../../../room/public-api';
-import type { VaultRoomSnapshotRecord } from '../models/vault-room-snapshot.model';
-import type { VaultGameState } from '../models/vault-game-state.model';
+import type { VaultRoomSnapshotRecord } from '../contracts/vault-room-snapshot.model';
+import type { VaultGameState } from '../contracts/vault-game-state.model';
 import { VAULT_GAME_PORT, type VaultGamePort } from '../ports/vault-game.port';
 import {
   VAULT_ROOM_SNAPSHOT_REPOSITORY,

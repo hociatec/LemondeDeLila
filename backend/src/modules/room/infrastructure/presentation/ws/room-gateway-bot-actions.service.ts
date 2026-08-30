@@ -11,7 +11,7 @@ import {
   RemoveBotFromRoomService,
 } from '../../../../bot/public-api';
 import { PerfMetricsService } from '../../../../../platform/observability/public-api';
-import { RoomStateService } from '../../../application/services/room-state.service';
+import { RoomStateService } from '../../../application/services/state/room-state.service';
 import { RoomWsNoBotToRemoveError } from '../../../domain/errors/room-ws.errors';
 import type { ActionsContext } from './room-gateway-actions.types';
 import { extractTraceMeta } from './room-command.helpers';

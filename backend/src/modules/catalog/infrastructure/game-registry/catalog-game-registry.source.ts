@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { GameRegistryService } from '../../../../game/public-api';
-import { CatalogSourceGame } from '../../application/models/catalog-source-game.record';
+import { CatalogSourceGame } from '../../application/contracts/catalog-source-game.record';
 import { CatalogGameSourcePort } from '../../application/ports/catalog-game-source.port';
 
 @Injectable()

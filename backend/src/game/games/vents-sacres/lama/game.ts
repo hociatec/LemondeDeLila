@@ -25,7 +25,7 @@ const scoring = roundScoring<LamaState>({
   score: ({ state, ctx }) => scoreLamaRound(state, ctx),
 });
 
-export default defineGame<LamaState, typeof LAMA_ACTIONS>({
+export default defineGame<LamaState>()({
   id: 'lama',
   displayName: 'LAMA',
   category: 'JeuxDeCartes',

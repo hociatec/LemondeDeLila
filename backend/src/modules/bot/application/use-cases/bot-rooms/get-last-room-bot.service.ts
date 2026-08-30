@@ -1,5 +1,5 @@
 import type { BotRoomRepository } from '../../ports/bot-room.repository';
-import type { BotRoomRecord } from '../../models/bot-room.record';
+import type { BotRoomRecord } from '../../contracts/bot-room.record';
 
 export class GetLastRoomBotService {
   constructor(private readonly rooms: BotRoomRepository) {}

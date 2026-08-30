@@ -3,7 +3,7 @@ import type { BugReportRepository } from '../../ports/bug-report.repository';
 import type {
   BugReportRecord,
   BugReportStatus,
-} from '../../models/bug-report.record';
+} from '../../contracts/bug-report.record';
 
 export class CreateBugReportService {
   constructor(private readonly repo: BugReportRepository) {}

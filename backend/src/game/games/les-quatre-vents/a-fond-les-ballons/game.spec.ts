@@ -10,10 +10,10 @@ describe('À fond les ballons declarative game', () => {
     await game.choose(starter, 'capitaine-cacahuete');
     const second = starter === 1 ? 2 : 1;
     await game.choose(second, 'professeur-gribouille');
-    expect(game.view(1).setupComplete).toBe(true);
+    expect(game.inspect.setupComplete()).toBe(true);
     await game.as(starter).do('roll', {});
-    expect(game.view(1).lastRoll).toBeGreaterThanOrEqual(1);
-    expect(game.view(1).deckCount).toBe(A_FOND_CARD_COUNT - 1);
+    expect(game.inspect.lastRoll()).toBeGreaterThanOrEqual(1);
+    expect(game.inspect.deckCount()).toBe(A_FOND_CARD_COUNT - 1);
     expect(await game.replay()).toEqual(game.state());
   });
 });

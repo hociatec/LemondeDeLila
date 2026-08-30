@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import type { RoomLobbyRepository } from '../../../../application/ports/room-lobby.repository';
-import type { RoomRecord } from '../../../../application/models/room-record.model';
-import { OPEN_ROOM_STATUSES } from '../../../../application/models/room-status.model';
+import type { RoomRecord } from '../../../../application/contracts/room-record.model';
+import { OPEN_ROOM_STATUSES } from '../../../../application/contracts/room-status.model';
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { toRoomRecord } from './room-typeorm.mappers';
@@ -34,7 +34,8 @@ export class RoomLobbyTypeormRepository implements RoomLobbyRepository {
       .andWhere(
         '(room.startedAt IS NOT NULL OR LOWER(room.status) IN (:...statuses))',
         { statuses },
-      );
+      )
+      .limit(500);
 
     if (filters?.gameType) {
       qb.andWhere('room.gameType = :gameType', { gameType: filters.gameType });
@@ -72,6 +73,7 @@ export class RoomLobbyTypeormRepository implements RoomLobbyRepository {
       .select('p.user_id', 'userId')
       .where('p.room_id = :roomId', { roomId })
       .andWhere('p.left_at IS NULL')
+      .limit(500)
       .getRawMany<{ userId: number }>();
 
     return rows

@@ -16,7 +16,7 @@ import {
 } from './rules';
 import type { JeuOieState } from './types';
 
-export default defineGame<JeuOieState, typeof JEU_OIE_ACTIONS>({
+export default defineGame<JeuOieState>()({
   id: 'jeu-oie',
   displayName: 'Jeu de l’oie',
   category: 'JeuxDePlateaux',

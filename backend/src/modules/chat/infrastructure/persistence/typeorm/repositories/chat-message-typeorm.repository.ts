@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 
-import { ChatMessageRecord } from '../../../../application/models/chat-message.record';
+import { ChatMessageRecord } from '../../../../application/contracts/chat-message.record';
 import {
   ChatMessageRepository,
   CreateChatMessageInput,

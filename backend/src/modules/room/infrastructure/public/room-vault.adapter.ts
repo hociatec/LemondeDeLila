@@ -3,12 +3,12 @@ import type {
   RoomVaultPort,
   RoomVaultRoomRecord,
 } from '../../application/ports/room-vault.port';
-import { RoomAccessService } from '../../application/services/room-access.service';
-import { RoomLifecycleFacadeService } from '../../application/services/room-lifecycle-facade.service';
-import { RoomMembershipFacadeService } from '../../application/services/room-membership-facade.service';
-import { RoomStateService } from '../../application/services/room-state.service';
+import { RoomAccessService } from '../../application/services/membership/room-access.service';
+import { RoomLifecycleFacadeService } from '../../application/services/lifecycle/room-lifecycle-facade.service';
+import { RoomMembershipFacadeService } from '../../application/services/membership/room-membership-facade.service';
+import { RoomStateService } from '../../application/services/state/room-state.service';
 import type { Room } from '../persistence/typeorm/entities/room.entity';
-import type { RoomRecord } from '../../application/models/room-record.model';
+import type { RoomRecord } from '../../application/contracts/room-record.model';
 
 @Injectable()
 export class RoomVaultAdapter implements RoomVaultPort {

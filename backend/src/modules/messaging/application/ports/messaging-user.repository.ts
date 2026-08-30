@@ -1,4 +1,4 @@
-import type { MessageUser } from '../models/message-user.model';
+import type { MessageUser } from '../contracts/message-user.model';
 
 export const MESSAGING_USER_READER = Symbol('MESSAGING_USER_READER');
 

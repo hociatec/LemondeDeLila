@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { FindOptionsWhere, In, IsNull, Repository } from 'typeorm';
 import type { PresenceRoomParticipantRepository } from '../../../../application/ports/presence-room-participant.repository';
-import type { PresenceActiveRoomParticipant } from '../../../../application/models/presence-active-room-participant.model';
+import type { PresenceActiveRoomParticipant } from '../../../../application/contracts/presence-active-room-participant.model';
 
 export const PRESENCE_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY = Symbol(
   'PRESENCE_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY',

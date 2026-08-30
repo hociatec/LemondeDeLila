@@ -11,6 +11,7 @@ import {
   ABSURDISSIMES_ANSWERS,
   ABSURDISSIMES_JUDGE,
   ABSURDISSIMES_PHASES,
+  SUBMISSIONS_REVEALED,
   drawWhiteCard,
 } from './rules';
 import type { NoGameState as AbsurdissimesState } from '../../../engine/sdk/public-api';
@@ -20,13 +21,14 @@ const whiteDeck = cards.deck({
   cards: WHITE_CARDS,
   shuffle: true,
 });
-export default defineGame<AbsurdissimesState, typeof ABSURDISSIMES_ACTIONS>({
+export default defineGame<AbsurdissimesState>()({
   id: 'les-absurdissimes',
   displayName: 'Les Absurdissimes !',
   category: 'Cartes',
   subcategory: 'VentsDansants',
   description: 'Proposez la réponse la plus absurde et convainquez le juge.',
   players: { min: 3, max: 8 },
+  events: [SUBMISSIONS_REVEALED],
   content: defineGameContent('les-absurdissimes', {
     blackCards: BLACK_CARDS,
     whiteCards: WHITE_CARDS,

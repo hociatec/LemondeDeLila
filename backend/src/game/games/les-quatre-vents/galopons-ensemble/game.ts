@@ -22,7 +22,7 @@ import {
 } from './rules';
 import type { NoGameState as GaloponsState } from '../../../engine/sdk/public-api';
 
-export default defineGame<GaloponsState, typeof GALOPONS_ACTIONS>({
+export default defineGame<GaloponsState>()({
   id: 'galopons-ensemble',
   displayName: 'Galopons ensemble !',
   category: 'JeuxDePlateaux',

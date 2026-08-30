@@ -1,5 +1,5 @@
 import { WebSocket } from 'ws';
-import type { PresenceClient } from '../models/presence-client.model';
+import type { PresenceClient } from '../contracts/presence-client.model';
 import type { PresenceChatService } from './presence-chat.service';
 import { PresenceClientMessageService } from './presence-client-message.service';
 

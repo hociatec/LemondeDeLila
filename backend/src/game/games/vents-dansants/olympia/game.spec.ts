@@ -10,8 +10,8 @@ describe('Olympia declarative game', () => {
       .players(['Athéna', 'Hermès'])
       .seed(47);
     await game.start();
-    expect(game.view(1).hand).toHaveLength(3);
-    expect(game.view(2).hand).toHaveLength(3);
+    expect(game.inspect.hand(1)).toHaveLength(3);
+    expect(game.inspect.hand(2)).toHaveLength(3);
     const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
     const divinities = kits.cards?.hands.divinities.byPlayer;
     expect(divinities?.['1']).not.toEqual(divinities?.['2']);
@@ -23,7 +23,7 @@ describe('Olympia declarative game', () => {
       .seed(48);
     await game.start();
     await game.as(1).do('draw_card', { deck: 'heros' });
-    expect(game.view(1).hand).toHaveLength(4);
+    expect(game.inspect.hand(1)).toHaveLength(4);
     expect(await game.replay()).toEqual(game.state());
   });
 });

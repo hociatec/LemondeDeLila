@@ -25,7 +25,7 @@ const deckNames: VoyageCollectionKind[] = [
   'landscape',
 ];
 
-export default defineGame<VoyageState, typeof VOYAGE_ACTIONS>({
+export default defineGame<VoyageState>()({
   id: 'voyage-en-terre-de-brumes',
   displayName: 'Voyage en Terre de Brumes !',
   category: 'JeuxDePlateaux',

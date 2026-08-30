@@ -1,4 +1,4 @@
-import type { BotRoomRecord } from '../../models/bot-room.record';
+import type { BotRoomRecord } from '../../contracts/bot-room.record';
 import { BotUnavailableNamesError } from '../../errors/bot-application.errors';
 import { BotNameCacheService } from './bot-name-cache.service';
 import { BotNameNormalizerService } from './bot-name-normalizer.service';

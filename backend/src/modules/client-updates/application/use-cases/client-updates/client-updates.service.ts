@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 
-import { ClientUpdateMeta } from '../../models/client-update-meta.record';
+import { ClientUpdateMeta } from '../../contracts/client-update-meta.record';
 import {
   CLIENT_UPDATES_META_STORE_PORT,
   type ClientUpdatesMetaStorePort,

@@ -7,7 +7,7 @@ import type {
 import type {
   BotManagedRoomRecord,
   BotRoomRecord,
-} from '../../../../application/models/bot-room.record';
+} from '../../../../application/contracts/bot-room.record';
 
 export const BOT_ROOM_BOTS_TYPEORM_REPOSITORY = Symbol(
   'BOT_ROOM_BOTS_TYPEORM_REPOSITORY',
@@ -49,6 +49,16 @@ export class BotRoomTypeormRepository implements BotRoomRepository {
     @Inject(BOT_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY)
     private readonly participants: Repository<ParticipantRow>,
   ) {}
+
+  runRoomMutation<T>(roomId: number, operation: () => Promise<T>): Promise<T> {
+    return this.rooms.manager.transaction(async (manager) => {
+      await manager.getRepository(this.rooms.target).findOne({
+        where: { id: roomId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      return operation();
+    });
+  }
 
   async findRoomById(roomId: number): Promise<BotManagedRoomRecord | null> {
     const room = await this.rooms.findOne({

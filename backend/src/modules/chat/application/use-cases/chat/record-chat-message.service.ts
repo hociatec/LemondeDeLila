@@ -4,7 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   ChatBroadcastUser,
   ChatNormalizedMessage,
-} from '../../models/chat-message.record';
+} from '../../contracts/chat-message.record';
 import {
   CHAT_MESSAGE_REPOSITORY,
   type ChatMessageRepository,

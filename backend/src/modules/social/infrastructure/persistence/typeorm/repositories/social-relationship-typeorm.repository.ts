@@ -8,7 +8,7 @@ import type {
 import type {
   SocialRelationshipRecord,
   SocialRelationshipStatus,
-} from '../../../../application/models/social-relationship.model';
+} from '../../../../application/contracts/social-relationship.model';
 import { SocialRelationshipUserRelationMissingError } from '../../../../domain/errors/social-domain.errors';
 import { User } from '../../../../../user/public-api';
 import { SocialRelationshipEntity } from '../entities/social-relationship.entity';

@@ -21,7 +21,7 @@ const ODYSSEE_PAWNS = Array.from({ length: 4 }, (_seat, seatIndex) =>
   })),
 ).flat();
 
-export default defineGame<OdysseeState, typeof ODYSSEE_ACTIONS>({
+export default defineGame<OdysseeState>()({
   id: 'odyssee-quatre-cieux',
   displayName: 'L’Odyssée des Quatre Cieux',
   category: 'JeuxDePlateaux',

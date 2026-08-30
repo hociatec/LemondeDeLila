@@ -13,7 +13,7 @@ function fixture(mutator) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-game-audit-'));
   const gamesRoot = path.join(root, 'src/game/games/world/example');
   const gameRoot = path.join(root, 'src/game');
-  const runtimeRoot = path.join(root, 'src/game/core/application/runtime');
+  const runtimeRoot = path.join(root, 'src/game/engine/runtime');
   fs.mkdirSync(gamesRoot, { recursive: true });
   fs.mkdirSync(runtimeRoot, { recursive: true });
   fs.mkdirSync(path.join(root, 'src/game/core/application/contracts'), {
@@ -116,6 +116,19 @@ test('rejects legacy action input discovery used as validation', () => {
     violations.some(
       (violation) => violation.rule === 'separate-action-validation',
     ),
+    true,
+  );
+});
+
+test('rejects direct runtime imports and enforces the stable author SDK', () => {
+  const violations = fixture(({ gamesRoot }) => {
+    fs.writeFileSync(
+      path.join(gamesRoot, 'rules.ts'),
+      "import { GameContext } from '../../../engine/runtime/game-rule-context';\n",
+    );
+  });
+  assert.equal(
+    violations.some((violation) => violation.rule === 'game-sdk-boundary'),
     true,
   );
 });

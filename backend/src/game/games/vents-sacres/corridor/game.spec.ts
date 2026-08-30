@@ -8,7 +8,7 @@ describe('Corridor declarative game', () => {
     await game.as(1).do('game.configure', { wallsPerPlayer: 10 });
     await game.choose(1, 'vent');
     await game.choose(2, 'eau');
-    expect(game.view(1).setupComplete).toBe(true);
+    expect(game.inspect.setupComplete()).toBe(true);
     expect(game.availableActions(1)).toContain('corridor_move');
   });
 

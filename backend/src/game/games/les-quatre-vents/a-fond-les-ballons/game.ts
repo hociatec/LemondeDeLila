@@ -21,10 +21,7 @@ import {
 } from './rules';
 import type { NoGameState as AFondLesBallonsState } from '../../../engine/sdk/public-api';
 
-export default defineGame<
-  AFondLesBallonsState,
-  typeof A_FOND_LES_BALLONS_ACTIONS
->({
+export default defineGame<AFondLesBallonsState>()({
   id: 'a-fond-les-ballons',
   displayName: 'A fond les ballons !',
   category: 'JeuxDePlateaux',

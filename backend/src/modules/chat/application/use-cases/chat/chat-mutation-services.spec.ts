@@ -4,7 +4,7 @@ import {
   ChatMessageDeleteWindowExpiredError,
   ChatMessageRequiredError,
 } from '../../../domain/errors/chat-domain.errors';
-import type { ChatMessageRecord } from '../../models/chat-message.record';
+import type { ChatMessageRecord } from '../../contracts/chat-message.record';
 import { ChatMessageCacheService } from '../../services/chat-message-cache.service';
 import { ChatMessagePresenterService } from '../../services/chat-message-presenter.service';
 import { EditOwnChatMessageService } from './edit-own-chat-message.service';

@@ -19,6 +19,6 @@ export {
   type RoomVaultRoomRecord,
   ROOM_VAULT_PORT,
 } from './application/ports/room-vault.port';
-export type { RoomPayload } from './application/models/room-payload.model';
-export { RoomMaintenanceSettingsService } from './application/services/room-maintenance-settings.service';
-export { buildUniqueActiveRoomPlayers } from './application/services/room-participant-roster';
+export type { RoomPayload } from './application/contracts/room-payload.model';
+export { RoomMaintenanceSettingsService } from './application/services/maintenance/room-maintenance-settings.service';
+export { buildUniqueActiveRoomPlayers } from './application/services/membership/room-participant-roster';

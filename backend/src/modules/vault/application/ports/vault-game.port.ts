@@ -1,4 +1,4 @@
-import type { VaultGameState } from '../models/vault-game-state.model';
+import type { VaultGameState } from '../contracts/vault-game-state.model';
 
 export const VAULT_GAME_PORT = Symbol('VAULT_GAME_PORT');
 

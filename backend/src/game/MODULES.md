@@ -1,145 +1,48 @@
-# Modules transversaux du gameplay
+# Architecture du moteur de jeu
 
-Chaque capacité générique du moteur possède son propre dossier. La structure cible est la même pour tous les modules :
+La frontière `game` contient quatre responsabilités distinctes :
 
-- `domain` : règles et modèles indépendants des frameworks ;
-- `application` : cas d'usage et services ;
-- `infrastructure` : composition Nest, persistance et adaptateurs ;
-- `presentation` : construction des contrats exposés aux clients.
+- `core` implémente le moteur déterministe, ses ports applicatifs et ses adapters ;
+- `engine` expose les capacités de catalogue et le SDK stable ;
+- `composition` ne contient que la découverte, le registre et le wiring Nest ;
+- `games` contient les définitions et règles propres aux jeux.
 
-Un sous-dossier n'est créé que lorsqu'il contient une responsabilité réelle. Les jeux de `game/games` consomment ces modules, mais conservent leurs règles spécifiques.
+Le runtime se trouve dans `engine/runtime` : il s'agit de l'implémentation
+du noyau, tandis que `engine/sdk/public-api.ts` constitue sa façade auteur. Le
+dossier `engine` n'est donc pas une seconde implémentation du runtime. Le
+déplacer sous `engine` mélangerait API publique, catalogue applicatif et détails
+d'exécution sans améliorer la direction des dépendances.
 
-Les modules sont placés directement sous `game`. `game/core` contient uniquement le noyau transversal encore partagé par plusieurs capacités ; il respecte lui aussi les couches `application`, `domain` et `infrastructure`. Les fichiers de composition Nest globaux restent directement à la racine de `game`.
+Les jeux suivent exclusivement :
 
-Modules déjà migrés :
-
-- `action-resolver` ;
-- `actionlog` ;
-- `board-effects-policies` ;
-- `cards` ;
-- `deck-policies` ;
-- `dice` ;
-- `effects` ;
-- `exchange` ;
-- `grid` ;
-- `history` ;
-- `movement` ;
-- `pawn-selection` ;
-- `prompts` ;
-- `quiz` ;
-- `shortcuts` ;
-- `state` ;
-- `victory`.
-
-Ils servent de structure de référence pour les prochains déplacements.
-
-## Écrire un jeu déclaratif
-
-Le chemin cible est court : un jeu importe uniquement
-`game/core/application/public-api`, déclare son contenu, choisit un pattern ou
-des kits, puis conserve localement les règles réellement spécifiques.
-
-### Exemple minimal
-
-```ts
-import {
-  defineGame,
-  gridGame,
-  defineAction,
-  gameInput,
-} from '../../core/application/public-api';
-
-const actions = {
-  play: defineAction({
-    input: gameInput.object({
-      cell: gameInput.string(),
-    }),
-    execute: ({ actor, input, ctx }) => {
-      ctx.grid.set('board', input.cell, actor.id);
-      ctx.turn.complete();
-    },
-  }),
-};
-
-export default defineGame({
-  id: 'mini-grid',
-  displayName: 'Mini grille',
-  category: 'Exemples',
-  players: { min: 2, max: 2 },
-  patterns: [gridGame({ boardId: 'board', width: 3, height: 3, winLength: 3 })],
-  setup: () => ({}),
-  actions,
-});
+```text
+games -> engine/sdk/public-api -> core
+composition -> core + engine + games
 ```
 
-Sans `view()`, le runtime expose automatiquement une projection générique
-versionnée : `extras.system`, `extras.kits`, `extras.actionCatalog`,
-`actions`, `pending`, `submissions` et `timers`. Une `view()` custom ne doit
-ajouter que la projection métier impossible à dériver des kits.
+Les tests d'architecture interdisent NestJS, la persistence, les imports
+profonds du runtime et les anciens formats dans `games`. Un jeu standard expose
+`game.ts`, `rules.ts`, `content.ts`, `game.spec.ts` et `manifest.json`. Des
+fichiers supplémentaires (`state.ts`, `effects.ts`, `configuration.ts`) ne sont
+créés que lorsqu'une responsabilité métier réelle le nécessite.
 
-`extras.system` et `extras.kits` sont la forme canonique de `GameSystemView`
-version 1. Les alias plats (`extras.match`, `extras.round`, `extras.cards`,
-`extras.score`, etc.) restent exposés uniquement pour compatibilité pendant la
-transition des clients. Ils ne doivent plus être utilisés par le nouveau code et
-peuvent être retirés lors de la prochaine version majeure du contrat de vue.
+Les capacités génériques sont classées par sous-domaine dans `runtime/` :
+`actions`, `automation`, `cards`, `choices`, `configuration`, `content`,
+`definitions`, `effects`, `events`, `kits`, `lifecycle`, `patterns`,
+`projection`, `recipes`, `state` et `submissions`. Un kit tenant dans un fichier
+reste sous `kits`; un domaine possédant plusieurs responsabilités obtient son
+propre dossier.
 
-### Exemple complexe
+## Contrat stable
 
-Pour un jeu de cartes à effets, le socle reste identique :
+- `defineGame()` compile patterns, composants, actions et hooks une seule fois ;
+- une partie consomme uniquement la définition compilée ;
+- le contenu statique est versionné et l'état persistant ne conserve que les
+  références et valeurs runtime ;
+- la vue publique générique est versionnée et les extensions restent sous
+  `game` ;
+- toute entrée Action, Choice ou Effect traverse le même parseur typé ;
+- une abstraction générique nouvelle doit améliorer plusieurs jeux existants.
 
-```ts
-import {
-  cardGame,
-  defineEffect,
-  defineGame,
-  gameEffects,
-  gameInput,
-} from '../../core/application/public-api';
-
-const steal = defineEffect({
-  input: gameInput.object({
-    count: gameInput.number({ integer: true, min: 1 }),
-  }),
-  apply: ({ actorPlayerId, targetPlayerIds, data, ctx }) => {
-    if (actorPlayerId == null) return;
-    for (const target of targetPlayerIds) {
-      for (let index = 0; index < data.count; index += 1) {
-        ctx.cards.stealRandom('players', target, actorPlayerId);
-      }
-    }
-  },
-});
-
-export default defineGame({
-  id: 'cards-with-effects',
-  displayName: 'Cartes à effets',
-  category: 'Exemples',
-  players: { min: 2, max: 4 },
-  patterns: [cardGame({ deckId: 'events', handId: 'players', cards: [] })],
-  setup: () => ({}),
-  actions: {},
-  effects: {
-    steal,
-  },
-});
-```
-
-Les primitives universelles restent dans `gameEffects`. Une mécanique propre à
-un jeu passe par `defineEffect` ou par une recipe locale. Une extraction vers le
-core n’est candidate qu’après plusieurs implémentations comparables.
-
-## Contrats stables
-
-- Un jeu peut utiliser `defineGame()` sans pattern. Les patterns sont des
-  accélérateurs, pas une obligation architecturale.
-- Une action fournie par un pattern ne peut être remplacée que via
-  `overrideAction(actionId, definition)`.
-- Les hooks lifecycle sont exécutés dans cet ordre : hooks issus des patterns,
-  puis hooks du jeu. L’ordre entre patterns suit l’ordre du tableau `patterns`.
-- La victoire déclarée par le jeu est évaluée avant les victoires fournies par
-  les patterns. Cet ordre est exposé par `compiled.victoryPriority`.
-- Les collisions de composants, actions, IDs de patterns et initialisations
-  sémantiques de patterns sont des erreurs de configuration.
-- Le contenu statique possède un manifest (`GameContentManifest`) et une version
-  stable. Les snapshots de partie ne doivent stocker que des IDs et de l’état
-  runtime ; le contenu complet reste dans le catalogue versionné.
+Les décisions globales de couches, vocabulaire, présentation et wiring Nest
+sont définies dans `docs/architecture/module-conventions.md` et ADR-003.

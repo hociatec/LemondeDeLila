@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   ChatMessageRecord,
   ChatNormalizedMessage,
-} from '../models/chat-message.record';
+} from '../contracts/chat-message.record';
 
 @Injectable()
 export class ChatMessagePresenterService {

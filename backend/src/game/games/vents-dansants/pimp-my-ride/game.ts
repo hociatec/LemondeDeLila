@@ -14,11 +14,7 @@ import {
 } from './rules';
 import type { PimpMyRidePlayerView, PimpMyRideState } from './state';
 
-export default defineGame<
-  PimpMyRideState,
-  typeof PIMP_MY_RIDE_ACTIONS,
-  PimpMyRidePlayerView
->({
+export default defineGame<PimpMyRideState>()({
   id: 'pimp-my-ride',
   displayName: 'Pimp My Ride',
   category: 'JeuxDePlateaux',
@@ -67,7 +63,7 @@ export default defineGame<
       ({ state, ctx }) => drawCarPart(state, ctx),
     ),
   ],
-  viewExtension: ({ state, ctx }) => {
+  viewExtension: ({ state, ctx }): PimpMyRidePlayerView => {
     const progress = ctx.players.byId((player) => {
       const carParts = currentCarParts(player.id, ctx);
       return {

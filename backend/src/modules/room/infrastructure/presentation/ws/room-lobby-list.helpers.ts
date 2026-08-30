@@ -1,4 +1,4 @@
-import { OPEN_ROOM_STATUSES } from '../../../application/models/room-status.model';
+import { OPEN_ROOM_STATUSES } from '../../../application/contracts/room-status.model';
 
 type RoomLobbyUser = {
   id: number;

@@ -1,5 +1,5 @@
 import type { GameRuntime } from '../contracts/game-runtime.interface';
-import type { GameStateEntity } from '../models/game-state.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
 import type {
   GameScheduledTask,
   GameTaskProcessor,

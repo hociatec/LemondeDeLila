@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   WsTicketScope,
   WsTicketValidationResult,
-} from '../models/ws-ticket.model';
+} from '../contracts/ws-ticket.model';
 import { WsTicketService } from './ws-ticket.service';
 import type { IncomingHttpHeaders, IncomingMessage } from 'http';
 

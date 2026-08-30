@@ -1,4 +1,4 @@
-import type { RoomUserRecord } from '../models/room-user.model';
+import type { RoomUserRecord } from '../contracts/room-user.model';
 
 export const ROOM_USER_REPOSITORY = Symbol('ROOM_USER_REPOSITORY');
 

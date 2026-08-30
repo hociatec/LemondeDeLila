@@ -9,7 +9,7 @@ describe('La Parade Sucrée declarative game', () => {
     const before =
       game.player('Alice').hand.length + game.player('Bob').hand.length;
     expect(before).toBe(13);
-    expect(game.view('Alice').hand).not.toEqual(game.view('Bob').hand);
+    expect(game.inspect.hand('Alice')).not.toEqual(game.inspect.hand('Bob'));
 
     for (
       let step = 0;
@@ -20,7 +20,7 @@ describe('La Parade Sucrée declarative game', () => {
       const actions = game.availableActions(actorId);
       const playable = actions.includes('play_card');
       if (playable) {
-        const expected = PARADE_SEQUENCE[game.view(actorId).discardCount];
+        const expected = PARADE_SEQUENCE[game.inspect.discardCount()];
         const hand = game.player(actorId).hand as string[];
         const cardId = hand.find(
           (candidate) => PARADE_CARD_BY_ID[candidate]?.value === expected,

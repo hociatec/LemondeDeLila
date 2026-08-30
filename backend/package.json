@@ -29,6 +29,9 @@
     "migration:run": "npm run typeorm -- migration:run -d dist/data-source.js",
     "migration:run:dev": "npm run typeorm -- migration:run -d src/data-source.ts",
     "test:db:migrations": "node tools/mysql-migrations-integration.cjs",
+    "test:redis:bullmq": "node tools/redis-bullmq-integration.cjs",
+    "test:integration:real": "node tools/run-real-integration.cjs",
+    "test:e2e:two-instances:real": "node tools/two-instance-real-e2e.cjs",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -42,7 +45,6 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:e2e:room:real": "node tools/room-real-e2e.cjs",
     "test:e2e:room-game:real": "node tools/room-game-real-e2e.cjs",
     "test:e2e:game:campaign:real": "node tools/game-campaign-real-e2e.cjs",
@@ -64,8 +66,10 @@
     "persistence:audit:test": "node --test tools/persistence-audit.spec.cjs",
     "security:audit": "node tools/security-boundary-audit.cjs",
     "layout:audit": "node tools/layout-architecture-audit.cjs",
-    "quality:check": "npm run quality:report && node tools/quality-check.cjs && npm run backend:audit && npm run persistence:audit:test && npm run persistence:audit && npm run security:audit && npm run layout:audit && npm run architecture:test && npm run architecture:check && npm run structure:test && npm run structure:check && npm run game-engine:audit:test && npm run game-engine:audit && npm run game:duplication",
-    "test:transverse": "jest game/core/application/helpers/game-room-run-id.helper.spec.ts game/core/application/helpers/payload-validators.helper.spec.ts game/core/application/runtime/declarative-game.runtime.spec.ts game/core/application/services/game-command-executor.service.spec.ts game/testing/architecture-tests/game/all-declarative-games.contract.spec.ts game/core/infrastructure/presentation/ws/game-ws-key-command.helper.spec.ts game/core/infrastructure/presentation/ws/game-ws-realtime-state.service.spec.ts modules/room/application/services/room-start-flow.service.spec.ts modules/update/infrastructure/persistence/wx-update-release.di.spec.ts modules/update/infrastructure/persistence/wx-update-release.service.spec.ts modules/update/infrastructure/persistence/wx-update-upload.service.spec.ts"
+    "scheduling:audit": "node tools/local-timer-audit.cjs",
+    "operability:audit": "node tools/operability-audit.cjs",
+    "quality:check": "npm run quality:report && node tools/quality-check.cjs && npm run backend:audit && npm run persistence:audit:test && npm run persistence:audit && npm run security:audit && npm run layout:audit && npm run scheduling:audit && npm run operability:audit && npm run architecture:test && npm run architecture:check && npm run structure:test && npm run structure:check && npm run game-engine:audit:test && npm run game-engine:audit && npm run game:duplication",
+    "test:transverse": "jest game/core/application/helpers/game-room-run-id.helper.spec.ts game/core/application/helpers/payload-validators.helper.spec.ts game/engine/runtime/declarative-game.runtime.spec.ts game/core/application/services/game-command-executor.service.spec.ts game/testing/architecture-tests/game/all-declarative-games.contract.spec.ts game/core/infrastructure/presentation/ws/game-ws-key-command.helper.spec.ts game/core/infrastructure/presentation/ws/game-ws-realtime-state.service.spec.ts modules/room/application/services/room-start-flow.service.spec.ts modules/update/infrastructure/persistence/wx-update-release.di.spec.ts modules/update/infrastructure/persistence/wx-update-release.service.spec.ts modules/update/infrastructure/persistence/wx-update-upload.service.spec.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

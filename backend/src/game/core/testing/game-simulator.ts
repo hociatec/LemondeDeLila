@@ -1,10 +1,10 @@
 import type { GameRuntime } from '../application/contracts/game-runtime.interface';
-import type { GameSingleActionDto } from '../application/models/game-action.model';
+import type { GameSingleActionDto } from '../application/contracts/game-action.model';
 import {
   FixedGameClock,
   StateGameRng,
-} from '../application/models/game-execution-context.model';
-import type { GameStateEntity } from '../application/models/game-state.model';
+} from '../application/contracts/game-execution-context.model';
+import type { GameStateEntity } from '../application/contracts/game-state.model';
 import { GameExecutionScopeService } from '../application/services/game-execution-scope.service';
 
 export type GameSimulationStatus =

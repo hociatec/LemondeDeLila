@@ -21,7 +21,7 @@ import {
 import type {
   AdminContactItem,
   AdminContactStatus,
-} from '../models/admin-contact.model';
+} from '../contracts/admin-contact.model';
 import {
   ADMIN_CONTACT_KIND,
   normalizeAdminContactPayload,

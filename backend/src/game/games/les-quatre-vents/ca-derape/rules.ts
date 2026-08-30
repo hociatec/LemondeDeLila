@@ -1,11 +1,8 @@
 import {
   commonStatuses,
-  defineAction,
   drawEvent,
   gameEffects,
-  gameInput,
   positionOf,
-  rejectRule,
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import {
@@ -28,50 +25,6 @@ export const CA_LAST_MOVE = 'ca-derape.last-move';
 export const CA_IDLE_TURNS = 'ca-derape.idle-turns';
 export const CA_MIRROR_ROLL = 'ca-derape.mirror-roll';
 export const CA_NEXT_PLAYER_DELTA = 'ca-derape.next-player-delta';
-
-export const roll = defineAction<CaDerapeState, Record<string, never>>({
-  input: gameInput.object({}),
-  documentation: 'Lance le dé et résout les cartes Situation en chaîne.',
-  execute: ({ state, actor, ctx }) => {
-    const mirroredFrom = mirrorSource(actor.id, ctx);
-    let value =
-      mirroredFrom == null ? 0 : ctx.resources.get(mirroredFrom, CA_LAST_ROLL);
-    if (value <= 0) value = ctx.dice.roll('main').total;
-    ctx.status.remove(actor.id, CA_MIRROR_ROLL);
-    if (ctx.status.consume(actor.id, commonStatuses.doubleRoll)) {
-      value *= 2;
-    }
-    ctx.resources.set(actor.id, CA_LAST_ROLL, value);
-    let delta = value + ctx.counters.get(CA_NEXT_PLAYER_DELTA);
-    ctx.counters.set(CA_NEXT_PLAYER_DELTA, 0);
-    if (ctx.status.consume(actor.id, commonStatuses.doubleMove)) {
-      delta *= 2;
-    }
-    incrementIdleCounters(actor.id, delta, ctx);
-    movePlayer(state, actor.id, delta, 0, true, ctx);
-    ctx.events.message('game.dice.rolled', {
-      playerId: actor.id,
-      diceId: 'main',
-      total: value,
-    });
-    ctx.turn.complete({ waiting: ctx.choice.current() != null });
-  },
-});
-
-export const CA_DERAPE_ACTIONS = { roll };
-
-export function resolveDeltaChoice(value: number, ctx: RuleContext): void {
-  const pending = ctx.choice.consumeContinuation<{
-    kind: 'next-delta';
-    actorId: number;
-  }>();
-  if (pending?.kind !== 'next-delta') {
-    rejectRule('Choix Ça Dérape inattendu');
-  }
-  if (value !== -1 && value !== 1) rejectRule('Delta invalide');
-  ctx.counters.set(CA_NEXT_PLAYER_DELTA, value);
-  ctx.turn.complete({ waiting: ctx.choice.current() != null });
-}
 
 function resolveCaDerapeTile(
   _state: CaDerapeState,
@@ -362,7 +315,7 @@ export function applyPenaltyAwareMove(
   movePlayer(state, actorId, delta, depth, true, ctx);
 }
 
-function movePlayer(
+export function movePlayer(
   state: CaDerapeState,
   playerId: number,
   delta: number,
@@ -395,7 +348,7 @@ function addUntilUsedStatus(
   ctx.status.add(playerId, statusId, { scope: 'until-used' });
 }
 
-function incrementIdleCounters(
+export function incrementIdleCounters(
   actorId: number,
   delta: number,
   ctx: RuleContext,
@@ -405,7 +358,10 @@ function incrementIdleCounters(
   if (delta !== 0) ctx.resources.set(actorId, CA_IDLE_TURNS, 0);
 }
 
-function mirrorSource(playerId: number, ctx: RuleContext): number | null {
+export function mirrorSource(
+  playerId: number,
+  ctx: RuleContext,
+): number | null {
   const value = ctx.status.get(playerId, CA_MIRROR_ROLL)?.data.sourcePlayerId;
   return typeof value === 'number' ? value : null;
 }

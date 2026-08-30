@@ -1,5 +1,5 @@
-import type { GamePendingEvent } from '../models/game-event.model';
-import type { GameStateEntity } from '../models/game-state.model';
+import type { GamePendingEvent } from '../contracts/game-event.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
 
 export const GAME_STATE_STORE = Symbol('GAME_STATE_STORE');
 

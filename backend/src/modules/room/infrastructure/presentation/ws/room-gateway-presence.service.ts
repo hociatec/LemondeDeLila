@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { bestEffort } from '@shared/utils/public-api';
-import { RoomMembershipFacadeService } from '../../../application/services/room-membership-facade.service';
-import { RoomStateService } from '../../../application/services/room-state.service';
+import { RoomMembershipFacadeService } from '../../../application/services/membership/room-membership-facade.service';
+import { RoomStateService } from '../../../application/services/state/room-state.service';
 import type { ClientMeta, ClientRole } from './room-gateway.types';
 import { hasUserConnectionsInRoom } from './room-socket-membership.helpers';
 

@@ -1,6 +1,6 @@
 import { stringOrEmpty } from '@shared/utils/public-api';
-import type { NotificationInboxPayload } from '../models/notification-inbox-item.model';
-import type { AdminContactStatus } from '../models/admin-contact.model';
+import type { NotificationInboxPayload } from '../contracts/notification-inbox-item.model';
+import type { AdminContactStatus } from '../contracts/admin-contact.model';
 
 export const ADMIN_CONTACT_KIND = 'admin_contact';
 

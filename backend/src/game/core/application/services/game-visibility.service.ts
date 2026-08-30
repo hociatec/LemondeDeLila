@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import type { GameStateEntity } from '../models/game-state.model';
-import type { GameStateWithActions } from '../models/game-action.model';
-import type { PendingState } from '../models/game-state.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
+import type { GameStateWithActions } from '../contracts/game-action.model';
+import type { PendingState } from '../contracts/game-state.model';
 
 @Injectable()
 export class GameVisibilityService {

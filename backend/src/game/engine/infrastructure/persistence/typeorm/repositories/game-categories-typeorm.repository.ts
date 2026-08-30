@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { GameCategoryAssignmentRecord } from '../../../../application/models/game-category-assignment.model';
-import type { GameCategoryRecord } from '../../../../application/models/game-category.model';
+import type { GameCategoryAssignmentRecord } from '../../../../application/contracts/game-category-assignment.model';
+import type { GameCategoryRecord } from '../../../../application/contracts/game-category.model';
 import type { GameCategoriesRepository } from '../../../../application/ports/game-categories.repository';
 import { GameCategoryAssignmentEntity } from '../entities/game-category-assignment.entity';
 import { GameCategoryEntity } from '../entities/game-category.entity';

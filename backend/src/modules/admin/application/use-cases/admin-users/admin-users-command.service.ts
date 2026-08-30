@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { isUniqueConstraintViolation } from '../../../../../platform/database/public-api';
 import {
   ADMIN_USER_REPOSITORY,
   type AdminUserRepository,
@@ -179,10 +180,4 @@ export class AdminUsersCommandService {
       throw error;
     }
   }
-}
-
-function isUniqueConstraintViolation(error: unknown): boolean {
-  if (typeof error !== 'object' || error === null) return false;
-  const candidate = error as { code?: unknown; errno?: unknown };
-  return candidate.code === 'ER_DUP_ENTRY' || candidate.errno === 1062;
 }

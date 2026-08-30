@@ -15,7 +15,7 @@ describe('Mon Village, Mon Histoire declarative game', () => {
     expect(game.state().game.lastRoll).not.toBeNull();
     const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
     expect(kits.collections.village.byPlayer['1']?.total).toBe(1);
-    expect(game.view(1).positions[1]).toBeGreaterThan(0);
+    expect(game.inspect.positions()[1]).toBeGreaterThan(0);
     expect(await game.replay()).toEqual(game.state());
   });
 

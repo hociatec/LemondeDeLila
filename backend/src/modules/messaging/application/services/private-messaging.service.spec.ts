@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import type { PrivateMessageRecord } from '../models/private-message.model';
+import type { PrivateMessageRecord } from '../contracts/private-message.model';
 import { MessageValidatorService } from './message-validator.service';
 import { PrivateMessagingService } from './private-messaging.service';
 
@@ -64,5 +64,41 @@ describe('PrivateMessagingService', () => {
     await expect(service.markRead(1, 'message-1')).rejects.toBeInstanceOf(
       ForbiddenException,
     );
+  });
+
+  it('keeps sender and recipient deletion independent and purge-owned', async () => {
+    const { service, messages } = setup();
+    const row = message();
+    messages.findByMessageId.mockResolvedValue(row);
+
+    await service.delete(1, row.messageId);
+    expect(row.deletedBySenderAt).toBeInstanceOf(Date);
+    expect(row.deletedByRecipientAt).toBeNull();
+    await expect(service.purge(2, row.messageId)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+
+    await service.delete(2, row.messageId);
+    await service.purge(2, row.messageId);
+    expect(messages.remove).toHaveBeenCalledWith(row.messageId);
+  });
+
+  it('does not overwrite read timestamps or save messages already read', async () => {
+    const { service, messages } = setup();
+    const row = message();
+    row.readByRecipientAt = new Date('2026-01-01T00:00:00Z');
+    messages.findByMessageId.mockResolvedValue(row);
+    await service.markRead(2, row.messageId);
+    expect(messages.save).not.toHaveBeenCalled();
+  });
+
+  it('validates pagination peers and clamps every mailbox boundary', async () => {
+    const { service, messages } = setup();
+    await service.conversation(1, 2, -5);
+    await service.outbox(1, Number.POSITIVE_INFINITY);
+    await service.deleted(1, 0);
+    expect(messages.findConversation).toHaveBeenCalledWith(1, 2, 1);
+    expect(messages.findOutbox).toHaveBeenCalledWith(1, 500);
+    expect(messages.findDeleted).toHaveBeenCalledWith(1, 100);
   });
 });

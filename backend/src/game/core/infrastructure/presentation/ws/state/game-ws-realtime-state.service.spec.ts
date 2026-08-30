@@ -1,5 +1,5 @@
 import type { GameRuntime } from '../../../../application/contracts/game-runtime.interface';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
 import { GameRoomStateFactory } from '../../../../application/services/game-room-state.factory';
 import { GameWsRealtimeStateService } from './game-ws-realtime-state.service';
 

@@ -8,8 +8,8 @@ describe('Dame Nature declarative game', () => {
   it('keeps opponents hands private while offering explicit actions', async () => {
     const game = testGame(gameDefinition).players(['Anne', 'Bob']).seed(31);
     await game.start();
-    const hiddenCard = game.view(2).hand[0];
-    expect(game.view(1).hand).not.toContain(hiddenCard);
+    const hiddenCard = game.inspect.hand(2)[0];
+    expect(game.inspect.hand(1)).not.toContain(hiddenCard);
     const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
     expect(kits.counters['dame-nature.pollution']).toBe(0);
   });

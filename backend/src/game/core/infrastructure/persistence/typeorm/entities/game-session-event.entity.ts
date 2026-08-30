@@ -1,5 +1,5 @@
 import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
-import type { GameEvent } from '../../../../application/models/game-event.model';
+import type { GameEvent } from '../../../../application/contracts/game-event.model';
 
 @Entity({ name: 'game_session_events' })
 @Index('IDX_game_session_events_version', ['roomId', 'gameType', 'version'])

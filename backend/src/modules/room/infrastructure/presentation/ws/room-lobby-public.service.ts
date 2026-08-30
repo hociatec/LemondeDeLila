@@ -5,10 +5,10 @@ import {
   ROOM_LOBBY_REPOSITORY,
   type RoomLobbyRepository,
 } from '../../../application/ports/room-lobby.repository';
-import { RoomLobbyPolicyService } from '../../../application/services/room-lobby-policy.service';
-import { RoomMembershipFacadeService } from '../../../application/services/room-membership-facade.service';
-import { RoomRealtimeTrackerService } from '../../../application/services/room-realtime-tracker.service';
-import { RoomStateService } from '../../../application/services/room-state.service';
+import { RoomLobbyPolicyService } from '../../../application/services/lobby/room-lobby-policy.service';
+import { RoomMembershipFacadeService } from '../../../application/services/membership/room-membership-facade.service';
+import { RoomRealtimeTrackerService } from '../../../application/services/state/room-realtime-tracker.service';
+import { RoomStateService } from '../../../application/services/state/room-state.service';
 import type {
   RoomsPublicJoinDto,
   RoomsPublicListDto,

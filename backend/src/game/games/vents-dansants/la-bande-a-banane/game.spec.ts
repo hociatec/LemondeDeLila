@@ -6,13 +6,13 @@ describe('La Bande à Banane declarative game', () => {
     const game = testGame(gameDefinition).players(['Alice', 'Bob']).seed(23);
     await game.start();
 
-    expect(game.view(1).hand).toHaveLength(6);
-    expect(game.view(2).hand).toHaveLength(5);
-    expect(JSON.stringify(game.view(2))).not.toContain(game.view(1).hand[0]);
+    expect(game.inspect.hand(1)).toHaveLength(6);
+    expect(game.inspect.hand(2)).toHaveLength(5);
+    expect(JSON.stringify(game.view(2))).not.toContain(game.inspect.hand(1)[0]);
 
     await game.as(1).do('pass', {});
 
-    expect(game.view(2).hand).toHaveLength(6);
+    expect(game.inspect.hand(2)).toHaveLength(6);
     expect(await game.replay()).toEqual(game.state());
   });
 

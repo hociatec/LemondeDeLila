@@ -4,7 +4,7 @@ import {
   CatalogGame,
   CategoryNode,
   FlatCategory,
-} from '../../models/catalog-game.record';
+} from '../../contracts/catalog-game.record';
 import { CatalogCacheService } from '../../services/catalog-cache.service';
 import { GetCatalogGameService } from './get-catalog-game.service';
 import { ListCatalogCategoriesService } from './list-catalog-categories.service';

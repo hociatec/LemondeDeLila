@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { ChatSettings } from '../../../../application/models/chat-settings.record';
+import { ChatSettings } from '../../../../application/contracts/chat-settings.record';
 import { ChatSettingsRepository } from '../../../../application/ports/chat-settings.repository';
 import { ChatSettingsEntity } from '../entities/chat-settings.entity';
 

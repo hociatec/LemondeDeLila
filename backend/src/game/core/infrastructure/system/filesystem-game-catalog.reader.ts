@@ -6,7 +6,7 @@ import type { GameCatalogReader } from '../../application/ports/game-catalog.rea
 import type {
   GameCatalogEntryRecord,
   GameManifestRecord,
-} from '../../application/models/game-catalog-entry.model';
+} from '../../application/contracts/game-catalog-entry.model';
 
 @Injectable()
 export class FilesystemGameCatalogReader implements GameCatalogReader {

@@ -2,7 +2,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import type { PresenceUserRepository } from '../../../../application/ports/presence-user.repository';
-import type { PresenceUserChatBan } from '../../../../application/models/presence-user-chat-ban.model';
+import type { PresenceUserChatBan } from '../../../../application/contracts/presence-user-chat-ban.model';
 import { User } from '../../../../../user/public-api';
 
 @Injectable()

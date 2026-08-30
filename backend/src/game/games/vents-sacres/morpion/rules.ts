@@ -11,7 +11,7 @@ import {
 import type { NoGameState as MorpionState } from '../../../engine/sdk/public-api';
 
 type PlayInput = { x: number; y: number };
-const MARK_PLACED = defineEvent({
+export const MARK_PLACED = defineEvent({
   type: 'morpion.mark.placed',
   data: gameInput.object({
     x: gameInput.number({ integer: true, min: 0, max: 2 }),

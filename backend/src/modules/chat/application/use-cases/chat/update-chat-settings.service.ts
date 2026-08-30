@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { ChatSettings } from '../../models/chat-settings.record';
+import { ChatSettings } from '../../contracts/chat-settings.record';
 import {
   CHAT_SETTINGS_REPOSITORY,
   type ChatSettingsRepository,

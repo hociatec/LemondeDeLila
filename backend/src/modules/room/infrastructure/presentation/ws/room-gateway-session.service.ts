@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import type { RoomPayload } from '../../../application/models/room-payload.model';
-import { RoomClientPolicyService } from '../../../application/services/room-client-policy.service';
-import { RoomStateService } from '../../../application/services/room-state.service';
+import type { RoomPayload } from '../../../application/contracts/room-payload.model';
+import { RoomClientPolicyService } from '../../../application/services/membership/room-client-policy.service';
+import { RoomStateService } from '../../../application/services/state/room-state.service';
 import { RoomChatStore } from './room-chat-state';
 import { RoomGatewaySessionPresenter } from './room-gateway-session.presenter';
 import type { ClientMeta } from './room-gateway.types';

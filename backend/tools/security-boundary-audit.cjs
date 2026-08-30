@@ -70,7 +70,7 @@ function auditHttpController(file, source) {
 }
 
 function audit() {
-  return walk().flatMap((file) => {
+  const violations = walk().flatMap((file) => {
     const name = relative(file);
     if (/\.(spec|test|e2e-spec)\.ts$/.test(name)) return [];
     const source = fs.readFileSync(file, 'utf8');
@@ -90,6 +90,29 @@ function audit() {
         : []),
     ];
   });
+  const ownershipContracts = [
+    ['modules/messaging/infrastructure/presentation/ws/messaging-ws.handler.ts', /messaging\.(?:delete|restore|purge|markRead)\(user\.id/],
+    ['modules/social/infrastructure/presentation/ws/social-ws.handler.ts', /social\.getProfile\(user\.id,\s*targetId\)/],
+    ['modules/stats/infrastructure/presentation/ws/stats-ws.handler.ts', /social\.getProfile\(user\.id,\s*dto\.userId\)/],
+    ['modules/vault/infrastructure/presentation/ws/vault-ws.handler.ts', /vault\.(?:save|restore|delete)\(user\.id/],
+    ['modules/room/infrastructure/presentation/ws/room-lobby-ws.handler.ts', /requireUser\(session\)/],
+  ];
+  for (const [name, contract] of ownershipContracts) {
+    const source = fs.readFileSync(path.join(root, name), 'utf8');
+    if (!contract.test(source)) violations.push(`${name}: garde ownership/IDOR absente`);
+  }
+  const inputContracts = [
+    ['main.ts', /json\(\{ limit: '256kb' \}\)/],
+    ['main.ts', /parameterLimit: 200/],
+    ['platform/ws/infrastructure/platform/lila-ws.adapter.ts', /DEFAULT_MAX_PAYLOAD_BYTES/],
+    ['modules/update/infrastructure/persistence/wx-update-upload.service.ts', /ENOSPC/],
+    ['shared/utils/atomic-file.utils.ts', /rename/],
+  ];
+  for (const [name, contract] of inputContracts) {
+    const source = fs.readFileSync(path.join(root, name), 'utf8');
+    if (!contract.test(source)) violations.push(`${name}: garde de saturation/entrée absente`);
+  }
+  return violations;
 }
 
 if (require.main === module) {

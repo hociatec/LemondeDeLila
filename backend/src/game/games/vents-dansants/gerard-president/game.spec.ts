@@ -11,7 +11,7 @@ describe('Gérard président declarative game', () => {
       .seed(53);
     await game.start();
     await game.as(1).do('set_theme', {});
-    const name = game.view(2).hand[0];
+    const name = game.inspect.hand(2)[0];
     await game.as(2).do('play_name', { names: [name] });
     const kits = (game.view(3) as unknown as { kits: StableGameKitsView }).kits;
     const session = kits.submissions.sessions['gerard.names'];

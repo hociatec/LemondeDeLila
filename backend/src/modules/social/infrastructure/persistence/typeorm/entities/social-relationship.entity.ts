@@ -6,7 +6,6 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../../../../user/public-api';
@@ -14,7 +13,6 @@ import { User } from '../../../../../user/public-api';
 export type SocialRelationshipStatus = 'pending' | 'accepted' | 'blocked';
 
 @Entity({ name: 'social_relationships' })
-@Unique('uniq_social_relationship_status', ['requester', 'addressee', 'status'])
 @Index('idx_social_relationship_status', ['status'])
 @Index('idx_social_relationship_requester', ['requester'])
 @Index('idx_social_relationship_addressee', ['addressee'])

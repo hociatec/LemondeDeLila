@@ -22,7 +22,34 @@ describe('database migrations contract', () => {
 
   it('places the newest migrations after the game-session baseline', () => {
     expect(basename(files.at(-1) ?? '')).toBe(
-      '1770600000000-AuditHotQueryIndexes.ts',
+      '1770800000000-EnforceSingleActiveGameMatch.ts',
     );
+  });
+
+  it('keeps the initial schema creation and teardown dependency-ordered', () => {
+    const source = readFileSync(
+      join(directory, '1734800000000-InitSchema.ts'),
+      'utf8',
+    );
+    const created = [
+      ...source.matchAll(
+        /name: '(users|chat_messages|messaging_private_messages|rooms|room_participants|room_bots|bot_names)'/g,
+      ),
+    ]
+      .map((match) => match[1])
+      .filter((name, index, all) => all.indexOf(name) === index);
+    const dropped = [...source.matchAll(/dropTable\('(.*?)'/g)].map(
+      (match) => match[1],
+    );
+    expect(created).toEqual([
+      'users',
+      'chat_messages',
+      'messaging_private_messages',
+      'rooms',
+      'room_participants',
+      'room_bots',
+      'bot_names',
+    ]);
+    expect(dropped).toEqual([...created].reverse());
   });
 });

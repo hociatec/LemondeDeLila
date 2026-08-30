@@ -14,7 +14,7 @@ import {
 import { GRANDE_MINE_EFFECTS } from './effects';
 import type { GrandeMineState } from './types';
 
-export default defineGame<GrandeMineState, typeof GRANDE_MINE_ACTIONS>({
+export default defineGame<GrandeMineState>()({
   id: 'la-grande-mine-de-barbak',
   displayName: 'La Grande Mine de Barbak !',
   category: 'JeuxDePlateaux',

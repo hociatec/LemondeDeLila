@@ -1,4 +1,5 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { isUniqueConstraintViolation } from '../../../../platform/database/public-api';
 import {
   SOCIAL_RELATIONSHIP_REPOSITORY,
   type SocialDirection,
@@ -12,6 +13,7 @@ import {
   SOCIAL_USER_READER,
   type SocialUserReader,
 } from '../ports/social-user.repository';
+import type { SocialRelationshipRecord } from '../contracts/social-relationship.model';
 
 @Injectable()
 export class SocialRelationshipService {
@@ -86,55 +88,34 @@ export class SocialRelationshipService {
       requesterId,
       addresseeId,
     );
-    if (existing.length > 0) {
-      if (existing.some((r) => r.status === 'blocked')) {
-        throw new HttpException('Relation bloquee.', 403);
-      }
-      if (existing.some((r) => r.status === 'accepted')) {
-        return { status: 'accepted' };
-      }
-      const pending = existing.find((r) => r.status === 'pending');
-      if (pending) {
-        if (
-          pending.requester?.id === requesterId &&
-          pending.addressee?.id === addresseeId
-        ) {
-          return {
-            id: pending.id,
-            status: pending.status,
-            createdAt: pending.createdAt,
-          };
-        }
-
-        if (
-          pending.requester?.id === addresseeId &&
-          pending.addressee?.id === requesterId
-        ) {
-          const saved = await this.relationships.save({
-            ...pending,
-            status: 'accepted',
-          });
-
-          await this.notifications.notifyFriendAccepted(addresseeId, {
-            userId: requesterId,
-          });
-
-          return {
-            id: saved.id,
-            status: saved.status,
-            updatedAt: saved.updatedAt,
-          };
-        }
-
-        return { status: 'pending' };
-      }
-    }
-
-    const saved = await this.relationships.create(
+    const resolved = await this.resolveExistingFriendRequest(
       requesterId,
       addresseeId,
-      'pending',
+      existing,
     );
+    if (resolved) return resolved;
+
+    let saved;
+    try {
+      saved = await this.relationships.create(
+        requesterId,
+        addresseeId,
+        'pending',
+      );
+    } catch (error) {
+      if (!isUniqueConstraintViolation(error)) throw error;
+      const concurrent = await this.relationships.findRelationsBetween(
+        requesterId,
+        addresseeId,
+      );
+      const relation = concurrent[0];
+      if (!relation) throw error;
+      return {
+        id: relation.id,
+        status: relation.status,
+        createdAt: relation.createdAt,
+      };
+    }
 
     await this.notifications.notifyFriendRequested(addresseeId, {
       requesterId,
@@ -144,6 +125,51 @@ export class SocialRelationshipService {
       id: saved.id,
       status: saved.status,
       createdAt: saved.createdAt,
+    };
+  }
+
+  private async resolveExistingFriendRequest(
+    requesterId: number,
+    addresseeId: number,
+    existing: SocialRelationshipRecord[],
+  ) {
+    if (existing.some((relation) => relation.status === 'blocked')) {
+      throw new HttpException('Relation bloquee.', 403);
+    }
+    if (existing.some((relation) => relation.status === 'accepted')) {
+      return { status: 'accepted' };
+    }
+
+    const pending = existing.find((relation) => relation.status === 'pending');
+    if (!pending) return null;
+    if (
+      pending.requester.id === requesterId &&
+      pending.addressee.id === addresseeId
+    ) {
+      return {
+        id: pending.id,
+        status: pending.status,
+        createdAt: pending.createdAt,
+      };
+    }
+    if (
+      pending.requester.id !== addresseeId ||
+      pending.addressee.id !== requesterId
+    ) {
+      return { status: 'pending' };
+    }
+
+    const saved = await this.relationships.save({
+      ...pending,
+      status: 'accepted',
+    });
+    await this.notifications.notifyFriendAccepted(addresseeId, {
+      userId: requesterId,
+    });
+    return {
+      id: saved.id,
+      status: saved.status,
+      updatedAt: saved.updatedAt,
     };
   }
 

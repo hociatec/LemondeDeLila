@@ -28,7 +28,7 @@ const familySets = cards.sets({
   ),
 });
 
-export default defineGame<NoGameState, typeof DAME_NATURE_ACTIONS>({
+export default defineGame<NoGameState>()({
   id: 'dame-nature',
   displayName: 'Dame Nature',
   category: 'JeuxDePlateaux',

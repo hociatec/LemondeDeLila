@@ -1,4 +1,4 @@
-import type { RoomParticipantRecord } from '../models/room-participant.model';
+import type { RoomParticipantRecord } from '../contracts/room-participant.model';
 
 export type RoomParticipantCreateRecord = Omit<
   Partial<RoomParticipantRecord>,

@@ -6,7 +6,11 @@ import { UpdateBugReportService } from './update-bug-report.service';
 import { UpdateBugReportStatusService } from './update-bug-report-status.service';
 import { BugReportStatusNormalizerService } from './bug-report-status-normalizer.service';
 import type { BugReportRepository } from '../../ports/bug-report.repository';
-import type { BugReportRecord } from '../../models/bug-report.record';
+import type { BugReportRecord } from '../../contracts/bug-report.record';
+import { AddBugReportCommentService } from '../bug-report-comments/add-bug-report-comment.service';
+import { CountBugReportCommentsService } from '../bug-report-comments/count-bug-report-comments.service';
+import { ListBugReportCommentsService } from '../bug-report-comments/list-bug-report-comments.service';
+import type { BugReportCommentRepository } from '../../ports/bug-report.repository';
 
 type RepoStub = {
   save(entity: BugReportRecord): Promise<BugReportRecord>;
@@ -54,6 +58,88 @@ describe('Bug report use cases', () => {
     const got = await getBugReport.execute(created.id);
     expect(got?.subject).toBe('Sujet');
     expect(got?.content).toBe('Contenu');
+  });
+
+  it('bounds comments, deduplicates counts and refuses comments on invisible reports', async () => {
+    const reports = createRepoStub();
+    const comments = {
+      save: jest.fn(async (record) => record),
+      listByReportId: jest.fn().mockResolvedValue([]),
+      countByReportIds: jest.fn().mockResolvedValue({ report: 2 }),
+    };
+    const commentRepo = comments as unknown as BugReportCommentRepository;
+
+    const add = new AddBugReportCommentService(
+      commentRepo,
+      reports as unknown as BugReportRepository,
+    );
+    await expect(
+      add.execute({
+        reportId: 'missing',
+        content: 'secret',
+        createdByUserId: 1,
+        createdByUsername: 'admin',
+      }),
+    ).resolves.toBeNull();
+    expect(comments.save).not.toHaveBeenCalled();
+
+    await new ListBugReportCommentsService(commentRepo).execute(' report ', {
+      offset: -10,
+      limit: 50_000,
+    });
+    expect(comments.listByReportId).toHaveBeenCalledWith('report', {
+      offset: 0,
+      limit: 100,
+    });
+
+    await new CountBugReportCommentsService(commentRepo).execute([
+      ' report ',
+      'report',
+      '',
+    ]);
+    expect(comments.countByReportIds).toHaveBeenCalledWith(['report']);
+  });
+
+  it('keeps concurrent comments distinct on the same visible report', async () => {
+    const reports = createRepoStub();
+    const now = new Date();
+    await reports.save({
+      id: 'report',
+      subject: 'Sujet',
+      content: 'Contenu',
+      status: 'pending',
+      createdByUserId: 1,
+      createdByUsername: 'admin',
+      createdAt: now,
+      updatedAt: now,
+    });
+    const savedIds = new Set<string>();
+    const comments = {
+      save: jest.fn(async (record) => {
+        savedIds.add(record.id);
+        return record;
+      }),
+      listByReportId: jest.fn(),
+      countByReportIds: jest.fn(),
+    } as unknown as BugReportCommentRepository;
+    const add = new AddBugReportCommentService(
+      comments,
+      reports as unknown as BugReportRepository,
+    );
+
+    const created = await Promise.all(
+      Array.from({ length: 16 }, (_, index) =>
+        add.execute({
+          reportId: 'report',
+          content: `comment-${index}`,
+          createdByUserId: index + 1,
+          createdByUsername: `admin-${index}`,
+        }),
+      ),
+    );
+
+    expect(created).not.toContain(null);
+    expect(savedIds.size).toBe(16);
   });
 
   it('updates, normalizes status and deletes', async () => {

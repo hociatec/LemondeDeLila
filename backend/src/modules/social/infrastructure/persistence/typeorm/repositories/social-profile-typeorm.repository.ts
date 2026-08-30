@@ -6,7 +6,7 @@ import type {
   SocialProfileEndgameMessages,
   SocialProfileRepository,
 } from '../../../../application/ports/social-profile.repository';
-import type { SocialProfileRecord } from '../../../../application/models/social-profile.model';
+import type { SocialProfileRecord } from '../../../../application/contracts/social-profile.model';
 import { SocialProfileUserRelationMissingError } from '../../../../domain/errors/social-domain.errors';
 import { User } from '../../../../../user/public-api';
 import { SocialProfileEntity } from '../entities/social-profile.entity';

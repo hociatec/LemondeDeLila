@@ -3,11 +3,9 @@ import type {
   GameStateMetadata,
   GameStateEntity,
   PlayerStateEntity,
-} from '../models/game-state.model';
-import {
-  ensureSeededRng,
-  seededShuffle,
-} from '../../../../shared/utils/public-api';
+} from '../contracts/game-state.model';
+import { ensureSeededRng } from '../random/seeded-rng';
+import { seededShuffle } from '../random/seeded-shuffle';
 import { resolveGameStateRunId } from '../helpers/game-room-run-id.helper';
 import { gameNowIso } from './game-execution-scope.service';
 

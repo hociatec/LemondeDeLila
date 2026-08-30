@@ -19,7 +19,7 @@ import {
   SOUND_KEYS,
   SoundKey,
   SoundManifest,
-} from '../../application/models/sound-manifest.record';
+} from '../../application/contracts/sound-manifest.record';
 import {
   NOTIFICATION_DISPATCHER,
   type NotificationDispatcher,
@@ -76,6 +76,7 @@ export class SoundsService {
           url: null,
           updatedAt,
         }),
+      warn: (message) => this.logger.warn(message),
       now: () => new Date().toISOString(),
     });
     this.tableAmbiences = new SoundsTableAmbiencesManager({

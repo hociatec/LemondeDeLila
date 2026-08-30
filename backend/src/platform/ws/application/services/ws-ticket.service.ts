@@ -11,7 +11,7 @@ import {
   verify as jwtVerify,
 } from 'jsonwebtoken';
 import { randomBytes, randomUUID } from 'crypto';
-import { WsTicketPayload, WsTicketScope } from '../models/ws-ticket.model';
+import { WsTicketPayload, WsTicketScope } from '../contracts/ws-ticket.model';
 import {
   WS_RUNTIME_CONFIG,
   type WsRuntimeConfig,

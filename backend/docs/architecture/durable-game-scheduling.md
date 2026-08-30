@@ -27,3 +27,16 @@ du moteur.
 Les heartbeats WebSocket, délais de déconnexion et regroupements très courts ne
 sont pas des échéances métier et restent volontairement locaux. Aucun polling
 MySQL n'est utilisé pour la planification.
+
+`room-auto-cleanup` est un balayage périodique idempotent : après redémarrage il
+recalcule les rooms éligibles depuis MySQL et ne porte aucune échéance métier.
+La programmation d'une mise à jour client par un administrateur est une commande
+d'exploitation éphémère, volontairement annulée au redémarrage ; elle ne modifie
+aucun agrégat avant sa diffusion. Les timeouts audio/HTTP, debounce, reconnexion,
+présence et délai de déconnexion sont également locaux et possédés par un hook de
+destruction.
+
+`npm run scheduling:audit` inventorie chaque appel local à `setTimeout` ou
+`setInterval`, vérifie son propriétaire et interdit toute nouvelle utilisation
+non classée. Une échéance durable nouvelle doit passer par un port de scheduler,
+jamais être ajoutée à cette liste par commodité.

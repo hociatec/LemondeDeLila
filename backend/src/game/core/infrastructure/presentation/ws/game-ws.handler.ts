@@ -4,7 +4,7 @@ import type { WsSession } from '../../../../../platform/realtime/public-api';
 import { PayloadValidationService } from '../../../../../platform/validation/public-api';
 import { GameContentService } from '../../../../engine/public-api';
 import { GameModuleOverviewRegistryService } from '../../../application/services/game-module-overview.service';
-import type { GameSingleActionDto } from '../../../application/models/game-action.model';
+import type { GameSingleActionDto } from '../../../application/contracts/game-action.model';
 import { GameRulesDto } from './dto/game-rules.ws.dto';
 import { GameWsCommandMapper } from './game-ws-command.mapper';
 import {
@@ -21,7 +21,7 @@ import { GameCommandExecutorService } from '../../../application/services/game-c
 import { GameRoomCommandQueueService } from '../../../application/services/game-room-command-queue.service';
 import { gameNowMs } from '../../../application/services/game-execution-scope.service';
 import { GameRegistryService } from '../../../application/services/game-registry.service';
-import { GAMEPLAY_MECHANICS_CATALOG } from '../../../application/runtime/definitions/mechanics-catalog';
+import { GAMEPLAY_MECHANICS_CATALOG } from '../../../../engine/runtime/definitions/mechanics-catalog';
 
 @Injectable()
 export class GameWsHandler {

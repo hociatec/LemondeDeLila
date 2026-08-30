@@ -5,7 +5,7 @@ import type {
   BotNameRepository,
   CreateBotNameInput,
 } from '../../../../application/ports/bot-name.repository';
-import type { BotNameRecord } from '../../../../application/models/bot-name.record';
+import type { BotNameRecord } from '../../../../application/contracts/bot-name.record';
 import { BotName } from '../entities/bot-name.entity';
 
 @Injectable()

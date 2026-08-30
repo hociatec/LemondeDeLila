@@ -7,19 +7,28 @@ Un domaine métier expose `public-api.ts` et ne crée que les dossiers utiles :
 ```text
 modules/feature/
   domain/          règles, entités, value objects et erreurs sans Nest/DB/Redis
-  application/     commandes, queries, résultats, use-cases et ports
-  infrastructure/  adapters TypeORM, Redis, filesystem et processus
-  presentation/    controllers, gateways, DTO de transport et presenters
+  application/     commandes, queries, résultats, contrats, use-cases et ports
+  infrastructure/  adapters techniques entrants et sortants
+    presentation/  controllers, gateways, DTO de transport et presenters
+    persistence/   adapters de stockage
   module/           composition Nest lorsque le wiring est réellement volumineux
   public-api.ts
 ```
+
+La présentation est une frontière logique distincte de la persistence, mais
+reste physiquement un adapter entrant sous `infrastructure`. Cette convention
+évite une cinquième couche racine tout en conservant la direction
+`presentation -> application`. Elle est uniforme dans les modules ; déplacer
+les 148 fichiers vers un dossier frère ne modifierait ni leur responsabilité ni
+leurs dépendances.
 
 Pour un gros domaine, `application` est organisé par capacité (`membership`,
 `lifecycle`, `lobby`, `maintenance`) plutôt que par suffixe. Un use-case porte une
 action applicative d'entrée ; un service applicatif fournit une capacité partagée
 par plusieurs use-cases. `domain` n'est jamais créé uniquement pour satisfaire la
-forme. Les modèles applicatifs sont nommés selon leur rôle : command, query,
-result, DTO, projection ou contract.
+forme. Les données applicatives sont sous `application/contracts` et nommées
+selon leur rôle : command, query, result, DTO, projection, record ou contract.
+Le dossier générique `application/models` est interdit par l'audit de layout.
 
 Les dépendances suivent `presentation -> application -> domain` et
 `infrastructure -> application/domain`. Le domaine et l'application n'importent

@@ -15,7 +15,7 @@ const TAXI_PHASES = defineGamePhases<TaxiState>()({
   phases: { playing: {} },
 });
 
-export default defineGame<TaxiState, typeof TAXI_ACTIONS>({
+export default defineGame<TaxiState>()({
   id: 'taxi-express',
   displayName: 'Taxi Express',
   category: 'JeuxDePlateaux',

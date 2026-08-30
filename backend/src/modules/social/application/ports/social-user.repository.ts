@@ -1,7 +1,7 @@
 import type {
   SocialSearchUserSummary,
   SocialUserSummary,
-} from '../models/social-user.model';
+} from '../contracts/social-user.model';
 
 export const SOCIAL_USER_READER = Symbol('SOCIAL_USER_READER');
 

@@ -8,7 +8,7 @@ import { CERCLES_SACRES_DECK } from './content';
 import { CERCLES_SACRES_ACTIONS, drawAtTurnStart } from './rules';
 import type { CerclesSacresState } from './types';
 
-export default defineGame<CerclesSacresState, typeof CERCLES_SACRES_ACTIONS>({
+export default defineGame<CerclesSacresState>()({
   id: 'cercles-sacres',
   displayName: 'Cercles Sacrés',
   category: 'JeuxDePlateaux',

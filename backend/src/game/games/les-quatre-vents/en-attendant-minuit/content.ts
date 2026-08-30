@@ -19,14 +19,8 @@ export type MinuitCardEffect =
   | { kind: 'move-others'; delta: number }
   | { kind: 'previous-neutral' };
 
-export type MinuitQuiz = {
-  prompt: string;
-  choices: [string, string, string];
-  correctIndex: number;
-  successDelta: number;
-  failureDelta: number;
-  anyCorrect?: boolean;
-};
+import { QUIZ_CARDS, type MinuitQuiz } from './quiz-content';
+export type { MinuitQuiz } from './quiz-content';
 
 export type MinuitCard = {
   id: number;
@@ -37,10 +31,6 @@ export type MinuitCard = {
 
 type StandardCardDefinition = Omit<MinuitCard, 'effects' | 'quiz'> & {
   effect: MinuitCardEffect;
-};
-
-type QuizCardDefinition = Omit<MinuitCard, 'effects' | 'quiz'> & {
-  quiz: MinuitQuiz;
 };
 
 const STANDARD_CARDS: StandardCardDefinition[] = [
@@ -94,248 +84,6 @@ const STANDARD_CARDS: StandardCardDefinition[] = [
   { id: 36, title: 'Chemin embrouillé', effect: { kind: 'previous-neutral' } },
 ];
 
-const quiz = (
-  id: number,
-  title: string,
-  prompt: string,
-  choices: [string, string, string],
-  correctIndex: number,
-  successDelta: number,
-  failureDelta: number,
-  anyCorrect = false,
-): QuizCardDefinition => ({
-  id,
-  title,
-  quiz: {
-    prompt,
-    choices,
-    correctIndex,
-    successDelta,
-    failureDelta,
-    ...(anyCorrect ? { anyCorrect: true } : {}),
-  },
-});
-
-const QUIZ_CARDS: QuizCardDefinition[] = [
-  quiz(
-    37,
-    'Petit Papa Noël',
-    'Quelle est la deuxième phrase ?',
-    ['Il me tarde tant', 'Quand tu descendras du ciel', 'Avec des jouets'],
-    1,
-    2,
-    0,
-  ),
-  quiz(
-    38,
-    'Vive le vent',
-    'Quel est le titre original ?',
-    ['Winter Wonderland', 'Silent Night', 'Jingle Bells'],
-    2,
-    3,
-    0,
-  ),
-  quiz(
-    39,
-    'Douce nuit',
-    'En quelle année fut-elle composée ?',
-    ['1808', '1818', '1828'],
-    1,
-    2,
-    0,
-  ),
-  quiz(
-    40,
-    'Mon beau sapin',
-    'De quel pays vient la chanson ?',
-    ['Allemagne', 'Suède', 'Italie'],
-    0,
-    2,
-    0,
-  ),
-  quiz(
-    41,
-    'Minuit, chrétiens',
-    'Qui en est le compositeur ?',
-    ['Schubert', 'Beethoven', 'Adolphe Adam'],
-    2,
-    3,
-    0,
-  ),
-  quiz(
-    42,
-    'Petit renne',
-    'En quelle année fut-elle publiée ?',
-    ['1939', '1949', '1955'],
-    1,
-    1,
-    0,
-  ),
-  quiz(
-    43,
-    'Noël blanc',
-    'Qui popularisa White Christmas ?',
-    ['Frank Sinatra', 'Bing Crosby', 'Dean Martin'],
-    1,
-    2,
-    0,
-  ),
-  quiz(
-    44,
-    'Les anges',
-    'Dans quelle langue était l’original ?',
-    ['Français', 'Italien', 'Espagnol'],
-    0,
-    1,
-    0,
-  ),
-  quiz(
-    45,
-    'Divin enfant',
-    'De quel siècle date le chant ?',
-    ['19e', '18e', '17e'],
-    1,
-    2,
-    0,
-  ),
-  quiz(
-    46,
-    'Gloria',
-    'Que signifie Gloria in excelsis Deo ?',
-    ['Gloire au monde', 'Chantons', 'Gloire à Dieu'],
-    2,
-    3,
-    0,
-  ),
-  quiz(
-    47,
-    'Tambourin',
-    'Quel instrument accompagne les bergers ?',
-    ['Claves', 'Triangle', 'Tambourin'],
-    2,
-    2,
-    0,
-  ),
-  quiz(
-    48,
-    'All I Want',
-    'Qui interprète ce tube ?',
-    ['Mariah Carey', 'Whitney Houston', 'Céline Dion'],
-    0,
-    1,
-    0,
-  ),
-  quiz(
-    49,
-    'Renne guide',
-    'Quel est son nom ?',
-    ['Rudolph', 'Dasher', 'Comet'],
-    0,
-    1,
-    -2,
-  ),
-  quiz(
-    50,
-    'Partage',
-    'Quelle action est généreuse ?',
-    ['Garder', 'Offrir', 'Cacher'],
-    1,
-    1,
-    -1,
-  ),
-  quiz(
-    51,
-    'Sapin',
-    'Quelle couleur n’est pas citée ?',
-    ['Rouge', 'Argent', 'Bleu'],
-    1,
-    1,
-    -1,
-  ),
-  quiz(
-    52,
-    'Rennes',
-    'Lequel n’est pas un renne ?',
-    ['Fringant', 'Comète', 'Frosty'],
-    2,
-    2,
-    -2,
-  ),
-  quiz(
-    53,
-    'Couleurs',
-    'Quel objet n’est pas rouge ?',
-    ['Flocon', 'Houx', 'Boule'],
-    0,
-    1,
-    -1,
-  ),
-  quiz(
-    54,
-    'Dessert',
-    'Quel dessert français ?',
-    ['Bûche', 'Tarte Tatin', 'Crêpe'],
-    0,
-    1,
-    -2,
-  ),
-  quiz(
-    55,
-    'Pied du sapin',
-    'Quel objet ne s’y trouve pas ?',
-    ['Cadeau', 'Bougie allumée', 'Carte'],
-    1,
-    2,
-    -3,
-  ),
-  quiz(
-    56,
-    'Cloche',
-    'Quel est son rôle ?',
-    ['Appeler les enfants', 'Décorer', 'Mesurer'],
-    0,
-    1,
-    -1,
-  ),
-  quiz(
-    57,
-    'Magie',
-    'Quel élément crée la magie ?',
-    ['Guirlandes', 'Chocolat', 'Bottes'],
-    0,
-    1,
-    -1,
-  ),
-  quiz(
-    58,
-    'Bonne action',
-    'Quelle action est généreuse ?',
-    ['Partager', 'Aider', 'Sourire'],
-    0,
-    3,
-    0,
-    true,
-  ),
-  quiz(
-    59,
-    'Cadeau au Père Noël',
-    'Quel cadeau choisir ?',
-    ['Un poème', 'Une chaussette', 'Du lait'],
-    0,
-    2,
-    -2,
-  ),
-  quiz(
-    60,
-    'Moment préféré',
-    'Quel moment attendent les enfants ?',
-    ['Cadeaux', 'Dîner', 'Dormir'],
-    0,
-    1,
-    -1,
-  ),
-];
-
 export const MINUIT_CARDS: MinuitCard[] = [
   ...STANDARD_CARDS.map((card) => ({
     id: card.id,
@@ -353,18 +101,12 @@ export const MINUIT_CARDS: MinuitCard[] = [
 function standardInstructions(
   effect: MinuitCardEffect,
 ): readonly GameEffectInstruction[] {
+  const statusInstructions = persistentStatusInstructions(effect);
+  if (statusInstructions) return statusInstructions;
   if (effect.kind === 'move') {
     return [gameEffects.custom('minuit.move', { delta: effect.delta })];
   }
   if (effect.kind === 'roll') return [gameEffects.custom('minuit.roll')];
-  if (effect.kind === 'shield-malus') {
-    return [
-      gameEffects.addStatus({
-        status: 'minuit.ignore-next-malus',
-        scope: 'until-used',
-      }),
-    ];
-  }
   if (effect.kind === 'next-card') {
     return [
       gameEffects.custom('minuit.move-to-type', {
@@ -382,14 +124,6 @@ function standardInstructions(
         gameEffects.target.chosenOpponent('minuit.gift'),
       ),
       gameEffects.completeTurn(),
-    ];
-  }
-  if (effect.kind === 'shield-skip') {
-    return [
-      gameEffects.addStatus({
-        status: 'minuit.ignore-next-skip',
-        scope: 'until-used',
-      }),
     ];
   }
   if (effect.kind === 'swap') {
@@ -411,14 +145,6 @@ function standardInstructions(
       }),
     ];
   }
-  if (effect.kind === 'force-draw') {
-    return [
-      gameEffects.addStatus({
-        status: 'minuit.force-draw-next-turn',
-        scope: 'until-used',
-      }),
-    ];
-  }
   if (effect.kind === 'swap-behind') {
     return [gameEffects.custom('minuit.swap-behind')];
   }
@@ -437,6 +163,22 @@ function standardInstructions(
       direction: 'backward',
     }),
   ];
+}
+
+function persistentStatusInstructions(
+  effect: MinuitCardEffect,
+): readonly GameEffectInstruction[] | null {
+  const status =
+    effect.kind === 'shield-malus'
+      ? 'minuit.ignore-next-malus'
+      : effect.kind === 'shield-skip'
+        ? 'minuit.ignore-next-skip'
+        : effect.kind === 'force-draw'
+          ? 'minuit.force-draw-next-turn'
+          : null;
+  return status
+    ? [gameEffects.addStatus({ status, scope: 'until-used' })]
+    : null;
 }
 
 export const MINUIT_PAWNS = [

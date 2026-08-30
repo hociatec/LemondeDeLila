@@ -6,9 +6,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as crypto from 'crypto';
-import type { PrivateMessageRecord } from '../models/private-message.model';
-import type { MessageUser } from '../models/message-user.model';
-import type { SendMessageInput } from '../models/send-message.input';
+import type { PrivateMessageRecord } from '../contracts/private-message.model';
+import type { MessageUser } from '../contracts/message-user.model';
+import type { SendMessageInput } from '../contracts/send-message.input';
 import {
   MESSAGING_USER_READER,
   type MessagingUserReader,

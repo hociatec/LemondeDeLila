@@ -12,16 +12,10 @@ const defaultRuntimeRoot = path.join(
   repoRoot,
   'src',
   'game',
-  'core',
-  'application',
+  'engine',
   'runtime',
 );
-const standardFiles = [
-  'game.ts',
-  'rules.ts',
-  'content.ts',
-  'game.spec.ts',
-];
+const standardFiles = ['game.ts', 'rules.ts', 'content.ts', 'game.spec.ts'];
 const forbiddenGameLayers = new Set([
   'actions',
   'application',
@@ -88,7 +82,12 @@ function add(violations, rule, file, message) {
   violations.push({ rule, file: normalize(file), message });
 }
 
-function inspectUnsafeTypes(source, relative, violations, enforceBoundaryCasts = true) {
+function inspectUnsafeTypes(
+  source,
+  relative,
+  violations,
+  enforceBoundaryCasts = true,
+) {
   const sourceFile = ts.createSourceFile(
     relative,
     source,
@@ -221,6 +220,14 @@ function auditGamePackages(gamesRoot, violations) {
     const source = fs.readFileSync(file, 'utf8');
     const basename = path.basename(file);
     const gameDirectory = findGameDirectory(file, gamesRoot);
+    if (['rules.ts', 'content.ts'].includes(basename) && lineCount(source) > 400) {
+      add(
+        violations,
+        'bounded-game-entry-file',
+        relative,
+        `${basename} dépasse 400 lignes; extraire un mécanisme ou une famille de contenu.`,
+      );
+    }
     if (
       /\.(module|service|presenter|registrar)\.ts$/.test(basename) ||
       basename === 'rulebook.ts' ||
@@ -242,7 +249,7 @@ function auditGamePackages(gamesRoot, violations) {
       );
     }
     if (
-      /from\s+['"][^'"]*core\/application\/(?!public-api['"])[^'"]+['"]/.test(
+      /from\s+['"][^'"]*(?:core\/application\/(?!public-api['"])[^'"]+|engine\/runtime(?:\/|['"]))/.test(
         source,
       )
     ) {
@@ -309,7 +316,10 @@ function auditGamePackages(gamesRoot, violations) {
         'Un jeu ne doit pas stocker son état dans metadata.',
       );
     }
-    if (!basename.endsWith('.spec.ts') && /\b(?:ctx|state)\.engine\b/.test(source)) {
+    if (
+      !basename.endsWith('.spec.ts') &&
+      /\b(?:ctx|state)\.engine\b/.test(source)
+    ) {
       add(
         violations,
         'encapsulated-engine-state',
@@ -317,7 +327,9 @@ function auditGamePackages(gamesRoot, violations) {
         'Un jeu ne doit jamais accéder directement à l’état interne du moteur.',
       );
     }
-    if (/\bconsole\.(?:log|info|warn|error)\s*\(|\bnew\s+Logger\s*\(/.test(source)) {
+    if (
+      /\bconsole\.(?:log|info|warn|error)\s*\(|\bnew\s+Logger\s*\(/.test(source)
+    ) {
       add(
         violations,
         'no-server-game-log',
@@ -389,8 +401,12 @@ function auditEngine(gameRoot, runtimeRoot, violations) {
     const relative = normalize(path.relative(repoRoot, file));
     const source = fs.readFileSync(file, 'utf8');
     inspectUnsafeTypes(source, relative, violations, false);
-    const isCompositionRoot = relative === 'src/game/composition/generated-game-registry.ts';
-    if (!file.startsWith(`${gamesRootForFile(gameRoot)}${path.sep}`) && !isCompositionRoot) {
+    const isCompositionRoot =
+      relative === 'src/game/composition/generated-game-registry.ts';
+    if (
+      !file.startsWith(`${gamesRootForFile(gameRoot)}${path.sep}`) &&
+      !isCompositionRoot
+    ) {
       for (const specifier of importSpecifiers(source)) {
         const target = specifier.startsWith('.')
           ? path.resolve(path.dirname(file), specifier)

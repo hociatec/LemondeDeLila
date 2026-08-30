@@ -11,7 +11,7 @@ import {
   type TableAmbienceDefinition,
   type TableAmbienceDefinitionsFile,
   type TableAmbienceSoundKey,
-} from '../../application/models/sound-manifest.record';
+} from '../../application/contracts/sound-manifest.record';
 import { toTableAmbienceDefinition } from './sounds-storage.utils';
 
 type SoundsTableAmbiencesManagerDeps = {
