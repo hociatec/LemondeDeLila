@@ -7,6 +7,8 @@ import type {
 } from './projection/game-system-view';
 import type { GameContextFor } from './game-rule-context';
 import type { PlayerValuesKitState } from './kits/player-values-kit';
+import type { GridKitState } from './kits/grid-kit';
+import type { SubmissionKitState } from './submissions/submission-kit';
 import { defineCardsSchema, type CardOfDeck } from './cards/typed-cards';
 import { defineAction } from './definitions/game-definition-builders';
 import { defineGame } from './definitions/game-definition-compiler';
@@ -109,6 +111,59 @@ describe('typed game contracts', () => {
     expect(setup.values.timerSeconds).toBe(30);
     expect(resources.energy).toBe(2);
     expect(counters.round).toBe(1);
+  });
+
+  it('keeps submission, grid, status and turn-flag payloads exact', () => {
+    type Submissions = SubmissionKitState<{ cardId: string; rank: number }>;
+    type Grid = GridKitState<
+      { ownerId: number; blocked: boolean },
+      { from: string; to: string }
+    >;
+    type Values = PlayerValuesKitState<
+      'energy',
+      'round',
+      { sourcePlayerId: number },
+      { resolution: { step: number } }
+    >;
+
+    const submissions: Submissions['sessions']['round'] = {
+      id: 'round',
+      kind: 'submission',
+      participantPlayerIds: [1],
+      valuesByPlayerId: { '1': { cardId: 'sun', rank: 2 } },
+      allowedValues: null,
+      secret: true,
+      closed: false,
+      revealed: false,
+    };
+    const grid: Grid = {
+      cells: { board: { '0,0': { ownerId: 1, blocked: false } } },
+      overlays: { board: { walls: [{ from: '0,0', to: '0,1' }] } },
+    };
+    const values: Values = {
+      scores: {},
+      resources: { energy: {} },
+      counters: { round: 1 },
+      statuses: {
+        '1': [
+          {
+            id: 'mirrored',
+            remaining: null,
+            scope: 'until-used',
+            data: { sourcePlayerId: 2 },
+          },
+        ],
+      },
+      turnFlags: { resolution: { step: 3 } },
+      scheduledSkips: {},
+      scheduledExtraTurns: {},
+    };
+
+    expect(submissions.valuesByPlayerId['1']?.rank).toBe(2);
+    expect(grid.cells.board?.['0,0']?.ownerId).toBe(1);
+    expect(grid.overlays.board?.walls?.[0]?.to).toBe('0,1');
+    expect(values.statuses['1']?.[0]?.data.sourcePlayerId).toBe(2);
+    expect(values.turnFlags.resolution.step).toBe(3);
   });
 
   it('derives player-view resources, counters and custom events from the compiled definition', () => {

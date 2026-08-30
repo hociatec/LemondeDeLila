@@ -19,22 +19,24 @@ export const commonStatuses = {
 export type CommonStatusId =
   (typeof commonStatuses)[keyof typeof commonStatuses];
 
-export type PlayerStatus = {
+export type PlayerStatus<TData extends object = Record<string, unknown>> = {
   id: string;
   remaining: number | null;
   scope: StatusScope;
-  data: Record<string, unknown>;
+  data: TData;
 };
 
 export type PlayerValuesKitState<
   TResourceId extends string = string,
   TCounterId extends string = string,
+  TStatusData extends object = Record<string, unknown>,
+  TTurnFlags extends Record<string, unknown> = Record<string, unknown>,
 > = {
   scores: Record<string, number>;
   resources: Record<TResourceId, Record<string, number>>;
   counters?: Record<TCounterId, number>;
-  statuses: Record<string, PlayerStatus[]>;
-  turnFlags: Record<string, unknown>;
+  statuses: Record<string, PlayerStatus<TStatusData>[]>;
+  turnFlags: TTurnFlags;
   scheduledSkips: Record<string, number>;
   scheduledExtraTurns: Record<string, number>;
 };
@@ -42,12 +44,13 @@ export type PlayerValuesKitState<
 export type PlayerValuesPlayerView<
   TResourceId extends string = string,
   TCounterId extends string = string,
+  TStatusData extends object = Record<string, unknown>,
 > = {
   scores: Record<string, number>;
   scoring: ScorePlayerView;
   resources: Record<TResourceId, Record<string, number>>;
   counters: Record<TCounterId, number>;
-  statuses: PlayerStatus[];
+  statuses: PlayerStatus<TStatusData>[];
 };
 
 export type ScorePlayerView = {
@@ -66,7 +69,9 @@ export type PlayerValuesVisibility = {
 export function createPlayerValuesKitState<
   TResourceId extends string = string,
   TCounterId extends string = string,
->(): PlayerValuesKitState<TResourceId, TCounterId> {
+  TStatusData extends object = Record<string, unknown>,
+  TTurnFlags extends Record<string, unknown> = Record<string, unknown>,
+>(): PlayerValuesKitState<TResourceId, TCounterId, TStatusData, TTurnFlags> {
   return {
     scores: {},
     resources: {},
@@ -75,7 +80,7 @@ export function createPlayerValuesKitState<
     turnFlags: {},
     scheduledSkips: {},
     scheduledExtraTurns: {},
-  } as PlayerValuesKitState<TResourceId, TCounterId>;
+  } as PlayerValuesKitState<TResourceId, TCounterId, TStatusData, TTurnFlags>;
 }
 
 export {
@@ -280,8 +285,12 @@ export class GameCountersController<TCounterId extends string = string> {
   }
 }
 
-export class GameStatusController {
-  constructor(private readonly state: PlayerValuesKitState) {}
+export class GameStatusController<
+  TStatusData extends object = Record<string, unknown>,
+> {
+  constructor(
+    private readonly state: PlayerValuesKitState<string, string, TStatusData>,
+  ) {}
 
   add(
     playerId: number,
@@ -289,15 +298,15 @@ export class GameStatusController {
     options: {
       turns?: number;
       scope?: StatusScope;
-      data?: Record<string, unknown>;
+      data?: TStatusData;
     } = {},
   ): void {
     const statuses = (this.state.statuses[String(playerId)] ??= []);
-    const status: PlayerStatus = {
+    const status: PlayerStatus<TStatusData> = {
       id,
       remaining: options.turns == null ? null : Math.max(0, options.turns),
       scope: options.scope ?? 'turn',
-      data: structuredClone(options.data ?? {}),
+      data: structuredClone(options.data ?? ({} as TStatusData)),
     };
     const existing = statuses.findIndex((candidate) => candidate.id === id);
     if (existing < 0) statuses.push(status);
@@ -310,14 +319,14 @@ export class GameStatusController {
     );
   }
 
-  get(playerId: number, id: string): PlayerStatus | null {
+  get(playerId: number, id: string): PlayerStatus<TStatusData> | null {
     const status = (this.state.statuses[String(playerId)] ?? []).find(
       (candidate) => candidate.id === id,
     );
     return status ? structuredClone(status) : null;
   }
 
-  list(playerId: number): PlayerStatus[] {
+  list(playerId: number): PlayerStatus<TStatusData>[] {
     return structuredClone(this.state.statuses[String(playerId)] ?? []);
   }
 

@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "ignoredRootDirectories": [],
   "components": {
     "modules": [
@@ -55,13 +55,13 @@
   },
   "publicEntryFiles": ["public-api.ts", "index.ts"],
   "composition": {
-    "rootComponents": ["root", "platform.database"],
+    "rootComponents": ["root"],
     "rootFiles": ["app.module.ts", "data-source.ts"],
     "layers": ["module"],
     "fileSuffixes": [".module.ts"]
   },
   "boundaries": {
-    "exemptSourceComponents": ["root", "platform.database"],
+    "exemptSourceComponents": ["root"],
     "exemptSourceFiles": ["app.module.ts", "data-source.ts"],
     "allowCompositionDeepImports": true,
     "allowCompositionTypeOrmEntities": true,

@@ -115,7 +115,7 @@ export abstract class DeclarativeGameQueries<
             });
         return (inputs ?? [{}]).map((payload) => ({
           type,
-          payload: payload as Record<string, unknown>,
+          payload: toActionPayload(payload),
         }));
       },
     );
@@ -158,7 +158,7 @@ export abstract class DeclarativeGameQueries<
       actionType,
       items: candidates.slice(0, limit).map((payload) => ({
         type: actionType,
-        payload: payload as Record<string, unknown>,
+        payload: toActionPayload(payload),
       })),
       offset,
       limit,
@@ -260,7 +260,7 @@ export abstract class DeclarativeGameQueries<
       type: selected.type,
       ...(selected.payload === undefined
         ? {}
-        : { payload: selected.payload as Record<string, unknown> }),
+        : { payload: toActionPayload(selected.payload) }),
       meta: { actorId: botPlayerId },
     };
     return [this.validateAction(runtime, selectedAction, botPlayerId)];
@@ -337,6 +337,11 @@ export abstract class DeclarativeGameQueries<
   getDescriptor(): GameRuntimeDescriptor {
     return describeGameDefinition(this.definition);
   }
+}
+
+/** Converts a schema-typed action object only at the transport DTO boundary. */
+function toActionPayload(payload: object): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(payload));
 }
 
 function projectPending(

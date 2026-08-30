@@ -12,8 +12,8 @@ src/
 └── shared/    primitives pures et types sans technologie applicative
 ```
 
-`main.ts`, `app.module.ts` et `data-source.ts` sont les seuls points de
-composition conservés directement à la racine.
+`main.ts`, `app.module.ts`, `data-source.ts` et `typeorm-entities.ts` sont les
+seuls points de composition conservés directement à la racine.
 
 La direction générale est fermée et contrôlée :
 
@@ -29,10 +29,11 @@ platform ─> shared
 shared ───> aucune frontière supérieure
 ```
 
-`platform/database` constitue le point de composition TypeORM : son registre
-d'entités et ses migrations peuvent connaître les adapters de persistance des
-modules et de `game`. Cette exception ne s'étend à aucun autre composant de
-plateforme.
+`typeorm-entities.ts` constitue le registre de composition TypeORM et connaît
+les adapters de persistance des modules et de `game`. `platform/database`
+reste purement technique : il reçoit ce registre par paramètre et ses migrations
+sont autonomes, sans import vers un contrat métier. Il ne bénéficie d'aucune
+exception à la direction `platform -> shared`.
 
 ## Modules métier
 

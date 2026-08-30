@@ -184,6 +184,30 @@ function audit() {
       violations.push(`${name}: contrat transaction/compensation absent`);
     }
   }
+  const databaseErrorContracts = [
+    [
+      'modules/user/application/use-cases/register-user.service.ts',
+      /mapUniqueConstraintViolation/,
+    ],
+    [
+      'modules/admin/application/use-cases/admin-users/admin-users-command.service.ts',
+      /mapUniqueConstraintViolation/,
+    ],
+    [
+      'modules/social/application/services/social-relationship.service.ts',
+      /isUniqueConstraintViolation/,
+    ],
+    [
+      'modules/stats/application/services/game-stats.service.ts',
+      /isUniqueConstraintViolation/,
+    ],
+  ];
+  for (const [name, contract] of databaseErrorContracts) {
+    const source = fs.readFileSync(path.join(root, name), 'utf8');
+    if (!contract.test(source)) {
+      violations.push(`${name}: mapping uniforme des erreurs DB absent`);
+    }
+  }
   return violations;
 }
 

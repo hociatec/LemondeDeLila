@@ -65,7 +65,7 @@ const contracts = [
   ],
   [
     'game/core/infrastructure/persistence/typeorm/mysql-game-room-lock.service.ts',
-    /game\.room_lock\.acquired/,
+    /(?=[\s\S]*game\.room_lock\.acquired)(?=[\s\S]*game\.room_lock\.acquire_failed)(?=[\s\S]*waitMs)/,
     'lock telemetry',
   ],
   [

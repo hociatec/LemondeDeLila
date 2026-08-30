@@ -32,16 +32,22 @@ import {
   type MatchPlayerView,
   type RoundPlayerView,
 } from './game-system-view.contracts';
+import type { EngineEventMap } from '../events/engine-event-registry';
 
 export * from './game-system-view.contracts';
 
-export function projectGameSystemView<TState extends object>(input: {
+type GameSystemProjectionInput<TState extends object> = {
   runtime: DeclarativeState<TState>;
   viewerPlayerId: number | null;
   components?: readonly GameComponentDefinition[];
   hasConfiguration?: boolean;
   playerValuesVisibility?: PlayerValuesVisibility;
-}): GenericGamePlayerView {
+};
+
+export function projectGameSystemView<
+  TState extends object,
+  TEvents extends object = EngineEventMap,
+>(input: GameSystemProjectionInput<TState>): GenericGamePlayerView<TEvents> {
   const { runtime, viewerPlayerId } = input;
   const values = projectPlayerValues(
     runtime.engine.playerValues,
@@ -67,7 +73,7 @@ export function projectGameSystemView<TState extends object>(input: {
     input.hasConfiguration ?? false,
   );
   const players = projectPlayers(runtime.players ?? []);
-  const events = projectEventsForPlayer(
+  const events = projectEventsForPlayer<TEvents>(
     runtime.engine.pendingEvents ?? [],
     viewerPlayerId,
   );
@@ -147,14 +153,11 @@ function projectExtendedKits<TState extends object>(
   return { status, board, collections };
 }
 
-export function projectEventsForPlayer(
+export function projectEventsForPlayer<TEvents extends object = EngineEventMap>(
   events: readonly GamePendingEvent[],
   viewerPlayerId: number | null,
-): GameEventsPlayerView<Record<string, Record<string, unknown>>> {
-  const latestByType: Record<
-    string,
-    GameEventPlayerView<string, Record<string, unknown>>
-  > = {};
+): GameEventsPlayerView<TEvents> {
+  const latestByType: Record<string, GameEventPlayerView<string, unknown>> = {};
   for (const event of events) {
     const projected = projectPendingGameEvent(event, viewerPlayerId);
     if (projected == null) continue;
@@ -165,7 +168,9 @@ export function projectEventsForPlayer(
       occurredAtMs: projected.occurredAtMs,
     };
   }
-  return { latestByType };
+  // Pending events are persisted through a string-keyed transport boundary;
+  // their registry type is restored here after visibility projection.
+  return { latestByType } as GameEventsPlayerView<TEvents>;
 }
 
 function projectEffectSource(

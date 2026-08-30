@@ -1,11 +1,22 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn } from 'typeorm';
-import type { GameTimeline } from '../../../game/core/application/contracts/game-event.model';
+
+type LegacyTimelineEvent = { seq: number; version: number };
+type LegacyTimelineSnapshot = {
+  seq: number;
+  version: number;
+  state: unknown;
+};
+type LegacyGameTimeline = {
+  initial?: LegacyTimelineSnapshot | null;
+  events?: LegacyTimelineEvent[];
+  snapshots?: LegacyTimelineSnapshot[];
+};
 
 type LegacySessionRow = {
   room_id: number;
   game_type: string;
   state: unknown;
-  timeline: GameTimeline | string | null;
+  timeline: LegacyGameTimeline | string | null;
 };
 
 export class SplitGameSessionTimeline1770400000000 implements MigrationInterface {
@@ -35,8 +46,8 @@ export class SplitGameSessionTimeline1770400000000 implements MigrationInterface
         );
       }
       const snapshots =
-        timeline.snapshots?.length > 0
-          ? timeline.snapshots
+        (timeline.snapshots?.length ?? 0) > 0
+          ? (timeline.snapshots ?? [])
           : timeline.initial
             ? [timeline.initial]
             : [];
@@ -148,10 +159,10 @@ function snapshotTable(): Table {
 }
 
 function parseTimeline(
-  value: GameTimeline | string | null,
-): GameTimeline | null {
+  value: LegacyGameTimeline | string | null,
+): LegacyGameTimeline | null {
   const parsed = parseJson(value);
-  return parsed && typeof parsed === 'object' ? (parsed as GameTimeline) : null;
+  return parsed && typeof parsed === 'object' ? parsed : null;
 }
 
 function parseJson(value: unknown): unknown {

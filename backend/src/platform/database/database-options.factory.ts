@@ -1,9 +1,11 @@
 import type { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { ORM_ENTITIES } from './entities';
+
+type TypeOrmEntities = NonNullable<TypeOrmModuleOptions['entities']>;
 
 export function createDatabaseOptions(
   config: ConfigService,
+  entities: TypeOrmEntities,
 ): TypeOrmModuleOptions {
   const url = config.get<string>('DATABASE_URL');
   const connection = url
@@ -17,7 +19,7 @@ export function createDatabaseOptions(
       };
   return {
     type: 'mysql',
-    entities: ORM_ENTITIES,
+    entities,
     synchronize: false,
     logging: false,
     ...connection,

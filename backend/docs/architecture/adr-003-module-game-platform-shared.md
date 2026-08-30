@@ -21,11 +21,12 @@ autre frontière ; `platform` dépend seulement de `shared` ; `modules` et
 `game` peuvent dépendre de `platform` et `shared`. Les relations entre modules,
 ainsi qu'entre modules et `game`, restent fermées et déclarées explicitement.
 
-Deux exceptions de composition sont assumées : `app.module.ts` assemble les
-modules Nest, et `platform/database` collecte les entités TypeORM et migrations
-dans un ordre global. Aucun service de plateforme ne peut utiliser cette
-exception pour importer du métier. Lorsqu'un adapter transversal a besoin
-d'une décision métier, il déclare un port ; la racine injecte l'implémentation.
+La composition est assumée uniquement à la racine : `app.module.ts` assemble
+les modules Nest et `typeorm-entities.ts` collecte les entités TypeORM dans un
+ordre global. `platform/database` reçoit cette liste par paramètre et ses
+migrations définissent leurs formats historiques localement ; il ne peut donc
+plus importer le métier. Lorsqu'un adapter transversal a besoin d'une décision
+métier, il déclare un port et la racine injecte l'implémentation.
 
 La structure est verrouillée par `architecture:check` et `layout:audit`. Le
 contrat d'architecture v4 possède une baseline vide, donc aucune dépendance

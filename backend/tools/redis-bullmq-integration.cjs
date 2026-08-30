@@ -89,7 +89,31 @@ async function main() {
   }
   await Promise.all([first.close(), second.close()]);
 
-  console.log('redis-bullmq-integration: OK (delayed, retries, suppression, restart, concurrence)');
+  const duplicateDeliveries = [];
+  const duplicateWorker = worker(async (job) => {
+    if (job.data.commandId === 'same-command') duplicateDeliveries.push(job.id);
+  });
+  await Promise.all([
+    queue.add(
+      'duplicate-delivery',
+      { commandId: 'same-command' },
+      { jobId: 'duplicate-delivery-a' },
+    ),
+    queue.add(
+      'duplicate-delivery',
+      { commandId: 'same-command' },
+      { jobId: 'duplicate-delivery-b' },
+    ),
+  ]);
+  await waitFor(() => duplicateDeliveries.length === 2);
+  if (new Set(duplicateDeliveries).size !== 2) {
+    throw new Error('Double livraison BullMQ non observée');
+  }
+  await duplicateWorker.close();
+
+  console.log(
+    'redis-bullmq-integration: OK (delayed, retries, suppression, restart, concurrence, double livraison)',
+  );
 }
 
 main()

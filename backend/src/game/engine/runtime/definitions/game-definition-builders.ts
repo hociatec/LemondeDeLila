@@ -1,7 +1,7 @@
 import type { GameExecutionContext } from '../../../core/application/contracts/game-execution-context.model';
 import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
 import type { GameContext } from '../game-rule-context';
-import { typedRuntimeHandler } from '../actions/parsed-input';
+import { typedRuntimeHandler } from './typed-runtime-handler';
 import {
   GAME_DEFINITION_KIND,
   type ChoiceResolver,

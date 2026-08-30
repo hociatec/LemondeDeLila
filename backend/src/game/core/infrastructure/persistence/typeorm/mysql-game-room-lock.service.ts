@@ -39,7 +39,16 @@ export class MysqlGameRoomLockService implements GameRoomLock {
         this.timeoutSeconds,
       ])) as MysqlLockResult[];
       acquired = Number(rows[0]?.acquired) === 1;
-      if (!acquired) throw new GameRoomLockUnavailableError(roomId);
+      if (!acquired) {
+        this.logger.warn(
+          JSON.stringify({
+            event: 'game.room_lock.acquire_failed',
+            roomId,
+            waitMs: Date.now() - startedAtMs,
+          }),
+        );
+        throw new GameRoomLockUnavailableError(roomId);
+      }
       this.logger.debug(
         JSON.stringify({
           event: 'game.room_lock.acquired',
