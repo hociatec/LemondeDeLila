@@ -3,7 +3,6 @@ import { requireUser } from '../../../../../platform/realtime/public-api';
 import type { WsSession } from '../../../../../platform/realtime/public-api';
 import { PayloadValidationService } from '../../../../../platform/validation/public-api';
 import { GameContentService } from '../../../../engine/public-api';
-import { GameModuleOverviewRegistryService } from '../../../application/services/game-module-overview.service';
 import type { GameSingleActionDto } from '../../../application/contracts/game-action.model';
 import { GameRulesDto } from './dto/game-rules.ws.dto';
 import { GameWsCommandMapper } from './game-ws-command.mapper';
@@ -20,21 +19,19 @@ import {
 import { GameCommandExecutorService } from '../../../application/services/game-command-executor.service';
 import { GameRoomCommandQueueService } from '../../../application/services/game-room-command-queue.service';
 import { gameNowMs } from '../../../application/services/game-execution-scope.service';
-import { GameRegistryService } from '../../../application/services/game-registry.service';
-import { GAMEPLAY_MECHANICS_CATALOG } from '../../../../engine/runtime/definitions/mechanics-catalog';
+import { GameWsCatalogPresenter } from './game-ws-catalog.presenter';
 
 @Injectable()
 export class GameWsHandler {
   constructor(
     private readonly content: GameContentService,
-    private readonly overviewRegistry: GameModuleOverviewRegistryService,
+    private readonly catalog: GameWsCatalogPresenter,
     private readonly validator: PayloadValidationService,
     private readonly commands: GameWsCommandMapper,
     private readonly realtime: GameWsRealtimeStateService,
     private readonly rooms: GameWsRoomContextService,
     private readonly executor: GameCommandExecutorService,
     private readonly queue: GameRoomCommandQueueService,
-    private readonly registry: GameRegistryService,
   ) {}
 
   async rules(session: WsSession, payload: unknown) {
@@ -51,11 +48,7 @@ export class GameWsHandler {
     requireUser(session);
     return {
       type: 'game.modules',
-      payload: {
-        modules: this.overviewRegistry.getModules(),
-        games: this.registry.listDescriptors(),
-        sdk: GAMEPLAY_MECHANICS_CATALOG,
-      },
+      payload: this.catalog.present(),
     };
   }
 

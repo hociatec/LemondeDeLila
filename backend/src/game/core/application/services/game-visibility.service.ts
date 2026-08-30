@@ -11,7 +11,7 @@ export class GameVisibilityService {
     viewerPlayerId: number | null,
   ): TView {
     const view = structuredClone(exposed);
-    delete (view as unknown as { engine?: unknown }).engine;
+    Reflect.deleteProperty(view, 'engine');
     if ('metadata' in view) view.metadata = {};
     view.pending = this.redactPending(view.pending, viewerPlayerId);
     return view;

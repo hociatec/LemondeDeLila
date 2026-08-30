@@ -196,19 +196,7 @@ export class ClientUpdatesArchivePublisher {
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean);
-    for (const entry of entries) {
-      if (
-        entry.startsWith('/') ||
-        entry.startsWith('\\') ||
-        entry.includes('..') ||
-        entry.includes(':') ||
-        entry.includes('\\')
-      ) {
-        throw new ClientUpdatesInvalidArchiveError(
-          `Archive invalide (entree non sure): ${entry}`,
-        );
-      }
-    }
+    assertSafeClientUpdateArchiveEntries(entries);
   }
 
   private async assertUnzipAvailable(): Promise<void> {
@@ -268,6 +256,25 @@ export class ClientUpdatesArchivePublisher {
       }
     } catch {
       // Best-effort.
+    }
+  }
+}
+
+export function assertSafeClientUpdateArchiveEntries(
+  entries: readonly string[],
+): void {
+  for (const entry of entries) {
+    const segments = entry.split('/');
+    if (
+      entry.startsWith('/') ||
+      entry.startsWith('\\') ||
+      entry.includes('\\') ||
+      /^[A-Za-z]:/.test(entry) ||
+      segments.includes('..')
+    ) {
+      throw new ClientUpdatesInvalidArchiveError(
+        `Archive invalide (entree non sure): ${entry}`,
+      );
     }
   }
 }

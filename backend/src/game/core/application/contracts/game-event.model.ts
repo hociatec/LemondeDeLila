@@ -25,6 +25,7 @@ export type GameEvent = GamePendingEvent & {
 };
 
 export type ProjectedGameEvent = Omit<GameEvent, 'visibility'>;
+export type ProjectedGamePendingEvent = Omit<GamePendingEvent, 'visibility'>;
 
 export type GameStatePatchOperation =
   | { operation: 'set'; key: keyof GameStateEntity; value: unknown }

@@ -18,6 +18,7 @@ import {
   type PresentedErrorPayload,
 } from '../../../../../shared/utils/public-api';
 import { WsRouteRegistry } from '../../../../ws/public-api';
+import { PerfMetricsService } from '../../../../observability/public-api';
 import type {
   RealtimeClientSession,
   RealtimeIncomingMessage,
@@ -38,6 +39,7 @@ export class RealtimeApiHandlerService {
     private readonly updates: ClientVersionPolicy,
     private readonly config: ConfigService,
     private readonly replay: RealtimeRequestReplayService,
+    private readonly perf: PerfMetricsService,
   ) {}
 
   async persistSession(session: RealtimeClientSession): Promise<void> {
@@ -69,6 +71,7 @@ export class RealtimeApiHandlerService {
   ): Promise<void> {
     const decoded = this.decode(raw);
     if (!decoded) {
+      this.perf.record('ws.message.rejected', 0, { reason: 'invalid' });
       this.logger.warn(
         `Message WS rejeté (invalide ou sans type) connectionId=${session.connectionId}`,
       );
@@ -96,10 +99,15 @@ export class RealtimeApiHandlerService {
       return;
     }
     if (replay.kind === 'replay') {
+      this.perf.record('ws.reconnect.replay', 0, { type });
       for (const frame of await replay.frames) this.safeSend(client, frame);
       return;
     }
     if (!this.consumeRateLimit(session)) {
+      this.perf.record('ws.message.rejected', 0, {
+        reason: 'rate-limit',
+        type,
+      });
       this.logger.warn(
         JSON.stringify({
           event: 'ws.rate_limit.rejected',
@@ -177,6 +185,7 @@ export class RealtimeApiHandlerService {
       replay.complete(frames);
       for (const frame of frames) this.safeSend(client, frame);
     } catch (err) {
+      this.perf.record('ws.handler.error', 0, { type });
       this.logger.error(
         `Erreur handler WS type=${type} requestId=${requestId ?? 'n/a'} userId=${session.user?.id ?? 'anon'} connectionId=${session.connectionId}: ${getErrorMessage(err, 'Erreur inconnue')}`,
         err instanceof Error ? err.stack : undefined,

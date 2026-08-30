@@ -159,12 +159,16 @@ export class SoundsService {
         try {
           await fs.promises.rm(path.join(soundDir, file), { force: true });
           deleted++;
-        } catch {
-          // ignore
+        } catch (error) {
+          this.logger.warn(
+            `Nettoyage audio ignoré pour ${soundId}/${file}: ${errorMessage(error)}`,
+          );
         }
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      this.logger.warn(
+        `Répertoire audio illisible pour ${soundId}: ${errorMessage(error)}`,
+      );
     }
     return deleted;
   }
@@ -180,7 +184,10 @@ export class SoundsService {
         throw new BadRequestException('manifest invalide');
       }
       return parsed;
-    } catch {
+    } catch (error) {
+      this.logger.warn(
+        `Manifest audio absent ou invalide, utilisation d'un manifest vide: ${errorMessage(error)}`,
+      );
       return { updatedAt: new Date().toISOString(), sounds: {} };
     }
   }
@@ -274,8 +281,10 @@ export class SoundsService {
         recursive: true,
         force: true,
       });
-    } catch {
-      // ignore
+    } catch (error) {
+      this.logger.warn(
+        `Nettoyage du son ${soundId} non terminé: ${errorMessage(error)}`,
+      );
     }
 
     await this.notifications.notifyAll('sounds.updated', {
@@ -347,4 +356,8 @@ function normalizeSoundKey(input: string): SoundKey {
   );
   if (!found) throw new BadRequestException(`soundId invalide: ${raw}`);
   return found;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

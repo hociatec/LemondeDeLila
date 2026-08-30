@@ -6,17 +6,67 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..', 'src');
 const contracts = [
-  ['main.ts', /enableShutdownHooks\(\['SIGTERM', 'SIGINT'\]\)/, 'shutdown hooks'],
+  [
+    'main.ts',
+    /enableShutdownHooks\(\['SIGTERM', 'SIGINT'\]\)/,
+    'shutdown hooks',
+  ],
   ['main.ts', /runWithCorrelationId/, 'correlation HTTP'],
-  ['platform/observability/infrastructure/logging/serv-logger.service.ts', /currentCorrelationId/, 'correlation logs'],
-  ['modules/health/infrastructure/presentation/http/controllers/health.controller.ts', /@Get\('live'\)/, 'liveness'],
-  ['modules/health/infrastructure/presentation/http/controllers/health.controller.ts', /@Get\('ready'\)/, 'readiness'],
-  ['game/core/application/services/game-engine-metrics.service.ts', /casConflicts/, 'CAS metrics'],
-  ['game/core/application/services/game-engine-metrics.service.ts', /deadLettered/, 'BullMQ metrics'],
-  ['game/core/infrastructure/persistence/typeorm/mysql-game-room-lock.service.ts', /game\.room_lock\.acquired/, 'lock telemetry'],
-  ['modules/room/infrastructure/presentation/ws/room-gateway-command.service.ts', /extractTraceMeta/, 'WS trace'],
-  ['platform/ws/application/services/ws-api-hub.service.ts', /onModuleDestroy/, 'WS graceful shutdown'],
-  ['game/core/infrastructure/scheduling/bullmq-game-task-scheduler.service.ts', /onModuleDestroy/, 'BullMQ graceful shutdown'],
+  [
+    'platform/observability/infrastructure/logging/serv-logger.service.ts',
+    /currentCorrelationId/,
+    'correlation logs',
+  ],
+  [
+    'modules/health/infrastructure/presentation/http/controllers/health.controller.ts',
+    /@Get\('live'\)/,
+    'liveness',
+  ],
+  [
+    'modules/health/infrastructure/presentation/http/controllers/health.controller.ts',
+    /@Get\('ready'\)/,
+    'readiness',
+  ],
+  [
+    'game/core/application/services/game-engine-metrics.service.ts',
+    /casConflicts/,
+    'CAS metrics',
+  ],
+  [
+    'game/core/application/services/game-engine-metrics.service.ts',
+    /deadLettered/,
+    'BullMQ metrics',
+  ],
+  [
+    'game/core/infrastructure/persistence/typeorm/mysql-game-room-lock.service.ts',
+    /game\.room_lock\.acquired/,
+    'lock telemetry',
+  ],
+  [
+    'modules/room/infrastructure/presentation/ws/room-gateway-command.service.ts',
+    /extractTraceMeta/,
+    'WS trace',
+  ],
+  [
+    'platform/realtime/infrastructure/presentation/ws/realtime-api-connection.service.ts',
+    /ws\.connection\.error/,
+    'WS connection metrics',
+  ],
+  [
+    'platform/realtime/infrastructure/presentation/ws/realtime-api-handler.service.ts',
+    /ws\.reconnect\.replay/,
+    'WS reconnect metrics',
+  ],
+  [
+    'platform/ws/application/services/ws-api-hub.service.ts',
+    /onModuleDestroy/,
+    'WS graceful shutdown',
+  ],
+  [
+    'game/core/infrastructure/scheduling/bullmq-game-task-scheduler.service.ts',
+    /onModuleDestroy/,
+    'BullMQ graceful shutdown',
+  ],
 ];
 
 const violations = [];

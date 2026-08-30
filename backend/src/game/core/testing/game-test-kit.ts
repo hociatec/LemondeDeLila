@@ -37,11 +37,7 @@ export class GameTestKit<
   TActions extends GameActionMap<TState>,
   TViewExtension extends object,
 > {
-  private readonly adapter: DeclarativeGameRuntime<
-    TState,
-    TActions,
-    TViewExtension
-  >;
+  private readonly adapter: DeclarativeGameRuntime<TState, TActions>;
   private readonly execution = new GameExecutionScopeService();
   private readonly executor = new GameCommandExecutorService(this.execution);
   private readonly sessionStore = new InMemoryGameSessionStore();
@@ -244,11 +240,10 @@ export class GameTestKit<
     return this;
   }
 
-  availableActions(playerId: number): string[] {
-    return this.adapter
+  readonly availableActions = (playerId: number): string[] =>
+    this.adapter
       .getAvailableActions(this.requireState(), playerId)
       .map((action) => action.type);
-  }
 
   async execute<K extends keyof TActions & string>(
     playerId: number,

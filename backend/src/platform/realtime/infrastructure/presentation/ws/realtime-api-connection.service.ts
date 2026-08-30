@@ -1,8 +1,9 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { WebSocket } from 'ws';
 import type { WsAuthPayload } from '../../../../../shared/interfaces/public-api';
 import { getErrorMessage } from '../../../../../shared/utils/public-api';
+import { PerfMetricsService } from '../../../../observability/public-api';
 import {
   WsApiHubService,
   WsJwtAuthService,
@@ -22,6 +23,7 @@ export class RealtimeApiConnectionService {
     private readonly wsTickets: WsTicketAuthService,
     private readonly hub: WsApiHubService,
     private readonly handler: RealtimeApiHandlerService,
+    private readonly perf: PerfMetricsService,
   ) {}
 
   async handleConnection(
@@ -40,6 +42,10 @@ export class RealtimeApiConnectionService {
       Boolean(token),
     );
     if (!ticketValidation.ok) {
+      this.perf.record('ws.connection.rejected', 0, {
+        scope,
+        reason: ticketValidation.reason,
+      });
       this.logger.warn(
         `Connexion WS refusée (ticket) reason=${ticketValidation.reason} hasToken=${Boolean(token)} clientVersion=${clientVersion ?? 'n/a'} connectionId=${connectionId}`,
       );
@@ -74,12 +80,19 @@ export class RealtimeApiConnectionService {
       gameType: session.gameType ?? null,
       userId: session.user?.id ?? null,
     });
+    this.perf.record('ws.connection.opened', 0, {
+      scope,
+      authenticated: session.user != null,
+    });
 
     client.on(
       'message',
       (raw) => void this.handler.handleIncoming(client, session, raw),
     );
-    client.on('error', () => client.close());
+    client.on('error', () => {
+      this.perf.record('ws.connection.error', 0, { scope });
+      client.close();
+    });
 
     await this.handler.persistSession(session);
     if (scope === 'game') {
@@ -93,6 +106,9 @@ export class RealtimeApiConnectionService {
     if (!session) {
       return;
     }
+    this.perf.record('ws.connection.closed', 0, {
+      scope: session.scope ?? 'api',
+    });
 
     void this.handler.clearSession(session.connectionId);
     this.hub.unregister(session.connectionId);

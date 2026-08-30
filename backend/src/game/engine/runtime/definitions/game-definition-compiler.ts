@@ -11,7 +11,12 @@ import {
   composePatterns,
   type GamePattern,
 } from '../patterns/gameplay-patterns';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import {
+  assertNoImplicitActionOverrides,
+  assertNoImplicitComponentOverrides,
+  assertNoImplicitInitializationOverrides,
+  assertNoImplicitTurnOverride,
+} from './game-definition-override-validator';
 import { GAME_DEFINITION_KIND } from './game-definition-contracts';
 import type {
   CompiledGameDefinition,
@@ -50,8 +55,8 @@ type GameDefinitionBuilder<TState extends object> = <
 
 /**
  * Curried form (`defineGame<State>()({...})`) keeps definition-owned literals
- * inferable after the state type has been selected. The direct form remains
- * available for state-less fixtures and compatibility.
+ * inferable after the state type has been selected. The direct form is the
+ * official concise syntax for games whose state is entirely owned by kits.
  */
 export function defineGame<
   TState extends object = NoGameState,
@@ -186,20 +191,6 @@ function finalizeCompiledDefinition(normalizedBase: object): unknown {
   return deepFreeze({ ...normalized, kind: GAME_DEFINITION_KIND });
 }
 
-function assertNoImplicitActionOverrides<TState extends object>(
-  patternActions: GameActionMap<TState>,
-  gameActions: GameActionMap<TState>,
-  gameId: string,
-): void {
-  for (const [actionId, action] of Object.entries(gameActions)) {
-    if (!(actionId in patternActions)) continue;
-    if (action.overrides === actionId) continue;
-    throw new GameConfigurationError(
-      `Action "${actionId}" fournie par un pattern et redéfinie par "${gameId}" sans overrideAction() explicite`,
-    );
-  }
-}
-
 function mergeInitialization(
   pattern?: GameInitialization,
   game?: GameInitialization,
@@ -280,85 +271,6 @@ function resolveTurnPolicy(
   if (!selected) return undefined;
   const { overrides: _overrides, ...policy } = selected;
   return Object.freeze(policy as TurnPolicy);
-}
-
-function assertNoImplicitComponentOverrides(
-  patternComponents: readonly GameComponentDefinition[],
-  gameComponents: readonly GameComponentDefinition[],
-  gameId: string,
-): void {
-  const patternKeys = new Set(
-    patternComponents.map(
-      (component) => `${component.component}:${component.id}`,
-    ),
-  );
-  for (const component of gameComponents) {
-    const key = `${component.component}:${component.id}`;
-    if (patternKeys.has(key) && component.overrides !== key) {
-      throw new GameConfigurationError(
-        `Composant "${key}" fourni par un pattern et redéfini par "${gameId}" sans overrideComponent() explicite`,
-      );
-    }
-  }
-}
-
-function assertNoImplicitTurnOverride(
-  pattern: TurnPolicy | undefined,
-  game: TurnPolicy | undefined,
-  gameId: string,
-): void {
-  if (!pattern || !game || sameTurnPolicy(pattern, game)) return;
-  if (game.overrides) return;
-  throw new GameConfigurationError(
-    `Politique de tour fournie par un pattern et redéfinie par "${gameId}" sans overrideTurn() explicite`,
-  );
-}
-
-function assertNoImplicitInitializationOverrides(
-  pattern: GameInitialization,
-  game: GameInitialization,
-): void {
-  const overrides = new Set(game.overrides ?? []);
-  const assertKeys = (
-    kind: 'resources' | 'counters' | 'tracks',
-    labels: Readonly<Record<string, unknown>> | undefined,
-    inherited: Readonly<Record<string, unknown>> | undefined,
-  ) => {
-    for (const key of Object.keys(labels ?? {})) {
-      if (!(key in (inherited ?? {}))) continue;
-      const overrideKey = `${kind}.${key}`;
-      if (!overrides.has(overrideKey)) {
-        throw new GameConfigurationError(
-          `Initialisation ${overrideKey} fournie par un pattern et redéfinie sans overrideInitialization(["${overrideKey}"], ...) explicite`,
-        );
-      }
-    }
-  };
-  assertKeys('resources', game.resources, pattern.resources);
-  assertKeys('counters', game.counters, pattern.counters);
-  assertKeys('tracks', game.tracks, pattern.tracks);
-  if (
-    game.scores != null &&
-    pattern.scores != null &&
-    !overrides.has('scores')
-  ) {
-    throw new GameConfigurationError(
-      'Initialisation scores fournie par un pattern et redéfinie sans overrideInitialization(["scores"], ...) explicite',
-    );
-  }
-  const patternPawns = new Set((pattern.pawns ?? []).map((pawn) => pawn.setId));
-  for (const pawn of game.pawns ?? []) {
-    const overrideKey = `pawns.${pawn.setId}`;
-    if (patternPawns.has(pawn.setId) && !overrides.has(overrideKey)) {
-      throw new GameConfigurationError(
-        `Initialisation ${overrideKey} fournie par un pattern et redéfinie sans overrideInitialization(["${overrideKey}"], ...) explicite`,
-      );
-    }
-  }
-}
-
-function sameTurnPolicy(left: TurnPolicy, right: TurnPolicy): boolean {
-  return left.kind === right.kind && left.actionPoints === right.actionPoints;
 }
 
 function mergeLifecycleHooks<TState extends object>(

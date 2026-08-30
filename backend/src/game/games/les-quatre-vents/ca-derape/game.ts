@@ -1,5 +1,6 @@
 import {
   cards,
+  defineCardsSchema,
   defineChoice,
   defineGamePhases,
   defineGame,
@@ -17,6 +18,16 @@ const CA_DERAPE_PHASES = defineGamePhases<CaDerapeState>()({
   initialPhase: 'playing',
   phases: { playing: {} },
 });
+const cardSchema = defineCardsSchema({
+  decks: {
+    situations: cards.deck({
+      id: 'situations',
+      cards: CA_DERAPE_CARDS,
+      shuffle: true,
+    }),
+  },
+  hands: {},
+});
 
 export default defineGame<CaDerapeState>()({
   id: 'ca-derape',
@@ -30,9 +41,7 @@ export default defineGame<CaDerapeState>()({
     tiles: CA_DERAPE_TILES,
   }),
   patterns: [raceGame({ trackId: 'derape', spaces: CA_DERAPE_TILES.length })],
-  components: [
-    cards.deck({ id: 'situations', cards: CA_DERAPE_CARDS, shuffle: true }),
-  ],
+  components: [...cardSchema.components],
   initialization: {
     counters: { [CA_NEXT_PLAYER_DELTA]: 0 },
     startRound: false,

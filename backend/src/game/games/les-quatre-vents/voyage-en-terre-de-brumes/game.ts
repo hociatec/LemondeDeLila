@@ -1,6 +1,7 @@
 import {
   cards,
   collection,
+  defineCardsSchema,
   defineChoice,
   defineGame,
   defineGameContent,
@@ -24,6 +25,20 @@ const deckNames: VoyageCollectionKind[] = [
   'treasure',
   'landscape',
 ];
+const cardSchema = defineCardsSchema({
+  decks: Object.fromEntries(
+    deckNames.map((id) => [
+      id,
+      cards.deck({
+        id,
+        cards: VOYAGE_CONTENT[id],
+        shuffle: true,
+        empty: 'recycle',
+      }),
+    ]),
+  ),
+  hands: {},
+});
 
 export default defineGame<VoyageState>()({
   id: 'voyage-en-terre-de-brumes',
@@ -41,14 +56,7 @@ export default defineGame<VoyageState>()({
     }),
   ],
   components: [
-    ...deckNames.map((id) =>
-      cards.deck({
-        id,
-        cards: VOYAGE_CONTENT[id],
-        shuffle: true,
-        empty: 'recycle',
-      }),
-    ),
+    ...cardSchema.components,
     collection.view({
       id: 'voyage',
       groups: Object.fromEntries(

@@ -1,5 +1,6 @@
 import {
   cards,
+  defineCardsSchema,
   defineChoice,
   defineGame,
   defineGameContent,
@@ -27,6 +28,21 @@ import { blockedPosition } from './resolution';
 import { CONTES_EFFECTS } from './effects';
 import type { ContesState } from './types';
 
+const cardSchema = defineCardsSchema({
+  decks: Object.fromEntries(
+    (['bonus', 'malus', 'surprise', 'conte'] as const).map((id) => [
+      id,
+      cards.deck({
+        id,
+        cards: CONTES_DECKS[id],
+        shuffle: true,
+        empty: 'recycle',
+      }),
+    ]),
+  ),
+  hands: {},
+});
+
 export default defineGame<ContesState>()({
   id: 'contes-et-cacahuetes',
   displayName: 'Contes et Cacahuètes',
@@ -49,30 +65,7 @@ export default defineGame<ContesState>()({
   ],
   components: [
     pawns.set({ id: 'contes', pawns: CONTES_PAWNS }),
-    cards.deck({
-      id: 'bonus',
-      cards: CONTES_DECKS.bonus,
-      shuffle: true,
-      empty: 'recycle',
-    }),
-    cards.deck({
-      id: 'malus',
-      cards: CONTES_DECKS.malus,
-      shuffle: true,
-      empty: 'recycle',
-    }),
-    cards.deck({
-      id: 'surprise',
-      cards: CONTES_DECKS.surprise,
-      shuffle: true,
-      empty: 'recycle',
-    }),
-    cards.deck({
-      id: 'conte',
-      cards: CONTES_DECKS.conte,
-      shuffle: true,
-      empty: 'recycle',
-    }),
+    ...cardSchema.components,
   ],
   initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],

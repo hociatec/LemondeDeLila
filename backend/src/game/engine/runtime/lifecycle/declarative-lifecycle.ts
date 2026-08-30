@@ -9,14 +9,9 @@ import { GameStateViolationError } from '../../../core/domain/errors/game-domain
 export class DeclarativeLifecycle<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
 > {
   constructor(
-    private readonly definition: CompiledGameDefinition<
-      TState,
-      TActions,
-      TPlayerView
-    >,
+    private readonly definition: CompiledGameDefinition<TState, TActions>,
   ) {}
 
   enterInitialPhase(

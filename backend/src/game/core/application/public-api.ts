@@ -25,8 +25,14 @@ export type { GameStateEntity } from './contracts/game-state.model';
 export type {
   EventVisibility,
   GameEvent,
+  GamePendingEvent,
   ProjectedGameEvent,
+  ProjectedGamePendingEvent,
 } from './contracts/game-event.model';
+export {
+  projectGameEvent,
+  projectPendingGameEvent,
+} from './services/game-event-visibility';
 export {
   GAME_STATE_STORE,
   type GameStateCommit,

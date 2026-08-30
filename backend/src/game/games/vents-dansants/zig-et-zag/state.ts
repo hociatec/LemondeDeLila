@@ -25,13 +25,3 @@ export interface ZigEtZagState {
   battle: ZigEtZagRound;
   lastRound: ZigEtZagRoundSummary | null;
 }
-
-export interface ZigEtZagBattleLogEntry {
-  key: 'zig.battle.started' | 'zig.battle.continues';
-  params: { roundNumber: number };
-}
-
-export type ZigEtZagPlayerView = {
-  lastRound:
-    (ZigEtZagRoundSummary & { battleLog: ZigEtZagBattleLogEntry[] }) | null;
-};

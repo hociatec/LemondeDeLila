@@ -56,7 +56,7 @@ export class ServLoggerService implements LoggerService {
     this.logger.info(sanitizeLogText(String(message)), this.meta(context));
   }
 
-  error(message: unknown, trace?: string, context?: string) {
+  error(message: unknown, trace?: unknown, context?: string) {
     this.logger.error(sanitizeLogText(String(message)), {
       ...this.meta(context),
       trace: trace ? sanitizeLogText(trace) : trace,

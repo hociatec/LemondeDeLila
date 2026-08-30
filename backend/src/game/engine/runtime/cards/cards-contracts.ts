@@ -4,13 +4,27 @@ export type CardId = string | number;
 export type CardValue = CardId | object;
 export type CardDefinition<
   TCard extends CardId | { id: CardId } = { id: CardId },
-> = TCard;
+> = Readonly<TCard>;
 
-export type CardInstance<TCard extends CardValue> = TCard;
+/**
+ * Runtime card representation. Stateless games keep their lightweight card
+ * value; games with mutable per-copy state opt into an explicit instance.
+ */
+export type CardInstance<
+  TDefinition extends CardValue,
+  TInstanceState extends object | undefined = undefined,
+> = TInstanceState extends object
+  ? Readonly<{
+      instanceId: string;
+      definition: CardDefinition<Extract<TDefinition, CardId | { id: CardId }>>;
+      state: TInstanceState;
+    }>
+  : TDefinition;
 
-export type CardZone<TCard extends CardValue> = ReadonlyArray<
-  CardInstance<TCard>
->;
+export type CardZone<
+  TDefinition extends CardValue,
+  TInstanceState extends object | undefined = undefined,
+> = ReadonlyArray<CardInstance<TDefinition, TInstanceState>>;
 
 export type DeckDefinition<TCard extends CardValue> = {
   readonly component: 'cards.deck';

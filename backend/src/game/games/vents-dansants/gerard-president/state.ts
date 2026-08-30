@@ -6,8 +6,3 @@ export interface GerardState {
   secondThemeId: string | null;
   lockedNameId: string | null;
 }
-
-export type GerardPlayerView = {
-  currentTheme: string | null;
-  secondTheme: string | null;
-};

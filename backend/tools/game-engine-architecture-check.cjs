@@ -3,6 +3,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const ts = require('typescript');
 
 const repoRoot = path.resolve(__dirname, '..');
@@ -16,6 +17,10 @@ const defaultRuntimeRoot = path.join(
   'runtime',
 );
 const standardFiles = ['game.ts', 'rules.ts', 'content.ts', 'game.spec.ts'];
+const SDK_PUBLIC_SURFACE = Object.freeze({
+  exportCount: 64,
+  sha256: '553a8ba543fd3f3ee3d4487bbeba24efc65bdfff0bbbe5680471059a9c5eb16a',
+});
 const forbiddenGameLayers = new Set([
   'actions',
   'application',
@@ -220,7 +225,10 @@ function auditGamePackages(gamesRoot, violations) {
     const source = fs.readFileSync(file, 'utf8');
     const basename = path.basename(file);
     const gameDirectory = findGameDirectory(file, gamesRoot);
-    if (['rules.ts', 'content.ts'].includes(basename) && lineCount(source) > 400) {
+    if (
+      ['rules.ts', 'content.ts'].includes(basename) &&
+      lineCount(source) > 400
+    ) {
       add(
         violations,
         'bounded-game-entry-file',
@@ -282,6 +290,18 @@ function auditGamePackages(gamesRoot, violations) {
         'explicit-player-projection',
         relative,
         'Une vue joueur doit utiliser une projection explicite des champs.',
+      );
+    }
+    if (
+      basename === 'game.ts' &&
+      /\bcards\.deck\s*\(/.test(source) &&
+      !/\bdefineCardsSchema\s*\(/.test(source)
+    ) {
+      add(
+        violations,
+        'typed-card-schema',
+        relative,
+        'Toute déclaration directe de pioche doit passer par defineCardsSchema().',
       );
     }
     if (/ctx\.history\.add\s*\(/.test(source)) {
@@ -500,6 +520,56 @@ function auditCli(violations) {
   }
 }
 
+function auditSdkPublicSurface(expected = SDK_PUBLIC_SURFACE) {
+  const configPath = ts.findConfigFile(
+    repoRoot,
+    ts.sys.fileExists,
+    'tsconfig.json',
+  );
+  if (!configPath) throw new Error('tsconfig.json introuvable');
+  const config = ts.readConfigFile(configPath, ts.sys.readFile);
+  const parsed = ts.parseJsonConfigFileContent(
+    config.config,
+    ts.sys,
+    path.dirname(configPath),
+  );
+  const program = ts.createProgram(parsed.fileNames, parsed.options);
+  const checker = program.getTypeChecker();
+  const sdkFile = program.getSourceFile(
+    path.join(repoRoot, 'src/game/engine/sdk/public-api.ts'),
+  );
+  const sdkSymbol = sdkFile && checker.getSymbolAtLocation(sdkFile);
+  if (!sdkFile || !sdkSymbol) {
+    return [
+      {
+        rule: 'sdk-public-surface',
+        file: 'src/game/engine/sdk/public-api.ts',
+        message: 'Surface publique SDK impossible à résoudre.',
+      },
+    ];
+  }
+  const names = checker
+    .getExportsOfModule(sdkSymbol)
+    .map((symbol) => symbol.name)
+    .sort();
+  const sha256 = crypto
+    .createHash('sha256')
+    .update(names.join('\n'))
+    .digest('hex');
+  if (names.length === expected.exportCount && sha256 === expected.sha256) {
+    return [];
+  }
+  return [
+    {
+      rule: 'sdk-public-surface',
+      file: 'src/game/engine/sdk/public-api.ts',
+      message:
+        `Surface modifiée: ${names.length} exports, sha256=${sha256}. ` +
+        'Toute évolution doit être versionnée et le contrat mis à jour explicitement.',
+    },
+  ];
+}
+
 function auditGameEngineArchitecture(options = {}) {
   const gamesRoot = options.gamesRoot ?? defaultGamesRoot;
   const gameRoot = options.gameRoot ?? defaultGameRoot;
@@ -508,6 +578,9 @@ function auditGameEngineArchitecture(options = {}) {
   auditGamePackages(gamesRoot, violations);
   auditEngine(gameRoot, runtimeRoot, violations);
   if (!options.skipCli) auditCli(violations);
+  if (!options.skipSdk && !options.skipCli) {
+    violations.push(...auditSdkPublicSurface());
+  }
   return violations.sort((left, right) =>
     `${left.rule}:${left.file}`.localeCompare(`${right.rule}:${right.file}`),
   );
@@ -530,6 +603,11 @@ function main() {
   process.exitCode = 1;
 }
 
-module.exports = { auditGameEngineArchitecture, standardFiles };
+module.exports = {
+  auditGameEngineArchitecture,
+  auditSdkPublicSurface,
+  SDK_PUBLIC_SURFACE,
+  standardFiles,
+};
 
 if (require.main === module) main();

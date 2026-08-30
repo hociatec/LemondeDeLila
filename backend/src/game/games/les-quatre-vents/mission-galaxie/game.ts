@@ -1,5 +1,6 @@
 import {
   cards,
+  defineCardsSchema,
   defineChoice,
   defineGameContent,
   defineGame,
@@ -15,23 +16,26 @@ import {
 } from './rules';
 import type { MissionGalaxieState } from './types';
 
-const decks = [
-  cards.deck({
-    id: 'questions',
-    cards: MISSION_GALAXIE_CONTENT.questions,
-    shuffle: true,
-  }),
-  cards.deck({
-    id: 'challenges',
-    cards: MISSION_GALAXIE_CONTENT.challenges,
-    shuffle: true,
-  }),
-  cards.deck({
-    id: 'events',
-    cards: MISSION_GALAXIE_CONTENT.events,
-    shuffle: true,
-  }),
-];
+const cardSchema = defineCardsSchema({
+  decks: {
+    questions: cards.deck({
+      id: 'questions',
+      cards: MISSION_GALAXIE_CONTENT.questions,
+      shuffle: true,
+    }),
+    challenges: cards.deck({
+      id: 'challenges',
+      cards: MISSION_GALAXIE_CONTENT.challenges,
+      shuffle: true,
+    }),
+    events: cards.deck({
+      id: 'events',
+      cards: MISSION_GALAXIE_CONTENT.events,
+      shuffle: true,
+    }),
+  },
+  hands: {},
+});
 
 export default defineGame<MissionGalaxieState>()({
   id: 'mission-galaxie',
@@ -48,7 +52,7 @@ export default defineGame<MissionGalaxieState>()({
       spaces: MISSION_GALAXIE_CONTENT.tiles.length,
     }),
   ],
-  components: [...decks],
+  components: [...cardSchema.components],
   shortcuts: [
     { key: 'D', type: 'action', actionType: 'roll' },
     { key: 'P', type: 'interface', id: 'position' },

@@ -1,6 +1,7 @@
 import {
   cards,
   cardGame,
+  defineCardsSchema,
   defineGamePhases,
   defineGame,
   defineGameContent,
@@ -13,6 +14,12 @@ import type { NoGameState as TaxiState } from '../../../engine/sdk/public-api';
 const TAXI_PHASES = defineGamePhases<TaxiState>()({
   initialPhase: 'playing',
   phases: { playing: {} },
+});
+const eventCards = defineCardsSchema({
+  decks: {
+    events: cards.deck({ id: 'events', cards: TAXI_EVENTS, shuffle: true }),
+  },
+  hands: {},
 });
 
 export default defineGame<TaxiState>()({
@@ -35,7 +42,7 @@ export default defineGame<TaxiState>()({
       cards: TAXI_CLIENTS,
     }),
   ],
-  components: [cards.deck({ id: 'events', cards: TAXI_EVENTS, shuffle: true })],
+  components: [...eventCards.components],
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
   initialPhase: TAXI_PHASES.initialPhase,
   phases: TAXI_PHASES.phases,

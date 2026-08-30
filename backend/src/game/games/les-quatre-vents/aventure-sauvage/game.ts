@@ -1,5 +1,6 @@
 import {
   cards,
+  defineCardsSchema,
   defineChoice,
   defineEffect,
   defineGame,
@@ -23,6 +24,22 @@ import {
 } from './rules';
 import type { AventureSauvageState } from './types';
 
+const cardSchema = defineCardsSchema({
+  decks: {
+    animal: cards.deck({
+      id: 'animal',
+      cards: AVENTURE_ANIMAL_CARDS,
+      shuffle: true,
+    }),
+    patte: cards.deck({
+      id: 'patte',
+      cards: AVENTURE_PATTE_CARDS,
+      shuffle: true,
+    }),
+  },
+  hands: {},
+});
+
 export default defineGame<AventureSauvageState>()({
   id: 'aventure-sauvage',
   displayName: 'Aventure Sauvage',
@@ -45,8 +62,7 @@ export default defineGame<AventureSauvageState>()({
   ],
   components: [
     pawns.set({ id: 'avatars', pawns: AVENTURE_PAWNS }),
-    cards.deck({ id: 'animal', cards: AVENTURE_ANIMAL_CARDS, shuffle: true }),
-    cards.deck({ id: 'patte', cards: AVENTURE_PATTE_CARDS, shuffle: true }),
+    ...cardSchema.components,
   ],
   shortcuts: [
     { key: 'D', type: 'action', actionType: 'roll' },

@@ -6,6 +6,7 @@ import type { ClientVersionPolicy } from '../../../application/ports/client-vers
 import { RealtimeApiHandlerService } from './realtime-api-handler.service';
 import type { RealtimeClientSession } from './realtime-api.types';
 import { RealtimeRequestReplayService } from './realtime-request-replay.service';
+import { PerfMetricsService } from '../../../../observability/public-api';
 
 describe('RealtimeApiHandlerService', () => {
   const setup = (overrides: Record<string, number> = {}) => {
@@ -21,12 +22,14 @@ describe('RealtimeApiHandlerService', () => {
     const config = {
       get: (key: string, fallback: number) => overrides[key] ?? fallback,
     } as ConfigService;
+    const perf = new PerfMetricsService();
     const service = new RealtimeApiHandlerService(
       registry,
       sessionStore,
       updates,
       config,
       new RealtimeRequestReplayService(),
+      perf,
     );
     const send = jest.fn();
     const close = jest.fn();
@@ -38,7 +41,7 @@ describe('RealtimeApiHandlerService', () => {
       clientVersion: null,
       clientProduct: null,
     };
-    return { service, registry, client, session, send, close };
+    return { service, registry, client, session, send, close, perf };
   };
 
   it('rejects unknown top-level properties instead of dispatching them', async () => {
@@ -101,7 +104,7 @@ describe('RealtimeApiHandlerService', () => {
   });
 
   it('executes a requestId once and replays its response across reconnects', async () => {
-    const { service, registry, client, session, send } = setup();
+    const { service, registry, client, session, send, perf } = setup();
     const handler = jest.fn().mockResolvedValue({
       type: 'sensitive.ok',
       payload: { committed: true },
@@ -125,6 +128,30 @@ describe('RealtimeApiHandlerService', () => {
 
     expect(handler).toHaveBeenCalledTimes(1);
     expect(send).toHaveBeenCalledTimes(2);
+    expect(perf.snapshot().events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ event: 'ws.reconnect.replay', count: 1 }),
+      ]),
+    );
+  });
+
+  it('records handler failures without exposing their details as metric labels', async () => {
+    const { service, registry, client, session, perf } = setup();
+    registry.register('failing.command', async () => {
+      throw new Error('secret database detail');
+    });
+
+    await service.handleIncoming(
+      client,
+      session,
+      JSON.stringify({ type: 'failing.command', payload: {} }),
+    );
+
+    expect(perf.snapshot().events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ event: 'ws.handler.error', count: 1 }),
+      ]),
+    );
   });
 
   it('rejects reuse of one requestId for a different command', async () => {

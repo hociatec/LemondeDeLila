@@ -7,6 +7,8 @@ const path = require('node:path');
 const test = require('node:test');
 const {
   auditGameEngineArchitecture,
+  auditSdkPublicSurface,
+  SDK_PUBLIC_SURFACE,
 } = require('./game-engine-architecture-check.cjs');
 
 function fixture(mutator) {
@@ -133,6 +135,19 @@ test('rejects direct runtime imports and enforces the stable author SDK', () => 
   );
 });
 
+test('requires defineCardsSchema for direct card-kit declarations', () => {
+  const violations = fixture(({ gamesRoot }) => {
+    fs.writeFileSync(
+      path.join(gamesRoot, 'game.ts'),
+      "export default defineGame({ id: 'example', components: [cards.deck({ id: 'main', cards: [] })] });\n",
+    );
+  });
+  assert.equal(
+    violations.some((violation) => violation.rule === 'typed-card-schema'),
+    true,
+  );
+});
+
 test('rejects missing standard files and manifest/definition drift', () => {
   const violations = fixture(({ gamesRoot }) => {
     fs.rmSync(path.join(gamesRoot, 'content.ts'));
@@ -210,4 +225,15 @@ test('rejects an incomplete official runtime contract', () => {
     (violation) => violation.rule === 'complete-runtime-contract',
   );
   assert.equal(missing.length, 9);
+});
+
+test('locks the complete public SDK surface, including type exports', () => {
+  assert.deepEqual(auditSdkPublicSurface(), []);
+  assert.equal(
+    auditSdkPublicSurface({
+      ...SDK_PUBLIC_SURFACE,
+      exportCount: SDK_PUBLIC_SURFACE.exportCount - 1,
+    })[0].rule,
+    'sdk-public-surface',
+  );
 });

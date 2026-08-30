@@ -12,14 +12,9 @@ import { sameSerializableValue } from '../state/serializable-value';
 export class DeclarativeChoiceRuntime<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
 > {
   constructor(
-    private readonly definition: CompiledGameDefinition<
-      TState,
-      TActions,
-      TPlayerView
-    >,
+    private readonly definition: CompiledGameDefinition<TState, TActions>,
   ) {}
 
   resolve(

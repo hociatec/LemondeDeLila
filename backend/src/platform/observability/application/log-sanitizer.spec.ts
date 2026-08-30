@@ -22,4 +22,14 @@ describe('log sanitizer', () => {
     ).not.toContain('abc.def');
     expect(sanitizeLogText('{"token":"abc"}')).not.toContain('abc');
   });
+
+  it('accepts framework error objects and structured trace metadata', () => {
+    expect(() => sanitizeLogText(new Error('redis unavailable'))).not.toThrow();
+    const sanitized = sanitizeLogText({
+      token: 'secret',
+      code: 'ECONNREFUSED',
+    });
+    expect(sanitized).not.toContain('secret');
+    expect(sanitized).toContain('ECONNREFUSED');
+  });
 });

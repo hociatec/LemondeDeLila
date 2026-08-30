@@ -10,11 +10,17 @@ import {
   ZIG_ET_ZAG_PHASES,
   zigRoundPlays,
 } from './rules';
-import type {
-  ZigEtZagBattleLogEntry,
-  ZigEtZagPlayerView,
-  ZigEtZagState,
-} from './state';
+import type { ZigEtZagRoundSummary, ZigEtZagState } from './state';
+
+type ZigEtZagBattleLogEntry = {
+  key: 'zig.battle.started' | 'zig.battle.continues';
+  params: { roundNumber: number };
+};
+
+type ZigEtZagPlayerView = {
+  lastRound:
+    (ZigEtZagRoundSummary & { battleLog: ZigEtZagBattleLogEntry[] }) | null;
+};
 
 const INITIAL_HAND_SIZE = 27;
 

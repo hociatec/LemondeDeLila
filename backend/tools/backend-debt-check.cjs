@@ -2,6 +2,8 @@
 /* eslint-disable no-console */
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+const ts = require('typescript');
 
 const root = path.resolve(__dirname, '..');
 const src = path.join(root, 'src');
@@ -20,6 +22,8 @@ const files = walk(src).filter(
   (file) =>
     file.endsWith('.ts') &&
     !file.endsWith('.spec.ts') &&
+    !file.endsWith('.test.ts') &&
+    !file.includes(`${path.sep}tests${path.sep}`) &&
     !file.includes(`${path.sep}migrations${path.sep}`),
 );
 const sources = files.map((file) => ({
@@ -28,6 +32,37 @@ const sources = files.map((file) => ({
   source: fs.readFileSync(file, 'utf8'),
 }));
 const violations = [];
+let explicitAny = 0;
+let unjustifiedEmptyCatches = 0;
+
+const environmentFile = path.join(root, '.env');
+if (fs.existsSync(environmentFile)) {
+  const unsafePermissions = fs.statSync(environmentFile).mode & 0o077;
+  if (unsafePermissions !== 0) {
+    violations.push('.env: permissions groupe/autres interdites (attendu 600)');
+  }
+}
+
+const trackedResult = spawnSync('git', ['ls-files', '-z'], {
+  cwd: root,
+  encoding: 'utf8',
+});
+if (trackedResult.status === 0) {
+  const trackedArtifacts = trackedResult.stdout
+    .split('\0')
+    .filter(Boolean)
+    .filter(
+      (file) =>
+        file.startsWith('coverage/') ||
+        file.startsWith('data/client-updates/') ||
+        /^\.tmp-eslint-.*\.json$/.test(file),
+    );
+  if (trackedArtifacts.length > 0) {
+    violations.push(
+      `artefacts runtime/générés suivis par Git: ${trackedArtifacts.length}`,
+    );
+  }
+}
 
 for (const item of sources) {
   if (/@deprecated\b/.test(item.source)) {
@@ -37,14 +72,34 @@ for (const item of sources) {
     violations.push(`${item.relative}: SQL PostgreSQL interdit`);
   }
   if (/\.query\s*\(\s*`[^`]*\$\{/s.test(item.source)) {
-    violations.push(`${item.relative}: interpolation dans une requête SQL brute`);
+    violations.push(
+      `${item.relative}: interpolation dans une requête SQL brute`,
+    );
   }
+
+  const sourceFile = ts.createSourceFile(
+    item.file,
+    item.source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const visit = (node) => {
+    if (node.kind === ts.SyntaxKind.AnyKeyword) explicitAny += 1;
+    if (ts.isCatchClause(node) && node.block.statements.length === 0) {
+      const justification = node.block.getText(sourceFile).slice(1, -1).trim();
+      if (!justification) unjustifiedEmptyCatches += 1;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
 }
 
 const silentPromiseCatches = sources.reduce(
   (count, item) =>
     count +
-    (item.source.match(/\.catch\(\(\)\s*=>\s*(?:undefined|\{\})\)/g)?.length ?? 0),
+    (item.source.match(/\.catch\(\(\)\s*=>\s*(?:undefined|\{\})\)/g)?.length ??
+      0),
   0,
 );
 const directProcessEnv = sources.reduce(
@@ -61,6 +116,16 @@ if (directProcessEnv > contract.ceilings.directProcessEnv) {
     `process.env directs: ${directProcessEnv} > ${contract.ceilings.directProcessEnv}`,
   );
 }
+if (explicitAny > contract.ceilings.explicitAny) {
+  violations.push(
+    `types any explicites en production: ${explicitAny} > ${contract.ceilings.explicitAny}`,
+  );
+}
+if (unjustifiedEmptyCatches > contract.ceilings.unjustifiedEmptyCatches) {
+  violations.push(
+    `catch vides sans justification: ${unjustifiedEmptyCatches} > ${contract.ceilings.unjustifiedEmptyCatches}`,
+  );
+}
 
 for (const component of contract.requiredLocalSpecs) {
   const componentRoot = path.join(src, component);
@@ -74,7 +139,7 @@ for (const document of contract.requiredDocuments) {
 }
 
 console.log(
-  `backend-debt-check: ${files.length} fichiers, silentPromiseCatches=${silentPromiseCatches}, directProcessEnv=${directProcessEnv}`,
+  `backend-debt-check: ${files.length} fichiers, silentPromiseCatches=${silentPromiseCatches}, directProcessEnv=${directProcessEnv}, explicitAny=${explicitAny}, unjustifiedEmptyCatches=${unjustifiedEmptyCatches}`,
 );
 if (violations.length > 0) {
   for (const violation of violations) console.error(`- ${violation}`);

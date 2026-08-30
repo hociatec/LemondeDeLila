@@ -5,12 +5,6 @@ export interface CompletedCarState {
   parts: string[];
 }
 
-export interface CompletedCarView {
-  name: string;
-  description: string;
-  parts: string[];
-}
-
 export interface CarProgress {
   stageIndex: number;
   carParts: string[];
@@ -20,10 +14,3 @@ export interface CarProgress {
 export interface PimpMyRideState {
   completedCars: PlayerMap<CompletedCarState[]>;
 }
-
-export type PimpMyRidePlayerView = {
-  progress: Record<
-    number,
-    Omit<CarProgress, 'completedCars'> & { completedCars: CompletedCarView[] }
-  >;
-};

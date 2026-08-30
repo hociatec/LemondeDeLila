@@ -40,7 +40,7 @@ async function main() {
   const delayedRuns = [];
   const delayedWorker = worker(async (job) => delayedRuns.push(job.id));
   const earliest = Date.now() + 250;
-  await queue.add('delayed', {}, { jobId: 'delayed', delay: 250 });
+  await queue.add('delayed', {}, { jobId: 'job-delayed', delay: 250 });
   await waitFor(() => delayedRuns.length === 1);
   if (Date.now() < earliest - 30) throw new Error('Job delayed exécuté trop tôt');
   await delayedWorker.close();
@@ -51,25 +51,27 @@ async function main() {
     if (attempts < 3) throw new Error('retry attendu');
   });
   await queue.add('retry', {}, {
-    jobId: 'retry',
+    jobId: 'job-retry',
     attempts: 3,
     backoff: { type: 'fixed', delay: 20 },
   });
-  await waitFor(async () => (await queue.getJob('retry'))?.isCompleted());
+  await waitFor(async () => (await queue.getJob('job-retry'))?.isCompleted());
   if (attempts !== 3) throw new Error(`Nombre de retries invalide: ${attempts}`);
   await retryWorker.close();
 
-  await queue.add('cancelled', {}, { jobId: 'cancelled', delay: 60_000 });
-  const cancelled = await queue.getJob('cancelled');
+  await queue.add('cancelled', {}, { jobId: 'job-cancelled', delay: 60_000 });
+  const cancelled = await queue.getJob('job-cancelled');
   await cancelled.remove();
-  if (await queue.getJob('cancelled')) throw new Error('Suppression BullMQ incomplète');
+  if (await queue.getJob('job-cancelled')) {
+    throw new Error('Suppression BullMQ incomplète');
+  }
 
-  await queue.add('restart', {}, { jobId: 'restart', delay: 100 });
+  await queue.add('restart', {}, { jobId: 'job-restart', delay: 100 });
   const stoppedWorker = worker(async () => undefined);
   await stoppedWorker.close();
   let restarted = 0;
   const restartedWorker = worker(async (job) => {
-    if (job.id === 'restart') restarted += 1;
+    if (job.id === 'job-restart') restarted += 1;
   });
   await waitFor(() => restarted === 1);
   await restartedWorker.close();

@@ -7,10 +7,7 @@ import { contentManifest } from '../content/game-content';
 export function describeGameDefinition<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
->(
-  definition: CompiledGameDefinition<TState, TActions, TPlayerView>,
-): GameRuntimeDescriptor {
+>(definition: CompiledGameDefinition<TState, TActions>): GameRuntimeDescriptor {
   return {
     id: definition.id,
     name: definition.displayName,
@@ -57,8 +54,7 @@ export function describeGameDefinition<
 function describeActions<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
->(definition: CompiledGameDefinition<TState, TActions, TPlayerView>) {
+>(definition: CompiledGameDefinition<TState, TActions>) {
   const configurationAction = definition.config
     ? [
         {
@@ -87,8 +83,7 @@ function describeActions<
 function describeConfiguration<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
->(definition: CompiledGameDefinition<TState, TActions, TPlayerView>) {
+>(definition: CompiledGameDefinition<TState, TActions>) {
   if (!definition.config) return {};
   return {
     configuration: {
@@ -109,10 +104,7 @@ function describeConfiguration<
 export function deriveGameShortcuts<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
->(
-  definition: CompiledGameDefinition<TState, TActions, TPlayerView>,
-): GameShortcutHint[] {
+>(definition: CompiledGameDefinition<TState, TActions>): GameShortcutHint[] {
   const shortcuts = [...structuredClone(definition.shortcuts ?? [])];
   const usedKeys = new Set(shortcuts.map((shortcut) => shortcut.key));
   const actionTypes = new Set(

@@ -1,5 +1,6 @@
 import {
   cards,
+  defineCardsSchema,
   defineChoice,
   defineEffect,
   defineGame,
@@ -22,6 +23,18 @@ import {
 } from './rules';
 import type { NoGameState as GaloponsState } from '../../../engine/sdk/public-api';
 
+const cardSchema = defineCardsSchema({
+  decks: {
+    adventure: cards.deck({
+      id: 'adventure',
+      cards: GALOPONS_CARDS,
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {},
+});
+
 export default defineGame<GaloponsState>()({
   id: 'galopons-ensemble',
   displayName: 'Galopons ensemble !',
@@ -37,12 +50,7 @@ export default defineGame<GaloponsState>()({
   patterns: [raceGame({ trackId: 'galopons', spaces: GALOPONS_TILES.length })],
   components: [
     pawns.set({ id: 'galopons', pawns: GALOPONS_PAWNS }),
-    cards.deck({
-      id: 'adventure',
-      cards: GALOPONS_CARDS,
-      shuffle: true,
-      empty: 'recycle',
-    }),
+    ...cardSchema.components,
   ],
   initialization: { firstPlayer: 'first', startRound: true },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],

@@ -30,9 +30,8 @@ import { DeclarativeGameQueries } from './projection/declarative-game-queries';
 export class DeclarativeGameRuntime<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
 >
-  extends DeclarativeGameQueries<TState, TActions, TPlayerView>
+  extends DeclarativeGameQueries<TState, TActions>
   implements GameRuntime
 {
   readonly gameType: string;
@@ -42,28 +41,12 @@ export class DeclarativeGameRuntime<
   readonly description?: string;
   readonly minPlayers: number;
   readonly maxPlayers: number;
-  protected readonly choices: DeclarativeChoiceRuntime<
-    TState,
-    TActions,
-    TPlayerView
-  >;
-  private readonly actions: DeclarativeActionController<
-    TState,
-    TActions,
-    TPlayerView
-  >;
-  private readonly lifecycle: DeclarativeLifecycle<
-    TState,
-    TActions,
-    TPlayerView
-  >;
+  protected readonly choices: DeclarativeChoiceRuntime<TState, TActions>;
+  private readonly actions: DeclarativeActionController<TState, TActions>;
+  private readonly lifecycle: DeclarativeLifecycle<TState, TActions>;
 
   constructor(
-    protected readonly definition: CompiledGameDefinition<
-      TState,
-      TActions,
-      TPlayerView
-    >,
+    protected readonly definition: CompiledGameDefinition<TState, TActions>,
   ) {
     super();
     this.gameType = definition.id;
