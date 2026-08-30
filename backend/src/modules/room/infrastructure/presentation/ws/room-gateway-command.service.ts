@@ -8,8 +8,32 @@ import {
 import type { ClientMeta, IncomingPayload } from './room-gateway.types';
 import {
   RoomWsIntentIdRequiredError,
+  RoomWsInvalidMessageError,
+  RoomWsUnknownCommandError,
   RoomWsUnknownIntentError,
 } from '../../../domain/errors/room-ws.errors';
+
+const MAX_ROOM_MESSAGE_BYTES = 65_536;
+const ROOM_COMMANDS = new Set([
+  'room.intent.execute',
+  'room.leave',
+  'room.chat.send',
+  'room.chat.history',
+  'room.start',
+  'room.reset',
+  'room.set-role',
+  'room.kick',
+  'room.ban',
+  'room.set-owner',
+  'room.set-ambience',
+  'room.toggle-privacy',
+  'room.info',
+  'room.ping',
+  'bot.add',
+  'bot.remove',
+  'room.create',
+  'room.join',
+]);
 
 type CommandContext = {
   safeSend: (client: WebSocket, payload: unknown) => void;
@@ -94,7 +118,7 @@ type CommandContext = {
 
 @Injectable()
 export class RoomGatewayCommandService {
-  decode(raw: unknown): IncomingPayload | null {
+  decode(raw: unknown): IncomingPayload {
     let text: string;
     if (typeof raw === 'string') {
       text = raw;
@@ -103,23 +127,31 @@ export class RoomGatewayCommandService {
     } else if (raw instanceof ArrayBuffer) {
       text = Buffer.from(raw).toString('utf-8');
     } else {
-      return null;
+      throw new RoomWsInvalidMessageError();
     }
     if (!text.trim()) {
-      return null;
+      throw new RoomWsInvalidMessageError();
     }
+    if (Buffer.byteLength(text, 'utf8') > MAX_ROOM_MESSAGE_BYTES) {
+      throw new RoomWsInvalidMessageError();
+    }
+    let parsed: unknown;
     try {
-      const parsed: unknown = JSON.parse(text);
-      if (!isRecord(parsed)) {
-        return null;
-      }
-      if (parsed.type !== undefined && typeof parsed.type !== 'string') {
-        return null;
-      }
-      return { type: parsed.type, payload: parsed.payload };
+      parsed = JSON.parse(text);
     } catch {
-      return null;
+      throw new RoomWsInvalidMessageError();
     }
+    if (!isRecord(parsed)) {
+      throw new RoomWsInvalidMessageError();
+    }
+    if (parsed.type !== undefined && typeof parsed.type !== 'string') {
+      throw new RoomWsInvalidMessageError();
+    }
+    const type = parsed.type?.trim();
+    if (!type || !ROOM_COMMANDS.has(type)) {
+      throw new RoomWsUnknownCommandError(type ?? '');
+    }
+    return { type, payload: parsed.payload };
   }
 
   async handleCommand(
@@ -297,7 +329,7 @@ export class RoomGatewayCommandService {
         await ctx.handleRoomJoin(client, meta, data, receivedAtMs);
         break;
       default:
-        break;
+        throw new RoomWsUnknownCommandError(type ?? '');
     }
   }
 }

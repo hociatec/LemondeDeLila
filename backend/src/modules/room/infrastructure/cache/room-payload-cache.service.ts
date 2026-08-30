@@ -2,7 +2,7 @@ import { Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Redis } from 'ioredis';
 import { RedisClientFactory } from '../../../../platform/redis/public-api';
-import { RoomPayload } from '../../application/models/room-payload.model';
+import { RoomPayload } from '../../application/contracts/room-payload.model';
 import { decodeRoomPayload } from './room-payload.decoder';
 
 @Injectable()

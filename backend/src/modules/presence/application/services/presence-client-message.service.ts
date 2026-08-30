@@ -4,7 +4,7 @@ import { getErrorDetails } from '@shared/utils/public-api';
 import type {
   PresenceClient,
   PresenceIncomingPayload,
-} from '../models/presence-client.model';
+} from '../contracts/presence-client.model';
 import {
   PresenceChatCommandResult,
   PresenceChatService,

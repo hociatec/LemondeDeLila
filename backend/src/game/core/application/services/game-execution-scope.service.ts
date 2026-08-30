@@ -3,12 +3,12 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import type {
   GameClock,
   GameExecutionContext,
-} from '../models/game-execution-context.model';
+} from '../contracts/game-execution-context.model';
 import {
   StateGameRng,
   SystemGameClock,
-} from '../models/game-execution-context.model';
-import type { GameStateEntity } from '../models/game-state.model';
+} from '../contracts/game-execution-context.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
 
 const executionStorage = new AsyncLocalStorage<GameExecutionContext>();
 const systemClock = new SystemGameClock();

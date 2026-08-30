@@ -4,7 +4,7 @@ import {
   BotRoomFullError,
   BotRoomOwnerRequiredError,
 } from '../../errors/bot-application.errors';
-import type { BotManagedRoomRecord } from '../../models/bot-room.record';
+import type { BotManagedRoomRecord } from '../../contracts/bot-room.record';
 import { BotRoomPolicyService } from './bot-room-policy.service';
 
 describe('BotRoomPolicyService', () => {

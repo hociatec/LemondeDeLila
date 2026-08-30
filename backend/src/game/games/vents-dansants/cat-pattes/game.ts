@@ -14,12 +14,8 @@ import {
   CAT_PATTES_DEFAULT_ROUNDS,
   CAT_PATTES_GOAL,
 } from './content';
-import {
-  CAT_PATTES_ACTIONS,
-  playableInputs,
-  resetCatPattesRound,
-  scoreCatPattesRound,
-} from './rules';
+import { CAT_PATTES_ACTIONS, playableInputs } from './rules';
+import { resetCatPattesRound, scoreCatPattesRound } from './round-rules';
 import { CAT_PATTES_EFFECTS } from './effects';
 
 const scoring = roundScoring<NoGameState>({
@@ -27,7 +23,7 @@ const scoring = roundScoring<NoGameState>({
 });
 const CAT_PATTES_PHASES = setupPlayingPhases<NoGameState>();
 
-export default defineGame<NoGameState, typeof CAT_PATTES_ACTIONS>({
+export default defineGame<NoGameState>()({
   id: 'cat-pattes',
   displayName: 'Cat Pattes !',
   category: 'JeuxDePlateaux',

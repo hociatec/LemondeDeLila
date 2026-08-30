@@ -71,14 +71,12 @@ export class RoomGatewayDispatcherService {
       }
       try {
         const payload = this.commands.decode(raw);
-        if (payload) {
-          await this.commands.handleCommand(
-            this.commandContext(),
-            client,
-            meta,
-            payload,
-          );
-        }
+        await this.commands.handleCommand(
+          this.commandContext(),
+          client,
+          meta,
+          payload,
+        );
       } catch (error) {
         await this.runtime.sendError(
           client,

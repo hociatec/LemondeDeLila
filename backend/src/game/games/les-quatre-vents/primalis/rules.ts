@@ -19,7 +19,7 @@ const PRIMALIS_FACES: readonly PrimalisFace[] = [
   'danger',
   'herbivore',
 ];
-const ROLL_RESOLVED = defineEvent({
+export const ROLL_RESOLVED = defineEvent({
   type: 'primalis.roll.resolved',
   data: gameInput.object({
     playerId: gameInput.playerId(),

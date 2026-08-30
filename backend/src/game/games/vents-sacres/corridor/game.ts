@@ -23,7 +23,7 @@ import {
 } from './rules';
 import type { CorridorPosition } from './types';
 
-export default defineGame<NoGameState, typeof CORRIDOR_ACTIONS>({
+export default defineGame<NoGameState>()({
   id: 'corridor',
   displayName: 'Le Corridor',
   category: 'JeuxDePlateaux',

@@ -6,8 +6,8 @@ import type {
   ListRoomsFilters,
   RoomRepository,
 } from '../../../../application/ports/room.repository';
-import type { RoomRecord } from '../../../../application/models/room-record.model';
-import type { RoomUserRecord } from '../../../../application/models/room-user.model';
+import type { RoomRecord } from '../../../../application/contracts/room-record.model';
+import type { RoomUserRecord } from '../../../../application/contracts/room-user.model';
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { toRoomEntity, toRoomRecord } from './room-typeorm.mappers';

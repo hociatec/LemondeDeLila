@@ -12,13 +12,13 @@ const ANSWERS = 'nawak.answers';
 const VOTES = 'nawak.votes';
 type RuleContext = GameContext<NawakState>;
 export const NAWAK_TARGET_SCORE = 5;
-const ANSWERS_REVEALED = defineEvent({
+export const ANSWERS_REVEALED = defineEvent({
   type: 'nawak.answers.revealed',
   data: gameInput.object({
     count: gameInput.number({ integer: true, min: 0 }),
   }),
 });
-const ROUND_STARTED = defineEvent({
+export const ROUND_STARTED = defineEvent({
   type: 'nawak.round.started',
   data: gameInput.object({
     challengeId: gameInput.string({ min: 1, max: 128 }),

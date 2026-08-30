@@ -1,4 +1,4 @@
-import type { RoomRecord } from '../models/room-record.model';
+import type { RoomRecord } from '../contracts/room-record.model';
 
 export const ROOM_LOBBY_REPOSITORY = Symbol('ROOM_LOBBY_REPOSITORY');
 

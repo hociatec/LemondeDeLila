@@ -1,4 +1,4 @@
-import type { AdminContactItem } from '../models/admin-contact.model';
+import type { AdminContactItem } from '../contracts/admin-contact.model';
 
 export const NOTIFICATION_INBOX_NOTIFIER = Symbol(
   'NOTIFICATION_INBOX_NOTIFIER',

@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@nestjs/common';
-import { GameSingleActionDto } from '../models/game-action.model';
-import { GameStateEntity } from '../models/game-state.model';
+import { GameSingleActionDto } from '../contracts/game-action.model';
+import { GameStateEntity } from '../contracts/game-state.model';
 import type { GameRuntime } from '../contracts/game-runtime.interface';
 
 @Injectable()

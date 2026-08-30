@@ -15,10 +15,7 @@ const deck = cards.deck({
   empty: 'recycle',
 });
 
-export default defineGame<
-  ToutPresDeMamanState,
-  typeof TOUT_PRES_DE_MAMAN_ACTIONS
->({
+export default defineGame<ToutPresDeMamanState>()({
   id: 'tout-pres-de-maman',
   displayName: 'Tout près de Maman !',
   category: 'JeuxDePlateaux',

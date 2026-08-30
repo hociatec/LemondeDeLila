@@ -2,9 +2,20 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import compression from 'compression';
+import {
+  json,
+  urlencoded,
+  type NextFunction,
+  type Request,
+  type Response,
+} from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { ServLoggerService } from './platform/observability/public-api';
+import {
+  normalizeCorrelationId,
+  runWithCorrelationId,
+  ServLoggerService,
+} from './platform/observability/public-api';
 import { LilaWsAdapter } from './platform/ws/infrastructure/platform/lila-ws.adapter';
 import { NormalizedValidationPipe } from './platform/validation/public-api';
 
@@ -16,6 +27,7 @@ async function bootstrap() {
     // Important: let errors bubble so our bootstrap().catch can log them.
     // Otherwise Nest may abort via ExceptionsZone and exit(1) without any useful output.
     abortOnError: false,
+    bodyParser: false,
   });
   const config = app.get(ConfigService);
   app.enableShutdownHooks(['SIGTERM', 'SIGINT']);
@@ -31,6 +43,15 @@ async function bootstrap() {
 
   app.use(helmet());
   app.use(compression());
+  app.use(json({ limit: '256kb' }));
+  app.use(urlencoded({ extended: false, limit: '64kb', parameterLimit: 200 }));
+  app.use((request: Request, response: Response, next: NextFunction) => {
+    const correlationId = normalizeCorrelationId(
+      request.headers['x-request-id'],
+    );
+    response.setHeader('x-request-id', correlationId);
+    runWithCorrelationId(correlationId, next);
+  });
 
   const corsOrigins = config.get<string>('CORS_ORIGINS');
   const origins = corsOrigins

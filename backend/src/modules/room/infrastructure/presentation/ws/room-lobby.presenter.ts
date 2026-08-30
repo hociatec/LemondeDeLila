@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import type { RoomPayload } from '../../../application/models/room-payload.model';
-import type { RoomRecord } from '../../../application/models/room-record.model';
-import type { RoomInvite } from '../../../application/services/room-invite.service';
+import type { RoomPayload } from '../../../application/contracts/room-payload.model';
+import type { RoomRecord } from '../../../application/contracts/room-record.model';
+import type { RoomInvite } from '../../../application/services/membership/room-invite.service';
 
 type LobbyWsVariant = 'legacy' | 'lobby';
 

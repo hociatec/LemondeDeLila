@@ -1,5 +1,5 @@
 import type { BugReportRepository } from '../../ports/bug-report.repository';
-import type { BugReportRecord } from '../../models/bug-report.record';
+import type { BugReportRecord } from '../../contracts/bug-report.record';
 import { BugReportStatusNormalizerService } from './bug-report-status-normalizer.service';
 
 export class GetBugReportService {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { RoomPayload } from '../../../application/models/room-payload.model';
+import type { RoomPayload } from '../../../application/contracts/room-payload.model';
 import type { RoomIntent } from './dto/room-intent.ws.dto';
 
 @Injectable()

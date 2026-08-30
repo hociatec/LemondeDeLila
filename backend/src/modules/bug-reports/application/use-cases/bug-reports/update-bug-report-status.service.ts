@@ -2,7 +2,7 @@ import type { BugReportRepository } from '../../ports/bug-report.repository';
 import type {
   BugReportRecord,
   BugReportStatus,
-} from '../../models/bug-report.record';
+} from '../../contracts/bug-report.record';
 import { GetBugReportService } from './get-bug-report.service';
 import { BugReportStatusNormalizerService } from './bug-report-status-normalizer.service';
 

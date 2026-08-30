@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { RoomAdminPort } from '../../application/ports/room-admin.port';
-import { RoomAdminContextService } from '../../application/services/room-admin-context.service';
-import { RoomAdminMaintenanceService } from '../../application/services/room-admin-maintenance.service';
+import { RoomAdminContextService } from '../../application/services/maintenance/room-admin-context.service';
+import { RoomAdminMaintenanceService } from '../../application/services/maintenance/room-admin-maintenance.service';
 
 @Injectable()
 export class RoomAdminAdapter implements RoomAdminPort {

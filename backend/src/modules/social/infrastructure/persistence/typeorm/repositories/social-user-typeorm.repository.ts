@@ -5,7 +5,7 @@ import type { SocialUserReader } from '../../../../application/ports/social-user
 import type {
   SocialSearchUserSummary,
   SocialUserSummary,
-} from '../../../../application/models/social-user.model';
+} from '../../../../application/contracts/social-user.model';
 import { User } from '../../../../../user/public-api';
 import { SocialProfileEntity } from '../entities/social-profile.entity';
 
@@ -73,13 +73,13 @@ export class SocialUserTypeormRepository implements SocialUserReader {
     }>;
 
     try {
-      rows = await buildQuery(true).getRawMany();
+      rows = await buildQuery(true).limit(limit).getRawMany();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (!/collation/i.test(message)) {
         throw error;
       }
-      rows = await buildQuery(false).getRawMany();
+      rows = await buildQuery(false).limit(limit).getRawMany();
     }
 
     return rows.map((row) => ({

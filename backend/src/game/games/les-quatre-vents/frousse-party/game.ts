@@ -18,7 +18,7 @@ import {
 } from './rules';
 import type { NoGameState as FrousseState } from '../../../engine/sdk/public-api';
 
-export default defineGame<FrousseState, typeof FROUSSE_ACTIONS>({
+export default defineGame<FrousseState>()({
   id: 'frousse-party',
   displayName: 'Frousse Party',
   category: 'JeuxDePlateaux',

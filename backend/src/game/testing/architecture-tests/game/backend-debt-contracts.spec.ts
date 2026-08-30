@@ -23,10 +23,10 @@ import {
   overrideTurn,
   pawns,
   simultaneous,
-} from '../../../core/application/public-api';
+} from '../../../engine/sdk/public-api';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import { GameTestKit } from '../../../core/testing/game-test-kit';
-import { DeclarativeGameRuntime } from '../../../core/application/runtime/declarative-game.runtime';
+import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
 import { GameSimulator } from '../../../core/testing/game-simulator';
 
 describe('backend debt contracts', () => {

@@ -3,7 +3,7 @@ import * as path from 'path';
 import { writeFileAtomic } from '../../../../shared/utils/public-api';
 import { Injectable } from '@nestjs/common';
 
-import { ClientUpdateMeta } from '../../application/models/client-update-meta.record';
+import { ClientUpdateMeta } from '../../application/contracts/client-update-meta.record';
 import { ClientUpdatesPathsService } from './client-updates-paths.service';
 import { decodeClientUpdateMeta } from './client-update-meta.decoder';
 import { getErrorCode } from '@shared/utils/public-api';

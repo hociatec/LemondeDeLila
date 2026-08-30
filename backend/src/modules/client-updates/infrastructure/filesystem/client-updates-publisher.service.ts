@@ -6,7 +6,7 @@ import {
   readEnvironmentBoolean,
   readEnvironment,
 } from '../../../../platform/config/public-api';
-import { ClientUpdateMeta } from '../../application/models/client-update-meta.record';
+import { ClientUpdateMeta } from '../../application/contracts/client-update-meta.record';
 import { ClientUpdatesMetaStoreService } from './client-updates-meta-store.service';
 import { ClientUpdatesPathsService } from './client-updates-paths.service';
 import { ClientUpdatesArchivePublisher } from './client-updates-archive-publisher';

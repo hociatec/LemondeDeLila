@@ -4,10 +4,16 @@ import {
   submissionJudgeGame,
 } from '../../../engine/sdk/public-api';
 import { NAWAK_CHALLENGES } from './content';
-import { NAWAK_ACTIONS, NAWAK_TARGET_SCORE, nawakStage } from './rules';
+import {
+  ANSWERS_REVEALED,
+  NAWAK_ACTIONS,
+  NAWAK_TARGET_SCORE,
+  ROUND_STARTED,
+  nawakStage,
+} from './rules';
 import type { NawakPlayerView, NawakState } from './state';
 
-export default defineGame<NawakState, typeof NAWAK_ACTIONS, NawakPlayerView>({
+export default defineGame<NawakState>()({
   id: 'nawak',
   displayName: 'Nawak !',
   category: 'JeuxDePlateaux',
@@ -15,6 +21,7 @@ export default defineGame<NawakState, typeof NAWAK_ACTIONS, NawakPlayerView>({
   description:
     'Répondez aux défis absurdes puis votez pour une réponse étrangère.',
   players: { min: 2, max: 8 },
+  events: [ANSWERS_REVEALED, ROUND_STARTED],
   content: defineGameContent('nawak', {
     challenges: NAWAK_CHALLENGES,
     targetScore: NAWAK_TARGET_SCORE,
@@ -47,9 +54,17 @@ export default defineGame<NawakState, typeof NAWAK_ACTIONS, NawakPlayerView>({
     };
   },
   actions: NAWAK_ACTIONS,
-  viewExtension: ({ state }) => ({
+  viewExtension: ({ state }): NawakPlayerView => ({
     currentChallengeId: state.currentChallengeId,
-    lastRound: structuredClone(state.lastRound),
+    lastRound: state.lastRound
+      ? {
+          challengeId: state.lastRound.challengeId,
+          submissions: { ...state.lastRound.submissions },
+          votes: { ...state.lastRound.votes },
+          pointsAwarded: { ...state.lastRound.pointsAwarded },
+          tie: state.lastRound.tie,
+        }
+      : null,
   }),
   bot: {
     choose: ({ state: _state, actor, ctx }) => {

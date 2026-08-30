@@ -7,18 +7,19 @@ import {
   pawns,
 } from '../../../engine/sdk/public-api';
 import { MORPION_PAWNS } from './content';
-import { chooseBotMove, MORPION_ACTIONS } from './rules';
+import { chooseBotMove, MARK_PLACED, MORPION_ACTIONS } from './rules';
 import type { NoGameState as MorpionState } from '../../../engine/sdk/public-api';
 
 const PAWN_CHOICE = 'morpion.pawn';
 
-export default defineGame<MorpionState, typeof MORPION_ACTIONS>({
+export default defineGame<MorpionState>()({
   id: 'morpion',
   displayName: 'Morpion',
   category: 'JeuxDePlateaux',
   subcategory: 'Les Vents Sacrés',
   description: 'Alignez 3 symboles sur une grille 3×3.',
   players: { min: 2, max: 2 },
+  events: [MARK_PLACED],
   content: defineGameContent('morpion', { pawns: MORPION_PAWNS }),
   patterns: [
     gridGame({

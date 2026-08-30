@@ -1,7 +1,7 @@
 import type { GameRuntime } from '../contracts/game-runtime.interface';
-import type { GameSingleActionDto } from '../models/game-action.model';
-import type { GameStateEntity } from '../models/game-state.model';
-import { FixedGameClock } from '../models/game-execution-context.model';
+import type { GameSingleActionDto } from '../contracts/game-action.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
+import { FixedGameClock } from '../contracts/game-execution-context.model';
 import { GameCommandExecutorService } from './game-command-executor.service';
 import { GameExecutionScopeService } from './game-execution-scope.service';
 

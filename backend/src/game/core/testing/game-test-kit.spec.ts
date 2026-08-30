@@ -1,8 +1,8 @@
 import {
   defineAction,
   defineGame,
-} from '../application/runtime/definitions/game-definition';
-import { gameInput } from '../application/runtime/actions/game-input-schema';
+} from '../../engine/runtime/definitions/game-definition';
+import { gameInput } from '../../engine/runtime/actions/game-input-schema';
 import { testGame } from './game-test-kit';
 
 type RaceState = Record<string, never>;
@@ -36,7 +36,7 @@ describe('GameTestKit', () => {
     game.as('bob').expectAction('advance');
     await game.as('bob').do('advance', { steps: 1 });
 
-    expect(game.view('alice').scores).toEqual({ '1': 2, '2': 1 });
+    expect(game.inspect.scores()).toEqual({ '1': 2, '2': 1 });
     expect(await game.replay()).toEqual(game.state());
   });
 

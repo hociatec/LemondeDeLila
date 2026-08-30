@@ -1,4 +1,4 @@
-import type { RoomPayload } from '../models/room-payload.model';
+import type { RoomPayload } from '../contracts/room-payload.model';
 
 export const ROOM_PAYLOAD_CACHE = Symbol('ROOM_PAYLOAD_CACHE');
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { ChatNormalizedMessage } from '../../models/chat-message.record';
+import { ChatNormalizedMessage } from '../../contracts/chat-message.record';
 import { ChatMessageCacheService } from '../../services/chat-message-cache.service';
 import { ChatMessagePresenterService } from '../../services/chat-message-presenter.service';
 import { ListRecentChatMessagesService } from './list-recent-chat-messages.service';

@@ -1,12 +1,12 @@
-import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
+import type { GameSingleActionDto } from '../../../core/application/contracts/game-action.model';
 import type { GameRuntime } from '../../../core/application/contracts/game-runtime.interface';
-import { FixedGameClock } from '../../../core/application/models/game-execution-context.model';
-import type { GameStateEntity } from '../../../core/application/models/game-state.model';
-import { DeclarativeGameRuntime } from '../../../core/application/runtime/declarative-game.runtime';
+import { FixedGameClock } from '../../../core/application/contracts/game-execution-context.model';
+import type { GameStateEntity } from '../../../core/application/contracts/game-state.model';
+import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
 import type {
   CompiledGameDefinition,
   GameActionMap,
-} from '../../../core/application/runtime/definitions/game-definition';
+} from '../../../engine/runtime/definitions/game-definition';
 import { GameCommandExecutorService } from '../../../core/application/services/game-command-executor.service';
 import { GameEngineService } from '../../../core/application/services/game-engine.service';
 import { InMemoryGameSessionStore } from '../../../core/infrastructure/persistence/memory/in-memory-game-session.store';

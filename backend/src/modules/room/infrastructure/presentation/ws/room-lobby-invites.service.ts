@@ -5,7 +5,7 @@ import {
   type NotificationDispatcher,
 } from '../../../../notification/public-api';
 import { PresenceService } from '../../../../presence/public-api';
-import type { RoomPayload } from '../../../application/models/room-payload.model';
+import type { RoomPayload } from '../../../application/contracts/room-payload.model';
 import {
   ROOM_LOBBY_REPOSITORY,
   type RoomLobbyRepository,
@@ -13,10 +13,10 @@ import {
 import {
   type RoomInvite,
   RoomInviteService,
-} from '../../../application/services/room-invite.service';
-import { RoomLobbyPolicyService } from '../../../application/services/room-lobby-policy.service';
-import { RoomMembershipFacadeService } from '../../../application/services/room-membership-facade.service';
-import { RoomStateService } from '../../../application/services/room-state.service';
+} from '../../../application/services/membership/room-invite.service';
+import { RoomLobbyPolicyService } from '../../../application/services/lobby/room-lobby-policy.service';
+import { RoomMembershipFacadeService } from '../../../application/services/membership/room-membership-facade.service';
+import { RoomStateService } from '../../../application/services/state/room-state.service';
 import type {
   RoomInvitePresenceListDto,
   RoomInviteRespondDto,

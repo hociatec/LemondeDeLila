@@ -3,7 +3,7 @@ import type {
   RoomBotState,
   RoomPayload,
   RoomPlayer,
-} from '../../application/models/room-payload.model';
+} from '../../application/contracts/room-payload.model';
 
 export function decodeRoomPayload(value: unknown): RoomPayload | null {
   if (

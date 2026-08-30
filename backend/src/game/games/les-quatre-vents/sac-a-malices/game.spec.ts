@@ -7,7 +7,7 @@ describe('Sac à Malices declarative game', () => {
     await game.start();
     await game.as(1).do('game.configure', { variantId: 'classic' });
     await game.as(1).do('roll', {});
-    expect(game.view(1).money[1]).toBeGreaterThanOrEqual(0);
+    expect(game.resource(1, 'money')).toBeGreaterThanOrEqual(0);
     expect('pendingPurchase' in game.view(1)).toBe(false);
     expect(await game.replay()).toEqual(game.state());
   });

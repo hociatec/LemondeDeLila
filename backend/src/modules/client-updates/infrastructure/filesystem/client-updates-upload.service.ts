@@ -28,13 +28,18 @@ import {
   ClientUpdateMeta,
   CompletedUploadMarker,
   UploadMetaFile,
-} from '../../application/models/client-update-meta.record';
+} from '../../application/contracts/client-update-meta.record';
 import { ClientUpdatesService } from '../../application/use-cases/client-updates/client-updates.service';
 import { decodeUploadMetaFile } from './client-update-meta.decoder';
+import {
+  assembleUploadArchive,
+  assertUploadArchiveSize,
+  CLIENT_UPDATE_MAX_TOTAL_BYTES,
+  listContiguousUploadParts,
+} from './client-update-upload-archive';
 
 @Injectable()
 export class ClientUpdatesUploadService {
-  private static readonly MAX_TOTAL_BYTES = 600 * 1024 * 1024;
   private static readonly MAX_CHUNKS = 10_000;
   private readonly logger = new Logger(ClientUpdatesUploadService.name);
 
@@ -248,7 +253,7 @@ export class ClientUpdatesUploadService {
     if (meta.completedAt) {
       return this.completedResult(meta, marker);
     }
-    const parts = await this.listContiguousParts(dir);
+    const parts = await listContiguousUploadParts(dir);
     const zipPath = path.join(
       os.tmpdir(),
       `lila-client-update-${uploadId}.zip`,
@@ -256,8 +261,8 @@ export class ClientUpdatesUploadService {
     let published = false;
     let markerWritten = false;
     try {
-      await this.assembleArchive(dir, parts, zipPath);
-      await this.assertArchiveSize(zipPath, meta.totalBytes);
+      await assembleUploadArchive(dir, parts, zipPath);
+      await assertUploadArchiveSize(zipPath, meta.totalBytes);
       const saved = this.toPublishedMeta(meta);
       await this.saveAndApplyZip(zipPath, saved);
       await writeFileAtomic(
@@ -310,7 +315,7 @@ export class ClientUpdatesUploadService {
     if (
       !Number.isSafeInteger(input) ||
       input <= 0 ||
-      input > ClientUpdatesUploadService.MAX_TOTAL_BYTES
+      input > CLIENT_UPDATE_MAX_TOTAL_BYTES
     ) {
       throw new BadRequestException('totalBytes invalide.');
     }
@@ -378,71 +383,6 @@ export class ClientUpdatesUploadService {
         minRequiredVersion: meta.minRequiredVersion || null,
       },
     };
-  }
-
-  private async listContiguousParts(
-    dir: string,
-  ): Promise<Array<{ name: string; index: number }>> {
-    const parts = (await fs.promises.readdir(dir))
-      .filter((file) => file.endsWith('.part'))
-      .map((name) => ({
-        name,
-        index: Number.parseInt(name.replace('.part', ''), 10),
-      }))
-      .filter((part) => Number.isFinite(part.index))
-      .sort((left, right) => left.index - right.index);
-    if (parts.length === 0) {
-      throw new BadRequestException('Aucun chunk recu.');
-    }
-    for (let expected = 0; expected < parts.length; expected++) {
-      if (parts[expected].index !== expected) {
-        throw new BadRequestException(
-          `Chunks manquants ou index non-contigus (attendu ${expected}).`,
-        );
-      }
-    }
-    return parts;
-  }
-
-  private async assembleArchive(
-    dir: string,
-    parts: Array<{ name: string }>,
-    zipPath: string,
-  ): Promise<void> {
-    const output = fs.createWriteStream(zipPath);
-    const finished = new Promise<void>((resolve, reject) => {
-      output.on('error', reject);
-      output.on('finish', resolve);
-    });
-    try {
-      for (const part of parts) {
-        await new Promise<void>((resolve, reject) => {
-          const input = fs.createReadStream(path.join(dir, part.name));
-          input.on('error', reject);
-          input.on('end', resolve);
-          input.pipe(output, { end: false });
-        });
-      }
-      output.end();
-      await finished;
-    } finally {
-      output.destroy();
-    }
-  }
-
-  private async assertArchiveSize(
-    zipPath: string,
-    expectedBytes: number | null,
-  ): Promise<void> {
-    const { size } = await fs.promises.stat(zipPath);
-    if (size > ClientUpdatesUploadService.MAX_TOTAL_BYTES) {
-      throw new BadRequestException('Archive trop volumineuse.');
-    }
-    if (expectedBytes != null && size !== expectedBytes) {
-      throw new BadRequestException(
-        `Taille archive invalide (attendu ${expectedBytes}, reçu ${size}).`,
-      );
-    }
   }
 
   private toPublishedMeta(meta: UploadMetaFile): ClientUpdateMeta {

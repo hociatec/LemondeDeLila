@@ -1,7 +1,7 @@
-import type { RoomBotRecord } from '../../../../application/models/room-bot.model';
-import type { RoomParticipantRecord } from '../../../../application/models/room-participant.model';
-import type { RoomRecord } from '../../../../application/models/room-record.model';
-import type { RoomUserRecord } from '../../../../application/models/room-user.model';
+import type { RoomBotRecord } from '../../../../application/contracts/room-bot.model';
+import type { RoomParticipantRecord } from '../../../../application/contracts/room-participant.model';
+import type { RoomRecord } from '../../../../application/contracts/room-record.model';
+import type { RoomUserRecord } from '../../../../application/contracts/room-user.model';
 import { RoomBot } from '../entities/room-bot.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { Room } from '../entities/room.entity';

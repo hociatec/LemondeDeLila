@@ -5,7 +5,7 @@ import type {
   BugReportCommentRepository,
   CreateBugReportCommentRecordInput,
 } from '../../../../application/ports/bug-report.repository';
-import type { BugReportCommentRecord } from '../../../../application/models/bug-report-comment.record';
+import type { BugReportCommentRecord } from '../../../../application/contracts/bug-report-comment.record';
 import { BugReportCommentEntity } from '../entities/bug-report-comment.entity';
 
 @Injectable()
@@ -22,6 +22,7 @@ export class BugReportCommentTypeormRepository implements BugReportCommentReposi
       .addSelect('COUNT(*)', 'count')
       .where('c.reportId IN (:...ids)', { ids: reportIds })
       .groupBy('c.reportId')
+      .limit(Math.min(reportIds.length, 500))
       .getRawMany<{ reportId: string; count: string }>();
 
     const output: Record<string, number> = {};

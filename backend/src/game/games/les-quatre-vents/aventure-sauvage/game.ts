@@ -23,7 +23,7 @@ import {
 } from './rules';
 import type { AventureSauvageState } from './types';
 
-export default defineGame<AventureSauvageState, typeof AVENTURE_ACTIONS>({
+export default defineGame<AventureSauvageState>()({
   id: 'aventure-sauvage',
   displayName: 'Aventure Sauvage',
   category: 'JeuxDePlateaux',

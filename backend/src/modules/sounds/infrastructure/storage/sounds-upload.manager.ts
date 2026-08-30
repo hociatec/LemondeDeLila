@@ -13,14 +13,16 @@ import type {
   SoundKey,
   SoundManifest,
   SoundManifestEntry,
-} from '../../application/models/sound-manifest.record';
+} from '../../application/contracts/sound-manifest.record';
 import {
-  createAudioToolExecutionError,
   detectSoundSilence,
-  isSoundSpawnExecutionError,
   probeSoundDurationSeconds,
   transcodeSoundToStableWav,
 } from './sounds-audio.utils';
+import {
+  audioToolExecutionError,
+  isAudioProcessSpawnError,
+} from './sounds-audio-process';
 
 type SoundsUploadDependencies = {
   dataRoot: string;
@@ -132,13 +134,13 @@ export class SoundsUploadManager {
     } catch (error) {
       if (
         isWavInput &&
-        (isSoundSpawnExecutionError(error) ||
+        (isAudioProcessSpawnError(error) ||
           error instanceof InternalServerErrorException)
       ) {
         return { outputPath: inputPath, tempDir: null };
       }
-      if (isSoundSpawnExecutionError(error)) {
-        throw createAudioToolExecutionError(
+      if (isAudioProcessSpawnError(error)) {
+        throw audioToolExecutionError(
           'ffmpeg',
           error,
           'Utilisez un fichier .wav si ffmpeg est bloqué sur ce serveur.',

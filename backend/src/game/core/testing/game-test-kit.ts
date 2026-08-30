@@ -1,16 +1,19 @@
-import type { GameSingleActionDto } from '../application/models/game-action.model';
-import { FixedGameClock } from '../application/models/game-execution-context.model';
+import type {
+  GameSingleActionDto,
+  GameStateWithActions,
+} from '../application/contracts/game-action.model';
+import { FixedGameClock } from '../application/contracts/game-execution-context.model';
 import type {
   GameStateEntity,
   PlayerStateEntity,
-} from '../application/models/game-state.model';
-import { DeclarativeGameRuntime } from '../application/runtime/declarative-game.runtime';
+} from '../application/contracts/game-state.model';
+import { DeclarativeGameRuntime } from '../../engine/runtime/declarative-game.runtime';
 import type {
   CompiledGameDefinition,
   GameActionDefinition,
   GameActionMap,
-} from '../application/runtime/definitions/game-definition';
-import type { MatchResult } from '../application/runtime/kits/match-kit';
+} from '../../engine/runtime/definitions/game-definition';
+import type { MatchResult } from '../../engine/runtime/kits/match-kit';
 import { GameCommandExecutorService } from '../application/services/game-command-executor.service';
 import { GameEngineService } from '../application/services/game-engine.service';
 import { GameExecutionScopeService } from '../application/services/game-execution-scope.service';
@@ -26,18 +29,6 @@ type EngineActionType = 'game.configure' | 'choice.resolve' | 'choice.timeout';
 type DriverActionInput<TActions, TType> = TType extends keyof TActions
   ? ActionInput<TActions[TType]>
   : Record<string, unknown>;
-
-type LegacyGameTestView = {
-  hand: never[];
-  deckCount: number;
-  discardCount: number;
-  money: Record<string, number>;
-  submissions: Record<string, unknown>;
-  positions: Record<string, number>;
-  scores: Record<string, number>;
-  lastRoll: number | null;
-  setupComplete: boolean;
-};
 
 const DEFAULT_NAMES = ['alice', 'bob', 'charlie', 'diana', 'eve', 'frank'];
 
@@ -116,7 +107,7 @@ export class GameTestKit<
     );
     if (!found)
       throw new Error(`Joueur de test introuvable: ${String(player)}`);
-    return { ...structuredClone(found), hand: this.hand(playerId) };
+    return { ...structuredClone(found), hand: this.inspect.hand(playerId) };
   }
 
   resource(player: string | number, resourceId: string): number {
@@ -152,7 +143,9 @@ export class GameTestKit<
     );
   }
 
-  view(player: string | number): TViewExtension & LegacyGameTestView {
+  view(
+    player: string | number,
+  ): TViewExtension & Omit<GameStateWithActions, 'game'> {
     const playerId = this.playerId(player);
     const exposed = this.adapter.exposeStateForUser(
       this.requireState(),
@@ -162,9 +155,70 @@ export class GameTestKit<
     return structuredClone({
       ...(game as TViewExtension),
       ...genericView,
-      ...this.legacyView(playerId),
     });
   }
+
+  readonly inspect = {
+    hand: <TCard = unknown>(
+      player: string | number,
+      handId?: string,
+    ): TCard[] => {
+      const playerId = this.playerId(player);
+      const cards = this.cardsState();
+      const hands = handId
+        ? cards.hands?.[handId]
+        : Object.values(cards.hands ?? {})[0];
+      return structuredClone(hands?.[String(playerId)] ?? []) as TCard[];
+    },
+    deckCount: (deckId?: string): number => {
+      const decks = this.cardsState().decks ?? {};
+      return (deckId ? decks[deckId] : Object.values(decks)[0])?.length ?? 0;
+    },
+    discardCount: (deckId?: string): number => {
+      const discards = this.cardsState().discards ?? {};
+      return (
+        (deckId ? discards[deckId] : Object.values(discards)[0])?.length ?? 0
+      );
+    },
+    positions: (trackId?: string): Record<string, number> => {
+      const state = this.requireState() as GameStateEntity & {
+        engine?: {
+          kits?: {
+            movement?: {
+              positions?: Record<string, Record<string, number>>;
+            };
+          };
+        };
+      };
+      const tracks = state.engine?.kits?.movement?.positions ?? {};
+      return structuredClone(
+        trackId ? (tracks[trackId] ?? {}) : (Object.values(tracks)[0] ?? {}),
+      );
+    },
+    scores: (): Record<string, number> => {
+      const state = this.requireState() as GameStateEntity & {
+        engine?: { playerValues?: { scores?: Record<string, number> } };
+      };
+      return structuredClone(state.engine?.playerValues?.scores ?? {});
+    },
+    lastRoll: (diceSetId?: string): number | null => {
+      const state = this.requireState() as GameStateEntity & {
+        engine?: {
+          kits?: {
+            dice?: {
+              rolls?: Record<string, { setId?: string; total?: number }>;
+            };
+          };
+        };
+      };
+      const rolls = Object.values(state.engine?.kits?.dice?.rolls ?? {});
+      const roll = diceSetId
+        ? rolls.filter((candidate) => candidate.setId === diceSetId).at(-1)
+        : rolls.at(-1);
+      return roll?.total ?? null;
+    },
+    setupComplete: (): boolean => this.requireState().phase !== 'setup',
+  };
 
   state(): GameStateEntity & { game: TState } {
     return structuredClone(this.requireState()) as GameStateEntity & {
@@ -287,71 +341,23 @@ export class GameTestKit<
     };
   }
 
-  private hand(playerId: number): unknown[] {
-    const state = this.requireState() as GameStateEntity & {
-      engine?: {
-        kits?: {
-          cards?: { hands?: Record<string, Record<string, unknown[]>> };
-        };
-      };
-    };
-    const allHands = state.engine?.kits?.cards?.hands ?? {};
-    const firstHand = Object.values(allHands)[0] ?? {};
-    return structuredClone(firstHand[String(playerId)] ?? []);
-  }
-
-  private legacyView(playerId: number): LegacyGameTestView {
+  private cardsState(): {
+    decks?: Record<string, unknown[]>;
+    discards?: Record<string, unknown[]>;
+    hands?: Record<string, Record<string, unknown[]>>;
+  } {
     const state = this.requireState() as GameStateEntity & {
       engine?: {
         kits?: {
           cards?: {
             decks?: Record<string, unknown[]>;
             discards?: Record<string, unknown[]>;
+            hands?: Record<string, Record<string, unknown[]>>;
           };
-          movement?: {
-            positions?: Record<string, Record<string, number>>;
-          };
-          dice?: {
-            rolls?: Record<string, { total?: number }>;
-          };
-        };
-        playerValues?: {
-          scores?: Record<string, number>;
-          resources?: Record<string, Record<string, number>>;
-        };
-        submissions?: {
-          sessions?: Record<
-            string,
-            { valuesByPlayerId?: Record<string, unknown> }
-          >;
         };
       };
     };
-    const cards = state.engine?.kits?.cards;
-    const firstDeck = Object.values(cards?.decks ?? {})[0] ?? [];
-    const firstDiscard = Object.values(cards?.discards ?? {})[0] ?? [];
-    const firstSubmission = Object.values(
-      state.engine?.submissions?.sessions ?? {},
-    )[0];
-    const positions = Object.values(
-      state.engine?.kits?.movement?.positions ?? {},
-    )[0];
-    const lastRoll = Object.values(state.engine?.kits?.dice?.rolls ?? {}).at(
-      -1,
-    );
-    return {
-      hand: this.hand(playerId) as never[],
-      deckCount: firstDeck.length,
-      discardCount: firstDiscard.length,
-      money: structuredClone(
-        state.engine?.playerValues?.resources?.money ?? {},
-      ),
-      submissions: structuredClone(firstSubmission?.valuesByPlayerId ?? {}),
-      positions: structuredClone(positions ?? {}),
-      scores: structuredClone(state.engine?.playerValues?.scores ?? {}),
-      lastRoll: lastRoll?.total ?? null,
-      setupComplete: state.phase !== 'setup',
-    };
+    return state.engine?.kits?.cards ?? {};
   }
 
   private playerId(player: string | number): number {

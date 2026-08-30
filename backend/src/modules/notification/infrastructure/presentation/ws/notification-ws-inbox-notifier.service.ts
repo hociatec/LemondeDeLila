@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@nestjs/common';
 import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
-import type { AdminContactItem } from '../../../application/models/admin-contact.model';
+import type { AdminContactItem } from '../../../application/contracts/admin-contact.model';
 import { NotificationDispatchService } from '../../system/notification-dispatch.service';
 
 @Injectable()

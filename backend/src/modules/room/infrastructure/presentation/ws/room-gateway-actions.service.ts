@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { PerfMetricsService } from '../../../../../platform/observability/public-api';
-import { RoomAdminPolicyService } from '../../../application/services/room-admin-policy.service';
-import { RoomAccessService } from '../../../application/services/room-access.service';
-import { RoomMembershipFacadeService } from '../../../application/services/room-membership-facade.service';
-import { RoomStateService } from '../../../application/services/room-state.service';
-import { RoomRealtimeTrackerService } from '../../../application/services/room-realtime-tracker.service';
+import { RoomAdminPolicyService } from '../../../application/services/maintenance/room-admin-policy.service';
+import { RoomAccessService } from '../../../application/services/membership/room-access.service';
+import { RoomMembershipFacadeService } from '../../../application/services/membership/room-membership-facade.service';
+import { RoomStateService } from '../../../application/services/state/room-state.service';
+import { RoomRealtimeTrackerService } from '../../../application/services/state/room-realtime-tracker.service';
 import { extractTraceMeta } from './room-command.helpers';
 import {
   RoomWsCurrentRoomMismatchError,

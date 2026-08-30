@@ -1,6 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
 import type { WsAuthPayload } from '../../../../../shared/interfaces/public-api';
-import type { WsSession } from '../../../application/models/ws-route.model';
+import type { WsSession } from '../../../application/contracts/ws-route.model';
 
 export function requireUser(session: WsSession): WsAuthPayload {
   if (!session.user?.id) {

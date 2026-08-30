@@ -3,7 +3,7 @@ import {
   WsRouteAlreadyRegisteredError,
   WsRouteTypeRequiredError,
 } from '../../domain/errors/ws-route-registry.errors';
-import { WsRouteHandler } from '../models/ws-route.model';
+import { WsRouteHandler } from '../contracts/ws-route.model';
 
 @Injectable()
 export class WsRouteRegistry {

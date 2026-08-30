@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
-import type { GameCatalogOverrideRecord } from '../models/game-catalog-override.model';
+import type { GameCatalogOverrideRecord } from '../contracts/game-catalog-override.model';
 import {
   GAME_CATALOG_OVERRIDES_REPOSITORY,
   type GameCatalogOverridesRepository,

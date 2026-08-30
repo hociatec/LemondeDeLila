@@ -8,7 +8,7 @@ describe('Zig et Zag declarative game', () => {
     await game.as(1).do('draw_card', {});
     await game.as(2).do('draw_card', {});
     expect(game.state().game.lastRound).not.toBeNull();
-    expect(game.view(1).hand.length + game.view(2).hand.length).toBe(54);
+    expect(game.inspect.hand(1).length + game.inspect.hand(2).length).toBe(54);
     expect(await game.replay()).toEqual(game.state());
   });
 
@@ -16,8 +16,7 @@ describe('Zig et Zag declarative game', () => {
     const game = testGame(gameDefinition).players(['Zig', 'Zag']).seed(42);
     await game.start();
     const first = game.view(1);
-    const second = game.view(2);
-    expect(first.hand).not.toEqual(second.hand);
+    expect(game.inspect.hand(1)).not.toEqual(game.inspect.hand(2));
     expect(JSON.stringify(first)).not.toContain('triggerFamilies');
   });
 });

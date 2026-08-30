@@ -1,8 +1,8 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import type { GameRuntime } from '../contracts/game-runtime.interface';
-import type { GameSingleActionDto } from '../models/game-action.model';
-import type { GameStateEntity } from '../models/game-state.model';
-import type { GameClock } from '../models/game-execution-context.model';
+import type { GameSingleActionDto } from '../contracts/game-action.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
+import type { GameClock } from '../contracts/game-execution-context.model';
 import {
   GameActionRejectedError,
   GameStateConflictError,
@@ -13,7 +13,7 @@ import {
   commandReceipt,
   normalizeCommandId,
   recordCommandReceipt,
-} from '../runtime/actions/game-command-journal';
+} from '../../../engine/runtime/actions/game-command-journal';
 import { GameEngineMetricsService } from './game-engine-metrics.service';
 
 @Injectable()

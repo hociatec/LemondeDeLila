@@ -33,7 +33,7 @@ const decks = [
   }),
 ];
 
-export default defineGame<MissionGalaxieState, typeof MISSION_GALAXIE_ACTIONS>({
+export default defineGame<MissionGalaxieState>()({
   id: 'mission-galaxie',
   displayName: 'Mission Galaxie',
   category: 'JeuxDePlateaux',

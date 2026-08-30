@@ -8,40 +8,22 @@ import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
-  assertStorageCapacity,
   bestEffort,
   StorageCapacityError,
-  writeFileAtomic,
 } from '../../../../shared/utils/public-api';
-import { readEnvironment } from '../../../../platform/config/public-api';
 
 import { WxUpdateReleaseService } from './wx-update-release.service';
-
-type WxUploadMeta = {
-  uploadId: string;
-  releaseId: string;
-  version: string;
-  sequence: number;
-  publishedAt: string;
-  message: string | null;
-  minimumVersion: string | null;
-  mandatoryAt: string | null;
-  sha256: string;
-  signature: string;
-  totalBytes: number;
-  installerSha256: string | null;
-  installerTotalBytes: number | null;
-  completedAt: string | null;
-};
-
-type WxUploadPartKind = 'artifact' | 'installer';
+import {
+  WxUpdateUploadStorage,
+  type WxUploadMeta,
+} from './wx-update-upload-storage';
 
 @Injectable()
 export class WxUpdateUploadService {
-  private readonly uploadsRoot: string;
+  private readonly storage: WxUpdateUploadStorage;
 
   constructor(private readonly updates: WxUpdateReleaseService) {
-    this.uploadsRoot = path.join(this.updates.getTargetDir(), '.uploads');
+    this.storage = new WxUpdateUploadStorage(this.updates.getTargetDir());
   }
 
   status() {
@@ -104,9 +86,9 @@ export class WxUpdateUploadService {
     ) {
       throw new BadRequestException('Métadonnées installateur WX invalides.');
     }
-    await this.pruneExpiredUploads();
+    await this.storage.pruneExpired();
     const uploadId = randomUUID();
-    const dir = this.resolveUploadDir(uploadId);
+    const dir = this.storage.uploadDir(uploadId);
     await fs.promises.mkdir(dir, { recursive: true });
     const meta: WxUploadMeta = {
       uploadId,
@@ -124,7 +106,7 @@ export class WxUpdateUploadService {
       installerTotalBytes: hasInstaller ? installerTotalBytes : null,
       completedAt: null,
     };
-    await this.writeJsonAtomic(path.join(dir, 'meta.json'), meta);
+    await this.storage.writeMeta(path.join(dir, 'meta.json'), meta);
     return { uploadId };
   }
 
@@ -134,12 +116,12 @@ export class WxUpdateUploadService {
     filePath: string;
     kind?: string;
   }) {
-    const uploadId = this.requireUploadId(input.uploadId);
+    const uploadId = this.storage.requireUploadId(input.uploadId);
     if (!Number.isSafeInteger(input.index) || input.index < 0) {
       throw new BadRequestException('Index de chunk WX invalide.');
     }
-    const kind = this.normalizePartKind(input.kind);
-    const dir = this.resolveUploadDir(uploadId);
+    const kind = this.storage.normalizePartKind(input.kind);
+    const dir = this.storage.uploadDir(uploadId);
     if (!fs.existsSync(path.join(dir, 'meta.json'))) {
       throw new BadRequestException('Upload WX introuvable.');
     }
@@ -148,7 +130,7 @@ export class WxUpdateUploadService {
       await fs.promises.rm(input.filePath, { force: true });
       return { ok: true, duplicate: true };
     }
-    await this.ensureStorageCapacity(
+    await this.storage.ensureCapacity(
       (await fs.promises.stat(input.filePath)).size,
     );
     try {
@@ -179,10 +161,10 @@ export class WxUpdateUploadService {
   }
 
   async complete(uploadIdInput: string) {
-    const uploadId = this.requireUploadId(uploadIdInput);
-    const dir = this.resolveUploadDir(uploadId);
+    const uploadId = this.storage.requireUploadId(uploadIdInput);
+    const dir = this.storage.uploadDir(uploadId);
     const metaPath = path.join(dir, 'meta.json');
-    const meta = await this.readMeta(metaPath);
+    const meta = await this.storage.readMeta(metaPath);
     if (meta.completedAt) {
       return {
         ok: true,
@@ -202,7 +184,7 @@ export class WxUpdateUploadService {
     const combinedPath = path.join(dir, 'combined.zip');
     const installerPath = path.join(dir, 'installer.zip');
     try {
-      await this.combineParts({
+      await this.storage.combineParts({
         dir,
         kind: 'artifact',
         destination: combinedPath,
@@ -215,7 +197,7 @@ export class WxUpdateUploadService {
       const hasInstaller =
         meta.installerSha256 != null && installerTotalBytes != null;
       if (installerTotalBytes != null && meta.installerSha256 != null) {
-        await this.combineParts({
+        await this.storage.combineParts({
           dir,
           kind: 'installer',
           destination: installerPath,
@@ -240,9 +222,9 @@ export class WxUpdateUploadService {
         signature: meta.signature,
       });
       meta.completedAt = new Date().toISOString();
-      await this.writeJsonAtomic(metaPath, meta);
+      await this.storage.writeMeta(metaPath, meta);
       await bestEffort(
-        this.removeUploadedParts(dir),
+        this.storage.removeParts(dir),
         `suppression des chunks WX upload=${uploadId}`,
       );
       return { ok: true, manifest };
@@ -255,162 +237,5 @@ export class WxUpdateUploadService {
       await fs.promises.rm(combinedPath, { force: true });
       await fs.promises.rm(installerPath, { force: true });
     }
-  }
-
-  private async ensureStorageCapacity(incomingBytes: number): Promise<void> {
-    const quota = this.environmentBytes(
-      'CLIENT_WX_STORAGE_QUOTA_BYTES',
-      8 * 1024 * 1024 * 1024,
-    );
-    const reserve = this.environmentBytes(
-      'STORAGE_MIN_FREE_BYTES',
-      512 * 1024 * 1024,
-    );
-    try {
-      await assertStorageCapacity({
-        root: this.updates.getTargetDir(),
-        incomingBytes,
-        maxTotalBytes: quota,
-        minFreeBytes: reserve,
-      });
-    } catch (error) {
-      if (error instanceof StorageCapacityError) {
-        throw new HttpException(error.message, 507);
-      }
-      throw error;
-    }
-  }
-
-  private environmentBytes(
-    key: 'CLIENT_WX_STORAGE_QUOTA_BYTES' | 'STORAGE_MIN_FREE_BYTES',
-    fallback: number,
-  ): number {
-    const raw = readEnvironment(key).trim();
-    if (!raw) return fallback;
-    const parsed = Number(raw);
-    return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : fallback;
-  }
-
-  private async combineParts(input: {
-    dir: string;
-    kind: WxUploadPartKind;
-    destination: string;
-    expectedBytes: number;
-    missingMessage: string;
-    overflowMessage: string;
-    sizeMessage: string;
-  }): Promise<void> {
-    const prefix = `${input.kind}.`;
-    const parts = (await fs.promises.readdir(input.dir))
-      .filter(
-        (name) =>
-          name.startsWith(prefix) &&
-          /^\d+\.part$/.test(name.slice(prefix.length)),
-      )
-      .map((name) => ({
-        name,
-        index: Number.parseInt(name.slice(prefix.length), 10),
-      }))
-      .sort((left, right) => left.index - right.index);
-    if (parts.length === 0) {
-      throw new BadRequestException(input.missingMessage);
-    }
-    parts.forEach((part, index) => {
-      if (part.index !== index) {
-        throw new BadRequestException(
-          `Chunk WX ${input.kind} manquant à l'index ${index}.`,
-        );
-      }
-    });
-
-    await fs.promises.rm(input.destination, { force: true });
-    const output = await fs.promises.open(input.destination, 'wx');
-    let combinedBytes = 0;
-    try {
-      for (const part of parts) {
-        const stream = fs.createReadStream(path.join(input.dir, part.name));
-        for await (const bytes of stream) {
-          combinedBytes += (bytes as Buffer).length;
-          if (combinedBytes > input.expectedBytes) {
-            throw new BadRequestException(input.overflowMessage);
-          }
-          await output.write(bytes as Buffer);
-        }
-      }
-      await output.sync();
-    } finally {
-      await output.close();
-    }
-    const size = (await fs.promises.stat(input.destination)).size;
-    if (size !== input.expectedBytes) {
-      throw new BadRequestException(
-        `${input.sizeMessage} (${size}, attendu ${input.expectedBytes}).`,
-      );
-    }
-  }
-
-  private normalizePartKind(value: string | undefined): WxUploadPartKind {
-    const kind = (value || 'artifact').trim().toLowerCase();
-    if (kind === 'artifact' || kind === 'installer') return kind;
-    throw new BadRequestException('Type de chunk WX invalide.');
-  }
-
-  private resolveUploadDir(uploadId: string): string {
-    return path.join(this.uploadsRoot, uploadId);
-  }
-
-  private requireUploadId(value: string): string {
-    const uploadId = (value || '').trim();
-    if (!/^[0-9a-f-]{36}$/i.test(uploadId)) {
-      throw new BadRequestException('Identifiant upload WX invalide.');
-    }
-    return uploadId;
-  }
-
-  private async readMeta(metaPath: string): Promise<WxUploadMeta> {
-    try {
-      return JSON.parse(
-        await fs.promises.readFile(metaPath, 'utf-8'),
-      ) as WxUploadMeta;
-    } catch {
-      throw new BadRequestException('Upload WX introuvable ou corrompu.');
-    }
-  }
-
-  private async writeJsonAtomic(
-    filePath: string,
-    value: unknown,
-  ): Promise<void> {
-    await writeFileAtomic(filePath, JSON.stringify(value, null, 2));
-  }
-
-  private async removeUploadedParts(dir: string): Promise<void> {
-    const entries = await fs.promises.readdir(dir).catch(() => []);
-    await Promise.all(
-      entries
-        .filter((name) => /^(artifact|installer)\.\d+\.part$/.test(name))
-        .map((name) => fs.promises.rm(path.join(dir, name), { force: true })),
-    );
-  }
-
-  private async pruneExpiredUploads(): Promise<void> {
-    const expiration = Date.now() - 24 * 60 * 60 * 1000;
-    const entries = await fs.promises
-      .readdir(this.uploadsRoot, { withFileTypes: true })
-      .catch(() => []);
-    await Promise.all(
-      entries
-        .filter((entry) => entry.isDirectory())
-        .map(async (entry) => {
-          const target = path.join(this.uploadsRoot, entry.name);
-          const stat = await fs.promises.stat(target).catch(() => null);
-          const meta = await this.readMeta(
-            path.join(target, 'meta.json'),
-          ).catch(() => null);
-          if (meta?.completedAt || (stat && stat.mtimeMs < expiration)) {
-            await fs.promises.rm(target, { recursive: true, force: true });
-          }
-        }),
-    );
   }
 }

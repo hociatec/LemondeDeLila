@@ -1,4 +1,4 @@
-import type { ClientUpdateMeta } from '../models/client-update-meta.record';
+import type { ClientUpdateMeta } from '../contracts/client-update-meta.record';
 
 export type ClientUpdatesPublisherPort = {
   resolveClientPublicUrl(latest: ClientUpdateMeta | null): string | null;

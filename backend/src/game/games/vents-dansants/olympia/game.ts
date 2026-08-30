@@ -18,7 +18,7 @@ const DECKS: OlympiaDeckType[] = [
   'evenements',
 ];
 
-export default defineGame<OlympiaState, typeof OLYMPIA_ACTIONS>({
+export default defineGame<OlympiaState>()({
   id: 'olympia',
   displayName: 'Olympia',
   category: 'JeuxDePlateaux',

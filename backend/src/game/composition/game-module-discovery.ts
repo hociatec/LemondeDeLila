@@ -2,7 +2,7 @@ import {
   isGameDefinition,
   type CompiledGameDefinition,
   type GameActionMap,
-} from '../core/application/runtime/definitions/game-definition';
+} from '../engine/runtime/definitions/game-definition';
 import { GENERATED_GAME_DEFINITIONS } from './generated-game-registry';
 
 export type DiscoveredGameDefinition = CompiledGameDefinition<

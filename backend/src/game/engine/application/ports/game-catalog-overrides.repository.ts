@@ -1,4 +1,4 @@
-import type { GameCatalogOverrideRecord } from '../models/game-catalog-override.model';
+import type { GameCatalogOverrideRecord } from '../contracts/game-catalog-override.model';
 
 export const GAME_CATALOG_OVERRIDES_REPOSITORY = Symbol(
   'GAME_CATALOG_OVERRIDES_REPOSITORY',

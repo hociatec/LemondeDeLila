@@ -36,10 +36,41 @@ export type ContesCard = {
 type RawContesCard = Omit<ContesCard, 'effects'>;
 
 const self = gameEffects.target.self();
-const custom = (
-  effectId: string,
-  data: Record<string, unknown> = {},
-): GameEffectInstruction => gameEffects.custom(effectId, data, self);
+type ContesCustomEffect =
+  | { id: 'contes.move'; data: { delta: number } }
+  | { id: 'contes.draw'; data: { type: ContesCardType } }
+  | { id: 'contes.schedule-target'; data: { effect: string } }
+  | {
+      id: 'contes.roll-move';
+      data: { mode: 'double' | 'half' | 'backward' };
+    }
+  | { id: 'contes.queue-draws'; data: { types: ContesCardType[] } }
+  | {
+      id: 'contes.extend-status';
+      data: { status: string; turns: number };
+    }
+  | {
+      id:
+        | 'contes.force-one-others'
+        | 'contes.abundance'
+        | 'contes.swap-closest'
+        | 'contes.block'
+        | 'contes.bonus-gift'
+        | 'contes.skip-if-low-roll'
+        | 'contes.previous-malus'
+        | 'contes.queue-random-draws'
+        | 'contes.laughter'
+        | 'contes.conte';
+      data?: never;
+    }
+  | { id: 'contes.option'; data: { effect: 'song' | 'wish' } };
+
+function custom<TEffect extends ContesCustomEffect>(
+  effectId: TEffect['id'],
+  ...payload: TEffect extends { data: infer TData } ? [TData] : []
+): GameEffectInstruction {
+  return gameEffects.custom(effectId, payload[0] ?? {}, self);
+}
 const move = (delta: number): GameEffectInstruction =>
   custom('contes.move', { delta });
 const draw = (type: ContesCardType): GameEffectInstruction =>

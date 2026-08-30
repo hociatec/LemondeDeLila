@@ -34,7 +34,7 @@ const familySets = cards.sets({
   }, {}),
 });
 
-export default defineGame<EntreRitesState, typeof ENTRE_RITES_ACTIONS>({
+export default defineGame<EntreRitesState>()({
   id: 'entre-rites-et-lumieres',
   displayName: 'Entre Rites & Lumières !',
   category: 'JeuxDePlateaux',

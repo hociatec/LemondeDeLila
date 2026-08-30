@@ -14,8 +14,8 @@ import type {
   GameEvent,
   GameSnapshot,
   GameTimeline,
-} from '../../../application/models/game-event.model';
-import type { GameStateEntity } from '../../../application/models/game-state.model';
+} from '../../../application/contracts/game-event.model';
+import type { GameStateEntity } from '../../../application/contracts/game-state.model';
 import {
   appendGameTimelineCommit,
   assertGameStateSize,

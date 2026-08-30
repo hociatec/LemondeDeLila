@@ -1,6 +1,6 @@
 import type { BotRoomRepository } from '../../ports/bot-room.repository';
 import { BotNotFoundError } from '../../errors/bot-application.errors';
-import type { BotRoomRecord } from '../../models/bot-room.record';
+import type { BotRoomRecord } from '../../contracts/bot-room.record';
 import { BotRoomPolicyService } from './bot-room-policy.service';
 
 export class RemoveBotFromRoomService {
@@ -10,6 +10,16 @@ export class RemoveBotFromRoomService {
   ) {}
 
   async execute(
+    roomId: number,
+    userId: number,
+    botId: number,
+  ): Promise<BotRoomRecord> {
+    return this.rooms.runRoomMutation(roomId, () =>
+      this.executeLocked(roomId, userId, botId),
+    );
+  }
+
+  private async executeLocked(
     roomId: number,
     userId: number,
     botId: number,

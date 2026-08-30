@@ -13,7 +13,7 @@
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/content/game-state-migration.ts",
+      "file": "game/engine/runtime/content/game-state-migration.ts",
       "subject": "migrateDeclarativeState",
       "line": 17,
       "actual": 125,
@@ -21,7 +21,7 @@
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/definitions/game-definition-validator.ts",
+      "file": "game/engine/runtime/definitions/game-definition-validator.ts",
       "subject": "assertGameDefinition",
       "line": 46,
       "actual": 368,
@@ -29,7 +29,7 @@
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/definitions/runtime-descriptor.ts",
+      "file": "game/engine/runtime/definitions/runtime-descriptor.ts",
       "subject": "describeGameDefinition",
       "line": 7,
       "actual": 91,
@@ -37,7 +37,7 @@
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/effects/game-effect-definition-validator.ts",
+      "file": "game/engine/runtime/effects/game-effect-definition-validator.ts",
       "subject": "assertEffectInstructions",
       "line": 18,
       "actual": 246,
@@ -45,7 +45,7 @@
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/projection/game-kit-view.ts",
+      "file": "game/engine/runtime/projection/game-kit-view.ts",
       "subject": "projectGameKits",
       "line": 94,
       "actual": 204,
@@ -53,7 +53,7 @@
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/projection/game-system-view.ts",
+      "file": "game/engine/runtime/projection/game-system-view.ts",
       "subject": "projectGameSystemView",
       "line": 173,
       "actual": 93,
@@ -61,7 +61,7 @@
     },
     {
       "rule": "function-lines",
-      "file": "game/core/application/runtime/state/game-session-contracts.ts",
+      "file": "game/engine/runtime/state/game-session-contracts.ts",
       "subject": "assertValidEngineKits",
       "line": 68,
       "actual": 178,

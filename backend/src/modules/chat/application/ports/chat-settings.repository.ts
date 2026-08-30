@@ -1,4 +1,4 @@
-import { ChatSettings } from '../models/chat-settings.record';
+import { ChatSettings } from '../contracts/chat-settings.record';
 
 export const CHAT_SETTINGS_REPOSITORY = Symbol('CHAT_SETTINGS_REPOSITORY');
 

@@ -42,21 +42,55 @@ function objectHasProperty(node, name) {
     ts.isObjectLiteralExpression(node) &&
     node.properties.some(
       (property) =>
-        property.name && property.name.getText().replaceAll(/["']/g, '') === name,
+        property.name &&
+        property.name.getText().replaceAll(/["']/g, '') === name,
     )
   );
 }
 
+function identifierHasBound(source, identifier) {
+  let found = false;
+  const visit = (node) => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === identifier &&
+      node.initializer &&
+      /\.(take|limit)\s*\(/.test(node.initializer.getText())
+    ) {
+      found = true;
+      return;
+    }
+    if (found || !ts.isCallExpression(node)) {
+      if (!found) ts.forEachChild(node, visit);
+      return;
+    }
+    if (
+      ts.isPropertyAccessExpression(node.expression) &&
+      ['take', 'limit'].includes(node.expression.name.text) &&
+      node.expression.expression.getText().startsWith(identifier)
+    ) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return found;
+}
+
 function auditFile(file) {
   const name = relative(file);
-  if (name.includes('/migrations/') || name.startsWith('migrations/')) return [];
+  if (name.includes('/migrations/') || name.startsWith('migrations/'))
+    return [];
   if (/\.(spec|test|e2e-spec)\.ts$/.test(name)) return [];
   const source = fs.readFileSync(file, 'utf8');
   const ast = sourceFile(file);
   const violations = [];
-  const nPlusOneSensitive = /^modules\/(messaging|notification|social|stats)\/application\//.test(
-    name,
-  );
+  const nPlusOneSensitive =
+    /^modules\/(messaging|notification|social|stats|user|room)\/application\//.test(
+      name,
+    );
   const visit = (node) => {
     if (
       nPlusOneSensitive &&
@@ -80,12 +114,26 @@ function auditFile(file) {
         violations.push(`${name}: query builder hors adapter TypeORM`);
       }
       if (
-        method === 'find' &&
+        (method === 'find' || method === 'findAndCount') &&
         name.includes('/infrastructure/persistence/typeorm/repositories/') &&
         node.arguments[0] &&
         !objectHasProperty(node.arguments[0], 'take')
       ) {
         violations.push(`${name}: collection TypeORM sans limite take`);
+      }
+      if (
+        ['getMany', 'getManyAndCount', 'getRawMany'].includes(method ?? '') &&
+        name.includes('/infrastructure/persistence/typeorm/repositories/')
+      ) {
+        const chain = ts.isPropertyAccessExpression(node.expression)
+          ? node.expression.expression.getText()
+          : '';
+        const boundedIdentifier =
+          ts.isIdentifier(node.expression.expression) &&
+          identifierHasBound(ast, node.expression.expression.text);
+        if (!/\.(take|limit)\s*\(/.test(chain) && !boundedIdentifier) {
+          violations.push(`${name}: query builder de collection sans limite`);
+        }
       }
     }
     ts.forEachChild(node, visit);
@@ -121,6 +169,20 @@ function audit() {
   }
   if (!/RELEASE_LOCK\(\?\)/.test(lockSource)) {
     violations.push('mysql-game-room-lock: RELEASE_LOCK doit rester paramétré');
+  }
+  const atomicWriteContracts = [
+    ['game/core/infrastructure/persistence/typeorm/repositories/game-session-typeorm.store.ts', /manager\.transaction/],
+    ['modules/stats/infrastructure/persistence/typeorm/repositories/game-match-typeorm.repository.ts', /manager\.transaction/],
+    ['modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.repository.ts', /manager\.transaction/],
+    ['modules/admin/infrastructure/persistence/typeorm/repositories/role-definition-typeorm.repository.ts', /manager\.transaction/],
+    ['modules/bot/infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository.ts', /pessimistic_write/],
+    ['modules/vault/application/services/vault-snapshot-restore.service.ts', /compensat/i],
+  ];
+  for (const [name, contract] of atomicWriteContracts) {
+    const source = fs.readFileSync(path.join(root, name), 'utf8');
+    if (!contract.test(source)) {
+      violations.push(`${name}: contrat transaction/compensation absent`);
+    }
   }
   return violations;
 }

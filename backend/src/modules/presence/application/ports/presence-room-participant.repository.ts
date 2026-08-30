@@ -1,4 +1,4 @@
-import type { PresenceActiveRoomParticipant } from '../models/presence-active-room-participant.model';
+import type { PresenceActiveRoomParticipant } from '../contracts/presence-active-room-participant.model';
 
 export const PRESENCE_ROOM_PARTICIPANT_REPOSITORY = Symbol(
   'PRESENCE_ROOM_PARTICIPANT_REPOSITORY',

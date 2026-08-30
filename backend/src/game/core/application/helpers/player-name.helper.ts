@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../models/game-state.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
 
 type PlayerLike =
   { id?: number | string; username?: string | null } | null | undefined;

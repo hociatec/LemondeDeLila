@@ -1,0 +1,20 @@
+# Dette backend restante
+
+Ce fichier contient uniquement les points qui n'ont pas encore pu être validés
+contre les services réels. Le harness existe, mais son exécution reste requise
+sur un hôte Docker capable de démarrer MySQL et Redis.
+
+## Tests distribués réels
+
+36. Ajouter les tests d'intégration réels DB + Redis + BullMQ + WebSocket
+    manquants.
+37. Tester MySQL réel pour locks, CAS, transactions, unicité et migrations.
+38. Tester Redis/BullMQ réel pour delayed jobs, retries, suppression, restart
+    et concurrence.
+39. Tester deux instances backend contre la même DB/Redis.
+40. Tester les migrations de zéro à la dernière et plusieurs migrations avec
+    données antérieures.
+
+## Persistence, sécurité et exploitation
+
+46. Auditer les plans SQL des requêtes fréquentes et les index associés.

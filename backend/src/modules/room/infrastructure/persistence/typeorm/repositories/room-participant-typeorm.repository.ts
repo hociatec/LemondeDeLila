@@ -5,7 +5,7 @@ import type {
   RoomParticipantCreateRecord,
   RoomParticipantRepository,
 } from '../../../../application/ports/room-participant.repository';
-import type { RoomParticipantRecord } from '../../../../application/models/room-participant.model';
+import type { RoomParticipantRecord } from '../../../../application/contracts/room-participant.model';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import {
   toRoomParticipantEntity,

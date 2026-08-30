@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
 
 @Entity({ name: 'game_sessions' })
 export class GameSessionEntity {

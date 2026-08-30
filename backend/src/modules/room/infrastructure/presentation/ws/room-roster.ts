@@ -1,4 +1,4 @@
-import type { RoomPlayer } from '../../../application/models/room-payload.model';
+import type { RoomPlayer } from '../../../application/contracts/room-payload.model';
 
 export type ClientMetaLike = {
   roomId: number;

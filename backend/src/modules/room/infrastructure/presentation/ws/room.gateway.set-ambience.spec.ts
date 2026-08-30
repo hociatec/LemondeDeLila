@@ -1,5 +1,5 @@
 import { RoomGatewayActionsService } from './room-gateway-actions.service';
-import { RoomAdminPolicyService } from '../../../application/services/room-admin-policy.service';
+import { RoomAdminPolicyService } from '../../../application/services/maintenance/room-admin-policy.service';
 import { RoomGatewayPresenter } from './room-gateway.presenter';
 
 function createGateway() {

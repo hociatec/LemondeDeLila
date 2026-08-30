@@ -2,7 +2,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import type { MessagingUserReader } from '../../../../application/ports/messaging-user.repository';
-import type { MessageUser } from '../../../../application/models/message-user.model';
+import type { MessageUser } from '../../../../application/contracts/message-user.model';
 import { User } from '../../../../../user/public-api';
 
 @Injectable()

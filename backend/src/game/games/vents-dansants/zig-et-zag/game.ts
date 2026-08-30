@@ -18,11 +18,7 @@ import type {
 
 const INITIAL_HAND_SIZE = 27;
 
-export default defineGame<
-  ZigEtZagState,
-  typeof ZIG_ET_ZAG_ACTIONS,
-  ZigEtZagPlayerView
->({
+export default defineGame<ZigEtZagState>()({
   id: 'zig-et-zag',
   displayName: 'Zig et Zag !',
   category: 'JeuxDePlateaux',
@@ -50,11 +46,13 @@ export default defineGame<
   initialPhase: ZIG_ET_ZAG_PHASES.initialPhase,
   phases: ZIG_ET_ZAG_PHASES.phases,
   actions: ZIG_ET_ZAG_ACTIONS,
-  viewExtension: ({ state, ctx }) => {
+  viewExtension: ({ state, ctx }): ZigEtZagPlayerView => {
     const summary = state.lastRound;
     const lastRound = summary
       ? {
-          ...structuredClone(summary),
+          roundNumber: summary.roundNumber,
+          roundWinnerPlayerId: summary.roundWinnerPlayerId,
+          cardsWon: summary.cardsWon,
           plays: zigRoundPlays({
             plays: summary.plays,
             tiedPlayers: [],

@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { isUniqueConstraintViolation } from '../../../../platform/database/public-api';
 import {
   PASSWORD_HASHER,
   type PasswordHasherPort,
@@ -105,10 +106,4 @@ export class RegisterUserService {
       throw new ConflictException('Email deja enregistre');
     }
   }
-}
-
-function isUniqueConstraintViolation(error: unknown): boolean {
-  if (!error || typeof error !== 'object') return false;
-  const candidate = error as { code?: unknown; errno?: unknown };
-  return candidate.code === 'ER_DUP_ENTRY' || candidate.errno === 1062;
 }

@@ -17,7 +17,7 @@ import type { FouleesState } from './types';
 
 const COLORS = ['Rouge', 'Bleu', 'Vert', 'Jaune'] as const;
 
-export default defineGame<FouleesState, typeof FOULEES_ACTIONS>({
+export default defineGame<FouleesState>()({
   id: 'foulees-fantastiques',
   displayName: 'Foulées Fantastiques !',
   category: 'JeuxDePlateaux',

@@ -1,5 +1,5 @@
 import { SocialProfileSettingsService } from './social-profile-settings.service';
-import type { SocialProfileSettings } from '../models/social-profile-settings.model';
+import type { SocialProfileSettings } from '../contracts/social-profile-settings.model';
 import { createSocialProfileSettingsDefaults } from '../../infrastructure/config/social-profile-settings-defaults.config';
 import { ConfigService } from '@nestjs/config';
 

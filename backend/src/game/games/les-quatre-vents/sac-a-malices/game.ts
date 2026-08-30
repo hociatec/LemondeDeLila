@@ -13,7 +13,8 @@ import {
 import { SAC_VARIANTS, type SacVariantId } from './content';
 import { SAC_ACTIONS } from './actions';
 import { SAC_POT } from './economy';
-import { resolveManagement, resolvePurchase, SAC_EFFECTS } from './rules';
+import { resolveManagement, resolvePurchase } from './rules';
+import { SAC_EFFECTS } from './effects';
 import type { SacPlayerView, SacState } from './state';
 
 const SAC_VARIANT_IDS = SAC_VARIANTS.map((variant) => variant.id);
@@ -23,13 +24,14 @@ const VARIANT_SELECTED = defineEvent({
   data: gameInput.object({ variantId: gameInput.enum(SAC_VARIANT_IDS) }),
 });
 
-export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
+export default defineGame<SacState>()({
   id: 'sac-a-malices',
   displayName: 'Sac à Malices !',
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
   description: 'Jeu immobilier décliné sur sept plateaux thématiques.',
   players: { min: 2, max: 8 },
+  events: [VARIANT_SELECTED],
   content: defineGameContent('sac-a-malices', { variants: SAC_VARIANTS }),
   config: defineConfiguration<SacState, { variantId: SacVariantId }>({
     input: gameInput.object({
@@ -102,8 +104,17 @@ export default defineGame<SacState, typeof SAC_ACTIONS, SacPlayerView>({
       resolve: ({ state, value, ctx }) => resolveManagement(state, value, ctx),
     }),
   },
-  viewExtension: ({ state }) => ({
-    buildings: structuredClone(state.buildings),
+  viewExtension: ({ state }): SacPlayerView => ({
+    buildings: Object.fromEntries(
+      Object.entries(state.buildings).map(([position, building]) => [
+        position,
+        {
+          houses: building.houses,
+          hotel: building.hotel,
+          mortgaged: building.mortgaged,
+        },
+      ]),
+    ),
   }),
   bot: {
     choose: ({ availableActions }) => {

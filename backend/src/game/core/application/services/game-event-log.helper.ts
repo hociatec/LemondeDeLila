@@ -4,10 +4,10 @@ import type {
   GameSnapshot,
   GameStatePatchOperation,
   GameTimeline,
-} from '../models/game-event.model';
-import type { GameStateEntity } from '../models/game-state.model';
+} from '../contracts/game-event.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
 import type { GameSnapshotPolicy } from '../ports/game-event-store.port';
-import { sameSerializableValue } from '../runtime/state/serializable-value';
+import { sameSerializableValue } from '../../../engine/runtime/state/serializable-value';
 import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
 
 type StateWithEventBuffer = GameStateEntity & {

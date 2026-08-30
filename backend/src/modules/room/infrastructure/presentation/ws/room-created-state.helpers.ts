@@ -1,7 +1,7 @@
 import type {
   RoomPayload,
   RoomPlayer,
-} from '../../../application/models/room-payload.model';
+} from '../../../application/contracts/room-payload.model';
 
 type RoomCreatedManifest =
   | {

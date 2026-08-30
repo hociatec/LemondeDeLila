@@ -1,4 +1,4 @@
-import type { VaultRoomSnapshotRecord } from '../models/vault-room-snapshot.model';
+import type { VaultRoomSnapshotRecord } from '../contracts/vault-room-snapshot.model';
 
 export const VAULT_ROOM_SNAPSHOT_REPOSITORY = Symbol(
   'VAULT_ROOM_SNAPSHOT_REPOSITORY',

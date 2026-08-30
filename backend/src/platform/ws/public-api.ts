@@ -5,8 +5,8 @@ export {
 export type {
   WsRouteHandler,
   WsSession,
-} from './application/models/ws-route.model';
-export type { WsTicketScope } from './application/models/ws-ticket.model';
+} from './application/contracts/ws-route.model';
+export type { WsTicketScope } from './application/contracts/ws-ticket.model';
 export { WsApiHubService } from './application/services/ws-api-hub.service';
 export { WsJwtAuthService } from './application/services/ws-jwt-auth.service';
 export { WsRouteRegistry } from './application/services/ws-route-registry.service';

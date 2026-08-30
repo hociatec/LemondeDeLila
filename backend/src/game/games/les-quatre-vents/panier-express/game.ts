@@ -32,7 +32,7 @@ import {
 import { PANIER_EFFECTS } from './effects';
 import type { PanierState } from './types';
 
-export default defineGame<PanierState, typeof PANIER_ACTIONS>({
+export default defineGame<PanierState>()({
   id: 'panier-express',
   displayName: 'Panier Express',
   category: 'JeuxDePlateaux',

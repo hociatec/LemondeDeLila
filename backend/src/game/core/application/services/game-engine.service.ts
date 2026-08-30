@@ -1,11 +1,11 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import type { GameStateEntity } from '../models/game-state.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
 import type {
   GameEvent,
   GameSnapshot,
   ProjectedGameEvent,
-} from '../models/game-event.model';
-import { SystemGameClock } from '../models/game-execution-context.model';
+} from '../contracts/game-event.model';
+import { SystemGameClock } from '../contracts/game-execution-context.model';
 import { drainPendingGameEvents } from './game-event-log.helper';
 import {
   GAME_STATE_STORE,

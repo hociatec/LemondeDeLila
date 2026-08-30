@@ -1,4 +1,4 @@
-import type { RoomPayload } from '../../../application/models/room-payload.model';
+import type { RoomPayload } from '../../../application/contracts/room-payload.model';
 
 export function buildRoomInfoMessage(
   state: RoomPayload,

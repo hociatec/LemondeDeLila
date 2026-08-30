@@ -9,7 +9,7 @@ describe('Pirates en vadrouille declarative game', () => {
     await game.as(1).do('roll', {});
 
     expect(game.state().game.lastRoll).not.toBeNull();
-    expect(game.view(1).positions[1]).toBeGreaterThan(0);
+    expect(game.inspect.positions()[1]).toBeGreaterThan(0);
     expect(await game.replay()).toEqual(game.state());
   });
 

@@ -1,10 +1,10 @@
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../models/game-action.model';
-import type { GameAutomaticActionPlan } from '../models/game-automation.model';
-import type { GameExecutionContext } from '../models/game-execution-context.model';
-import type { GameStateEntity } from '../models/game-state.model';
+} from '../contracts/game-action.model';
+import type { GameAutomaticActionPlan } from '../contracts/game-automation.model';
+import type { GameExecutionContext } from '../contracts/game-execution-context.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
 import type {
   GameShortcutHint,
   GameShortcutsContext,

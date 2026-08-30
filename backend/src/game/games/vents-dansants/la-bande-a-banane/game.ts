@@ -13,7 +13,7 @@ import {
 } from './rules';
 import type { BandeABananeState } from './types';
 
-export default defineGame<BandeABananeState, typeof BANDE_A_BANANE_ACTIONS>({
+export default defineGame<BandeABananeState>()({
   id: 'la-bande-a-banane',
   displayName: 'La Bande à Banane !',
   category: 'JeuxDePlateaux',

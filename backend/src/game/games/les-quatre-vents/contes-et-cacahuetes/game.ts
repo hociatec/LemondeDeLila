@@ -27,7 +27,7 @@ import { blockedPosition } from './resolution';
 import { CONTES_EFFECTS } from './effects';
 import type { ContesState } from './types';
 
-export default defineGame<ContesState, typeof CONTES_ACTIONS>({
+export default defineGame<ContesState>()({
   id: 'contes-et-cacahuetes',
   displayName: 'Contes et Cacahuètes',
   category: 'JeuxDePlateaux',

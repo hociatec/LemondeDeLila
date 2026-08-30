@@ -5,7 +5,7 @@ import {
   type CreatePrivateMessageInput,
   type PrivateMessageRepository,
 } from '../../../../application/ports/private-message.repository';
-import type { PrivateMessageRecord } from '../../../../application/models/private-message.model';
+import type { PrivateMessageRecord } from '../../../../application/contracts/private-message.model';
 import { PrivateMessageNotFoundError } from '../../../../domain/errors/private-message-domain.errors';
 import { User } from '../../../../../user/public-api';
 import { PrivateMessageEntity } from '../entities/private-message.entity';

@@ -1,5 +1,5 @@
 ﻿import { HttpException, Injectable } from '@nestjs/common';
-import type { PrivateMessageRecord } from '../../../application/models/private-message.model';
+import type { PrivateMessageRecord } from '../../../application/contracts/private-message.model';
 import { PrivateMessagingService } from '../../../application/services/private-messaging.service';
 import { MessagePresenterService } from '../../../application/services/message-presenter.service';
 import { MessagingWsNotificationService } from './messaging-ws-notification.service';

@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import type {
   GameCatalogOverrideRecord,
   GameCatalogStatus,
-} from '../../../../application/models/game-catalog-override.model';
+} from '../../../../application/contracts/game-catalog-override.model';
 import type { GameCatalogOverridesRepository } from '../../../../application/ports/game-catalog-overrides.repository';
 import { GameCatalogOverrideEntity } from '../entities/game-catalog-override.entity';
 

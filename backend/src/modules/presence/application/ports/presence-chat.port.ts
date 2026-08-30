@@ -1,4 +1,4 @@
-import type { PresenceChatHistory } from '../models/presence-chat-history.model';
+import type { PresenceChatHistory } from '../contracts/presence-chat-history.model';
 
 export const PRESENCE_CHAT_PORT = Symbol('PRESENCE_CHAT_PORT');
 

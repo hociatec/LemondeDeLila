@@ -6,8 +6,8 @@ import {
   Optional,
 } from '@nestjs/common';
 import type { GameRuntime } from '../contracts/game-runtime.interface';
-import type { GameSingleActionDto } from '../models/game-action.model';
-import type { GameStateEntity } from '../models/game-state.model';
+import type { GameSingleActionDto } from '../contracts/game-action.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
 import {
   GAME_TASK_SCHEDULER,
   type GameScheduledTask,

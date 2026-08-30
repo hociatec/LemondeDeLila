@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { GameSingleActionDto } from '../../../application/models/game-action.model';
+import type { GameSingleActionDto } from '../../../application/contracts/game-action.model';
 
 @Injectable()
 export class GameWsCommandMapper {

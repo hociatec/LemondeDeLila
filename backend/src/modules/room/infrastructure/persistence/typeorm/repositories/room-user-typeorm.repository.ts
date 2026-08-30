@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { RoomUserRepository } from '../../../../application/ports/room-user.repository';
-import type { RoomUserRecord } from '../../../../application/models/room-user.model';
+import type { RoomUserRecord } from '../../../../application/contracts/room-user.model';
 import { User } from '../../../../../user/public-api';
 import { toRoomUserRecord } from './room-typeorm.mappers';
 

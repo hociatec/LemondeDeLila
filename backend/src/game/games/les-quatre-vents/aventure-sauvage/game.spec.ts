@@ -17,7 +17,7 @@ describe('Aventure Sauvage declarative game', () => {
     await game.choose(1, 'lion');
     await game.choose(2, 'girafe');
     await game.as(1).do('roll', {});
-    expect(game.view(1).positions[1]).toBeGreaterThan(0);
+    expect(game.inspect.positions()[1]).toBeGreaterThan(0);
     expect(await game.replay()).toEqual(game.state());
   });
 });

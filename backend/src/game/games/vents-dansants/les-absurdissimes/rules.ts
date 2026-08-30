@@ -16,7 +16,7 @@ const WHITE_DECK = 'white';
 export const ABSURDISSIMES_ANSWERS = 'absurdissimes.answers';
 export const ABSURDISSIMES_JUDGE = 'absurdissimes.judge';
 export const ABSURDISSIMES_TARGET_SCORE = 10;
-const SUBMISSIONS_REVEALED = defineEvent({
+export const SUBMISSIONS_REVEALED = defineEvent({
   type: 'absurdissimes.submissions.revealed',
   data: gameInput.object({
     count: gameInput.number({ integer: true, min: 0 }),

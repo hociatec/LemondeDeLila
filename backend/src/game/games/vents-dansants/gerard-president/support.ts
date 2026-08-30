@@ -151,7 +151,7 @@ export function redrawNames(
   refillHand(NAME_HANDS, 'names', playerId, 10, ctx);
 }
 
-export function refillHand<TCard>(
+export function refillHand<TCard extends string | number | object>(
   handId: string,
   deckId: string,
   playerId: number,

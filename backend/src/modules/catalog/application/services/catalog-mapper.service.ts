@@ -4,8 +4,8 @@ import {
   CatalogGame,
   CategoryNode,
   FlatCategory,
-} from '../models/catalog-game.record';
-import { CatalogSourceGame } from '../models/catalog-source-game.record';
+} from '../contracts/catalog-game.record';
+import { CatalogSourceGame } from '../contracts/catalog-source-game.record';
 
 @Injectable()
 export class CatalogMapperService {
@@ -21,13 +21,18 @@ export class CatalogMapperService {
       const subcategory = '';
       const status =
         typeof definition.status === 'string' ? definition.status : 'finished';
+      const minPlayers = this.playerBound(definition.minPlayers, 2);
+      const maxPlayers = Math.max(
+        minPlayers,
+        this.playerBound(definition.maxPlayers, 6),
+      );
 
       return {
         id: definition.id,
         name: definition.name,
         status,
-        minPlayers: definition.minPlayers ?? 2,
-        maxPlayers: definition.maxPlayers ?? 6,
+        minPlayers,
+        maxPlayers,
         chatEnabled:
           typeof definition.chatEnabled === 'boolean'
             ? definition.chatEnabled
@@ -186,6 +191,11 @@ export class CatalogMapperService {
           segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase(),
       )
       .join(' ');
+  }
+
+  private playerBound(value: number | undefined, fallback: number): number {
+    if (!Number.isFinite(value)) return fallback;
+    return Math.max(1, Math.min(64, Math.trunc(value ?? fallback)));
   }
 
   private buildCategoryRefs(

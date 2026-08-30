@@ -1,4 +1,4 @@
-import type { GameCatalogEntryRecord } from '../models/game-catalog-entry.model';
+import type { GameCatalogEntryRecord } from '../contracts/game-catalog-entry.model';
 
 export interface GameCatalogReader {
   listEntries(): GameCatalogEntryRecord[];

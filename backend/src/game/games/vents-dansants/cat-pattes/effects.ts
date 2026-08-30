@@ -5,12 +5,8 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { CatPattesBotType, CatPattesParadeType } from './content';
 import { CAT_PATTES_GOAL } from './content';
-import {
-  CAT_TURBO_PLAYED,
-  applyParade,
-  applyPower,
-  completeCatPattesRound,
-} from './rules';
+import { applyParade, applyPower } from './rules';
+import { CAT_TURBO_PLAYED, completeCatPattesRound } from './round-rules';
 type CatPattesState = NoGameState;
 
 const PARADES = ['croquettes', 'rayon', 'dodo', 'coussin', 'saut'] as const;

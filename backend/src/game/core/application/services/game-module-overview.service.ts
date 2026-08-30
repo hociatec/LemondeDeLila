@@ -1,5 +1,5 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
-import { ModuleOverviewDto } from '../models/generic-module.model';
+import { ModuleOverviewDto } from '../contracts/generic-module.model';
 import {
   GAME_MODULE_OVERVIEW,
   GameModuleOverviewProvider,

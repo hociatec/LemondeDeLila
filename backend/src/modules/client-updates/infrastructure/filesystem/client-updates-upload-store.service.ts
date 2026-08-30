@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common';
 import {
   ClientUpdateMeta,
   CompletedUploadMarker,
-} from '../../application/models/client-update-meta.record';
+} from '../../application/contracts/client-update-meta.record';
 import { ClientUpdatesPathsService } from './client-updates-paths.service';
 import { decodeCompletedUploadMarker } from './client-update-meta.decoder';
 

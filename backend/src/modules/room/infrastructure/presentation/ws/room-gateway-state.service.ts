@@ -1,21 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { getErrorMessage } from '@shared/utils/public-api';
-import { RoomClientPolicyService } from '../../../application/services/room-client-policy.service';
-import type { RoomPayload } from '../../../application/models/room-payload.model';
-import { RoomStateService } from '../../../application/services/room-state.service';
+import { RoomClientPolicyService } from '../../../application/services/membership/room-client-policy.service';
+import type { RoomPayload } from '../../../application/contracts/room-payload.model';
+import { RoomStateService } from '../../../application/services/state/room-state.service';
 import {
   buildRoomSnapshot,
-  collectRoomAnnouncementMessages,
   type RoomSnapshot,
 } from './room-announcement.helpers';
-import { emitRoomAnnouncementDiff } from './room-announcement-diff.helpers';
-import type { RoomFocusIntent } from './dto/room-focus-intent.ws.dto';
-import type {
-  RoomIntent,
-  RoomStartWizardIntent,
-} from './dto/room-intent.ws.dto';
+import type { RoomIntent } from './dto/room-intent.ws.dto';
 import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
+import { RoomGatewayAnnouncements } from './room-gateway.announcements';
 import type { ClientMeta } from './room-gateway.types';
 import {
   addHiddenSelf,
@@ -40,11 +35,15 @@ type StateContext = {
 
 @Injectable()
 export class RoomGatewayStateService {
+  private readonly announcements: RoomGatewayAnnouncements;
+
   constructor(
     private readonly roomState: RoomStateService,
     private readonly clientPolicy: RoomClientPolicyService,
     private readonly presenter: RoomGatewayStatePresenter,
-  ) {}
+  ) {
+    this.announcements = new RoomGatewayAnnouncements(presenter);
+  }
 
   async sendRoomState(ctx: StateContext, roomId: number): Promise<void> {
     try {
@@ -134,7 +133,7 @@ export class RoomGatewayStateService {
     roomId: number,
     intent: RoomIntent,
   ): Promise<void> {
-    await ctx.broadcast(roomId, 'room.intent', intent);
+    await this.announcements.broadcastIntent(ctx, roomId, intent);
   }
 
   async broadcastRoomPayload(
@@ -150,7 +149,7 @@ export class RoomGatewayStateService {
       .trim();
 
     this.applySpectators(ctx, roomId, payload);
-    const focusIntent = this.computeStatusFocusIntent(ctx, roomId, payload);
+    const focusIntent = this.announcements.focusIntent(ctx, roomId, payload);
     await this.broadcastRoomUpdated(ctx, roomId, payload);
     if (focusIntent) {
       await ctx.broadcast(roomId, 'room.focus', focusIntent);
@@ -168,7 +167,7 @@ export class RoomGatewayStateService {
 
     const previousSnapshot = ctx.lastRoomSnapshotByRoomId.get(roomId);
     const nextSnapshot = buildRoomSnapshot(payload);
-    await this.emitRoomAnnouncementsFromDiff(
+    await this.announcements.broadcastDiff(
       ctx,
       roomId,
       previousSnapshot,
@@ -176,7 +175,7 @@ export class RoomGatewayStateService {
     );
     ctx.lastRoomSnapshotByRoomId.set(roomId, nextSnapshot);
 
-    const startWizardIntent = this.buildStartWizardIntent(
+    const startWizardIntent = this.announcements.startWizardIntent(
       payload,
       previousStatus,
       nextStatus,
@@ -248,7 +247,7 @@ export class RoomGatewayStateService {
         .toLowerCase()
         .trim();
 
-      const focusIntent = this.computeStatusFocusIntent(ctx, roomId, payload);
+      const focusIntent = this.announcements.focusIntent(ctx, roomId, payload);
       const meta = ctx.clients.get(client);
       const payloadForClient =
         meta != null
@@ -259,9 +258,9 @@ export class RoomGatewayStateService {
         this.presenter.presentRoomUpdated(roomId, payloadForClient),
       );
       if (focusIntent) {
-        this.sendFocusIntent(ctx, client, roomId, focusIntent);
+        this.announcements.sendFocus(ctx, client, roomId, focusIntent);
       }
-      const startWizardIntent = this.buildStartWizardIntent(
+      const startWizardIntent = this.announcements.startWizardIntent(
         payload,
         previousStatus,
         nextStatus,
@@ -285,29 +284,6 @@ export class RoomGatewayStateService {
         // ignore
       }
     }
-  }
-
-  private sendFocusIntent(
-    ctx: StateContext,
-    client: WebSocket,
-    roomId: number,
-    focusIntent: RoomFocusIntent,
-  ): void {
-    ctx.safeSend(client, this.presenter.presentRoomFocus(roomId, focusIntent));
-    ctx.safeSend(
-      client,
-      this.presenter.presentRoomIntent(
-        roomId,
-        this.presenter.presentFocusIntent(focusIntent),
-      ),
-    );
-    ctx.safeSend(
-      client,
-      this.presenter.presentRoomIntent(
-        roomId,
-        this.presenter.presentFocusAnnouncement(focusIntent),
-      ),
-    );
   }
 
   private async broadcastRoomUpdated(
@@ -364,93 +340,5 @@ export class RoomGatewayStateService {
 
     sendToSet(targets);
     sendToSet(silentTargets);
-  }
-
-  private buildStartWizardIntent(
-    payload: RoomPayload,
-    previousStatus: string,
-    nextStatus: string,
-  ): RoomStartWizardIntent | null {
-    if (
-      previousStatus.length === 0 &&
-      nextStatus.length > 0 &&
-      nextStatus !== 'started'
-    ) {
-      return {
-        ownerId: payload.room.owner?.id ?? null,
-        title: 'Configuration de la table',
-        description: 'Le serveur vous invite à préparer la partie.',
-        message: "Choisissez rapidement l'ambiance et la configuration.",
-      };
-    }
-
-    return null;
-  }
-
-  private computeStatusFocusIntent(
-    ctx: StateContext,
-    roomId: number,
-    payload: RoomPayload,
-  ): RoomFocusIntent | null {
-    const previousStatus = (ctx.lastRoomStatusByRoomId.get(roomId) ?? '')
-      .toLowerCase()
-      .trim();
-    const nextStatus = String(payload.room.status ?? '')
-      .toLowerCase()
-      .trim();
-
-    if (previousStatus !== 'started' && nextStatus === 'started') {
-      return {
-        region: 'game',
-        reason: 'room.started',
-        priority: 'assertive',
-      };
-    }
-
-    return null;
-  }
-
-  private async emitRoomAnnouncementsFromDiff(
-    ctx: StateContext,
-    roomId: number,
-    previous: RoomSnapshot | undefined,
-    next: RoomSnapshot,
-  ): Promise<void> {
-    const messages = collectRoomAnnouncementMessages(previous, next);
-    if (!previous || messages.length > 0) {
-      for (const message of messages) {
-        await this.broadcastRoomAnnouncement(ctx, roomId, message);
-      }
-      return;
-    }
-
-    if (!previous) {
-      return;
-    }
-    await emitRoomAnnouncementDiff({
-      roomId,
-      previous,
-      next,
-      announce: (message) =>
-        this.broadcastRoomAnnouncement(ctx, roomId, message),
-    });
-  }
-
-  private async broadcastRoomAnnouncement(
-    ctx: StateContext,
-    roomId: number,
-    message: string,
-    priority: 'polite' | 'assertive' = 'polite',
-  ): Promise<void> {
-    const normalized = (message ?? '').trim();
-    if (normalized.length === 0) {
-      return;
-    }
-
-    await this.broadcastRoomIntent(
-      ctx,
-      roomId,
-      this.presenter.presentAnnouncement(normalized, priority),
-    );
   }
 }

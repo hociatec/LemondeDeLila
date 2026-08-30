@@ -5,6 +5,29 @@ export class RoomWsError extends Error {
   }
 }
 
+export class RoomWsInvalidMessageError extends RoomWsError {
+  readonly presentToClient = 'code';
+  readonly code = 'ROOM_WS_INVALID_MESSAGE';
+  readonly details = {};
+
+  constructor() {
+    super('Message WebSocket Room invalide');
+  }
+}
+
+export class RoomWsUnknownCommandError extends RoomWsError {
+  readonly presentToClient = 'code';
+  readonly code = 'ROOM_WS_UNKNOWN_COMMAND';
+
+  constructor(command: string) {
+    super(`Commande Room inconnue: ${command}`);
+  }
+
+  get details(): { command: string } {
+    return { command: this.message.slice('Commande Room inconnue: '.length) };
+  }
+}
+
 export class RoomWsInvalidRoomIdError extends RoomWsError {
   constructor() {
     super('roomId invalide');

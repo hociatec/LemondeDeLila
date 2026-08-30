@@ -41,6 +41,7 @@ export class AdminUserTypeormRepository implements AdminUserRepository {
     const rows = await this.users
       .createQueryBuilder('user')
       .select('user.id', 'id')
+      .limit(100_000)
       .getRawMany<{ id: number }>();
     return rows
       .map((row) => Number(row.id))

@@ -1,4 +1,4 @@
-import type { VaultGameState } from './application/models/vault-game-state.model';
+import type { VaultGameState } from './application/contracts/vault-game-state.model';
 
 export type VaultRoomSnapshotV1 = {
   version: 1;

@@ -5,48 +5,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 import { moneyDelta, movementDelta, normalize, skipTurns } from './text-parser';
-import classicBoard from './model/content/board.json';
-import classicChance from './model/content/chance-cards.json';
-import classicCommunity from './model/content/community-cards.json';
-import classicGroups from './model/content/groups.json';
-import classicStations from './model/content/stations.json';
-import classicUtilities from './model/content/utilities.json';
-import cosmosBoard from './variants/cosmos-credit/model/content/board.json';
-import cosmosChance from './variants/cosmos-credit/model/content/chance-cards.json';
-import cosmosCommunity from './variants/cosmos-credit/model/content/community-cards.json';
-import cosmosGroups from './variants/cosmos-credit/model/content/groups.json';
-import cosmosStations from './variants/cosmos-credit/model/content/stations.json';
-import cosmosUtilities from './variants/cosmos-credit/model/content/utilities.json';
-import gaiaBoard from './variants/gaia/model/content/board.json';
-import gaiaChance from './variants/gaia/model/content/chance-cards.json';
-import gaiaCommunity from './variants/gaia/model/content/community-cards.json';
-import gaiaGroups from './variants/gaia/model/content/groups.json';
-import gaiaStations from './variants/gaia/model/content/stations.json';
-import gaiaUtilities from './variants/gaia/model/content/utilities.json';
-import pintzelBoard from './variants/pintzel-couronnes/model/content/board.json';
-import pintzelChance from './variants/pintzel-couronnes/model/content/chance-cards.json';
-import pintzelCommunity from './variants/pintzel-couronnes/model/content/community-cards.json';
-import pintzelGroups from './variants/pintzel-couronnes/model/content/groups.json';
-import pintzelStations from './variants/pintzel-couronnes/model/content/stations.json';
-import pintzelUtilities from './variants/pintzel-couronnes/model/content/utilities.json';
-import flandresBoard from './variants/route-des-flandres/model/content/board.json';
-import flandresChance from './variants/route-des-flandres/model/content/chance-cards.json';
-import flandresCommunity from './variants/route-des-flandres/model/content/community-cards.json';
-import flandresGroups from './variants/route-des-flandres/model/content/groups.json';
-import flandresStations from './variants/route-des-flandres/model/content/stations.json';
-import flandresUtilities from './variants/route-des-flandres/model/content/utilities.json';
-import sabordBoard from './variants/sabord-quai/model/content/board.json';
-import sabordChance from './variants/sabord-quai/model/content/chance-cards.json';
-import sabordCommunity from './variants/sabord-quai/model/content/community-cards.json';
-import sabordGroups from './variants/sabord-quai/model/content/groups.json';
-import sabordStations from './variants/sabord-quai/model/content/stations.json';
-import sabordUtilities from './variants/sabord-quai/model/content/utilities.json';
-import violetteBoard from './variants/violette-boussole/model/content/board.json';
-import violetteChance from './variants/violette-boussole/model/content/chance-cards.json';
-import violetteCommunity from './variants/violette-boussole/model/content/community-cards.json';
-import violetteGroups from './variants/violette-boussole/model/content/groups.json';
-import violetteStations from './variants/violette-boussole/model/content/stations.json';
-import violetteUtilities from './variants/violette-boussole/model/content/utilities.json';
+import * as variantContent from './variant-content';
 
 export type SacVariantId =
   | 'classic'
@@ -171,70 +130,70 @@ type RawBundle = {
 
 export const SAC_VARIANTS: SacVariant[] = [
   variant('classic', 'Chouette et fortune !', {
-    board: classicBoard,
-    chance: classicChance,
-    community: classicCommunity,
-    groups: classicGroups,
-    stations: classicStations,
-    utilities: classicUtilities,
+    board: variantContent.classicBoard,
+    chance: variantContent.classicChance,
+    community: variantContent.classicCommunity,
+    groups: variantContent.classicGroups,
+    stations: variantContent.classicStations,
+    utilities: variantContent.classicUtilities,
   }),
   variant(
     'gaia',
     'Gaïa',
     {
-      board: gaiaBoard,
-      chance: gaiaChance,
-      community: gaiaCommunity,
-      groups: gaiaGroups,
-      stations: gaiaStations,
-      utilities: gaiaUtilities,
+      board: variantContent.gaiaBoard,
+      chance: variantContent.gaiaChance,
+      community: variantContent.gaiaCommunity,
+      groups: variantContent.gaiaGroups,
+      stations: variantContent.gaiaStations,
+      utilities: variantContent.gaiaUtilities,
     },
     greenRules(),
   ),
   variant('violette-boussole', 'Violette & Boussole', {
-    board: violetteBoard,
-    chance: violetteChance,
-    community: violetteCommunity,
-    groups: violetteGroups,
-    stations: violetteStations,
-    utilities: violetteUtilities,
+    board: variantContent.violetteBoard,
+    chance: variantContent.violetteChance,
+    community: variantContent.violetteCommunity,
+    groups: variantContent.violetteGroups,
+    stations: variantContent.violetteStations,
+    utilities: variantContent.violetteUtilities,
   }),
   variant('sabord-quai', 'Sabord et Quai', {
-    board: sabordBoard,
-    chance: sabordChance,
-    community: sabordCommunity,
-    groups: sabordGroups,
-    stations: sabordStations,
-    utilities: sabordUtilities,
+    board: variantContent.sabordBoard,
+    chance: variantContent.sabordChance,
+    community: variantContent.sabordCommunity,
+    groups: variantContent.sabordGroups,
+    stations: variantContent.sabordStations,
+    utilities: variantContent.sabordUtilities,
   }),
   variant('route-des-flandres', 'La Route des Flandres', {
-    board: flandresBoard,
-    chance: flandresChance,
-    community: flandresCommunity,
-    groups: flandresGroups,
-    stations: flandresStations,
-    utilities: flandresUtilities,
+    board: variantContent.flandresBoard,
+    chance: variantContent.flandresChance,
+    community: variantContent.flandresCommunity,
+    groups: variantContent.flandresGroups,
+    stations: variantContent.flandresStations,
+    utilities: variantContent.flandresUtilities,
   }),
   variant(
     'cosmos-credit',
     'Cosmos & Crédit',
     {
-      board: cosmosBoard,
-      chance: cosmosChance,
-      community: cosmosCommunity,
-      groups: cosmosGroups,
-      stations: cosmosStations,
-      utilities: cosmosUtilities,
+      board: variantContent.cosmosBoard,
+      chance: variantContent.cosmosChance,
+      community: variantContent.cosmosCommunity,
+      groups: variantContent.cosmosGroups,
+      stations: variantContent.cosmosStations,
+      utilities: variantContent.cosmosUtilities,
     },
     cosmosRules(),
   ),
   variant('pintzel-couronnes', 'Pintzel & Couronnes !', {
-    board: pintzelBoard,
-    chance: pintzelChance,
-    community: pintzelCommunity,
-    groups: pintzelGroups,
-    stations: pintzelStations,
-    utilities: pintzelUtilities,
+    board: variantContent.pintzelBoard,
+    chance: variantContent.pintzelChance,
+    community: variantContent.pintzelCommunity,
+    groups: variantContent.pintzelGroups,
+    stations: variantContent.pintzelStations,
+    utilities: variantContent.pintzelUtilities,
   }),
 ];
 

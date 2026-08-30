@@ -60,6 +60,44 @@ describe('GameStatsService', () => {
     });
   });
 
+  it('deduplicates reconnecting humans and recovers a concurrent start', async () => {
+    const { service, repo } = setup();
+    repo.createMatchWithPlayers.mockRejectedValueOnce({
+      code: 'ER_DUP_ENTRY',
+    });
+    repo.findActiveMatchByRoomId
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ ...match });
+
+    await expect(
+      service.startMatch({
+        roomId: 4,
+        gameType: 'lama',
+        humans: [
+          { id: 1, username: 'Alice-old' },
+          { id: 1, username: 'Alice' },
+        ],
+        botsCount: 0,
+      }),
+    ).resolves.toEqual(match);
+    expect(repo.createMatchWithPlayers).toHaveBeenCalledWith(
+      expect.objectContaining({
+        match: expect.objectContaining({ humansCount: 1 }),
+        players: [{ userId: 1, username: 'Alice' }],
+      }),
+    );
+  });
+
+  it('is idempotent when a finished room has no active match', async () => {
+    const { service, repo } = setup();
+    await service.finalizeFinished(4, {
+      status: 'finished',
+      phase: 'end',
+      log: [],
+    });
+    expect(repo.saveMatchWithPlayers).not.toHaveBeenCalled();
+  });
+
   it('preserves quit outcomes while finalizing winners and losers', async () => {
     const { service, repo } = setup();
     repo.findActiveMatchByRoomId.mockResolvedValue({ ...match });

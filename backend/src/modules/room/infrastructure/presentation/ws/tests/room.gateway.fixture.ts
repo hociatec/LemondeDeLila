@@ -3,8 +3,8 @@ import { RoomGatewayCommandService } from '../room-gateway-command.service';
 import { RoomGatewayLifecycleService } from '../room-gateway-lifecycle.service';
 import { RoomGatewayLifecyclePresenter } from '../room-gateway-lifecycle.presenter';
 import { RoomGatewayPresenceService } from '../room-gateway-presence.service';
-import { RoomJoinPolicyService } from '../../../../application/services/room-join-policy.service';
-import { RoomAdminPolicyService } from '../../../../application/services/room-admin-policy.service';
+import { RoomJoinPolicyService } from '../../../../application/services/membership/room-join-policy.service';
+import { RoomAdminPolicyService } from '../../../../application/services/maintenance/room-admin-policy.service';
 import { RoomGatewayPresenter } from '../room-gateway.presenter';
 import { buildTestRoomPayload, buildTestSocket } from './backend-test-builders';
 

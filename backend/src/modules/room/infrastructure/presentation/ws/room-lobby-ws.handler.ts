@@ -4,7 +4,7 @@ import {
   requireUser,
   type WsSession,
 } from '../../../../../platform/realtime/public-api';
-import { RoomLobbyRefreshService } from '../../../application/services/room-lobby-refresh.service';
+import { RoomLobbyRefreshService } from '../../../application/services/lobby/room-lobby-refresh.service';
 import {
   RoomInvitePresenceListDto,
   RoomInviteRespondDto,

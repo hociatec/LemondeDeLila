@@ -21,16 +21,11 @@ export class GameRuleViolationError extends GameDomainError {
   }
 }
 
-/**
- * Compatibility helper for rules that have not yet adopted `ctx.reject`.
- * It deliberately throws a typed domain error so presentation code never has
- * to infer a business failure from an arbitrary native Error message.
- */
 export function rejectRule(
-  _legacyMessage: string,
+  message: string,
   details: Readonly<Record<string, unknown>> = {},
 ): never {
-  throw new GameRuleViolationError('GAME_RULE_VIOLATION', details);
+  throw new GameRuleViolationError('GAME_RULE_VIOLATION', details, message);
 }
 
 export class GameRoomNotFoundError extends GameDomainError {

@@ -9,7 +9,7 @@ describe('Ça Dérape declarative game', () => {
   it('keeps the 80-card deck and resolves turns deterministically', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(91);
     await game.start();
-    expect(game.view(1).deckCount).toBe(CA_DERAPE_CARDS.length);
+    expect(game.inspect.deckCount()).toBe(CA_DERAPE_CARDS.length);
     await game.as(1).do('roll', {});
     const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
     expect(kits.resources['ca-derape.last-roll']['1']).toBeGreaterThanOrEqual(

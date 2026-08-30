@@ -1,5 +1,5 @@
-import type { GameCategoryAssignmentRecord } from '../models/game-category-assignment.model';
-import type { GameCategoryRecord } from '../models/game-category.model';
+import type { GameCategoryAssignmentRecord } from '../contracts/game-category-assignment.model';
+import type { GameCategoryRecord } from '../contracts/game-category.model';
 
 export const GAME_CATEGORIES_REPOSITORY = Symbol('GAME_CATEGORIES_REPOSITORY');
 

@@ -5,7 +5,7 @@ import type {
   BugReportRepository,
   CreateBugReportRecordInput,
 } from '../../../../application/ports/bug-report.repository';
-import type { BugReportRecord } from '../../../../application/models/bug-report.record';
+import type { BugReportRecord } from '../../../../application/contracts/bug-report.record';
 import { BugReportEntity } from '../entities/bug-report.entity';
 
 @Injectable()

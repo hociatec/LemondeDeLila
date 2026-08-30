@@ -1,7 +1,7 @@
 import type {
   BotManagedRoomRecord,
   BotRoomRecord,
-} from '../models/bot-room.record';
+} from '../contracts/bot-room.record';
 
 export interface CreateBotForRoomInput {
   roomId: number;
@@ -9,6 +9,7 @@ export interface CreateBotForRoomInput {
 }
 
 export interface BotRoomRepository {
+  runRoomMutation<T>(roomId: number, operation: () => Promise<T>): Promise<T>;
   findRoomById(roomId: number): Promise<BotManagedRoomRecord | null>;
   listBotsForRoom(roomId: number): Promise<BotRoomRecord[]>;
   createBot(input: CreateBotForRoomInput): Promise<BotRoomRecord>;

@@ -7,11 +7,11 @@ describe('Les Mains de la Terre declarative game', () => {
     const game = testGame(gameDefinition).players(['Alice', 'Bob']).seed(41);
     await game.start();
 
-    expect(game.view(1).hand).toHaveLength(6);
-    expect(game.view(2).hand).toHaveLength(6);
-    expect(JSON.stringify(game.view(2))).not.toContain(game.view(1).hand[0]);
+    expect(game.inspect.hand(1)).toHaveLength(6);
+    expect(game.inspect.hand(2)).toHaveLength(6);
+    expect(JSON.stringify(game.view(2))).not.toContain(game.inspect.hand(1)[0]);
 
-    const family = LES_MAINS_CARD_BY_ID[game.view(1).hand[0]].family;
+    const family = LES_MAINS_CARD_BY_ID[game.inspect.hand<string>(1)[0]].family;
     const requested = LES_MAINS_METIER_CARDS.find(
       (card) => card.family === family,
     );

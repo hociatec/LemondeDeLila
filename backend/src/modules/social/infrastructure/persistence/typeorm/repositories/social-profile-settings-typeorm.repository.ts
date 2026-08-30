@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { SocialProfileSettings } from '../../../../application/models/social-profile-settings.model';
+import type { SocialProfileSettings } from '../../../../application/contracts/social-profile-settings.model';
 import type { SocialProfileSettingsRepository } from '../../../../application/ports/social-profile-settings.repository';
 import { SocialProfileSettingsEntity } from '../entities/social-profile-settings.entity';
 

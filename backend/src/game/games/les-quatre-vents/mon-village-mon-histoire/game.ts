@@ -6,20 +6,21 @@ import {
   raceGame,
 } from '../../../engine/sdk/public-api';
 import { VILLAGE_TILES, VILLAGE_ZONES } from './content';
-import { deckForZone, MON_VILLAGE_ACTIONS } from './rules';
+import { CARD_COLLECTED, deckForZone, MON_VILLAGE_ACTIONS } from './rules';
 import type { MonVillageState } from './types';
 
 const zoneDecks = VILLAGE_ZONES.map((zone) =>
   cards.deck({ id: deckForZone(zone.id), cards: zone.cards, shuffle: true }),
 );
 
-export default defineGame<MonVillageState, typeof MON_VILLAGE_ACTIONS>({
+export default defineGame<MonVillageState>()({
   id: 'mon-village-mon-histoire',
   displayName: 'Mon Village, Mon Histoire',
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
   description: 'Parcourez les métiers qui font vivre un village.',
   players: { min: 2, max: 6 },
+  events: [CARD_COLLECTED],
   content: defineGameContent('mon-village-mon-histoire', {
     tiles: VILLAGE_TILES,
     zones: VILLAGE_ZONES,

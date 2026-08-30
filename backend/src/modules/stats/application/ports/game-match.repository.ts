@@ -1,8 +1,8 @@
-import type { GameMatchRecord } from '../models/game-match.model';
+import type { GameMatchRecord } from '../contracts/game-match.model';
 import type {
   GameMatchOutcome,
   GameMatchPlayerRecord,
-} from '../models/game-match-player.model';
+} from '../contracts/game-match-player.model';
 
 export const GAME_MATCH_REPOSITORY = Symbol('GAME_MATCH_REPOSITORY');
 

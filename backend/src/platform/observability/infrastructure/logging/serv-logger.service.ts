@@ -7,6 +7,7 @@ import {
   readEnvironmentBoolean,
 } from '../../../config/public-api';
 import { sanitizeLogText } from '../../application/log-sanitizer';
+import { currentCorrelationId } from '../../application/request-context';
 
 export class ServLoggerService implements LoggerService {
   private readonly logger: winston.Logger;
@@ -52,26 +53,26 @@ export class ServLoggerService implements LoggerService {
   }
 
   log(message: unknown, context?: string) {
-    this.logger.info(sanitizeLogText(String(message)), { context });
+    this.logger.info(sanitizeLogText(String(message)), this.meta(context));
   }
 
   error(message: unknown, trace?: string, context?: string) {
     this.logger.error(sanitizeLogText(String(message)), {
-      context,
+      ...this.meta(context),
       trace: trace ? sanitizeLogText(trace) : trace,
     });
   }
 
   warn(message: unknown, context?: string) {
-    this.logger.warn(sanitizeLogText(String(message)), { context });
+    this.logger.warn(sanitizeLogText(String(message)), this.meta(context));
   }
 
   debug(message: unknown, context?: string) {
-    this.logger.debug(sanitizeLogText(String(message)), { context });
+    this.logger.debug(sanitizeLogText(String(message)), this.meta(context));
   }
 
   verbose(message: unknown, context?: string) {
-    this.logger.verbose(sanitizeLogText(String(message)), { context });
+    this.logger.verbose(sanitizeLogText(String(message)), this.meta(context));
   }
 
   setLogLevels(levels: LogLevel[]) {
@@ -93,6 +94,10 @@ export class ServLoggerService implements LoggerService {
     };
     const level = mapped[max] ?? 'info';
     this.logger.level = level;
+  }
+
+  private meta(context?: string): { context?: string; correlationId?: string } {
+    return { context, correlationId: currentCorrelationId() };
   }
 
   private resolveLevel(): string {

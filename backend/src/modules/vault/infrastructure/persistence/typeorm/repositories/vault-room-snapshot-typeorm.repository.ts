@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { VaultRoomSnapshotRecord } from '../../../../application/models/vault-room-snapshot.model';
+import type { VaultRoomSnapshotRecord } from '../../../../application/contracts/vault-room-snapshot.model';
 import type { VaultRoomSnapshotRepository } from '../../../../application/ports/vault-room-snapshot.repository';
 import { VaultRoomSnapshotEntity } from '../entities/vault-room-snapshot.entity';
 

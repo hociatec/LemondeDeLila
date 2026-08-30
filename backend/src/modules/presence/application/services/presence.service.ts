@@ -7,11 +7,11 @@ import { getErrorDetails } from '../../../../shared/utils/public-api';
 import type {
   PresenceClient,
   PresenceListItem,
-} from '../models/presence-client.model';
+} from '../contracts/presence-client.model';
 export type {
   PresenceClientCommand,
   PresenceListItem,
-} from '../models/presence-client.model';
+} from '../contracts/presence-client.model';
 import {
   PresenceEvent,
   PresenceTransport,

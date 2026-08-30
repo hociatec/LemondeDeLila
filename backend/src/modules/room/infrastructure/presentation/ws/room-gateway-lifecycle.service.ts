@@ -3,31 +3,27 @@ import { WebSocket } from 'ws';
 import { CatalogService } from '../../../../catalog/public-api';
 import { PerfMetricsService } from '../../../../../platform/observability/public-api';
 import { bestEffort } from '@shared/utils/public-api';
-import { RoomWsPrivateInvitationRequiredError } from '../../../domain/errors/room-ws.errors';
-import { RoomJoinPolicyService } from '../../../application/services/room-join-policy.service';
-import { RoomLifecycleFacadeService } from '../../../application/services/room-lifecycle-facade.service';
-import { RoomMembershipFacadeService } from '../../../application/services/room-membership-facade.service';
-import { RoomRealtimeTrackerService } from '../../../application/services/room-realtime-tracker.service';
-import { RoomStateService } from '../../../application/services/room-state.service';
+import { RoomJoinPolicyService } from '../../../application/services/membership/room-join-policy.service';
+import { RoomLifecycleFacadeService } from '../../../application/services/lifecycle/room-lifecycle-facade.service';
+import { RoomMembershipFacadeService } from '../../../application/services/membership/room-membership-facade.service';
+import { RoomRealtimeTrackerService } from '../../../application/services/state/room-realtime-tracker.service';
+import { RoomStateService } from '../../../application/services/state/room-state.service';
 import { buildCreatedRoomState } from './room-created-state.helpers';
 import { extractTraceMeta } from './room-command.helpers';
 import { RoomGatewayLifecyclePresenter } from './room-gateway-lifecycle.presenter';
 import type { AuthedClient, ClientMeta } from './room-gateway.types';
-import type {
-  JoinResolution,
-  LifecycleContext,
-} from './room-gateway-lifecycle.types';
+import type { LifecycleContext } from './room-gateway-lifecycle.types';
 import {
   addSocketToRoomMembership,
   removeSocketFromRoomMembership,
 } from './room-socket-membership.helpers';
-import {
-  parseRoomCreateRequest,
-  parseRoomJoinRequest,
-} from './room-request.helpers';
+import { parseRoomCreateRequest } from './room-request.helpers';
+import { RoomGatewayJoinWorkflow } from './room-gateway-join.workflow';
 
 @Injectable()
 export class RoomGatewayLifecycleService {
+  private readonly joins: RoomGatewayJoinWorkflow;
+
   constructor(
     private readonly membership: RoomMembershipFacadeService,
     private readonly lifecycle: RoomLifecycleFacadeService,
@@ -35,9 +31,17 @@ export class RoomGatewayLifecycleService {
     private readonly catalog: CatalogService,
     private readonly perf: PerfMetricsService,
     private readonly realtimeTracker: RoomRealtimeTrackerService,
-    private readonly joinPolicy: RoomJoinPolicyService,
+    joinPolicy: RoomJoinPolicyService,
     private readonly presenter: RoomGatewayLifecyclePresenter,
-  ) {}
+  ) {
+    this.joins = new RoomGatewayJoinWorkflow(
+      membership,
+      roomState,
+      realtimeTracker,
+      joinPolicy,
+      presenter,
+    );
+  }
 
   async handleRoomLeave(
     ctx: LifecycleContext,
@@ -152,7 +156,7 @@ export class RoomGatewayLifecycleService {
       'ws.room.reset.total',
       async () => {
         await this.lifecycle.resetRoom(meta.roomId, meta.userId, false);
-        await this.promoteConnectedSpectatorsToParticipants(ctx, meta.roomId);
+        await this.joins.promoteSpectators(ctx, meta.roomId);
         await this.roomState.invalidateRoomPayloadCache(meta.roomId);
 
         await ctx.broadcast(
@@ -170,7 +174,7 @@ export class RoomGatewayLifecycleService {
     ctx: LifecycleContext,
     roomId: number,
   ): Promise<void> {
-    await this.promoteConnectedSpectatorsToParticipants(ctx, roomId);
+    await this.joins.promoteSpectators(ctx, roomId);
   }
 
   async handleTogglePrivacy(
@@ -304,10 +308,7 @@ export class RoomGatewayLifecycleService {
     await this.perf.measure(
       'ws.room.join.total',
       async () => {
-        const resolution = await this.resolveJoin(ctx, client, meta, payload);
-        if (resolution) {
-          await this.applyJoin(ctx, client, meta, resolution);
-        }
+        await this.joins.join(ctx, client, meta, payload);
       },
       {
         userId: meta.userId,
@@ -316,140 +317,5 @@ export class RoomGatewayLifecycleService {
         ...trace,
       },
     );
-  }
-
-  private async resolveJoin(
-    ctx: LifecycleContext,
-    client: WebSocket,
-    meta: ClientMeta,
-    payload: unknown,
-  ): Promise<JoinResolution | null> {
-    const request = parseRoomJoinRequest(ctx.asRecord(payload));
-    const roomId = this.joinPolicy.requireValidRoomId(request.roomId);
-    if (
-      this.joinPolicy.isBanned(this.roomState.isBanned(roomId, meta.userId))
-    ) {
-      await ctx.sendError(client, this.presenter.presentJoinBannedError());
-      return null;
-    }
-    const silent = Boolean(request.silent);
-    if (silent && !this.joinPolicy.canUseSilentMode(meta.isAdmin || false)) {
-      client.close(4003, this.presenter.presentSilentModeForbiddenReason());
-      return null;
-    }
-    let spectator = request.spectator || silent;
-    if (this.joinPolicy.shouldValidateSpectatorAccess(spectator, silent)) {
-      if (!(await ctx.canSpectate(roomId, meta.userId))) {
-        client.close(4003, this.presenter.presentSpectatorForbiddenReason());
-        return null;
-      }
-    }
-    if (!spectator) {
-      try {
-        await this.membership.joinRoom(roomId, meta.userId);
-      } catch (error) {
-        const state = await this.roomState.getRoomPayload(roomId);
-        if (!this.joinPolicy.shouldFallbackToSpectator(state, meta.userId)) {
-          throw error;
-        }
-        if (!(await ctx.canSpectate(roomId, meta.userId))) {
-          throw new RoomWsPrivateInvitationRequiredError();
-        }
-        spectator = true;
-      }
-    }
-    return { roomId, silent, spectator };
-  }
-
-  private async applyJoin(
-    ctx: LifecycleContext,
-    client: WebSocket,
-    meta: ClientMeta,
-    resolution: JoinResolution,
-  ): Promise<void> {
-    const previousRoomId = meta.roomId;
-    const previousRole = meta.role;
-    if (
-      previousRoomId !== resolution.roomId ||
-      (meta.silent === true) !== resolution.silent
-    ) {
-      removeSocketFromRoomMembership(
-        ctx.rooms,
-        ctx.silentRooms,
-        previousRoomId,
-        client,
-      );
-      addSocketToRoomMembership(
-        ctx.rooms,
-        ctx.silentRooms,
-        resolution.roomId,
-        client,
-        resolution.silent,
-      );
-    }
-    meta.roomId = resolution.roomId;
-    meta.role = resolution.spectator ? 'spectator' : 'participant';
-    meta.silent = resolution.silent;
-    this.realtimeTracker.setSocketParticipantRoom(
-      client,
-      meta.role === 'participant' && !meta.silent ? meta.roomId : null,
-    );
-    if (resolution.silent) {
-      await ctx.sendRoomStateToClient(client, resolution.roomId, {
-        includeRealtimePlayers: true,
-        includeHiddenSelf: { userId: meta.userId, username: meta.username },
-      });
-    } else {
-      await ctx.sendRoomState(resolution.roomId);
-    }
-    if (previousRoomId > 0 && previousRoomId !== resolution.roomId) {
-      await ctx.leavePreviousRoomOnSwitch(
-        previousRoomId,
-        meta.userId,
-        previousRole,
-      );
-    }
-  }
-
-  private async promoteConnectedSpectatorsToParticipants(
-    ctx: LifecycleContext,
-    roomId: number,
-  ): Promise<void> {
-    if (!Number.isFinite(roomId) || roomId <= 0) {
-      return;
-    }
-
-    let isPrivate: boolean;
-    try {
-      const state = await this.roomState.getRoomPayload(roomId);
-      isPrivate = Boolean(state?.room?.isPrivate);
-    } catch {
-      isPrivate = false;
-    }
-
-    const connected = Array.from(ctx.clients.entries())
-      .map(([socket, meta]) => ({ socket, meta }))
-      .filter(({ meta }) => meta.roomId === roomId)
-      .filter(({ meta }) => meta.silent !== true)
-      .filter(({ meta }) => meta.role === 'spectator');
-
-    for (const { socket, meta } of connected) {
-      try {
-        await this.membership.joinRoom(roomId, meta.userId, {
-          allowPrivate: isPrivate,
-        });
-      } catch {
-        continue;
-      }
-
-      meta.role = 'participant';
-      this.realtimeTracker.setSocketParticipantRoom(socket, roomId);
-
-      try {
-        ctx.safeSend(socket, this.presenter.presentRolePromoted(roomId));
-      } catch {
-        // ignore
-      }
-    }
   }
 }

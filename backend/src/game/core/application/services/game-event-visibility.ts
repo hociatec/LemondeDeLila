@@ -1,4 +1,7 @@
-import type { GameEvent, ProjectedGameEvent } from '../models/game-event.model';
+import type {
+  GameEvent,
+  ProjectedGameEvent,
+} from '../contracts/game-event.model';
 
 export function projectGameEvent(
   event: GameEvent,

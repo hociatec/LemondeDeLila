@@ -1,4 +1,4 @@
-import type { PrivateMessageRecord } from '../models/private-message.model';
+import type { PrivateMessageRecord } from '../contracts/private-message.model';
 
 export const PRIVATE_MESSAGE_REPOSITORY = Symbol('PRIVATE_MESSAGE_REPOSITORY');
 

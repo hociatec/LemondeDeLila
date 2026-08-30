@@ -8,7 +8,7 @@ import type {
   NotificationInboxContactRow,
   NotificationInboxItemRecord,
   NotificationInboxPayload,
-} from '../../../../application/models/notification-inbox-item.model';
+} from '../../../../application/contracts/notification-inbox-item.model';
 import { NotificationInboxItemNotFoundError } from '../../../../domain/errors/notification-domain.errors';
 import { User } from '../../../../../user/public-api';
 import { NotificationInboxItemEntity } from '../entities/notification-inbox-item.entity';
@@ -178,6 +178,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
         .where('it.kind = :kind', { kind: cleanKind })
         .andWhere('it.contactId = :contactId', { contactId: cid })
         .andWhere('it.deletedAt IS NULL')
+        .limit(500)
         .getRawMany<NotificationInboxContactRawRow>();
 
       return rows

@@ -1,4 +1,4 @@
-import { RoomPayload } from '../models/room-payload.model';
+import { RoomPayload } from '../contracts/room-payload.model';
 
 export const ROOM_VAULT_PORT = Symbol('ROOM_VAULT_PORT');
 

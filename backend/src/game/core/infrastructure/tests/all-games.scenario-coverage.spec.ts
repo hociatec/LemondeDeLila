@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import type { GameStateEntity } from '../../application/models/game-state.model';
+import type { GameStateEntity } from '../../application/contracts/game-state.model';
 import { GamePluginsModule } from '../../../engine/public-api';
 import type {
   GameCatalogDefinition,
@@ -9,7 +9,7 @@ import {
   GameRegistryModule,
   GameRegistryService,
 } from '../../../engine/public-api';
-import type { GameSingleActionDto } from '../../application/models/game-action.model';
+import type { GameSingleActionDto } from '../../application/contracts/game-action.model';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as fs from 'node:fs';
 import * as path from 'node:path';

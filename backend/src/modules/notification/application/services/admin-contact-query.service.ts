@@ -3,7 +3,7 @@ import {
   NOTIFICATION_INBOX_REPOSITORY,
   type NotificationInboxRepository,
 } from '../ports/notification-inbox.repository';
-import type { AdminContactThreadSummary } from '../models/admin-contact.model';
+import type { AdminContactThreadSummary } from '../contracts/admin-contact.model';
 import {
   ADMIN_CONTACT_KIND,
   normalizeAdminContactPayload,

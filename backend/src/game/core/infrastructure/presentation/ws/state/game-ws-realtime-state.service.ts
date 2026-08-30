@@ -3,7 +3,7 @@ import { stringOrEmpty } from '@shared/utils/public-api';
 import type { WsSession } from '../../../../../../platform/realtime/public-api';
 import { WsApiHubService } from '../../../../../../platform/ws/public-api';
 import type { GameRuntime } from '../../../../application/contracts/game-runtime.interface';
-import type { GameStateEntity } from '../../../../application/models/game-state.model';
+import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
 import { resolveGameStateRunId } from '../../../../application/helpers/game-room-run-id.helper';
 import { GameRoomStateFactory } from '../../../../application/services/game-room-state.factory';
 import { GameEngineService } from '../../../../application/services/game-engine.service';

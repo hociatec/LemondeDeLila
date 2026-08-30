@@ -1,7 +1,7 @@
 import type {
   ClientUpdateMeta,
   CompletedUploadMarker,
-} from '../models/client-update-meta.record';
+} from '../contracts/client-update-meta.record';
 
 export type ClientUpdatesUploadStorePort = {
   getUploadsRoot(): string;

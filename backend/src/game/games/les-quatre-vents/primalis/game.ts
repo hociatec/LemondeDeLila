@@ -9,17 +9,19 @@ import {
   primalisCollections,
   PRIMALIS_ACTIONS,
   PRIMALIS_DANGER_AMPLIFIED,
+  ROLL_RESOLVED,
   winnerByResources,
 } from './rules';
 import type { PrimalisState } from './types';
 
-export default defineGame<PrimalisState, typeof PRIMALIS_ACTIONS>({
+export default defineGame<PrimalisState>()({
   id: 'primalis',
   displayName: 'Primalis',
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
   description: 'Construisez votre tribu avant l’impact de la comète.',
   players: { min: 2, max: 6 },
+  events: [ROLL_RESOLVED],
   content: defineGameContent('primalis', { tiles: PRIMALIS_TILES }),
   patterns: [raceGame({ trackId: 'comet', spaces: PRIMALIS_TILES.length })],
   initialization: {

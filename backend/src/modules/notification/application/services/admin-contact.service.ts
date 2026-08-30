@@ -21,12 +21,12 @@ import type {
   AdminContactItem,
   AdminContactStatus,
   AdminContactThreadSummary,
-} from '../models/admin-contact.model';
+} from '../contracts/admin-contact.model';
 export type {
   AdminContactItem,
   AdminContactStatus,
   AdminContactThreadSummary,
-} from '../models/admin-contact.model';
+} from '../contracts/admin-contact.model';
 import { AdminContactDeliveryService } from './admin-contact-delivery.service';
 import { AdminContactQueryService } from './admin-contact-query.service';
 import { AdminContactWorkflowService } from './admin-contact-workflow.service';

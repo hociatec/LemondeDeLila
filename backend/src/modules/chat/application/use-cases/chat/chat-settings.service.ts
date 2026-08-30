@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { ChatSettings } from '../../models/chat-settings.record';
+import { ChatSettings } from '../../contracts/chat-settings.record';
 import { GetChatSettingsService } from './get-chat-settings.service';
 import { UpdateChatSettingsService } from './update-chat-settings.service';
 

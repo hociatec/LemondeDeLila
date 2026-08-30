@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { CatalogGame } from '../../models/catalog-game.record';
+import { CatalogGame } from '../../contracts/catalog-game.record';
 import { CATALOG_GAME_SOURCE_PORT } from '../../ports/catalog-game-source.port';
 import type { CatalogGameSourcePort } from '../../ports/catalog-game-source.port';
 import { CatalogCacheService } from '../../services/catalog-cache.service';

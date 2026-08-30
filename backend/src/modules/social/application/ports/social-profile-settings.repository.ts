@@ -1,4 +1,4 @@
-import type { SocialProfileSettings } from '../models/social-profile-settings.model';
+import type { SocialProfileSettings } from '../contracts/social-profile-settings.model';
 
 export const SOCIAL_PROFILE_SETTINGS_REPOSITORY = Symbol(
   'SOCIAL_PROFILE_SETTINGS_REPOSITORY',

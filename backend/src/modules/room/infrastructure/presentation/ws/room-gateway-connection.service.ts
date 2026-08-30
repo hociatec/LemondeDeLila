@@ -7,10 +7,10 @@ import {
   isVersionLower,
 } from '../../../../../shared/utils/public-api';
 import { WsTicketAuthService } from '../../../../../platform/realtime/public-api';
-import { RoomClientPolicyService } from '../../../application/services/room-client-policy.service';
-import { RoomJoinPolicyService } from '../../../application/services/room-join-policy.service';
-import { RoomMembershipFacadeService } from '../../../application/services/room-membership-facade.service';
-import { RoomStateService } from '../../../application/services/room-state.service';
+import { RoomClientPolicyService } from '../../../application/services/membership/room-client-policy.service';
+import { RoomJoinPolicyService } from '../../../application/services/membership/room-join-policy.service';
+import { RoomMembershipFacadeService } from '../../../application/services/membership/room-membership-facade.service';
+import { RoomStateService } from '../../../application/services/state/room-state.service';
 import { RoomGatewayLifecyclePresenter } from './room-gateway-lifecycle.presenter';
 import type { ClientMeta, ClientRole } from './room-gateway.types';
 import { extractRoomWsParams } from './room-ws-params';

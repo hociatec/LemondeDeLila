@@ -1,5 +1,5 @@
-import type { GameEvent, GameSnapshot } from '../models/game-event.model';
-import type { GameStateEntity } from '../models/game-state.model';
+import type { GameEvent, GameSnapshot } from '../contracts/game-event.model';
+import type { GameStateEntity } from '../contracts/game-state.model';
 
 export const GAME_EVENT_STORE = Symbol('GAME_EVENT_STORE');
 export const GAME_SNAPSHOT_POLICY = Symbol('GAME_SNAPSHOT_POLICY');

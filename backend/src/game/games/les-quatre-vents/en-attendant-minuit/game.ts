@@ -19,7 +19,7 @@ import {
 } from './rules';
 import type { MinuitState } from './types';
 
-export default defineGame<MinuitState, typeof MINUIT_ACTIONS>({
+export default defineGame<MinuitState>()({
   id: 'en-attendant-minuit',
   displayName: 'En Attendant Minuit !',
   category: 'JeuxDePlateaux',

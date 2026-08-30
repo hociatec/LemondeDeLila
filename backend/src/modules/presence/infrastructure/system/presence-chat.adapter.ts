@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ChatService, ChatSettingsService } from '../../../chat/public-api';
-import type { PresenceChatHistory } from '../../application/models/presence-chat-history.model';
+import type { PresenceChatHistory } from '../../application/contracts/presence-chat-history.model';
 import type { PresenceChatPort } from '../../application/ports/presence-chat.port';
 
 @Injectable()

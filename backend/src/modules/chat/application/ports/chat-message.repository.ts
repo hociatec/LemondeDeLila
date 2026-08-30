@@ -1,4 +1,4 @@
-import { ChatMessageRecord } from '../models/chat-message.record';
+import { ChatMessageRecord } from '../contracts/chat-message.record';
 
 export const CHAT_MESSAGE_REPOSITORY = Symbol('CHAT_MESSAGE_REPOSITORY');
 
