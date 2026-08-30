@@ -84,6 +84,7 @@ export class RoomClientPolicyService {
       if (!started && bots > 0) actions.add('bot.remove');
       actions.add('room.kick');
       actions.add('room.ban');
+      actions.add('room.invite');
       actions.add('room.set-owner');
       actions.add('room.set-ambience');
       actions.add('room.tableAmbience');

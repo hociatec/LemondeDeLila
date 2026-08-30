@@ -5,6 +5,8 @@ add_executable(lemonde_de_lila_wx_tests
     src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp
     src/modules/catalog/presentation/CatalogShelfNavigator.cpp
     src/modules/rooms/infrastructure/RoomPayloadCodec.cpp
+    src/modules/rooms/infrastructure/RoomInvitationPayloadCodec.cpp
+    src/modules/rooms/infrastructure/TableAmbiencePayloadCodec.cpp
     src/modules/rooms/infrastructure/RoomSessionGateway.cpp
     src/modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp
     src/modules/rooms/infrastructure/RoomSessionGateway.CommandResponses.cpp
@@ -169,12 +171,16 @@ add_executable(lemonde_de_lila_wx_gameplay_tests
     src/modules/gameplay/dice/application/GameDiceTextBuilder.cpp
     src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp
     src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp
+    src/modules/gameplay/prompts/application/GameActionPromptFactory.cpp
     src/modules/gameplay/history/presentation/GameLogCursor.cpp
+    src/modules/gameplay/information/application/GameCapabilityTextBuilder.cpp
     src/modules/gameplay/session/infrastructure/GameEventPayloadCodec.cpp
     src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp
     src/modules/gameplay/state/infrastructure/GamePendingDecoder.cpp
     src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp
     src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp
+    src/modules/gameplay/state/infrastructure/GameSystemDecoder.cpp
+    src/modules/gameplay/state/domain/GameKits.cpp
     src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp
 )
 target_include_directories(lemonde_de_lila_wx_gameplay_tests PRIVATE src)

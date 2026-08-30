@@ -12,8 +12,7 @@ class GamePendingDecoder final
 {
 public:
     [[nodiscard]] static std::optional<domain::GamePending> Decode(
-        const nlohmann::json& stateNode,
-        const nlohmann::json& metadata,
-        const nlohmann::json& extras);
+        const nlohmann::json& pendingNode,
+        const std::vector<domain::GameAction>& actions);
 };
 }

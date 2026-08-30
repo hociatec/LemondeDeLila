@@ -29,41 +29,54 @@ std::string Text(const nlohmann::json& object, const char* key)
     const auto found = object.find(key);
     return found != object.end() && found->is_string() ? found->get<std::string>() : std::string{};
 }
+
+void AppendDice(
+    const nlohmann::json& raw,
+    domain::GameDiceState& state,
+    const std::string& setLabel)
+{
+    const auto dice = raw.find("dice");
+    if (dice == raw.end() || !dice->is_array()) return;
+    for (std::size_t position = 0; position < dice->size(); ++position)
+    {
+        const auto& item = (*dice)[position];
+        if (!item.is_object()) continue;
+        domain::GameDie die;
+        die.id = Text(item, "id");
+        if (die.id.empty()) die.id = "die-" + std::to_string(state.dice.size() + 1);
+        die.label = Text(item, "label");
+        if (die.label.empty()) die.label = "Dé " + std::to_string(position + 1);
+        if (!setLabel.empty()) die.label = setLabel + " - " + die.label;
+        die.sides = PositiveInt(item, "sides").value_or(6);
+        die.value = PositiveInt(item, "value");
+        die.disabled = item.value("disabled", false);
+        die.actionIndex = Index(item, "actionIndex");
+        state.dice.push_back(std::move(die));
+    }
+}
 }
 
-std::optional<domain::GameDiceState> GameDiceDecoder::Decode(const nlohmann::json& extras)
+std::optional<domain::GameDiceState> GameDiceDecoder::Decode(const nlohmann::json& diceKit)
 {
-    if (!extras.is_object()) return std::nullopt;
-    const auto raw = extras.find("dice");
-    if (raw == extras.end() || !raw->is_object()) return std::nullopt;
+    if (!diceKit.is_object()) return std::nullopt;
+    const auto& raw = diceKit;
 
     domain::GameDiceState state;
-    const auto label = Text(*raw, "label");
+    const auto label = Text(raw, "label");
     if (!label.empty()) state.label = label;
-    state.total = PositiveInt(*raw, "total");
-    state.rollActionIndex = Index(*raw, "rollActionIndex");
-    state.rollKey = Text(*raw, "rollKey");
+    state.total = PositiveInt(raw, "total");
+    state.rollActionIndex = Index(raw, "rollActionIndex");
+    state.rollKey = Text(raw, "rollKey");
 
-    const auto dice = raw->find("dice");
-    if (dice != raw->end() && dice->is_array())
+    const auto sets = raw.find("sets");
+    if (sets != raw.end() && sets->is_object() && !sets->empty())
     {
-        state.dice.reserve(dice->size());
-        for (std::size_t position = 0; position < dice->size(); ++position)
-        {
-            const auto& item = (*dice)[position];
-            if (!item.is_object()) continue;
-            domain::GameDie die;
-            die.id = Text(item, "id");
-            if (die.id.empty()) die.id = "die-" + std::to_string(position + 1);
-            die.label = Text(item, "label");
-            if (die.label.empty()) die.label = "Dé " + std::to_string(position + 1);
-            die.sides = PositiveInt(item, "sides").value_or(6);
-            die.value = PositiveInt(item, "value");
-            die.disabled = item.value("disabled", false);
-            die.actionIndex = Index(item, "actionIndex");
-            state.dice.push_back(std::move(die));
-        }
+        for (const auto& set : sets->items())
+            if (set.value().is_object())
+                AppendDice(set.value(), state,
+                    Text(set.value(), "label").empty() ? set.key() : Text(set.value(), "label"));
     }
+    else AppendDice(raw, state, {});
 
     if (state.dice.empty() && !state.total.has_value() && !state.rollActionIndex.has_value())
         return std::nullopt;

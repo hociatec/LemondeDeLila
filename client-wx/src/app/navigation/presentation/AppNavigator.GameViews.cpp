@@ -49,6 +49,7 @@ wxWindow* AppNavigator::CreateGameView(ViewId viewId)
         return new modules::rooms::presentation::RoomPanel(
             hostFrame_->ContentParent(),
             roomSessionService_,
+            roomLobbyService_,
             gameSessionService_,
             audioService_,
             [this]()

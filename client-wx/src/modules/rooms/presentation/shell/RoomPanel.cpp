@@ -14,6 +14,7 @@ namespace lila::modules::rooms::presentation
 RoomPanel::RoomPanel(
     wxWindow* parent,
     application::RoomSessionService& roomService,
+    application::RoomLobbyService& roomLobbyService,
     lila::modules::gameplay::application::GameSessionService& gameService,
     lila::modules::audio::application::IAudioService& audioService,
     CurrentUserIdProvider currentUserId,
@@ -22,6 +23,7 @@ RoomPanel::RoomPanel(
     CloseRequestedHandler onCloseRequested)
     : lila::shared::accessibility::NonFocusablePanel(parent, 0),
       roomService_(roomService),
+      roomLobbyService_(roomLobbyService),
       gameService_(gameService),
       audioService_(audioService),
       currentUserId_(std::move(currentUserId)),

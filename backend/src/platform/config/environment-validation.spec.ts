@@ -54,6 +54,22 @@ describe('environment validation', () => {
     expect(rejected.error?.message).toContain('NOTIFICATION_REDIS_URL');
   });
 
+  it('accepts systemd boolean forms for forced client updates', () => {
+    const enabled = environmentValidationSchema.validate({
+      ...validBase,
+      CLIENT_FORCE_LATEST: '1',
+    });
+    const disabled = environmentValidationSchema.validate({
+      ...validBase,
+      CLIENT_FORCE_LATEST: '0',
+    });
+
+    expect(enabled.error).toBeUndefined();
+    expect(enabled.value.CLIENT_FORCE_LATEST).toBe(true);
+    expect(disabled.error).toBeUndefined();
+    expect(disabled.value.CLIENT_FORCE_LATEST).toBe(false);
+  });
+
   it('keeps every supported variable documented in .env.example', () => {
     const example = fs.readFileSync(
       path.resolve(__dirname, '../../../.env.example'),

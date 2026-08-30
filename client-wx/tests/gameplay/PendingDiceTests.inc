@@ -21,7 +21,7 @@ void TestPendingChoicesUseOnlyExplicitServerMappings()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
     Expect(state.pending.has_value(), "Le pending generique doit etre conserve.");
     Expect(state.pending->viewerActionable && state.pending->choices.size() == 2,
         "Les choix destines au viewer doivent rester interactifs.");
@@ -29,8 +29,8 @@ void TestPendingChoicesUseOnlyExplicitServerMappings()
             state.pending->choices[1].action->type == "opaque_beta" &&
             state.pending->choices[1].action->payload.at("value") == 2,
         "Un choix doit executer uniquement son mapping explicite fourni par le serveur.");
-    Expect(state.round == 3 && state.botThinking,
-        "Le resume generique doit conserver la manche et l'etat du bot.");
+    Expect(state.round == 3,
+        "Le résumé générique doit conserver la manche du contrat system.round.");
 }
 
 void TestPendingChoicesStayPassiveWithoutServerMapping()
@@ -49,7 +49,7 @@ void TestPendingChoicesStayPassiveWithoutServerMapping()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
     Expect(state.pending.has_value() && !state.pending->viewerActionable,
         "Le client ne doit pas deduire un choix interactif depuis la liste d'actions.");
     Expect(!state.pending->choices[0].action.has_value(),
@@ -81,7 +81,7 @@ void TestGenericDiceContract()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
     Expect(state.dice.has_value() && state.dice->dice.size() == 2,
         "Tous les des fournis par le serveur doivent etre conserves.");
     Expect(state.dice->total == 8 && state.dice->dice[1].value == 5,
@@ -96,7 +96,6 @@ void TestGenericDiceContract()
 
 void TestClassicRollActionContract()
 {
-    using lila::modules::gameplay::application::dice::GameDiceActionResolver;
     const auto payload = nlohmann::json{
         {"roomId", 16},
         {"gameType", "classic-board-game"},
@@ -108,10 +107,9 @@ void TestClassicRollActionContract()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
-    const auto action = GameDiceActionResolver::ResolveClassicRoll(state.actions);
-    Expect(action.has_value() && action->type == "ROLL_DICE",
-        "Entree doit pouvoir lancer un de expose comme action classique sans module visuel.");
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    Expect(state.lines.size() == 2 && state.lines.front().label.find("ROLL_DICE") != std::string::npos,
+        "Une action inconnue du panneau de dés doit rester utilisable via GameLine.");
 }
 
 void TestDiceRollTracker()
@@ -127,4 +125,3 @@ void TestDiceRollTracker()
     Expect(tracker.Observe(dice, 1),
         "Deux lancers identiques doivent rester distincts grace a la cle serveur.");
 }
-

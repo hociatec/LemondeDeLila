@@ -1,7 +1,6 @@
 #include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
 
 #include <algorithm>
-#include <string_view>
 
 #include <nlohmann/json.hpp>
 
@@ -11,138 +10,68 @@ namespace lila::modules::gameplay::infrastructure
 {
 namespace
 {
-using detail::ReadInt;
-using detail::ReadString;
-
-bool IsPawnPending(std::string_view type)
-{
-    return type == "choose_pawn" || type == "pick_pawn";
-}
-
-bool IsCompatibleAction(std::string_view type)
-{
-    return IsPawnPending(type) || type == "move_pawn";
-}
-
-domain::GameAction DecodeMappedAction(const nlohmann::json& value)
+domain::GameAction DecodeAction(const nlohmann::json& raw)
 {
     domain::GameAction action;
-    if (!value.is_object()) return action;
-    action.type = ReadString(value, "type");
-    const auto payload = value.find("payload");
-    if (payload != value.end() && payload->is_object()) action.payload = *payload;
+    if (!raw.is_object()) return action;
+    action.type = detail::ReadString(raw, "type");
+    action.label = detail::ReadString(raw, "label");
+    const auto payload = raw.find("payload");
+    if (payload != raw.end() && payload->is_object()) action.payload = *payload;
+    action.disabled = detail::ReadBool(raw, "disabled");
     return action;
 }
 
-std::string ReadPawnId(const nlohmann::json& value)
-{
-    for (const char* key : {"id", "pawnId", "pawn", "value"})
-    {
-        auto text = ReadString(value, key);
-        if (!text.empty()) return text;
-        const int number = ReadInt(value, key);
-        if (number != 0) return std::to_string(number);
-    }
-    return {};
-}
-
-std::string ChoiceLabel(const nlohmann::json& pawn)
-{
-    auto label = ReadString(pawn, "label");
-    if (label.empty()) label = ReadPawnId(pawn);
-    const auto description = ReadString(pawn, "description");
-    if (!description.empty()) label += " - " + description;
-    return label;
-}
-
-const domain::GameAction* FindPawnAction(
+std::optional<domain::GameAction> FindValueAction(
     const std::vector<domain::GameAction>& actions,
-    std::string_view pawnId)
+    const nlohmann::json& value)
 {
     const auto found = std::find_if(actions.begin(), actions.end(),
-        [pawnId](const domain::GameAction& action)
+        [&value](const domain::GameAction& action)
         {
-            return IsPawnPending(action.type) && ReadPawnId(action.payload) == pawnId;
+            const auto selected = action.payload.find("value");
+            return !action.disabled && selected != action.payload.end() && *selected == value;
         });
-    return found == actions.end() ? nullptr : &*found;
-}
-
-domain::GameAction MoveAction(
-    const std::vector<domain::GameAction>& actions,
-    const nlohmann::json& move)
-{
-    const auto found = std::find_if(actions.begin(), actions.end(),
-        [](const domain::GameAction& action) { return action.type == "move_pawn"; });
-    domain::GameAction action;
-    action.type = found == actions.end() ? "move_pawn" : found->type;
-    action.payload = {
-        {"pawnIndex", ReadInt(move, "pawnIndex")},
-        {"targetProgress", ReadInt(move, "targetProgress")},
-    };
-    return action;
+    return found == actions.end() ? std::nullopt : std::optional<domain::GameAction>(*found);
 }
 }
 
 std::optional<domain::PawnSelection> PawnSelectionDecoder::Decode(
     const nlohmann::json& stateNode,
-    const std::vector<domain::GameAction>& availableActions)
+    const std::vector<domain::GameAction>& availableActions,
+    const nlohmann::json& pawnsKit)
 {
     const auto pending = stateNode.find("pending");
     if (pending == stateNode.end() || !pending->is_object()) return std::nullopt;
-    const auto type = ReadString(*pending, "type");
-    if (!IsPawnPending(type)) return std::nullopt;
-
-    const bool viewerCanAct = std::any_of(
-        availableActions.begin(), availableActions.end(),
-        [](const domain::GameAction& action)
-        {
-            return !action.disabled && IsCompatibleAction(action.type);
-        });
-    if (!viewerCanAct) return std::nullopt;
-
-    domain::PawnSelection selection;
-    selection.pendingType = type;
-    selection.label = "Votre pion.";
-
-    const auto data = pending->find("data");
+    const auto data = pending->value("data", nlohmann::json::object());
+    const auto kind = detail::ReadString(*pending, "workflowKind").empty()
+        ? detail::ReadString(data, "kind") : detail::ReadString(*pending, "workflowKind");
+    const auto legacyPawns = data.find("pawns");
+    if (kind != "pawn" && (legacyPawns == data.end() || !legacyPawns->is_array()) &&
+        pawnsKit.empty()) return std::nullopt;
     const auto choices = pending->find("choices");
-    const nlohmann::json empty = nlohmann::json::object();
-    const auto& dataNode = data != pending->end() && data->is_object() ? *data : empty;
-    const auto mapped = dataNode.find("choiceActionsByIndex");
-    const auto pawns = dataNode.find("pawns");
-    const auto moves = dataNode.find("moves");
-
-    const std::size_t count = choices != pending->end() && choices->is_array()
-        ? choices->size()
-        : pawns != dataNode.end() && pawns->is_array() ? pawns->size() : 0;
-    for (std::size_t index = 0; index < count; ++index)
+    if (choices == pending->end() || !choices->is_array()) return std::nullopt;
+    const auto options = data.find("options");
+    const auto mapped = data.find("choiceActionsByIndex");
+    domain::PawnSelection selection;
+    selection.pendingType = detail::ReadString(*pending, "type");
+    selection.label = detail::ReadString(*pending, "label");
+    if (selection.label.empty()) selection.label = "Votre pion.";
+    for (std::size_t index = 0; index < choices->size(); ++index)
     {
+        if (!(*choices)[index].is_string()) continue;
         domain::PawnChoice choice;
-        if (choices != pending->end() && choices->is_array() && (*choices)[index].is_string())
-            choice.label = (*choices)[index].get<std::string>();
-        if (choice.label.empty() && pawns != dataNode.end() && pawns->is_array())
-            choice.label = ChoiceLabel((*pawns)[index]);
-
-        if (mapped != dataNode.end() && mapped->is_array() && index < mapped->size())
-            choice.action = DecodeMappedAction((*mapped)[index]);
-        if (choice.action.type.empty() && pawns != dataNode.end() && pawns->is_array())
-        {
-            const auto pawnId = ReadPawnId((*pawns)[index]);
-            if (const auto* action = FindPawnAction(availableActions, pawnId))
-                choice.action = *action;
-        }
-        if (choice.action.type.empty() && moves != dataNode.end() && moves->is_array() &&
-            index < moves->size())
-            choice.action = MoveAction(availableActions, (*moves)[index]);
-        if (choice.action.type.empty() && index < availableActions.size() &&
-            IsCompatibleAction(availableActions[index].type))
-            choice.action = availableActions[index];
-
-        if (!choice.label.empty() && !choice.action.type.empty() && !choice.action.disabled)
+        choice.label = (*choices)[index].get<std::string>();
+        if (mapped != data.end() && mapped->is_array() && index < mapped->size())
+            choice.action = DecodeAction((*mapped)[index]);
+        const auto value = options != data.end() && options->is_array() && index < options->size()
+            ? (*options)[index] : nlohmann::json();
+        if (choice.action.type.empty() && !value.is_null())
+            if (const auto action = FindValueAction(availableActions, value)) choice.action = *action;
+        if (!choice.action.type.empty() && !choice.action.disabled)
             selection.choices.push_back(std::move(choice));
     }
-    return selection.choices.empty()
-        ? std::nullopt
+    return selection.choices.empty() ? std::nullopt
         : std::optional<domain::PawnSelection>(std::move(selection));
 }
 }

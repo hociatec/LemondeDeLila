@@ -1,6 +1,7 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
 #include <wx/listbox.h>
+#include <wx/choice.h>
 #include <wx/scrolwin.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -9,6 +10,7 @@
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
+#include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -50,6 +52,10 @@ void GamePlayPanel::BuildLayout()
     contentPanel_->SetBackgroundColour(lila::shared::ui::Theme::PanelBackground());
     auto* content = new wxBoxSizer(wxVERTICAL);
 
+    infoPanelChoice_ = new wxChoice(contentPanel_, wxID_ANY);
+    infoPanelChoice_->SetName(wxString(L"Section d’informations de jeu"));
+    content->Add(infoPanelChoice_, 0, wxEXPAND | wxBOTTOM, 6);
+
     infoText_ = new wxTextCtrl(
         contentPanel_, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_DONTWRAP | wxWANTS_CHARS);
@@ -62,6 +68,9 @@ void GamePlayPanel::BuildLayout()
 
     dicePanel_ = new dice::GameDicePanel(contentPanel_);
     content->Add(dicePanel_, 1, wxEXPAND | wxBOTTOM, 8);
+
+    gridPanel_ = new grid::GameGridPanel(contentPanel_);
+    content->Add(gridPanel_, 1, wxEXPAND | wxBOTTOM, 8);
 
     actionsLabel_ = new wxStaticText(contentPanel_, wxID_ANY, wxString(L"Actions disponibles"));
     actionsLabel_->SetForegroundColour(lila::shared::ui::Theme::Accent());
@@ -76,7 +85,7 @@ void GamePlayPanel::BuildLayout()
     content->Add(choicesLabel_, 0, wxEXPAND | wxBOTTOM, 4);
     choicesList_ = new wxListBox(
         contentPanel_, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-        0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
+        0, nullptr, wxLB_EXTENDED | wxWANTS_CHARS);
     choicesList_->SetName(wxString(L"Choix de jeu"));
     choicesList_->SetMinSize(wxSize(260, 90));
     content->Add(choicesList_, 1, wxEXPAND | wxBOTTOM, 8);

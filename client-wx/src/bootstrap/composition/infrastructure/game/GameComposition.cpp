@@ -11,6 +11,7 @@
 #include "modules/leaderboard/application/LeaderboardService.h"
 #include "modules/leaderboard/infrastructure/LeaderboardApi.h"
 #include "modules/rooms/application/RoomLobbyService.h"
+#include "modules/rooms/application/RoomInvitationMonitor.h"
 #include "modules/rooms/application/RoomSessionService.h"
 #include "modules/rooms/infrastructure/RoomLobbyApi.h"
 #include "modules/rooms/infrastructure/RoomSessionGateway.h"
@@ -42,6 +43,14 @@ void GameComposition::Assemble(
         catalogRealtimeApiClient,
         catalogApi,
         catalogService,
+        *network.wsTicketProvider,
+        sessionStore);
+
+    roomInvitationWebSocketClient = detail::CreateWebSocketClient();
+    roomInvitationMonitor = std::make_unique<modules::rooms::application::RoomInvitationMonitor>(
+        shared::network::ExtractOrigin(shared::config::AppConfig::ResolveBackendApiWs()) +
+            std::string(shared::network::ws::NotifyPath),
+        *roomInvitationWebSocketClient,
         *network.wsTicketProvider,
         sessionStore);
 

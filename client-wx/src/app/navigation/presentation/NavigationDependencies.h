@@ -42,6 +42,7 @@ class PresenceMonitor;
 
 namespace lila::modules::rooms::application
 {
+class RoomInvitationMonitor;
 class RoomLobbyService;
 class RoomSessionService;
 }
@@ -86,6 +87,7 @@ struct GameNavigationDependencies final
 {
     lila::modules::catalog::application::CatalogService& catalogService;
     lila::modules::rooms::application::RoomLobbyService& roomLobbyService;
+    lila::modules::rooms::application::RoomInvitationMonitor& roomInvitationMonitor;
     lila::modules::rooms::application::RoomSessionService& roomSessionService;
     lila::modules::vault::application::VaultService& vaultService;
     lila::modules::storybook::application::StoryBookService& storyBookService;

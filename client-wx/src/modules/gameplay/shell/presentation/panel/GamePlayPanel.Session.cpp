@@ -153,6 +153,15 @@ void GamePlayPanel::RequestRefresh()
         "Actualisation du jeu impossible.");
 }
 
+void GamePlayPanel::ShowRules()
+{
+    activeInfoPanel_ = "rules";
+    UpdateInfoPanel();
+    auto* service = &service_;
+    RunCommand([service](std::stop_token stopToken) { service->RequestRules(stopToken); },
+        "Chargement des règles impossible.");
+}
+
 void GamePlayPanel::RunCommand(
     std::function<void(std::stop_token)> command,
     std::string failureMessage,

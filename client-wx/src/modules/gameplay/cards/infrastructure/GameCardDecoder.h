@@ -11,7 +11,7 @@ namespace lila::modules::gameplay::infrastructure
 class GameCardDecoder final
 {
 public:
-    [[nodiscard]] static std::vector<domain::GameCard> DecodeHand(
-        const nlohmann::json& extras);
+    [[nodiscard]] static std::vector<domain::GameCard> DecodeVisibleHands(
+        const nlohmann::json& cardsKit);
 };
 }

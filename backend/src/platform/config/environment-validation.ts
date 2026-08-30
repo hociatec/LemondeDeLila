@@ -106,8 +106,8 @@ const updateEnvironment = {
     .optional(),
   CLIENT_MIN_VERSION: Joi.string().optional(),
   CLIENT_FORCE_LATEST: Joi.boolean()
-    .truthy('true')
-    .falsy('false')
+    .truthy('true', '1')
+    .falsy('false', '0')
     .default(false),
   CLIENT_WX_UPDATES_DIR: Joi.string().optional(),
   CLIENT_WX_UPDATES_META_PATH: Joi.string().optional(),

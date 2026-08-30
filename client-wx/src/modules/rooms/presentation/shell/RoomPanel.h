@@ -22,6 +22,7 @@ namespace lila::shared::accessibility { class ActionButton; }
 namespace lila::modules::gameplay::application { class GameSessionService; }
 namespace lila::modules::gameplay::presentation { class GamePlayPanel; }
 namespace lila::modules::rooms::application { class RoomSessionService; }
+namespace lila::modules::rooms::application { class RoomLobbyService; }
 namespace lila::modules::audio::application { class IAudioService; }
 
 namespace lila::modules::rooms::presentation
@@ -41,6 +42,7 @@ public:
     RoomPanel(
         wxWindow* parent,
         application::RoomSessionService& roomService,
+        application::RoomLobbyService& roomLobbyService,
         lila::modules::gameplay::application::GameSessionService& gameService,
         lila::modules::audio::application::IAudioService& audioService,
         CurrentUserIdProvider currentUserId,
@@ -83,6 +85,13 @@ private:
     void Leave();
     void RequestLeaveConfirmation();
     void RequestResetConfirmation();
+    void ShowRules();
+    void ConfigureAmbience();
+    void ConfigureAmbienceVolume();
+    void InvitePlayer();
+    void SendInvite(int userId);
+    void ModeratePlayer(bool ban);
+    void TransferOwnership();
     void ApplyRoom(domain::RoomState room);
     void SyncGamePlayPanel();
     void ShowConnecting();
@@ -96,6 +105,7 @@ private:
     void ApplyInitialFocusIfNeeded();
 
     application::RoomSessionService& roomService_;
+    application::RoomLobbyService& roomLobbyService_;
     lila::modules::gameplay::application::GameSessionService& gameService_;
     lila::modules::audio::application::IAudioService& audioService_;
     CurrentUserIdProvider currentUserId_;
@@ -117,6 +127,7 @@ private:
     bool saveInProgress_ = false;
     bool abandonInProgress_ = false;
     bool chatHistoryReceived_ = false;
+    int ambienceVolume_ = 15;
     std::vector<wxString> pendingRoomAnnouncements_;
     std::unique_ptr<history::HistoryAnnouncementQueue> historyAnnouncements_;
 };

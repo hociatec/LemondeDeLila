@@ -1,17 +1,16 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
-
 #include <algorithm>
 #include <utility>
-
 #include <wx/listbox.h>
+#include <wx/choice.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
-
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/application/GameActionPresentationPolicy.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
+#include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/information/presentation/GameInfoTextBuilder.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
@@ -20,12 +19,15 @@
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/ui/presentation/theme/Theme.h"
-
 namespace lila::modules::gameplay::presentation
 {
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
     const bool hadNavigationTarget = PreferredNavigationTarget() != nullptr;
+    const bool initialState = state_.viewVersion == 0;
+    const auto previousTurnPlayer = state_.system.turn.currentPlayerId;
+    const auto previousRoundWinners = state_.system.round.winnerPlayerIds;
+    const bool wasFinished = state_.system.match.status == "finished";
     if (!application::GameStateUpdatePolicy::ShouldApply(state_, state))
     {
         lila::shared::logging::LogWarning(
@@ -40,9 +42,49 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     const bool diceRolled = diceRollTracker_.Observe(state.dice, state.turnIndex);
     state.lines = application::GameActionPresentationPolicy::GenericLines(state);
     state_ = std::move(state);
-    if (diceRolled && onDiceRolled_) onDiceRolled_();
-    UpdateStatus(wxString{});
-    PublishLogMessages(state_.logMessages);
+    RebuildInfoPanelChoices();
+    UpdateTimerAnnouncements();
+    if (diceRolled && onDiceRolled_) onDiceRolled_(); UpdateStatus(wxString{});
+    if (initialState)
+    {
+        logCursor_.Restore(state_.logMessages);
+        if (onHistoryMessage_ && !state_.turnLabel.empty())
+            onHistoryMessage_(FromUtf8(state_.turnLabel));
+    }
+    else PublishLogMessages(state_.logMessages);
+    if (!initialState && previousTurnPlayer != state_.system.turn.currentPlayerId &&
+        onHistoryMessage_ && !state_.turnLabel.empty())
+        onHistoryMessage_(FromUtf8(state_.turnLabel));
+    if (!initialState && previousRoundWinners != state_.system.round.winnerPlayerIds &&
+        !state_.system.round.winnerPlayerIds.empty() && onHistoryMessage_)
+    {
+        wxString message(L"Manche terminée. Gagnant(s) : ");
+        for (std::size_t index = 0; index < state_.system.round.winnerPlayerIds.size(); ++index)
+        {
+            if (index > 0) message += wxString(L", ");
+            const int id = state_.system.round.winnerPlayerIds[index];
+            const auto player = std::find_if(state_.system.players.begin(), state_.system.players.end(),
+                [id](const domain::GamePlayer& value) { return value.id == id; });
+            message += player == state_.system.players.end()
+                ? wxString::Format(L"Joueur %d", id) : FromUtf8(player->username);
+        }
+        onHistoryMessage_(message);
+    }
+    if (!initialState && !wasFinished && state_.system.match.status == "finished" &&
+        state_.system.match.result && onHistoryMessage_)
+    {
+        wxString message(L"Partie terminée. Gagnant(s) : ");
+        for (std::size_t index = 0; index < state_.system.match.result->winnerPlayerIds.size(); ++index)
+        {
+            if (index > 0) message += wxString(L", ");
+            const int id = state_.system.match.result->winnerPlayerIds[index];
+            const auto player = std::find_if(state_.system.players.begin(), state_.system.players.end(),
+                [id](const domain::GamePlayer& value) { return value.id == id; });
+            message += player == state_.system.players.end()
+                ? wxString::Format(L"Joueur %d", id) : FromUtf8(player->username);
+        }
+        onHistoryMessage_(message);
+    }
     if (IsFinished())
     {
         confirmationPanel_->HideConfirmation();
@@ -58,14 +100,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     RebuildLines();
     handPanel_->ApplyCards(state_.hand);
     dicePanel_->Apply(state_.dice);
-    const auto ui = state_.extras.find("ui");
-    if (activeInfoPanel_ == "details" && ui != state_.extras.end() && ui->is_object())
-    {
-        const auto defaultPanel = ui->find("defaultPanel");
-        if (defaultPanel != ui->end() && defaultPanel->is_string() &&
-            !defaultPanel->get<std::string>().empty())
-            activeInfoPanel_ = defaultPanel->get<std::string>();
-    }
+    gridPanel_->Apply(state_.kits.grid);
     const bool hasActions = !state_.lines.empty() &&
         (!state_.pending || state_.pending->type.empty());
     actionsLabel_->Show(hasActions);
@@ -98,21 +133,22 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     if (!hadNavigationTarget && PreferredNavigationTarget() != nullptr &&
         onZoneFocusRequested_)
         onZoneFocusRequested_();
+    const bool setupProjectionCompleted = startConfigurationFlow_.ObserveSetup(
+        state_.system.setup);
     if (!roomStarted_ && roomStartFlowRequested_ &&
         !startConfigurationFlow_.IsAwaitingActionAcknowledgement() &&
-        (!state_.prompt || !state_.prompt->submitThenStart))
+        state_.system.setup.complete &&
+        (setupProjectionCompleted || !state_.prompt))
     {
         roomStartFlowRequested_ = false;
         roomStartPending_ = true;
         if (onRoomStartRequested_) onRoomStartRequested_();
     }
 }
-
 void GamePlayPanel::UpdateInfoPanel()
 {
     infoText_->SetValue(BuildInfoText(activeInfoPanel_));
 }
-
 void GamePlayPanel::UpdateStatus(const wxString& message, bool isError, bool announce)
 {
     statusLabel_->SetLabel(message);
@@ -124,12 +160,16 @@ void GamePlayPanel::UpdateStatus(const wxString& message, bool isError, bool ann
         lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*statusLabel_, message);
     Layout();
 }
-
 void GamePlayPanel::PublishLogMessages(const std::vector<std::string>& messages)
 {
     const auto freshMessages = logCursor_.ExtractNew(messages);
     if (!onHistoryMessage_) return;
-    for (const auto& message : freshMessages) onHistoryMessage_(FromUtf8(message));
+    for (const auto& message : freshMessages)
+    {
+        const auto separator = message.find('|');
+        onHistoryMessage_(FromUtf8(separator == std::string::npos
+            ? message : message.substr(separator + 1)));
+    }
 }
 
 void GamePlayPanel::ClearView()
@@ -137,6 +177,7 @@ void GamePlayPanel::ClearView()
     activeInfoPanel_ = "details";
     dismissedPromptActionType_.clear();
     submittedPromptActionType_.clear();
+    rulesText_.clear();
     confirmationPanel_->HideConfirmation();
     promptPanel_->HidePrompt(true);
     pawnSelectionPanel_->Clear();
@@ -151,9 +192,13 @@ void GamePlayPanel::ClearView()
     choicesList_->Hide();
     handPanel_->ClearHand();
     dicePanel_->Clear();
+    gridPanel_->Clear();
     infoText_->Clear();
+    infoPanelChoice_->Clear();
+    infoPanelIds_.clear();
     logCursor_.Reset();
     diceRollTracker_.Reset();
+    announcedTimers_.clear();
     shortcutsLabel_->SetLabel(wxString{});
     statusLabel_->SetLabel(wxString{});
     statusLabel_->Hide();
@@ -197,6 +242,8 @@ wxString GamePlayPanel::BuildLineDetail() const
 
 wxString GamePlayPanel::BuildInfoText(const std::string& panelId) const
 {
+    if (panelId == "rules") return rulesText_.empty()
+        ? wxString(L"Chargement des règles...") : FromUtf8(rulesText_);
     return info::GameInfoTextBuilder::Build(state_, panelId, BuildLineDetail());
 }
 }

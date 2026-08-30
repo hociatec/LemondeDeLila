@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <optional>
 
 #include "modules/audio/application/IAudioService.h"
 
@@ -18,6 +19,8 @@ public:
     void Play(domain::SoundCue cue) override;
     void StartLoop(domain::SoundCue cue) override;
     void StopLoop() override;
+    void StartTableAmbience(std::string_view soundId) override;
+    void SetTableAmbienceVolume(int volume) override;
     void SetBackground(domain::AudioBackground background) override;
     void StopAll() override;
     void ShutdownImmediately() override;
@@ -28,5 +31,7 @@ private:
     IAudioBackend& backend_;
     const IAudioSettingsProvider& settingsProvider_;
     std::atomic_bool shuttingDown_ = false;
+    std::atomic_int tableAmbienceVolume_ = 15;
+    std::optional<domain::SoundCue> tableAmbienceCue_;
 };
 }

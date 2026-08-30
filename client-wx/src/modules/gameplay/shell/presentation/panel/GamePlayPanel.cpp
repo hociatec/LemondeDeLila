@@ -3,11 +3,13 @@
 #include <utility>
 
 #include <wx/listbox.h>
+#include <wx/choice.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/session/application/GameSessionService.h"
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
+#include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 
@@ -120,7 +122,7 @@ bool GamePlayPanel::BeginRoomStart()
         if (GetParent()) GetParent()->Layout();
         return true;
     }
-    if (state_.prompt && state_.prompt->submitThenStart)
+    if (!state_.system.setup.complete && state_.prompt)
     {
         dismissedPromptActionType_.clear();
         submittedPromptActionType_.clear();
@@ -189,10 +191,17 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     {
         if (auto* target = dicePanel_->NavigationTarget()) return target;
     }
+    if (gridPanel_ != nullptr)
+    {
+        if (auto* target = gridPanel_->NavigationTarget(); target && gridPanel_->IsShown())
+            return target;
+    }
     if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
         return choicesList_;
     if (linesList_ != nullptr && linesList_->IsShown() && linesList_->GetCount() > 0)
         return linesList_;
+    if (infoPanelChoice_ != nullptr && infoPanelChoice_->IsShown() &&
+        infoPanelChoice_->GetCount() > 0) return infoPanelChoice_;
     return nullptr;
 }
 }

@@ -77,11 +77,11 @@ std::vector<domain::GameAction> DecodeActions(const nlohmann::json& payload)
     return result;
 }
 
-std::vector<domain::GameShortcut> DecodeShortcuts(const nlohmann::json& extras)
+std::vector<domain::GameShortcut> DecodeShortcuts(const nlohmann::json& system)
 {
     std::vector<domain::GameShortcut> result;
-    const auto shortcuts = extras.find("shortcuts");
-    if (shortcuts == extras.end() || !shortcuts->is_array()) return result;
+    const auto shortcuts = system.find("shortcuts");
+    if (shortcuts == system.end() || !shortcuts->is_array()) return result;
     for (const auto& raw : *shortcuts)
     {
         if (!raw.is_object()) continue;
@@ -112,7 +112,6 @@ std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode)
     prompt.label = ReadString(*pending, "label");
     prompt.actionType = ReadString(*data, "actionType");
     prompt.cancelActionType = ReadString(*data, "cancelActionType");
-    prompt.submitThenStart = ReadBool(*data, "submitThenStart");
     if (prompt.actionType.empty() || fields == data->end() || !fields->is_array()) return std::nullopt;
     for (const auto& raw : *fields)
     {
@@ -124,6 +123,11 @@ std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode)
         field.initialText = ReadString(raw, "initialText");
         field.minimum = lila::shared::data::json::ReadOptionalIntegerCoerced(raw, "min");
         field.maximum = lila::shared::data::json::ReadOptionalIntegerCoerced(raw, "max");
+        field.integer = ReadBool(raw, "integer");
+        field.schema = raw;
+        const auto choices = raw.find("choices");
+        if (choices != raw.end() && choices->is_array())
+            for (const auto& choice : *choices) field.choices.push_back(choice);
         if (field.label.empty()) field.label = field.key;
         if (!field.key.empty()) prompt.fields.push_back(std::move(field));
     }
@@ -140,11 +144,13 @@ std::vector<domain::GameLine> BuildLines(const std::vector<domain::GameAction>& 
         domain::GameLine line;
         line.id = action.type + "#" + std::to_string(index);
         line.label = BuildActionLabel(action);
-        line.detail = CompactPayloadLabel(action.payload);
+        line.detail = action.documentation;
+        const auto payloadDetail = CompactPayloadLabel(action.payload);
+        if (!payloadDetail.empty())
+            line.detail += (line.detail.empty() ? std::string{} : "\n") + payloadDetail;
         line.kind = domain::GameLineKind::Action;
         line.actionIndex = index;
         line.enabled = !action.disabled;
-        line.raw = nlohmann::json{{"type", action.type}, {"payload", action.payload}};
         lines.push_back(std::move(line));
     }
     return lines;

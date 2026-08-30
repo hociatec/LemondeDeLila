@@ -12,6 +12,7 @@
 #include "modules/home/presentation/HomeFrame.h"
 #include "modules/options/application/OptionsStore.h"
 #include "modules/presence/application/PresenceMonitor.h"
+#include "modules/rooms/application/RoomInvitationMonitor.h"
 #include "modules/session/application/SessionStore.h"
 #include "modules/session/domain/Session.h"
 #include "modules/social/application/SocialService.h"
@@ -79,6 +80,13 @@ void AppNavigator::OnLogoutRequested(std::size_t)
     audioService_.Play(lila::modules::audio::domain::SoundCue::ClientDisconnected);
     messagingOpenedFromSocial_ = false;
     presenceMonitor_.Stop();
+    roomInvitationMonitor_.Stop();
+    if (invitationResponseTask_)
+    {
+        invitationResponseTask_->RequestCancel();
+        invitationResponseTask_.reset();
+    }
+    pendingInvitations_.clear();
     const wxWeakRef<HostFrame> weakFrame(hostFrame_);
     sessionRevocationTask_ = sessionStore_.LogoutAsync(
         [this, weakFrame]()

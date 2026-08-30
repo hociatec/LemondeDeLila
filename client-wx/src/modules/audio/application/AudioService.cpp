@@ -1,6 +1,8 @@
 #include "modules/audio/application/AudioService.h"
 
+#include <algorithm>
 #include <array>
+#include <charconv>
 #include <optional>
 
 #include "modules/audio/application/IAudioBackend.h"
@@ -78,6 +80,47 @@ void AudioService::StopLoop()
     if (!shuttingDown_.load(std::memory_order_acquire))
     {
         backend_.SetLoop(std::nullopt, 0.0F);
+    }
+}
+
+void AudioService::StartTableAmbience(std::string_view soundId)
+{
+    constexpr std::string_view Prefix = "TableAmbience";
+    if (!soundId.starts_with(Prefix))
+    {
+        tableAmbienceCue_.reset();
+        StopLoop();
+        return;
+    }
+    int number = 0;
+    const auto suffix = soundId.substr(Prefix.size());
+    const auto parsed = std::from_chars(suffix.data(), suffix.data() + suffix.size(), number);
+    if (parsed.ec != std::errc{} || parsed.ptr != suffix.data() + suffix.size() ||
+        number < 1 || number > 20)
+    {
+        tableAmbienceCue_.reset();
+        StopLoop();
+        return;
+    }
+    const auto first = static_cast<std::size_t>(domain::SoundCue::TableAmbience1);
+    tableAmbienceCue_ = static_cast<domain::SoundCue>(first + static_cast<std::size_t>(number - 1));
+    auto settings = settingsProvider_.Snapshot();
+    settings.tableAmbienceVolume = tableAmbienceVolume_.load();
+    const auto playback = ResolvePlaybackSettings(
+        *domain::FindSoundDescriptor(*tableAmbienceCue_), settings);
+    backend_.SetLoop(playback.enabled ? tableAmbienceCue_ : std::nullopt, playback.volume);
+}
+
+void AudioService::SetTableAmbienceVolume(int volume)
+{
+    tableAmbienceVolume_.store(std::clamp(volume, 0, 100));
+    if (tableAmbienceCue_)
+    {
+        const auto cue = *tableAmbienceCue_;
+        tableAmbienceCue_.reset();
+        const auto number = static_cast<std::size_t>(cue) -
+            static_cast<std::size_t>(domain::SoundCue::TableAmbience1) + 1;
+        StartTableAmbience("TableAmbience" + std::to_string(number));
     }
 }
 

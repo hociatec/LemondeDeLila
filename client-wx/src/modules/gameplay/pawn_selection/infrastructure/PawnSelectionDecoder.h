@@ -3,7 +3,7 @@
 #include <optional>
 #include <vector>
 
-#include <nlohmann/json_fwd.hpp>
+#include <nlohmann/json.hpp>
 
 #include "modules/gameplay/actions/domain/GameAction.h"
 #include "modules/gameplay/pawn_selection/domain/PawnSelection.h"
@@ -15,6 +15,7 @@ class PawnSelectionDecoder final
 public:
     [[nodiscard]] static std::optional<domain::PawnSelection> Decode(
         const nlohmann::json& stateNode,
-        const std::vector<domain::GameAction>& availableActions);
+        const std::vector<domain::GameAction>& availableActions,
+        const nlohmann::json& pawnsKit = nlohmann::json::object());
 };
 }

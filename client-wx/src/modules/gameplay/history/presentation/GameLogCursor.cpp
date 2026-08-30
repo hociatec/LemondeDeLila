@@ -33,4 +33,9 @@ void GameLogCursor::Reset() noexcept
 {
     publishedMessages_.clear();
 }
+
+void GameLogCursor::Restore(const std::vector<std::string>& messages)
+{
+    publishedMessages_ = messages;
+}
 }

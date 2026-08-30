@@ -12,6 +12,7 @@ enum class GameEventType
     StateUpdated,
     Acknowledged,
     TurnUpdated,
+    Rules,
     Error,
     Ignored,
 };
@@ -33,5 +34,6 @@ struct GameEvent final
     std::string message;
     bool isError = false;
     std::optional<GameAcknowledgement> acknowledgement;
+    std::string rules;
 };
 }

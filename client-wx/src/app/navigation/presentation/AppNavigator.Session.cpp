@@ -11,6 +11,7 @@
 #include "modules/home/presentation/HomeFrame.h"
 #include "modules/options/application/OptionsStore.h"
 #include "modules/presence/application/PresenceMonitor.h"
+#include "modules/rooms/application/RoomInvitationMonitor.h"
 #include "modules/session/application/SessionStore.h"
 #include "modules/session/domain/Session.h"
 #include "modules/social/application/SocialService.h"
@@ -39,6 +40,7 @@ void AppNavigator::ShowSession(std::size_t selectedIndex, bool resetInitialFocus
     }
 
     presenceMonitor_.Start();
+    roomInvitationMonitor_.Start();
     auto* view = GetOrCreateView(ViewId::MainMenu);
     if (resetInitialFocus)
     {
@@ -57,6 +59,13 @@ void AppNavigator::CloseApplication(bool forUpdate)
     closing_ = true;
     audioService_.ShutdownImmediately();
     presenceMonitor_.Stop();
+    roomInvitationMonitor_.Stop();
+    if (invitationResponseTask_)
+    {
+        invitationResponseTask_->RequestCancel();
+        invitationResponseTask_.reset();
+    }
+    pendingInvitations_.clear();
     if (hostFrame_ != nullptr) hostFrame_->Hide();
     ResetSessionViews();
     ResetView(ViewId::Home);

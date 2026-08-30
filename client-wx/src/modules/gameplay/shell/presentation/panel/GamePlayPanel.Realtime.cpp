@@ -52,11 +52,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         }
         if (startConfigurationFlow_.Acknowledge(acknowledgement.command))
         {
-            roomStartFlowRequested_ = false;
-            roomStartPending_ = true;
             submittedPromptActionType_.clear();
-            if (onRoomStartRequested_) onRoomStartRequested_();
-            if (onZoneFocusRequested_) onZoneFocusRequested_();
             return;
         }
         const bool openedPanel = !acknowledgement.panelId.empty() &&
@@ -80,6 +76,12 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         if (onHistoryMessage_) onHistoryMessage_(message);
         return;
     }
+    case domain::GameEventType::Rules:
+        rulesText_ = event.rules.empty() ? "Aucune règle publiée." : std::move(event.rules);
+        activeInfoPanel_ = "rules";
+        UpdateInfoPanel();
+        if (onHistoryMessage_) onHistoryMessage_(BuildInfoText("rules"));
+        return;
     case domain::GameEventType::Error:
         inputSubmissionGuard_.Reset();
         lila::shared::logging::LogError("GameInput", "Server error: " + event.message);

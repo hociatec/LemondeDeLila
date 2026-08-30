@@ -6,6 +6,14 @@ export class EnforceSingleActiveGameMatch1770800000000 implements MigrationInter
   name = 'EnforceSingleActiveGameMatch1770800000000';
 
   async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `UPDATE game_matches matches
+       LEFT JOIN rooms room ON room.id = matches.room_id
+       SET matches.ended_at = CURRENT_TIMESTAMP,
+           matches.ended_reason = COALESCE(matches.ended_reason, 'restart')
+       WHERE matches.ended_at IS NULL
+         AND room.id IS NULL`,
+    );
     const duplicates = (await queryRunner.query(
       `SELECT room_id, COUNT(*) AS occurrences
        FROM game_matches

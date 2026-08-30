@@ -31,7 +31,6 @@ std::vector<domain::GameLine> GameActionPresentationPolicy::GenericLines(
 
     if (state.dice.has_value())
     {
-        bool hasExplicitDiceAction = false;
         const auto count = state.dice->dice.empty()
             ? std::size_t{1}
             : state.dice->dice.size();
@@ -39,14 +38,7 @@ std::vector<domain::GameLine> GameActionPresentationPolicy::GenericLines(
         {
             const auto actionIndex = dice::GameDiceActionResolver::ResolveIndex(
                 *state.dice, state.actions, index);
-            hasExplicitDiceAction = hasExplicitDiceAction || actionIndex.has_value();
             Mark(represented, actionIndex);
-        }
-        if (!hasExplicitDiceAction)
-        {
-            Mark(
-                represented,
-                dice::GameDiceActionResolver::ResolveClassicRollIndex(state.actions));
         }
     }
 

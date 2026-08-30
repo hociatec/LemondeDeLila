@@ -12,7 +12,7 @@ void TestGenericCardsContract()
         }}}},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
     Expect(state.hand.size() == 3, "Toutes les cartes de la main doivent etre conservees.");
     Expect(state.hand[0].id == "wolf" && state.hand[0].label == "Le loup",
         "Une carte doit recevoir le libelle riche correspondant a son identifiant.");
@@ -46,7 +46,7 @@ void TestCardsCarryTheirActionsAcrossGames()
             })}}},
         }},
     };
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
     const auto first = GameCardActionResolver::Resolve(state.hand, state.actions, 0);
     const auto second = GameCardActionResolver::Resolve(state.hand, state.actions, 1);
     Expect(first.has_value() && first->payload.at("cardId") == "wolf",
@@ -88,7 +88,7 @@ void TestServerDrivenKeyboardActionsSurviveTheClientContract()
         }},
     };
 
-    const auto state = GameStatePayloadCodec::DecodeState(payload);
+    const auto state = GameStatePayloadCodec::DecodeState(V2Payload(payload));
     const auto play = GameCardActionResolver::Resolve(state.hand, state.actions, 0);
     Expect(play.has_value() && play->type == "play_card",
         "Entree sur une carte doit retrouver l'action associee par le serveur.");
@@ -136,7 +136,7 @@ void TestOpaqueServerDrivenHandAndShortcuts()
         }},
     };
 
-    const auto state = GameStatePayloadCodec::DecodeState(payload);
+    const auto state = GameStatePayloadCodec::DecodeState(V2Payload(payload));
     const auto play = GameCardActionResolver::Resolve(state.hand, state.actions, 0);
     Expect(play.has_value() && play->type == "opaque_play" &&
             play->payload.at("value") == 2,
@@ -185,7 +185,7 @@ void TestSpecializedActionsAreNotDuplicated()
         }},
     };
 
-    const auto state = GameStatePayloadCodec::DecodeState(payload);
+    const auto state = GameStatePayloadCodec::DecodeState(V2Payload(payload));
     const auto lines = GameActionPresentationPolicy::GenericLines(state);
     Expect(lines.size() == 2,
         "Les actions liees a la main et aux des ne doivent pas etre affichees une seconde fois.");
@@ -218,8 +218,8 @@ void TestLegacySpecializedActionsAreNotDuplicated()
         }},
     };
 
-    const auto state = GameStatePayloadCodec::DecodeState(payload);
+    const auto state = GameStatePayloadCodec::DecodeState(V2Payload(payload));
     const auto lines = GameActionPresentationPolicy::GenericLines(state);
-    Expect(lines.size() == 1 && lines.front().actionIndex == 2,
-        "Les liaisons historiques carte/payload et lancer classique doivent aussi rester uniques.");
+    Expect(lines.size() == 2 && lines[0].actionIndex == 1 && lines[1].actionIndex == 2,
+        "Sans liaison explicite du kit, les actions inconnues doivent rester utilisables via GameLine.");
 }

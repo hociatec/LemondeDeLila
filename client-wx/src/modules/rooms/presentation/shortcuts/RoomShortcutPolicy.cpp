@@ -30,6 +30,12 @@ std::string_view RoomShortcutPolicy::Resolve(
         if (key == 'H' && Allows(room, "room.toggle-privacy")) return "room:privacy";
         if (key == 'M' && Allows(room, "room.set-role")) return "room:role";
         if (key == 'S' && Allows(room, "room.snapshot.save")) return "room:save";
+        if (key == 'A' && Allows(room, "room.set-ambience")) return "room:ambience";
+        if (key == 'V' && Allows(room, "room.tableAmbienceVolume")) return "room:ambience-volume";
+        if (key == 'I' && Allows(room, "room.invite")) return "room:invite";
+        if (key == 'K' && Allows(room, "room.kick")) return "room:kick";
+        if (key == 'B' && Allows(room, "room.ban")) return "room:ban";
+        if (key == 'P' && Allows(room, "room.set-owner")) return "room:set-owner";
         return {};
     }
 
@@ -44,6 +50,7 @@ std::string_view RoomShortcutPolicy::Resolve(
 
     if (key == 'W' && Allows(room, "room.players")) return "room:players";
     if (key == 'I' && Allows(room, "room.info")) return "room:info";
+    if (key == 'R' && Allows(room, "room.rules")) return "room:rules";
     if (key == 'X' && Allows(room, "room.reset")) return "room:reset";
     if (key == 'Q' && Allows(room, "room.leave")) return "room:leave";
     return {};

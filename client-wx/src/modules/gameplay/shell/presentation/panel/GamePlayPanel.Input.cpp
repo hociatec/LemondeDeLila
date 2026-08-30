@@ -5,11 +5,13 @@
 
 #include <wx/event.h>
 #include <wx/listbox.h>
+#include <wx/choice.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/dice/application/GameDiceActionResolver.h"
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
+#include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
@@ -43,9 +45,12 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     // Tab belongs to RoomPanel's two-zone navigation. Handling it here would
     // trap the keyboard inside the hand because this panel uses CHAR_HOOK.
     if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB) return false;
+    if (gridPanel_->HandleKey(event)) return true;
 
     const bool tableShortcutHasPriority =
         event.ControlDown() || event.AltDown() || event.MetaDown() ||
+        keyCode == 'B' || keyCode == 'b' || keyCode == 'W' || keyCode == 'w' ||
+        keyCode == 'I' || keyCode == 'i' || keyCode == 'R' || keyCode == 'r' ||
         keyCode == 'Q' || keyCode == 'q' || keyCode == 'X' || keyCode == 'x';
     if (tableShortcutHasPriority && onTableShortcut_ && onTableShortcut_(event)) return true;
 
@@ -81,9 +86,15 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             return true;
         }
         auto* focused = wxWindow::FindFocus();
+        if (focused == infoPanelChoice_) return false;
         if (focused == dicePanel_->NavigationTarget())
         {
             static_cast<void>(ActivateSelectedDie());
+            return true;
+        }
+        if (focused == gridPanel_->NavigationTarget())
+        {
+            static_cast<void>(ActivateSelectedGridCell());
             return true;
         }
         if (focused == linesList_ && linesList_->IsShown())
@@ -102,6 +113,14 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         return true;
     }
     if (HandleShortcut(key)) return true;
+    if (key == "T")
+    {
+        const auto message = state_.turnLabel.empty()
+            ? wxString(L"Aucun tour actif.") : FromUtf8(state_.turnLabel);
+        UpdateStatus(message, false, true);
+        if (onHistoryMessage_) onHistoryMessage_(message);
+        return true;
+    }
     SendKey(key);
     return true;
 }
@@ -161,10 +180,7 @@ bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
 bool GamePlayPanel::HandleInterfaceShortcut(const std::string& id)
 {
     if (id.empty()) return false;
-    activeInfoPanel_ = id;
-    UpdateInfoPanel();
-    const auto text = BuildInfoText(id);
-    if (onHistoryMessage_ && !text.empty()) onHistoryMessage_(text);
+    SelectInfoPanel(id, true);
     return true;
 }
 
@@ -172,12 +188,6 @@ std::optional<domain::GameAction> GamePlayPanel::ResolveShortcutAction(const std
 {
     return shortcuts::GameShortcutResolver::ResolveAction(
         state_, actionType, linesList_->GetSelection());
-}
-
-std::optional<domain::GameAction> GamePlayPanel::ResolveRollAction() const
-{
-    return application::dice::GameDiceActionResolver::ResolveClassicRoll(
-        state_.actions);
 }
 
 std::string GamePlayPanel::NormalizeKey(const wxKeyEvent& event) const
