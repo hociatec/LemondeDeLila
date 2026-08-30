@@ -1,17 +1,22 @@
 import {
   defineEffectRecipe,
-  freezeGameContent,
   gameEffects,
+  loadGameContent,
   rejectContent,
 } from '../../../engine/sdk/public-api';
-import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
+import type {
+  GameContent,
+  GameEffectInstruction,
+} from '../../../engine/sdk/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { MamanCard, MamanTile } from './types';
 
 type RawMamanCard = Omit<MamanCard, 'effects'>;
 
-function loadContent(): { tiles: MamanTile[]; cards: MamanCard[] } {
+type MamanContent = { tiles: MamanTile[]; cards: MamanCard[] };
+
+function loadContent(): GameContent<MamanContent> {
   const directory = contentDirectory();
   const board: unknown = JSON.parse(
     readFileSync(resolve(directory, 'board.json'), 'utf8'),
@@ -19,23 +24,32 @@ function loadContent(): { tiles: MamanTile[]; cards: MamanCard[] } {
   const cards: unknown = JSON.parse(
     readFileSync(resolve(directory, 'cards.json'), 'utf8'),
   );
-  if (
-    !isRecord(board) ||
-    !Array.isArray(board.tiles) ||
-    !board.tiles.every(isTile) ||
-    !isRecord(cards) ||
-    !Array.isArray(cards.cards) ||
-    !cards.cards.every(isCard)
-  ) {
-    rejectContent('Contenu de Tout près de Maman invalide');
-  }
-  return {
-    tiles: board.tiles,
-    cards: cards.cards.map((card) => ({
-      ...card,
-      effects: MAMAN_CARD_EFFECTS[card.id] ?? [],
-    })),
-  };
+  return loadGameContent(
+    'tout-pres-de-maman',
+    { board, cards },
+    {
+      parse: (value) => {
+        if (
+          !isRecord(value) ||
+          !isRecord(value.board) ||
+          !Array.isArray(value.board.tiles) ||
+          !value.board.tiles.every(isTile) ||
+          !isRecord(value.cards) ||
+          !Array.isArray(value.cards.cards) ||
+          !value.cards.cards.every(isCard)
+        ) {
+          rejectContent('Contenu de Tout près de Maman invalide');
+        }
+        return {
+          tiles: value.board.tiles,
+          cards: value.cards.cards.map((card) => ({
+            ...card,
+            effects: MAMAN_CARD_EFFECTS[card.id] ?? [],
+          })),
+        };
+      },
+    },
+  );
 }
 
 function contentDirectory(): string {
@@ -139,10 +153,9 @@ const MAMAN_CARD_EFFECTS: Readonly<
   30: move(1),
 };
 
-export const MAMAN_CONTENT = loadContent();
+export const MAMAN_GAME_CONTENT = loadContent();
+export const MAMAN_CONTENT = MAMAN_GAME_CONTENT.data;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
-
-freezeGameContent(MAMAN_CONTENT);

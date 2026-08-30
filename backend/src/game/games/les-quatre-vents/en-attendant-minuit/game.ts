@@ -1,5 +1,6 @@
 import {
   cards,
+  defineCardsSchema,
   defineChoice,
   defineGame,
   defineGameContent,
@@ -18,6 +19,18 @@ import {
   resolvePending,
 } from './rules';
 import type { MinuitState } from './types';
+
+const cardSchema = defineCardsSchema({
+  decks: {
+    noel: cards.deck({
+      id: 'noel',
+      cards: MINUIT_CARDS,
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {},
+});
 
 export default defineGame<MinuitState>()({
   id: 'en-attendant-minuit',
@@ -41,12 +54,7 @@ export default defineGame<MinuitState>()({
   ],
   components: [
     pawns.set({ id: 'minuit', pawns: MINUIT_PAWNS }),
-    cards.deck({
-      id: 'noel',
-      cards: MINUIT_CARDS,
-      shuffle: true,
-      empty: 'recycle',
-    }),
+    ...cardSchema.components,
   ],
   initialization: { firstPlayer: 'first', startRound: true },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],

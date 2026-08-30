@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  HttpException,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -12,14 +11,10 @@ import { randomUUID } from 'crypto';
 import { Inject } from '@nestjs/common';
 import {
   assertPathInside,
-  assertStorageCapacity,
   bestEffort,
   getErrorMessage,
-  parseVersion,
   writeFileAtomic,
-  StorageCapacityError,
 } from '../../../../shared/utils/public-api';
-import { readEnvironment } from '../../../../platform/config/public-api';
 import {
   CLIENT_UPDATES_UPLOAD_STORE_PORT,
   type ClientUpdatesUploadStorePort,
@@ -34,9 +29,19 @@ import { decodeUploadMetaFile } from './client-update-meta.decoder';
 import {
   assembleUploadArchive,
   assertUploadArchiveSize,
-  CLIENT_UPDATE_MAX_TOTAL_BYTES,
   listContiguousUploadParts,
 } from './client-update-upload-archive';
+import {
+  clientUpdateStorageError,
+  ensureClientUpdateStorageCapacity,
+  isNodeError,
+  normalizeMessage,
+  normalizeMinRequiredVersion,
+  normalizeUploadId,
+  normalizeUploadTotalBytes,
+  normalizeVersion,
+} from './client-updates-upload-policy';
+import { publishUploadedClientUpdate } from './client-updates-upload-publication';
 
 @Injectable()
 export class ClientUpdatesUploadService {
@@ -58,27 +63,6 @@ export class ClientUpdatesUploadService {
     };
   }
 
-  private async saveAndApplyZip(zipPath: string, meta: ClientUpdateMeta) {
-    try {
-      await this.updates.applyZip(zipPath);
-
-      try {
-        const published =
-          await this.updates.getPublishedClickOnceVersionFromDisk();
-        if (published) {
-          meta = { ...meta, version: published };
-        }
-      } catch {
-        // Best-effort
-      }
-
-      await this.updates.saveLatest(meta);
-    } catch (err) {
-      const msg = getErrorMessage(err);
-      throw new BadRequestException(`Publication echouee: ${msg}`);
-    }
-  }
-
   async uploadSingleZip(params: {
     zipPath: string;
     version?: string;
@@ -89,7 +73,7 @@ export class ClientUpdatesUploadService {
     if (!zipPath || !fs.existsSync(zipPath)) {
       throw new BadRequestException('Fichier upload introuvable.');
     }
-    await this.ensureStorageCapacity(
+    await ensureClientUpdateStorageCapacity(
       this.updates.getTargetDir(),
       (await fs.promises.stat(zipPath)).size,
     );
@@ -108,8 +92,12 @@ export class ClientUpdatesUploadService {
       publicUrl: this.updates.getPublicUrl(),
       minRequiredVersion,
     };
-    await this.saveAndApplyZip(zipPath, meta);
-    return { ok: true, meta };
+    const publishedMeta = await publishUploadedClientUpdate(
+      this.updates,
+      zipPath,
+      meta,
+    );
+    return { ok: true, meta: publishedMeta };
   }
 
   async uploadInit(params: {
@@ -131,7 +119,7 @@ export class ClientUpdatesUploadService {
       minRequiredVersion: normalizeMinRequiredVersion(
         params.minRequiredVersion,
       ),
-      totalBytes: this.normalizeTotalBytes(params.totalBytes),
+      totalBytes: normalizeUploadTotalBytes(params.totalBytes),
       createdAt: new Date().toISOString(),
       completedAt: null,
     };
@@ -149,7 +137,7 @@ export class ClientUpdatesUploadService {
     index: number;
     filePath: string;
   }) {
-    const uploadId = this.normalizeUploadId(params.uploadId);
+    const uploadId = normalizeUploadId(params.uploadId);
     const index = params.index;
     if (
       !Number.isSafeInteger(index) ||
@@ -175,7 +163,7 @@ export class ClientUpdatesUploadService {
     if (fs.existsSync(partPath)) {
       return { ok: true, duplicate: true };
     }
-    await this.ensureStorageCapacity(
+    await ensureClientUpdateStorageCapacity(
       root,
       (await fs.promises.stat(params.filePath)).size,
     );
@@ -189,14 +177,14 @@ export class ClientUpdatesUploadService {
       if (isNodeError(error) && error.code === 'EEXIST') {
         return { ok: true, duplicate: true };
       }
-      throw this.storageError(error);
+      throw clientUpdateStorageError(error);
     }
     await fs.promises.rm(params.filePath, { force: true });
     return { ok: true };
   }
 
   async uploadComplete(params: { uploadId: string }) {
-    const uploadId = this.normalizeUploadId(params.uploadId);
+    const uploadId = normalizeUploadId(params.uploadId);
     const root = this.uploadStore.getUploadsRoot();
     const dir = assertPathInside(root, path.join(root, uploadId));
     const metaPath = path.join(dir, 'meta.json');
@@ -264,7 +252,11 @@ export class ClientUpdatesUploadService {
       await assembleUploadArchive(dir, parts, zipPath);
       await assertUploadArchiveSize(zipPath, meta.totalBytes);
       const saved = this.toPublishedMeta(meta);
-      await this.saveAndApplyZip(zipPath, saved);
+      const publishedMeta = await publishUploadedClientUpdate(
+        this.updates,
+        zipPath,
+        saved,
+      );
       await writeFileAtomic(
         metaPath,
         JSON.stringify(
@@ -274,8 +266,8 @@ export class ClientUpdatesUploadService {
         ),
       );
       published = true;
-      markerWritten = await this.writeCompletionMarker(uploadId, saved);
-      return { ok: true, meta: saved };
+      markerWritten = await this.writeCompletionMarker(uploadId, publishedMeta);
+      return { ok: true, meta: publishedMeta };
     } finally {
       void bestEffort(
         fs.promises.rm(zipPath, { force: true }),
@@ -300,71 +292,6 @@ export class ClientUpdatesUploadService {
       throw new BadRequestException('Métadonnées d’upload invalides.');
     }
     return meta;
-  }
-
-  private normalizeUploadId(input: unknown): string {
-    const uploadId = typeof input === 'string' ? input.trim() : '';
-    if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(uploadId)) {
-      throw new BadRequestException('uploadId invalide.');
-    }
-    return uploadId;
-  }
-
-  private normalizeTotalBytes(input: number | null | undefined): number | null {
-    if (input == null) return null;
-    if (
-      !Number.isSafeInteger(input) ||
-      input <= 0 ||
-      input > CLIENT_UPDATE_MAX_TOTAL_BYTES
-    ) {
-      throw new BadRequestException('totalBytes invalide.');
-    }
-    return input;
-  }
-
-  private async ensureStorageCapacity(
-    root: string,
-    incomingBytes: number,
-  ): Promise<void> {
-    try {
-      await assertStorageCapacity({
-        root,
-        incomingBytes,
-        maxTotalBytes: this.environmentBytes(
-          'CLIENT_UPDATES_STORAGE_QUOTA_BYTES',
-          4 * 1024 * 1024 * 1024,
-        ),
-        minFreeBytes: this.environmentBytes(
-          'STORAGE_MIN_FREE_BYTES',
-          512 * 1024 * 1024,
-        ),
-      });
-    } catch (error) {
-      throw this.storageError(error);
-    }
-  }
-
-  private storageError(error: unknown): unknown {
-    if (
-      error instanceof StorageCapacityError ||
-      (isNodeError(error) && error.code === 'ENOSPC')
-    ) {
-      return new HttpException(
-        error instanceof Error ? error.message : 'Espace disque insuffisant.',
-        507,
-      );
-    }
-    return error;
-  }
-
-  private environmentBytes(
-    key: 'CLIENT_UPDATES_STORAGE_QUOTA_BYTES' | 'STORAGE_MIN_FREE_BYTES',
-    fallback: number,
-  ): number {
-    const raw = readEnvironment(key).trim();
-    if (!raw) return fallback;
-    const parsed = Number(raw);
-    return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : fallback;
   }
 
   private completedResult(
@@ -409,31 +336,4 @@ export class ClientUpdatesUploadService {
       return false;
     }
   }
-}
-
-function isNodeError(error: unknown): error is NodeJS.ErrnoException {
-  return typeof error === 'object' && error !== null && 'code' in error;
-}
-
-function normalizeVersion(input: unknown): string | null {
-  const value = typeof input === 'string' ? input.trim() : '';
-  if (!value) return null;
-  if (parseVersion(value) == null) {
-    throw new BadRequestException('Version invalide');
-  }
-  return value;
-}
-
-function normalizeMinRequiredVersion(input: unknown): string | null {
-  const value = typeof input === 'string' ? input.trim() : '';
-  if (!value) return null;
-  if (parseVersion(value) == null) {
-    throw new BadRequestException('minRequiredVersion invalide');
-  }
-  return value;
-}
-
-function normalizeMessage(input: unknown): string | null {
-  const message = typeof input === 'string' ? input.trim() : '';
-  return message || null;
 }

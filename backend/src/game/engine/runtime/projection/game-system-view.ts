@@ -3,234 +3,37 @@ import type { PlayerStateEntity } from '../../../core/application/contracts/game
 import type { GameConfigurationState } from '../configuration/configuration-kit';
 import type { GameComponentDefinition } from '../definitions/component-kit';
 import type { DeclarativeState } from '../definitions/game-definition';
-import {
-  projectGameKits,
-  type DicePlayerView,
-  type GameKitsPlayerView,
-  type MovementPlayerView,
-  type PawnSetsPlayerView,
-} from './game-kit-view';
-import type { CardsPlayerView } from '../cards/cards-kit';
-import type {
-  MatchKitState,
-  MatchLifecycleStatus,
-  MatchPlayerStatus,
-  MatchResult,
-} from '../kits/match-kit';
+import { projectGameKits } from './game-kit-view';
+import type { MatchKitState } from '../kits/match-kit';
 import {
   projectPlayerValues,
   projectStatusViews,
-  type PlayerStatus,
   type PlayerValuesVisibility,
-  type ScorePlayerView,
 } from '../kits/player-values-kit';
 import type { RoundKitState } from '../kits/round-kit';
 import type { EffectSource } from '../effects/effects-kit';
-import type {
-  EventVisibility,
-  GamePendingEvent,
-} from '../../../core/application/contracts/game-event.model';
-import type { EngineEventMap } from '../events/engine-event-registry';
-import type {
-  GameEventDefinition,
-  GameEventMapOf,
-} from '../events/game-event-definition';
-import {
-  projectSubmissions,
-  type SubmissionPlayerView,
-} from '../submissions/submission-kit';
+import type { GamePendingEvent } from '../../../core/application/contracts/game-event.model';
+import { projectPendingGameEvent } from '../../../core/application/services/game-event-visibility';
+import { projectSubmissions } from '../submissions/submission-kit';
 import {
   projectCollections,
-  type CollectionPlayerView,
   type CollectionViewDefinition,
 } from './collection-view';
+import {
+  GAME_SYSTEM_VIEW_VERSION,
+  type EffectSourcePlayerView,
+  type GameEventPlayerView,
+  type GameEventsPlayerView,
+  type GamePlayersPlayerView,
+  type GameSetupPlayerView,
+  type GameStatusPlayerView,
+  type GameTurnPlayerView,
+  type GenericGamePlayerView,
+  type MatchPlayerView,
+  type RoundPlayerView,
+} from './game-system-view.contracts';
 
-export const GAME_SYSTEM_VIEW_VERSION = 1 as const;
-
-/** Public match contract, deliberately separate from the persisted kit state. */
-export type MatchPlayerView = {
-  status: MatchLifecycleStatus;
-  startedAtMs: number | null;
-  finishedAtMs: number | null;
-  result: MatchResult | null;
-  playerStatuses: Record<string, MatchPlayerStatus>;
-};
-
-/** Public round contract, deliberately separate from the persisted kit state. */
-export type RoundPlayerView = {
-  number: number;
-  status: RoundKitState['status'];
-  starterPlayerId: number | null;
-  participantPlayerIds: number[];
-  leftPlayerIds: number[];
-  winnerPlayerIds: number[];
-  completedRounds: number;
-};
-
-export type StableGameSystemView<TEvents extends object = EngineEventMap> = {
-  match: MatchPlayerView;
-  round: RoundPlayerView;
-  turn: GameTurnPlayerView;
-  setup: GameSetupPlayerView;
-  players: GamePlayersPlayerView;
-  events: GameEventsPlayerView<TEvents>;
-};
-
-export type GameEventPlayerView<TType extends string, TData> = {
-  type: TType;
-  data: TData;
-  actorId: number | null;
-  occurredAtMs: number;
-};
-
-export type GameEventsPlayerView<TEvents extends object = EngineEventMap> = {
-  latestByType: Partial<{
-    [TType in keyof TEvents & string]: GameEventPlayerView<
-      TType,
-      TEvents[TType]
-    >;
-  }>;
-};
-
-export type GamePlayersPlayerView = {
-  all: Array<{ id: number; username: string; isBot: boolean; alive: boolean }>;
-};
-
-export type StableGameKitsView<
-  TResourceId extends string = string,
-  TCounterId extends string = string,
-> = {
-  cards: CardsPlayerView | null;
-  movement: MovementPlayerView | null;
-  pawns: PawnSetsPlayerView | null;
-  grid: NonNullable<GameKitsPlayerView['grid']> | null;
-  dice: DicePlayerView | null;
-  score: ScorePlayerView;
-  resources: Record<string, Partial<Record<TResourceId, number>>>;
-  counters: Partial<Record<TCounterId, number>>;
-  status: GameStatusPlayerView;
-  inventory: GameKitsPlayerView['inventory'] | null;
-  economy: GameKitsPlayerView['economy'] | null;
-  ownership: GameKitsPlayerView['ownership'] | null;
-  quiz: GameKitsPlayerView['quiz'] | null;
-  submissions: SubmissionPlayerView;
-  collections: CollectionPlayerView;
-};
-
-export type GameTurnPlayerView = {
-  currentPlayerId: number | null;
-  direction: 1 | -1;
-  number: number;
-  actionPointsRemaining: number | null;
-  immediateExtraTurns: number;
-  extraCount: number;
-  skipTurnsByPlayer: Record<string, number>;
-  extraTurnsByPlayer: Record<string, number>;
-  replacementTurnsByPlayer: Record<string, number>;
-  waitingSessionId: string | null;
-  waitingPlayerIds: number[];
-};
-
-export type GameSetupPlayerView<
-  TValues extends object = Record<string, unknown>,
-> = {
-  complete: boolean;
-  phase: string;
-  ownerPlayerId: number | null;
-  values: Readonly<TValues>;
-};
-
-export type GameSetupPlayerViewFor<TDefinition> = GameSetupPlayerView<
-  import('../configuration/configuration-kit').ConfigurationValuesOf<TDefinition>
->;
-
-export type GenericBoardPlayerView = {
-  movement: MovementPlayerView | null;
-  pawns: PawnSetsPlayerView | null;
-  grid: NonNullable<GameKitsPlayerView['grid']> | null;
-};
-
-export type GameStatusPlayerView = {
-  /** Public statuses indexed by status id then player id. */
-  byId: Record<string, Record<string, PlayerStatus>>;
-};
-
-export type GenericGamePlayerView<
-  TEvents extends object = EngineEventMap,
-  TResourceId extends string = string,
-  TCounterId extends string = string,
-> = {
-  viewVersion: typeof GAME_SYSTEM_VIEW_VERSION;
-  system: StableGameSystemView<TEvents>;
-  kits: StableGameKitsView<TResourceId, TCounterId>;
-  effect: { source: EffectSourcePlayerView | null };
-};
-
-type DefinitionInitialization<TDefinition> = TDefinition extends {
-  readonly initialization?: infer TInitialization;
-}
-  ? TInitialization
-  : never;
-
-type PatternInitialization<TDefinition> = TDefinition extends {
-  readonly patterns?: infer TPatterns;
-}
-  ? TPatterns extends readonly (infer TPattern)[]
-    ? TPattern extends { readonly initialization?: infer TValue }
-      ? TValue
-      : never
-    : never
-  : never;
-
-type AllInitializations<TDefinition> =
-  DefinitionInitialization<TDefinition> | PatternInitialization<TDefinition>;
-
-type ResourceIds<TInitialization> = TInitialization extends {
-  readonly resources?: infer TResources;
-}
-  ? string extends keyof NonNullable<TResources>
-    ? never
-    : Extract<keyof NonNullable<TResources>, string>
-  : never;
-
-type CounterIds<TInitialization> = TInitialization extends {
-  readonly counters?: infer TCounters;
-}
-  ? string extends keyof NonNullable<TCounters>
-    ? never
-    : Extract<keyof NonNullable<TCounters>, string>
-  : never;
-
-type InitializationResourceId<TDefinition> = ResourceIds<
-  NonNullable<AllInitializations<TDefinition>>
->;
-
-type InitializationCounterId<TDefinition> = CounterIds<
-  NonNullable<AllInitializations<TDefinition>>
->;
-
-type DefinitionEvents<TDefinition> = TDefinition extends {
-  readonly events?: infer TEvents;
-}
-  ? TEvents extends readonly GameEventDefinition<string, object>[]
-    ? GameEventMapOf<TEvents>
-    : Record<never, never>
-  : Record<never, never>;
-
-/** PlayerView whose resource and counter keys come from a definition shape. */
-export type GamePlayerViewFor<TDefinition> = GenericGamePlayerView<
-  EngineEventMap & DefinitionEvents<TDefinition>,
-  InitializationResourceId<TDefinition>,
-  InitializationCounterId<TDefinition>
->;
-
-/** Stable public projection; deliberately decoupled from EffectSource internals. */
-export type EffectSourcePlayerView = {
-  playerId: number | null;
-  cardId?: string | number;
-  deckId?: string;
-  tileId?: string | number;
-};
+export * from './game-system-view.contracts';
 
 export function projectGameSystemView<TState extends object>(input: {
   runtime: DeclarativeState<TState>;
@@ -353,38 +156,16 @@ export function projectEventsForPlayer(
     GameEventPlayerView<string, Record<string, unknown>>
   > = {};
   for (const event of events) {
-    const data = projectEventData(event.visibility, event.data, viewerPlayerId);
-    if (data == null) continue;
+    const projected = projectPendingGameEvent(event, viewerPlayerId);
+    if (projected == null) continue;
     latestByType[event.type] = {
-      type: event.type,
-      data,
-      actorId: event.actorId,
-      occurredAtMs: event.occurredAtMs,
+      type: projected.type,
+      data: projected.data,
+      actorId: projected.actorId,
+      occurredAtMs: projected.occurredAtMs,
     };
   }
   return { latestByType };
-}
-
-function projectEventData(
-  visibility: EventVisibility,
-  data: Record<string, unknown>,
-  viewerPlayerId: number | null,
-): Record<string, unknown> | null {
-  if (visibility.kind === 'internal') return null;
-  if (visibility.kind === 'private') {
-    return viewerPlayerId != null &&
-      visibility.playerIds.includes(viewerPlayerId)
-      ? structuredClone(data)
-      : null;
-  }
-  if (visibility.kind === 'split') {
-    const privateData =
-      viewerPlayerId == null
-        ? undefined
-        : visibility.privateDataByPlayer[String(viewerPlayerId)];
-    return structuredClone({ ...data, ...(privateData ?? {}) });
-  }
-  return structuredClone(data);
 }
 
 function projectEffectSource(

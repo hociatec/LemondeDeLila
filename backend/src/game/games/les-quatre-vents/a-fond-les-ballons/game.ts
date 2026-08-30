@@ -1,5 +1,6 @@
 import {
   cards,
+  defineCardsSchema,
   defineChoice,
   defineGame,
   defineGameContent,
@@ -20,6 +21,18 @@ import {
   resolvePawn,
 } from './rules';
 import type { NoGameState as AFondLesBallonsState } from '../../../engine/sdk/public-api';
+
+const cardSchema = defineCardsSchema({
+  decks: {
+    loufoque: cards.deck({
+      id: 'loufoque',
+      cards: A_FOND_LES_BALLONS_CARDS,
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {},
+});
 
 export default defineGame<AFondLesBallonsState>()({
   id: 'a-fond-les-ballons',
@@ -42,12 +55,7 @@ export default defineGame<AFondLesBallonsState>()({
   ],
   components: [
     pawns.set({ id: 'balloons-pawns', pawns: A_FOND_LES_BALLONS_PAWNS }),
-    cards.deck({
-      id: 'loufoque',
-      cards: A_FOND_LES_BALLONS_CARDS,
-      shuffle: true,
-      empty: 'recycle',
-    }),
+    ...cardSchema.components,
   ],
   initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],

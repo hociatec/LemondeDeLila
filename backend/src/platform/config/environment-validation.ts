@@ -39,6 +39,8 @@ const redisAndRateLimitEnvironment = {
   GAME_ENGINE_STATE_REDIS_URL: Joi.string().uri().optional(),
   GAME_TASK_REDIS_URL: Joi.string().uri().optional(),
   ROOM_PAYLOAD_REDIS_URL: Joi.string().uri().optional(),
+  NOTIFICATION_REDIS_URL: Joi.string().uri().optional(),
+  PRESENCE_REDIS_URL: Joi.string().uri().optional(),
   RATE_LIMIT_TTL: Joi.number().integer().positive().default(60),
   RATE_LIMIT_COUNT: Joi.number().integer().positive().default(120),
 };

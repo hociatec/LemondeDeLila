@@ -21,13 +21,22 @@ export class CanonicalizeSocialRelationshipPairs1770700000000 implements Migrati
       );
     }
     await queryRunner.query(
-      'ALTER TABLE `social_relationships` DROP INDEX `uniq_social_relationship`, ADD COLUMN `pair_low_id` int GENERATED ALWAYS AS (LEAST(`requester_id`, `addressee_id`)) STORED, ADD COLUMN `pair_high_id` int GENERATED ALWAYS AS (GREATEST(`requester_id`, `addressee_id`)) STORED, ADD UNIQUE INDEX `uniq_social_relationship_pair` (`pair_low_id`, `pair_high_id`)',
+      'ALTER TABLE `social_relationships` ADD COLUMN `pair_low_id` int GENERATED ALWAYS AS (LEAST(`requester_id`, `addressee_id`)) VIRTUAL, ADD COLUMN `pair_high_id` int GENERATED ALWAYS AS (GREATEST(`requester_id`, `addressee_id`)) VIRTUAL',
+    );
+    await queryRunner.query(
+      'CREATE UNIQUE INDEX `uniq_social_relationship_pair` ON `social_relationships` (`pair_low_id`, `pair_high_id`)',
+    );
+    await queryRunner.query(
+      'DROP INDEX `uniq_social_relationship_status` ON `social_relationships`',
     );
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      'ALTER TABLE `social_relationships` DROP INDEX `uniq_social_relationship_pair`, DROP COLUMN `pair_high_id`, DROP COLUMN `pair_low_id`, ADD UNIQUE INDEX `uniq_social_relationship` (`requester_id`, `addressee_id`)',
+      'CREATE UNIQUE INDEX `uniq_social_relationship_status` ON `social_relationships` (`requester_id`, `addressee_id`, `status`)',
+    );
+    await queryRunner.query(
+      'ALTER TABLE `social_relationships` DROP INDEX `uniq_social_relationship_pair`, DROP COLUMN `pair_high_id`, DROP COLUMN `pair_low_id`',
     );
   }
 }

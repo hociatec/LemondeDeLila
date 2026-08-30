@@ -39,8 +39,14 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Tests
-        run: npm test -- --runInBand
+      - name: Tests with coverage ratchet
+        run: npm run test:cov -- --runInBand
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Quality checks
         run: npm run quality:check
+
+      - name: Real MySQL, Redis, BullMQ and two-instance integration
+        run: npm run test:integration:real

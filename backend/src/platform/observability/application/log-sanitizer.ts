@@ -38,9 +38,15 @@ export function sanitizeLogValue(
   return sanitized;
 }
 
-/** Redacts credentials even when a framework already serialized the payload. */
-export function sanitizeLogText(value: string): string {
-  return value
+/** Redacts credentials even when a framework supplies an Error or structured value. */
+export function sanitizeLogText(value: unknown): string {
+  const text =
+    typeof value === 'string'
+      ? value
+      : value instanceof Error
+        ? (value.stack ?? value.message)
+        : (JSON.stringify(sanitizeLogValue(value)) ?? String(value));
+  return text
     .replace(/\b(Bearer|Basic)\s+[A-Za-z0-9._~+/=-]+/gi, `$1 ${REDACTED}`)
     .replace(
       /(["']?(?:accessToken|authorization|cookie|credentials|password|refreshToken|secret|token)["']?\s*[:=]\s*)(["']?)[^\s,;}]+\2/gi,

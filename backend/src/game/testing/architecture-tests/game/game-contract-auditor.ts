@@ -217,9 +217,8 @@ function auditFinishedState(
 async function auditCommand<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
 >(
-  adapter: DeclarativeGameRuntime<TState, TActions, TPlayerView>,
+  adapter: DeclarativeGameRuntime<TState, TActions>,
   executor: GameCommandExecutorService,
   state: GameStateEntity,
   action: GameSingleActionDto,

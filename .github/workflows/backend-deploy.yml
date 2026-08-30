@@ -34,11 +34,17 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Transverse tests
-        run: npm run test:transverse
+      - name: Full tests with coverage ratchet
+        run: npm run test:cov -- --runInBand
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Quality checks
         run: npm run quality:check
+
+      - name: Real MySQL, Redis, BullMQ and two-instance integration
+        run: npm run test:integration:real
 
   deploy:
     needs: quality

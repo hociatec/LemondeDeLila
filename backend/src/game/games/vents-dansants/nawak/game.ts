@@ -11,7 +11,9 @@ import {
   ROUND_STARTED,
   nawakStage,
 } from './rules';
-import type { NawakPlayerView, NawakState } from './state';
+import type { NawakState } from './state';
+
+type NawakPlayerView = Pick<NawakState, 'currentChallengeId' | 'lastRound'>;
 
 export default defineGame<NawakState>()({
   id: 'nawak',

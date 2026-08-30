@@ -12,7 +12,20 @@ import {
   PIMP_MY_RIDE_ACTIONS,
   PIMP_CAR_NAME_INDEX,
 } from './rules';
-import type { PimpMyRidePlayerView, PimpMyRideState } from './state';
+import type { CarProgress, PimpMyRideState } from './state';
+
+type CompletedCarView = {
+  name: string;
+  description: string;
+  parts: string[];
+};
+
+type PimpMyRidePlayerView = {
+  progress: Record<
+    number,
+    Omit<CarProgress, 'completedCars'> & { completedCars: CompletedCarView[] }
+  >;
+};
 
 export default defineGame<PimpMyRideState>()({
   id: 'pimp-my-ride',

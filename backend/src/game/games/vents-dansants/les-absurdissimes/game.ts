@@ -1,6 +1,7 @@
 import {
   cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
 } from '../../../engine/sdk/public-api';
@@ -16,10 +17,11 @@ import {
 } from './rules';
 import type { NoGameState as AbsurdissimesState } from '../../../engine/sdk/public-api';
 
-const whiteDeck = cards.deck({
-  id: 'white',
-  cards: WHITE_CARDS,
-  shuffle: true,
+const whiteCards = defineCardsSchema({
+  decks: {
+    white: cards.deck({ id: 'white', cards: WHITE_CARDS, shuffle: true }),
+  },
+  hands: {},
 });
 export default defineGame<AbsurdissimesState>()({
   id: 'les-absurdissimes',
@@ -41,7 +43,7 @@ export default defineGame<AbsurdissimesState>()({
       initialHandSize: 10,
     }),
   ],
-  components: [whiteDeck],
+  components: [...whiteCards.components],
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'J', type: 'action', actionType: 'judge_pick' },

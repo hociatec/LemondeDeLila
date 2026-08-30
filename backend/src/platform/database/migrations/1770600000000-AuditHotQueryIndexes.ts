@@ -8,6 +8,14 @@ export class AuditHotQueryIndexes1770600000000 implements MigrationInterface {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
+    // MySQL discards its implicit FK indexes when the wider hot-query indexes
+    // supersede them. Restore the historical FK indexes before removing ours.
+    await queryRunner.query(
+      'CREATE INDEX `FK_25cf9baa7efbb4d9a924c396b17` ON `room_participants` (`room_id`)',
+    );
+    await queryRunner.query(
+      'CREATE INDEX `FK_a0a82c13f56ba6082fb122b6adb` ON `room_participants` (`user_id`)',
+    );
     for (const [table, index] of [...INDEX_OWNERSHIP].reverse()) {
       await queryRunner.query(`DROP INDEX \`${index}\` ON \`${table}\``);
     }

@@ -26,7 +26,7 @@ async function main() {
     password,
     database,
     migrations: [
-      path.join(__dirname, '../src/platform/database/migrations/*.ts'),
+      path.join(__dirname, '../src/platform/database/migrations/[0-9]*.ts'),
     ],
     entities: [path.join(__dirname, '../src/**/*.entity.ts')],
     synchronize: false,
@@ -42,6 +42,7 @@ async function main() {
     if (pending) throw new Error('Des migrations restent en attente');
     await verifyCriticalIndexes(source);
     await verifyCriticalQueryPlans(source);
+    await verifyNamedLocks();
     await verifyGameSessionInvariants(source);
     await verifyConcurrentUniqueness(source);
     await verifyRecentMigrationsWithExistingData(source);
@@ -52,6 +53,37 @@ async function main() {
     if (source.isInitialized) await source.destroy();
     await admin.query(`DROP DATABASE \`${database}\``);
     await admin.end();
+  }
+}
+
+async function verifyNamedLocks() {
+  const options = { host, port, user, password, database };
+  const first = await mysql.createConnection(options);
+  const second = await mysql.createConnection(options);
+  const lockName = `lmdl:integration-lock:${process.pid}`;
+  try {
+    const [[initial]] = await first.query(
+      'SELECT GET_LOCK(?, 0) AS acquired',
+      [lockName],
+    );
+    const [[contended]] = await second.query(
+      'SELECT GET_LOCK(?, 0) AS acquired',
+      [lockName],
+    );
+    if (Number(initial.acquired) !== 1 || Number(contended.acquired) !== 0) {
+      throw new Error('Exclusion du verrou nommé MySQL non garantie');
+    }
+    await first.query('SELECT RELEASE_LOCK(?) AS released', [lockName]);
+    const [[afterRelease]] = await second.query(
+      'SELECT GET_LOCK(?, 0) AS acquired',
+      [lockName],
+    );
+    if (Number(afterRelease.acquired) !== 1) {
+      throw new Error('Verrou nommé MySQL non libéré entre instances');
+    }
+    await second.query('SELECT RELEASE_LOCK(?) AS released', [lockName]);
+  } finally {
+    await Promise.allSettled([first.end(), second.end()]);
   }
 }
 

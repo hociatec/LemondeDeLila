@@ -9,7 +9,3 @@ export type SacManagementKind = 'build' | 'sell' | 'mortgage' | 'unmortgage';
 export interface SacState {
   buildings: Record<number, SacBuilding>;
 }
-
-export type SacPlayerView = {
-  buildings: Record<number, SacBuilding>;
-};

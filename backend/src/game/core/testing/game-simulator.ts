@@ -43,6 +43,16 @@ type RuntimeState = GameStateEntity & {
   };
 };
 
+type SimulationContext = {
+  state: RuntimeState;
+  clock: FixedGameClock;
+  startedAtMs: number;
+  maxCommands: number;
+  observedEvents: number;
+  eventFrequency: Record<string, number>;
+  cardFrequency: Record<string, number>;
+};
+
 /** Headless deterministic runner for bot-vs-bot campaigns. */
 export class GameSimulator {
   private readonly execution = new GameExecutionScopeService();
@@ -52,7 +62,7 @@ export class GameSimulator {
     initialState: GameStateEntity,
     options: { maxCommands?: number; startAtMs?: number } = {},
   ): GameSimulationResult {
-    let state = structuredClone(initialState) as RuntimeState;
+    const state = structuredClone(initialState) as RuntimeState;
     for (const player of state.players ?? []) player.isBot = true;
     const metadataStartAtMs = Date.parse(
       String(state.metadata?.roomStartedAt ?? ''),
@@ -62,79 +72,86 @@ export class GameSimulator {
       (Number.isFinite(metadataStartAtMs)
         ? metadataStartAtMs
         : 1_700_000_000_000);
-    const clock = new FixedGameClock(startedAtMs);
-    const maxCommands = Math.max(1, options.maxCommands ?? 2_000);
-    const eventFrequency: Record<string, number> = {};
-    const cardFrequency: Record<string, number> = {};
-    let observedEvents = 0;
-
+    const context: SimulationContext = {
+      state,
+      clock: new FixedGameClock(startedAtMs),
+      startedAtMs,
+      maxCommands: Math.max(1, options.maxCommands ?? 2_000),
+      observedEvents: 0,
+      eventFrequency: {},
+      cardFrequency: {},
+    };
     try {
-      for (let commands = 0; commands < maxCommands; commands += 1) {
-        this.collectEvents(
-          state,
-          observedEvents,
-          eventFrequency,
-          cardFrequency,
-        );
-        observedEvents = state.engine?.pendingEvents?.length ?? 0;
-        if (this.finished(state)) {
-          return this.result(
-            'finished',
-            commands,
-            clock.nowMs() - startedAtMs,
-            state,
-            eventFrequency,
-            cardFrequency,
-          );
-        }
-
-        const automatic = runtime.getAutomaticActions(state);
-        if (automatic?.actions.length) {
-          if (
-            automatic.executeAtMs != null &&
-            automatic.executeAtMs > clock.nowMs()
-          ) {
-            clock.advanceBy(automatic.executeAtMs - clock.nowMs());
-          }
-          state = this.apply(runtime, state, automatic.actions, clock);
-          continue;
-        }
-
-        const action = this.nextBotAction(runtime, state);
-        if (!action) {
-          return this.result(
-            'deadlock',
-            commands,
-            clock.nowMs() - startedAtMs,
-            state,
-            eventFrequency,
-            cardFrequency,
-          );
-        }
-        state = this.apply(runtime, state, [action], clock);
-      }
-      return this.result(
-        'step-limit',
-        maxCommands,
-        clock.nowMs() - startedAtMs,
-        state,
-        eventFrequency,
-        cardFrequency,
-      );
+      return this.runLoop(runtime, context);
     } catch (error) {
-      const result = this.result(
-        'failed',
-        0,
-        clock.nowMs() - startedAtMs,
-        state,
-        eventFrequency,
-        cardFrequency,
-      );
+      const result = this.simulationResult(context, 'failed', 0);
       return {
         ...result,
         error: error instanceof Error ? error.message : String(error),
       };
     }
+  }
+
+  private runLoop(
+    runtime: GameRuntime,
+    context: SimulationContext,
+  ): GameSimulationResult {
+    for (let commands = 0; commands < context.maxCommands; commands += 1) {
+      this.collectEvents(
+        context.state,
+        context.observedEvents,
+        context.eventFrequency,
+        context.cardFrequency,
+      );
+      context.observedEvents = context.state.engine?.pendingEvents?.length ?? 0;
+      if (this.finished(context.state)) {
+        return this.simulationResult(context, 'finished', commands);
+      }
+
+      const automatic = runtime.getAutomaticActions(context.state);
+      if (automatic?.actions.length) {
+        if (
+          automatic.executeAtMs != null &&
+          automatic.executeAtMs > context.clock.nowMs()
+        ) {
+          context.clock.advanceBy(
+            automatic.executeAtMs - context.clock.nowMs(),
+          );
+        }
+        context.state = this.apply(
+          runtime,
+          context.state,
+          automatic.actions,
+          context.clock,
+        );
+        continue;
+      }
+
+      const action = this.nextBotAction(runtime, context.state);
+      if (!action) return this.simulationResult(context, 'deadlock', commands);
+      context.state = this.apply(
+        runtime,
+        context.state,
+        [action],
+        context.clock,
+      );
+    }
+    return this.simulationResult(context, 'step-limit', context.maxCommands);
+  }
+
+  private simulationResult(
+    context: SimulationContext,
+    status: GameSimulationStatus,
+    commands: number,
+  ): GameSimulationResult {
+    return this.result(
+      status,
+      commands,
+      context.clock.nowMs() - context.startedAtMs,
+      context.state,
+      context.eventFrequency,
+      context.cardFrequency,
+    );
   }
 
   runMany(

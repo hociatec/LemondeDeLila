@@ -1,12 +1,19 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const compose = path.join(__dirname, 'real-integration.compose.yml');
 const integrationEnv = {
   ...process.env,
+  NODE_ENV: 'test',
+  IGNORE_ENV_FILE: 'true',
+  JWT_ALGORITHM: 'HS256',
+  JWT_SECRET: 'real-integration-jwt-secret-at-least-32-characters',
+  WS_TICKET_SECRET: 'real-integration-ws-secret-at-least-32-characters',
   DB_HOST: '127.0.0.1',
   DB_PORT: process.env.INTEGRATION_MYSQL_PORT ?? '33306',
   DB_USER: 'root',
@@ -23,8 +30,69 @@ function run(command, args, env = process.env) {
   if (result.status !== 0) throw new Error(`${command} ${args.join(' ')} a échoué`);
 }
 
+function succeeds(command, args, env = process.env) {
+  return spawnSync(command, args, {
+    cwd: root,
+    env,
+    stdio: 'inherit',
+  }).status === 0;
+}
+
+let nativeRedisDirectory = null;
+
+function startDependencies() {
+  if (succeeds('docker', ['compose', '-f', compose, 'up', '-d', '--wait'])) {
+    return;
+  }
+  console.warn(
+    'Compose simultané indisponible; nouvelle tentative avec MySQL Docker et Redis local isolé.',
+  );
+  run('docker', [
+    'compose',
+    '-f',
+    compose,
+    'down',
+    '--volumes',
+    '--remove-orphans',
+  ]);
+  run('docker', ['compose', '-f', compose, 'up', '-d', '--wait', 'mysql']);
+  nativeRedisDirectory = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'lmdl-real-integration-redis-'),
+  );
+  const port = process.env.INTEGRATION_REDIS_PORT ?? '36379';
+  run('redis-server', [
+    '--bind',
+    '127.0.0.1',
+    '--port',
+    port,
+    '--save',
+    '',
+    '--appendonly',
+    'no',
+    '--daemonize',
+    'yes',
+    '--pidfile',
+    path.join(nativeRedisDirectory, 'redis.pid'),
+    '--dir',
+    nativeRedisDirectory,
+  ]);
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    if (succeeds('redis-cli', ['-p', port, 'ping'])) return;
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+  }
+  throw new Error('Redis local d’intégration indisponible');
+}
+
+function stopNativeRedis() {
+  if (!nativeRedisDirectory) return;
+  const port = process.env.INTEGRATION_REDIS_PORT ?? '36379';
+  succeeds('redis-cli', ['-p', port, 'shutdown', 'nosave']);
+  fs.rmSync(nativeRedisDirectory, { recursive: true, force: true });
+  nativeRedisDirectory = null;
+}
+
 try {
-  run('docker', ['compose', '-f', compose, 'up', '-d', '--wait']);
+  startDependencies();
   run('npm', ['run', 'migration:run:dev'], integrationEnv);
   run('npm', ['run', 'test:db:migrations'], integrationEnv);
   run('npm', ['run', 'test:redis:bullmq'], integrationEnv);
@@ -32,5 +100,6 @@ try {
   run('node', ['tools/two-instance-real-e2e.cjs'], integrationEnv);
   console.log('real-integration: OK (MySQL, migrations, Redis, BullMQ, 2 backends, WS)');
 } finally {
+  stopNativeRedis();
   run('docker', ['compose', '-f', compose, 'down', '--volumes', '--remove-orphans']);
 }

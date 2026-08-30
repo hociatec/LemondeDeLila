@@ -1,8 +1,9 @@
 import {
-  freezeGameContent,
   gameEffects,
+  loadGameContent,
   rejectContent,
 } from '../../../engine/sdk/public-api';
+import type { GameContent } from '../../../engine/sdk/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { PirateCard, PirateTile } from './types';
@@ -54,9 +55,10 @@ const OBSTACLE_EFFECTS: Readonly<
   10: [gameEffects.loseResource(GOLD, 1, undefined, { allowPartial: true })],
 };
 
-export const PIRATES_CONTENT = loadContent();
+export const PIRATES_GAME_CONTENT = loadContent();
+export const PIRATES_CONTENT = PIRATES_GAME_CONTENT.data;
 
-function loadContent(): PirateContent {
+function loadContent(): GameContent<PirateContent> {
   const directory = contentDirectory();
   const board: unknown = JSON.parse(
     readFileSync(resolve(directory, 'board.json'), 'utf8'),
@@ -64,29 +66,44 @@ function loadContent(): PirateContent {
   const cards: unknown = JSON.parse(
     readFileSync(resolve(directory, 'cards.json'), 'utf8'),
   );
-  if (!isRecord(board) || !isArrayOf(board.tiles, isTile)) {
-    rejectContent('Plateau Pirates en vadrouille invalide');
-  }
-  if (
-    !isRecord(cards) ||
-    !isArrayOf(cards.treasure, isCard) ||
-    !isArrayOf(cards.obstacle, isCard) ||
-    !isArrayOf(cards.bonus, isCard)
-  ) {
-    rejectContent('Cartes Pirates en vadrouille invalides');
-  }
-  return {
-    tiles: board.tiles,
-    treasure: cards.treasure.map((card) => ({ ...card, effects: [] })),
-    obstacle: cards.obstacle.map((card) => ({
-      ...card,
-      effects: OBSTACLE_EFFECTS[card.id] ?? [],
-    })),
-    bonus: cards.bonus.map((card) => ({
-      ...card,
-      effects: BONUS_EFFECTS[card.id] ?? [],
-    })),
-  };
+  return loadGameContent(
+    'pirates-en-vadrouille',
+    { board, cards },
+    {
+      parse: (value) => {
+        if (
+          !isRecord(value) ||
+          !isRecord(value.board) ||
+          !isArrayOf(value.board.tiles, isTile)
+        ) {
+          rejectContent('Plateau Pirates en vadrouille invalide');
+        }
+        if (
+          !isRecord(value.cards) ||
+          !isArrayOf(value.cards.treasure, isCard) ||
+          !isArrayOf(value.cards.obstacle, isCard) ||
+          !isArrayOf(value.cards.bonus, isCard)
+        ) {
+          rejectContent('Cartes Pirates en vadrouille invalides');
+        }
+        return {
+          tiles: value.board.tiles,
+          treasure: value.cards.treasure.map((card) => ({
+            ...card,
+            effects: [],
+          })),
+          obstacle: value.cards.obstacle.map((card) => ({
+            ...card,
+            effects: OBSTACLE_EFFECTS[card.id] ?? [],
+          })),
+          bonus: value.cards.bonus.map((card) => ({
+            ...card,
+            effects: BONUS_EFFECTS[card.id] ?? [],
+          })),
+        };
+      },
+    },
+  );
 }
 
 function immunity(turns: number): PirateCard['effects'][number] {
@@ -154,5 +171,3 @@ function isArrayOf<T>(
 ): value is T[] {
   return Array.isArray(value) && value.every(guard);
 }
-
-freezeGameContent(PIRATES_CONTENT);

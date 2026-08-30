@@ -42,4 +42,17 @@ describe('assertStorageCapacity', () => {
       }),
     ).resolves.toBeUndefined();
   });
+
+  it('rejects an upload when the real filesystem free-space reserve cannot be met', async () => {
+    await expect(
+      assertStorageCapacity({
+        root,
+        incomingBytes: 1,
+        maxTotalBytes: Number.MAX_SAFE_INTEGER,
+        minFreeBytes: Number.MAX_SAFE_INTEGER,
+      }),
+    ).rejects.toMatchObject<Partial<StorageCapacityError>>({
+      reason: 'disk-free',
+    });
+  });
 });

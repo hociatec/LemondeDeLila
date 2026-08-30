@@ -20,8 +20,3 @@ export interface NawakState {
   currentChallengeId: string;
   lastRound: NawakRoundState | null;
 }
-
-export type NawakPlayerView = Pick<
-  NawakState,
-  'currentChallengeId' | 'lastRound'
->;

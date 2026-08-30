@@ -1,5 +1,6 @@
 import {
   cards,
+  defineCardsSchema,
   defineChoice,
   defineGame,
   defineGameContent,
@@ -17,6 +18,18 @@ import {
   resolvePawn,
 } from './rules';
 import type { NoGameState as FrousseState } from '../../../engine/sdk/public-api';
+
+const cardSchema = defineCardsSchema({
+  decks: {
+    frights: cards.deck({
+      id: 'frights',
+      cards: FROUSSE_CARDS,
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {},
+});
 
 export default defineGame<FrousseState>()({
   id: 'frousse-party',
@@ -40,12 +53,7 @@ export default defineGame<FrousseState>()({
   ],
   components: [
     pawns.set({ id: 'frousse', pawns: FROUSSE_PAWNS }),
-    cards.deck({
-      id: 'frights',
-      cards: FROUSSE_CARDS,
-      shuffle: true,
-      empty: 'recycle',
-    }),
+    ...cardSchema.components,
   ],
   initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],

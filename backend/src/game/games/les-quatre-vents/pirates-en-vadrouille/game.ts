@@ -1,20 +1,26 @@
 import {
   cards,
   collection,
+  defineCardsSchema,
   defineEffect,
   defineGame,
-  defineGameContent,
   gameInput,
   inventory,
   raceGame,
 } from '../../../engine/sdk/public-api';
-import { PIRATES_CONTENT } from './content';
+import { PIRATES_CONTENT, PIRATES_GAME_CONTENT } from './content';
 import { PIRATES_ACTIONS, stealTreasure } from './rules';
 import type { PiratesState } from './types';
 
-const cardDecks = (['treasure', 'obstacle', 'bonus'] as const).map((id) =>
-  cards.deck({ id, cards: PIRATES_CONTENT[id], shuffle: true }),
-);
+const cardSchema = defineCardsSchema({
+  decks: Object.fromEntries(
+    (['treasure', 'obstacle', 'bonus'] as const).map((id) => [
+      id,
+      cards.deck({ id, cards: PIRATES_CONTENT[id], shuffle: true }),
+    ]),
+  ),
+  hands: {},
+});
 
 export default defineGame<PiratesState>()({
   id: 'pirates-en-vadrouille',
@@ -23,12 +29,12 @@ export default defineGame<PiratesState>()({
   subcategory: 'LesQuatreVents',
   description: 'Explorez Papayousse et ouvrez son coffre légendaire.',
   players: { min: 2, max: 6 },
-  content: defineGameContent('pirates-en-vadrouille', PIRATES_CONTENT),
+  content: PIRATES_GAME_CONTENT,
   patterns: [
     raceGame({ trackId: 'island', spaces: PIRATES_CONTENT.tiles.length }),
   ],
   components: [
-    ...cardDecks,
+    ...cardSchema.components,
     ...(['treasure', 'obstacle', 'bonus'] as const).map((kind) =>
       inventory.set({
         id: `pirates-${kind}`,

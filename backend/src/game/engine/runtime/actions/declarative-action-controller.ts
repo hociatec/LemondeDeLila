@@ -29,19 +29,10 @@ type ContextFactory<TState extends object> = (
 export class DeclarativeActionController<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
 > {
   constructor(
-    private readonly definition: CompiledGameDefinition<
-      TState,
-      TActions,
-      TPlayerView
-    >,
-    private readonly choices: DeclarativeChoiceRuntime<
-      TState,
-      TActions,
-      TPlayerView
-    >,
+    private readonly definition: CompiledGameDefinition<TState, TActions>,
+    private readonly choices: DeclarativeChoiceRuntime<TState, TActions>,
   ) {}
 
   validate(

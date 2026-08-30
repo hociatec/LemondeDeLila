@@ -12,18 +12,24 @@ import {
   cards,
   defineAction,
   defineGame,
-  definePattern,
-  eventTrackGame,
   gameEffects,
   gameInput,
   movement,
+  pawns,
+} from '../../../engine/sdk/public-api';
+import {
+  definePattern,
+  eventTrackGame,
   overrideAction,
   overrideComponent,
   overrideInitialization,
   overrideTurn,
-  pawns,
   simultaneous,
-} from '../../../engine/sdk/public-api';
+} from '../../../engine/runtime/public-api';
+import type {
+  CardInstance,
+  GameViewExtension,
+} from '../../../engine/runtime/public-api';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import { GameTestKit } from '../../../core/testing/game-test-kit';
 import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
@@ -31,6 +37,29 @@ import { GameSimulator } from '../../../core/testing/game-simulator';
 
 describe('backend debt contracts', () => {
   const definitions = discoverGameDefinitions();
+
+  it('keeps lightweight cards optional and reserves system view namespaces', () => {
+    const lightweight: CardInstance<'lama'> = 'lama';
+    const stateful: CardInstance<
+      { id: 'hero'; label: string },
+      { exhausted: boolean }
+    > = {
+      instanceId: 'hero-1',
+      definition: { id: 'hero', label: 'Hero' },
+      state: { exhausted: false },
+    };
+    type ReservedNamespaceAccepted =
+      { system: object } extends GameViewExtension<{
+        system: object;
+      }>
+        ? true
+        : false;
+    const reservedNamespaceAccepted: ReservedNamespaceAccepted = false;
+
+    expect(lightweight).toBe('lama');
+    expect(stateful.state.exhausted).toBe(false);
+    expect(reservedNamespaceAccepted).toBe(false);
+  });
 
   it('compiles every definition once with diagnostics consumable by tooling', () => {
     for (const definition of definitions) {

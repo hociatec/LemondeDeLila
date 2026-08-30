@@ -1,5 +1,6 @@
 import {
   cards,
+  defineCardsSchema,
   defineChoice,
   defineGameContent,
   defineGame,
@@ -29,6 +30,18 @@ import {
   restoreMovement,
   PANIER_REVERSED,
 } from './rules';
+
+const cardSchema = defineCardsSchema({
+  decks: {
+    events: cards.deck({ id: 'events', cards: PANIER_EVENTS, shuffle: true }),
+    exchanges: cards.deck({
+      id: 'exchanges',
+      cards: PANIER_EXCHANGES,
+      shuffle: true,
+    }),
+  },
+  hands: {},
+});
 import { PANIER_EFFECTS } from './effects';
 import type { PanierState } from './types';
 
@@ -58,8 +71,7 @@ export default defineGame<PanierState>()({
   ],
   components: [
     pawns.set({ id: 'panier', pawns: PANIER_PAWNS }),
-    cards.deck({ id: 'events', cards: PANIER_EVENTS, shuffle: true }),
-    cards.deck({ id: 'exchanges', cards: PANIER_EXCHANGES, shuffle: true }),
+    ...cardSchema.components,
     inventory.set({ id: 'market-items', visibility: 'owner' }),
     inventory.set({ id: 'shopping-lists', visibility: 'owner' }),
     inventory.set({ id: 'shopping-baskets', visibility: 'owner' }),

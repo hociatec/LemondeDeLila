@@ -1,4 +1,6 @@
 import { environmentValidationSchema } from './environment-validation';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const validBase = {
   NODE_ENV: 'test',
@@ -35,5 +37,37 @@ describe('environment validation', () => {
       JWT_PRIVATE_KEY_PEM: 'private',
     });
     expect(result.error?.message).toContain('JWT_PUBLIC_KEY');
+  });
+
+  it('validates the dedicated notification and presence Redis URLs', () => {
+    const accepted = environmentValidationSchema.validate({
+      ...validBase,
+      NOTIFICATION_REDIS_URL: 'redis://127.0.0.1:6379/2',
+      PRESENCE_REDIS_URL: 'redis://127.0.0.1:6379/3',
+    });
+    const rejected = environmentValidationSchema.validate({
+      ...validBase,
+      NOTIFICATION_REDIS_URL: 'not-a-url',
+    });
+
+    expect(accepted.error).toBeUndefined();
+    expect(rejected.error?.message).toContain('NOTIFICATION_REDIS_URL');
+  });
+
+  it('keeps every supported variable documented in .env.example', () => {
+    const example = fs.readFileSync(
+      path.resolve(__dirname, '../../../.env.example'),
+      'utf8',
+    );
+    const documented = new Set(
+      [...example.matchAll(/^#?\s*([A-Z][A-Z0-9_]+)=/gm)].map(
+        (match) => match[1],
+      ),
+    );
+    const supported = new Set(
+      Object.keys(environmentValidationSchema.describe().keys ?? {}),
+    );
+
+    expect([...documented].sort()).toEqual([...supported].sort());
   });
 });

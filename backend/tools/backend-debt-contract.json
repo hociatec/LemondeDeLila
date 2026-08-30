@@ -2,7 +2,9 @@
   "schemaVersion": 1,
   "ceilings": {
     "silentPromiseCatches": 0,
-    "directProcessEnv": 3
+    "directProcessEnv": 3,
+    "explicitAny": 0,
+    "unjustifiedEmptyCatches": 0
   },
   "requiredLocalSpecs": [
     "modules/user",
@@ -20,6 +22,10 @@
     "docs/architecture/adr-001-platform.md",
     "docs/architecture/adr-002-source-layout.md",
     "docs/architecture/adr-003-module-game-platform-shared.md",
+    "docs/architecture/adr-004-mysql-locking.md",
+    "docs/architecture/adr-005-bullmq-scheduling.md",
+    "docs/architecture/adr-006-game-sdk-runtime.md",
+    "docs/architecture/adr-007-events-snapshots.md",
     "docs/architecture/realtime-resilience-test-matrix.md",
     "docs/architecture/transaction-boundaries.md"
   ]

@@ -1,5 +1,6 @@
 import {
   cards,
+  defineCardsSchema,
   defineChoice,
   defineConfiguration,
   defineEvent,
@@ -15,13 +16,36 @@ import { SAC_ACTIONS } from './actions';
 import { SAC_POT } from './economy';
 import { resolveManagement, resolvePurchase } from './rules';
 import { SAC_EFFECTS } from './effects';
-import type { SacPlayerView, SacState } from './state';
+import type { SacBuilding, SacState } from './state';
+
+type SacPlayerView = {
+  buildings: Record<number, SacBuilding>;
+};
 
 const SAC_VARIANT_IDS = SAC_VARIANTS.map((variant) => variant.id);
 const SAC_PHASES = setupPlayingPhases<SacState>();
 const VARIANT_SELECTED = defineEvent({
   type: 'game.variant.selected',
   data: gameInput.object({ variantId: gameInput.enum(SAC_VARIANT_IDS) }),
+});
+const cardSchema = defineCardsSchema({
+  decks: Object.fromEntries(
+    SAC_VARIANTS.flatMap((variant) =>
+      (['chance', 'community'] as const).map((kind) => {
+        const id = `${kind}:${variant.id}`;
+        return [
+          id,
+          cards.deck({
+            id,
+            cards: uniqueDeckCards(variant.id, kind, variant[kind]),
+            shuffle: true,
+            empty: 'recycle',
+          }),
+        ];
+      }),
+    ),
+  ),
+  hands: {},
 });
 
 export default defineGame<SacState>()({
@@ -72,20 +96,7 @@ export default defineGame<SacState>()({
       assets: Array.from({ length: 40 }, (_, index) => String(index)),
       visibility: 'public',
     }),
-    ...SAC_VARIANTS.flatMap((variant) => [
-      cards.deck({
-        id: `chance:${variant.id}`,
-        cards: uniqueDeckCards(variant.id, 'chance', variant.chance),
-        shuffle: true,
-        empty: 'recycle',
-      }),
-      cards.deck({
-        id: `community:${variant.id}`,
-        cards: uniqueDeckCards(variant.id, 'community', variant.community),
-        shuffle: true,
-        empty: 'recycle',
-      }),
-    ]),
+    ...cardSchema.components,
   ],
   initialization: { counters: { [SAC_POT]: 0 }, startRound: false },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],

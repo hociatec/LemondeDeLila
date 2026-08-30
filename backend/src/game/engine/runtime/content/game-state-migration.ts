@@ -25,12 +25,11 @@ export function migrateDeclarativeState<TState extends object>(
   configuration: GameConfigurationShape<TState> | undefined,
 ): DeclarativeState<TState> {
   const runtime = structuredClone(state) as DeclarativeState<TState>;
-  const versionedEngine = legacyVersionedEngine(runtime);
-  let version = Number(versionedEngine.schemaVersion ?? 1);
+  let version = Number(runtime.engine.schemaVersion ?? 1);
   if (!Number.isInteger(version) || version < 1) version = 1;
   assertCompatibleSchemaVersion(gameId, version, targetVersion);
-  const storedRulesVersion = versionedEngine.rulesVersion;
-  const storedContentVersion = versionedEngine.contentVersion;
+  const storedRulesVersion = runtime.engine.rulesVersion;
+  const storedContentVersion = runtime.engine.contentVersion;
   if (typeof storedContentVersion === 'string') {
     migrateContentVersion(
       runtime,
@@ -118,19 +117,6 @@ function removeObsoleteEngineFields<TState extends object>(
   delete obsoleteEngineFields.pending;
   delete obsoleteEngineFields.rng;
   delete obsoleteEngineFields.eventSequence;
-}
-
-function legacyVersionedEngine<TState extends object>(
-  runtime: DeclarativeState<TState>,
-): Omit<
-  DeclarativeState<TState>['engine'],
-  'schemaVersion' | 'rulesVersion'
-> & {
-  schemaVersion?: number;
-  rulesVersion?: string;
-  contentVersion?: string;
-} {
-  return runtime.engine;
 }
 
 function assertCompatibleSchemaVersion(
@@ -249,9 +235,8 @@ function stripObsoleteStaticKitDefinitions(
     dice: ['sets'],
     grid: ['boards'],
   })) {
-    const state = kits[kit as keyof typeof kits] as unknown as
-      Record<string, unknown> | undefined;
+    const state = kits[kit as keyof typeof kits];
     if (!state) continue;
-    for (const field of fields) delete state[field];
+    for (const field of fields) Reflect.deleteProperty(state, field);
   }
 }

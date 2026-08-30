@@ -17,7 +17,12 @@ function rgCount(pattern, searchRoot, extraArgs = []) {
   // - 0 when matches are found
   // - 1 when no matches are found
   // Treat other non-zero statuses as failures unless stdout exists.
-  if (result.status != null && result.status !== 0 && result.status !== 1 && !result.stdout) {
+  if (
+    result.status != null &&
+    result.status !== 0 &&
+    result.status !== 1 &&
+    !result.stdout
+  ) {
     return 0;
   }
   const lines = String(result.stdout ?? '')
@@ -47,8 +52,9 @@ const productionDirectPendingAssignments = rgCount(
   ['-g', '!*.spec.ts'],
 );
 const mojibakeMatches = rgCount(
-  'Ã|â€™|â€œ|â€|â‚|Â|Ì€|ï»¿|�|[\\x80-\\x9F]',
+  'Ã|â€™|â€œ|â€|â‚|Ì€|ï»¿|�|\\x{FEFF}|[\\x80-\\x9F]|[A-Za-zÀ-ÿ]\\?[A-Za-zÀ-ÿ]',
   'src',
+  ['-g', '!*.spec.ts'],
 );
 const scoresByPlayerIdMentionsInGames = rgCount(
   '\\bscoresByPlayerId\\b',

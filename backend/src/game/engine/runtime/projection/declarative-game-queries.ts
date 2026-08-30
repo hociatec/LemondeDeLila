@@ -40,17 +40,14 @@ import {
 export abstract class DeclarativeGameQueries<
   TState extends object,
   TActions extends GameActionMap<TState>,
-  TPlayerView extends object,
 > {
   protected abstract readonly definition: CompiledGameDefinition<
     TState,
-    TActions,
-    TPlayerView
+    TActions
   >;
   protected abstract readonly choices: DeclarativeChoiceRuntime<
     TState,
-    TActions,
-    TPlayerView
+    TActions
   >;
   protected abstract runtimeState(
     state: GameStateEntity,
@@ -183,7 +180,7 @@ export abstract class DeclarativeGameQueries<
           actor,
           ctx: context,
         })
-      : ({} as TPlayerView);
+      : {};
     const pending = projectPending(runtime.pending, actor?.id ?? null);
     const system = projectGameSystemView({
       runtime,

@@ -290,11 +290,7 @@ function runtimeState(state: GameStateEntity) {
 }
 
 function execute(
-  adapter: DeclarativeGameRuntime<
-    SampleState,
-    typeof sampleGame.actions,
-    { score: number }
-  >,
+  adapter: DeclarativeGameRuntime<SampleState, typeof sampleGame.actions>,
   state: GameStateEntity,
   type: string,
   payload: Record<string, unknown>,
@@ -305,11 +301,7 @@ function execute(
 }
 
 function apply(
-  adapter: DeclarativeGameRuntime<
-    SampleState,
-    typeof sampleGame.actions,
-    { score: number }
-  >,
+  adapter: DeclarativeGameRuntime<SampleState, typeof sampleGame.actions>,
   state: GameStateEntity,
   action: {
     type: string;

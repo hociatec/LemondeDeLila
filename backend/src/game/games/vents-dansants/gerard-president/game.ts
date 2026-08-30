@@ -1,6 +1,7 @@
 import {
   cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
 } from '../../../engine/sdk/public-api';
@@ -20,7 +21,23 @@ import {
   GERARD_THEME_SECRET,
   gerardMasterId,
 } from './support';
-import type { GerardPlayerView, GerardState } from './state';
+import type { GerardState } from './state';
+
+type GerardPlayerView = {
+  currentTheme: string | null;
+  secondTheme: string | null;
+};
+
+const themeCards = defineCardsSchema({
+  decks: {
+    themes: cards.deck({
+      id: 'themes',
+      cards: GERARD_PRESIDENT_THEME_CARDS,
+      shuffle: true,
+    }),
+  },
+  hands: {},
+});
 
 const specialCards = GERARD_PRESIDENT_SPECIAL_CARDS.flatMap((card) => [
   card.id,
@@ -53,13 +70,7 @@ export default defineGame<GerardState>()({
       initialHandSize: 2,
     }),
   ],
-  components: [
-    cards.deck({
-      id: 'themes',
-      cards: GERARD_PRESIDENT_THEME_CARDS,
-      shuffle: true,
-    }),
-  ],
+  components: [...themeCards.components],
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_name' },
     { key: 'S', type: 'action', actionType: 'play_special' },

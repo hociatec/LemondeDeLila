@@ -55,9 +55,7 @@ export function roundScoped<TComponent extends GameComponent>(
   return Object.freeze({
     ...component,
     scope: 'round',
-  }) as unknown as TComponent & {
-    readonly scope: 'round';
-  };
+  }) as unknown as TComponent & { readonly scope: 'round' };
 }
 
 export function matchScoped<TComponent extends GameComponent>(
@@ -66,9 +64,7 @@ export function matchScoped<TComponent extends GameComponent>(
   return Object.freeze({
     ...component,
     scope: 'match',
-  }) as unknown as TComponent & {
-    readonly scope: 'match';
-  };
+  }) as unknown as TComponent & { readonly scope: 'match' };
 }
 
 export type PerPlayerInitialValue = number | Readonly<Record<string, number>>;

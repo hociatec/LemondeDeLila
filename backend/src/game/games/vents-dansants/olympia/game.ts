@@ -1,6 +1,7 @@
 import {
   cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
 } from '../../../engine/sdk/public-api';
@@ -17,6 +18,15 @@ const DECKS: OlympiaDeckType[] = [
   'attaques',
   'evenements',
 ];
+const extraCards = defineCardsSchema({
+  decks: Object.fromEntries(
+    DECKS.filter((id) => id !== 'heros' && id !== 'divinite').map((id) => [
+      id,
+      cards.deck({ id, cards: OLYMPIA_DECKS[id], shuffle: true }),
+    ]),
+  ),
+  hands: {},
+});
 
 export default defineGame<OlympiaState>()({
   id: 'olympia',
@@ -39,11 +49,7 @@ export default defineGame<OlympiaState>()({
       visibility: 'public',
     }),
   ],
-  components: [
-    ...DECKS.filter((id) => id !== 'heros' && id !== 'divinite').map((id) =>
-      cards.deck({ id, cards: OLYMPIA_DECKS[id], shuffle: true }),
-    ),
-  ],
+  components: [...extraCards.components],
   shortcuts: [
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'P', type: 'action', actionType: 'pass' },
