@@ -1,5 +1,16 @@
 import { Logger } from '@nestjs/common';
 import Redis from 'ioredis';
+import {
+  currentCorrelationId,
+  normalizeCorrelationId,
+  runWithCorrelationId,
+} from '../observability/public-api';
+
+type CorrelatedPubSubEnvelope<TEvent> = {
+  kind: 'lila.pubsub';
+  correlationId: string;
+  event: TEvent;
+};
 
 export class RedisPubSubTransport<TEvent> {
   private readonly publisher: Redis;
@@ -21,6 +32,7 @@ export class RedisPubSubTransport<TEvent> {
         // and blocking API requests (default ioredis maxRetriesPerRequest is 20).
         maxRetriesPerRequest: 1,
         enableOfflineQueue: false,
+        enableReadyCheck: false,
       });
       // Important: ioredis emits an 'error' event which will crash the process if unhandled.
       // Default transport is best-effort; dedicated factories can log details.
@@ -45,7 +57,13 @@ export class RedisPubSubTransport<TEvent> {
 
   async publish(event: TEvent): Promise<void> {
     try {
-      await this.publisher.publish(this.channel, JSON.stringify(event));
+      const envelope: CorrelatedPubSubEnvelope<TEvent> = {
+        kind: 'lila.pubsub',
+        correlationId:
+          currentCorrelationId() ?? normalizeCorrelationId(undefined),
+        event,
+      };
+      await this.publisher.publish(this.channel, JSON.stringify(envelope));
     } catch (error) {
       this.logger.warn(
         `Notification non publiée (Redis indisponible ? channel=${this.channel})`,
@@ -59,9 +77,16 @@ export class RedisPubSubTransport<TEvent> {
       if (channel !== this.channel) return;
       try {
         const parsed: unknown = JSON.parse(message);
-        const event = this.decodeEvent(parsed);
+        const correlated = correlatedEnvelope(parsed);
+        const event = this.decodeEvent(correlated?.event ?? parsed);
         if (event) {
-          handler(event);
+          if (correlated) {
+            runWithCorrelationId(correlated.correlationId, () =>
+              handler(event),
+            );
+          } else {
+            handler(event);
+          }
         }
       } catch {
         /* ignore malformed payloads */
@@ -75,4 +100,23 @@ export class RedisPubSubTransport<TEvent> {
     this.subscriber.disconnect();
     return Promise.resolve();
   }
+}
+
+function correlatedEnvelope(
+  value: unknown,
+): CorrelatedPubSubEnvelope<unknown> | null {
+  if (!value || typeof value !== 'object') return null;
+  const candidate = value as Partial<CorrelatedPubSubEnvelope<unknown>>;
+  if (
+    candidate.kind !== 'lila.pubsub' ||
+    typeof candidate.correlationId !== 'string' ||
+    !('event' in candidate)
+  ) {
+    return null;
+  }
+  return {
+    kind: 'lila.pubsub',
+    correlationId: normalizeCorrelationId(candidate.correlationId),
+    event: candidate.event,
+  };
 }

@@ -1,5 +1,7 @@
 import {
+  cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
   inventory,
@@ -13,6 +15,25 @@ import {
 } from './rules';
 import type { BandeABananeState } from './types';
 
+const cardSchema = defineCardsSchema({
+  decks: {
+    banana: cards.deck({
+      id: 'banana',
+      cards: BANDE_A_BANANE_DECK.map((card) => card.id),
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'banana',
+      initial: 5,
+      visibility: 'owner',
+    }),
+  },
+});
+
 export default defineGame<BandeABananeState>()({
   id: 'la-bande-a-banane',
   displayName: 'La Bande à Banane !',
@@ -25,11 +46,9 @@ export default defineGame<BandeABananeState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'banana',
       handId: 'players',
-      cards: BANDE_A_BANANE_DECK.map((card) => card.id),
-      initialHandSize: 5,
-      empty: 'recycle',
       drawAtTurnStart,
     }),
   ],

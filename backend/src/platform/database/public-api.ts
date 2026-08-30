@@ -1,1 +1,4 @@
-export { isUniqueConstraintViolation } from './application/database-error-classifier';
+export {
+  isUniqueConstraintViolation,
+  mapUniqueConstraintViolation,
+} from './application/database-error-classifier';

@@ -1,7 +1,12 @@
 import { promises as fs } from 'node:fs';
+import * as fsSync from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { assertPathInside, writeFileAtomic } from './atomic-file.utils';
+import {
+  assertPathInside,
+  writeFileAtomic,
+  writeFileAtomicSync,
+} from './atomic-file.utils';
 
 describe('atomic file utilities', () => {
   let root: string;
@@ -34,5 +39,15 @@ describe('atomic file utilities', () => {
     expect(() =>
       assertPathInside(root, path.join(root, '..', 'escape')),
     ).toThrow('Chemin hors du répertoire autorisé');
+  });
+
+  it('atomically replaces a file for synchronous stores', () => {
+    const target = path.join(root, 'sync.json');
+    writeFileAtomicSync(target, 'first');
+    writeFileAtomicSync(target, 'second');
+    expect(fsSync.readFileSync(target, 'utf8')).toBe('second');
+    expect(
+      fsSync.readdirSync(root).filter((name) => name.endsWith('.tmp')),
+    ).toEqual([]);
   });
 });

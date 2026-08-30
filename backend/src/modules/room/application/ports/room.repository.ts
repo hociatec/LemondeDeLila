@@ -25,6 +25,10 @@ export interface RoomRepository {
   findById(id: number): Promise<RoomRecord | null>;
   findByIdWithOwner(id: number): Promise<RoomRecord | null>;
   findByIdWithPayloadRelations(id: number): Promise<RoomRecord | null>;
+  togglePrivacyOwned(
+    roomId: number,
+    ownerUserId: number,
+  ): Promise<RoomRecord | null>;
   listForAdmin(filters: ListRoomsFilters): Promise<RoomRecord[]>;
   listCleanupCandidateIds(filters: CleanupRoomsFilters): Promise<number[]>;
   createOwnedRoom(input: {

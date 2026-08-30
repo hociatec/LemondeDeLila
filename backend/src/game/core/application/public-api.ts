@@ -30,10 +30,6 @@ export type {
   ProjectedGamePendingEvent,
 } from './contracts/game-event.model';
 export {
-  projectGameEvent,
-  projectPendingGameEvent,
-} from './services/game-event-visibility';
-export {
   GAME_STATE_STORE,
   type GameStateCommit,
   type GameStateCommitResult,

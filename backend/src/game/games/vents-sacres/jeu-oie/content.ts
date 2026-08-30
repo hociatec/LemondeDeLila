@@ -1,6 +1,8 @@
 import {
   freezeGameContent,
+  loadGameContent,
   rejectContent,
+  trackContent,
 } from '../../../engine/sdk/public-api';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -15,7 +17,7 @@ export const GOOSE_PAWNS: GoosePawn[] = [
   { id: 'marmotte-reveuse', label: 'Marmotte rêveuse', feminine: true },
 ];
 
-export const GOOSE_TILES = buildTiles(loadTexts());
+export const GOOSE_TILES = trackContent(buildTiles(loadTexts()));
 
 function loadTexts(): Map<number, { title: string; description: string }> {
   const candidates = [
@@ -31,12 +33,18 @@ function loadTexts(): Map<number, { title: string; description: string }> {
   ];
   const path = candidates.find(existsSync);
   if (!path) rejectContent('Descriptions du Jeu de l’Oie introuvables');
-  const parsed: unknown = JSON.parse(
+  const parsed = loadGameContent(
+    'jeu-oie-descriptions',
     readFileSync(path, 'utf8').replace(/^\uFEFF/, ''),
-  );
-  if (!isRecord(parsed) || !Array.isArray(parsed.cases)) {
-    rejectContent('Descriptions du Jeu de l’Oie invalides');
-  }
+    {
+      parse(value: unknown): { cases: unknown[] } {
+        if (!isRecord(value) || !Array.isArray(value.cases)) {
+          rejectContent('Descriptions du Jeu de l’Oie invalides');
+        }
+        return { cases: value.cases };
+      },
+    },
+  ).data;
   const texts = new Map<number, { title: string; description: string }>();
   for (const value of parsed.cases) {
     if (!isRecord(value)) continue;
@@ -83,4 +91,3 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 freezeGameContent(GOOSE_PAWNS);
-freezeGameContent(GOOSE_TILES);

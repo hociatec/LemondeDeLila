@@ -93,11 +93,12 @@ const EVENT_EFFECTS: Readonly<
   ],
   'barbak-event-19': [gameEffects.custom('mine.double-next-player')],
   'barbak-event-20': [
-    gameEffects.custom(
-      'mine.discard-target-hand',
-      {},
-      gameEffects.target.chosenOpponent('mine.event-target'),
-    ),
+    gameEffects.discardCards({
+      deckId: 'mine',
+      handId: 'players',
+      count: 1,
+      target: gameEffects.target.chosenOpponent('mine.event-target'),
+    }),
   ],
   'barbak-event-24': [gameEffects.custom('mine.remove-treasure')],
 };

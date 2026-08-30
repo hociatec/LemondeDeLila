@@ -18,7 +18,7 @@ import {
   nextTileOfType,
   ownsGroup,
   payTax,
-  position,
+  sacBoardPosition,
   purchasePrice,
   rentFor,
   SAC_JAIL_TURNS,
@@ -116,7 +116,7 @@ export function moveForward(
   )
     return;
   const variant = currentSacVariant(ctx);
-  const current = position(playerId, ctx);
+  const current = sacBoardPosition(playerId, ctx);
   const raw = current + delta;
   if (delta > 0 && raw >= variant.tiles.length) {
     const passages = Math.floor(raw / variant.tiles.length);
@@ -236,7 +236,7 @@ export function applyCardMovement(
   }
   const target = movementTarget(playerId, movement, ctx);
   if (target == null) return;
-  const current = position(playerId, ctx);
+  const current = sacBoardPosition(playerId, ctx);
   if (target < current || (movement.kind === 'start' && movement.collect)) {
     changeMoney(
       state,
@@ -259,13 +259,32 @@ function movementTarget(
   if (movement.kind === 'last') return variant.tiles.length - 1;
   if (movement.kind === 'start') return 0;
   if (movement.kind === 'next-station')
-    return nextTileOfType(variant, position(playerId, ctx), 'station', 1);
+    return nextTileOfType(
+      variant,
+      sacBoardPosition(playerId, ctx),
+      'station',
+      1,
+    );
   if (movement.kind === 'next-community')
-    return nextTileOfType(variant, position(playerId, ctx), 'community', 1);
+    return nextTileOfType(
+      variant,
+      sacBoardPosition(playerId, ctx),
+      'community',
+      1,
+    );
   if (movement.kind === 'previous-chance')
-    return nextTileOfType(variant, position(playerId, ctx), 'chance', -1);
+    return nextTileOfType(
+      variant,
+      sacBoardPosition(playerId, ctx),
+      'chance',
+      -1,
+    );
   if (movement.kind === 'next-group') {
-    return nextGroupTile(variant, position(playerId, ctx), movement.group);
+    return nextGroupTile(
+      variant,
+      sacBoardPosition(playerId, ctx),
+      movement.group,
+    );
   }
   if (movement.kind !== 'named') return null;
   return findTile(

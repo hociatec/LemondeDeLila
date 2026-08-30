@@ -111,7 +111,12 @@ export type {
   GameConfigurationState,
   GameConfigurationUi,
 } from './configuration/configuration-kit';
-export { GameContext } from './game-rule-context';
+export {
+  GameContext,
+  type GameContextFor,
+  type GameCounterIdOf,
+  type GameResourceIdOf,
+} from './game-rule-context';
 export type {
   DomainEvent,
   EngineEventMap,

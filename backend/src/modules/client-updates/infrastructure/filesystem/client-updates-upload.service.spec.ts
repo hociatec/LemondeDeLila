@@ -56,8 +56,8 @@ describe('ClientUpdatesUploadService', () => {
         completedAt: null,
       }),
     );
-    await fs.promises.writeFile(path.join(uploadDir, '0.part'), 'abc');
-    await fs.promises.writeFile(path.join(uploadDir, '1.part'), 'def');
+    await fs.promises.writeFile(path.join(uploadDir, '0.part'), 'PK\x03');
+    await fs.promises.writeFile(path.join(uploadDir, '1.part'), '\x04ab');
 
     let publishedArchive = '';
     const updates = {
@@ -80,7 +80,7 @@ describe('ClientUpdatesUploadService', () => {
 
     const result = await service.uploadComplete({ uploadId });
 
-    expect(publishedArchive).toBe('abcdef');
+    expect(publishedArchive).toBe('PK\x03\x04ab');
     expect(updates.applyZip).toHaveBeenCalledTimes(1);
     expect(updates.saveLatest).toHaveBeenCalledWith(
       expect.objectContaining({ version: '1.2.3' }),
@@ -144,6 +144,31 @@ describe('ClientUpdatesUploadService', () => {
 
     await expect(service.uploadComplete({ uploadId })).rejects.toThrow(
       'Taille archive invalide',
+    );
+    expect(updates.applyZip).not.toHaveBeenCalled();
+  });
+
+  it('refuse un fichier non-ZIP même si sa taille annoncée est correcte', async () => {
+    const { service, updates } = createService();
+    const uploadId = 'upload-type';
+    const uploadDir = path.join(uploadsRoot, uploadId);
+    await fs.promises.mkdir(uploadDir, { recursive: true });
+    await fs.promises.writeFile(
+      path.join(uploadDir, 'meta.json'),
+      JSON.stringify({
+        uploadId,
+        version: '1.2.3',
+        message: null,
+        minRequiredVersion: null,
+        totalBytes: 4,
+        createdAt: '2026-08-26T00:00:00.000Z',
+        completedAt: null,
+      }),
+    );
+    await fs.promises.writeFile(path.join(uploadDir, '0.part'), 'nope');
+
+    await expect(service.uploadComplete({ uploadId })).rejects.toThrow(
+      'archive ZIP requise',
     );
     expect(updates.applyZip).not.toHaveBeenCalled();
   });

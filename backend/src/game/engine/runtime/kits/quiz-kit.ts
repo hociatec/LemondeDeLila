@@ -1,11 +1,11 @@
 import type { GameRng } from '../../../core/application/contracts/game-execution-context.model';
 import {
-  GameConfigurationError,
   GameNotFoundError,
   GameRuleViolationError,
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
 import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
+import { quizContent } from '../content/game-content';
 
 export type QuizQuestion = {
   id: string;
@@ -47,33 +47,11 @@ export type QuizKitState = {
 
 export const quiz = {
   bank(definition: Omit<QuizDefinition, 'component'>): QuizDefinition {
-    const questionIds = definition.questions.map((question) =>
-      question.id.trim(),
-    );
-    if (
-      questionIds.some((questionId) => questionId.length === 0) ||
-      new Set(questionIds).size !== questionIds.length
-    ) {
-      throw new GameConfigurationError(
-        `Identifiants de questions invalides: ${definition.id}`,
-      );
-    }
-    for (const question of definition.questions) {
-      if (
-        question.choices.length < 2 ||
-        !Number.isInteger(question.answerIndex) ||
-        question.answerIndex < 0 ||
-        question.answerIndex >= question.choices.length
-      ) {
-        throw new GameConfigurationError(
-          `Question de quiz invalide: ${question.id}`,
-        );
-      }
-    }
+    const questions = quizContent(definition.questions);
     return deepFreeze({
       ...definition,
       component: 'quiz.bank',
-      questions: structuredClone(definition.questions),
+      questions,
     });
   },
 };

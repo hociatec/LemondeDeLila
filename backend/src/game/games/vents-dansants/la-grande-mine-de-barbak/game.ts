@@ -1,5 +1,7 @@
 import {
+  cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
   inventory,
@@ -14,6 +16,25 @@ import {
 import { GRANDE_MINE_EFFECTS } from './effects';
 import type { GrandeMineState } from './types';
 
+const cardSchema = defineCardsSchema({
+  decks: {
+    mine: cards.deck({
+      id: 'mine',
+      cards: LA_GRANDE_MINE_CARDS.map((card) => card.id),
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'mine',
+      initial: 5,
+      visibility: 'owner',
+    }),
+  },
+});
+
 export default defineGame<GrandeMineState>()({
   id: 'la-grande-mine-de-barbak',
   displayName: 'La Grande Mine de Barbak !',
@@ -26,10 +47,9 @@ export default defineGame<GrandeMineState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'mine',
       handId: 'players',
-      cards: LA_GRANDE_MINE_CARDS.map((card) => card.id),
-      initialHandSize: 5,
       drawAtTurnStart: ({ ctx }) => drawAtTurnStart(ctx),
     }),
   ],

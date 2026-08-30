@@ -23,16 +23,21 @@ describe('WsApiHubService', () => {
   });
 
   it('closes and clears every owned socket during shutdown', () => {
+    jest.useFakeTimers();
     const hub = new WsApiHubService(config);
     const socket = {
       readyState: 1,
       bufferedAmount: 0,
       send: jest.fn(),
       close: jest.fn(),
+      terminate: jest.fn(),
     };
     hub.register('active', socket);
     hub.onModuleDestroy();
     expect(socket.close).toHaveBeenCalledWith(1001, 'Server shutdown');
     expect(hub.listConnections()).toEqual([]);
+    jest.advanceTimersByTime(1_000);
+    expect(socket.terminate).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
   });
 });

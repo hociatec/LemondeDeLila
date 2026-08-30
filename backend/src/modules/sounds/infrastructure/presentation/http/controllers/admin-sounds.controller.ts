@@ -152,9 +152,7 @@ export class AdminSoundsController {
         throw err;
       }
 
-      throw new InternalServerErrorException(
-        `Upload son échoué: ${message}`.trim(),
-      );
+      throw new InternalServerErrorException('Upload son échoué.');
     } finally {
       try {
         // best-effort cleanup of temp file

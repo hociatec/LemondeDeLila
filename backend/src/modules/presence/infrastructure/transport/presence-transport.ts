@@ -19,7 +19,14 @@ export class RedisPresenceTransport extends PresenceTransport {
       'presence-updates',
       decodePresenceEvent,
       redisFactory
-        ? (u, name) => redisFactory.create(u, name, { lazyConnect: true })
+        ? (u, name) =>
+            redisFactory.create(u, name, {
+              lazyConnect: true,
+              maxRetriesPerRequest: 1,
+              enableOfflineQueue: false,
+              enableReadyCheck: false,
+              connectionName: name,
+            })
         : undefined,
     );
   }

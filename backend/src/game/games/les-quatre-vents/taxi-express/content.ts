@@ -1,6 +1,7 @@
 import {
-  freezeGameContent,
+  cardContent,
   rejectContent,
+  trackContent,
 } from '../../../engine/sdk/public-api';
 import boardContent from './content/board.json';
 import clientsContent from './content/clients.json';
@@ -21,15 +22,15 @@ export type TaxiEvent = {
   blockedTileId: number;
 };
 
-export const TAXI_TILES: TaxiTile[] = boardContent.tiles.map((tile) => ({
-  ...tile,
-}));
-export const TAXI_CLIENTS: TaxiClient[] = clientsContent.cards.map((card) => ({
-  ...card,
-}));
-export const TAXI_EVENTS: TaxiEvent[] = eventsContent.cards.map((card) => ({
-  ...card,
-}));
+export const TAXI_TILES = trackContent(
+  boardContent.tiles.map((tile) => ({ ...tile })) satisfies TaxiTile[],
+);
+export const TAXI_CLIENTS = cardContent(
+  clientsContent.cards.map((card) => ({ ...card })) satisfies TaxiClient[],
+);
+export const TAXI_EVENTS = cardContent(
+  eventsContent.cards.map((card) => ({ ...card })) satisfies TaxiEvent[],
+);
 export const TAXI_TARGET_TRIPS = rulesContent.victory.target;
 
 if (TAXI_TILES.length !== TAXI_EVENTS.length)
@@ -40,7 +41,3 @@ if (
   )
 )
   rejectContent('Une destination Taxi est absente du plateau');
-
-freezeGameContent(TAXI_TILES);
-freezeGameContent(TAXI_CLIENTS);
-freezeGameContent(TAXI_EVENTS);

@@ -25,19 +25,21 @@ const allowedCalls = new Map([
     1,
   ],
   ['modules/presence/application/services/presence-heartbeat.ts', 2],
+  ['platform/ws/application/services/ws-api-hub.service.ts', 1],
   [
     'modules/room/application/services/lifecycle/room-auto-cleanup.service.ts',
     2,
   ],
-  [
-    'modules/room/application/services/lobby/room-lobby-refresh.service.ts',
-    1,
-  ],
+  ['modules/room/application/services/lobby/room-lobby-refresh.service.ts', 1],
   [
     'modules/room/infrastructure/presentation/ws/room-gateway-presence.service.ts',
     1,
   ],
   ['modules/room/infrastructure/presentation/ws/room-heartbeat.helpers.ts', 1],
+  [
+    'modules/room/infrastructure/presentation/ws/room-gateway-runtime-state.service.ts',
+    1,
+  ],
   ['modules/sounds/infrastructure/storage/sounds-audio-process.ts', 1],
 ]);
 

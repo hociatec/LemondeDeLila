@@ -5,7 +5,9 @@ Statut : accepté.
 `game/core` porte les contrats applicatifs, la persistance et l'exécution
 durable. `game/engine/runtime` porte le modèle déclaratif déterministe.
 `game/engine/sdk/public-api.ts` est l'unique façade auteur et expose explicitement
-les 64 symboles réellement consommés par les jeux ; `game/composition` ne fait que découverte, registre généré
+les 71 symboles de la version 2.1 ; les helpers de contenu et les types d'IDs
+inférés ajoutés en 2.1 sont les seules extensions depuis le gel initial.
+`game/composition` ne fait que découverte, registre généré
 et wiring Nest. Les jeux concrets ne connaissent ni core, ni runtime, ni Nest.
 
 `game/shortcuts` est un petit contrat transversal de projection des raccourcis,
@@ -54,3 +56,7 @@ deux versions de production consécutives où l'inventaire de `game_sessions` ne
 contient plus aucun `engine.schemaVersion` antérieur à la version cible. Le
 runtime n'entretient plus de branche ou de format legacy parallèle pendant
 cette période.
+
+La revue détaillée des fichiers runtime proches des seuils et des services Room
+est consignée dans `runtime-cohesion-review.md`. Elle conclut à leur cohésion
+actuelle et fixe les conditions qui imposeraient une extraction future.

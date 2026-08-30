@@ -1,10 +1,5 @@
-import {
-  cards,
-  type CardValue,
-  type DeckDefinition,
-  type HandsDefinition,
-} from '../cards/cards-kit';
-import { defineCardsSchema } from '../cards/typed-cards';
+import { type CardValue } from '../cards/cards-kit';
+import type { CardsSchemaDefinition } from '../cards/typed-cards';
 import type { GameComponentDefinition } from '../definitions/component-kit';
 import { diceKit } from '../kits/dice-kit';
 import type {
@@ -186,44 +181,21 @@ export function pawnRace<TState extends object>(options: {
   });
 }
 
-export function cardGame<
-  TState extends object,
-  TCard extends CardValue,
->(options: {
-  deckId?: string;
-  handId?: string;
-  cards: readonly TCard[];
-  initialHandSize?: number;
+export function cardGame<TState extends object>(options: {
+  /** Canonical cards definition shared by state, hands, discards and zones. */
+  schema: CardsSchemaDefinition;
+  deckId: string;
+  handId: string;
   drawAtTurnStart?:
     number | NonNullable<GameLifecycleHooks<TState>['beforeTurn']>;
-  visibility?: HandsDefinition['visibility'];
-  shuffle?: boolean;
-  empty?: DeckDefinition<TCard>['empty'];
 }): GamePattern<TState> {
-  const deckId = options.deckId ?? 'main';
-  const handId = options.handId ?? 'players';
-  const deck = cards.deck({
-    id: deckId,
-    cards: options.cards,
-    shuffle: options.shuffle ?? true,
-    empty: options.empty ?? 'recycle',
-  });
-  const hands = cards.hands({
-    id: handId,
-    deck: deckId,
-    initial: options.initialHandSize ?? 0,
-    visibility: options.visibility ?? 'owner',
-  });
-  const schema = defineCardsSchema({
-    decks: { [deckId]: deck },
-    hands: { [handId]: hands },
-  });
-  const components: GameComponentDefinition[] = [...schema.components];
+  const { deckId, handId } = options;
+  const components: GameComponentDefinition[] = [...options.schema.components];
   const beforeTurn =
     typeof options.drawAtTurnStart === 'function'
       ? options.drawAtTurnStart
       : (options.drawAtTurnStart ?? 0) > 0
-        ? drawCardsAtTurnStart<TState, TCard>({
+        ? drawCardsAtTurnStart<TState, CardValue>({
             deckId,
             handId,
             count: options.drawAtTurnStart,

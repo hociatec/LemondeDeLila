@@ -136,22 +136,26 @@ export class GameScoreController {
   }
 }
 
-export class GameResourcesController {
+export class GameResourcesController<TResourceId extends string = string> {
   constructor(
-    private readonly state: PlayerValuesKitState,
+    private readonly state: PlayerValuesKitState<TResourceId>,
     private readonly emit: (
       type: string,
       data: Record<string, unknown>,
     ) => void,
   ) {}
 
-  get(playerId: number, resource: string): number {
+  get(playerId: number, resource: TResourceId): number {
     return this.state.resources[resource]?.[String(playerId)] ?? 0;
   }
 
-  set(playerId: number, resource: string, value: number): number {
+  set(playerId: number, resource: TResourceId, value: number): number {
     const previous = this.get(playerId, resource);
-    (this.state.resources[resource] ??= {})[String(playerId)] = value;
+    const stateResources = this.state.resources as Record<
+      string,
+      Record<string, number>
+    >;
+    (stateResources[resource] ??= {})[String(playerId)] = value;
     this.emit('resource.changed', {
       playerId,
       resource,
@@ -162,15 +166,15 @@ export class GameResourcesController {
     return value;
   }
 
-  add(playerId: number, resource: string, amount: number): number {
+  add(playerId: number, resource: TResourceId, amount: number): number {
     return this.set(playerId, resource, this.get(playerId, resource) + amount);
   }
 
-  has(playerId: number, resource: string, amount: number): boolean {
+  has(playerId: number, resource: TResourceId, amount: number): boolean {
     return this.get(playerId, resource) >= amount;
   }
 
-  remove(playerId: number, resource: string, amount: number): number {
+  remove(playerId: number, resource: TResourceId, amount: number): number {
     if (!this.has(playerId, resource, amount)) {
       throw new GameRuleViolationError(
         'RESOURCE_INSUFFICIENT',
@@ -181,12 +185,21 @@ export class GameResourcesController {
     return this.add(playerId, resource, -amount);
   }
 
-  transfer(from: number, to: number, resource: string, amount: number): void {
+  transfer(
+    from: number,
+    to: number,
+    resource: TResourceId,
+    amount: number,
+  ): void {
     const normalizedAmount = this.normalizePositiveAmount(amount);
     if (normalizedAmount === 0 || from === to) return;
     const fromKey = String(from);
     const toKey = String(to);
-    const resources = (this.state.resources[resource] ??= {});
+    const stateResources = this.state.resources as Record<
+      string,
+      Record<string, number>
+    >;
+    const resources = (stateResources[resource] ??= {});
     const sourceAmount = resources[fromKey] ?? 0;
     if (sourceAmount < normalizedAmount) {
       throw new GameRuleViolationError(
@@ -232,22 +245,23 @@ export class GameResourcesController {
   }
 }
 
-export class GameCountersController {
+export class GameCountersController<TCounterId extends string = string> {
   constructor(
-    private readonly state: PlayerValuesKitState,
+    private readonly state: PlayerValuesKitState<string, TCounterId>,
     private readonly emit: (
       type: string,
       data: Record<string, unknown>,
     ) => void,
   ) {}
 
-  get(counter: string): number {
+  get(counter: TCounterId): number {
     return this.state.counters?.[counter] ?? 0;
   }
 
-  set(counter: string, value: number): number {
+  set(counter: TCounterId, value: number): number {
     const previous = this.get(counter);
-    (this.state.counters ??= {})[counter] = value;
+    const counters = (this.state.counters ??= {} as Record<TCounterId, number>);
+    counters[counter] = value;
     this.emit('counter.changed', {
       counter,
       previous,
@@ -257,11 +271,11 @@ export class GameCountersController {
     return value;
   }
 
-  add(counter: string, amount: number): number {
+  add(counter: TCounterId, amount: number): number {
     return this.set(counter, this.get(counter) + amount);
   }
 
-  subtract(counter: string, amount: number): number {
+  subtract(counter: TCounterId, amount: number): number {
     return this.add(counter, -amount);
   }
 }

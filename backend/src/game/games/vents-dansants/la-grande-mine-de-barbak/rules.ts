@@ -104,10 +104,14 @@ export function scoreDomain(domain: MineDomain): number {
 }
 
 function resolveImmediate(card: LaGrandeMineCard, ctx: RuleContext): void {
-  ctx.effects.schedule(
-    gameEffects.custom('mine.log-card', { cardId: card.id }),
-    ...card.effects,
-  );
+  const playerId = ctx.effects.sourcePlayerId();
+  if (playerId != null) {
+    ctx.events.message('grande-mine.card.triggered', {
+      playerId,
+      cardId: card.id,
+    });
+  }
+  ctx.effects.schedule(...card.effects);
 }
 
 export function drawPassive(playerId: number, ctx: RuleContext): void {

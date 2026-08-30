@@ -13,3 +13,15 @@ export function isUniqueConstraintViolation(error: unknown): boolean {
     ? isUniqueConstraintViolation(candidate.driverError)
     : false;
 }
+
+export async function mapUniqueConstraintViolation<T>(
+  operation: () => Promise<T>,
+  conflict: () => Error,
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (isUniqueConstraintViolation(error)) throw conflict();
+    throw error;
+  }
+}

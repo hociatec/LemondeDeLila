@@ -30,6 +30,13 @@ export type CardZoneMap<TDecks extends CardDeckMap> = Readonly<
   Record<string, TypedCardZoneDefinition<TDecks, keyof TDecks & string>>
 >;
 
+type HandIdForDeck<THands, TDeckId extends PropertyKey> = {
+  [THandId in keyof THands]: THands[THandId] extends { readonly deck: TDeckId }
+    ? THandId
+    : never;
+}[keyof THands] &
+  string;
+
 export type TypedCardsKitState<
   TDecks extends CardDeckMap,
   THands extends CardHandMap<TDecks>,
@@ -57,6 +64,35 @@ export type TypedCardsRuntime<
   draw<TDeckId extends keyof TDecks & string>(
     deckId: TDeckId,
   ): CardOfDeck<TDecks, TDeckId> | null;
+  drawOrRecycle<TDeckId extends keyof TDecks & string>(
+    deckId: TDeckId,
+  ): CardOfDeck<TDecks, TDeckId> | null;
+  discardPile<TDeckId extends keyof TDecks & string>(
+    deckId: TDeckId,
+  ): CardOfDeck<TDecks, TDeckId>[];
+  discard<TDeckId extends keyof TDecks & string>(
+    deckId: TDeckId,
+    card: CardOfDeck<TDecks, TDeckId>,
+  ): void;
+  drawToHand<
+    TDeckId extends keyof TDecks & string,
+    THandId extends HandIdForDeck<THands, TDeckId>,
+  >(
+    deckId: TDeckId,
+    handId: THandId,
+    playerId: number,
+    options?: { recycle?: boolean },
+  ): CardOfDeck<TDecks, TDeckId> | null;
+  drawManyToHand<
+    TDeckId extends keyof TDecks & string,
+    THandId extends HandIdForDeck<THands, TDeckId>,
+  >(
+    deckId: TDeckId,
+    handId: THandId,
+    playerId: number,
+    count: number,
+    options?: { recycle?: boolean },
+  ): CardOfDeck<TDecks, TDeckId>[];
   hand<THandId extends keyof THands & string>(
     handId: THandId,
     playerId: number,
@@ -66,6 +102,20 @@ export type TypedCardsRuntime<
     playerId: number,
     card: CardOfDeck<TDecks, THands[THandId]['deck']>,
   ): void;
+  take<THandId extends keyof THands & string>(
+    handId: THandId,
+    playerId: number,
+    card: CardOfDeck<TDecks, THands[THandId]['deck']>,
+  ): CardOfDeck<TDecks, THands[THandId]['deck']>;
+  play<
+    TDeckId extends keyof TDecks & string,
+    THandId extends HandIdForDeck<THands, TDeckId>,
+  >(
+    handId: THandId,
+    deckId: TDeckId,
+    playerId: number,
+    card: CardOfDeck<TDecks, TDeckId>,
+  ): void;
   zone<TZoneId extends keyof TZones & string>(
     zoneId: TZoneId,
   ): CardOfDeck<TDecks, TZones[TZoneId]['deck']>[];
@@ -73,13 +123,37 @@ export type TypedCardsRuntime<
     zoneId: TZoneId,
     card: CardOfDeck<TDecks, TZones[TZoneId]['deck']>,
   ): void;
+  takeFromZone<TZoneId extends keyof TZones & string>(
+    zoneId: TZoneId,
+    card: CardOfDeck<TDecks, TZones[TZoneId]['deck']>,
+  ): CardOfDeck<TDecks, TZones[TZoneId]['deck']>;
 };
+
+export type CardsSchemaDefinition<
+  TDecks extends CardDeckMap = CardDeckMap,
+  THands extends CardHandMap<TDecks> = CardHandMap<TDecks>,
+  TZones extends CardZoneMap<TDecks> = CardZoneMap<TDecks>,
+> = Readonly<{
+  decks: TDecks;
+  hands: THands;
+  zones: TZones;
+  components: readonly (
+    DeckDefinition<CardValue> | HandsDefinition | CardZoneDefinition
+  )[];
+  bind(
+    controller: GameCardsController,
+  ): TypedCardsRuntime<TDecks, THands, TZones>;
+}>;
 
 export function defineCardsSchema<
   const TDecks extends CardDeckMap,
   const THands extends CardHandMap<TDecks>,
   const TZones extends CardZoneMap<TDecks> = Record<string, never>,
->(definition: { decks: TDecks; hands: THands; zones?: TZones }) {
+>(definition: {
+  decks: TDecks;
+  hands: THands;
+  zones?: TZones;
+}): CardsSchemaDefinition<TDecks, THands, TZones> {
   return Object.freeze({
     ...definition,
     zones: Object.freeze(definition.zones ?? {}) as TZones,

@@ -4,7 +4,10 @@ import {
   gameEffects,
   positionOf,
 } from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
+import type {
+  GameContext,
+  NoGameState as CaDerapeState,
+} from '../../../engine/sdk/public-api';
 import {
   CA_DERAPE_TILES,
   type CaCard,
@@ -13,8 +16,6 @@ import {
   type CaRuleEffect,
   type CaSpecialEffect,
 } from './content';
-import type { NoGameState as CaDerapeState } from '../../../engine/sdk/public-api';
-
 type RuleContext = GameContext<CaDerapeState>;
 export const TRACK = 'derape';
 const DECK = 'situations';
@@ -25,7 +26,6 @@ export const CA_LAST_MOVE = 'ca-derape.last-move';
 export const CA_IDLE_TURNS = 'ca-derape.idle-turns';
 export const CA_MIRROR_ROLL = 'ca-derape.mirror-roll';
 export const CA_NEXT_PLAYER_DELTA = 'ca-derape.next-player-delta';
-
 function resolveCaDerapeTile(
   _state: CaDerapeState,
   playerId: number,
@@ -120,7 +120,11 @@ export function applySpecial(
   } else if (effect === 'move-and-swap') {
     movePlayer(state, actorId, delta || 2, 0, true, ctx);
     if (ctx.match.lifecycle() !== 'finished') {
-      scheduleTargetEffect('ca-derape.swap', ctx);
+      const opponent = gameEffects.target.chosenOpponent('ca-derape.swap');
+      ctx.effects.schedule(
+        gameEffects.swapPositions(TRACK, gameEffects.target.self(), opponent),
+        gameEffects.completeTurn(),
+      );
     }
   }
 }
@@ -280,7 +284,7 @@ export function applyRule(
 }
 
 function scheduleTargetEffect(
-  effectId: 'ca-derape.swap' | 'ca-derape.next-player' | 'ca-derape.mirror',
+  effectId: 'ca-derape.next-player' | 'ca-derape.mirror',
   ctx: RuleContext,
   completeTurn = true,
 ): void {

@@ -34,6 +34,7 @@ export class RedisNotificationTransport extends NotificationTransport {
               // Pub/sub notifications should never block API requests when Redis is down.
               maxRetriesPerRequest: 1,
               enableOfflineQueue: false,
+              enableReadyCheck: false,
               connectionName: name,
             })
         : undefined,

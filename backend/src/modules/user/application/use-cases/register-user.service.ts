@@ -4,7 +4,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { isUniqueConstraintViolation } from '../../../../platform/database/public-api';
+import { mapUniqueConstraintViolation } from '../../../../platform/database/public-api';
 import {
   PASSWORD_HASHER,
   type PasswordHasherPort,
@@ -48,25 +48,22 @@ export class RegisterUserService {
     }
 
     const passwordHash = await this.passwordHasher.hash(input.password);
-    try {
-      await this.users.create({
-        email: normalizedEmail,
-        username: normalizedUsername,
-        password: passwordHash,
-        roles: [],
-        avatar: input.avatar?.trim() ? input.avatar.trim() : null,
-        preferences: null,
-        bannedUntil: null,
-        banReason: null,
-        chatBannedUntil: null,
-        chatBanReason: null,
-      });
-    } catch (error) {
-      if (isUniqueConstraintViolation(error)) {
-        throw new ConflictException('Email ou nom utilisateur déjà utilisé');
-      }
-      throw error;
-    }
+    await mapUniqueConstraintViolation(
+      () =>
+        this.users.create({
+          email: normalizedEmail,
+          username: normalizedUsername,
+          password: passwordHash,
+          roles: [],
+          avatar: input.avatar?.trim() ? input.avatar.trim() : null,
+          preferences: null,
+          bannedUntil: null,
+          banReason: null,
+          chatBannedUntil: null,
+          chatBanReason: null,
+        }),
+      () => new ConflictException('Email ou nom utilisateur déjà utilisé'),
+    );
   }
 
   private readonly reserved = new Set([

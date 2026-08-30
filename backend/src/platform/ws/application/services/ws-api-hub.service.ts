@@ -9,7 +9,10 @@ type WsSocketLike = {
   bufferedAmount?: number;
   send(data: string, cb?: (err?: Error) => void): void;
   close(code?: number, reason?: string): void;
+  terminate?(): void;
 };
+
+const SHUTDOWN_SOCKET_GRACE_MS = 1_000;
 
 export type WsApiHubConnectionMeta = {
   scope?: string;
@@ -32,7 +35,8 @@ export class WsApiHubService implements OnModuleDestroy {
   ) {}
 
   onModuleDestroy(): void {
-    for (const socket of this.socketsByConnectionId.values()) {
+    const sockets = [...this.socketsByConnectionId.values()];
+    for (const socket of sockets) {
       try {
         socket.close(1001, 'Server shutdown');
       } catch (error) {
@@ -44,6 +48,12 @@ export class WsApiHubService implements OnModuleDestroy {
     }
     this.socketsByConnectionId.clear();
     this.metaByConnectionId.clear();
+    const termination = setTimeout(() => {
+      for (const socket of sockets) {
+        if (socket.readyState !== 3) socket.terminate?.();
+      }
+    }, SHUTDOWN_SOCKET_GRACE_MS);
+    termination.unref();
   }
 
   register(

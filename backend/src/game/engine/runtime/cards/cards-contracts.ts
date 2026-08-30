@@ -1,4 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { cardContent } from '../content/game-content';
 
 export type CardId = string | number;
 export type CardValue = CardId | object;
@@ -39,18 +40,18 @@ export type DeckLifecycleState = {
   exhausted: boolean;
 };
 
-export type HandsDefinition = {
+export type HandsDefinition<TDeckId extends string = string> = {
   readonly component: 'cards.hands';
   id: string;
-  deck: string;
+  deck: TDeckId;
   initial: number;
   visibility: 'owner' | 'public';
 };
 
-export type CardZoneDefinition = {
+export type CardZoneDefinition<TDeckId extends string = string> = {
   readonly component: 'cards.zone';
   id: string;
-  deck: string;
+  deck: TDeckId;
   visibility: 'public' | 'hidden';
 };
 
@@ -117,24 +118,26 @@ export const cards = {
         `La pioche ${definition.id} mélange références de contenu et valeurs libres`,
       );
     }
-    const identifiedIds = identifiedCards.map((card) => contentIdKey(card.id));
-    if (new Set(identifiedIds).size !== identifiedIds.length) {
-      throw new GameConfigurationError(
-        `La pioche ${definition.id} contient des identifiants de carte dupliqués`,
-      );
-    }
+    const catalog =
+      identifiedCards.length === definition.cards.length
+        ? cardContent(identifiedCards)
+        : deepFreeze(structuredClone(definition.cards));
     return deepFreeze({
       ...definition,
       component: 'cards.deck',
-      cards: structuredClone(definition.cards),
+      cards: catalog,
     });
   },
 
-  hands(definition: Omit<HandsDefinition, 'component'>): HandsDefinition {
+  hands<const TDeckId extends string>(
+    definition: Omit<HandsDefinition<TDeckId>, 'component'>,
+  ): HandsDefinition<TDeckId> {
     return Object.freeze({ ...definition, component: 'cards.hands' });
   },
 
-  zone(definition: Omit<CardZoneDefinition, 'component'>): CardZoneDefinition {
+  zone<const TDeckId extends string>(
+    definition: Omit<CardZoneDefinition<TDeckId>, 'component'>,
+  ): CardZoneDefinition<TDeckId> {
     return Object.freeze({ ...definition, component: 'cards.zone' });
   },
 

@@ -6,7 +6,11 @@ import { GameInventoryController } from './kits/inventory-kit';
 import { GameEconomyController } from './kits/economy-kit';
 import { GameOwnershipController } from './kits/ownership-kit';
 import { GameRankingController } from './kits/ranking-kit';
-import type { DeclarativeState } from './definitions/game-definition';
+import type {
+  CompiledGameDefinition,
+  DeclarativeState,
+  GameActionMap,
+} from './definitions/game-definition';
 import { GameChoiceController } from './choices/game-choice-controller';
 import { GameMovementController } from './kits/movement-kit';
 import { GamePawnController } from './kits/pawn-kit';
@@ -50,6 +54,58 @@ import { GameContextComponents } from './definitions/game-context-components';
 export type { EventDataMap, DomainEvent } from './events/game-context-events';
 export type { EngineEventMap } from './events/engine-event-registry';
 export type { EventVisibility } from '../../core/application/contracts/game-event.model';
+
+type ContextDefinitionInitialization<TDefinition> = TDefinition extends {
+  readonly initialization?: infer TInitialization;
+}
+  ? TInitialization
+  : never;
+type ContextPatternInitialization<TDefinition> = TDefinition extends {
+  readonly patterns?: infer TPatterns;
+}
+  ? TPatterns extends readonly (infer TPattern)[]
+    ? TPattern extends { readonly initialization?: infer TValue }
+      ? TValue
+      : never
+    : never
+  : never;
+type ContextInitializations<TDefinition> =
+  | ContextDefinitionInitialization<TDefinition>
+  | ContextPatternInitialization<TDefinition>;
+export type GameResourceIdOf<TDefinition> =
+  ContextInitializations<TDefinition> extends infer TInitialization
+    ? TInitialization extends { readonly resources?: infer TResources }
+      ? string extends keyof NonNullable<TResources>
+        ? string
+        : Extract<keyof NonNullable<TResources>, string>
+      : never
+    : never;
+export type GameCounterIdOf<TDefinition> =
+  ContextInitializations<TDefinition> extends infer TInitialization
+    ? TInitialization extends { readonly counters?: infer TCounters }
+      ? string extends keyof NonNullable<TCounters>
+        ? string
+        : Extract<keyof NonNullable<TCounters>, string>
+      : never
+    : never;
+type GameStateOf<TDefinition> =
+  TDefinition extends CompiledGameDefinition<
+    infer TState,
+    GameActionMap<infer TState>,
+    object,
+    infer _TInitialization,
+    infer _TEvents,
+    infer _TPatterns
+  >
+    ? TState
+    : object;
+export type GameContextFor<TDefinition> = Omit<
+  GameContext<GameStateOf<TDefinition>>,
+  'resources' | 'counters'
+> & {
+  readonly resources: GameResourcesController<GameResourceIdOf<TDefinition>>;
+  readonly counters: GameCountersController<GameCounterIdOf<TDefinition>>;
+};
 
 export class GameContext<TState extends object> {
   readonly random: GameExecutionContext['rng'];

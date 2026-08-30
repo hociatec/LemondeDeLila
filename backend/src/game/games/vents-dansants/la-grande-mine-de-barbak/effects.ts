@@ -1,7 +1,6 @@
 import { defineEffect, gameInput } from '../../../engine/sdk/public-api';
 import type { GrandeMineState } from './types';
 import {
-  discardRandomHand,
   drawPassive,
   finishMine,
   recoverDiscard,
@@ -11,17 +10,6 @@ import {
 } from './rules';
 
 export const GRANDE_MINE_EFFECTS = {
-  'mine.log-card': defineEffect<GrandeMineState, { cardId: string }>({
-    input: gameInput.object({ cardId: gameInput.cardId() }),
-    apply: ({ actorPlayerId, data, ctx }) => {
-      if (actorPlayerId != null) {
-        ctx.events.message('grande-mine.card.triggered', {
-          playerId: actorPlayerId,
-          cardId: data.cardId,
-        });
-      }
-    },
-  }),
   'mine.remove-domain': defineEffect<GrandeMineState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ targetPlayerIds, ctx }) => {
@@ -88,16 +76,6 @@ export const GRANDE_MINE_EFFECTS = {
       ctx.turn.to(nextId);
       ctx.turn.extra();
       ctx.turn.to(actorPlayerId);
-    },
-  }),
-  'mine.discard-target-hand': defineEffect<
-    GrandeMineState,
-    Record<string, never>
-  >({
-    input: gameInput.object({}),
-    apply: ({ targetPlayerIds, ctx }) => {
-      const targetId = targetPlayerIds[0];
-      if (targetId != null) discardRandomHand(targetId, ctx);
     },
   }),
   'mine.remove-treasure': defineEffect<GrandeMineState, Record<string, never>>({

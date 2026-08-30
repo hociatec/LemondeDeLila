@@ -1,5 +1,7 @@
 import {
+  cards,
   cardGame,
+  defineCardsSchema,
   defineGame,
   defineGameContent,
   inventory,
@@ -7,6 +9,25 @@ import {
 import { CERCLES_SACRES_DECK } from './content';
 import { CERCLES_SACRES_ACTIONS, drawAtTurnStart } from './rules';
 import type { CerclesSacresState } from './types';
+
+const cardSchema = defineCardsSchema({
+  decks: {
+    'sacred-circles': cards.deck({
+      id: 'sacred-circles',
+      cards: CERCLES_SACRES_DECK.map((card) => card.id),
+      shuffle: true,
+      empty: 'recycle',
+    }),
+  },
+  hands: {
+    players: cards.hands({
+      id: 'players',
+      deck: 'sacred-circles',
+      initial: 6,
+      visibility: 'owner',
+    }),
+  },
+});
 
 export default defineGame<CerclesSacresState>()({
   id: 'cercles-sacres',
@@ -20,11 +41,9 @@ export default defineGame<CerclesSacresState>()({
   }),
   patterns: [
     cardGame({
+      schema: cardSchema,
       deckId: 'sacred-circles',
       handId: 'players',
-      cards: CERCLES_SACRES_DECK.map((card) => card.id),
-      initialHandSize: 6,
-      empty: 'recycle',
       drawAtTurnStart,
     }),
   ],

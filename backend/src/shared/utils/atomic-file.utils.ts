@@ -1,4 +1,5 @@
 import { promises as fs } from 'node:fs';
+import * as fsSync from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
@@ -32,6 +33,35 @@ export async function writeFileAtomic(
       () => fs.rm(temporary, { force: true }),
       'remove temporary file after rename failure',
     );
+    throw error;
+  }
+}
+
+export function writeFileAtomicSync(
+  targetPath: string,
+  data: string | Buffer,
+): void {
+  const directory = path.dirname(targetPath);
+  fsSync.mkdirSync(directory, { recursive: true });
+  const temporary = path.join(
+    directory,
+    `.${path.basename(targetPath)}.${process.pid}.${randomUUID()}.tmp`,
+  );
+  let descriptor: number | null = null;
+  try {
+    descriptor = fsSync.openSync(temporary, 'wx');
+    fsSync.writeFileSync(descriptor, data);
+    fsSync.fsyncSync(descriptor);
+    fsSync.closeSync(descriptor);
+    descriptor = null;
+    fsSync.renameSync(temporary, targetPath);
+  } catch (error) {
+    if (descriptor != null) fsSync.closeSync(descriptor);
+    try {
+      fsSync.rmSync(temporary, { force: true });
+    } catch {
+      // The original write failure remains authoritative.
+    }
     throw error;
   }
 }

@@ -114,30 +114,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
       .where('id = :id', { id })
       .andWhere('user_id = :userId', { userId })
       .execute();
-    if ((res.affected ?? 0) > 0) {
-      return true;
-    }
-
-    const found = await this.repo.findOne({
-      where: { id },
-      select: { id: true, user: { id: true } },
-      relations: { user: true },
-      withDeleted: true,
-    });
-    if (!found) {
-      return false;
-    }
-
-    this.logger.warn(
-      `Hard delete fallback user=${userId} id=${id} owner=${found.user?.id ?? 'none'}`,
-    );
-    const fallback = await this.repo
-      .createQueryBuilder()
-      .delete()
-      .from(NotificationInboxItemEntity)
-      .where('id = :id', { id })
-      .execute();
-    return (fallback.affected ?? 0) > 0;
+    return (res.affected ?? 0) > 0;
   }
 
   async countUnread(userId: number): Promise<number> {
