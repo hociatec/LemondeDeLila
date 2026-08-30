@@ -1,1 +1,100 @@
 
+1: Typer `GameSetup.values`: `GameSetup` contient encore `nlohmann::json values`. Comme le backend possède un schema de configuration générique, le wx devrait idéalement stocker une collection typée de valeurs/config fields plutôt qu’un JSON brut.
+
+2: Typer davantage `GameEngineEvent.data`: L’event possède `type`, `actorId`, `sequence`, etc., ce qui est déjà bien. `data` peut rester opaque comme fallback, mais les événements moteur connus doivent être décodés en payloads structurés ou présentés via un registry typé.
+
+3: Réduire `GameEventPresenter` basé sur des clés JSON: Il est maintenant centralisé, donc architecturalement correct. La prochaine étape serait de faire porter les événements moteur courants par des types dédiés plutôt que lire `"playerId"`, `"cardId"`, etc. depuis `data`.
+
+4: Garder `GameValue` seulement aux vraies extensions dynamiques: `unknownCapabilities`, `state.game`, valeurs arbitraires de submissions et certaines données spécifiques sont de bons usages. Les capabilities connues ne doivent plus y revenir.
+
+5: Cards est maintenant beaucoup mieux typé: `GameDeckView`, `GameHandView`, `GameCardZoneView` existent. Il reste à vérifier que toutes les données nécessaires aux zones publiques sont explicitement modélisées et que le panel/info ne retombe pas vers `GameValue` pour des champs standards.
+
+6: Ajouter éventuellement un `GameInventoryPanel` si l’inventaire est central dans certains jeux: Le modèle existe, mais actuellement `GameResourcesPanel` + panneau Information semblent porter une partie de la présentation. Pour Panier Express/Sac à Malices, un panneau inventaire navigable peut améliorer nettement l’usage clavier.
+
+7: Même réflexion pour Economy: Pas nécessaire de créer un panel si le marché est uniquement consultatif. S’il faut sélectionner/inspecter fréquemment des offres, un `GameEconomyPanel` serait préférable.
+
+8: `GameWorkflowPanel` regroupe Quiz + Submissions + Collections: C’est une bonne simplification. Vérifier seulement que ces trois workflows peuvent coexister simultanément sans devenir une longue liste difficile à naviguer.
+
+9: Ajouter des sections/headers accessibles dans `GameWorkflowPanel`: Aujourd’hui tout est mis dans une seule `wxListBox`. Des entrées « Quiz », « Soumissions », « Collections » ou un découpage stable améliorerait la navigation si plusieurs capabilities coexistent.
+
+10: Quiz reste principalement consultatif dans `GameWorkflowPanel`: L’interaction est correctement déléguée à `pending/actions`, ce qui est sain. Ne duplique pas la logique d’action dans le panel Quiz.
+
+11: Submissions suit la même règle: Le panel informe, le Prompt/Action system agit. C’est exactement la bonne séparation.
+
+12: `correctAnswerIndex` dans `GameWorkflowPanel` est affiché dès qu’il est présent: C’est correct uniquement parce que le backend contrôle la projection. Garde cette règle et ne tente jamais de calculer la bonne réponse côté wx.
+
+13: Améliorer les labels de ressources/counters/status: `HumanLabel(id)` est un fallback correct, mais si le backend expose des labels/descriptors officiels, utiliser ceux-ci en priorité.
+
+14: Même chose pour collections, tracks, pawn sets, markets et inventories: ID technique → label backend → fallback `HumanLabel()`.
+
+15: `GameMovementPanel` doit rester consultatif: Les actions réelles restent dans `actions/pending`, donc aucun calcul local de mouvement.
+
+16: Vérifier la restauration de sélection Movement: Le panel possède déjà `SelectedKey()`. Conserver une clé stable composée de track/player/pawn et non d’un index.
+
+17: Même chose pour ResourcesPanel et WorkflowPanel: restauration par ID stable, ce que ton code commence déjà à faire.
+
+18: Timer update ne doit jamais reconstruire les panels: Mettre à jour uniquement le texte/annonce timer si le reste du state est identique.
+
+19: Event update seul ne doit pas voler le focus: Même principe.
+
+20: `GameGridPanel` doit restaurer par `(boardId, cellId)`: Vérifie que la clé utilisée est bien composite si plusieurs boards sont possibles.
+
+21: Le GridPanel doit continuer à prendre les pawns depuis `GamePawnsView`: c’est maintenant corrigé conceptuellement, garde cette source unique.
+
+22: Les actions de cellule doivent toujours être déterminées par les `actions` serveur: pas de légalité locale.
+
+23: `GameCapabilityTextBuilder::JsonLines()` reste encore utilisé pour `setup.values` et `state.game`: C’est acceptable pour `state.game`; pour setup, il faut le remplacer une fois le modèle de config typé fini.
+
+24: Garder `JsonLines()` uniquement comme fallback pour `unknownCapabilities`/`game`: Les capabilities connues ont maintenant leurs propres formatters.
+
+25: Le panneau Information est maintenant bien mieux factorisé avec `GameBoardCapabilityText`, `GameAssetCapabilityText`, `GameWorkflowCapabilityText`, etc. Je garderais cette architecture.
+
+26: `GameDiceState` reste un modèle séparé hors `GameCapabilities.h`: Ce n’est pas un problème. Dice est une capability suffisamment riche pour avoir son propre domaine.
+
+27: Les aliases `hand`/`dice` racine ont disparu de `GameState`: très bonne correction.
+
+28: Le `gameType` est encore dans `GameState`, ce qui est normal pour l’identité du match. Il ne doit jamais devenir une condition de rendu.
+
+29: `GameState.game` reste JSON opaque: c’est correct. Ne crée surtout pas 5 structs C++ spécifiques pour les cinq extensions backend.
+
+30: Si une extension `game` devient importante/interactif dans plusieurs jeux, promouvoir cette notion en kit backend plutôt que la typer côté client.
+
+31: Le système RoomActionPolicy est maintenant bien séparé: `AllowsServer()` vs `AllowsInterface()` corrige exactement le problème précédent.
+
+32: Volume ambiance est maintenant correctement local: très bon point.
+
+33: Players/Info/Rules sont maintenant correctement des actions interface: très bon point.
+
+34: Vérifier le flux d’invitation entrant: émission est présente, mais il faut garantir réception websocket → dialogue → accept/refuse → restauration du focus.
+
+35: Vérifier les cas où l’invitation arrive pendant une partie/prompt: le dialogue ne doit pas casser un pending gameplay.
+
+36: Les sons ponctuels devraient utiliser `GameEngineEvent.sequence`: Maintenant que la sequence existe, c’est la bonne identité pour empêcher les sons doublés après refresh.
+
+37: `GameDiceRollTracker` utilise encore `turnIndex + total` comme fallback d’identité: Tu peux le simplifier progressivement en utilisant l’event `dice.rolled.sequence` comme source principale.
+
+38: Éviter deux systèmes parallèles pour détecter les lancers: EventPresenter/audio via event d’un côté et DiceRollTracker par comparaison de state de l’autre. Choisir les events pour les effets ponctuels.
+
+39: Même chose pour match end / score change / movement sounds: événements pour les sons, state pour l’affichage.
+
+40: `GameLogCursor` peut maintenant utiliser `GameEngineEvent::Identity()` basé sur `sequence`: très bonne base. Assure-toi qu’il ne retombe sur le texte que lorsque sequence/id sont absents.
+
+41: Reconnexion: utiliser la dernière sequence connue pour ne pas réannoncer l’historique ancien.
+
+42: Les pending `many/players/ordering` sont maintenant réellement couverts: gros point corrigé.
+
+43: Vérifier `min/max` lorsque `max = 0/null`: ne pas interpréter accidentellement cela comme « aucune sélection autorisée » si le backend signifie « non borné ».
+
+44: Vérifier les choices vides: un pending sans option mais avec `viewerActionable=false` doit rester consultatif, pas bloquer le focus.
+
+45: Vérifier les choices dynamiques dont les options changent entre deux snapshots: restaurer uniquement les valeurs encore présentes.
+
+46: ActionCatalog typé est bon: supprimer tout parser secondaire du même descriptor s’il en reste ailleurs.
+
+47: `GamePromptPanel` doit rester l’unique moteur de formulaire d’action configurable: éviter de recréer des dialogs particuliers dans des panels capabilities.
+
+48: Configuration setup pourrait utiliser exactement le même moteur de fields que `GamePromptPanel`: cela éviterait deux systèmes de formulaires génériques.
+
+49: Mutualiser les contrôles `boolean/number/text/choice/many/ordering` entre config et action prompts si ce n’est pas déjà fait.
+
+50: Le prochain vrai chantier de simplification est donc petit: **config/setup typé, events encore un peu plus typés, unification des sons sur les events, et quelques finitions focus/navigation**.
