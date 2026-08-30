@@ -33,9 +33,23 @@ GameHandPanel::GameHandPanel(wxWindow* parent)
 void GameHandPanel::ApplyCards(const std::vector<domain::GameCard>& cards)
 {
     const int previousSelection = list_->GetSelection();
-    list_->Clear();
+    const auto previousKey = previousSelection >= 0 &&
+        static_cast<std::size_t>(previousSelection) < cardKeys_.size()
+        ? cardKeys_[static_cast<std::size_t>(previousSelection)] : std::string{};
+    std::vector<std::string> nextKeys;
+    std::vector<std::string> nextLabels;
+    nextKeys.reserve(cards.size());
+    nextLabels.reserve(cards.size());
     for (const auto& card : cards)
-        list_->Append(FromUtf8(application::cards::GameCardTextBuilder::AccessibleText(card)));
+    {
+        nextKeys.push_back(card.id);
+        nextLabels.push_back(application::cards::GameCardTextBuilder::AccessibleText(card));
+    }
+    if (nextKeys == cardKeys_ && nextLabels == cardLabels_) return;
+    list_->Clear();
+    cardKeys_ = std::move(nextKeys);
+    cardLabels_ = std::move(nextLabels);
+    for (const auto& label : cardLabels_) list_->Append(FromUtf8(label));
 
     const bool hasHand = list_->GetCount() > 0;
     Show(hasHand);
@@ -47,15 +61,16 @@ void GameHandPanel::ApplyCards(const std::vector<domain::GameCard>& cards)
     const int defaultSelection = firstEnabled == cards.end()
         ? 0
         : static_cast<int>(std::distance(cards.begin(), firstEnabled));
-    const int nextSelection = previousSelection != wxNOT_FOUND && previousSelection >= 0 &&
-        static_cast<unsigned int>(previousSelection) < list_->GetCount()
-        ? previousSelection
-        : defaultSelection;
+    const auto matchingCard = std::find(cardKeys_.begin(), cardKeys_.end(), previousKey);
+    const int nextSelection = matchingCard == cardKeys_.end() ? defaultSelection
+        : static_cast<int>(std::distance(cardKeys_.begin(), matchingCard));
     list_->SetSelection(nextSelection);
 }
 
 void GameHandPanel::ClearHand()
 {
+    cardKeys_.clear();
+    cardLabels_.clear();
     list_->Clear();
     Hide();
 }

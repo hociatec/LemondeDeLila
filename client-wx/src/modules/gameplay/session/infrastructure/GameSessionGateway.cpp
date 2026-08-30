@@ -14,6 +14,7 @@
 #include "shared/network/application/websocket/IWebSocketClient.h"
 #include "shared/network/domain/WebSocketConstants.h"
 #include "shared/logging/application/Logger.h"
+#include "shared/errors/domain/AppError.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -103,7 +104,7 @@ void GameSessionGateway::ExecuteAction(const domain::GameAction& action, std::st
     if (action.type.empty()) throw std::invalid_argument("Action de jeu invalide.");
     lila::shared::logging::LogInfo("GameInput", "Sending action: type=" + action.type);
     SendJson(nlohmann::json{
-        {"type", "game.actions"},
+        {"type", "game.action"},
         {"payload", GameStatePayloadCodec::EncodeActionPayload(roomId, gameType_, action)}});
     lila::shared::logging::LogInfo("GameInput", "Action sent: type=" + action.type);
 }
@@ -119,7 +120,11 @@ domain::GameState GameSessionGateway::AwaitState(std::stop_token stopToken)
         }
         if (event.type == domain::GameEventType::Error)
         {
-            throw std::runtime_error(event.message.empty() ? "Etat de jeu indisponible." : event.message);
+            throw lila::shared::errors::AppException(
+                lila::shared::errors::ToAppError(
+                    event.message.empty()
+                        ? "Etat de jeu indisponible."
+                        : event.message));
         }
     }
     throw std::runtime_error("Connexion au jeu interrompue.");

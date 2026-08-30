@@ -47,10 +47,26 @@ describe('RoomGateway lifecycle scenarios', () => {
     expect(deps.roomsService.primeRoomPayloadCache).toHaveBeenCalled();
     expect(gateway.broadcastRoomPayload).toHaveBeenCalled();
 
+    const primed = deps.roomsService.primeRoomPayloadCache.mock.calls[0][1];
+    expect(primed.room).toMatchObject({
+      id: 10,
+      status: 'setup',
+      startedAt: null,
+      runId: 0,
+      tableAmbienceSoundId: null,
+    });
+
     const sent = socket.send.mock.calls.map((call: any[]) =>
       JSON.parse(String(call[0])),
     );
-    expect(sent.some((m: any) => m.type === 'room.created')).toBe(true);
+    expect(
+      sent.some(
+        (m: any) =>
+          m.type === 'room.created' &&
+          m.payload?.room?.runId === 0 &&
+          m.payload?.room?.startedAt === null,
+      ),
+    ).toBe(true);
   });
 
   it('join: rejects banned users with sendError', async () => {

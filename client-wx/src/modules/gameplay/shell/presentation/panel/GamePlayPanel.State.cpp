@@ -60,7 +60,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
                 ", incomingStatus=" + state.system.match.status);
         return;
     }
-    if (!gameName_.empty()) state.gameName = gameName_;
     state.lines = application::GameActionPresentationPolicy::GenericLines(state);
     state_ = std::move(state);
     RebuildInfoPanelChoices();
@@ -70,32 +69,23 @@ void GamePlayPanel::ApplyState(domain::GameState state)
             observedEventIdentities_.insert(event.Identity());
     else if (onGameSoundEvent_)
     {
-        bool finishSoundEmitted = false;
         for (const auto& event : state_.system.events)
             if (observedEventIdentities_.insert(event.Identity()).second)
-            {
                 onGameSoundEvent_(event.type,
                     state_.system.match.result
                         ? state_.system.match.result->winnerPlayerIds : std::vector<int>{});
-                finishSoundEmitted = finishSoundEmitted ||
-                    event.type == "match.finished" || event.type == "game.finished";
-            }
-        if (!wasFinished && state_.system.match.status == "finished" && !finishSoundEmitted)
-            onGameSoundEvent_("match.finished",
-                state_.system.match.result
-                    ? state_.system.match.result->winnerPlayerIds : std::vector<int>{});
     }
     UpdateStatus(wxString{});
     if (initialState)
     {
         logCursor_.Restore(state_.logMessages);
-        if (onHistoryMessage_ && !state_.turnLabel.empty())
-            onHistoryMessage_(FromUtf8(state_.turnLabel));
+        if (onHistoryMessage_)
+            onHistoryMessage_(FromUtf8(TurnLabel(state_)));
     }
     else PublishLogMessages(state_.logMessages);
     if (!initialState && previousTurnPlayer != state_.system.turn.currentPlayerId &&
-        onHistoryMessage_ && !state_.turnLabel.empty())
-        onHistoryMessage_(FromUtf8(state_.turnLabel));
+        onHistoryMessage_)
+        onHistoryMessage_(FromUtf8(TurnLabel(state_)));
     if (!initialState && previousRoundWinners != state_.system.round.winnerPlayerIds &&
         !state_.system.round.winnerPlayerIds.empty() && onHistoryMessage_)
     {
@@ -142,7 +132,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     handPanel_->ApplyCards(state_.kits.VisibleHand());
     dicePanel_->Apply(state_.kits.dice);
     gridPanel_->Apply(state_.kits.grid ? &*state_.kits.grid : nullptr,
-        state_.actions, state_.system.players);
+        state_.actions, state_.system.players,
+        state_.kits.pawns ? &*state_.kits.pawns : nullptr);
     movementPanel_->Apply(state_.kits, state_.system.players);
     resourcesPanel_->Apply(state_);
     workflowPanel_->Apply(state_);

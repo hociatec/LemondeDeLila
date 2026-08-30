@@ -34,15 +34,7 @@ void DecodeKits(const nlohmann::json& raw, domain::GameKits& kits)
 {
     const auto cards = Section(raw, "cards");
     if (!cards.empty())
-    {
-        domain::GameCardsView view;
-        view.visibleHand = GameCardDecoder::DecodeVisibleHands(cards);
-        view.decks = DecodeGameValue(cards.value("decks", nlohmann::json::object()));
-        view.discards = DecodeGameValue(cards.value("discards", nlohmann::json::object()));
-        view.hands = DecodeGameValue(cards.value("hands", nlohmann::json::object()));
-        view.zones = DecodeGameValue(cards.value("zones", nlohmann::json::object()));
-        kits.cards = std::move(view);
-    }
+        kits.cards = GameCardDecoder::Decode(cards);
     const auto dice = Section(raw, "dice");
     if (!dice.empty()) kits.dice = GameDiceDecoder::Decode(dice);
     kits.grid = GameBoardCapabilitiesDecoder::Grid(Section(raw, "grid"));
@@ -65,13 +57,6 @@ void DecodeKits(const nlohmann::json& raw, domain::GameKits& kits)
     for (const auto& item : raw.items())
         if (std::find(known.begin(), known.end(), item.key()) == known.end())
             kits.unknownCapabilities.emplace(item.key(), DecodeGameValue(item.value()));
-}
-
-std::string PlayerName(const domain::GameSystem& system, int playerId)
-{
-    for (const auto& player : system.players)
-        if (player.id == playerId) return player.username;
-    return {};
 }
 
 std::vector<std::string> EventMessages(const domain::GameSystem& system)
@@ -110,6 +95,7 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     if (!payload.is_object()) throw std::runtime_error("Etat de jeu invalide.");
     domain::GameState state;
     state.roomId = ReadInt(payload, "roomId");
+    state.runId = ReadInt(payload, "runId");
     state.version = ReadInt(payload, "version");
     state.viewVersion = ReadInt(payload, "viewVersion");
     if (state.viewVersion != domain::GameState::SupportedViewVersion)
@@ -137,12 +123,7 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
         payload, state.actions, Section(kits, "pawns"));
     state.lines = BuildLines(state.actions);
     state.logMessages = EventMessages(state.system);
-    if (state.system.turn.currentPlayerId)
-        state.currentPlayerLabel = PlayerName(state.system, *state.system.turn.currentPlayerId);
-    state.turnLabel = state.currentPlayerLabel.empty()
-        ? std::string("Aucun tour actif") : "Tour de " + state.currentPlayerLabel;
     state.gameType = ReadString(payload, "gameType");
-    state.gameName = ReadString(payload, "gameName");
     if (state.roomId <= 0) throw std::runtime_error("Etat de jeu sans table.");
     return state;
 }

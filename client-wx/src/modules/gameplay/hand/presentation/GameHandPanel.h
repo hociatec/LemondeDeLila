@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include <wx/panel.h>
@@ -24,5 +25,7 @@ public:
 
 private:
     wxListBox* list_ = nullptr;
+    std::vector<std::string> cardKeys_;
+    std::vector<std::string> cardLabels_;
 };
 }

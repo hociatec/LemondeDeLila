@@ -352,6 +352,38 @@ async function main() {
     assert(roomId > 0, 'Invalid roomId');
     report.push('Room created for game flow: OK');
 
+    // The WX client opens gameplay while the room is still in setup so the
+    // owner can answer server-driven configuration prompts before room.start.
+    // This transition must remain valid independently from the started flow.
+    const setupGameWs = new WsClient(
+      withClientVersion(
+        `${baseWsUrl}/ws/game?token=${encodeURIComponent(users[0].token)}&ticket=${encodeURIComponent(users[0].gameTicket)}&roomId=${roomId}&gameType=lama`,
+      ),
+      'game-owner-setup',
+    );
+    sockets.push(setupGameWs);
+    await setupGameWs.connect();
+    const setupGameState = await setupGameWs.waitFor(
+      (m) =>
+        m &&
+        m.type === 'game.state' &&
+        String(m?.payload?.system?.match?.status || '').toLowerCase() ===
+          'setup',
+      25000,
+      'game.owner.setupState',
+    );
+    assert(
+      Number(setupGameState?.payload?.runId || 0) === 1,
+      'Setup game state must reserve room run 1',
+    );
+    await setupGameWs.close();
+    users[0].gameTicket = await issueTicket(
+      baseHttpUrl,
+      users[0].token,
+      'game',
+    );
+    report.push('Game ws join while room is in setup: OK');
+
     const playerRoomWs = new WsClient(
       withClientVersion(
         `${baseWsUrl}/ws?token=${encodeURIComponent(users[1].token)}&ticket=${encodeURIComponent(users[1].roomTicket)}&room=${roomId}`,
@@ -487,8 +519,8 @@ async function main() {
     report.push('Game rules/turn/state requests: OK');
 
     const currentPlayerId =
-      typeof ownerState?.payload?.turn?.currentPlayerId === 'number'
-        ? ownerState.payload.turn.currentPlayerId
+      typeof ownerState?.payload?.system?.turn?.currentPlayerId === 'number'
+        ? ownerState.payload.system.turn.currentPlayerId
         : null;
     assert(currentPlayerId != null, 'currentPlayerId missing in game state');
 
@@ -512,7 +544,7 @@ async function main() {
     ownerGameWs.popAll();
     playerGameWs.popAll();
     actorWs.send({
-      type: 'game.actions',
+      type: 'game.action',
       payload: {
         roomId,
         gameType: 'lama',
@@ -524,7 +556,9 @@ async function main() {
       (m) =>
         m &&
         m.type === 'game.ack' &&
-        String(m?.payload?.action || '') === 'game.actions',
+        ['game.action', 'game.actions'].includes(
+          String(m?.payload?.action || ''),
+        ),
       25000,
       'game.actions ack',
     );

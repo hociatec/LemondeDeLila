@@ -24,6 +24,19 @@ void Players(std::ostringstream& out, const domain::GameState& state,
         out << Player(state, ids[index]);
     }
 }
+
+std::string SubmissionValue(
+    const domain::GameState& state, const domain::GameSubmissionValue& value)
+{
+    if (value.kind == domain::GameSubmissionValueKind::Player && value.playerId)
+        return Player(state, *value.playerId);
+    if (!value.label.empty()) return value.label;
+    if (!value.text.empty()) return value.text;
+    if (!value.id.empty()) return HumanLabel(value.id);
+    if (value.number) return std::to_string(*value.number);
+    if (value.boolean) return *value.boolean ? "oui" : "non";
+    return ValueLines(value.fallback);
+}
 }
 
 std::optional<std::string> BuildWorkflowCapabilityText(
@@ -56,8 +69,9 @@ std::optional<std::string> BuildWorkflowCapabilityText(
             out << "Ont soumis : "; Players(out, state, session.submittedPlayerIds); out << '\n';
             out << "En attente : "; Players(out, state, session.pendingPlayerIds); out << '\n';
             for (const auto& [playerId, value] : session.visibleValues)
-                out << Player(state, playerId) << " : " << ValueLines(value) << '\n';
-            if (session.ownValue) out << "Votre soumission : " << ValueLines(*session.ownValue) << '\n';
+                out << Player(state, playerId) << " : " << SubmissionValue(state, value) << '\n';
+            if (session.ownValue)
+                out << "Votre soumission : " << SubmissionValue(state, *session.ownValue) << '\n';
         }
         for (const auto& judge : state.kits.submissions->judges)
             if (judge.playerId) out << "Juge : " << Player(state, *judge.playerId) << '\n';

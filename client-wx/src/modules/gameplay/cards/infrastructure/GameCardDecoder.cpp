@@ -1,5 +1,6 @@
 #include "modules/gameplay/cards/infrastructure/GameCardDecoder.h"
 
+#include <algorithm>
 #include <optional>
 #include <string_view>
 
@@ -68,28 +69,93 @@ std::vector<domain::GameCard> DecodeArray(const nlohmann::json& value)
     }
     return cards;
 }
+
+int Count(const nlohmann::json& value)
+{
+    if (value.is_array()) return static_cast<int>(value.size());
+    if (!value.is_object()) return 0;
+    const auto count = value.find("count");
+    return count != value.end() && count->is_number_integer()
+        ? std::max(0, count->get<int>()) : 0;
+}
+}
+
+domain::GameCardsView GameCardDecoder::Decode(const nlohmann::json& cardsKit)
+{
+    domain::GameCardsView result;
+    if (!cardsKit.is_object()) return result;
+
+    const auto decks = cardsKit.find("decks");
+    if (decks != cardsKit.end() && decks->is_object())
+        for (const auto& item : decks->items())
+            result.decks.push_back({item.key(), Count(item.value())});
+
+    const auto discards = cardsKit.find("discards");
+    if (discards != cardsKit.end() && discards->is_object())
+        for (const auto& item : discards->items())
+        {
+            domain::GameDiscardView discard;
+            discard.id = item.key();
+            if (item.value().is_object())
+            {
+                const auto cards = item.value().find("cards");
+                if (cards != item.value().end()) discard.cards = DecodeArray(*cards);
+            }
+            discard.count = Count(item.value());
+            if (discard.count == 0) discard.count = static_cast<int>(discard.cards.size());
+            result.discards.push_back(std::move(discard));
+        }
+
+    const auto hands = cardsKit.find("hands");
+    if (hands != cardsKit.end() && hands->is_object())
+        for (const auto& item : hands->items())
+        {
+            if (!item.value().is_object()) continue;
+            domain::GameHandView hand;
+            hand.id = item.key();
+            hand.visibility = FirstText(item.value(), {"visibility"});
+            const auto byPlayer = item.value().find("byPlayer");
+            if (byPlayer != item.value().end() && byPlayer->is_object())
+                for (const auto& playerItem : byPlayer->items())
+                {
+                    domain::GameHandPlayerView player;
+                    try { player.playerId = std::stoi(playerItem.key()); }
+                    catch (const std::exception&) { continue; }
+                    player.cardsVisible = playerItem.value().is_array();
+                    player.cards = DecodeArray(playerItem.value());
+                    player.count = player.cardsVisible
+                        ? static_cast<int>(player.cards.size()) : Count(playerItem.value());
+                    if (player.cardsVisible)
+                        result.visibleHand.insert(result.visibleHand.end(),
+                            player.cards.begin(), player.cards.end());
+                    hand.players.push_back(std::move(player));
+                }
+            result.hands.push_back(std::move(hand));
+        }
+
+    const auto zones = cardsKit.find("zones");
+    if (zones != cardsKit.end() && zones->is_object())
+        for (const auto& item : zones->items())
+        {
+            if (!item.value().is_object()) continue;
+            domain::GameCardZoneView zone;
+            zone.id = item.key();
+            zone.visibility = FirstText(item.value(), {"visibility"});
+            const auto cards = item.value().find("cards");
+            if (cards != item.value().end())
+            {
+                zone.cardsVisible = cards->is_array();
+                zone.cards = DecodeArray(*cards);
+                zone.count = zone.cardsVisible
+                    ? static_cast<int>(zone.cards.size()) : Count(*cards);
+            }
+            result.zones.push_back(std::move(zone));
+        }
+    return result;
 }
 
 std::vector<domain::GameCard> GameCardDecoder::DecodeVisibleHands(const nlohmann::json& cardsKit)
 {
-    std::vector<domain::GameCard> result;
-    if (!cardsKit.is_object()) return result;
-    const auto hands = cardsKit.find("hands");
-    if (hands == cardsKit.end() || !hands->is_object()) return result;
-    for (const auto& hand : hands->items())
-    {
-        if (!hand.value().is_object()) continue;
-        const auto byPlayer = hand.value().find("byPlayer");
-        if (byPlayer == hand.value().end() || !byPlayer->is_object()) continue;
-        for (const auto& playerCards : byPlayer->items())
-        {
-            if (!playerCards.value().is_array()) continue;
-            auto cards = DecodeArray(playerCards.value());
-            result.insert(result.end(),
-                std::make_move_iterator(cards.begin()),
-                std::make_move_iterator(cards.end()));
-        }
-    }
-    return result;
+    return Decode(cardsKit).visibleHand;
 }
 }

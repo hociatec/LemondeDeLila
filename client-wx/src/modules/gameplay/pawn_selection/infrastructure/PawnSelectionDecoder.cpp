@@ -39,16 +39,14 @@ std::optional<domain::GameAction> FindValueAction(
 std::optional<domain::PawnSelection> PawnSelectionDecoder::Decode(
     const nlohmann::json& stateNode,
     const std::vector<domain::GameAction>& availableActions,
-    const nlohmann::json& pawnsKit)
+    const nlohmann::json&)
 {
     const auto pending = stateNode.find("pending");
     if (pending == stateNode.end() || !pending->is_object()) return std::nullopt;
     const auto data = pending->value("data", nlohmann::json::object());
     const auto kind = detail::ReadString(*pending, "workflowKind").empty()
         ? detail::ReadString(data, "kind") : detail::ReadString(*pending, "workflowKind");
-    const auto legacyPawns = data.find("pawns");
-    if (kind != "pawn" && (legacyPawns == data.end() || !legacyPawns->is_array()) &&
-        pawnsKit.empty()) return std::nullopt;
+    if (kind != "pawn") return std::nullopt;
     const auto choices = pending->find("choices");
     if (choices == pending->end() || !choices->is_array()) return std::nullopt;
     const auto options = data.find("options");

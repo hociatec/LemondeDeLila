@@ -178,6 +178,7 @@ describe('typed game contracts', () => {
     const event: NonNullable<
       View['system']['events']['latestByType']['sample.round.revealed']
     > = {
+      id: '1:0',
       type: 'sample.round.revealed',
       data: { round: 2 },
       actorId: 1,

@@ -1,5 +1,6 @@
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 
+#include <optional>
 #include <stdexcept>
 #include <utility>
 
@@ -14,11 +15,13 @@ AuthenticatedRealtimeApiClient::AuthenticatedRealtimeApiClient(
     std::string endpoint,
     std::string clientVersion,
     websocket::IWebSocketClient& webSocketClient,
-    http::IWsTicketProvider& wsTicketProvider)
+    http::IWsTicketProvider& wsTicketProvider,
+    std::chrono::milliseconds requestTimeout)
     : endpoint_(std::move(endpoint)),
       clientVersion_(std::move(clientVersion)),
       webSocketClient_(webSocketClient),
-      wsTicketProvider_(wsTicketProvider)
+      wsTicketProvider_(wsTicketProvider),
+      requestTimeout_(requestTimeout)
 {
 }
 
@@ -27,6 +30,7 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
     const std::string& bearerToken,
     std::stop_token stopToken) const
 {
+    std::optional<detail::RealtimeRequestDeadline> deadline;
     try
     {
         std::unique_lock<std::timed_mutex> requestLock(requestMutex_, std::defer_lock);
@@ -58,6 +62,7 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
 
         const std::string requestId = protocol::GenerateRequestId();
         const std::string envelope = protocol::BuildEnvelope(request, requestId);
+        deadline.emplace(webSocketClient_, requestTimeout_);
         std::stop_callback cancelOperation(
             stopToken,
             [this]() { webSocketClient_.CancelPendingOperation(); });
@@ -87,7 +92,11 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
     }
     catch (const std::exception& exception)
     {
-        return detail::TransportErrorResponse(request.type, stopToken, exception);
+        return detail::DeadlineErrorResponse(
+            request.type,
+            stopToken,
+            deadline.has_value() && deadline->TimedOut(),
+            exception);
     }
 }
 }

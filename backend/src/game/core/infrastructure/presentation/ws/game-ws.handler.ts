@@ -145,7 +145,7 @@ export class GameWsHandler {
       return {
         type: 'game.ack',
         payload: {
-          action: 'game.actions',
+          action: 'game.action',
           ok: true,
           roomId,
           gameType: resolved.gameType,

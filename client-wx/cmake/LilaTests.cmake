@@ -152,6 +152,16 @@ lila_add_test_executable(lemonde_de_lila_wx_social_profile_mapper_tests
 lila_add_test_executable(lemonde_de_lila_wx_chat_error_resolver_tests
     tests/ChatErrorResolverTests.cpp
 )
+lila_add_test_executable(lemonde_de_lila_wx_realtime_deadline_tests
+    tests/RealtimeRequestDeadlineTests.cpp
+    src/shared/config/domain/AppConfig.cpp
+    src/shared/network/application/realtime/AuthenticatedRealtimeApiClient.cpp
+    src/shared/network/application/realtime/RealtimeProtocol.cpp
+)
+target_link_libraries(
+    lemonde_de_lila_wx_realtime_deadline_tests
+    PRIVATE nlohmann_json::nlohmann_json
+)
 
 add_library(lemonde_de_lila_wx_presentation_compile_tests OBJECT
     tests/PresentationControllerCompileTests.cpp

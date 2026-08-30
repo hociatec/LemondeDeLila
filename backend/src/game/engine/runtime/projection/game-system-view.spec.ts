@@ -25,11 +25,25 @@ describe('game system view event visibility', () => {
     expect(owner).toHaveProperty('public');
     expect(owner).toHaveProperty('private');
     expect(owner).not.toHaveProperty('internal');
+    const identified = owner as Record<string, { id: string } | undefined>;
+    expect(identified.public?.id).toBe('0:0');
+    expect(identified.private?.id).toBe('0:2');
 
     const other = projectEventsForPlayer(events, 3).latestByType;
     expect(other).toHaveProperty('public');
     expect(other).not.toHaveProperty('private');
     expect(other).not.toHaveProperty('internal');
+  });
+
+  it('keeps a stable event identity across repeated projections', () => {
+    const events = [event('dice.rolled', { kind: 'public' }, { total: 7 })];
+    const first = projectEventsForPlayer(events, 1, 42).latestByType;
+    const refreshed = projectEventsForPlayer(events, 1, 42).latestByType;
+    const nextVersion = projectEventsForPlayer(events, 1, 43).latestByType;
+
+    expect(first['dice.rolled']?.id).toBe('42:0');
+    expect(refreshed['dice.rolled']?.id).toBe('42:0');
+    expect(nextVersion['dice.rolled']?.id).toBe('43:0');
   });
 
   it('adds only the viewer-specific part of split events', () => {

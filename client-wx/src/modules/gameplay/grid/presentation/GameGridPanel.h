@@ -20,7 +20,8 @@ public:
     explicit GameGridPanel(wxWindow* parent);
     void Apply(const domain::GameGridView* grid,
         const std::vector<domain::GameAction>& actions,
-        const std::vector<domain::GamePlayer>& players);
+        const std::vector<domain::GamePlayer>& players,
+        const domain::GamePawnsView* pawns);
     void Clear();
     [[nodiscard]] bool HandleKey(wxKeyEvent& event);
     [[nodiscard]] std::string SelectedCellId() const;
@@ -37,6 +38,7 @@ private:
         std::string description;
         int x = 0;
         int y = 0;
+        [[nodiscard]] bool operator==(const Cell&) const = default;
     };
     wxListBox* cells_ = nullptr;
     std::vector<Cell> model_;

@@ -18,7 +18,7 @@ public:
 
     [[nodiscard]] bool Acknowledge(std::string_view command) noexcept
     {
-        if (phase_ != Phase::AwaitingActionAcknowledgement || command != "game.actions")
+        if (phase_ != Phase::AwaitingActionAcknowledgement || command != "game.action")
             return false;
         phase_ = Phase::AwaitingSetupProjection;
         return true;

@@ -27,9 +27,6 @@ struct GameState final
     int version = 0;
     int viewVersion = 0;
     std::string gameType;
-    std::string gameName;
-    std::string turnLabel;
-    std::string currentPlayerLabel;
     std::vector<GameAction> actions;
     std::vector<GameShortcut> shortcuts;
     std::vector<GameLine> lines;

@@ -1,6 +1,7 @@
 #include "bootstrap/composition/infrastructure/game/GameComposition.h"
 
 #include <memory>
+#include <utility>
 
 #include "bootstrap/composition/infrastructure/network/NetworkComposition.h"
 #include "bootstrap/composition/infrastructure/support/AuthenticatedServiceFactory.h"
@@ -23,6 +24,7 @@
 #include "shared/config/domain/AppConfig.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
+#include "shared/network/application/realtime/RealtimeApiClient.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
 #include "shared/network/domain/WebSocketConstants.h"
 #include "shared/network/domain/UrlUtils.h"
@@ -38,13 +40,23 @@ void GameComposition::Assemble(
     const StepLogger& setStep)
 {
     setStep("Creation du service catalogue");
-    detail::CreateAuthenticatedServiceStack(
-        catalogWebSocketClient,
-        catalogRealtimeApiClient,
-        catalogApi,
-        catalogService,
-        *network.wsTicketProvider,
-        sessionStore);
+    catalogWebSocketClient = detail::CreateWebSocketClient();
+    shared::network::websocket::WebSocketHeaders catalogHeaders;
+    catalogHeaders.emplace(
+        std::string(shared::network::ws::ClientProductHeader),
+        std::string(shared::network::ws::ClientProduct));
+    catalogHeaders.emplace(
+        std::string(shared::network::ws::ClientVersionHeader),
+        shared::config::AppConfig::ResolveClientVersion());
+    catalogRealtimeApiClient =
+        std::make_unique<shared::network::realtime::RealtimeApiClient>(
+            shared::config::AppConfig::ResolveBackendApiWs(),
+            std::move(catalogHeaders),
+            *catalogWebSocketClient);
+    catalogApi = std::make_unique<modules::catalog::infrastructure::CatalogApi>(
+        *catalogRealtimeApiClient);
+    catalogService = std::make_unique<modules::catalog::application::CatalogService>(
+        *catalogApi);
 
     roomInvitationWebSocketClient = detail::CreateWebSocketClient();
     roomInvitationMonitor = std::make_unique<modules::rooms::application::RoomInvitationMonitor>(

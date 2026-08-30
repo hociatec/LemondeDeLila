@@ -259,11 +259,26 @@ export class RealtimeApiHandlerService {
       if (
         !isRecord(parsed) ||
         Object.keys(parsed).some(
-          (key) => !['type', 'payload', 'requestId'].includes(key),
+          (key) =>
+            ![
+              'type',
+              'payload',
+              'requestId',
+              'protocolVersion',
+              'clientVersion',
+            ].includes(key),
         ) ||
         typeof parsed.type !== 'string' ||
         parsed.type.length === 0 ||
         parsed.type.length > 100 ||
+        (parsed.protocolVersion !== undefined &&
+          (typeof parsed.protocolVersion !== 'number' ||
+            !Number.isInteger(parsed.protocolVersion) ||
+            parsed.protocolVersion < 1)) ||
+        (parsed.clientVersion !== undefined &&
+          (typeof parsed.clientVersion !== 'string' ||
+            parsed.clientVersion.length === 0 ||
+            parsed.clientVersion.length > 64)) ||
         (parsed.requestId !== undefined &&
           (typeof parsed.requestId !== 'string' ||
             parsed.requestId.length > 128))

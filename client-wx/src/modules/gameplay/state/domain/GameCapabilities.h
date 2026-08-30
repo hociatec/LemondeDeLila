@@ -12,13 +12,50 @@
 
 namespace lila::modules::gameplay::domain
 {
+struct GameDeckView final
+{
+    std::string id;
+    int count = 0;
+};
+
+struct GameDiscardView final
+{
+    std::string id;
+    int count = 0;
+    std::vector<GameCard> cards;
+};
+
+struct GameHandPlayerView final
+{
+    int playerId = 0;
+    int count = 0;
+    bool cardsVisible = false;
+    std::vector<GameCard> cards;
+};
+
+struct GameHandView final
+{
+    std::string id;
+    std::string visibility;
+    std::vector<GameHandPlayerView> players;
+};
+
+struct GameCardZoneView final
+{
+    std::string id;
+    std::string visibility;
+    int count = 0;
+    bool cardsVisible = false;
+    std::vector<GameCard> cards;
+};
+
 struct GameCardsView final
 {
     std::vector<GameCard> visibleHand;
-    GameValue decks;
-    GameValue discards;
-    GameValue hands;
-    GameValue zones;
+    std::vector<GameDeckView> decks;
+    std::vector<GameDiscardView> discards;
+    std::vector<GameHandView> hands;
+    std::vector<GameCardZoneView> zones;
 };
 
 struct GameMovementTrack final
@@ -127,6 +164,29 @@ struct GameQuizView final
     std::vector<GameQuizSession> sessions;
 };
 
+enum class GameSubmissionValueKind
+{
+    Unknown,
+    Text,
+    Option,
+    Card,
+    Player,
+    Number,
+    Boolean,
+};
+
+struct GameSubmissionValue final
+{
+    GameSubmissionValueKind kind = GameSubmissionValueKind::Unknown;
+    std::string id;
+    std::string label;
+    std::string text;
+    std::optional<int> playerId;
+    std::optional<double> number;
+    std::optional<bool> boolean;
+    GameValue fallback;
+};
+
 struct GameSubmissionSession final
 {
     std::string id;
@@ -136,8 +196,8 @@ struct GameSubmissionSession final
     std::vector<int> pendingPlayerIds;
     bool closed = false;
     bool revealed = false;
-    std::map<int, GameValue> visibleValues;
-    std::optional<GameValue> ownValue;
+    std::map<int, GameSubmissionValue> visibleValues;
+    std::optional<GameSubmissionValue> ownValue;
 };
 struct GameSubmissionJudge final
 {
@@ -203,6 +263,7 @@ struct GameTimerView final
 {
     std::string id;
     std::string label;
+    std::string actionType;
     std::optional<std::int64_t> deadlineMs;
     std::optional<std::int64_t> remainingMs;
     bool paused = false;

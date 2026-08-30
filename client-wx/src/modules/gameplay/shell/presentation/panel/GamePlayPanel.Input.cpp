@@ -15,6 +15,7 @@
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
+#include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
@@ -116,9 +117,7 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     if (HandleShortcut(key)) return true;
     if (key == "T")
     {
-        const auto message = state_.turnLabel.empty()
-            ? wxString(L"Aucun tour actif.")
-            : lila::shared::text::FromUtf8(state_.turnLabel);
+        const auto message = FromUtf8(TurnLabel(state_));
         UpdateStatus(message, false, true);
         if (onHistoryMessage_) onHistoryMessage_(message);
         return true;

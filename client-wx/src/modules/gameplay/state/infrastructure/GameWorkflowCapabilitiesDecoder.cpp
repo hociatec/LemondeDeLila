@@ -41,6 +41,48 @@ std::string PrimitiveId(const nlohmann::json& object, const char* key)
     if (found->is_number_integer()) return std::to_string(found->get<long long>());
     return {};
 }
+
+domain::GameSubmissionValue SubmissionValue(const nlohmann::json& raw)
+{
+    domain::GameSubmissionValue result;
+    result.fallback = DecodeGameValue(raw);
+    if (raw.is_string())
+    {
+        result.kind = domain::GameSubmissionValueKind::Text;
+        result.text = raw.get<std::string>();
+        return result;
+    }
+    if (raw.is_number())
+    {
+        result.kind = domain::GameSubmissionValueKind::Number;
+        result.number = raw.get<double>();
+        return result;
+    }
+    if (raw.is_boolean())
+    {
+        result.kind = domain::GameSubmissionValueKind::Boolean;
+        result.boolean = raw.get<bool>();
+        return result;
+    }
+    if (!raw.is_object()) return result;
+    result.label = detail::ReadString(raw, "label");
+    result.text = detail::ReadString(raw, "text");
+    if (result.text.empty()) result.text = detail::ReadString(raw, "value");
+    if (const auto playerId = OptionalInt(raw, "playerId"))
+    {
+        result.kind = domain::GameSubmissionValueKind::Player;
+        result.playerId = playerId;
+        result.id = std::to_string(*playerId);
+    }
+    else if (!(result.id = PrimitiveId(raw, "cardId")).empty())
+        result.kind = domain::GameSubmissionValueKind::Card;
+    else if (!(result.id = PrimitiveId(raw, "optionId")).empty())
+        result.kind = domain::GameSubmissionValueKind::Option;
+    else if (!(result.id = PrimitiveId(raw, "id")).empty())
+        result.kind = domain::GameSubmissionValueKind::Option;
+    else if (!result.text.empty()) result.kind = domain::GameSubmissionValueKind::Text;
+    return result;
+}
 }
 
 std::optional<domain::GameQuizView> GameWorkflowCapabilitiesDecoder::Quiz(
@@ -107,10 +149,10 @@ std::optional<domain::GameSubmissionsView> GameWorkflowCapabilitiesDecoder::Subm
             const auto values = item.value().find("valuesByPlayerId");
             if (values != item.value().end() && values->is_object())
                 for (const auto& value : values->items())
-                    try { session.visibleValues.emplace(std::stoi(value.key()), DecodeGameValue(value.value())); }
+                    try { session.visibleValues.emplace(std::stoi(value.key()), SubmissionValue(value.value())); }
                     catch (const std::exception&) {}
             const auto own = item.value().find("ownValue");
-            if (own != item.value().end()) session.ownValue = DecodeGameValue(*own);
+            if (own != item.value().end()) session.ownValue = SubmissionValue(*own);
             result.sessions.push_back(std::move(session));
         }
     const auto judges = raw.find("judges");
@@ -156,6 +198,7 @@ std::vector<domain::GameTimerView> GameWorkflowCapabilitiesDecoder::Timers(
         if (item.value().is_object())
         {
             timer.label = detail::ReadString(item.value(), "label");
+            timer.actionType = detail::ReadString(item.value(), "actionType");
             timer.deadlineMs = OptionalInt64(item.value(), "deadlineMs");
             timer.remainingMs = OptionalInt64(item.value(), "remainingMs");
             timer.paused = detail::ReadBool(item.value(), "paused");

@@ -4,13 +4,15 @@
 
 #include <nlohmann/json_fwd.hpp>
 
-#include "modules/gameplay/cards/domain/GameCard.h"
+#include "modules/gameplay/state/domain/GameCapabilities.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
 class GameCardDecoder final
 {
 public:
+    [[nodiscard]] static domain::GameCardsView Decode(
+        const nlohmann::json& cardsKit);
     [[nodiscard]] static std::vector<domain::GameCard> DecodeVisibleHands(
         const nlohmann::json& cardsKit);
 };
