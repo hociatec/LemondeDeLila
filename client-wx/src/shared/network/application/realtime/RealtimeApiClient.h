@@ -1,11 +1,13 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#include <chrono>
 #include <mutex>
 #include <stop_token>
 #include <string>
 
 #include "shared/network/application/websocket/IWebSocketClient.h"
+#include "shared/network/domain/NetworkPolicy.h"
 
 namespace lila::shared::network::websocket
 {
@@ -46,7 +48,9 @@ public:
     RealtimeApiClient(
         std::string endpoint,
         websocket::WebSocketHeaders headers,
-        websocket::IWebSocketClient& webSocketClient);
+        websocket::IWebSocketClient& webSocketClient,
+        std::chrono::milliseconds requestTimeout =
+            std::chrono::milliseconds{NetworkTimeouts::ReceiveMs});
 
     void WarmUp();
     [[nodiscard]] RealtimeApiResponse Send(
@@ -57,6 +61,7 @@ private:
     std::string endpoint_;
     websocket::WebSocketHeaders headers_;
     websocket::IWebSocketClient& webSocketClient_;
+    std::chrono::milliseconds requestTimeout_;
     std::timed_mutex requestMutex_;
 };
 }

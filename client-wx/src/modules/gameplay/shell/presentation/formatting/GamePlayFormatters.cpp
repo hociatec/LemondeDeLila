@@ -22,6 +22,21 @@ wxString FromUtf8(const std::string& value)
     return lila::shared::text::FromUtf8(value);
 }
 
+std::string CurrentPlayerLabel(const domain::GameState& state)
+{
+    if (!state.system.turn.currentPlayerId) return {};
+    const int playerId = *state.system.turn.currentPlayerId;
+    for (const auto& player : state.system.players)
+        if (player.id == playerId) return player.username;
+    return "Joueur " + std::to_string(playerId);
+}
+
+std::string TurnLabel(const domain::GameState& state)
+{
+    const auto player = CurrentPlayerLabel(state);
+    return player.empty() ? "Aucun tour actif" : "Tour de " + player;
+}
+
 std::string JsonToDisplay(const nlohmann::json& value)
 {
     if (value.is_null()) return {};

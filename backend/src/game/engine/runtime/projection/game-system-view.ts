@@ -76,6 +76,7 @@ export function projectGameSystemView<
   const events = projectEventsForPlayer<TEvents>(
     runtime.engine.pendingEvents ?? [],
     viewerPlayerId,
+    runtime.version ?? 0,
   );
   const cards = kits.cards ?? null;
   const dice = kits.dice ?? null;
@@ -156,12 +157,14 @@ function projectExtendedKits<TState extends object>(
 export function projectEventsForPlayer<TEvents extends object = EngineEventMap>(
   events: readonly GamePendingEvent[],
   viewerPlayerId: number | null,
+  stateVersion = 0,
 ): GameEventsPlayerView<TEvents> {
   const latestByType: Record<string, GameEventPlayerView<string, unknown>> = {};
-  for (const event of events) {
+  for (const [index, event] of events.entries()) {
     const projected = projectPendingGameEvent(event, viewerPlayerId);
     if (projected == null) continue;
     latestByType[event.type] = {
+      id: `${stateVersion}:${index}`,
       type: projected.type,
       data: projected.data,
       actorId: projected.actorId,

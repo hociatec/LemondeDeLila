@@ -1,5 +1,7 @@
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
 
+#include <algorithm>
+
 #include <wx/listbox.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -31,27 +33,42 @@ GameDicePanel::GameDicePanel(wxWindow* parent)
 void GameDicePanel::Apply(const std::optional<domain::GameDiceState>& state)
 {
     const int previous = list_->GetSelection();
-    list_->Clear();
-    if (!state)
+    const auto previousKey = previous >= 0 && static_cast<std::size_t>(previous) < rowKeys_.size()
+        ? rowKeys_[static_cast<std::size_t>(previous)] : std::string{};
+    std::vector<std::string> nextKeys;
+    std::vector<std::string> nextLabels;
+    if (state)
     {
-        Hide();
-        return;
+        for (const auto& die : state->dice)
+        {
+            nextKeys.push_back(die.id);
+            nextLabels.push_back(application::dice::GameDiceTextBuilder::DieText(die));
+        }
+        if (state->dice.empty())
+        {
+            nextKeys.push_back("total");
+            nextLabels.push_back(application::dice::GameDiceTextBuilder::TotalText(*state));
+        }
     }
-    for (const auto& die : state->dice)
-        list_->Append(FromUtf8(application::dice::GameDiceTextBuilder::DieText(die)));
-    if (state->dice.empty())
-        list_->Append(FromUtf8(application::dice::GameDiceTextBuilder::TotalText(*state)));
+    if (nextKeys == rowKeys_ && nextLabels == rowLabels_) return;
+    list_->Clear();
+    rowKeys_ = std::move(nextKeys);
+    rowLabels_ = std::move(nextLabels);
+    for (const auto& label : rowLabels_) list_->Append(FromUtf8(label));
 
     const bool visible = list_->GetCount() > 0;
     Show(visible);
     if (!visible) return;
-    const int selection = previous >= 0 &&
-        static_cast<unsigned int>(previous) < list_->GetCount() ? previous : 0;
+    const auto matchingRow = std::find(rowKeys_.begin(), rowKeys_.end(), previousKey);
+    const int selection = matchingRow == rowKeys_.end() ? 0
+        : static_cast<int>(std::distance(rowKeys_.begin(), matchingRow));
     list_->SetSelection(selection);
 }
 
 void GameDicePanel::Clear()
 {
+    rowKeys_.clear();
+    rowLabels_.clear();
     list_->Clear();
     Hide();
 }

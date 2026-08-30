@@ -71,9 +71,58 @@ std::optional<std::string> BuildValueCapabilityText(
     if (capability == "cards" && state.kits.cards)
     {
         out << "Main visible : " << state.kits.cards->visibleHand.size() << " carte(s).\n";
-        if (!state.kits.cards->decks.Empty()) out << "Pioches\n" << ValueLines(state.kits.cards->decks, "  ");
-        if (!state.kits.cards->discards.Empty()) out << "Défausses\n" << ValueLines(state.kits.cards->discards, "  ");
-        if (!state.kits.cards->zones.Empty()) out << "Zones publiques\n" << ValueLines(state.kits.cards->zones, "  ");
+        if (!state.kits.cards->decks.empty())
+        {
+            out << "Pioches\n";
+            for (const auto& deck : state.kits.cards->decks)
+                out << "- " << HumanLabel(deck.id) << " : " << deck.count << " carte(s)\n";
+        }
+        if (!state.kits.cards->discards.empty())
+        {
+            out << "Défausses\n";
+            for (const auto& discard : state.kits.cards->discards)
+            {
+                out << "- " << HumanLabel(discard.id) << " : " << discard.count << " carte(s)";
+                if (!discard.cards.empty())
+                {
+                    out << " — ";
+                    for (std::size_t index = 0; index < discard.cards.size(); ++index)
+                    {
+                        if (index > 0) out << ", ";
+                        out << discard.cards[index].label;
+                    }
+                }
+                out << '\n';
+            }
+        }
+        if (!state.kits.cards->hands.empty())
+        {
+            out << "Mains\n";
+            for (const auto& hand : state.kits.cards->hands)
+                for (const auto& player : hand.players)
+                    out << "- " << HumanLabel(hand.id) << ", " << Player(state, player.playerId)
+                        << " : " << player.count << " carte(s)"
+                        << (player.cardsVisible ? " visibles" : " masquées") << '\n';
+        }
+        if (!state.kits.cards->zones.empty())
+        {
+            out << "Zones de cartes\n";
+            for (const auto& zone : state.kits.cards->zones)
+            {
+                out << "- " << HumanLabel(zone.id) << " : " << zone.count << " carte(s)"
+                    << (zone.cardsVisible ? " visibles" : " masquées");
+                if (!zone.cards.empty())
+                {
+                    out << " — ";
+                    for (std::size_t index = 0; index < zone.cards.size(); ++index)
+                    {
+                        if (index > 0) out << ", ";
+                        out << zone.cards[index].label;
+                    }
+                }
+                out << '\n';
+            }
+        }
         return out.str();
     }
     if (capability == "dice" && state.kits.dice)

@@ -207,6 +207,15 @@ void TestRoomSessionGatewayUsesWpfHandshakeContract()
         gateway.ReceiveEvent({}).type == lila::modules::rooms::domain::RoomEventType::Closed,
         "Fermeture de table typee attendue");
 
+    socket.responses.push_back(nlohmann::json{
+        {"type", "error"},
+        {"payload", {{"code", "ROOM_WS_UNKNOWN_COMMAND"}, {"params", nlohmann::json::object()}}},
+    }.dump());
+    const auto codedError = gateway.ReceiveEvent({});
+    Expect(
+        codedError.type == lila::modules::rooms::domain::RoomEventType::Error &&
+            codedError.message == "Commande de table inconnue.",
+        "Les erreurs codees du nouveau backend doivent etre presentees lisiblement");
+
     std::cout << "[TEST PASSED] RoomSessionGatewayUsesWpfHandshakeContract\n";
 }
-

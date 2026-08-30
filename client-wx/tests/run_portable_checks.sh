@@ -160,6 +160,14 @@ c++ "${COMMON_FLAGS[@]}" \
   -o "$BUILD_DIR/chat-error-resolver-tests"
 "$BUILD_DIR/chat-error-resolver-tests"
 
+c++ "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
+  "$ROOT/tests/RealtimeRequestDeadlineTests.cpp" \
+  "$ROOT/src/shared/config/domain/AppConfig.cpp" \
+  "$ROOT/src/shared/network/application/realtime/AuthenticatedRealtimeApiClient.cpp" \
+  "$ROOT/src/shared/network/application/realtime/RealtimeProtocol.cpp" \
+  -o "$BUILD_DIR/realtime-request-deadline-tests"
+"$BUILD_DIR/realtime-request-deadline-tests"
+
 c++ "${COMMON_FLAGS[@]}" -c \
   "$ROOT/tests/PresentationControllerCompileTests.cpp" \
   -o "$BUILD_DIR/presentation-controller-compile-tests.o"

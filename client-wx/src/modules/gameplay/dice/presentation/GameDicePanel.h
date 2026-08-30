@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include <wx/panel.h>
 
 #include "modules/gameplay/dice/domain/GameDiceState.h"
@@ -22,5 +25,7 @@ public:
 
 private:
     wxListBox* list_ = nullptr;
+    std::vector<std::string> rowKeys_;
+    std::vector<std::string> rowLabels_;
 };
 }

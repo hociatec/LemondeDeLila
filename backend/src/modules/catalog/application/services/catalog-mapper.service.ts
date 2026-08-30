@@ -14,7 +14,7 @@ export class CatalogMapperService {
       const rawCategory = this.formatCategoryName(
         definition.category || 'Catalogue',
       );
-      const rawSubcategory = this.formatCategoryName(
+      const rawSubcategory = this.formatCollectionName(
         definition.subcategory || '',
       );
       const category = rawSubcategory || rawCategory;
@@ -191,6 +191,23 @@ export class CatalogMapperService {
           segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase(),
       )
       .join(' ');
+  }
+
+  private formatCollectionName(name: string): string {
+    const formatted = this.formatCategoryName(name);
+    switch (this.slugify(formatted)) {
+      case 'les-quatre-vents':
+        return 'Les Quatre Vents';
+      case 'vents-dansants':
+        return 'Vents Dansants';
+      case 'vents-sacres':
+      case 'les-vents-sacres':
+        return 'Vents Sacrés';
+      case 'vents-infinis':
+        return 'Vents Infinis';
+      default:
+        return formatted;
+    }
   }
 
   private playerBound(value: number | undefined, fallback: number): number {

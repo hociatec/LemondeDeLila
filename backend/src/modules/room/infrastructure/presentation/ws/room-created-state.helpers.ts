@@ -23,6 +23,8 @@ type RoomCreatedRoom = {
   status: string;
   gameType: string;
   startedAt?: Date | null;
+  runId?: number | null;
+  tableAmbienceSoundId?: string | null;
 };
 
 export function buildCreatedRoomState(params: {
@@ -56,6 +58,14 @@ export function buildCreatedRoomState(params: {
       status: room.status,
       gameType: room.gameType,
       startedAt: room.startedAt ? room.startedAt.toISOString() : null,
+      // The setup game state is deliberately attached to the next run.  Keep
+      // this field in the eagerly primed payload too; otherwise game.join sees
+      // a different room contract until the cache is rebuilt from storage.
+      runId:
+        typeof room.runId === 'number' && Number.isFinite(room.runId)
+          ? room.runId
+          : 0,
+      tableAmbienceSoundId: room.tableAmbienceSoundId ?? null,
       counts: { players: 1, spectators: 0 },
       owner: { id: userId, username },
       players: [player],

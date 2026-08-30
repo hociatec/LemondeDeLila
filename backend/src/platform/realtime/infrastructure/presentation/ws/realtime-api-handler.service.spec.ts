@@ -58,6 +58,33 @@ describe('RealtimeApiHandlerService', () => {
     expect(handler).not.toHaveBeenCalled();
   });
 
+  it('accepts the version metadata emitted by the desktop client', async () => {
+    const { service, registry, client, session, send } = setup();
+    const handler = jest.fn().mockResolvedValue({
+      type: 'catalog.all',
+      payload: { categories: [], games: [] },
+    });
+    registry.register('catalog.all', handler);
+
+    await service.handleIncoming(
+      client,
+      session,
+      JSON.stringify({
+        type: 'catalog.all',
+        requestId: 'catalog-request-1',
+        protocolVersion: 1,
+        clientVersion: '1.2.58',
+        payload: {},
+      }),
+    );
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(send.mock.calls.at(-1)?.[0] as string)).toMatchObject({
+      type: 'catalog.all',
+      requestId: 'catalog-request-1',
+    });
+  });
+
   it('rejects oversized payloads before route dispatch', async () => {
     const { service, registry, client, session } = setup({
       WS_MAX_PAYLOAD_BYTES: 32,

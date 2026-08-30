@@ -13,10 +13,7 @@ void TestServerDrivenPawnSelection()
                 {"playerId", 7},
                 {"choices", nlohmann::json::array({"Une fleur", "Un caillou"})},
                 {"data", {
-                    {"pawns", nlohmann::json::array({
-                        {{"id", "flower"}, {"label", "Une fleur"}},
-                        {{"id", "stone"}, {"label", "Un caillou"}},
-                    })},
+                    {"kind", "pawn"},
                     {"choiceActionsByIndex", nlohmann::json::array({
                         {{"type", "choose_pawn"}, {"payload", {{"pawnId", "flower"}}}},
                         {{"type", "choose_pawn"}, {"payload", {{"pawnId", "stone"}}}},
@@ -46,9 +43,7 @@ void TestPawnSelectionHiddenForPassiveViewer()
                 {"type", "choose_pawn"},
                 {"playerId", 8},
                 {"choices", nlohmann::json::array({"Une fleur"})},
-                {"data", {{"pawns", nlohmann::json::array({
-                    {{"id", "flower"}, {"label", "Une fleur"}},
-                })}}},
+                {"data", {{"kind", "pawn"}}},
             }},
         }},
     };

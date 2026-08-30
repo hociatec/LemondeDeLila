@@ -39,37 +39,105 @@ GameResourcesPanel::GameResourcesPanel(wxWindow* parent) : wxPanel(parent)
 
 void GameResourcesPanel::Apply(const domain::GameState& state)
 {
-    Clear();
+    const auto previousKey = SelectedKey();
+    std::vector<std::string> nextKeys;
+    std::vector<std::string> nextLabels;
+    const auto append = [&nextKeys, &nextLabels](std::string key, std::string label)
+    {
+        nextKeys.push_back(std::move(key));
+        nextLabels.push_back(std::move(label));
+    };
     if (state.kits.score)
         for (const auto& score : state.kits.score->leaderboard)
-            rows_->Append(FromUtf8(std::to_string(score.rank) + ". " +
-                Player(state, score.playerId) + " : " + Amount(score.score) + " points"));
+        {
+            append("score:" + std::to_string(score.playerId), std::to_string(score.rank) + ". " +
+                Player(state, score.playerId) + " : " + Amount(score.score) + " points");
+        }
     if (state.kits.resources)
         for (const auto& player : state.kits.resources->players)
             for (const auto& value : player.values)
-                rows_->Append(FromUtf8(Player(state, player.playerId) + ", " +
-                    application::info::HumanLabel(value.id) + " : " + Amount(value.value)));
+            {
+                append("resource:" + std::to_string(player.playerId) + ":" + value.id,
+                    Player(state, player.playerId) + ", " +
+                    application::info::HumanLabel(value.id) + " : " + Amount(value.value));
+            }
+    if (state.kits.counters)
+        for (const auto& value : state.kits.counters->values)
+        {
+            append("counter:" + value.id, std::string("Compteur ") +
+                application::info::HumanLabel(value.id) + " : " + Amount(value.value));
+        }
     if (state.kits.inventory)
         for (const auto& set : state.kits.inventory->sets)
             for (const auto& player : set.players)
             {
                 if (player.hiddenCount)
-                    rows_->Append(FromUtf8(Player(state, player.playerId) + ", " +
-                        std::to_string(*player.hiddenCount) + " objet(s) masqué(s)"));
+                {
+                    append("inventory:" + set.id + ":" +
+                        std::to_string(player.playerId) + ":hidden",
+                        Player(state, player.playerId) + ", " +
+                        std::to_string(*player.hiddenCount) + " objet(s) masqué(s)");
+                }
                 for (const auto& [item, count] : player.quantities)
-                    rows_->Append(FromUtf8(Player(state, player.playerId) + ", " +
-                        application::info::HumanLabel(item) + " : " + std::to_string(count)));
+                {
+                    append("inventory:" + set.id + ":" +
+                        std::to_string(player.playerId) + ":" + item,
+                        Player(state, player.playerId) + ", " +
+                        application::info::HumanLabel(item) + " : " + std::to_string(count));
+                }
             }
     if (state.kits.economy)
         for (const auto& market : state.kits.economy->markets)
             for (const auto& price : market.prices)
-                rows_->Append(FromUtf8(application::info::HumanLabel(price.id) + " : " +
-                    Amount(price.value) + " " + application::info::HumanLabel(market.currency)));
-    if (rows_->GetCount() > 0) rows_->SetSelection(0);
+            {
+                append("market:" + market.id + ":" + price.id,
+                    application::info::HumanLabel(price.id) + " : " + Amount(price.value) +
+                    " " + application::info::HumanLabel(market.currency));
+            }
+    if (state.kits.collections)
+        for (const auto& collection : state.kits.collections->players)
+            for (const auto& group : collection.groups)
+            {
+                std::string label = Player(state, collection.playerId) + ", collection " +
+                    application::info::HumanLabel(collection.collectionId) + ", groupe " +
+                    application::info::HumanLabel(group.id) + " : " +
+                    std::to_string(group.count) + " élément(s)";
+                if (!group.items.empty())
+                {
+                    label += " — ";
+                    for (std::size_t index = 0; index < group.items.size(); ++index)
+                    {
+                        if (index > 0) label += ", ";
+                        label += application::info::HumanLabel(group.items[index]);
+                    }
+                }
+                append("collection:" + collection.collectionId + ":" +
+                    std::to_string(collection.playerId) + ":" + group.id, std::move(label));
+            }
+    if (nextKeys == rowKeys_ && nextLabels == rowLabels_) return;
+    rows_->Clear();
+    rowKeys_ = std::move(nextKeys);
+    rowLabels_ = std::move(nextLabels);
+    for (const auto& label : rowLabels_) rows_->Append(FromUtf8(label));
+    if (rows_->GetCount() > 0)
+    {
+        const auto found = std::find(rowKeys_.begin(), rowKeys_.end(), previousKey);
+        rows_->SetSelection(found == rowKeys_.end() ? 0
+            : static_cast<int>(std::distance(rowKeys_.begin(), found)));
+    }
     Show(rows_->GetCount() > 0);
 }
 
-void GameResourcesPanel::Clear() { rows_->Clear(); Hide(); }
+void GameResourcesPanel::Clear()
+{
+    rowKeys_.clear(); rowLabels_.clear(); rows_->Clear(); Hide();
+}
+std::string GameResourcesPanel::SelectedKey() const
+{
+    const int selection = rows_->GetSelection();
+    return selection < 0 || static_cast<std::size_t>(selection) >= rowKeys_.size()
+        ? std::string{} : rowKeys_[static_cast<std::size_t>(selection)];
+}
 wxWindow* GameResourcesPanel::NavigationTarget() const
 {
     return IsShown() && rows_->GetCount() > 0 ? rows_ : nullptr;

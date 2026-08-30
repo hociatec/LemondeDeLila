@@ -36,6 +36,10 @@ export class GameWsStatePresenter {
       ...exposed,
       roomId: input.roomId,
       gameType: input.gameType,
+      runId:
+        typeof input.state.metadata?.roomRunId === 'number'
+          ? input.state.metadata.roomRunId
+          : 0,
       version: input.version,
       system: {
         ...this.asRecord(exposed.system),

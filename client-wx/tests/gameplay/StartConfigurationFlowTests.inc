@@ -10,7 +10,7 @@ void TestStartConfigurationIsSubmittedOnlyOnce()
         "Un second envoi doit etre refuse pendant l'attente de l'acquittement.");
     Expect(!flow.Acknowledge("game.state"),
         "Un acquittement sans rapport ne doit pas demarrer la salle.");
-    Expect(flow.Acknowledge("game.actions"),
+    Expect(flow.Acknowledge("game.action"),
         "L'acquittement de la configuration doit demander le demarrage de la salle.");
     Expect(!flow.IsAwaitingRoomStart(),
         "L'acquittement doit attendre la projection system.setup du serveur.");
@@ -19,7 +19,7 @@ void TestStartConfigurationIsSubmittedOnlyOnce()
         "Le démarrage ne doit être demandé qu'après system.setup.complete.");
     Expect(!flow.TryBeginSubmission(setup),
         "La configuration ne doit jamais etre rejouee pendant le demarrage de la salle.");
-    Expect(!flow.Acknowledge("game.actions"),
+    Expect(!flow.Acknowledge("game.action"),
         "Un acquittement duplique ne doit pas redemarrer la salle.");
 
     flow.Reset();

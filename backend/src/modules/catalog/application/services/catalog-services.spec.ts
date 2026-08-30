@@ -21,6 +21,30 @@ describe('catalog services', () => {
     );
   });
 
+  it('merges equivalent collection spellings into one shelf', () => {
+    const mapper = new CatalogMapperService();
+    const games = mapper.toCatalogGames([
+      {
+        id: 'oie',
+        name: "Jeu de l'oie",
+        subcategory: 'VentsSacres',
+      },
+      {
+        id: 'morpion',
+        name: 'Morpion',
+        subcategory: 'Les Vents Sacrés',
+      },
+    ]);
+
+    expect(games.map((game) => game.category)).toEqual([
+      'Vents Sacrés',
+      'Vents Sacrés',
+    ]);
+    expect(mapper.buildCategoryTree(games)).toEqual([
+      expect.objectContaining({ id: 'vents-sacres', name: 'Vents Sacrés' }),
+    ]);
+  });
+
   it('expires cached catalog data and returns defensive list identities', () => {
     jest.useFakeTimers().setSystemTime(1_000);
     const cache = new CatalogCacheService({ ttlMs: 100 });

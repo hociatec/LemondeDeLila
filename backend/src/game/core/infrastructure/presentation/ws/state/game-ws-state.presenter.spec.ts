@@ -14,7 +14,7 @@ describe('GameWsStatePresenter', () => {
       turnIndex: 1,
       players: [{ id: 1, username: 'A' }],
       turn: { currentPlayerId: 1, direction: 1 },
-      metadata: {},
+      metadata: { roomRunId: 7 },
     } as unknown as GameStateEntity;
     const handler = {
       exposeStateForUser: () => ({
@@ -41,6 +41,7 @@ describe('GameWsStatePresenter', () => {
       'P',
       'S',
     ]);
+    expect(payload.runId).toBe(7);
     expect(payload.state).toBeUndefined();
   });
 

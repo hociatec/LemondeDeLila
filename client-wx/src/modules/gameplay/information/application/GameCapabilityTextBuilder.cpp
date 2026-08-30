@@ -59,7 +59,10 @@ std::string GameCapabilityTextBuilder::Build(
     }
     if (capability == "turn")
     {
-        out << state.turnLabel << "\nNuméro : " << state.system.turn.number
+        out << (state.system.turn.currentPlayerId
+                ? "Tour de " + Player(state, *state.system.turn.currentPlayerId)
+                : std::string("Aucun tour actif"))
+            << "\nNuméro : " << state.system.turn.number
             << "\nDirection : " << (state.system.turn.direction == 1 ? "horaire" : "antihoraire");
         if (state.system.turn.actionPointsRemaining)
             out << "\nPoints d’action : " << *state.system.turn.actionPointsRemaining;

@@ -6,6 +6,7 @@
 
 #include "modules/rooms/infrastructure/RoomPayloadCodec.h"
 #include "modules/rooms/infrastructure/RoomProtocol.h"
+#include "shared/errors/application/PresentedErrorPayload.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
 
 namespace lila::modules::rooms::infrastructure
@@ -75,7 +76,8 @@ domain::RoomEvent RoomSessionGateway::DecodeEvent(const nlohmann::json& message)
     const auto payload = message.value("payload", nlohmann::json::object());
     if (type == protocol::Error)
     {
-        auto error = payload.value("message", std::string("Action de table impossible."));
+        auto error = lila::shared::errors::PresentedErrorMessage(
+            payload, "Action de table impossible.");
         if (FailPendingCommands(error)) return {};
         return {domain::RoomEventType::Error, {}, {}, std::move(error), false, {}};
     }

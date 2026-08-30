@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
+#include "shared/errors/application/PresentedErrorPayload.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -65,10 +66,10 @@ domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
     }
     if (type == "error")
     {
-        auto messageText = ReadString(payload, "message");
-        if (messageText.empty()) messageText = ReadString(payload, "error");
+        auto messageText = lila::shared::errors::PresentedErrorMessage(
+            payload, "Action de jeu impossible.");
         return {domain::GameEventType::Error, std::nullopt,
-            messageText.empty() ? std::string("Action de jeu impossible.") : messageText,
+            std::move(messageText),
             true, std::nullopt, {}};
     }
     return {domain::GameEventType::Ignored, std::nullopt, {}, false, std::nullopt, {}};

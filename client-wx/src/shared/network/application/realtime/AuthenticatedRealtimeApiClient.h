@@ -2,6 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include <chrono>
 #include <mutex>
 #include <stop_token>
 #include <string>
@@ -9,6 +10,7 @@
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/realtime/RealtimeApiClient.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
+#include "shared/network/domain/NetworkPolicy.h"
 
 namespace lila::shared::network::realtime
 {
@@ -19,7 +21,9 @@ public:
         std::string endpoint,
         std::string clientVersion,
         websocket::IWebSocketClient& webSocketClient,
-        http::IWsTicketProvider& wsTicketProvider);
+        http::IWsTicketProvider& wsTicketProvider,
+        std::chrono::milliseconds requestTimeout =
+            std::chrono::milliseconds{NetworkTimeouts::ReceiveMs});
 
     [[nodiscard]] RealtimeApiResponse Send(
         const RealtimeApiRequest& request,
@@ -31,6 +35,7 @@ private:
     std::string clientVersion_;
     websocket::IWebSocketClient& webSocketClient_;
     http::IWsTicketProvider& wsTicketProvider_;
+    std::chrono::milliseconds requestTimeout_;
     mutable std::timed_mutex requestMutex_;
 };
 }

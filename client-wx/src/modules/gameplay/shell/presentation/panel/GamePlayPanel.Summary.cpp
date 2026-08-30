@@ -15,8 +15,7 @@ wxString GamePlayPanel::BuildHeaderText() const
         text += FromUtf8(value);
     };
     append(state_.system.setup.phase);
-    append(state_.currentPlayerLabel);
-    append(state_.turnLabel);
+    append(CurrentPlayerLabel(state_));
     if (text.empty()) text = wxString(L"Partie");
     return text;
 }
@@ -28,7 +27,7 @@ wxString GamePlayPanel::BuildStateSummaryText() const
     const auto phase = state_.system.setup.phase.empty()
         ? std::string("?") : state_.system.setup.phase;
     wxString text = FromUtf8(status);
-    if (!state_.turnLabel.empty()) text += wxString(L" - ") + FromUtf8(state_.turnLabel);
+    text += wxString(L" - ") + FromUtf8(TurnLabel(state_));
     text += wxString::Format(
         L" (phase : %s, tour : %d, manche : %d)",
         FromUtf8(phase), state_.system.turn.number, state_.system.round.number);

@@ -46,7 +46,8 @@ std::string OverlayText(const domain::GameGridOverlayView& overlay,
 std::string Describe(const domain::GameGridCellView& cell,
     const domain::GameGridBoardView& board,
     const std::vector<domain::GameAction>& actions,
-    const std::vector<domain::GamePlayer>& players)
+    const std::vector<domain::GamePlayer>& players,
+    const domain::GamePawnsView* pawns)
 {
     std::ostringstream out;
     out << "Plateau " << board.id << ", case " << cell.id;
@@ -54,7 +55,20 @@ std::string Describe(const domain::GameGridCellView& cell,
     else if (!cell.occupied) out << ", libre";
     else out << ", occupée";
     if (!cell.label.empty()) out << ", " << cell.label;
-    if (!cell.pawnId.empty()) out << ", pion";
+    if (!cell.pawnId.empty())
+    {
+        out << ", pion";
+        if (pawns != nullptr)
+        {
+            const auto pawn = std::find_if(pawns->pawns.begin(), pawns->pawns.end(),
+                [&cell](const domain::GamePawnView& value) { return value.id == cell.pawnId; });
+            if (pawn != pawns->pawns.end())
+            {
+                if (!pawn->label.empty()) out << " " << pawn->label;
+                if (pawn->ownerId) out << " de " << PlayerName(players, *pawn->ownerId);
+            }
+        }
+    }
     else if (cell.kind == "wall") out << ", mur";
     else if (cell.kind == "obstacle") out << ", obstacle";
     else if (cell.kind == "goal") out << ", objectif";
@@ -79,7 +93,8 @@ GameGridPanel::GameGridPanel(wxWindow* parent) : wxPanel(parent)
     auto* layout = new wxBoxSizer(wxVERTICAL);
     cells_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
-    cells_->SetName(wxString(L"Grille de jeu. Flèches pour naviguer, Entrée pour activer."));
+    cells_->SetName(wxString(
+        L"Grille de jeu. Flèches pour naviguer, Page précédente ou suivante pour changer de plateau, Entrée pour activer."));
     layout->Add(cells_, 1, wxEXPAND);
     SetSizer(layout);
     Hide();
@@ -87,15 +102,20 @@ GameGridPanel::GameGridPanel(wxWindow* parent) : wxPanel(parent)
 
 void GameGridPanel::Apply(const domain::GameGridView* grid,
     const std::vector<domain::GameAction>& actions,
-    const std::vector<domain::GamePlayer>& players)
+    const std::vector<domain::GamePlayer>& players,
+    const domain::GamePawnsView* pawns)
 {
     const auto previousBoard = SelectedBoardId();
     const auto previousCell = SelectedCellId();
-    Clear();
-    if (grid == nullptr) return;
-    for (const auto& board : grid->boards)
-        for (const auto& cell : board.cells)
-            model_.push_back({board.id, cell.id, Describe(cell, board, actions, players), cell.x, cell.y});
+    std::vector<Cell> nextModel;
+    if (grid != nullptr)
+        for (const auto& board : grid->boards)
+            for (const auto& cell : board.cells)
+                nextModel.push_back({board.id, cell.id,
+                Describe(cell, board, actions, players, pawns), cell.x, cell.y});
+    if (nextModel == model_) return;
+    cells_->Clear();
+    model_ = std::move(nextModel);
     for (const auto& cell : model_) cells_->Append(FromUtf8(cell.description));
     if (!model_.empty())
     {
@@ -114,6 +134,31 @@ bool GameGridPanel::HandleKey(wxKeyEvent& event)
 {
     if (!IsShown() || wxWindow::FindFocus() != cells_ || model_.empty()) return false;
     const int current = std::max(0, cells_->GetSelection());
+    if (event.GetKeyCode() == WXK_PAGEUP || event.GetKeyCode() == WXK_PAGEDOWN)
+    {
+        std::vector<std::string> boards;
+        for (const auto& cell : model_)
+            if (std::find(boards.begin(), boards.end(), cell.boardId) == boards.end())
+                boards.push_back(cell.boardId);
+        if (boards.size() < 2) return true;
+        const auto currentBoard = std::find(boards.begin(), boards.end(),
+            model_[static_cast<std::size_t>(current)].boardId);
+        const auto offset = static_cast<std::size_t>(std::distance(boards.begin(), currentBoard));
+        const auto targetOffset = event.GetKeyCode() == WXK_PAGEDOWN
+            ? (offset + 1) % boards.size() : (offset + boards.size() - 1) % boards.size();
+        const int currentX = model_[static_cast<std::size_t>(current)].x;
+        const int currentY = model_[static_cast<std::size_t>(current)].y;
+        auto target = std::find_if(model_.begin(), model_.end(),
+            [&boards, targetOffset, currentX, currentY](const Cell& cell)
+            { return cell.boardId == boards[targetOffset] && cell.x == currentX && cell.y == currentY; });
+        if (target == model_.end())
+            target = std::find_if(model_.begin(), model_.end(),
+                [&boards, targetOffset](const Cell& cell)
+                { return cell.boardId == boards[targetOffset]; });
+        if (target != model_.end())
+            cells_->SetSelection(static_cast<int>(std::distance(model_.begin(), target)));
+        return true;
+    }
     int x = model_[static_cast<std::size_t>(current)].x;
     int y = model_[static_cast<std::size_t>(current)].y;
     if (event.GetKeyCode() == WXK_LEFT) --x;

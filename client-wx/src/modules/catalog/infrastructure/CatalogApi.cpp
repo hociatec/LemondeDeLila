@@ -1,14 +1,14 @@
 #include "modules/catalog/infrastructure/CatalogApi.h"
 
 #include <string>
+#include <stdexcept>
 
 #include <nlohmann/json.hpp>
 
 #include "modules/catalog/infrastructure/CatalogPayloadCodec.h"
-#include "modules/session/application/SessionStore.h"
 #include "modules/catalog/domain/CatalogErrorMessages.h"
-#include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
-#include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
+#include "shared/errors/presentation/ErrorFormatting.h"
+#include "shared/network/application/realtime/RealtimeApiClient.h"
 
 namespace lila::modules::catalog::infrastructure
 {
@@ -18,9 +18,8 @@ constexpr const char* CatalogAllEvent = "catalog.all";
 }
 
 CatalogApi::CatalogApi(
-    lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client,
-    lila::modules::session::application::SessionStore& sessionStore) noexcept
-    : client_(client), sessionStore_(sessionStore)
+    lila::shared::network::realtime::RealtimeApiClient& client) noexcept
+    : client_(client)
 {
 }
 
@@ -31,14 +30,14 @@ std::vector<domain::CatalogShelf> CatalogApi::GetShelves(std::stop_token stopTok
         return {};
     }
 
-    const auto response = lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
-        client_,
-        sessionStore_,
-        lila::shared::errors::NoActiveCatalogSession,
-        CatalogAllEvent,
-        nlohmann::json::object(),
-        lila::shared::errors::CatalogLoadFailed,
-        stopToken);
+    const auto response = client_.Send(
+        {CatalogAllEvent, nlohmann::json::object()}, stopToken);
+    if (!response.success)
+    {
+        throw std::runtime_error(lila::shared::errors::WithDetails(
+            lila::shared::errors::CatalogLoadFailed,
+            response.errorMessage));
+    }
     if (stopToken.stop_requested())
     {
         return {};

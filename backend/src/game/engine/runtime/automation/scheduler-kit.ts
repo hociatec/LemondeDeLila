@@ -104,7 +104,10 @@ export function projectScheduler(
   state: GameSchedulerState,
   viewerPlayerId: number | null,
   nowMs: number,
-): Record<string, { deadlineMs: number; remainingMs: number }> {
+): Record<
+  string,
+  { deadlineMs: number; remainingMs: number; actionType?: string }
+> {
   return Object.fromEntries(
     Object.values(state.tasks).flatMap((task) => {
       if (task.visibility.kind === 'internal') return [];
@@ -121,6 +124,7 @@ export function projectScheduler(
           {
             deadlineMs: task.dueAtMs,
             remainingMs: Math.max(0, task.dueAtMs - nowMs),
+            ...(task.action?.type ? { actionType: task.action.type } : {}),
           },
         ],
       ];

@@ -51,6 +51,8 @@ export type StableGameSystemView<TEvents extends object = EngineEventMap> = {
 };
 
 export type GameEventPlayerView<TType extends string, TData> = {
+  /** Stable identity within a committed game-state version. */
+  id: string;
   type: TType;
   data: TData;
   actorId: number | null;

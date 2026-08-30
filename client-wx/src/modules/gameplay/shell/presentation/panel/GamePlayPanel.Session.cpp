@@ -49,6 +49,14 @@ void GamePlayPanel::StartJoin()
                     if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
                     if (error || !state)
                     {
+                        if (error)
+                        {
+                            lila::shared::logging::LogError(
+                                "GameSession",
+                                error->DiagnosticDetails().empty()
+                                    ? error->UserMessage()
+                                    : error->DiagnosticDetails());
+                        }
                         const auto message = error ? error->UserMessage() : std::string("Connexion au jeu impossible.");
                         weakThis->UpdateStatus(FromUtf8(message), true, true);
                         return;
@@ -67,7 +75,7 @@ void GamePlayPanel::ExecuteAction(domain::GameAction action)
     auto* service = &service_;
     const auto actionType = action.type;
     SubmitInputCommand(
-        "game.actions",
+        "game.action",
         [service, action = std::move(action)](std::stop_token stopToken)
         {
             service->ExecuteAction(action, stopToken);

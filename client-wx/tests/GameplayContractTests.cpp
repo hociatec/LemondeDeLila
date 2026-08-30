@@ -58,10 +58,11 @@ nlohmann::json V2Payload(const nlohmann::json& legacy)
     nlohmann::json kits{{"score", {{"byPlayer", nlohmann::json::object()},
         {"leaderboard", nlohmann::json::array()}}}};
     if (extras.contains("hand")) kits["cards"] = {{"hands", {{"main", {
-        {"visibility", "owner"}, {"byPlayer", {{"viewer", extras["hand"]}}}}}}}};
+        {"visibility", "owner"}, {"byPlayer", {{"1", extras["hand"]}}}}}}}};
     if (extras.contains("dice")) kits["dice"] = extras["dice"];
     nlohmann::json result{
         {"viewVersion", 1}, {"roomId", legacy.value("roomId", 1)},
+        {"runId", legacy.value("runId", 0)},
         {"version", legacy.value("version", 1)}, {"gameType", legacy.value("gameType", "test")},
         {"system", std::move(system)}, {"kits", std::move(kits)},
         {"effect", nlohmann::json::object()}, {"game", nlohmann::json::object()},
@@ -108,6 +109,7 @@ int main()
         TestStartConfigurationIsSubmittedOnlyOnce();
         TestCommandSubmissionGuardSerializesGameplayCommands();
         TestStructuredGameAcknowledgements();
+        TestStructuredBackendErrorsAreReadable();
         TestCapabilityInformationIsInspectable();
         TestKnownCapabilitiesAreTyped();
         TestPendingMultipleWorkflowsUseOneExplicitAction();
