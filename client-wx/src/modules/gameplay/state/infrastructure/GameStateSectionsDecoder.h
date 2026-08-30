@@ -15,7 +15,7 @@ namespace lila::modules::gameplay::infrastructure::detail
 {
 [[nodiscard]] std::vector<std::string> DecodeLog(const nlohmann::json& payload);
 [[nodiscard]] std::vector<domain::GameAction> DecodeActions(const nlohmann::json& payload);
-[[nodiscard]] std::vector<domain::GameShortcut> DecodeShortcuts(const nlohmann::json& extras);
+[[nodiscard]] std::vector<domain::GameShortcut> DecodeShortcuts(const nlohmann::json& system);
 [[nodiscard]] std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode);
 [[nodiscard]] std::vector<domain::GameLine> BuildLines(const std::vector<domain::GameAction>& actions);
 [[nodiscard]] std::string NormalizeShortcutKey(std::string rawKey);

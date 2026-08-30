@@ -87,6 +87,7 @@ domain::RoomState ReadRoomState(const nlohmann::json& payload)
         (startedAt != room.end() && !startedAt->is_null() &&
          (!startedAt->is_string() || !startedAt->get<std::string>().empty()));
     result.isPrivate = room.value("isPrivate", false);
+    result.tableAmbienceSoundId = room.value("tableAmbienceSoundId", std::string{});
     result.maxPlayers = lila::shared::data::json::ReadRequiredInteger(room, "maxPlayers");
     const auto manifest = payload.find("manifest");
     result.gameName = manifest != payload.end() && manifest->is_object()

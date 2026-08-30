@@ -4,6 +4,7 @@
 #include <utility>
 
 #include <wx/event.h>
+#include <wx/choice.h>
 #include <wx/listbox.h>
 #include <wx/scrolwin.h>
 #include <wx/textctrl.h>
@@ -14,6 +15,7 @@
 #include "modules/gameplay/dice/application/GameDiceActionResolver.h"
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
+#include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
@@ -30,6 +32,12 @@ void GamePlayPanel::BindEvents()
             if (!HandleKey(event)) event.Skip();
         });
     linesList_->Bind(wxEVT_LISTBOX, [this](wxCommandEvent&) { UpdateInfoPanel(); });
+    infoPanelChoice_->Bind(wxEVT_CHOICE, [this](wxCommandEvent&)
+    {
+        const int selected = infoPanelChoice_->GetSelection();
+        if (selected >= 0 && static_cast<std::size_t>(selected) < infoPanelIds_.size())
+            SelectInfoPanel(infoPanelIds_[static_cast<std::size_t>(selected)], true);
+    });
     linesList_->Bind(wxEVT_LISTBOX_DCLICK, [this](wxCommandEvent&) { ActivateSelectedLine(); });
     handPanel_->Bind(
         wxEVT_LISTBOX_DCLICK,
@@ -37,6 +45,9 @@ void GamePlayPanel::BindEvents()
     dicePanel_->Bind(
         wxEVT_LISTBOX_DCLICK,
         [this](wxCommandEvent&) { static_cast<void>(ActivateSelectedDie()); });
+    gridPanel_->Bind(
+        wxEVT_LISTBOX_DCLICK,
+        [this](wxCommandEvent&) { static_cast<void>(ActivateSelectedGridCell()); });
     choicesList_->Bind(
         wxEVT_LISTBOX_DCLICK,
         [this](wxCommandEvent&) { static_cast<void>(ActivateSelectedPendingChoice()); });
@@ -79,9 +90,10 @@ void GamePlayPanel::BindEvents()
             submittedPromptActionType_ = action.type;
             dismissedPromptActionType_.clear();
             const bool startsRoomAfterSubmission = !roomStarted_ && roomStartFlowRequested_ &&
-                state_.prompt && state_.prompt->submitThenStart &&
+                !state_.system.setup.complete && state_.prompt &&
                 state_.prompt->actionType == action.type;
-            if (startsRoomAfterSubmission && !startConfigurationFlow_.TryBeginSubmission())
+            if (startsRoomAfterSubmission &&
+                !startConfigurationFlow_.TryBeginSubmission(state_.system.setup))
                 return;
             ExecuteAction(std::move(action));
             if (!startsRoomAfterSubmission && onZoneFocusRequested_)
@@ -161,9 +173,46 @@ bool GamePlayPanel::ActivateSelectedDie()
     const auto index = selected >= 0 ? static_cast<std::size_t>(selected) : std::size_t{0};
     auto action = application::dice::GameDiceActionResolver::Resolve(
         *state_.dice, state_.actions, index);
-    if (!action) action = ResolveRollAction();
     if (!action) return false;
     PrepareAndExecuteAction(std::move(*action));
+    return true;
+}
+
+bool GamePlayPanel::ActivateSelectedGridCell()
+{
+    const auto cellId = gridPanel_->SelectedCellId();
+    const auto boardId = gridPanel_->SelectedBoardId();
+    if (cellId.empty()) return false;
+    const auto action = std::find_if(
+        state_.actions.begin(), state_.actions.end(),
+        [&cellId, &boardId](const domain::GameAction& candidate)
+        {
+            if (candidate.disabled || !candidate.payload.is_object()) return false;
+            const auto targetBoard = candidate.payload.find("boardId");
+            if (targetBoard != candidate.payload.end() && targetBoard->is_string() &&
+                targetBoard->get<std::string>() != boardId) return false;
+            for (const char* key : {"cellId", "tileId", "position"})
+            {
+                const auto value = candidate.payload.find(key);
+                if (value == candidate.payload.end()) continue;
+                if (value->is_string() && value->get<std::string>() == cellId) return true;
+                if (value->is_number_integer() && std::to_string(value->get<long long>()) == cellId)
+                    return true;
+                if (value->is_object())
+                {
+                    const auto encoded = std::to_string(value->value("x", -1)) + "," +
+                        std::to_string(value->value("y", -1));
+                    if (encoded == cellId) return true;
+                }
+            }
+            return false;
+        });
+    if (action == state_.actions.end())
+    {
+        UpdateStatus(wxString(L"Aucune action disponible pour cette case."), false, true);
+        return true;
+    }
+    PrepareAndExecuteAction(*action);
     return true;
 }
 }

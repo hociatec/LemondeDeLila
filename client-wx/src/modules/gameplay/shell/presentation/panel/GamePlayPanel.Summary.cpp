@@ -1,5 +1,6 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
+#include <algorithm>
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 
 namespace lila::modules::gameplay::presentation
@@ -29,7 +30,20 @@ wxString GamePlayPanel::BuildStateSummaryText() const
     text += wxString::Format(
         L" (phase : %s, tour : %d, manche : %d)",
         FromUtf8(phase), state_.turnIndex, state_.round);
-    if (state_.botThinking) text += wxString(L" - Un bot réfléchit.");
+    if (state_.timers.is_object() && !state_.timers.empty())
+    {
+        text += wxString(L" - Minuteurs : ");
+        bool first = true;
+        for (const auto& timer : state_.timers.items())
+        {
+            if (!timer.value().is_object()) continue;
+            const auto remaining = timer.value().value("remainingMs", 0LL);
+            if (!first) text += wxString(L", ");
+            first = false;
+            text += FromUtf8(timer.key()) + wxString::Format(
+                L" %lld s", std::max<long long>(0, remaining) / 1000);
+        }
+    }
     return text;
 }
 

@@ -26,7 +26,7 @@ void TestServerDrivenPawnSelection()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
     Expect(state.pawnSelection.has_value(), "Le choix de pion actif doit etre decode.");
     Expect(state.pawnSelection->label == "Votre pion.", "Le libelle WPF du choix de pion est attendu.");
     Expect(state.pawnSelection->choices.size() == 2, "Tous les pions serveur doivent etre proposes.");
@@ -53,7 +53,7 @@ void TestPawnSelectionHiddenForPassiveViewer()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
     Expect(!state.pawnSelection.has_value(),
         "Un spectateur ou joueur passif ne doit pas recevoir une liste interactive.");
 }
@@ -125,4 +125,23 @@ void TestOlderGameStateCannotRestoreSetupPrompt()
     Expect(GameStateUpdatePolicy::ShouldApply(roundState, newRunState),
         "Une nouvelle execution doit accepter une version remise a un.");
 }
+}
+void TestCapabilityInformationIsInspectable()
+{
+    using lila::modules::gameplay::application::info::GameCapabilityTextBuilder;
+    lila::modules::gameplay::domain::GameState state;
+    state.system.players.push_back({7, "Lila", false, true});
+    state.system.match.status = "playing";
+    state.system.round.number = 2;
+    state.system.round.status = "playing";
+    state.system.setup.complete = false;
+    state.system.setup.phase = "setup";
+    state.system.setup.ownerPlayerId = 7;
+    state.kits.resources = {{"7", {{"coins", 3}}}};
+    Expect(GameCapabilityTextBuilder::Build(state, "match").find("playing") != std::string::npos,
+        "L'état du match doit être inspectable.");
+    Expect(GameCapabilityTextBuilder::Build(state, "setup").find("Lila") != std::string::npos,
+        "La configuration doit nommer son propriétaire.");
+    Expect(GameCapabilityTextBuilder::Build(state, "resources").find("coins") != std::string::npos,
+        "Chaque capability doit conserver une présentation générique.");
 }

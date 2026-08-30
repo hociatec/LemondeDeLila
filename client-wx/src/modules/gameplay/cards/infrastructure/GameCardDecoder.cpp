@@ -70,9 +70,26 @@ std::vector<domain::GameCard> DecodeArray(const nlohmann::json& value)
 }
 }
 
-std::vector<domain::GameCard> GameCardDecoder::DecodeHand(const nlohmann::json& extras)
+std::vector<domain::GameCard> GameCardDecoder::DecodeVisibleHands(const nlohmann::json& cardsKit)
 {
-    if (!extras.is_object()) return {};
-    return DecodeArray(extras.value("hand", nlohmann::json::array()));
+    std::vector<domain::GameCard> result;
+    if (!cardsKit.is_object()) return result;
+    const auto hands = cardsKit.find("hands");
+    if (hands == cardsKit.end() || !hands->is_object()) return result;
+    for (const auto& hand : hands->items())
+    {
+        if (!hand.value().is_object()) continue;
+        const auto byPlayer = hand.value().find("byPlayer");
+        if (byPlayer == hand.value().end() || !byPlayer->is_object()) continue;
+        for (const auto& playerCards : byPlayer->items())
+        {
+            if (!playerCards.value().is_array()) continue;
+            auto cards = DecodeArray(playerCards.value());
+            result.insert(result.end(),
+                std::make_move_iterator(cards.begin()),
+                std::make_move_iterator(cards.end()));
+        }
+    }
+    return result;
 }
 }

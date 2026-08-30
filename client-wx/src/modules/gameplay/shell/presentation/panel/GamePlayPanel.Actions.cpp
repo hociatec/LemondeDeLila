@@ -7,6 +7,7 @@
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
+#include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -21,6 +22,13 @@ void GamePlayPanel::PrepareAndExecuteAction(domain::GameAction action)
     if (state_.prompt && state_.prompt->actionType == action.type)
     {
         ShowInlinePrompt(std::move(action));
+        return;
+    }
+    if (const auto prompt = application::GameActionPromptFactory::Build(
+            action, state_.actionCatalog))
+    {
+        confirmationPanel_->HideConfirmation();
+        promptPanel_->ShowPrompt(*prompt, std::move(action));
         return;
     }
     ExecuteAction(std::move(action));
@@ -67,15 +75,8 @@ void GamePlayPanel::SyncInlinePrompt()
     auto action = ResolveShortcutAction(state_.prompt->actionType);
     if (!action)
     {
-        action = domain::GameAction{};
-        action->type = state_.prompt->actionType;
-        const auto found = std::find_if(
-            state_.actions.begin(), state_.actions.end(),
-            [this](const domain::GameAction& candidate)
-            {
-                return candidate.type == state_.prompt->actionType;
-            });
-        if (found != state_.actions.end()) *action = *found;
+        promptPanel_->HidePrompt(false);
+        return;
     }
     ShowInlinePrompt(std::move(*action));
 }
@@ -90,6 +91,29 @@ void GamePlayPanel::ShowInlinePrompt(domain::GameAction action)
 bool GamePlayPanel::ActivateSelectedPendingChoice()
 {
     if (!state_.pending || !state_.pending->viewerActionable) return false;
+    if (state_.pending->multipleSelection)
+    {
+        wxArrayInt selections;
+        const auto count = choicesList_->GetSelections(selections);
+        if (count < state_.pending->minimumSelections ||
+            count > state_.pending->maximumSelections)
+        {
+            UpdateStatus(wxString::Format(
+                L"Sélectionnez entre %d et %d éléments.",
+                state_.pending->minimumSelections,
+                state_.pending->maximumSelections), true, true);
+            return true;
+        }
+        if (!state_.pending->selectionAction) return false;
+        auto action = *state_.pending->selectionAction;
+        action.payload["value"] = nlohmann::json::array();
+        for (const auto selected : selections)
+            if (selected >= 0 && static_cast<std::size_t>(selected) < state_.pending->choices.size())
+                action.payload["value"].push_back(
+                    state_.pending->choices[static_cast<std::size_t>(selected)].value);
+        PrepareAndExecuteAction(std::move(action));
+        return true;
+    }
     const int selected = choicesList_->GetSelection();
     if (selected == wxNOT_FOUND || selected < 0 ||
         static_cast<std::size_t>(selected) >= state_.pending->choices.size())

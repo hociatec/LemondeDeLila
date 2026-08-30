@@ -3,6 +3,7 @@
 #include <string>
 #include <optional>
 #include <vector>
+#include <utility>
 
 namespace lila::modules::rooms::domain
 {
@@ -24,6 +25,29 @@ struct RoomMember
 {
     int id = 0;
     std::string name;
+};
+
+struct RoomInviteCandidate final
+{
+    int id = 0;
+    std::string username;
+    std::string availability;
+    bool pendingInvite = false;
+};
+
+struct TableAmbience final
+{
+    std::string soundId;
+    std::string name;
+};
+
+struct RoomInvitation final
+{
+    std::string invitationId;
+    int roomId = 0;
+    std::string roomName;
+    int fromUserId = 0;
+    std::string fromUsername;
 };
 
 struct RoomState
@@ -48,6 +72,7 @@ struct RoomState
     std::vector<RoomMember> spectators;
     std::vector<RoomMember> bots;
     std::vector<std::string> allowedActions;
+    std::string tableAmbienceSoundId;
 };
 
 enum class RoomCommand
@@ -61,13 +86,27 @@ enum class RoomCommand
     Info,
     SendChat,
     Ping,
+    Kick,
+    Ban,
+    SetAmbience,
+    SetOwner,
 };
 
 struct RoomCommandRequest final
 {
+    RoomCommandRequest() = default;
+    RoomCommandRequest(
+        RoomCommand requestedCommand,
+        bool requestedSpectator = false,
+        std::string requestedMessage = {},
+        int requestedTargetUserId = 0)
+        : command(requestedCommand), spectator(requestedSpectator),
+          message(std::move(requestedMessage)), targetUserId(requestedTargetUserId) {}
+
     RoomCommand command = RoomCommand::Info;
     bool spectator = false;
     std::string message;
+    int targetUserId = 0;
 };
 
 struct RoomChatMessage final

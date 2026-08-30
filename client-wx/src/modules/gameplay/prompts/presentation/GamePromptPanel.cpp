@@ -6,6 +6,7 @@
 
 #include <wx/button.h>
 #include <wx/checkbox.h>
+#include <wx/choice.h>
 #include <wx/event.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -67,7 +68,8 @@ std::string GamePromptPanel::BuildSignature(const domain::GamePrompt& prompt)
     std::ostringstream signature;
     signature << prompt.actionType;
     for (const auto& field : prompt.fields)
-        signature << '|' << field.key << ':' << field.kind << ':' << field.initialText;
+        signature << '|' << field.key << ':' << field.kind << ':' << field.initialText
+                  << ':' << nlohmann::json(field.choices).dump();
     return signature.str();
 }
 
@@ -101,7 +103,20 @@ void GamePromptPanel::RebuildFields(const domain::GamePrompt& prompt)
         std::string kind = field.kind;
         std::transform(kind.begin(), kind.end(), kind.begin(),
             [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
-        if (kind == "boolean" || kind == "bool")
+        if (!field.choices.empty())
+        {
+            auto* label = new wxStaticText(this, wxID_ANY, FromUtf8(field.label));
+            label->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
+            fieldsSizer_->Add(label, 0, wxEXPAND | wxBOTTOM, 3);
+            wxArrayString labels;
+            for (const auto& choice : field.choices)
+                labels.Add(FromUtf8(choice.is_string() ? choice.get<std::string>() : choice.dump()));
+            control.choice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, labels);
+            control.choice->SetSelection(0);
+            control.choice->SetName(FromUtf8(field.label));
+            fieldsSizer_->Add(control.choice, 0, wxEXPAND | wxBOTTOM, 8);
+        }
+        else if (kind == "boolean" || kind == "bool")
         {
             control.checkbox = new wxCheckBox(this, wxID_ANY, FromUtf8(field.label));
             const auto parsed = application::GamePromptInputCodec::Parse(field, field.initialText);
@@ -115,8 +130,10 @@ void GamePromptPanel::RebuildFields(const domain::GamePrompt& prompt)
             auto* label = new wxStaticText(this, wxID_ANY, FromUtf8(field.label));
             label->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
             fieldsSizer_->Add(label, 0, wxEXPAND | wxBOTTOM, 3);
+            const long style = wxTE_PROCESS_ENTER | wxWANTS_CHARS |
+                ((kind == "array" || kind == "object" || kind == "json") ? wxTE_MULTILINE : 0);
             control.text = new wxTextCtrl(this, wxID_ANY, FromUtf8(field.initialText),
-                wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | wxWANTS_CHARS);
+                wxDefaultPosition, wxDefaultSize, style);
             control.text->SetName(FromUtf8(field.label));
             fieldsSizer_->Add(control.text, 0, wxEXPAND | wxBOTTOM, 8);
         }
@@ -130,6 +147,15 @@ void GamePromptPanel::Submit()
     auto action = *action_;
     for (const auto& control : fields_)
     {
+        if (control.choice != nullptr)
+        {
+            const int selected = control.choice->GetSelection();
+            if (selected < 0 || static_cast<std::size_t>(selected) >= control.field.choices.size())
+                return;
+            action.payload[control.field.key] =
+                control.field.choices[static_cast<std::size_t>(selected)];
+            continue;
+        }
         const std::string raw = control.checkbox != nullptr
             ? (control.checkbox->GetValue() ? "oui" : "non")
             : std::string(control.text->GetValue().ToUTF8().data());
@@ -173,8 +199,9 @@ std::vector<wxWindow*> GamePromptPanel::TabTargets() const
     std::vector<wxWindow*> controls;
     controls.reserve(fields_.size() + 2);
     for (const auto& field : fields_)
-        controls.push_back(field.checkbox != nullptr ? static_cast<wxWindow*>(field.checkbox)
-                                                     : static_cast<wxWindow*>(field.text));
+        controls.push_back(field.choice != nullptr ? static_cast<wxWindow*>(field.choice)
+            : field.checkbox != nullptr ? static_cast<wxWindow*>(field.checkbox)
+                                        : static_cast<wxWindow*>(field.text));
     controls.push_back(cancelButton_);
     controls.push_back(submitButton_);
     return controls;

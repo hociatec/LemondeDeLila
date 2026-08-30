@@ -12,6 +12,6 @@ class GameDiceDecoder final
 {
 public:
     [[nodiscard]] static std::optional<domain::GameDiceState> Decode(
-        const nlohmann::json& extras);
+        const nlohmann::json& diceKit);
 };
 }

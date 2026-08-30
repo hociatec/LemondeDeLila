@@ -17,6 +17,10 @@ inline constexpr std::string_view Info = "room.info";
 inline constexpr std::string_view SendChat = "room.chat.send";
 inline constexpr std::string_view ChatHistoryRequest = "room.chat.history";
 inline constexpr std::string_view Ping = "room.ping";
+inline constexpr std::string_view Kick = "room.kick";
+inline constexpr std::string_view Ban = "room.ban";
+inline constexpr std::string_view SetAmbience = "room.set-ambience";
+inline constexpr std::string_view SetOwner = "room.set-owner";
 
 inline constexpr std::string_view Created = "room.created";
 inline constexpr std::string_view Joined = "room.joined";

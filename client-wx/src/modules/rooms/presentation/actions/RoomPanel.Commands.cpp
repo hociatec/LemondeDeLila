@@ -38,6 +38,13 @@ void RoomPanel::HandleAction(std::string_view itemId)
     case Action::AddBot: ExecuteCommand({Command::AddBot, false, {}}); return;
     case Action::RemoveBot: ExecuteCommand({Command::RemoveBot, false, {}}); return;
     case Action::ShowInfo: ExecuteCommand({Command::Info, false, {}}); return;
+    case Action::ShowRules: ShowRules(); return;
+    case Action::ConfigureAmbience: ConfigureAmbience(); return;
+    case Action::ConfigureAmbienceVolume: ConfigureAmbienceVolume(); return;
+    case Action::Invite: InvitePlayer(); return;
+    case Action::Kick: ModeratePlayer(false); return;
+    case Action::Ban: ModeratePlayer(true); return;
+    case Action::SetOwner: TransferOwnership(); return;
     case Action::TogglePrivacy: ExecuteCommand({Command::TogglePrivacy, false, {}}); return;
     case Action::ToggleRole:
         ExecuteCommand({Command::SetRole, !room_.selfSpectator, {}});

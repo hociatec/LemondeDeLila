@@ -78,6 +78,13 @@ void GameSessionGateway::RequestState(std::stop_token)
         {"payload", {{"roomId", roomId}, {"gameType", gameType_}}}});
 }
 
+void GameSessionGateway::RequestRules(std::stop_token)
+{
+    if (gameType_.empty()) throw std::runtime_error("Aucune partie active.");
+    SendJson(nlohmann::json{{"type", "game.rules"},
+        {"payload", {{"gameType", gameType_}}}});
+}
+
 void GameSessionGateway::SendKey(std::string_view key, std::stop_token)
 {
     const auto roomId = roomId_.load();

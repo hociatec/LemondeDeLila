@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <deque>
 #include <string>
 
 #include <wx/timer.h>
@@ -9,6 +10,7 @@
 #include "app/navigation/presentation/NavigationDependencies.h"
 #include "app/navigation/presentation/ViewRegistry.h"
 #include "shared/accessibility/application/FocusTransition.h"
+#include "modules/rooms/domain/Room.h"
 
 class wxWindow;
 
@@ -39,6 +41,7 @@ public:
         GameNavigationDependencies game,
         SocialNavigationDependencies social,
         AudioNavigationDependencies audio);
+    ~AppNavigator();
 
     bool Start();
     void FocusCurrentView();
@@ -66,6 +69,7 @@ private:
     void OnSessionRevocationFinished();
     void ArmCloseRevocationTimeout();
     void PrewarmSessionData();
+    void HandleRoomInvitation(lila::modules::rooms::domain::RoomInvitation invitation);
     void ReplaceView(domain::ViewId nextViewId, wxWindow* nextView);
     void OnLoginSucceeded(const lila::modules::user::domain::AuthenticationResult& result);
     void OnLogoutRequested(std::size_t selectedIndex);
@@ -85,6 +89,7 @@ private:
     lila::modules::options::application::OptionsStore& optionsStore_;
     lila::modules::catalog::application::CatalogService& catalogService_;
     lila::modules::rooms::application::RoomLobbyService& roomLobbyService_;
+    lila::modules::rooms::application::RoomInvitationMonitor& roomInvitationMonitor_;
     lila::modules::rooms::application::RoomSessionService& roomSessionService_;
     lila::modules::vault::application::VaultService& vaultService_;
     lila::modules::storybook::application::StoryBookService& storyBookService_;
@@ -108,6 +113,9 @@ private:
     domain::ViewId storyBookReturnView_ = domain::ViewId::Catalog;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> catalogPrewarmTask_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> sessionRevocationTask_;
+    std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> invitationResponseTask_;
+    std::deque<lila::modules::rooms::domain::RoomInvitation> pendingInvitations_;
+    bool invitationDialogOpen_ = false;
     std::unique_ptr<wxTimer> closeRevocationTimeout_;
     bool closing_ = false;
     bool closeFinalized_ = false;

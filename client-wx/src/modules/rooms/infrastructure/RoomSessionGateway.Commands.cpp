@@ -42,6 +42,17 @@ void RoomSessionGateway::Execute(
         payload["clientSentAtMs"] = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()).count();
     }
+    else if (request.command == domain::RoomCommand::Kick ||
+        request.command == domain::RoomCommand::Ban ||
+        request.command == domain::RoomCommand::SetOwner)
+    {
+        if (request.targetUserId <= 0) throw std::invalid_argument("Joueur cible invalide.");
+        payload["userId"] = request.targetUserId;
+    }
+    else if (request.command == domain::RoomCommand::SetAmbience)
+    {
+        payload["soundId"] = request.message;
+    }
 
     const auto traceId = CreateTraceId();
     payload["_trace"] = {

@@ -2,14 +2,16 @@
 
 #include <string_view>
 
+#include "modules/gameplay/state/domain/GameSystem.h"
+
 namespace lila::modules::gameplay::application
 {
 class GameStartConfigurationFlow final
 {
 public:
-    [[nodiscard]] bool TryBeginSubmission() noexcept
+    [[nodiscard]] bool TryBeginSubmission(const domain::GameSetup& setup) noexcept
     {
-        if (phase_ != Phase::Idle) return false;
+        if (phase_ != Phase::Idle || setup.complete) return false;
         phase_ = Phase::AwaitingActionAcknowledgement;
         return true;
     }
@@ -18,6 +20,13 @@ public:
     {
         if (phase_ != Phase::AwaitingActionAcknowledgement || command != "game.actions")
             return false;
+        phase_ = Phase::AwaitingSetupProjection;
+        return true;
+    }
+
+    [[nodiscard]] bool ObserveSetup(const domain::GameSetup& setup) noexcept
+    {
+        if (phase_ != Phase::AwaitingSetupProjection || !setup.complete) return false;
         phase_ = Phase::AwaitingRoomStart;
         return true;
     }
@@ -42,6 +51,7 @@ private:
     {
         Idle,
         AwaitingActionAcknowledgement,
+        AwaitingSetupProjection,
         AwaitingRoomStart,
     };
 

@@ -3,17 +3,21 @@ void TestStartConfigurationIsSubmittedOnlyOnce()
     using lila::modules::gameplay::application::GameStartConfigurationFlow;
 
     GameStartConfigurationFlow flow;
-    Expect(flow.TryBeginSubmission(),
+    lila::modules::gameplay::domain::GameSetup setup;
+    Expect(flow.TryBeginSubmission(setup),
         "La configuration initiale doit pouvoir etre envoyee.");
-    Expect(!flow.TryBeginSubmission(),
+    Expect(!flow.TryBeginSubmission(setup),
         "Un second envoi doit etre refuse pendant l'attente de l'acquittement.");
     Expect(!flow.Acknowledge("game.state"),
         "Un acquittement sans rapport ne doit pas demarrer la salle.");
     Expect(flow.Acknowledge("game.actions"),
         "L'acquittement de la configuration doit demander le demarrage de la salle.");
-    Expect(flow.IsAwaitingRoomStart(),
-        "Apres configuration, le client doit seulement attendre le demarrage de la salle.");
-    Expect(!flow.TryBeginSubmission(),
+    Expect(!flow.IsAwaitingRoomStart(),
+        "L'acquittement doit attendre la projection system.setup du serveur.");
+    setup.complete = true;
+    Expect(flow.ObserveSetup(setup) && flow.IsAwaitingRoomStart(),
+        "Le démarrage ne doit être demandé qu'après system.setup.complete.");
+    Expect(!flow.TryBeginSubmission(setup),
         "La configuration ne doit jamais etre rejouee pendant le demarrage de la salle.");
     Expect(!flow.Acknowledge("game.actions"),
         "Un acquittement duplique ne doit pas redemarrer la salle.");

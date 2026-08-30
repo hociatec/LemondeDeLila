@@ -13,10 +13,6 @@ std::optional<std::size_t> ValidIndex(
     return index;
 }
 
-bool IsClassicRollActionType(const std::string& type)
-{
-    return type == "roll" || type == "ROLL_DICE" || type == "roll_dice";
-}
 }
 
 std::optional<std::size_t> GameDiceActionResolver::ResolveIndex(
@@ -44,23 +40,4 @@ std::optional<domain::GameAction> GameDiceActionResolver::Resolve(
         : std::nullopt;
 }
 
-std::optional<std::size_t> GameDiceActionResolver::ResolveClassicRollIndex(
-    const std::vector<domain::GameAction>& actions)
-{
-    for (std::size_t index = 0; index < actions.size(); ++index)
-    {
-        if (!actions[index].disabled && IsClassicRollActionType(actions[index].type))
-            return index;
-    }
-    return std::nullopt;
-}
-
-std::optional<domain::GameAction> GameDiceActionResolver::ResolveClassicRoll(
-    const std::vector<domain::GameAction>& actions)
-{
-    const auto index = ResolveClassicRollIndex(actions);
-    return index.has_value()
-        ? std::optional<domain::GameAction>(actions[*index])
-        : std::nullopt;
-}
 }

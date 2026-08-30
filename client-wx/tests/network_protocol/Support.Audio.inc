@@ -29,6 +29,8 @@ public:
     }
 
     void StopLoop() override {}
+    void StartTableAmbience(std::string_view) override {}
+    void SetTableAmbienceVolume(int) override {}
 
     void SetBackground(lila::modules::audio::domain::AudioBackground background) override
     {
@@ -86,4 +88,3 @@ public:
     int interruptCount = 0;
     int shutdownCount = 0;
 };
-

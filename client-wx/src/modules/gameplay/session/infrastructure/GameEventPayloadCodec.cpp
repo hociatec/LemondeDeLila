@@ -30,13 +30,13 @@ bool ReadBoolean(const nlohmann::json& value, const char* field, bool fallback)
 domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
 {
     if (!message.is_object())
-        return {domain::GameEventType::Ignored, std::nullopt, {}, false, std::nullopt};
+        return {domain::GameEventType::Ignored, std::nullopt, {}, false, std::nullopt, {}};
     const auto type = ReadString(message, "type");
     const auto payload = message.value("payload", nlohmann::json::object());
     if (type == "game.state")
     {
         return {domain::GameEventType::StateUpdated,
-            GameStatePayloadCodec::DecodeState(payload), {}, false, std::nullopt};
+            GameStatePayloadCodec::DecodeState(payload), {}, false, std::nullopt, {}};
     }
     if (type == "game.ack")
     {
@@ -49,12 +49,19 @@ domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
         acknowledgement.message = ReadString(payload, "message");
         return {domain::GameEventType::Acknowledged, std::nullopt,
             acknowledgement.command, !acknowledgement.ok,
-            std::move(acknowledgement)};
+            std::move(acknowledgement), {}};
     }
     if (type == "game.turn")
     {
         return {domain::GameEventType::TurnUpdated, std::nullopt,
-            ReadString(payload, "currentPlayerUsername"), false, std::nullopt};
+            ReadString(payload, "currentPlayerUsername"), false, std::nullopt, {}};
+    }
+    if (type == "game.rules")
+    {
+        domain::GameEvent event;
+        event.type = domain::GameEventType::Rules;
+        event.rules = ReadString(payload, "rules");
+        return event;
     }
     if (type == "error")
     {
@@ -62,8 +69,8 @@ domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
         if (messageText.empty()) messageText = ReadString(payload, "error");
         return {domain::GameEventType::Error, std::nullopt,
             messageText.empty() ? std::string("Action de jeu impossible.") : messageText,
-            true, std::nullopt};
+            true, std::nullopt, {}};
     }
-    return {domain::GameEventType::Ignored, std::nullopt, {}, false, std::nullopt};
+    return {domain::GameEventType::Ignored, std::nullopt, {}, false, std::nullopt, {}};
 }
 }

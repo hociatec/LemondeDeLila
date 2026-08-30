@@ -4,13 +4,16 @@
 
 #include <wx/app.h>
 #include <wx/msgdlg.h>
+#include <wx/weakref.h>
 
 #include "app/navigation/presentation/HostFrame.h"
 #include "modules/audio/application/IAudioService.h"
 #include "modules/options/application/OptionsStore.h"
+#include "modules/rooms/application/RoomInvitationMonitor.h"
 #include "modules/presence/application/PresenceMonitor.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/logging/application/Logger.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 #include "modules/update/application/UpdateSignals.h"
 
@@ -27,6 +30,7 @@ AppNavigator::AppNavigator(
       optionsStore_(auth.optionsStore),
       catalogService_(game.catalogService),
       roomLobbyService_(game.roomLobbyService),
+      roomInvitationMonitor_(game.roomInvitationMonitor),
       roomSessionService_(game.roomSessionService),
       vaultService_(game.vaultService),
       storyBookService_(game.storyBookService),
@@ -38,6 +42,14 @@ AppNavigator::AppNavigator(
       presenceMonitor_(social.presenceMonitor),
       audioService_(audio.audioService)
 {
+}
+
+AppNavigator::~AppNavigator()
+{
+    roomInvitationMonitor_.SetInvitationHandler({});
+    roomInvitationMonitor_.Stop();
+    presenceMonitor_.Stop();
+    if (invitationResponseTask_) invitationResponseTask_->RequestCancel();
 }
 
 bool AppNavigator::Start()
@@ -59,6 +71,17 @@ bool AppNavigator::Start()
                 audioService_.Play(lila::modules::audio::domain::SoundCue::Selection);
             });
         hostFrame_->SetPresenceRequestedHandler([this]() { ShowPresence(); });
+        roomInvitationMonitor_.SetInvitationHandler(
+            [this](modules::rooms::domain::RoomInvitation invitation)
+            {
+                const wxWeakRef<HostFrame> weakFrame(hostFrame_);
+                if (!weakFrame) return;
+                weakFrame->CallAfter(
+                    [this, weakFrame, invitation = std::move(invitation)]() mutable
+                    {
+                        if (weakFrame) HandleRoomInvitation(std::move(invitation));
+                    });
+            });
         hostFrame_->SetCloseRequestedHandler(
             [this]()
             {

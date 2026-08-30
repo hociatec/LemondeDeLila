@@ -88,14 +88,27 @@ c++ "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" \
   "$ROOT/src/modules/gameplay/dice/application/GameDiceTextBuilder.cpp" \
   "$ROOT/src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp" \
   "$ROOT/src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp" \
+  "$ROOT/src/modules/gameplay/prompts/application/GameActionPromptFactory.cpp" \
+  "$ROOT/src/modules/gameplay/session/infrastructure/GameEventPayloadCodec.cpp" \
   "$ROOT/src/modules/gameplay/history/presentation/GameLogCursor.cpp" \
+  "$ROOT/src/modules/gameplay/information/application/GameCapabilityTextBuilder.cpp" \
   "$ROOT/src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp" \
   "$ROOT/src/modules/gameplay/state/infrastructure/GamePendingDecoder.cpp" \
   "$ROOT/src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp" \
   "$ROOT/src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GameSystemDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/domain/GameKits.cpp" \
   "$ROOT/src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp" \
   -o "$BUILD_DIR/gameplay-contract-tests"
 "$BUILD_DIR/gameplay-contract-tests"
+
+c++ "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
+  "$ROOT/tests/RoomContractTests.cpp" \
+  "$ROOT/src/modules/rooms/infrastructure/RoomInvitationPayloadCodec.cpp" \
+  "$ROOT/src/modules/rooms/infrastructure/TableAmbiencePayloadCodec.cpp" \
+  "$ROOT/src/modules/rooms/presentation/shortcuts/RoomShortcutPolicy.cpp" \
+  -o "$BUILD_DIR/room-contract-tests"
+"$BUILD_DIR/room-contract-tests"
 
 c++ "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
   "$ROOT/tests/ServiceResilienceTests.cpp" \

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <charconv>
 #include <cctype>
+#include <cmath>
 #include <system_error>
 
 namespace lila::modules::gameplay::application
@@ -38,15 +39,32 @@ GamePromptInputResult GamePromptInputCodec::Parse(
     if (kind == "number")
     {
         const auto text = Trim(std::move(rawValue));
-        int value = 0;
+        double value = 0.0;
         const auto parsed = std::from_chars(text.data(), text.data() + text.size(), value);
-        if (text.empty() || parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size())
+        if (text.empty() || parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size() ||
+            !std::isfinite(value)) return Invalid("Saisissez un nombre.");
+        if (field.integer && std::trunc(value) != value)
             return Invalid("Saisissez un nombre entier.");
         if (field.minimum && value < *field.minimum)
             return Invalid("La valeur minimale est " + std::to_string(*field.minimum) + ".");
         if (field.maximum && value > *field.maximum)
             return Invalid("La valeur maximale est " + std::to_string(*field.maximum) + ".");
-        return {true, value, {}};
+        return field.integer
+            ? GamePromptInputResult{true, static_cast<long long>(value), {}}
+            : GamePromptInputResult{true, value, {}};
+    }
+
+    if (kind == "array" || kind == "object" || kind == "json")
+    {
+        auto value = nlohmann::json::parse(rawValue, nullptr, false);
+        if (value.is_discarded()) return Invalid("Saisissez une valeur JSON valide.");
+        if (kind == "array" && !value.is_array()) return Invalid("Une liste JSON est attendue.");
+        if (kind == "object" && !value.is_object()) return Invalid("Un objet JSON est attendu.");
+        if (field.minimum && value.is_array() && value.size() < static_cast<std::size_t>(*field.minimum))
+            return Invalid("La liste est trop courte.");
+        if (field.maximum && value.is_array() && value.size() > static_cast<std::size_t>(*field.maximum))
+            return Invalid("La liste est trop longue.");
+        return {true, std::move(value), {}};
     }
 
     if (kind == "boolean")

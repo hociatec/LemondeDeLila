@@ -21,6 +21,10 @@ inline std::string_view Type(domain::RoomCommand command)
     case domain::RoomCommand::Info: return protocol::Info;
     case domain::RoomCommand::SendChat: return protocol::SendChat;
     case domain::RoomCommand::Ping: return protocol::Ping;
+    case domain::RoomCommand::Kick: return protocol::Kick;
+    case domain::RoomCommand::Ban: return protocol::Ban;
+    case domain::RoomCommand::SetAmbience: return protocol::SetAmbience;
+    case domain::RoomCommand::SetOwner: return protocol::SetOwner;
     }
     throw std::invalid_argument("Commande de table inconnue.");
 }
@@ -31,7 +35,11 @@ inline bool NeedsAcknowledgement(domain::RoomCommand command)
         command == domain::RoomCommand::Reset ||
         command == domain::RoomCommand::AddBot ||
         command == domain::RoomCommand::RemoveBot ||
-        command == domain::RoomCommand::TogglePrivacy;
+        command == domain::RoomCommand::TogglePrivacy ||
+        command == domain::RoomCommand::Kick ||
+        command == domain::RoomCommand::Ban ||
+        command == domain::RoomCommand::SetAmbience ||
+        command == domain::RoomCommand::SetOwner;
 }
 
 }

@@ -4,8 +4,6 @@
 #include <limits>
 #include <string>
 
-#include <nlohmann/json.hpp>
-
 namespace lila::modules::gameplay::domain
 {
 enum class GameLineKind
@@ -24,6 +22,5 @@ struct GameLine final
     GameLineKind kind = GameLineKind::Info;
     std::size_t actionIndex = NoAction;
     bool enabled = true;
-    nlohmann::json raw = nlohmann::json::object();
 };
 }

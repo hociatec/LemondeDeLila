@@ -48,6 +48,20 @@ std::vector<lila::shared::ui::controls::VerticalMenuItem> RoomPresentationModel:
         items.push_back({"room:players", wxString(L"Lister les joueurs")});
     if (Allows(room, "room.info"))
         items.push_back({"room:info", wxString(L"Informations sur la table")});
+    if (Allows(room, "room.rules"))
+        items.push_back({"room:rules", wxString(L"Règles du jeu")});
+    if (Allows(room, "room.set-ambience"))
+        items.push_back({"room:ambience", wxString(L"Choisir l’ambiance de table")});
+    if (Allows(room, "room.tableAmbienceVolume"))
+        items.push_back({"room:ambience-volume", wxString(L"Volume de l’ambiance")});
+    if (Allows(room, "room.invite"))
+        items.push_back({"room:invite", wxString(L"Inviter un utilisateur")});
+    if (Allows(room, "room.kick"))
+        items.push_back({"room:kick", wxString(L"Exclure un joueur")});
+    if (Allows(room, "room.ban"))
+        items.push_back({"room:ban", wxString(L"Bannir un joueur")});
+    if (Allows(room, "room.set-owner"))
+        items.push_back({"room:set-owner", wxString(L"Transférer la propriété")});
     if (Allows(room, "room.toggle-privacy"))
         items.push_back({"room:privacy", room.isPrivate
             ? wxString(L"Rendre la table publique")
@@ -111,6 +125,13 @@ RoomPresentationModel::Action RoomPresentationModel::ActionForId(std::string_vie
     if (id == "room:remove-bot") return Action::RemoveBot;
     if (id == "room:players") return Action::ShowPlayers;
     if (id == "room:info") return Action::ShowInfo;
+    if (id == "room:rules") return Action::ShowRules;
+    if (id == "room:ambience") return Action::ConfigureAmbience;
+    if (id == "room:ambience-volume") return Action::ConfigureAmbienceVolume;
+    if (id == "room:invite") return Action::Invite;
+    if (id == "room:kick") return Action::Kick;
+    if (id == "room:ban") return Action::Ban;
+    if (id == "room:set-owner") return Action::SetOwner;
     if (id == "room:privacy") return Action::TogglePrivacy;
     if (id == "room:role") return Action::ToggleRole;
     if (id == "room:save") return Action::Save;

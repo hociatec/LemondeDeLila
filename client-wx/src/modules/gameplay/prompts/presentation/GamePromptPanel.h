@@ -12,6 +12,7 @@
 
 class wxButton;
 class wxCheckBox;
+class wxChoice;
 class wxKeyEvent;
 class wxSizer;
 class wxStaticText;
@@ -47,6 +48,7 @@ private:
         domain::GamePromptField field;
         wxTextCtrl* text = nullptr;
         wxCheckBox* checkbox = nullptr;
+        wxChoice* choice = nullptr;
     };
 
     void BuildLayout();

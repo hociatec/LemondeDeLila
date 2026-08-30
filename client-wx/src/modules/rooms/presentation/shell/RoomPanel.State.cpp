@@ -24,6 +24,7 @@ void RoomPanel::ApplyRoom(domain::RoomState room)
     room.gameSummary = room_.gameSummary;
     room.gameEngine = room_.gameEngine;
     room_ = std::move(room);
+    audioService_.StartTableAmbience(room_.tableAmbienceSoundId);
     state_ = State::Ready;
     ShowRoom();
 }

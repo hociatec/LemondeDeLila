@@ -10,6 +10,7 @@ class GameLogCursor final
 public:
     [[nodiscard]] std::vector<std::string> ExtractNew(
         const std::vector<std::string>& messages);
+    void Restore(const std::vector<std::string>& messages);
     void Reset() noexcept;
 
 private:
