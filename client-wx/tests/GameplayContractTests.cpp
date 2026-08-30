@@ -10,7 +10,6 @@
 #include "modules/gameplay/actions/application/GameActionPresentationPolicy.h"
 #include "modules/gameplay/actions/application/GameCommandSubmissionGuard.h"
 #include "modules/gameplay/dice/application/GameDiceActionResolver.h"
-#include "modules/gameplay/dice/application/GameDiceRollTracker.h"
 #include "modules/gameplay/dice/application/GameDiceTextBuilder.h"
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
@@ -18,6 +17,7 @@
 #include "modules/gameplay/session/application/GameStartConfigurationFlow.h"
 #include "modules/gameplay/session/infrastructure/GameEventPayloadCodec.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
+#include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
 #include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
@@ -96,12 +96,11 @@ int main()
         TestServerDrivenKeyboardActionsSurviveTheClientContract();
         TestOpaqueServerDrivenHandAndShortcuts();
         TestSpecializedActionsAreNotDuplicated();
-        TestLegacySpecializedActionsAreNotDuplicated();
+        TestUnmappedSpecializedActionsRemainGeneric();
         TestPendingChoicesUseOnlyExplicitServerMappings();
         TestPendingChoicesStayPassiveWithoutServerMapping();
         TestGenericDiceContract();
         TestClassicRollActionContract();
-        TestDiceRollTracker();
         TestServerDrivenPawnSelection();
         TestPawnSelectionHiddenForPassiveViewer();
         TestGameLogCursor();
@@ -113,6 +112,7 @@ int main()
         TestCapabilityInformationIsInspectable();
         TestKnownCapabilitiesAreTyped();
         TestPendingMultipleWorkflowsUseOneExplicitAction();
+        TestPendingSelectionPolicy();
         TestEventsHaveStableIdentityAndAccessibleText();
         TestGridActionResolutionUsesBoardAndCell();
         std::cout << "Gameplay contract tests passed.\n";

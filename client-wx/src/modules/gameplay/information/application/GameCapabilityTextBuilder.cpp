@@ -77,7 +77,11 @@ std::string GameCapabilityTextBuilder::Build(
         if (state.system.setup.ownerPlayerId)
             out << "\nPropriétaire : " << Player(state, *state.system.setup.ownerPlayerId);
         if (!state.system.setup.values.empty())
-            out << "\nValeurs publiques\n" << JsonLines(state.system.setup.values, "  ");
+        {
+            out << "\nValeurs publiques\n";
+            for (const auto& [key, value] : state.system.setup.values)
+                out << "  " << HumanLabel(key) << " : " << ValueLines(value, "    ") << '\n';
+        }
         return out.str();
     }
     if (capability == "effect" && state.effect)

@@ -29,10 +29,13 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         return;
     case domain::GameEventType::Acknowledged:
     {
-        domain::GameAcknowledgement fallback;
-        fallback.command = event.message;
-        fallback.ok = true;
-        const auto acknowledgement = event.acknowledgement.value_or(fallback);
+        if (!event.acknowledgement)
+        {
+            lila::shared::logging::LogError(
+                "GameInput", "Acknowledgement payload missing.");
+            return;
+        }
+        const auto& acknowledgement = *event.acknowledgement;
         lila::shared::logging::LogInfo(
             "GameInput", "Acknowledgement received: " + acknowledgement.command);
         static_cast<void>(inputSubmissionGuard_.Acknowledge(

@@ -3,7 +3,6 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
-#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -42,10 +41,9 @@ std::string PrimitiveId(const nlohmann::json& object, const char* key)
     return {};
 }
 
-domain::GameSubmissionValue SubmissionValue(const nlohmann::json& raw)
+std::optional<domain::GameSubmissionValue> SubmissionValue(const nlohmann::json& raw)
 {
     domain::GameSubmissionValue result;
-    result.fallback = DecodeGameValue(raw);
     if (raw.is_string())
     {
         result.kind = domain::GameSubmissionValueKind::Text;
@@ -64,7 +62,7 @@ domain::GameSubmissionValue SubmissionValue(const nlohmann::json& raw)
         result.boolean = raw.get<bool>();
         return result;
     }
-    if (!raw.is_object()) return result;
+    if (!raw.is_object()) return std::nullopt;
     result.label = detail::ReadString(raw, "label");
     result.text = detail::ReadString(raw, "text");
     if (result.text.empty()) result.text = detail::ReadString(raw, "value");
@@ -81,7 +79,9 @@ domain::GameSubmissionValue SubmissionValue(const nlohmann::json& raw)
     else if (!(result.id = PrimitiveId(raw, "id")).empty())
         result.kind = domain::GameSubmissionValueKind::Option;
     else if (!result.text.empty()) result.kind = domain::GameSubmissionValueKind::Text;
-    return result;
+    return result.kind == domain::GameSubmissionValueKind::Unknown
+        ? std::nullopt
+        : std::optional<domain::GameSubmissionValue>(std::move(result));
 }
 }
 
@@ -149,7 +149,11 @@ std::optional<domain::GameSubmissionsView> GameWorkflowCapabilitiesDecoder::Subm
             const auto values = item.value().find("valuesByPlayerId");
             if (values != item.value().end() && values->is_object())
                 for (const auto& value : values->items())
-                    try { session.visibleValues.emplace(std::stoi(value.key()), SubmissionValue(value.value())); }
+                    try
+                    {
+                        if (auto decoded = SubmissionValue(value.value()))
+                            session.visibleValues.emplace(std::stoi(value.key()), std::move(*decoded));
+                    }
                     catch (const std::exception&) {}
             const auto own = item.value().find("ownValue");
             if (own != item.value().end()) session.ownValue = SubmissionValue(*own);
@@ -182,7 +186,6 @@ std::optional<domain::GameEffectView> GameWorkflowCapabilitiesDecoder::Effect(
     }
     result.status = detail::ReadString(raw, "status");
     result.resolved = detail::ReadBool(raw, "resolved") || result.status == "resolved";
-    result.data = DecodeGameValue(raw);
     return result;
 }
 

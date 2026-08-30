@@ -1,4 +1,4 @@
-void TestRoomSessionGatewayUsesWpfHandshakeContract()
+void TestRoomSessionGatewayUsesBackendHandshakeContract()
 {
     lila::modules::session::application::SessionStore sessionStore(
         std::make_unique<InMemorySessionRepository>());
@@ -10,6 +10,8 @@ void TestRoomSessionGatewayUsesWpfHandshakeContract()
     sessionStore.Open(session, false);
 
     FakeRoomWebSocketClient socket;
+    for (int index = 0; index < 40; ++index)
+        socket.responses.push_back(nlohmann::json{{"type", "pong"}}.dump());
     socket.responses.push_back(nlohmann::json{
         {"type", "room.created"},
         {"roomId", 42},
@@ -53,6 +55,28 @@ void TestRoomSessionGatewayUsesWpfHandshakeContract()
     Expect(command.at("type") == "room.create", "Type room.create attendu");
     Expect(command.at("payload").at("gameType") == "four-winds", "gameType cree attendu");
 
+    auto roomMessage = [](const char* type, int roomId)
+    {
+        return nlohmann::json{
+            {"type", type}, {"roomId", roomId},
+            {"payload", {
+                {"manifest", {{"id", "four-winds"}, {"name", "Les quatre vents"},
+                    {"minPlayers", 2}, {"maxPlayers", 4}}},
+                {"room", {
+                    {"id", roomId}, {"name", "Table test"}, {"gameType", "four-winds"},
+                    {"status", "setup"}, {"isPrivate", false}, {"maxPlayers", 4},
+                    {"owner", {{"id", 7}, {"username", "alice"}}},
+                    {"players", nlohmann::json::array({{{"id", 7}, {"username", "alice"}}})},
+                    {"spectators", nlohmann::json::array()},
+                    {"bots", nlohmann::json::array()},
+                    {"allowedActions", nlohmann::json::array({"bot.add"})}}}}}};
+    };
+    socket.QueueResponse(roomMessage("room.updated", 99).dump());
+    socket.QueueResponse(roomMessage("room.joined", 42).dump());
+    const auto joined = gateway.Join(42, false, {});
+    Expect(joined.id == 42,
+        "Le handshake join doit ignorer un etat d'une autre table.");
+
     socket.responses.push_back(nlohmann::json{
         {"type", "room.updated"},
         {"roomId", 42},
@@ -92,7 +116,7 @@ void TestRoomSessionGatewayUsesWpfHandshakeContract()
     auto startFuture = std::async(
         std::launch::async,
         [&gateway]() { gateway.Execute({lila::modules::rooms::domain::RoomCommand::Start}, {}); });
-    const auto startCommand = nlohmann::json::parse(socket.WaitForSentPayload(2));
+    const auto startCommand = nlohmann::json::parse(socket.WaitForSentPayload(3));
     Expect(startCommand.at("type") == "room.start", "Commande room.start attendue");
     const auto setup = gateway.ReceiveEvent({});
     Expect(
@@ -130,7 +154,7 @@ void TestRoomSessionGatewayUsesWpfHandshakeContract()
             gateway.Execute(
                 {lila::modules::rooms::domain::RoomCommand::TogglePrivacy}, {});
         });
-    const auto privacyCommand = nlohmann::json::parse(socket.WaitForSentPayload(3));
+    const auto privacyCommand = nlohmann::json::parse(socket.WaitForSentPayload(4));
     const auto announcement = gateway.ReceiveEvent({});
     Expect(
         announcement.type == lila::modules::rooms::domain::RoomEventType::Announcement,
@@ -217,5 +241,5 @@ void TestRoomSessionGatewayUsesWpfHandshakeContract()
             codedError.message == "Commande de table inconnue.",
         "Les erreurs codees du nouveau backend doivent etre presentees lisiblement");
 
-    std::cout << "[TEST PASSED] RoomSessionGatewayUsesWpfHandshakeContract\n";
+    std::cout << "[TEST PASSED] RoomSessionGatewayUsesBackendHandshakeContract\n";
 }

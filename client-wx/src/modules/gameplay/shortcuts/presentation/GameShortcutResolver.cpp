@@ -1,8 +1,6 @@
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 
 #include <algorithm>
-#include <string_view>
-
 #include <wx/event.h>
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
@@ -11,15 +9,6 @@ namespace lila::modules::gameplay::presentation::shortcuts
 {
 namespace
 {
-std::string UnmodifiedFallback(const std::string& normalizedKey)
-{
-    constexpr std::string_view ShiftPrefix = "SHIFT+";
-    if (normalizedKey.size() == ShiftPrefix.size() + 1 &&
-        normalizedKey.compare(0, ShiftPrefix.size(), ShiftPrefix) == 0)
-        return normalizedKey.substr(ShiftPrefix.size());
-    return {};
-}
-
 const domain::GameShortcut* FindAvailableAction(
     const domain::GameState& state,
     const std::string& normalizedKey)
@@ -54,16 +43,9 @@ const domain::GameShortcut* GameShortcutResolver::Find(
     const domain::GameState& state,
     const std::string& normalizedKey)
 {
-    // As in the WPF client, a currently available game action wins over an
-    // interface panel using the same key. Explicit Shift+ shortcuts win first,
-    // then Shift falls back to the ordinary letter shortcut.
+    // A currently available game action wins over an interface panel using the same key.
     if (const auto* action = FindAvailableAction(state, normalizedKey)) return action;
-    if (const auto* interfaceShortcut = FindInterface(state, normalizedKey)) return interfaceShortcut;
-
-    const auto fallback = UnmodifiedFallback(normalizedKey);
-    if (fallback.empty()) return nullptr;
-    if (const auto* action = FindAvailableAction(state, fallback)) return action;
-    return FindInterface(state, fallback);
+    return FindInterface(state, normalizedKey);
 }
 
 std::optional<domain::GameAction> GameShortcutResolver::ResolveAction(

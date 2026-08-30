@@ -21,12 +21,12 @@ void GamePlayPanel::RebuildInfoPanelChoices()
         std::pair{"economy", L"Marché et économie"}, std::pair{"ownership", L"Propriétés"},
         std::pair{"collections", L"Collections"}, std::pair{"quiz", L"Quiz"},
         std::pair{"submissions", L"Soumissions"}};
-    infoPanelChoice_->Clear();
-    infoPanelIds_.clear();
-    const auto append = [this](std::string id, const wchar_t* label)
+    std::vector<std::string> nextIds;
+    std::vector<wxString> nextLabels;
+    const auto append = [&nextIds, &nextLabels](std::string id, const wchar_t* label)
     {
-        infoPanelIds_.push_back(std::move(id));
-        infoPanelChoice_->Append(wxString(label));
+        nextIds.push_back(std::move(id));
+        nextLabels.emplace_back(label);
     };
     append("details", L"Détails de l’action sélectionnée");
     append("match", L"Match");
@@ -39,6 +39,14 @@ void GamePlayPanel::RebuildInfoPanelChoices()
     if (state_.effect) append("effect", L"Effet courant");
     if (!state_.timers.empty()) append("timers", L"Minuteries");
     if (!state_.game.empty()) append("specific", L"Informations spécifiques");
+    if (nextIds == infoPanelIds_)
+    {
+        infoPanelChoice_->Show(infoPanelIds_.size() > 1);
+        return;
+    }
+    infoPanelChoice_->Clear();
+    infoPanelIds_ = std::move(nextIds);
+    for (const auto& label : nextLabels) infoPanelChoice_->Append(label);
     const auto selected = std::find(infoPanelIds_.begin(), infoPanelIds_.end(), activeInfoPanel_);
     if (selected == infoPanelIds_.end()) activeInfoPanel_ = "details";
     const auto current = std::find(infoPanelIds_.begin(), infoPanelIds_.end(), activeInfoPanel_);

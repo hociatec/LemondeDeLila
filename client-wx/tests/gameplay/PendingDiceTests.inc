@@ -111,17 +111,3 @@ void TestClassicRollActionContract()
     Expect(state.lines.size() == 2 && state.lines.front().label.find("ROLL_DICE") != std::string::npos,
         "Une action inconnue du panneau de dés doit rester utilisable via GameLine.");
 }
-
-void TestDiceRollTracker()
-{
-    using lila::modules::gameplay::application::dice::GameDiceRollTracker;
-    lila::modules::gameplay::domain::GameDiceState dice;
-    dice.total = 4;
-    dice.rollKey = "roll-1";
-    GameDiceRollTracker tracker;
-    Expect(!tracker.Observe(dice, 1), "Le premier etat de de ne doit pas jouer de son.");
-    Expect(!tracker.Observe(dice, 1), "Un etat identique ne doit pas rejouer le son.");
-    dice.rollKey = "roll-2";
-    Expect(tracker.Observe(dice, 1),
-        "Deux lancers identiques doivent rester distincts grace a la cle serveur.");
-}

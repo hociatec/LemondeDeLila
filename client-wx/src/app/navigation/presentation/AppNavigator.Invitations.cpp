@@ -5,6 +5,7 @@
 
 #include <wx/msgdlg.h>
 #include <wx/weakref.h>
+#include <wx/window.h>
 
 #include "app/navigation/presentation/HostFrame.h"
 #include "modules/audio/application/IAudioService.h"
@@ -15,6 +16,15 @@
 
 namespace lila::app::navigation
 {
+namespace
+{
+void RestoreInvitationFocus(const wxWeakRef<wxWindow>& target)
+{
+    if (target && target->IsShownOnScreen() && target->IsEnabled() && target->AcceptsFocus())
+        target->SetFocus();
+}
+}
+
 void AppNavigator::HandleRoomInvitation(modules::rooms::domain::RoomInvitation invitation)
 {
     if (invitationResponseTask_ || invitationDialogOpen_)
@@ -29,6 +39,7 @@ void AppNavigator::HandleRoomInvitation(modules::rooms::domain::RoomInvitation i
     const auto room = invitation.roomName.empty()
         ? wxString::Format(L"table %d", invitation.roomId)
         : lila::shared::text::FromUtf8(invitation.roomName);
+    const wxWeakRef<wxWindow> focusedBefore(wxWindow::FindFocus());
     invitationDialogOpen_ = true;
     const bool accept = wxMessageBox(
         sender + wxString(L" vous invite à rejoindre ") + room + wxString(L". Accepter ?"),
@@ -36,6 +47,7 @@ void AppNavigator::HandleRoomInvitation(modules::rooms::domain::RoomInvitation i
         wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION,
         hostFrame_) == wxYES;
     invitationDialogOpen_ = false;
+    RestoreInvitationFocus(focusedBefore);
 
     auto* service = &roomLobbyService_;
     const wxWeakRef<HostFrame> weakFrame(hostFrame_);
@@ -54,8 +66,10 @@ void AppNavigator::HandleRoomInvitation(modules::rooms::domain::RoomInvitation i
                 if (!weakFrame) return;
                 if (error)
                 {
+                    const wxWeakRef<wxWindow> focusedBeforeError(wxWindow::FindFocus());
                     wxMessageBox(lila::shared::text::FromUtf8(error->UserMessage()),
                         wxString(L"Invitation"), wxOK | wxICON_ERROR, weakFrame);
+                    RestoreInvitationFocus(focusedBeforeError);
                 }
                 else if (accept) JoinRoom(roomId, false);
                 if (!pendingInvitations_.empty())

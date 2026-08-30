@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
+#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
 #include "shared/data/json/JsonCoercion.h"
 
 namespace lila::modules::gameplay::infrastructure
@@ -22,6 +23,61 @@ std::optional<std::int64_t> OptionalInt64(const nlohmann::json& value, const cha
     if (found == value.end() || found->is_null() || !found->is_number_integer())
         return std::nullopt;
     return found->get<std::int64_t>();
+}
+
+std::string EventText(const nlohmann::json& data, const char* key)
+{
+    const auto found = data.find(key);
+    if (found == data.end()) return {};
+    if (found->is_string()) return found->get<std::string>();
+    if (found->is_number_integer()) return std::to_string(found->get<long long>());
+    if (found->is_number_float()) return std::to_string(found->get<double>());
+    return {};
+}
+
+std::string EventContent(const nlohmann::json& data, const char* key)
+{
+    const auto found = data.find(key);
+    if (found == data.end()) return {};
+    if (found->is_string() || found->is_number()) return EventText(data, key);
+    if (!found->is_object()) return {};
+    for (const auto* labelKey : {"label", "name", "title", "id", "cardId", "itemId"})
+        if (const auto value = EventText(*found, labelKey); !value.empty()) return value;
+    return {};
+}
+
+domain::GameEngineEventData DecodeEventData(
+    const std::string& eventType, const nlohmann::json& data)
+{
+    domain::GameEngineEventData result;
+    result.message = EventText(data, "message");
+    result.content = EventContent(data, "card");
+    result.deckId = EventText(data, "deckId");
+    result.resourceId = EventText(data, "resource");
+    result.itemId = EventText(data, "itemId");
+    result.pawnId = EventText(data, "pawnId");
+    result.total = EventText(data, "total");
+    result.value = EventText(data, "value");
+    result.amount = EventText(data, "amount");
+    result.fromPosition = EventText(data, "from");
+    result.toPosition = EventText(data, "to");
+    result.position = EventText(data, "position");
+    result.number = EventText(data, "number");
+    result.count = EventText(data, "count");
+    result.playerId = OptionalInt(data, "playerId");
+    if (eventType == "resource.transferred")
+    {
+        result.sourcePlayerId = OptionalInt(data, "from");
+        result.targetPlayerId = OptionalInt(data, "to");
+    }
+    else
+    {
+        result.sourcePlayerId = OptionalInt(data, "fromPlayerId");
+        result.targetPlayerId = OptionalInt(data, "toPlayerId");
+    }
+    result.leftPlayerId = OptionalInt(data, "leftPlayerId");
+    result.rightPlayerId = OptionalInt(data, "rightPlayerId");
+    return result;
 }
 
 std::vector<int> IntArray(const nlohmann::json& object, const char* key)
@@ -132,7 +188,10 @@ domain::GameSystem GameSystemDecoder::Decode(const nlohmann::json& system)
     result.setup.complete = detail::ReadBool(setup, "complete");
     result.setup.phase = detail::ReadString(setup, "phase");
     result.setup.ownerPlayerId = OptionalInt(setup, "ownerPlayerId");
-    result.setup.values = detail::ObjectOrEmpty(setup.value("values", nlohmann::json::object()));
+    const auto setupValues = setup.find("values");
+    if (setupValues != setup.end() && setupValues->is_object())
+        for (const auto& item : setupValues->items())
+            result.setup.values.emplace(item.key(), DecodeGameValue(item.value()));
     const auto events = detail::ObjectOrEmpty(system.value("events", nlohmann::json::object()));
     const auto latest = events.find("latestByType");
     if (latest != events.end() && latest->is_object())
@@ -142,10 +201,12 @@ domain::GameSystem GameSystemDecoder::Decode(const nlohmann::json& system)
             domain::GameEngineEvent event;
             event.id = detail::ReadString(item.value(), "id");
             event.type = detail::ReadString(item.value(), "type");
-            if (event.type.empty()) event.type = item.key();
-            event.data = detail::ObjectOrEmpty(item.value().value("data", nlohmann::json::object()));
+            const auto occurredAtMs = OptionalInt64(item.value(), "occurredAtMs");
+            if (event.id.empty() || event.type.empty() || !occurredAtMs) continue;
+            event.details = DecodeEventData(event.type, detail::ObjectOrEmpty(
+                item.value().value("data", nlohmann::json::object())));
             event.actorId = OptionalInt(item.value(), "actorId");
-            event.occurredAtMs = OptionalInt64(item.value(), "occurredAtMs").value_or(0);
+            event.occurredAtMs = *occurredAtMs;
             event.sequence = OptionalInt64(item.value(), "sequence");
             result.events.push_back(std::move(event));
         }

@@ -12,6 +12,7 @@
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "modules/rooms/domain/RoomErrorMessages.h"
 #include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/logging/application/Logger.h"
 
 namespace lila::modules::rooms::presentation
 {
@@ -49,6 +50,12 @@ void RoomPanel::StartRequest()
                     if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
                     if (error || !room)
                     {
+                        if (error)
+                            lila::shared::logging::LogError(
+                                "Rooms",
+                                error->DiagnosticDetails().empty()
+                                    ? error->UserMessage()
+                                    : error->DiagnosticDetails());
                         const auto message = error ? error->UserMessage()
                             : std::string(lila::shared::errors::RoomConnectionFailed);
                         weakThis->ShowError(lila::shared::text::FromUtf8(message), {});

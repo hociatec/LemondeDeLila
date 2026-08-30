@@ -3,7 +3,9 @@
 #include <condition_variable>
 #include <deque>
 #include <mutex>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 #include <nlohmann/json_fwd.hpp>
@@ -32,7 +34,10 @@ public:
 private:
     void Connect(std::stop_token stopToken);
     void SendJson(const nlohmann::json& message);
-    [[nodiscard]] domain::RoomState AwaitState(std::stop_token stopToken);
+    [[nodiscard]] domain::RoomState AwaitState(
+        std::optional<int> expectedRoomId,
+        std::string_view requiredMessageType,
+        std::stop_token stopToken);
     [[nodiscard]] domain::RoomEvent DecodeEvent(const nlohmann::json& message);
     [[nodiscard]] std::string CreateTraceId();
     void CompleteAcknowledgement(std::string_view traceId);
