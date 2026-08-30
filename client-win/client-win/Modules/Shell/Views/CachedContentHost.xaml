@@ -1,8 +1,0 @@
-<UserControl x:Class="client_win.Modules.Shell.Views.CachedContentHost"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Focusable="True"
-             IsTabStop="False">
-    <Grid x:Name="HostGrid"/>
-</UserControl>
-
