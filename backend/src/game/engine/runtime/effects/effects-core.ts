@@ -1,5 +1,5 @@
 import type { GameContext } from '../game-rule-context';
-import { typedRuntimeHandler } from '../actions/parsed-input';
+import { typedRuntimeHandler } from '../definitions/typed-runtime-handler';
 import type {
   GameInputDescriptor,
   GameInputSchema,

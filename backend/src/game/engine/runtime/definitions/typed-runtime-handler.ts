@@ -1,6 +1,6 @@
-import type { GameInputSchema } from './game-input-schema';
+import type { GameInputSchema } from '../actions/game-input-schema';
 
-/** Single raw -> schema -> typed-value entry point shared by runtime registries. */
+/** Canonical raw -> schema -> typed-value boundary shared by runtime registries. */
 export function parseRuntimeInput<TValue>(
   schema: GameInputSchema<TValue>,
   raw: unknown,
@@ -9,7 +9,7 @@ export function parseRuntimeInput<TValue>(
   return schema.parse(raw, path);
 }
 
-/** Shared existential boundary for actions, choices and effects. */
+/** Existential runtime adapter shared by actions, choices and effects. */
 export type TypedRuntimeHandler<TValue, TExecution, TResult = void> = {
   readonly input: GameInputSchema<TValue>;
   parse(raw: unknown): TValue;

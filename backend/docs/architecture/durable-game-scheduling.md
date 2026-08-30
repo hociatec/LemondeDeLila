@@ -40,3 +40,9 @@ destruction.
 `setInterval`, vérifie son propriétaire et interdit toute nouvelle utilisation
 non classée. Une échéance durable nouvelle doit passer par un port de scheduler,
 jamais être ajoutée à cette liste par commodité.
+
+`npm run test:redis:bullmq` utilise Redis et de vrais workers BullMQ pour prouver
+les délais, retries, annulations, reprise après arrêt d'un worker, concurrence et
+double livraison d'une même commande logique. Le test applicatif
+`game-realtime-automation.service.spec.ts` prouve séparément que cette double
+livraison ne peut produire qu'un commit CAS.

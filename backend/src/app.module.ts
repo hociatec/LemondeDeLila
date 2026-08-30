@@ -31,6 +31,7 @@ import { SoundsModule } from './modules/sounds/public-api';
 import { UpdateModule, UpdatePolicyService } from './modules/update/public-api';
 import { UserModule } from './modules/user/public-api';
 import { VaultModule } from './modules/vault/public-api';
+import { ORM_ENTITIES } from './typeorm-entities';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { VaultModule } from './modules/vault/public-api';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: createDatabaseOptions,
+      useFactory: (config: ConfigService) =>
+        createDatabaseOptions(config, ORM_ENTITIES),
     }),
     UserModule,
     ChatModule,

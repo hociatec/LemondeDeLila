@@ -10,7 +10,7 @@ import type {
 
 export class GameJudgeController {
   constructor(
-    private readonly state: SubmissionKitState,
+    private readonly state: SubmissionKitState<unknown>,
     private readonly players: readonly PlayerStateEntity[],
     private readonly emit: SubmissionEmitter,
   ) {}

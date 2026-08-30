@@ -47,12 +47,13 @@ describe('game system view event visibility', () => {
       ),
     ];
 
-    expect(projectEventsForPlayer(events, 1).latestByType.split?.data).toEqual({
-      count: 2,
-      card: 'mine',
-    });
+    type SplitEvents = { split: { count: number; card?: string } };
     expect(
-      projectEventsForPlayer(events, null).latestByType.split?.data,
+      projectEventsForPlayer<SplitEvents>(events, 1).latestByType.split?.data,
+    ).toEqual({ count: 2, card: 'mine' });
+    expect(
+      projectEventsForPlayer<SplitEvents>(events, null).latestByType.split
+        ?.data,
     ).toEqual({ count: 2 });
   });
 });

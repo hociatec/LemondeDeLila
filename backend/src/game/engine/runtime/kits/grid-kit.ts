@@ -14,10 +14,10 @@ export type GridDefinition = {
 };
 
 export type GridPosition = { x: number; y: number };
-export type GridKitState = {
-  cells: Record<string, Record<string, unknown>>;
+export type GridKitState<TCellState = unknown, TOverlayState = unknown> = {
+  cells: Record<string, Record<string, TCellState>>;
   /** Typed-by-caller board layers for edges, walls and other grid overlays. */
-  overlays: Record<string, Record<string, unknown[]>>;
+  overlays: Record<string, Record<string, TOverlayState[]>>;
 };
 
 export const grid = {
@@ -34,9 +34,9 @@ export const grid = {
   },
 };
 
-export class GameGridController {
+export class GameGridController<TCellState = unknown, TOverlayState = unknown> {
   constructor(
-    private readonly state: GridKitState,
+    private readonly state: GridKitState<TCellState, TOverlayState>,
     definitions: readonly GridDefinition[] = [],
   ) {
     this.state.overlays ??= {};
@@ -95,7 +95,10 @@ export class GameGridController {
     );
   }
 
-  get<TValue>(boardId: string, position: GridPosition): TValue | null {
+  get<TValue extends TCellState = TCellState>(
+    boardId: string,
+    position: GridPosition,
+  ): TValue | null {
     if (!this.inside(boardId, position)) return null;
     return (
       (this.state.cells[boardId]?.[cellKey(position)] as TValue | undefined) ??
@@ -103,7 +106,11 @@ export class GameGridController {
     );
   }
 
-  set<TValue>(boardId: string, position: GridPosition, value: TValue): void {
+  set<TValue extends TCellState>(
+    boardId: string,
+    position: GridPosition,
+    value: TValue,
+  ): void {
     if (!this.inside(boardId, position)) {
       throw new GameRuleViolationError(
         'GRID_POSITION_OUT_OF_BOUNDS',
@@ -119,7 +126,7 @@ export class GameGridController {
     delete this.state.cells[boardId]?.[cellKey(position)];
   }
 
-  entries<TValue>(
+  entries<TValue extends TCellState = TCellState>(
     boardId: string,
   ): Array<{ position: GridPosition; value: TValue }> {
     this.requireBoard(boardId);
@@ -131,12 +138,15 @@ export class GameGridController {
     );
   }
 
-  overlays<TValue>(boardId: string, layerId: string): readonly TValue[] {
+  overlays<TValue extends TOverlayState = TOverlayState>(
+    boardId: string,
+    layerId: string,
+  ): readonly TValue[] {
     this.requireBoard(boardId);
     return (this.state.overlays[boardId]?.[layerId] ?? []) as TValue[];
   }
 
-  setOverlays<TValue>(
+  setOverlays<TValue extends TOverlayState>(
     boardId: string,
     layerId: string,
     values: readonly TValue[],
@@ -147,7 +157,11 @@ export class GameGridController {
     ];
   }
 
-  appendOverlay<TValue>(boardId: string, layerId: string, value: TValue): void {
+  appendOverlay<TValue extends TOverlayState>(
+    boardId: string,
+    layerId: string,
+    value: TValue,
+  ): void {
     this.requireBoard(boardId);
     ((this.state.overlays[boardId] ??= {})[layerId] ??= []).push(
       structuredClone(value),
@@ -173,7 +187,10 @@ export class GameGridController {
     return empty;
   }
 
-  lineWinner<TValue>(boardId: string, length: number): TValue | null {
+  lineWinner<TValue extends TCellState = TCellState>(
+    boardId: string,
+    length: number,
+  ): TValue | null {
     const board = this.requireBoard(boardId);
     const cells = Array.from(
       { length: board.width * board.height },
@@ -214,7 +231,10 @@ export class GameGridController {
   }
 }
 
-export function createGridKitState(): GridKitState {
+export function createGridKitState<
+  TCellState = unknown,
+  TOverlayState = unknown,
+>(): GridKitState<TCellState, TOverlayState> {
   return { cells: {}, overlays: {} };
 }
 

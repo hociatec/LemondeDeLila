@@ -9,6 +9,7 @@ réutilisable, sans déplacer des invariants entre plusieurs fichiers.
 
 | Fichier | Responsabilité vérifiée | Décision |
 |---|---|---|
+| `runtime/game-rule-context.ts` | composition des capacités disponibles pendant une règle | conserver comme façade de composition : chaque getter délègue à un contrôleur spécialisé et aucun état métier parallèle n'y est stocké |
 | `definitions/game-definition-contracts.ts` | contrat statique complet d'une définition compilée | conserver groupé : séparer actions, définition et état créerait des imports circulaires autour de `GameContext` et `DeclarativeState` |
 | `runtime/public-api.ts` | manifeste explicite des exports internes autorisés | conserver explicite : le nombre de lignes ne mesure pas la surface, verrouillée par le test du hash des exports SDK |
 | `kits/pawn-kit.ts` | définition, état et contrôleur atomique des pions | conserver groupé ; aucune seconde source d'état |
@@ -20,6 +21,7 @@ réutilisable, sans déplacer des invariants entre plusieurs fichiers.
 | `kits/quiz-kit.ts` | cycle de vie atomique d'une session de quiz | conserver groupé ; le catalogue statique est déjà délégué à `quizContent` |
 | `room-gateway-state.service.ts` | lecture/projection WS et resynchronisation | présentation uniquement ; aucune mutation métier |
 | `room-gateway-command.service.ts` | validation d'enveloppe, auth et délégation des commandes | orchestration de transport uniquement ; mutations déléguées aux services applicatifs |
+| `sounds/infrastructure/storage/sounds.service.ts` | façade de stockage audio, manifeste et délégation des opérations | conserver comme façade : upload, maintenance et ambiances sont déjà isolés dans trois managers ; le service ne réimplémente pas leurs workflows |
 
 Toute croissance au-delà des seuils de structure, toute dépendance métier ajoutée
 aux services Room ou toute deuxième source d'état invalide cette revue et doit

@@ -190,3 +190,119 @@ test('lets composition modules wire another component entity without opening rep
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('rejects private imports across business modules', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-architecture-'));
+  try {
+    fs.mkdirSync(path.join(root, 'modules', 'user', 'application'), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(root, 'modules', 'vault', 'domain'), {
+      recursive: true,
+    });
+    fs.writeFileSync(
+      path.join(root, 'modules', 'user', 'application', 'service.ts'),
+      "import { secret } from '../../vault/domain/secret';\nvoid secret;\n",
+    );
+    fs.writeFileSync(
+      path.join(root, 'modules', 'vault', 'domain', 'secret.ts'),
+      'export const secret = true;\n',
+    );
+
+    const analysis = analyzeArchitecture({ root, contract });
+    assert.equal(
+      analysis.violations.some(
+        (entry) => entry.rule === 'cross-component-deep-import',
+      ),
+      true,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('rejects shared depending on business code', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-architecture-'));
+  try {
+    fs.mkdirSync(path.join(root, 'shared', 'utils'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'modules', 'user'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'shared', 'utils', 'helper.ts'),
+      "import { userApi } from '../../modules/user/public-api';\nvoid userApi;\n",
+    );
+    fs.writeFileSync(
+      path.join(root, 'modules', 'user', 'public-api.ts'),
+      'export const userApi = true;\n',
+    );
+
+    const analysis = analyzeArchitecture({ root, contract });
+    assert.equal(
+      analysis.violations.some(
+        (entry) => entry.rule === 'shared-dependency-direction',
+      ),
+      true,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('rejects platform depending on business code', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-architecture-'));
+  try {
+    fs.mkdirSync(path.join(root, 'platform', 'redis', 'application'), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(root, 'modules', 'user'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'platform', 'redis', 'application', 'adapter.ts'),
+      "import { userApi } from '../../../modules/user/public-api';\nvoid userApi;\n",
+    );
+    fs.writeFileSync(
+      path.join(root, 'modules', 'user', 'public-api.ts'),
+      'export const userApi = true;\n',
+    );
+
+    const analysis = analyzeArchitecture({ root, contract });
+    assert.equal(
+      analysis.violations.some(
+        (entry) => entry.rule === 'platform-dependency-direction',
+      ),
+      true,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('reports a real cycle between components', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-architecture-'));
+  try {
+    fs.mkdirSync(path.join(root, 'modules', 'user'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'modules', 'vault'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'modules', 'user', 'public-api.ts'),
+      "import { vaultApi } from '../vault/public-api';\nexport const userApi = vaultApi;\n",
+    );
+    fs.writeFileSync(
+      path.join(root, 'modules', 'vault', 'public-api.ts'),
+      "import { userApi } from '../user/public-api';\nexport const vaultApi = userApi;\n",
+    );
+
+    const analysis = analyzeArchitecture({ root, contract });
+    assert.equal(
+      analysis.violations.some((entry) => entry.rule === 'component-cycle'),
+      true,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('keeps the complete modules, game, platform and shared graph clean', () => {
+  const analysis = analyzeArchitecture();
+  assert.deepEqual(groupViolations(analysis.violations), []);
+  for (const component of ['user', 'game', 'platform.database', 'shared.utils']) {
+    assert.equal(analysis.components.has(component), true);
+  }
+});

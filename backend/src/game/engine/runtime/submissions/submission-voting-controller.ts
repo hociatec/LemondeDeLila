@@ -5,11 +5,13 @@ import {
 import { sameSerializableValue } from '../state/serializable-value';
 import { GameSubmissionController } from './submission-controller';
 
-export class GameVotingController extends GameSubmissionController {
+export class GameVotingController<
+  TSubmission = unknown,
+> extends GameSubmissionController<TSubmission> {
   open(options: {
     id: string;
     players?: readonly number[];
-    choices?: readonly unknown[];
+    choices?: readonly TSubmission[];
     secret?: boolean;
   }): void {
     if (!options.choices || options.choices.length === 0) {
@@ -20,7 +22,11 @@ export class GameVotingController extends GameSubmissionController {
     this.createSession('vote', options, options.choices);
   }
 
-  vote<TValue>(id: string, playerId: number, value: TValue): void {
+  vote<TValue extends TSubmission>(
+    id: string,
+    playerId: number,
+    value: TValue,
+  ): void {
     const session = this.requireOpen(id, 'vote', playerId);
     if (
       !session.allowedValues?.some((candidate) =>
@@ -48,14 +54,14 @@ export class GameVotingController extends GameSubmissionController {
     this.closeWhenComplete(session);
   }
 
-  tally(id: string): Array<{ value: unknown; votes: number }> {
+  tally(id: string): Array<{ value: TSubmission; votes: number }> {
     const session = this.require(id);
     if (session.kind !== 'vote' || !session.closed) {
       throw new GameStateViolationError('Vote encore ouvert', {
         sessionId: id,
       });
     }
-    const results: Array<{ value: unknown; votes: number }> = [];
+    const results: Array<{ value: TSubmission; votes: number }> = [];
     for (const value of Object.values(session.valuesByPlayerId)) {
       const existing = results.find((candidate) =>
         sameSerializableValue(candidate.value, value),

@@ -4,10 +4,10 @@ import type {
   SubmissionPlayerView,
 } from '../submissions/submission-controller';
 
-export function projectSubmissions(
-  state: SubmissionKitState,
+export function projectSubmissions<TSubmission>(
+  state: SubmissionKitState<TSubmission>,
   viewerPlayerId: number | null,
-): SubmissionPlayerView {
+): SubmissionPlayerView<TSubmission> {
   return {
     stage: projectSubmissionStage(state),
     sessions: Object.fromEntries(
@@ -58,7 +58,7 @@ export function projectSubmissions(
 }
 
 function projectSubmissionStage(
-  state: SubmissionKitState,
+  state: SubmissionKitState<unknown>,
 ): SubmissionFlowStage {
   const sessions = Object.values(state.sessions);
   const vote = sessions.find((session) => session.kind === 'vote');

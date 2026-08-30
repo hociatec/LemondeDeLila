@@ -5,23 +5,23 @@ import {
 import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
 import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
 
-export type SubmissionSession = {
+export type SubmissionSession<TSubmission = unknown> = {
   id: string;
   kind: 'submission' | 'vote';
   participantPlayerIds: number[];
-  valuesByPlayerId: Record<string, unknown>;
-  allowedValues: readonly unknown[] | null;
+  valuesByPlayerId: Record<string, TSubmission>;
+  allowedValues: readonly TSubmission[] | null;
   secret: boolean;
   closed: boolean;
   revealed: boolean;
 };
 
-export type SubmissionKitState = {
-  sessions: Record<string, SubmissionSession>;
+export type SubmissionKitState<TSubmission = unknown> = {
+  sessions: Record<string, SubmissionSession<TSubmission>>;
   judges: Record<string, { playerIds: number[]; index: number }>;
 };
 
-export type SubmissionPlayerView = {
+export type SubmissionPlayerView<TSubmission = unknown> = {
   stage: SubmissionFlowStage;
   sessions: Record<
     string,
@@ -30,8 +30,8 @@ export type SubmissionPlayerView = {
       participantPlayerIds: number[];
       submittedPlayerIds: number[];
       pendingPlayerIds: number[];
-      valuesByPlayerId?: Record<string, unknown>;
-      ownValue?: unknown;
+      valuesByPlayerId?: Record<string, TSubmission>;
+      ownValue?: TSubmission;
       closed: boolean;
       revealed: boolean;
     }
@@ -56,13 +56,15 @@ export type SubmissionEmitter = (
   visibility?: EventVisibility,
 ) => void;
 
-export function createSubmissionKitState(): SubmissionKitState {
+export function createSubmissionKitState<
+  TSubmission = unknown,
+>(): SubmissionKitState<TSubmission> {
   return { sessions: {}, judges: {} };
 }
 
-export class GameSubmissionController {
+export class GameSubmissionController<TSubmission = unknown> {
   constructor(
-    protected readonly state: SubmissionKitState,
+    protected readonly state: SubmissionKitState<TSubmission>,
     protected readonly players: readonly PlayerStateEntity[],
     protected readonly emit: SubmissionEmitter,
   ) {}
@@ -75,7 +77,11 @@ export class GameSubmissionController {
     this.createSession('submission', options, null);
   }
 
-  submit<TValue>(id: string, playerId: number, value: TValue): void {
+  submit<TValue extends TSubmission>(
+    id: string,
+    playerId: number,
+    value: TValue,
+  ): void {
     const session = this.requireOpen(id, 'submission', playerId);
     session.valuesByPlayerId[String(playerId)] = structuredClone(value);
     this.emit(
@@ -93,7 +99,11 @@ export class GameSubmissionController {
     this.closeWhenComplete(session);
   }
 
-  replace<TValue>(id: string, playerId: number, value: TValue): void {
+  replace<TValue extends TSubmission>(
+    id: string,
+    playerId: number,
+    value: TValue,
+  ): void {
     const session = this.require(id);
     if (
       session.kind !== 'submission' ||
@@ -136,7 +146,7 @@ export class GameSubmissionController {
     return this.state.sessions[id] != null;
   }
 
-  session(id: string): SubmissionSession | null {
+  session(id: string): SubmissionSession<TSubmission> | null {
     const session = this.state.sessions[id];
     return session ? structuredClone(session) : null;
   }
@@ -163,7 +173,9 @@ export class GameSubmissionController {
     });
   }
 
-  reveal<TValue>(id: string): Record<string, TValue> {
+  reveal<TValue extends TSubmission = TSubmission>(
+    id: string,
+  ): Record<string, TValue> {
     const session = this.require(id);
     if (!session.closed) {
       throw new GameStateViolationError('Soumissions encore ouvertes', {
@@ -179,7 +191,9 @@ export class GameSubmissionController {
     return structuredClone(session.valuesByPlayerId as Record<string, TValue>);
   }
 
-  values<TValue>(id: string): Record<string, TValue> {
+  values<TValue extends TSubmission = TSubmission>(
+    id: string,
+  ): Record<string, TValue> {
     return structuredClone(
       this.require(id).valuesByPlayerId as Record<string, TValue>,
     );
@@ -196,7 +210,7 @@ export class GameSubmissionController {
       players?: readonly number[];
       secret?: boolean;
     },
-    allowedValues: readonly unknown[] | null,
+    allowedValues: readonly TSubmission[] | null,
   ): void {
     if (
       this.state.sessions[options.id] &&
@@ -238,7 +252,7 @@ export class GameSubmissionController {
     });
   }
 
-  protected require(id: string): SubmissionSession {
+  protected require(id: string): SubmissionSession<TSubmission> {
     const session = this.state.sessions[id];
     if (!session) {
       throw new GameStateViolationError('Session de soumission absente', {
@@ -252,7 +266,7 @@ export class GameSubmissionController {
     id: string,
     kind: SubmissionSession['kind'],
     playerId: number,
-  ): SubmissionSession {
+  ): SubmissionSession<TSubmission> {
     const session = this.require(id);
     if (session.kind !== kind || session.closed) {
       throw new GameRuleViolationError('SUBMISSION_CLOSED', { id, kind });
@@ -272,7 +286,7 @@ export class GameSubmissionController {
     return session;
   }
 
-  protected closeWhenComplete(session: SubmissionSession): void {
+  protected closeWhenComplete(session: SubmissionSession<TSubmission>): void {
     if (this.pendingPlayers(session.id).length > 0) return;
     session.closed = true;
     this.emit(`${session.kind}.closed`, { sessionId: session.id });

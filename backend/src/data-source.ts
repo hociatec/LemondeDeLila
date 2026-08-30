@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { join } from 'node:path';
-import { ORM_ENTITIES } from './platform/database/entities';
+import { ORM_ENTITIES } from './typeorm-entities';
 import {
   getProcessEnvironment,
   readEnvironmentBoolean,
