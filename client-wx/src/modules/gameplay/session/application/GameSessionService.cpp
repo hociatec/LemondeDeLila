@@ -65,9 +65,18 @@ void GameSessionService::SendKey(std::string_view key, std::stop_token stopToken
     gateway_.SendKey(key, stopToken);
 }
 
-void GameSessionService::ExecuteAction(const domain::GameAction& action, std::stop_token stopToken)
+void GameSessionService::ExecuteAction(
+    const domain::GameCommandEnvelope& command,
+    std::stop_token stopToken)
 {
-    gateway_.ExecuteAction(action, stopToken);
+    gateway_.ExecuteAction(command, stopToken);
+}
+
+void GameSessionService::RequestActionCandidates(
+    const domain::GameActionCandidatesRequest& request,
+    std::stop_token stopToken)
+{
+    gateway_.RequestActionCandidates(request, stopToken);
 }
 
 void GameSessionService::Close()
@@ -107,6 +116,8 @@ void GameSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t gene
                         exception.what(),
                         true,
                         std::nullopt,
+                        {},
+                        std::nullopt,
                         {}},
                     generation);
             }
@@ -122,6 +133,8 @@ void GameSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t gene
                         std::nullopt,
                         "Connexion au jeu interrompue.",
                         true,
+                        std::nullopt,
+                        {},
                         std::nullopt,
                         {}},
                     generation);

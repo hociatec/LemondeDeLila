@@ -11,19 +11,24 @@ export class AddSystemBotToRoomService {
   ) {}
 
   async execute(roomId: number): Promise<BotRoomRecord> {
-    return this.rooms.runRoomMutation(roomId, () => this.executeLocked(roomId));
+    return this.rooms.runRoomMutation(roomId, (rooms) =>
+      this.executeLocked(rooms, roomId),
+    );
   }
 
-  private async executeLocked(roomId: number): Promise<BotRoomRecord> {
-    const room = this.policy.requireRoom(await this.rooms.findRoomById(roomId));
+  private async executeLocked(
+    rooms: BotRoomRepository,
+    roomId: number,
+  ): Promise<BotRoomRecord> {
+    const room = this.policy.requireRoom(await rooms.findRoomById(roomId));
 
     const [humans, existingBots] = await Promise.all([
-      this.rooms.countActiveHumansForRoom(room.id),
-      this.rooms.listBotsForRoom(room.id),
+      rooms.countActiveHumansForRoom(room.id),
+      rooms.listBotsForRoom(room.id),
     ]);
     this.policy.ensureCapacity(room, humans, existingBots.length);
 
     const name = await this.names.pickName(existingBots);
-    return this.rooms.createBot({ roomId: room.id, name });
+    return rooms.createBot({ roomId: room.id, name });
   }
 }

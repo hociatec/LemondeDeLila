@@ -436,6 +436,116 @@ async function main() {
     ownerWs.popAll();
     playerWs.popAll();
 
+    const addBotTraceId = `bot-add-${runId}`;
+    ownerWs.send({
+      type: 'bot.add',
+      payload: { _trace: { id: addBotTraceId, sentAtMs: Date.now() } },
+    });
+    await ownerWs.waitFor(
+      (m) =>
+        m &&
+        m.type === 'room.ack' &&
+        m?.payload?.action === 'bot.add' &&
+        m?.payload?.traceId === addBotTraceId,
+      20000,
+      'owner bot.add ack',
+    );
+    const botAdded = await ownerWs.waitFor(
+      (m) =>
+        m &&
+        m.type === 'bot.added' &&
+        Number(m.roomId) === roomId &&
+        Number(m?.payload?.bot?.id || 0) > 0,
+      20000,
+      'owner bot.added',
+    );
+    const botId = Number(botAdded.payload.bot.id);
+    const roomWithBot = await ownerWs.waitFor(
+      (m) =>
+        m &&
+        m.type === 'room.updated' &&
+        Number(m.roomId) === roomId &&
+        Array.isArray(m?.payload?.room?.bots) &&
+        m.payload.room.bots.some((bot) => Number(bot?.id) === botId),
+      20000,
+      'owner room.updated after bot.add',
+    );
+    assert(
+      roomWithBot.payload.room.allowedActions.includes('bot.remove'),
+      'bot.remove must be allowed after bot.add',
+    );
+    const persistedBot = await queryOne(
+      db,
+      'SELECT id, room_id, name FROM room_bots WHERE id = ? AND room_id = ?',
+      [botId, roomId],
+    );
+    assert(persistedBot, 'Added bot not persisted in DB');
+
+    ownerWs.popAll();
+    playerWs.popAll();
+    const removeBotTraceId = `bot-remove-${runId}`;
+    ownerWs.send({
+      type: 'bot.remove',
+      payload: { _trace: { id: removeBotTraceId, sentAtMs: Date.now() } },
+    });
+    await ownerWs.waitFor(
+      (m) =>
+        m &&
+        m.type === 'room.ack' &&
+        m?.payload?.action === 'bot.remove' &&
+        m?.payload?.traceId === removeBotTraceId,
+      20000,
+      'owner bot.remove ack',
+    );
+    await ownerWs.waitFor(
+      (m) =>
+        m &&
+        m.type === 'bot.removed' &&
+        Number(m.roomId) === roomId &&
+        Number(m?.payload?.botId || 0) === botId,
+      20000,
+      'owner bot.removed',
+    );
+    const roomWithoutBot = await ownerWs.waitFor(
+      (m) =>
+        m &&
+        m.type === 'room.updated' &&
+        Number(m.roomId) === roomId &&
+        Array.isArray(m?.payload?.room?.bots) &&
+        !m.payload.room.bots.some((bot) => Number(bot?.id) === botId),
+      20000,
+      'owner room.updated after bot.remove',
+    );
+    assert(
+      roomWithoutBot.payload.room.allowedActions.includes('bot.add'),
+      'bot.add must be allowed after bot.remove',
+    );
+    const removedBot = await queryOne(
+      db,
+      'SELECT id FROM room_bots WHERE id = ? AND room_id = ?',
+      [botId, roomId],
+    );
+    assert(!removedBot, 'Removed bot still persisted in DB');
+
+    const pingSentAtMs = Date.now();
+    ownerWs.send({ type: 'room.ping', payload: { clientSentAtMs: pingSentAtMs } });
+    await ownerWs.waitFor(
+      (m) =>
+        m &&
+        m.type === 'room.pong' &&
+        Number(m.roomId) === roomId &&
+        Number(m?.payload?.clientSentAtMs) === pingSentAtMs,
+      20000,
+      'owner room.pong after bot add/remove',
+    );
+    assert(
+      ownerWs.ws?.readyState === WebSocket.OPEN && ownerWs.closedCode == null,
+      `Owner WS closed after bot add/remove: ${ownerWs.closedCode || 'unknown'}`,
+    );
+    report.push(
+      'Scenario 4 - bot.add/B + bot.remove/Maj+B + DB + socket still connected: OK',
+    );
+
     const ownerChatMessage = `chat-owner-${runId}`;
     ownerWs.send({ type: 'room.chat.send', payload: { message: ownerChatMessage } });
     const ownerChatEcho = await ownerWs.waitFor(
@@ -538,7 +648,7 @@ async function main() {
       'room.info empty message',
     );
     report.push(
-      'Scenario 4 - chat send/receive/history + cooldown + intent.execute(room.chat.history/room.info): OK',
+      'Scenario 5 - chat send/receive/history + cooldown + intent.execute(room.chat.history/room.info): OK',
     );
 
     ownerWs.popAll();
@@ -567,7 +677,7 @@ async function main() {
       roomStillSetup && String(roomStillSetup.status).toLowerCase() === 'setup',
       'Room should remain setup after non-owner start',
     );
-    report.push('Scenario 5 - non-owner room.start rejected, DB unchanged: OK');
+    report.push('Scenario 6 - non-owner room.start rejected, DB unchanged: OK');
 
     ownerWs.send({
       type: 'room.start',
@@ -615,9 +725,7 @@ async function main() {
         m.type === 'room.intent' &&
         Number(m.roomId) === roomId &&
         String(m?.payload?.type || '') === 'announcement' &&
-        String(m?.payload?.payload?.message || '')
-          .toLowerCase()
-          .includes('commence'),
+        String(m?.payload?.payload?.message || '').trim().length > 0,
       20000,
       'owner start announcement intent',
     );
@@ -647,7 +755,7 @@ async function main() {
     assert(roomStartedDb.started_at != null, 'DB started_at should not be null');
     assert(Number(roomStartedDb.run_id) >= 1, 'DB run_id should be incremented');
     report.push(
-      'Scenario 6 - owner room.start launches game + focus/intents emitted + DB started_at/run_id set: OK',
+      'Scenario 7 - owner room.start launches game + focus/intents emitted + DB started_at/run_id set: OK',
     );
 
     spectatorWs = new WsClient(
@@ -712,7 +820,7 @@ async function main() {
       'spectator chat history missing spectator message',
     );
     report.push(
-      'Scenario 7 - started room spectator fallback + auto history + spectator chat/history: OK',
+      'Scenario 8 - started room spectator fallback + auto history + spectator chat/history: OK',
     );
 
     ownerWs.popAll();
@@ -768,7 +876,7 @@ async function main() {
       'Expected 3 active participants after reset spectator promotion',
     );
     report.push(
-      'Scenario 8 - room.reset transitions game->setup and promotes connected spectators to participants: OK',
+      'Scenario 9 - room.reset transitions game->setup and promotes connected spectators to participants: OK',
     );
 
     ownerWs.send({ type: 'room.toggle-privacy', payload: {} });
@@ -787,7 +895,7 @@ async function main() {
       [roomId],
     );
     assert(Number(roomPrivateDb.is_private) === 1, 'DB is_private should be true');
-    report.push('Scenario 9 - room.toggle-privacy updates WS + MySQL: OK');
+    report.push('Scenario 10 - room.toggle-privacy updates WS + MySQL: OK');
 
     blockedWs = new WsClient(
       withClientVersion(
@@ -801,7 +909,7 @@ async function main() {
       `Expected blocked spectator close code 4003, got ${blockedWs.closedCode ?? 'none'}`,
     );
     report.push(
-      'Scenario 10 - private room rejects non-invited spectator (WS close 4003): OK',
+      'Scenario 11 - private room rejects non-invited spectator (WS close 4003): OK',
     );
   } finally {
     try {

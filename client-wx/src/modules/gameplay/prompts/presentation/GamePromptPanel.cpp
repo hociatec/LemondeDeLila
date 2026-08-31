@@ -1,7 +1,5 @@
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 
-#include <cctype>
-#include <sstream>
 #include <utility>
 
 #include <wx/button.h>
@@ -9,14 +7,12 @@
 #include <wx/checklst.h>
 #include <wx/choice.h>
 #include <wx/event.h>
-#include <wx/sizer.h>
+#include <wx/listbox.h>
 #include <wx/rearrangectrl.h>
+#include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 
-#include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
-#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
-#include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/accessibility/application/NavigationController.h"
 #include "shared/accessibility/presentation/ModalNavigation.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -40,6 +36,10 @@ void GamePromptPanel::SetVisibilityChangedHandler(VisibilityChangedHandler handl
 {
     onVisibilityChanged_ = std::move(handler);
 }
+void GamePromptPanel::SetCandidatesRequestHandler(CandidatesRequestHandler handler)
+{
+    onCandidatesRequest_ = std::move(handler);
+}
 
 void GamePromptPanel::BuildLayout()
 {
@@ -53,6 +53,22 @@ void GamePromptPanel::BuildLayout()
     fieldsSizer_ = new wxBoxSizer(wxVERTICAL);
     root->Add(fieldsSizer_, 1, wxEXPAND);
 
+    candidatesLabel_ = new wxStaticText(this, wxID_ANY, wxString(L"Candidats disponibles"));
+    candidatesLabel_->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
+    root->Add(candidatesLabel_, 0, wxEXPAND | wxTOP | wxBOTTOM, 4);
+    auto* candidateSearch = new wxBoxSizer(wxHORIZONTAL);
+    candidatesQuery_ = new wxTextCtrl(this, wxID_ANY);
+    candidatesQuery_->SetName(wxString(L"Recherche de candidats"));
+    candidatesSearchButton_ = new wxButton(this, wxID_FIND, wxString(L"Rechercher"));
+    candidateSearch->Add(candidatesQuery_, 1, wxRIGHT, 6);
+    candidateSearch->Add(candidatesSearchButton_);
+    root->Add(candidateSearch, 0, wxEXPAND | wxBOTTOM, 4);
+    candidatesList_ = new wxListBox(this, wxID_ANY);
+    candidatesList_->SetName(wxString(L"Candidats de l'action"));
+    root->Add(candidatesList_, 1, wxEXPAND | wxBOTTOM, 4);
+    candidatesMoreButton_ = new wxButton(this, wxID_MORE, wxString(L"Charger la suite"));
+    root->Add(candidatesMoreButton_, 0, wxALIGN_LEFT | wxBOTTOM, 8);
+
     auto* buttons = new wxBoxSizer(wxHORIZONTAL);
     buttons->AddStretchSpacer();
     cancelButton_ = new wxButton(this, wxID_CANCEL, wxString(L"Annuler"));
@@ -64,126 +80,10 @@ void GamePromptPanel::BuildLayout()
 
     cancelButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { Cancel(); });
     submitButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { Submit(); });
-}
-
-std::string GamePromptPanel::BuildSignature(const domain::GamePrompt& prompt)
-{
-    std::ostringstream signature;
-    signature << prompt.actionType;
-    for (const auto& field : prompt.fields)
-        signature << '|' << field.key << ':' << field.kind << ':' << field.initialText
-                  << ':' << field.multiple << ':' << field.ordering;
-    for (const auto& field : prompt.fields)
-        for (const auto& choice : field.choices)
-            signature << ':' << infrastructure::EncodeGameValue(choice).dump();
-    return signature.str();
-}
-
-void GamePromptPanel::ShowPrompt(const domain::GamePrompt& prompt, domain::GameAction action)
-{
-    action_ = std::move(action);
-    cancelActionType_ = prompt.cancelActionType;
-    const auto nextSignature = BuildSignature(prompt);
-    if (signature_ != nextSignature)
-    {
-        signature_ = nextSignature;
-        RebuildFields(prompt);
-    }
-
-    const auto title = prompt.title.empty() ? prompt.label : prompt.title;
-    title_->SetLabel(FromUtf8(title.empty() ? std::string("Configuration") : title));
-    Show();
-    if (onVisibilityChanged_) onVisibilityChanged_(true);
-    Layout();
-    FocusFirst();
-}
-
-void GamePromptPanel::RebuildFields(const domain::GamePrompt& prompt)
-{
-    fieldsSizer_->Clear(true);
-    fields_.clear();
-    for (const auto& field : prompt.fields)
-    {
-        FieldControl control;
-        control.field = field;
-        std::string kind = field.kind;
-        std::transform(kind.begin(), kind.end(), kind.begin(),
-            [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
-        if (!field.choices.empty())
-        {
-            auto* label = new wxStaticText(this, wxID_ANY, FromUtf8(field.label));
-            label->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
-            fieldsSizer_->Add(label, 0, wxEXPAND | wxBOTTOM, 3);
-            wxArrayString labels;
-            for (const auto& choice : field.choices)
-            {
-                const auto encoded = infrastructure::EncodeGameValue(choice);
-                labels.Add(FromUtf8(encoded.is_string()
-                    ? encoded.get<std::string>() : encoded.dump()));
-            }
-            if (field.ordering)
-            {
-                wxArrayInt order;
-                for (std::size_t index = 0; index < field.choices.size(); ++index)
-                    order.Add(static_cast<int>(index));
-                control.ordering = new wxRearrangeCtrl(this, wxID_ANY,
-                    wxDefaultPosition, wxDefaultSize, order, labels);
-                control.ordering->SetName(FromUtf8(field.label +
-                    ". Réorganisez avec les boutons haut et bas."));
-                fieldsSizer_->Add(control.ordering, 0, wxEXPAND | wxBOTTOM, 8);
-            }
-            else if (field.multiple)
-            {
-                control.multipleChoice = new wxCheckListBox(this, wxID_ANY,
-                    wxDefaultPosition, wxDefaultSize, labels);
-                control.multipleChoice->SetName(FromUtf8(field.label + ". Choix multiples."));
-                fieldsSizer_->Add(control.multipleChoice, 0, wxEXPAND | wxBOTTOM, 8);
-            }
-            else
-            {
-                if (field.optional) labels.Insert(wxString(L"Non renseigné"), 0);
-                control.choice = new wxChoice(this, wxID_ANY,
-                    wxDefaultPosition, wxDefaultSize, labels);
-                control.choice->SetSelection(0);
-                control.choice->SetName(FromUtf8(field.label));
-                fieldsSizer_->Add(control.choice, 0, wxEXPAND | wxBOTTOM, 8);
-            }
-        }
-        else if (kind == "boolean" || kind == "bool")
-        {
-            if (field.optional)
-            {
-                control.field.choices = {domain::GameValue{true}, domain::GameValue{false}};
-                control.choice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                    wxArrayString{wxString(L"Non renseigné"), wxString(L"Oui"), wxString(L"Non")});
-                control.choice->SetSelection(0);
-                control.choice->SetName(FromUtf8(field.label));
-                fieldsSizer_->Add(control.choice, 0, wxEXPAND | wxBOTTOM, 8);
-            }
-            else
-            {
-                control.checkbox = new wxCheckBox(this, wxID_ANY, FromUtf8(field.label));
-                const auto parsed = application::GamePromptInputCodec::Parse(field, field.initialText);
-                control.checkbox->SetValue(
-                    parsed.valid && parsed.value.is_boolean() && parsed.value.get<bool>());
-                control.checkbox->SetName(FromUtf8(field.label));
-                fieldsSizer_->Add(control.checkbox, 0, wxEXPAND | wxBOTTOM, 8);
-            }
-        }
-        else
-        {
-            auto* label = new wxStaticText(this, wxID_ANY, FromUtf8(field.label));
-            label->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
-            fieldsSizer_->Add(label, 0, wxEXPAND | wxBOTTOM, 3);
-            const long style = wxTE_PROCESS_ENTER | wxWANTS_CHARS |
-                ((kind == "array" || kind == "object" || kind == "json") ? wxTE_MULTILINE : 0);
-            control.text = new wxTextCtrl(this, wxID_ANY, FromUtf8(field.initialText),
-                wxDefaultPosition, wxDefaultSize, style);
-            control.text->SetName(FromUtf8(field.label));
-            fieldsSizer_->Add(control.text, 0, wxEXPAND | wxBOTTOM, 8);
-        }
-        fields_.push_back(std::move(control));
-    }
+    candidatesSearchButton_->Bind(wxEVT_BUTTON,
+        [this](wxCommandEvent&) { RequestCandidates(true); });
+    candidatesMoreButton_->Bind(wxEVT_BUTTON,
+        [this](wxCommandEvent&) { RequestCandidates(false); });
 }
 
 void GamePromptPanel::Cancel()
@@ -199,6 +99,7 @@ void GamePromptPanel::HidePrompt(bool clearSignature)
     action_.reset();
     cancelActionType_.clear();
     if (clearSignature) signature_.clear();
+    candidatesRequestPending_ = false;
     if (onVisibilityChanged_) onVisibilityChanged_(false);
 }
 
@@ -208,6 +109,13 @@ std::vector<wxWindow*> GamePromptPanel::TabTargets() const
 {
     std::vector<wxWindow*> controls;
     controls.reserve(fields_.size() + 2);
+    if (paginatedCandidates_)
+    {
+        controls.push_back(candidatesQuery_);
+        controls.push_back(candidatesSearchButton_);
+        controls.push_back(candidatesList_);
+        if (candidatesMoreButton_->IsShown()) controls.push_back(candidatesMoreButton_);
+    }
     for (const auto& field : fields_)
         controls.push_back(field.ordering != nullptr ? static_cast<wxWindow*>(field.ordering)
             : field.multipleChoice != nullptr ? static_cast<wxWindow*>(field.multipleChoice)

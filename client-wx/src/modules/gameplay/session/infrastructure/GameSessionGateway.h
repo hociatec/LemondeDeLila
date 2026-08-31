@@ -31,7 +31,12 @@ public:
     void RequestState(std::stop_token stopToken) override;
     void RequestRules(std::stop_token stopToken) override;
     void SendKey(std::string_view key, std::stop_token stopToken) override;
-    void ExecuteAction(const domain::GameAction& action, std::stop_token stopToken) override;
+    void ExecuteAction(
+        const domain::GameCommandEnvelope& command,
+        std::stop_token stopToken) override;
+    void RequestActionCandidates(
+        const domain::GameActionCandidatesRequest& request,
+        std::stop_token stopToken) override;
     [[nodiscard]] domain::GameEvent ReceiveEvent(std::stop_token stopToken) override;
     void Interrupt() override;
     void Close() override;

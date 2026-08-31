@@ -7,8 +7,6 @@
 #include "modules/gameplay/cards/infrastructure/GameCardDecoder.h"
 #include "modules/gameplay/dice/infrastructure/GameDiceDecoder.h"
 #include "modules/gameplay/actions/infrastructure/GameActionCatalogDecoder.h"
-#include "modules/gameplay/events/presentation/GameEventPresenter.h"
-#include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
 #include "modules/gameplay/state/infrastructure/GameAssetCapabilitiesDecoder.h"
 #include "modules/gameplay/state/infrastructure/GameBoardCapabilitiesDecoder.h"
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
@@ -23,53 +21,63 @@ namespace lila::modules::gameplay::infrastructure
 {
 namespace
 {
-nlohmann::json Section(const nlohmann::json& payload, const char* key)
+const nlohmann::json& RequiredObject(const nlohmann::json& payload, const char* key)
 {
     const auto found = payload.find(key);
-    return found != payload.end() && found->is_object()
-        ? *found : nlohmann::json::object();
+    if (found == payload.end() || !found->is_object())
+        throw std::runtime_error(std::string("Section V2 invalide: ") + key + ".");
+    return *found;
+}
+
+const nlohmann::json* OptionalObject(const nlohmann::json& payload, const char* key)
+{
+    const auto found = payload.find(key);
+    if (found == payload.end() || found->is_null()) return nullptr;
+    if (!found->is_object())
+        throw std::runtime_error(std::string("Capability V2 invalide: ") + key + ".");
+    return &*found;
 }
 
 void DecodeKits(const nlohmann::json& raw, domain::GameKits& kits)
 {
-    const auto cards = Section(raw, "cards");
-    if (!cards.empty())
-        kits.cards = GameCardDecoder::Decode(cards);
-    const auto dice = Section(raw, "dice");
-    if (!dice.empty()) kits.dice = GameDiceDecoder::Decode(dice);
-    kits.grid = GameBoardCapabilitiesDecoder::Grid(Section(raw, "grid"));
-    kits.movement = GameBoardCapabilitiesDecoder::Movement(Section(raw, "movement"));
-    kits.pawns = GameBoardCapabilitiesDecoder::Pawns(Section(raw, "pawns"));
-    kits.score = GamePlayerValuesDecoder::Score(Section(raw, "score"));
-    kits.resources = GamePlayerValuesDecoder::Resources(Section(raw, "resources"));
-    kits.counters = GamePlayerValuesDecoder::Counters(Section(raw, "counters"));
-    kits.status = GamePlayerValuesDecoder::Status(Section(raw, "status"));
-    kits.inventory = GameAssetCapabilitiesDecoder::Inventory(Section(raw, "inventory"));
-    kits.economy = GameAssetCapabilitiesDecoder::Economy(Section(raw, "economy"));
-    kits.ownership = GameAssetCapabilitiesDecoder::Ownership(Section(raw, "ownership"));
-    kits.collections = GameAssetCapabilitiesDecoder::Collections(Section(raw, "collections"));
-    kits.quiz = GameWorkflowCapabilitiesDecoder::Quiz(Section(raw, "quiz"));
-    kits.submissions = GameWorkflowCapabilitiesDecoder::Submissions(Section(raw, "submissions"));
+    if (const auto* value = OptionalObject(raw, "cards"))
+        kits.cards = GameCardDecoder::Decode(*value);
+    if (const auto* value = OptionalObject(raw, "dice"))
+        kits.dice = GameDiceDecoder::Decode(*value);
+    if (const auto* value = OptionalObject(raw, "grid"))
+        kits.grid = GameBoardCapabilitiesDecoder::Grid(*value);
+    if (const auto* value = OptionalObject(raw, "movement"))
+        kits.movement = GameBoardCapabilitiesDecoder::Movement(*value);
+    if (const auto* value = OptionalObject(raw, "pawns"))
+        kits.pawns = GameBoardCapabilitiesDecoder::Pawns(*value);
+    if (const auto* value = OptionalObject(raw, "score"))
+        kits.score = GamePlayerValuesDecoder::Score(*value);
+    if (const auto* value = OptionalObject(raw, "resources"))
+        kits.resources = GamePlayerValuesDecoder::Resources(*value);
+    if (const auto* value = OptionalObject(raw, "counters"))
+        kits.counters = GamePlayerValuesDecoder::Counters(*value);
+    if (const auto* value = OptionalObject(raw, "status"))
+        kits.status = GamePlayerValuesDecoder::Status(*value);
+    if (const auto* value = OptionalObject(raw, "inventory"))
+        kits.inventory = GameAssetCapabilitiesDecoder::Inventory(*value);
+    if (const auto* value = OptionalObject(raw, "economy"))
+        kits.economy = GameAssetCapabilitiesDecoder::Economy(*value);
+    if (const auto* value = OptionalObject(raw, "ownership"))
+        kits.ownership = GameAssetCapabilitiesDecoder::Ownership(*value);
+    if (const auto* value = OptionalObject(raw, "collections"))
+        kits.collections = GameAssetCapabilitiesDecoder::Collections(*value);
+    if (const auto* value = OptionalObject(raw, "quiz"))
+        kits.quiz = GameWorkflowCapabilitiesDecoder::Quiz(*value);
+    if (const auto* value = OptionalObject(raw, "submissions"))
+        kits.submissions = GameWorkflowCapabilitiesDecoder::Submissions(*value);
     static const std::vector<std::string> known{
         "cards", "dice", "grid", "movement", "pawns", "score", "resources",
         "counters", "status", "inventory", "economy", "ownership", "collections",
         "quiz", "submissions"};
     for (const auto& item : raw.items())
-        if (std::find(known.begin(), known.end(), item.key()) == known.end())
+        if (std::find(known.begin(), known.end(), item.key()) == known.end() &&
+            !item.value().is_null())
             kits.unknownCapabilities.emplace(item.key(), DecodeGameValue(item.value()));
-}
-
-std::vector<std::string> EventMessages(const domain::GameSystem& system)
-{
-    std::vector<std::string> messages;
-    messages.reserve(system.events.size());
-    for (const auto& event : system.events)
-    {
-        const auto message = presentation::events::GameEventPresenter::Present(
-            event, system.players);
-        if (!message.empty()) messages.push_back(event.Identity() + "|" + message);
-    }
-    return messages;
 }
 
 void ApplyCatalogLabels(
@@ -101,40 +109,30 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     if (state.viewVersion != domain::GameState::SupportedViewVersion)
         throw std::runtime_error(
             "Version de vue de jeu non supportee: " + std::to_string(state.viewVersion) + ".");
-    const auto system = Section(payload, "system");
-    const auto kits = Section(payload, "kits");
-    if (system.empty() || kits.empty())
-        throw std::runtime_error("Projection de jeu V2 incomplete.");
+    const auto& system = RequiredObject(payload, "system");
+    const auto& kits = RequiredObject(payload, "kits");
     state.system = GameSystemDecoder::Decode(system);
     DecodeKits(kits, state.kits);
-    state.effect = GameWorkflowCapabilitiesDecoder::Effect(Section(payload, "effect"));
-    state.game = Section(payload, "game");
+    if (const auto* effect = OptionalObject(payload, "effect"))
+        state.effect = GameWorkflowCapabilitiesDecoder::Effect(*effect);
+    if (const auto* game = OptionalObject(payload, "game"))
+        state.game = DecodeGameValue(*game);
     state.actionCatalog = GameActionCatalogDecoder::Decode(
         payload.value("actionCatalog", nlohmann::json::array()));
-    state.timers = GameWorkflowCapabilitiesDecoder::Timers(Section(payload, "timers"));
+    if (const auto* timers = OptionalObject(payload, "timers"))
+        state.timers = GameWorkflowCapabilitiesDecoder::Timers(*timers);
     state.actions = DecodeActions(payload);
     ApplyCatalogLabels(state.actions, state.actionCatalog);
-    state.shortcuts = DecodeShortcuts(system);
+    state.system.shortcuts = DecodeShortcuts(system);
     const auto pending = payload.find("pending");
     if (pending != payload.end() && pending->is_object())
+    {
         state.pending = GamePendingDecoder::Decode(*pending, state.actions);
-    state.prompt = DecodePrompt(payload);
-    state.pawnSelection = PawnSelectionDecoder::Decode(
-        payload, state.actions, Section(kits, "pawns"));
-    state.lines = BuildLines(state.actions);
-    state.logMessages = EventMessages(state.system);
+        if (state.pending) state.pending->prompt = DecodePrompt(payload);
+    }
     state.gameType = ReadString(payload, "gameType");
     if (state.roomId <= 0) throw std::runtime_error("Etat de jeu sans table.");
     return state;
-}
-
-nlohmann::json GameStatePayloadCodec::EncodeActionPayload(
-    int roomId,
-    const std::string& gameType,
-    const domain::GameAction& action)
-{
-    return {{"roomId", roomId}, {"gameType", gameType},
-        {"actions", nlohmann::json::array({{{"type", action.type}, {"payload", action.payload}}})}};
 }
 
 std::string GameStatePayloadCodec::NormalizeShortcutKey(std::string rawKey)

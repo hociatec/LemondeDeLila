@@ -61,12 +61,15 @@ void GamePlayPanel::CloseSession()
     requestSlot_.Cancel();
     inputRequestSlot_.Cancel();
     inputSubmissionGuard_.Reset();
+    retryableActionCommand_.reset();
     service_.ClearEventHandler();
     service_.Close();
     roomId_ = 0;
     gameType_.clear();
     gameName_.clear();
     state_ = {};
+    lines_.clear();
+    pawnSelection_.reset();
     roomStarted_ = true;
     roomStartFlowRequested_ = false;
     roomStartPending_ = false;
@@ -126,7 +129,7 @@ bool GamePlayPanel::BeginRoomStart()
         if (GetParent()) GetParent()->Layout();
         return true;
     }
-    if (!state_.system.setup.complete && state_.prompt)
+    if (!state_.system.setup.complete && ActivePrompt() != nullptr)
     {
         dismissedPromptActionType_.clear();
         submittedPromptActionType_.clear();

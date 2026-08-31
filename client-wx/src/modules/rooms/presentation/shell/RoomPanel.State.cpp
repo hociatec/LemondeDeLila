@@ -21,8 +21,6 @@ namespace lila::modules::rooms::presentation
 void RoomPanel::ApplyRoom(domain::RoomState room)
 {
     if (!application::RoomStateUpdatePolicy::ShouldApply(room_, room)) return;
-    room.gameSummary = room_.gameSummary;
-    room.gameEngine = room_.gameEngine;
     room_ = std::move(room);
     audioService_.StartTableAmbience(room_.tableAmbienceSoundId);
     state_ = State::Ready;
@@ -61,7 +59,8 @@ void RoomPanel::ShowRoom()
     SyncGamePlayPanel();
     gameNameLabel_->SetLabel(lila::shared::text::FromUtf8(room_.gameName));
     UpdateStatus(RoomPresentationModel::BuildStatus(room_));
-    detailsLabel_->SetLabel(RoomPresentationModel::BuildDetails(room_));
+    detailsLabel_->SetLabel(RoomPresentationModel::BuildDetails(
+        room_, request_.gameSummary, request_.gameEngine));
     detailsLabel_->Wrap(640);
     detailsLabel_->Show(!isStarted);
     chatTitle_->Show(room_.chatEnabled);

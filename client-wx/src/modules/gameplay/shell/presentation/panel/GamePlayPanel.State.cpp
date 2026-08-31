@@ -10,6 +10,7 @@
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/application/GameActionPresentationPolicy.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/events/presentation/GameEventPresenter.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
@@ -19,6 +20,7 @@
 #include "modules/gameplay/information/presentation/GameInfoTextBuilder.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
+#include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
@@ -27,6 +29,21 @@
 #include "shared/ui/presentation/theme/Theme.h"
 namespace lila::modules::gameplay::presentation
 {
+namespace
+{
+std::vector<std::string> EventMessages(const domain::GameSystem& system)
+{
+    std::vector<std::string> messages;
+    messages.reserve(system.events.size());
+    for (const auto& event : system.events)
+    {
+        const auto message = events::GameEventPresenter::Present(event, system.players);
+        if (!message.empty()) messages.push_back(event.Identity() + "|" + message);
+    }
+    return messages;
+}
+}
+
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
     const wxWeakRef<wxWindow> focusedBefore(wxWindow::FindFocus());
@@ -50,8 +67,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         }
     const bool initialState = state_.viewVersion == 0;
     const auto previousTurnPlayer = state_.system.turn.currentPlayerId;
-    const auto previousRoundWinners = state_.system.round.winnerPlayerIds;
-    const bool wasFinished = state_.system.match.status == "finished";
     if (!application::GameStateUpdatePolicy::ShouldApply(state_, state))
     {
         lila::shared::logging::LogWarning(
@@ -62,8 +77,12 @@ void GamePlayPanel::ApplyState(domain::GameState state)
                 ", incomingStatus=" + state.system.match.status);
         return;
     }
-    state.lines = application::GameActionPresentationPolicy::GenericLines(state);
+    auto nextLines = application::GameActionPresentationPolicy::GenericLines(state);
+    auto nextPawnSelection = infrastructure::PawnSelectionDecoder::Decode(state.pending);
+    auto nextLogMessages = EventMessages(state.system);
     state_ = std::move(state);
+    lines_ = std::move(nextLines);
+    pawnSelection_ = std::move(nextPawnSelection);
     RebuildInfoPanelChoices();
     UpdateTimerAnnouncements();
     if (initialState)
@@ -80,44 +99,14 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     UpdateStatus(wxString{});
     if (initialState)
     {
-        logCursor_.Restore(state_.logMessages);
+        logCursor_.Restore(nextLogMessages);
         if (onHistoryMessage_)
             onHistoryMessage_(FromUtf8(TurnLabel(state_)));
     }
-    else PublishLogMessages(state_.logMessages);
+    else PublishLogMessages(nextLogMessages);
     if (!initialState && previousTurnPlayer != state_.system.turn.currentPlayerId &&
         onHistoryMessage_)
         onHistoryMessage_(FromUtf8(TurnLabel(state_)));
-    if (!initialState && previousRoundWinners != state_.system.round.winnerPlayerIds &&
-        !state_.system.round.winnerPlayerIds.empty() && onHistoryMessage_)
-    {
-        wxString message(L"Manche terminée. Gagnant(s) : ");
-        for (std::size_t index = 0; index < state_.system.round.winnerPlayerIds.size(); ++index)
-        {
-            if (index > 0) message += wxString(L", ");
-            const int id = state_.system.round.winnerPlayerIds[index];
-            const auto player = std::find_if(state_.system.players.begin(), state_.system.players.end(),
-                [id](const domain::GamePlayer& value) { return value.id == id; });
-            message += player == state_.system.players.end()
-                ? wxString::Format(L"Joueur %d", id) : FromUtf8(player->username);
-        }
-        onHistoryMessage_(message);
-    }
-    if (!initialState && !wasFinished && state_.system.match.status == "finished" &&
-        state_.system.match.result && onHistoryMessage_)
-    {
-        wxString message(L"Partie terminée. Gagnant(s) : ");
-        for (std::size_t index = 0; index < state_.system.match.result->winnerPlayerIds.size(); ++index)
-        {
-            if (index > 0) message += wxString(L", ");
-            const int id = state_.system.match.result->winnerPlayerIds[index];
-            const auto player = std::find_if(state_.system.players.begin(), state_.system.players.end(),
-                [id](const domain::GamePlayer& value) { return value.id == id; });
-            message += player == state_.system.players.end()
-                ? wxString::Format(L"Joueur %d", id) : FromUtf8(player->username);
-        }
-        onHistoryMessage_(message);
-    }
     if (IsFinished())
     {
         confirmationPanel_->HideConfirmation();
@@ -139,7 +128,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     movementPanel_->Apply(state_.kits, state_.system.players);
     resourcesPanel_->Apply(state_);
     workflowPanel_->Apply(state_);
-    const bool hasActions = !state_.lines.empty() &&
+    const bool hasActions = !lines_.empty() &&
         (!state_.pending || state_.pending->type.empty());
     actionsLabel_->Show(hasActions);
     linesList_->Show(hasActions);
@@ -195,8 +184,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     infoText_->Show(!infoText_->GetValue().empty());
     SyncInlinePrompt();
     const bool pawnSelectionCompleted =
-        pawnSelectionPanel_->IsActive() && !state_.pawnSelection.has_value();
-    pawnSelectionPanel_->Apply(state_.pawnSelection);
+        pawnSelectionPanel_->IsActive() && !pawnSelection_.has_value();
+    pawnSelectionPanel_->Apply(pawnSelection_);
     if (pawnSelectionCompleted && onZoneFocusRequested_) onZoneFocusRequested_();
     SyncContentVisibility();
     Layout();
@@ -210,7 +199,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     if (!roomStarted_ && roomStartFlowRequested_ &&
         !startConfigurationFlow_.IsAwaitingActionAcknowledgement() &&
         state_.system.setup.complete &&
-        (setupProjectionCompleted || !state_.prompt))
+        (setupProjectionCompleted || ActivePrompt() == nullptr))
     {
         roomStartFlowRequested_ = false;
         roomStartPending_ = true;

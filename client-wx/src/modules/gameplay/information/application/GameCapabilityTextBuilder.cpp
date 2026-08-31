@@ -2,8 +2,6 @@
 
 #include <sstream>
 
-#include <nlohmann/json.hpp>
-
 #include "modules/gameplay/information/application/GameKnownCapabilityText.h"
 #include "modules/gameplay/information/application/GameValueTextBuilder.h"
 
@@ -100,27 +98,9 @@ std::string GameCapabilityTextBuilder::Build(
                 << (timer.paused ? " — en pause" : "") << '\n';
         return out.str();
     }
-    if (capability == "specific" || capability == "game") return JsonLines(state.game);
+    if (capability == "specific" || capability == "game") return ValueLines(state.game);
     if (const auto* unknown = state.kits.Unknown(capability)) return ValueLines(*unknown);
     return {};
 }
 
-std::string GameCapabilityTextBuilder::JsonLines(
-    const nlohmann::json& value, const std::string& prefix)
-{
-    std::ostringstream out;
-    if (value.is_object())
-        for (const auto& item : value.items())
-            if (item.value().is_primitive())
-                out << prefix << HumanLabel(item.key()) << " : " << JsonLines(item.value()) << '\n';
-            else out << prefix << HumanLabel(item.key()) << '\n'
-                     << JsonLines(item.value(), prefix + "  ");
-    else if (value.is_array())
-        for (const auto& item : value) out << prefix << "- " << JsonLines(item, prefix + "  ");
-    else if (value.is_string()) out << value.get<std::string>();
-    else if (value.is_boolean()) out << (value.get<bool>() ? "oui" : "non");
-    else if (value.is_null()) out << "non renseigné";
-    else out << value.dump();
-    return out.str();
-}
 }

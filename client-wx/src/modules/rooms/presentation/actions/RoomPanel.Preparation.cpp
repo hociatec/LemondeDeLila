@@ -29,8 +29,6 @@ void RoomPanel::PrepareCreate(
     room_ = {};
     room_.gameType = request_.gameType;
     room_.gameName = request_.gameName.empty() ? request_.gameType : request_.gameName;
-    room_.gameSummary = request_.gameSummary;
-    room_.gameEngine = request_.gameEngine;
     room_.name = "Table de jeu";
     room_.minPlayers = request_.minPlayers;
     room_.maxPlayers = request_.maxPlayers;

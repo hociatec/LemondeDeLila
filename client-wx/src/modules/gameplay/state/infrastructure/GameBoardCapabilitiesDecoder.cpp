@@ -41,8 +41,8 @@ std::optional<domain::GameMovementView> GameBoardCapabilitiesDecoder::Movement(
     const nlohmann::json& raw)
 {
     const auto tracks = raw.find("tracks");
-    if (tracks == raw.end() || !tracks->is_object() || tracks->empty()) return std::nullopt;
     domain::GameMovementView result;
+    if (tracks == raw.end() || !tracks->is_object()) return result;
     for (const auto& item : tracks->items())
     {
         if (!item.value().is_object()) continue;
@@ -53,16 +53,15 @@ std::optional<domain::GameMovementView> GameBoardCapabilitiesDecoder::Movement(
         track.positions = Positions(item.value().value("positions", nlohmann::json::object()));
         result.tracks.push_back(std::move(track));
     }
-    return result.tracks.empty() ? std::nullopt
-                                 : std::optional<domain::GameMovementView>(std::move(result));
+    return result;
 }
 
 std::optional<domain::GamePawnsView> GameBoardCapabilitiesDecoder::Pawns(
     const nlohmann::json& raw)
 {
     const auto sets = raw.find("sets");
-    if (sets == raw.end() || !sets->is_object() || sets->empty()) return std::nullopt;
     domain::GamePawnsView result;
+    if (sets == raw.end() || !sets->is_object()) return result;
     for (const auto& set : sets->items())
     {
         if (!set.value().is_object()) continue;
@@ -95,16 +94,15 @@ std::optional<domain::GamePawnsView> GameBoardCapabilitiesDecoder::Pawns(
             result.pawns.push_back(std::move(pawn));
         }
     }
-    return result.pawns.empty() ? std::nullopt
-                                : std::optional<domain::GamePawnsView>(std::move(result));
+    return result;
 }
 
 std::optional<domain::GameGridView> GameBoardCapabilitiesDecoder::Grid(
     const nlohmann::json& raw)
 {
     const auto boards = raw.find("boards");
-    if (boards == raw.end() || !boards->is_object() || boards->empty()) return std::nullopt;
     domain::GameGridView result;
+    if (boards == raw.end() || !boards->is_object()) return result;
     for (const auto& item : boards->items())
     {
         if (!item.value().is_object()) continue;
@@ -160,7 +158,6 @@ std::optional<domain::GameGridView> GameBoardCapabilitiesDecoder::Grid(
                     }
         result.boards.push_back(std::move(board));
     }
-    return result.boards.empty() ? std::nullopt
-                                 : std::optional<domain::GameGridView>(std::move(result));
+    return result;
 }
 }

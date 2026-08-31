@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 
+#include "modules/gameplay/session/domain/GameActionCandidates.h"
 #include "modules/gameplay/state/domain/GameState.h"
 
 namespace lila::modules::gameplay::domain
@@ -12,6 +13,7 @@ enum class GameEventType
     StateUpdated,
     Acknowledged,
     TurnUpdated,
+    ActionCandidates,
     Rules,
     Error,
     Ignored,
@@ -35,5 +37,7 @@ struct GameEvent final
     bool isError = false;
     std::optional<GameAcknowledgement> acknowledgement;
     std::string rules;
+    std::optional<GameActionCandidatesResult> candidates;
+    std::string errorCode;
 };
 }

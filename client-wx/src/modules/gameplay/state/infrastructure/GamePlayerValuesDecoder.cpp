@@ -23,7 +23,7 @@ int PlayerId(const std::string& key)
 
 std::optional<domain::GameScoreView> GamePlayerValuesDecoder::Score(const nlohmann::json& raw)
 {
-    if (!raw.is_object() || raw.empty()) return std::nullopt;
+    if (!raw.is_object()) return std::nullopt;
     domain::GameScoreView result;
     const auto byPlayer = raw.find("byPlayer");
     if (byPlayer != raw.end() && byPlayer->is_object())
@@ -42,14 +42,13 @@ std::optional<domain::GameScoreView> GamePlayerValuesDecoder::Score(const nlohma
                 entry.score = Number(*score).value_or(0);
             result.leaderboard.push_back(entry);
         }
-    return result.byPlayer.empty() && result.leaderboard.empty()
-        ? std::nullopt : std::optional<domain::GameScoreView>(std::move(result));
+    return result;
 }
 
 std::optional<domain::GameResourcesView> GamePlayerValuesDecoder::Resources(
     const nlohmann::json& raw)
 {
-    if (!raw.is_object() || raw.empty()) return std::nullopt;
+    if (!raw.is_object()) return std::nullopt;
     std::map<int, domain::GamePlayerAmounts> players;
     for (const auto& resource : raw.items())
     {
@@ -63,7 +62,6 @@ std::optional<domain::GameResourcesView> GamePlayerValuesDecoder::Resources(
                 player.values.push_back({resource.key(), *value});
             }
     }
-    if (players.empty()) return std::nullopt;
     domain::GameResourcesView result;
     for (auto& [id, player] : players) result.players.push_back(std::move(player));
     return result;
@@ -72,21 +70,20 @@ std::optional<domain::GameResourcesView> GamePlayerValuesDecoder::Resources(
 std::optional<domain::GameCountersView> GamePlayerValuesDecoder::Counters(
     const nlohmann::json& raw)
 {
-    if (!raw.is_object() || raw.empty()) return std::nullopt;
+    if (!raw.is_object()) return std::nullopt;
     domain::GameCountersView result;
     for (const auto& item : raw.items())
         if (const auto value = Number(item.value()))
             result.values.push_back({item.key(), *value});
-    return result.values.empty() ? std::nullopt
-                                 : std::optional<domain::GameCountersView>(std::move(result));
+    return result;
 }
 
 std::optional<domain::GameStatusView> GamePlayerValuesDecoder::Status(
     const nlohmann::json& raw)
 {
     const auto byId = raw.find("byId");
-    if (byId == raw.end() || !byId->is_object() || byId->empty()) return std::nullopt;
     domain::GameStatusView result;
+    if (byId == raw.end() || !byId->is_object()) return result;
     for (const auto& status : byId->items())
     {
         if (!status.value().is_object()) continue;
@@ -103,7 +100,6 @@ std::optional<domain::GameStatusView> GamePlayerValuesDecoder::Status(
             result.values.push_back(std::move(value));
         }
     }
-    return result.values.empty() ? std::nullopt
-                                 : std::optional<domain::GameStatusView>(std::move(result));
+    return result;
 }
 }

@@ -80,6 +80,24 @@ void TestKnownCapabilitiesAreTyped()
         "Une capacité future doit rester disponible dans l'extension typée générique.");
 }
 
+void TestEmptyV2KitsAndCapabilitiesRemainValid()
+{
+    auto payload = V2Payload({{"roomId", 79}, {"gameType", "empty-kits"}});
+    payload["kits"] = nlohmann::json::object();
+    const auto empty = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(
+        payload);
+    Expect(!empty.kits.cards && !empty.kits.grid,
+        "kits vide doit rester une projection V2 valide sans capability active.");
+
+    payload["kits"] = {{"cards", nlohmann::json::object()},
+        {"grid", nlohmann::json::object()}, {"score", nlohmann::json::object()},
+        {"quiz", nlohmann::json::object()}};
+    const auto present = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(
+        payload);
+    Expect(present.kits.cards && present.kits.grid && present.kits.score && present.kits.quiz,
+        "Une capability présente sous forme d'objet vide ne doit pas être confondue avec null.");
+}
+
 void TestPendingMultipleWorkflowsUseOneExplicitAction()
 {
     auto payload = V2Payload({{"roomId", 72}, {"gameType", "choice-game"}, {"state", {
@@ -152,11 +170,16 @@ void TestEventsHaveStableIdentityAndAccessibleText()
             state.system.events[1].details.playerId == 7 &&
             state.system.events[1].details.value == "12",
         "Les payloads des événements connus doivent être décodés avant leur présentation.");
-    Expect(state.logMessages.size() == 2 && state.logMessages[0].find("sequence:17|") == 0,
+    std::vector<std::string> logMessages;
+    for (const auto& event : state.system.events)
+        logMessages.push_back(event.Identity() + "|" +
+            lila::modules::gameplay::presentation::events::GameEventPresenter::Present(
+                event, state.system.players));
+    Expect(logMessages.size() == 2 && logMessages[0].find("sequence:17|") == 0,
         "La sequence backend doit être l'identité principale du message d'historique.");
-    Expect(state.logMessages[0].find("Lila lance les dés : 8") != std::string::npos &&
-            state.logMessages[1].find("Lila a maintenant 12 point(s)") != std::string::npos &&
-            state.logMessages[0].find('{') == std::string::npos,
+    Expect(logMessages[0].find("Lila lance les dés : 8") != std::string::npos &&
+            logMessages[1].find("Lila a maintenant 12 point(s)") != std::string::npos &&
+            logMessages[0].find('{') == std::string::npos,
         "Un événement doit produire une phrase accessible sans dump JSON.");
 }
 

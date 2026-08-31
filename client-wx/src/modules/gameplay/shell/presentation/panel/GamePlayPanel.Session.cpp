@@ -8,6 +8,7 @@
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/logging/application/Logger.h"
+#include "shared/network/application/realtime/RealtimeProtocol.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -74,11 +75,25 @@ void GamePlayPanel::ExecuteAction(domain::GameAction action)
     if (action.type.empty() || action.disabled) return;
     auto* service = &service_;
     const auto actionType = action.type;
+    const bool retryingSameIntent = retryableActionCommand_ &&
+        retryableActionCommand_->roomId == roomId_ &&
+        retryableActionCommand_->gameType == gameType_ &&
+        retryableActionCommand_->knownVersion == state_.version &&
+        retryableActionCommand_->actions.size() == 1 &&
+        retryableActionCommand_->actions.front().type == action.type &&
+        retryableActionCommand_->actions.front().payload == action.payload;
+    domain::GameCommandEnvelope command = retryingSameIntent
+        ? *retryableActionCommand_
+        : domain::GameCommandEnvelope{
+            roomId_, gameType_,
+            lila::shared::network::realtime::protocol::GenerateRequestId(),
+            state_.version, {std::move(action)}};
+    retryableActionCommand_ = command;
     SubmitInputCommand(
         "game.action",
-        [service, action = std::move(action)](std::stop_token stopToken)
+        [service, command = std::move(command)](std::stop_token stopToken)
         {
-            service->ExecuteAction(action, stopToken);
+            service->ExecuteAction(command, stopToken);
         },
         "Action de jeu impossible.");
     lila::shared::logging::LogInfo("GameInput", "Action submitted: " + actionType);

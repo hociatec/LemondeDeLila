@@ -9,7 +9,10 @@ export interface CreateBotForRoomInput {
 }
 
 export interface BotRoomRepository {
-  runRoomMutation<T>(roomId: number, operation: () => Promise<T>): Promise<T>;
+  runRoomMutation<T>(
+    roomId: number,
+    operation: (rooms: BotRoomRepository) => Promise<T>,
+  ): Promise<T>;
   findRoomById(roomId: number): Promise<BotManagedRoomRecord | null>;
   listBotsForRoom(roomId: number): Promise<BotRoomRecord[]>;
   createBot(input: CreateBotForRoomInput): Promise<BotRoomRecord>;

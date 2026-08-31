@@ -31,8 +31,8 @@ void TestCommandSubmissionGuardSerializesGameplayCommands()
 
     Expect(guard.TryBegin("game.action", 1, 4, start),
         "Une action doit partir sur la nouvelle execution");
-    Expect(guard.TryBegin("game.key", 1, 4, start + std::chrono::seconds(6)),
-        "Une action sans reponse doit pouvoir etre retentee apres le delai de securite");
+    Expect(!guard.TryBegin("game.key", 1, 4, start + std::chrono::seconds(6)),
+        "Une action sans réponse ne doit jamais être rejouée aveuglément");
 }
 
 void TestStructuredGameAcknowledgements()
@@ -75,7 +75,34 @@ void TestStructuredBackendErrorsAreReadable()
 
     Expect(
         conflict.type == lila::modules::gameplay::domain::GameEventType::Error &&
+            conflict.errorCode == "GAME_STATE_CONFLICT" &&
             conflict.message ==
                 "La partie a chang\xC3\xA9""; actualisez puis r\xC3\xA9""essayez.",
         "Une erreur codee du backend doit produire un message utilisateur precis");
+}
+
+void TestActionCandidatesContract()
+{
+    using Codec = lila::modules::gameplay::infrastructure::GameCommandPayloadCodec;
+    lila::modules::gameplay::domain::GameActionCandidatesRequest request;
+    request.actionType = "card.choose";
+    request.query.emplace("search",
+        lila::modules::gameplay::domain::GameValue{std::string("renard")});
+    request.offset = 50;
+    request.limit = 25;
+    const auto encoded = Codec::EncodeCandidatesRequest(7, "cards", request);
+    Expect(encoded.at("actionType") == "card.choose" &&
+            encoded.at("query").at("search") == "renard" &&
+            encoded.at("offset") == 50 && encoded.at("limit") == 25,
+        "La requête de candidats doit conserver recherche et pagination.");
+
+    const auto decoded = Codec::DecodeCandidates({
+        {"roomId", 7}, {"gameType", "cards"}, {"actionType", "card.choose"},
+        {"items", nlohmann::json::array({
+            {{"type", "card.choose"}, {"payload", {{"cardId", "fox"}}}}})},
+        {"offset", 50}, {"limit", 25}, {"nextOffset", 75}});
+    Expect(decoded.items.size() == 1 &&
+            decoded.items[0].payload.at("cardId") == "fox" &&
+            decoded.nextOffset == 75,
+        "La page de candidats doit conserver les valeurs originales et la suite.");
 }

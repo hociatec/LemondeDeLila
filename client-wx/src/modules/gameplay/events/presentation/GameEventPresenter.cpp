@@ -104,6 +104,7 @@ std::string GameEventPresenter::Present(
     if (event.type == "round.ended") return "La manche est terminée.";
     if (event.type == "match.finished" || event.type == "game.finished")
         return "La partie est terminée.";
-    return {};
+    const auto type = Label(event.type);
+    return type.empty() ? std::string("Événement de jeu.") : type + ".";
 }
 }

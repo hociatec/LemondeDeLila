@@ -21,6 +21,7 @@ import type {
   PawnSetsPlayerView,
 } from './game-kit-view';
 
+/** Breaking schema version. Additive compatible fields do not increment it. */
 export const GAME_SYSTEM_VIEW_VERSION = 1 as const;
 
 export type MatchPlayerView = {

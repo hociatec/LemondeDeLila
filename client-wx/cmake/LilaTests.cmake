@@ -14,6 +14,7 @@ add_executable(lemonde_de_lila_wx_tests
     src/modules/rooms/presentation/navigation/RoomLobbyNavigator.cpp
     src/modules/rooms/presentation/navigation/RoomOpenRequest.cpp
     src/modules/rooms/presentation/model/RoomPresentationModel.cpp
+    src/modules/rooms/presentation/actions/RoomActionPolicy.cpp
     src/modules/rooms/presentation/shortcuts/RoomShortcutPolicy.cpp
     src/modules/vault/infrastructure/VaultPayloadCodec.cpp
     src/modules/vault/presentation/VaultNavigator.cpp
@@ -173,6 +174,7 @@ lila_configure_cpp_target(lemonde_de_lila_wx_presentation_compile_tests)
 add_executable(lemonde_de_lila_wx_gameplay_tests
     tests/GameplayContractTests.cpp
     src/modules/gameplay/actions/application/GameActionPresentationPolicy.cpp
+    src/modules/gameplay/actions/infrastructure/GameActionCatalogDecoder.cpp
     src/modules/gameplay/cards/application/GameCardActionResolver.cpp
     src/modules/gameplay/cards/application/GameCardTextBuilder.cpp
     src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
@@ -182,14 +184,28 @@ add_executable(lemonde_de_lila_wx_gameplay_tests
     src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp
     src/modules/gameplay/prompts/application/GameActionPromptFactory.cpp
     src/modules/gameplay/history/presentation/GameLogCursor.cpp
+    src/modules/gameplay/grid/application/GameGridActionResolver.cpp
+    src/modules/gameplay/events/presentation/GameEventPresenter.cpp
+    src/modules/gameplay/information/application/GameAssetCapabilityText.cpp
+    src/modules/gameplay/information/application/GameBoardCapabilityText.cpp
     src/modules/gameplay/information/application/GameCapabilityTextBuilder.cpp
+    src/modules/gameplay/information/application/GameValueCapabilityText.cpp
+    src/modules/gameplay/information/application/GameValueTextBuilder.cpp
+    src/modules/gameplay/information/application/GameWorkflowCapabilityText.cpp
+    src/modules/gameplay/session/infrastructure/GameCommandPayloadCodec.cpp
     src/modules/gameplay/session/infrastructure/GameEventPayloadCodec.cpp
     src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp
+    src/modules/gameplay/state/infrastructure/GameAssetCapabilitiesDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameBoardCapabilitiesDecoder.cpp
     src/modules/gameplay/state/infrastructure/GamePendingDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GamePlayerValuesDecoder.cpp
     src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp
     src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp
     src/modules/gameplay/state/infrastructure/GameSystemDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameValueDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameWorkflowCapabilitiesDecoder.cpp
     src/modules/gameplay/state/domain/GameKits.cpp
+    src/modules/gameplay/state/domain/GameSystem.cpp
     src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp
 )
 target_include_directories(lemonde_de_lila_wx_gameplay_tests PRIVATE src)

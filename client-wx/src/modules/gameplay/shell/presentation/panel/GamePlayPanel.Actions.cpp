@@ -13,6 +13,12 @@
 
 namespace lila::modules::gameplay::presentation
 {
+const domain::GamePrompt* GamePlayPanel::ActivePrompt() const noexcept
+{
+    return state_.pending && state_.pending->prompt
+        ? &*state_.pending->prompt : nullptr;
+}
+
 void GamePlayPanel::PrepareAndExecuteAction(domain::GameAction action)
 {
     if (action.confirm)
@@ -21,7 +27,7 @@ void GamePlayPanel::PrepareAndExecuteAction(domain::GameAction action)
         confirmationPanel_->ShowConfirmation(std::move(action));
         return;
     }
-    if (state_.prompt && state_.prompt->actionType == action.type)
+    if (const auto* prompt = ActivePrompt(); prompt && prompt->actionType == action.type)
     {
         ShowInlinePrompt(std::move(action));
         return;
@@ -48,7 +54,8 @@ bool GamePlayPanel::IsConfirmationVisible() const
 
 void GamePlayPanel::SyncInlinePrompt()
 {
-    if (!state_.prompt)
+    const auto* prompt = ActivePrompt();
+    if (prompt == nullptr)
     {
         dismissedPromptActionType_.clear();
         submittedPromptActionType_.clear();
@@ -61,20 +68,20 @@ void GamePlayPanel::SyncInlinePrompt()
         return;
     }
     if (!submittedPromptActionType_.empty() &&
-        submittedPromptActionType_ != state_.prompt->actionType)
+        submittedPromptActionType_ != prompt->actionType)
         submittedPromptActionType_.clear();
-    if (submittedPromptActionType_ == state_.prompt->actionType)
+    if (submittedPromptActionType_ == prompt->actionType)
     {
         promptPanel_->HidePrompt(false);
         return;
     }
-    if (dismissedPromptActionType_ == state_.prompt->actionType)
+    if (dismissedPromptActionType_ == prompt->actionType)
     {
         promptPanel_->HidePrompt(false);
         return;
     }
 
-    auto action = ResolveShortcutAction(state_.prompt->actionType);
+    auto action = ResolveShortcutAction(prompt->actionType);
     if (!action)
     {
         promptPanel_->HidePrompt(false);
@@ -85,9 +92,10 @@ void GamePlayPanel::SyncInlinePrompt()
 
 void GamePlayPanel::ShowInlinePrompt(domain::GameAction action)
 {
-    if (!state_.prompt || state_.prompt->actionType != action.type) return;
+    const auto* prompt = ActivePrompt();
+    if (prompt == nullptr || prompt->actionType != action.type) return;
     confirmationPanel_->HideConfirmation();
-    promptPanel_->ShowPrompt(*state_.prompt, std::move(action));
+    promptPanel_->ShowPrompt(*prompt, std::move(action));
 }
 
 bool GamePlayPanel::ActivateSelectedPendingChoice()

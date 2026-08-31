@@ -73,6 +73,7 @@ std::vector<domain::GameActionDescriptor> GameActionCatalogDecoder::Decode(
         descriptor.documentation = detail::ReadString(item, "documentation");
         descriptor.description = detail::ReadString(item, "description");
         descriptor.confirm = detail::ReadBool(item, "confirm");
+        descriptor.paginatedCandidates = detail::ReadBool(item, "paginatedCandidates");
         const auto ui = item.find("ui");
         if (ui != item.end() && ui->is_object())
         {

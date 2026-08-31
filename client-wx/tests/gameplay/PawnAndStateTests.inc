@@ -24,11 +24,13 @@ void TestServerDrivenPawnSelection()
     };
 
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    Expect(state.pawnSelection.has_value(), "Le choix de pion actif doit etre decode.");
-    Expect(state.pawnSelection->label == "Votre pion.", "Le libelle WPF du choix de pion est attendu.");
-    Expect(state.pawnSelection->choices.size() == 2, "Tous les pions serveur doivent etre proposes.");
-    Expect(state.pawnSelection->choices[1].label == "Un caillou", "Le libelle serveur doit rester intact.");
-    Expect(state.pawnSelection->choices[1].action.payload.at("pawnId") == "stone",
+    const auto selection = lila::modules::gameplay::infrastructure::PawnSelectionDecoder::Decode(
+        state.pending);
+    Expect(selection.has_value(), "Le choix de pion actif doit etre decode.");
+    Expect(selection->label == "Votre pion.", "Le libelle WPF du choix de pion est attendu.");
+    Expect(selection->choices.size() == 2, "Tous les pions serveur doivent etre proposes.");
+    Expect(selection->choices[1].label == "Un caillou", "Le libelle serveur doit rester intact.");
+    Expect(selection->choices[1].action.payload.at("pawnId") == "stone",
         "Le choix doit renvoyer l'action explicitement associee par le serveur.");
 }
 
@@ -49,7 +51,7 @@ void TestPawnSelectionHiddenForPassiveViewer()
     };
 
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    Expect(!state.pawnSelection.has_value(),
+    Expect(!lila::modules::gameplay::infrastructure::PawnSelectionDecoder::Decode(state.pending),
         "Un spectateur ou joueur passif ne doit pas recevoir une liste interactive.");
 }
 

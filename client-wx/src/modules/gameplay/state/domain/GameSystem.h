@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "modules/gameplay/state/domain/GameValue.h"
+#include "modules/gameplay/shortcuts/domain/GameShortcut.h"
 
 namespace lila::modules::gameplay::domain
 {
@@ -112,5 +113,6 @@ struct GameSystem final
     std::vector<GamePlayer> players;
     GameSetup setup;
     std::vector<GameEngineEvent> events;
+    std::vector<GameShortcut> shortcuts;
 };
 }

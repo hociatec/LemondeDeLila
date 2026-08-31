@@ -15,6 +15,9 @@
 #include "modules/gameplay/actions/application/GameCommandSubmissionGuard.h"
 #include "modules/gameplay/session/application/GameStartConfigurationFlow.h"
 #include "modules/gameplay/session/domain/GameEvent.h"
+#include "modules/gameplay/session/domain/GameCommandEnvelope.h"
+#include "modules/gameplay/state/domain/GameLine.h"
+#include "modules/gameplay/pawn_selection/domain/PawnSelection.h"
 #include "modules/gameplay/state/domain/GameState.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
@@ -109,6 +112,7 @@ private:
     bool ActivateSelectedGridCell();
     void SyncInlinePrompt();
     void ShowInlinePrompt(domain::GameAction action);
+    [[nodiscard]] const domain::GamePrompt* ActivePrompt() const noexcept;
     void SyncContentVisibility();
     [[nodiscard]] bool IsInlinePromptVisible() const;
     [[nodiscard]] bool IsConfirmationVisible() const;
@@ -156,6 +160,10 @@ private:
     prompt::GamePromptPanel* promptPanel_ = nullptr;
     pawn_selection::PawnSelectionPanel* pawnSelectionPanel_ = nullptr;
     domain::GameState state_;
+    std::vector<domain::GameLine> lines_;
+    std::vector<std::string> renderedLineIds_;
+    std::optional<domain::PawnSelection> pawnSelection_;
+    std::optional<domain::GameCommandEnvelope> retryableActionCommand_;
     int roomId_ = 0;
     std::string gameType_;
     std::string gameName_;

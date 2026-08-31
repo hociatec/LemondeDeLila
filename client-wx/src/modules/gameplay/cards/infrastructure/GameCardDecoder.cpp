@@ -154,8 +154,4 @@ domain::GameCardsView GameCardDecoder::Decode(const nlohmann::json& cardsKit)
     return result;
 }
 
-std::vector<domain::GameCard> GameCardDecoder::DecodeVisibleHands(const nlohmann::json& cardsKit)
-{
-    return Decode(cardsKit).visibleHand;
-}
 }

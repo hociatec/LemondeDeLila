@@ -7,7 +7,8 @@
 #include <string_view>
 #include <thread>
 
-#include "modules/gameplay/actions/domain/GameAction.h"
+#include "modules/gameplay/session/domain/GameActionCandidates.h"
+#include "modules/gameplay/session/domain/GameCommandEnvelope.h"
 #include "modules/gameplay/session/domain/GameEvent.h"
 #include "modules/gameplay/state/domain/GameState.h"
 
@@ -33,7 +34,10 @@ public:
     void RequestState(std::stop_token stopToken);
     void RequestRules(std::stop_token stopToken);
     void SendKey(std::string_view key, std::stop_token stopToken);
-    void ExecuteAction(const domain::GameAction& action, std::stop_token stopToken);
+    void ExecuteAction(const domain::GameCommandEnvelope& command, std::stop_token stopToken);
+    void RequestActionCandidates(
+        const domain::GameActionCandidatesRequest& request,
+        std::stop_token stopToken);
     void Close();
 
 private:

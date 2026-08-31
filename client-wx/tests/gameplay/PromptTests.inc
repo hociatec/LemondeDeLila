@@ -27,13 +27,14 @@ void TestServerDrivenPrompt()
     };
 
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    Expect(state.prompt.has_value(), "Le formulaire serveur doit être décodé.");
-    Expect(state.prompt->actionType == "configure", "Le formulaire doit cibler son action.");
-    Expect(state.prompt->cancelActionType == "cancel_config", "L'action d'annulation doit être conservée.");
-    Expect(state.prompt->fields.size() == 2, "Tous les champs génériques doivent être conservés.");
-    Expect(state.prompt->fields[0].minimum == 1 && state.prompt->fields[0].maximum == 100,
+    Expect(state.pending && state.pending->prompt, "Le formulaire serveur doit être décodé.");
+    const auto& prompt = *state.pending->prompt;
+    Expect(prompt.actionType == "configure", "Le formulaire doit cibler son action.");
+    Expect(prompt.cancelActionType == "cancel_config", "L'action d'annulation doit être conservée.");
+    Expect(prompt.fields.size() == 2, "Tous les champs génériques doivent être conservés.");
+    Expect(prompt.fields[0].minimum == 1 && prompt.fields[0].maximum == 100,
         "Les bornes numériques doivent être conservées.");
-    Expect(state.shortcuts.size() == 1 && state.shortcuts[0].normalizedKey == "Q",
+    Expect(state.system.shortcuts.size() == 1 && state.system.shortcuts[0].normalizedKey == "Q",
         "Les raccourcis restent pilotés par le serveur.");
 }
 
@@ -119,7 +120,7 @@ void TestStaleSetupPromptIsIgnoredDuringRound()
     };
 
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    Expect(state.prompt.has_value(),
+    Expect(state.pending && state.pending->prompt,
         "Le client V2 doit conserver le formulaire projeté sans réinterpréter la phase.");
     Expect(state.pending.has_value(),
         "Le pending V2 doit rester la source de vérité du serveur.");
@@ -151,7 +152,7 @@ void TestPromptWithoutItsServerActionCannotReopen()
     };
 
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    Expect(state.prompt.has_value(),
+    Expect(state.pending && state.pending->prompt,
         "Le formulaire projeté doit rester descriptible même sans action disponible.");
     Expect(state.pending.has_value(),
         "Le pending serveur ne doit pas être supprimé par une heuristique cliente.");
@@ -170,6 +171,7 @@ void TestActionLabelsRemainDistinct()
         })},
     };
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
-    Expect(state.lines.size() == 2, "Les deux actions doivent être affichées.");
-    Expect(state.lines[0].label != state.lines[1].label, "Le payload doit distinguer des libellés identiques.");
+    const auto lines = lila::modules::gameplay::application::GameActionPresentationPolicy::GenericLines(state);
+    Expect(lines.size() == 2, "Les deux actions doivent être affichées.");
+    Expect(lines[0].label != lines[1].label, "Le payload doit distinguer des libellés identiques.");
 }

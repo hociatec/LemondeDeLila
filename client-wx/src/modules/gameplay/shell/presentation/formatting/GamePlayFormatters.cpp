@@ -1,7 +1,5 @@
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 
-#include <sstream>
-
 #include <nlohmann/json.hpp>
 
 #include "shared/text/presentation/encoding/Encoding.h"
@@ -57,12 +55,4 @@ std::string PanelJsonToDisplay(const nlohmann::json& value)
     return title + "\n" + message;
 }
 
-void AppendJsonObjectLines(std::ostringstream& out, const nlohmann::json& object)
-{
-    if (!object.is_object()) return;
-    for (const auto& item : object.items())
-    {
-        out << item.key() << " : " << JsonToDisplay(item.value()) << '\n';
-    }
-}
 }

@@ -50,13 +50,22 @@ export class BotRoomTypeormRepository implements BotRoomRepository {
     private readonly participants: Repository<ParticipantRow>,
   ) {}
 
-  runRoomMutation<T>(roomId: number, operation: () => Promise<T>): Promise<T> {
+  runRoomMutation<T>(
+    roomId: number,
+    operation: (rooms: BotRoomRepository) => Promise<T>,
+  ): Promise<T> {
     return this.rooms.manager.transaction(async (manager) => {
-      await manager.getRepository(this.rooms.target).findOne({
+      const transactionalRooms = manager.getRepository(this.rooms.target);
+      await transactionalRooms.findOne({
         where: { id: roomId },
         lock: { mode: 'pessimistic_write' },
       });
-      return operation();
+      const transactionalRepository = new BotRoomTypeormRepository(
+        manager.getRepository(this.bots.target),
+        transactionalRooms,
+        manager.getRepository(this.participants.target),
+      );
+      return operation(transactionalRepository);
     });
   }
 

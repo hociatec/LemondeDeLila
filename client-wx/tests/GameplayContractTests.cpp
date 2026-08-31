@@ -19,7 +19,10 @@
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
+#include "modules/gameplay/session/infrastructure/GameCommandPayloadCodec.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
+#include "modules/gameplay/events/presentation/GameEventPresenter.h"
+#include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
 #include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
 
@@ -109,8 +112,10 @@ int main()
         TestCommandSubmissionGuardSerializesGameplayCommands();
         TestStructuredGameAcknowledgements();
         TestStructuredBackendErrorsAreReadable();
+        TestActionCandidatesContract();
         TestCapabilityInformationIsInspectable();
         TestKnownCapabilitiesAreTyped();
+        TestEmptyV2KitsAndCapabilitiesRemainValid();
         TestPendingMultipleWorkflowsUseOneExplicitAction();
         TestPendingSelectionPolicy();
         TestEventsHaveStableIdentityAndAccessibleText();
