@@ -38,7 +38,7 @@ void GamePlayPanel::RebuildInfoPanelChoices()
         if (state_.kits.Has(id)) append(id, label);
     if (state_.effect) append("effect", L"Effet courant");
     if (!state_.timers.empty()) append("timers", L"Minuteries");
-    if (!state_.game.empty()) append("specific", L"Informations spécifiques");
+    if (!state_.game.Empty()) append("specific", L"Informations spécifiques");
     if (nextIds == infoPanelIds_)
     {
         infoPanelChoice_->Show(infoPanelIds_.size() > 1);

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include <nlohmann/json_fwd.hpp>
 
 #include "modules/gameplay/state/domain/GameCapabilities.h"
@@ -12,8 +10,6 @@ class GameCardDecoder final
 {
 public:
     [[nodiscard]] static domain::GameCardsView Decode(
-        const nlohmann::json& cardsKit);
-    [[nodiscard]] static std::vector<domain::GameCard> DecodeVisibleHands(
         const nlohmann::json& cardsKit);
 };
 }

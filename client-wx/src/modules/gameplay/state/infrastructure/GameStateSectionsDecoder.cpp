@@ -1,7 +1,5 @@
 #include "modules/gameplay/state/infrastructure/GameStateSectionsDecoder.h"
 
-#include <sstream>
-#include <cctype>
 #include <utility>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
@@ -12,77 +10,11 @@ namespace lila::modules::gameplay::infrastructure::detail
 {
 namespace
 {
-std::string PayloadKey(std::string key)
-{
-    if (key == "playerId") return "Joueur";
-    if (key == "ownerId") return "Propriétaire";
-    if (key == "cardId" || key == "card") return "Carte";
-    if (key == "pawnId") return "Pion";
-    if (key == "cellId") return "Case";
-    if (key == "boardId") return "Plateau";
-    std::string label;
-    for (const char character : key)
-    {
-        if (character == '_' || character == '-' || character == '.') label += ' ';
-        else
-        {
-            if (std::isupper(static_cast<unsigned char>(character)) && !label.empty()) label += ' ';
-            label += static_cast<char>(std::tolower(static_cast<unsigned char>(character)));
-        }
-    }
-    if (!label.empty()) label[0] = static_cast<char>(std::toupper(
-        static_cast<unsigned char>(label[0])));
-    return label;
-}
-
 nlohmann::json ActionPayload(const nlohmann::json& action)
 {
     return ObjectOrEmpty(action.value("payload", nlohmann::json::object()));
 }
 
-std::string CompactPayloadLabel(const nlohmann::json& payload)
-{
-    if (!payload.is_object() || payload.empty()) return {};
-    std::ostringstream out;
-    bool first = true;
-    for (const auto& item : payload.items())
-    {
-        if (!first) out << ", ";
-        first = false;
-        out << PayloadKey(item.key()) << " : ";
-        if (item.value().is_string()) out << item.value().get<std::string>();
-        else if (item.value().is_number_integer()) out << item.value().get<int>();
-        else if (item.value().is_boolean()) out << (item.value().get<bool>() ? "true" : "false");
-        else out << item.value().dump();
-    }
-    return out.str();
-}
-
-std::string BuildActionLabel(const domain::GameAction& action)
-{
-    std::string label = action.label.empty() ? action.type : action.label;
-    const auto details = CompactPayloadLabel(action.payload);
-    if (!details.empty()) label += " (" + details + ")";
-    if (action.disabled) label += " — indisponible";
-    return label;
-}
-}
-
-std::vector<std::string> DecodeLog(const nlohmann::json& payload)
-{
-    std::vector<std::string> result;
-    const auto log = payload.find("log");
-    if (log == payload.end() || !log->is_array()) return result;
-    for (const auto& entry : *log)
-    {
-        if (entry.is_string()) result.push_back(entry.get<std::string>());
-        else if (entry.is_object())
-        {
-            auto message = ReadString(entry, "message");
-            if (!message.empty()) result.push_back(std::move(message));
-        }
-    }
-    return result;
 }
 
 std::vector<domain::GameAction> DecodeActions(const nlohmann::json& payload)
@@ -166,28 +98,6 @@ std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode)
         if (!field.key.empty()) prompt.fields.push_back(std::move(field));
     }
     return prompt.fields.empty() ? std::nullopt : std::optional<domain::GamePrompt>(std::move(prompt));
-}
-
-std::vector<domain::GameLine> BuildLines(const std::vector<domain::GameAction>& actions)
-{
-    std::vector<domain::GameLine> lines;
-    lines.reserve(actions.size());
-    for (std::size_t index = 0; index < actions.size(); ++index)
-    {
-        const auto& action = actions[index];
-        domain::GameLine line;
-        line.id = action.type + "#" + std::to_string(index);
-        line.label = BuildActionLabel(action);
-        line.detail = action.documentation;
-        const auto payloadDetail = CompactPayloadLabel(action.payload);
-        if (!payloadDetail.empty())
-            line.detail += (line.detail.empty() ? std::string{} : "\n") + payloadDetail;
-        line.kind = domain::GameLineKind::Action;
-        line.actionIndex = index;
-        line.enabled = !action.disabled;
-        lines.push_back(std::move(line));
-    }
-    return lines;
 }
 
 std::string NormalizeShortcutKey(std::string rawKey)

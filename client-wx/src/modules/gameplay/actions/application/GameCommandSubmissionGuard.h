@@ -19,7 +19,7 @@ public:
         TimePoint now = Clock::now())
     {
         if (command.empty()) return false;
-        if (inFlight_ && now - startedAt_ < RetryAfter) return false;
+        if (inFlight_) return false;
         command_ = command;
         sourceVersion_ = stateVersion;
         sourceRunId_ = runId;
@@ -56,8 +56,6 @@ public:
     [[nodiscard]] bool IsInFlight() const noexcept { return inFlight_; }
 
 private:
-    static constexpr auto RetryAfter = std::chrono::seconds(5);
-
     std::string command_;
     bool inFlight_ = false;
     int sourceVersion_ = 0;

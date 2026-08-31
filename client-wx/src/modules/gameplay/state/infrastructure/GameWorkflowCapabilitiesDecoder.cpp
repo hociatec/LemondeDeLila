@@ -88,7 +88,7 @@ std::optional<domain::GameSubmissionValue> SubmissionValue(const nlohmann::json&
 std::optional<domain::GameQuizView> GameWorkflowCapabilitiesDecoder::Quiz(
     const nlohmann::json& raw)
 {
-    if (!raw.is_object() || raw.empty()) return std::nullopt;
+    if (!raw.is_object()) return std::nullopt;
     domain::GameQuizView result;
     const auto banks = raw.find("banks");
     if (banks != raw.end() && banks->is_object())
@@ -123,14 +123,13 @@ std::optional<domain::GameQuizView> GameWorkflowCapabilitiesDecoder::Quiz(
             }
             result.sessions.push_back(std::move(session));
         }
-    return result.banks.empty() && result.sessions.empty()
-        ? std::nullopt : std::optional<domain::GameQuizView>(std::move(result));
+    return result;
 }
 
 std::optional<domain::GameSubmissionsView> GameWorkflowCapabilitiesDecoder::Submissions(
     const nlohmann::json& raw)
 {
-    if (!raw.is_object() || raw.empty()) return std::nullopt;
+    if (!raw.is_object()) return std::nullopt;
     domain::GameSubmissionsView result;
     result.stage = detail::ReadString(raw, "stage");
     const auto sessions = raw.find("sessions");
@@ -167,14 +166,13 @@ std::optional<domain::GameSubmissionsView> GameWorkflowCapabilitiesDecoder::Subm
             result.judges.push_back({item.key(), OptionalInt(item.value(), "playerId"),
                 Ids(item.value(), "playerIds"), detail::ReadInt(item.value(), "index")});
         }
-    return result.stage.empty() && result.sessions.empty() && result.judges.empty()
-        ? std::nullopt : std::optional<domain::GameSubmissionsView>(std::move(result));
+    return result;
 }
 
 std::optional<domain::GameEffectView> GameWorkflowCapabilitiesDecoder::Effect(
     const nlohmann::json& raw)
 {
-    if (!raw.is_object() || raw.empty()) return std::nullopt;
+    if (!raw.is_object()) return std::nullopt;
     domain::GameEffectView result;
     const auto source = raw.find("source");
     if (source != raw.end() && source->is_object())

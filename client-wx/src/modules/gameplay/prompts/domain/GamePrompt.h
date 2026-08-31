@@ -31,6 +31,7 @@ struct GamePrompt final
     std::string label;
     std::string actionType;
     std::string cancelActionType;
+    bool paginatedCandidates = false;
     std::vector<GamePromptField> fields;
 };
 }

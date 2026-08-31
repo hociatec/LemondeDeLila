@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/session/infrastructure/GameEventPayloadCodec.h"
+#include "modules/gameplay/session/infrastructure/GameCommandPayloadCodec.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 #include "modules/session/application/SessionConnectionRetry.h"
 #include "modules/session/application/SessionStore.h"
@@ -97,16 +98,33 @@ void GameSessionGateway::SendKey(std::string_view key, std::stop_token)
         {"payload", {{"roomId", roomId}, {"gameType", gameType_}, {"key", normalized}}}});
 }
 
-void GameSessionGateway::ExecuteAction(const domain::GameAction& action, std::stop_token)
+void GameSessionGateway::ExecuteAction(
+    const domain::GameCommandEnvelope& command,
+    std::stop_token)
 {
     const auto roomId = roomId_.load();
     if (roomId <= 0 || gameType_.empty()) throw std::runtime_error("Aucune partie active.");
-    if (action.type.empty()) throw std::invalid_argument("Action de jeu invalide.");
-    lila::shared::logging::LogInfo("GameInput", "Sending action: type=" + action.type);
+    if (command.roomId != roomId || command.gameType != gameType_)
+        throw std::invalid_argument("La commande ne correspond pas à la partie active.");
+    lila::shared::logging::LogInfo(
+        "GameInput", "Sending command: id=" + command.commandId);
     SendJson(nlohmann::json{
         {"type", "game.action"},
-        {"payload", GameStatePayloadCodec::EncodeActionPayload(roomId, gameType_, action)}});
-    lila::shared::logging::LogInfo("GameInput", "Action sent: type=" + action.type);
+        {"payload", GameCommandPayloadCodec::EncodeAction(command)}});
+    lila::shared::logging::LogInfo(
+        "GameInput", "Command sent: id=" + command.commandId);
+}
+
+void GameSessionGateway::RequestActionCandidates(
+    const domain::GameActionCandidatesRequest& request,
+    std::stop_token)
+{
+    const auto roomId = roomId_.load();
+    if (roomId <= 0 || gameType_.empty()) throw std::runtime_error("Aucune partie active.");
+    SendJson(nlohmann::json{
+        {"type", "game.action.candidates"},
+        {"payload", GameCommandPayloadCodec::EncodeCandidatesRequest(
+            roomId, gameType_, request)}});
 }
 
 domain::GameState GameSessionGateway::AwaitState(std::stop_token stopToken)

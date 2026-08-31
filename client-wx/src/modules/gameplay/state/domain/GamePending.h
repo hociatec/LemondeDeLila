@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "modules/gameplay/actions/domain/GameAction.h"
+#include "modules/gameplay/prompts/domain/GamePrompt.h"
 #include "modules/gameplay/state/domain/GameValue.h"
 
 namespace lila::modules::gameplay::domain
@@ -34,6 +35,7 @@ struct GamePending final
     int minimumSelections = 1;
     int maximumSelections = 1;
     std::optional<GameAction> selectionAction;
+    std::optional<GamePrompt> prompt;
     std::vector<GamePendingChoice> choices;
     GameValue::Object unknownData;
 };

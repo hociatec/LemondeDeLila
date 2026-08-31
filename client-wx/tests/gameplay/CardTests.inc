@@ -93,19 +93,22 @@ void TestServerDrivenKeyboardActionsSurviveTheClientContract()
     const auto play = GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 0);
     Expect(play.has_value() && play->type == "play_card",
         "Entree sur une carte doit retrouver l'action associee par le serveur.");
-    Expect(state.shortcuts.size() == 2 &&
-            state.shortcuts[0].normalizedKey == "SPACE" &&
-            state.shortcuts[0].actionType == "draw_card",
+    Expect(state.system.shortcuts.size() == 2 &&
+            state.system.shortcuts[0].normalizedKey == "SPACE" &&
+            state.system.shortcuts[0].actionType == "draw_card",
         "Espace doit rester associe a l'action fournie par le serveur.");
-    Expect(state.shortcuts[1].normalizedKey == "P" &&
-            state.shortcuts[1].actionType == "end_turn",
+    Expect(state.system.shortcuts[1].normalizedKey == "P" &&
+            state.system.shortcuts[1].actionType == "end_turn",
         "P doit rester associe a l'action de fin de tour exposee par le serveur.");
 
-    const auto encoded = GameStatePayloadCodec::EncodeActionPayload(
-        21, "server-driven-card-game", *play);
+    const auto encoded = lila::modules::gameplay::infrastructure::GameCommandPayloadCodec::EncodeAction(
+        {21, "server-driven-card-game", "command-123", state.version, {*play}});
     Expect(encoded.at("actions").at(0).at("type") == "play_card" &&
             encoded.at("actions").at(0).at("payload").at("value") == 2,
         "L'action de carte doit etre envoyee sans perdre son type ni sa valeur.");
+    Expect(encoded.at("commandId") == "command-123" &&
+            encoded.at("knownVersion") == state.version,
+        "La commande doit conserver son identite et la version connue.");
 }
 
 void TestOpaqueServerDrivenHandAndShortcuts()
@@ -144,14 +147,14 @@ void TestOpaqueServerDrivenHandAndShortcuts()
         "Entree doit jouer la carte selectionnee sans connaitre le jeu.");
     Expect(!GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 1).has_value(),
         "Entree ne doit pas jouer une carte desactivee.");
-    Expect(state.shortcuts.size() == 3 &&
-            state.shortcuts[0].normalizedKey == "SPACE" &&
-            state.shortcuts[0].actionType == "opaque_draw",
+    Expect(state.system.shortcuts.size() == 3 &&
+            state.system.shortcuts[0].normalizedKey == "SPACE" &&
+            state.system.shortcuts[0].actionType == "opaque_draw",
         "Espace doit rester lie a l'action opaque fournie par le serveur.");
-    Expect(state.shortcuts[1].normalizedKey == "P" &&
-            state.shortcuts[1].actionType == "opaque_leave" &&
-            state.shortcuts[2].normalizedKey == "C" &&
-            state.shortcuts[2].id == "discard",
+    Expect(state.system.shortcuts[1].normalizedKey == "P" &&
+            state.system.shortcuts[1].actionType == "opaque_leave" &&
+            state.system.shortcuts[2].normalizedKey == "C" &&
+            state.system.shortcuts[2].id == "discard",
         "Les raccourcis d'action et d'interface doivent tous etre conserves.");
     Expect(GameStatePayloadCodec::NormalizeShortcutKey(" pressed RETURN ") == "ENTER",
         "Return doit etre normalise comme Entree.");

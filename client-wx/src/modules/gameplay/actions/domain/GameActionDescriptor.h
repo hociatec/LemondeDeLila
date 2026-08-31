@@ -31,6 +31,7 @@ struct GameActionDescriptor final
     std::string documentation;
     std::string control;
     bool confirm = false;
+    bool paginatedCandidates = false;
     std::optional<GameInputDescriptor> input;
 };
 }

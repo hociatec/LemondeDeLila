@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include <string>
 
 #include <nlohmann/json_fwd.hpp>
@@ -15,5 +14,4 @@ namespace lila::modules::gameplay::presentation
 [[nodiscard]] std::string TurnLabel(const domain::GameState& state);
 [[nodiscard]] std::string JsonToDisplay(const nlohmann::json& value);
 [[nodiscard]] std::string PanelJsonToDisplay(const nlohmann::json& value);
-void AppendJsonObjectLines(std::ostringstream& out, const nlohmann::json& object);
 }

@@ -14,11 +14,28 @@ enum class RoomInterfaceAction
     TableAmbienceVolume,
 };
 
+enum class RoomServerAction
+{
+    Start,
+    Reset,
+    Save,
+    AddBot,
+    RemoveBot,
+    TogglePrivacy,
+    SetRole,
+    SetAmbience,
+    Invite,
+    Kick,
+    Ban,
+    SetOwner,
+    Leave,
+};
+
 class RoomActionPolicy final
 {
 public:
     [[nodiscard]] static bool AllowsServer(
-        const domain::RoomState& room, std::string_view action) noexcept;
+        const domain::RoomState& room, RoomServerAction action) noexcept;
     [[nodiscard]] static constexpr bool AllowsInterface(RoomInterfaceAction) noexcept
     {
         return true;

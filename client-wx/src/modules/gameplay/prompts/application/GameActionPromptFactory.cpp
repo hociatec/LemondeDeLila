@@ -48,12 +48,13 @@ std::optional<domain::GamePrompt> GameActionPromptFactory::Build(
     prompt.actionType = action.type;
     prompt.title = descriptor->label.empty() ? Humanize(action.type) : descriptor->label;
     prompt.label = prompt.title;
+    prompt.paginatedCandidates = descriptor->paginatedCandidates;
     for (const auto& property : descriptor->input->properties)
     {
         if (action.payload.contains(property.key)) continue;
         prompt.fields.push_back(Field(property));
     }
-    return prompt.fields.empty() ? std::nullopt
+    return prompt.fields.empty() && !prompt.paginatedCandidates ? std::nullopt
                                  : std::optional<domain::GamePrompt>(std::move(prompt));
 }
 }

@@ -57,8 +57,6 @@ struct RoomState
     std::string name;
     std::string gameType;
     std::string gameName;
-    std::string gameSummary;
-    std::string gameEngine;
     std::string status;
     bool started = false;
     bool isPrivate = false;

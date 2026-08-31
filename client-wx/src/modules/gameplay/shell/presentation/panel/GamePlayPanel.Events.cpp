@@ -18,6 +18,7 @@
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
+#include "modules/gameplay/session/application/GameSessionService.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "shared/logging/application/Logger.h"
@@ -85,14 +86,30 @@ void GamePlayPanel::BindEvents()
         {
             UpdateStatus(message, true, true);
         });
+    promptPanel_->SetCandidatesRequestHandler(
+        [this](domain::GameActionCandidatesRequest request)
+        {
+            auto* service = &service_;
+            RunCommand(
+                [service, request = std::move(request)](std::stop_token stopToken)
+                {
+                    service->RequestActionCandidates(request, stopToken);
+                },
+                "Chargement des candidats impossible.",
+                [](GamePlayPanel& panel, const lila::shared::errors::AppError&)
+                {
+                    panel.promptPanel_->RejectCandidatesRequest();
+                });
+        });
     promptPanel_->SetSubmitHandler(
         [this](domain::GameAction action)
         {
             submittedPromptActionType_ = action.type;
             dismissedPromptActionType_.clear();
+            const auto* prompt = ActivePrompt();
             const bool startsRoomAfterSubmission = !roomStarted_ && roomStartFlowRequested_ &&
-                !state_.system.setup.complete && state_.prompt &&
-                state_.prompt->actionType == action.type;
+                !state_.system.setup.complete && prompt &&
+                prompt->actionType == action.type;
             if (startsRoomAfterSubmission &&
                 !startConfigurationFlow_.TryBeginSubmission(state_.system.setup))
                 return;
@@ -103,7 +120,8 @@ void GamePlayPanel::BindEvents()
     promptPanel_->SetCancelHandler(
         [this](std::string)
         {
-            if (state_.prompt) dismissedPromptActionType_ = state_.prompt->actionType;
+            if (const auto* prompt = ActivePrompt())
+                dismissedPromptActionType_ = prompt->actionType;
             roomStartFlowRequested_ = false;
             roomStartPending_ = false;
             startConfigurationFlow_.Reset();
@@ -124,9 +142,9 @@ bool GamePlayPanel::HandleZoneActivation()
     }
     if (IsConfirmationVisible() || IsInlinePromptVisible()) return true;
     if (pawnSelectionPanel_->IsActive()) return true;
-    if (state_.prompt)
+    if (const auto* prompt = ActivePrompt())
     {
-        if (submittedPromptActionType_ != state_.prompt->actionType)
+        if (submittedPromptActionType_ != prompt->actionType)
         {
             dismissedPromptActionType_.clear();
             SyncInlinePrompt();

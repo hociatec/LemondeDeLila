@@ -8,7 +8,7 @@ describe('distributed bot room mutations', () => {
     const rooms = {
       runRoomMutation: jest.fn(async (_roomId, operation) => {
         order.push('lock');
-        const result = await operation();
+        const result = await operation(rooms);
         order.push('unlock');
         return result;
       }),

@@ -78,8 +78,6 @@ std::optional<domain::GameDiceState> GameDiceDecoder::Decode(const nlohmann::jso
     }
     else AppendDice(raw, state, {});
 
-    if (state.dice.empty() && !state.total.has_value() && !state.rollActionIndex.has_value())
-        return std::nullopt;
     return state;
 }
 }

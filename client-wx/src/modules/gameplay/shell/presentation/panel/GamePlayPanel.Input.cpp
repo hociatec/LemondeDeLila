@@ -104,7 +104,8 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             ActivateSelectedLine();
             return true;
         }
-        if (state_.prompt && submittedPromptActionType_ == state_.prompt->actionType)
+        if (const auto* prompt = ActivePrompt();
+            prompt && submittedPromptActionType_ == prompt->actionType)
             return true;
         SendKey(key);
         return true;
@@ -129,12 +130,13 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
 void GamePlayPanel::ActivateSelectedLine()
 {
     const int selection = linesList_->GetSelection();
-    if (selection == wxNOT_FOUND || selection < 0 || static_cast<std::size_t>(selection) >= state_.lines.size())
+    if (selection == wxNOT_FOUND || selection < 0 ||
+        static_cast<std::size_t>(selection) >= lines_.size())
     {
         UpdateStatus(wxString(L"Aucune ligne sélectionnée."), true, true);
         return;
     }
-    const auto& line = state_.lines[static_cast<std::size_t>(selection)];
+    const auto& line = lines_[static_cast<std::size_t>(selection)];
     if (!line.enabled || line.actionIndex == domain::GameLine::NoAction ||
         line.actionIndex >= state_.actions.size())
     {
@@ -148,7 +150,8 @@ void GamePlayPanel::ActivateSelectedLine()
 
 bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
 {
-    const auto* found = shortcuts::GameShortcutResolver::Find(state_, normalizedKey);
+    const auto* found = shortcuts::GameShortcutResolver::Find(
+        state_, lines_, normalizedKey);
     if (found == nullptr)
     {
         lila::shared::logging::LogInfo(
@@ -188,7 +191,7 @@ bool GamePlayPanel::HandleInterfaceShortcut(const std::string& id)
 std::optional<domain::GameAction> GamePlayPanel::ResolveShortcutAction(const std::string& actionType) const
 {
     return shortcuts::GameShortcutResolver::ResolveAction(
-        state_, actionType, linesList_->GetSelection());
+        state_, lines_, actionType, linesList_->GetSelection());
 }
 
 std::string GamePlayPanel::NormalizeKey(const wxKeyEvent& event) const

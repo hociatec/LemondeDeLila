@@ -5,6 +5,7 @@
 #include <wx/checkbox.h>
 #include <wx/checklst.h>
 #include <wx/choice.h>
+#include <wx/listbox.h>
 #include <wx/rearrangectrl.h>
 #include <wx/textctrl.h>
 
@@ -19,6 +20,21 @@ void GamePromptPanel::Submit()
 {
     if (!IsActive() || !action_) return;
     auto action = *action_;
+    if (paginatedCandidates_)
+    {
+        const int selected = candidatesList_->GetSelection();
+        if (selected == wxNOT_FOUND || selected < 0 ||
+            static_cast<std::size_t>(selected) >= candidates_.size())
+        {
+            if (onValidationError_) onValidationError_(
+                wxString(L"Sélectionnez un candidat fourni par le serveur."), candidatesList_);
+            return;
+        }
+        action = candidates_[static_cast<std::size_t>(selected)];
+        HidePrompt();
+        if (onSubmit_) onSubmit_(std::move(action));
+        return;
+    }
     for (const auto& control : fields_)
     {
         if (control.ordering != nullptr)

@@ -11,17 +11,19 @@ namespace
 {
 const domain::GameShortcut* FindAvailableAction(
     const domain::GameState& state,
+    const std::vector<domain::GameLine>& lines,
     const std::string& normalizedKey)
 {
     const auto found = std::find_if(
-        state.shortcuts.begin(), state.shortcuts.end(),
-        [&state, &normalizedKey](const domain::GameShortcut& shortcut)
+        state.system.shortcuts.begin(), state.system.shortcuts.end(),
+        [&state, &lines, &normalizedKey](const domain::GameShortcut& shortcut)
         {
             return shortcut.normalizedKey == normalizedKey &&
                 shortcut.kind == domain::GameShortcutKind::Action &&
-                GameShortcutResolver::ResolveAction(state, shortcut.actionType, -1).has_value();
+                GameShortcutResolver::ResolveAction(
+                    state, lines, shortcut.actionType, -1).has_value();
         });
-    return found == state.shortcuts.end() ? nullptr : &*found;
+    return found == state.system.shortcuts.end() ? nullptr : &*found;
 }
 
 const domain::GameShortcut* FindInterface(
@@ -29,34 +31,36 @@ const domain::GameShortcut* FindInterface(
     const std::string& normalizedKey)
 {
     const auto found = std::find_if(
-        state.shortcuts.begin(), state.shortcuts.end(),
+        state.system.shortcuts.begin(), state.system.shortcuts.end(),
         [&normalizedKey](const domain::GameShortcut& shortcut)
         {
             return shortcut.normalizedKey == normalizedKey &&
                 shortcut.kind == domain::GameShortcutKind::Interface;
         });
-    return found == state.shortcuts.end() ? nullptr : &*found;
+    return found == state.system.shortcuts.end() ? nullptr : &*found;
 }
 }
 
 const domain::GameShortcut* GameShortcutResolver::Find(
     const domain::GameState& state,
+    const std::vector<domain::GameLine>& lines,
     const std::string& normalizedKey)
 {
     // A currently available game action wins over an interface panel using the same key.
-    if (const auto* action = FindAvailableAction(state, normalizedKey)) return action;
+    if (const auto* action = FindAvailableAction(state, lines, normalizedKey)) return action;
     return FindInterface(state, normalizedKey);
 }
 
 std::optional<domain::GameAction> GameShortcutResolver::ResolveAction(
     const domain::GameState& state,
+    const std::vector<domain::GameLine>& lines,
     const std::string& actionType,
     int selectedLine)
 {
     if (actionType.empty()) return std::nullopt;
-    if (selectedLine >= 0 && static_cast<std::size_t>(selectedLine) < state.lines.size())
+    if (selectedLine >= 0 && static_cast<std::size_t>(selectedLine) < lines.size())
     {
-        const auto& line = state.lines[static_cast<std::size_t>(selectedLine)];
+        const auto& line = lines[static_cast<std::size_t>(selectedLine)];
         if (line.actionIndex < state.actions.size() &&
             state.actions[line.actionIndex].type == actionType &&
             !state.actions[line.actionIndex].disabled)
@@ -99,7 +103,7 @@ std::string GameShortcutResolver::NormalizeKey(const wxKeyEvent& event)
 wxString GameShortcutResolver::BuildHelpText(const domain::GameState& state)
 {
     wxString result;
-    for (const auto& shortcut : state.shortcuts)
+    for (const auto& shortcut : state.system.shortcuts)
     {
         if (!result.empty()) result += wxString(L" | ");
         result += FromUtf8(shortcut.normalizedKey);

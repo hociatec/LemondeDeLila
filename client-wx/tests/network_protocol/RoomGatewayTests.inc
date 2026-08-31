@@ -20,6 +20,7 @@ void TestRoomSessionGatewayUsesBackendHandshakeContract()
             {"room", {
                 {"id", 42}, {"name", "Table d'Alice"}, {"gameType", "four-winds"},
                 {"status", "waiting"}, {"isPrivate", false}, {"maxPlayers", 4},
+                {"tableAmbienceSoundId", nullptr},
                 {"players", nlohmann::json::array({{{"id", 7}, {"username", "alice"}}})},
                 {"spectators", nlohmann::json::array()},
                 {"bots", nlohmann::json::array()},
@@ -33,6 +34,8 @@ void TestRoomSessionGatewayUsesBackendHandshakeContract()
 
     const auto room = gateway.Create("four-winds", {});
     Expect(room.id == 42, "Table creee attendue");
+    Expect(room.tableAmbienceSoundId.empty(),
+        "Une ambiance de table nullable doit respecter le contrat room.created.");
     Expect(socket.endpoint == "wss://example.test/ws", "Endpoint room /ws attendu");
     Expect(
         tickets.requestedScope == lila::shared::network::ws::WsTicketScopeRoom,

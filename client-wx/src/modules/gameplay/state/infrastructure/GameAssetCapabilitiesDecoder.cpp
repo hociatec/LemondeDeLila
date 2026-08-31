@@ -26,7 +26,7 @@ std::vector<int> Ids(const nlohmann::json& raw)
 std::optional<domain::GameInventoryView> GameAssetCapabilitiesDecoder::Inventory(
     const nlohmann::json& raw)
 {
-    if (!raw.is_object() || raw.empty()) return std::nullopt;
+    if (!raw.is_object()) return std::nullopt;
     domain::GameInventoryView result;
     for (const auto& item : raw.items())
     {
@@ -55,14 +55,13 @@ std::optional<domain::GameInventoryView> GameAssetCapabilitiesDecoder::Inventory
             }
         result.sets.push_back(std::move(set));
     }
-    return result.sets.empty() ? std::nullopt
-                               : std::optional<domain::GameInventoryView>(std::move(result));
+    return result;
 }
 
 std::optional<domain::GameEconomyView> GameAssetCapabilitiesDecoder::Economy(
     const nlohmann::json& raw)
 {
-    if (!raw.is_object() || raw.empty()) return std::nullopt;
+    if (!raw.is_object()) return std::nullopt;
     domain::GameEconomyView result;
     for (const auto& item : raw.items())
     {
@@ -77,14 +76,13 @@ std::optional<domain::GameEconomyView> GameAssetCapabilitiesDecoder::Economy(
                     market.prices.push_back({price.key(), price.value().get<double>()});
         result.markets.push_back(std::move(market));
     }
-    return result.markets.empty() ? std::nullopt
-                                  : std::optional<domain::GameEconomyView>(std::move(result));
+    return result;
 }
 
 std::optional<domain::GameOwnershipView> GameAssetCapabilitiesDecoder::Ownership(
     const nlohmann::json& raw)
 {
-    if (!raw.is_object() || raw.empty()) return std::nullopt;
+    if (!raw.is_object()) return std::nullopt;
     domain::GameOwnershipView result;
     for (const auto& registry : raw.items())
     {
@@ -94,14 +92,13 @@ std::optional<domain::GameOwnershipView> GameAssetCapabilitiesDecoder::Ownership
         for (const auto& asset : owners->items())
             result.assets.push_back({registry.key(), asset.key(), Ids(asset.value())});
     }
-    return result.assets.empty() ? std::nullopt
-                                 : std::optional<domain::GameOwnershipView>(std::move(result));
+    return result;
 }
 
 std::optional<domain::GameCollectionsView> GameAssetCapabilitiesDecoder::Collections(
     const nlohmann::json& raw)
 {
-    if (!raw.is_object() || raw.empty()) return std::nullopt;
+    if (!raw.is_object()) return std::nullopt;
     domain::GameCollectionsView result;
     for (const auto& collection : raw.items())
     {
@@ -132,7 +129,6 @@ std::optional<domain::GameCollectionsView> GameAssetCapabilitiesDecoder::Collect
             result.players.push_back(std::move(player));
         }
     }
-    return result.players.empty() ? std::nullopt
-                                  : std::optional<domain::GameCollectionsView>(std::move(result));
+    return result;
 }
 }

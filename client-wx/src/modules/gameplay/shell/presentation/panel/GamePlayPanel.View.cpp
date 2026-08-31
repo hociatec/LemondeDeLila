@@ -83,6 +83,7 @@ void GamePlayPanel::ClearView()
     movementPanel_->Clear();
     resourcesPanel_->Clear();
     workflowPanel_->Clear();
+    renderedLineIds_.clear();
     infoText_->Clear();
     infoPanelChoice_->Clear();
     infoPanelIds_.clear();
@@ -97,12 +98,15 @@ void GamePlayPanel::ClearView()
 
 void GamePlayPanel::RebuildLines()
 {
-    if (linesList_->GetCount() == state_.lines.size())
+    std::vector<std::string> nextIds;
+    nextIds.reserve(lines_.size());
+    for (const auto& line : lines_) nextIds.push_back(line.id);
+    if (linesList_->GetCount() == lines_.size() && nextIds == renderedLineIds_)
     {
         bool unchanged = true;
-        for (std::size_t index = 0; index < state_.lines.size(); ++index)
+        for (std::size_t index = 0; index < lines_.size(); ++index)
             if (linesList_->GetString(static_cast<unsigned int>(index)) !=
-                FromUtf8(state_.lines[index].label))
+                FromUtf8(lines_[index].label))
             {
                 unchanged = false;
                 break;
@@ -110,12 +114,17 @@ void GamePlayPanel::RebuildLines()
         if (unchanged) return;
     }
     const int previousSelection = linesList_->GetSelection();
+    const auto previousId = previousSelection >= 0 &&
+        static_cast<std::size_t>(previousSelection) < renderedLineIds_.size()
+        ? renderedLineIds_[static_cast<std::size_t>(previousSelection)] : std::string{};
     linesList_->Clear();
-    for (const auto& line : state_.lines) linesList_->Append(FromUtf8(line.label));
-    if (state_.lines.empty()) return;
-    const int nextSelection = previousSelection != wxNOT_FOUND && previousSelection >= 0 &&
-        static_cast<std::size_t>(previousSelection) < state_.lines.size()
-        ? previousSelection : 0;
+    renderedLineIds_ = std::move(nextIds);
+    for (const auto& line : lines_) linesList_->Append(FromUtf8(line.label));
+    if (lines_.empty()) return;
+    const auto restored = std::find(
+        renderedLineIds_.begin(), renderedLineIds_.end(), previousId);
+    const int nextSelection = restored == renderedLineIds_.end()
+        ? 0 : static_cast<int>(std::distance(renderedLineIds_.begin(), restored));
     linesList_->SetSelection(nextSelection);
 }
 
@@ -128,9 +137,9 @@ wxString GamePlayPanel::BuildLineDetail() const
 {
     const int selection = linesList_->GetSelection();
     if (selection == wxNOT_FOUND || selection < 0 ||
-        static_cast<std::size_t>(selection) >= state_.lines.size())
+        static_cast<std::size_t>(selection) >= lines_.size())
         return wxString(L"Aucune ligne sélectionnée.");
-    const auto& line = state_.lines[static_cast<std::size_t>(selection)];
+    const auto& line = lines_[static_cast<std::size_t>(selection)];
     wxString text = FromUtf8(line.label);
     if (!line.detail.empty()) text += wxString(L"\n") + FromUtf8(line.detail);
     return text;
