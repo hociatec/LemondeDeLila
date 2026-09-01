@@ -15,15 +15,27 @@ namespace lila::shared::accessibility
 {
 inline void CycleModalFocus(const std::vector<wxWindow*>& controls, bool backwards)
 {
-    if (controls.empty()) return;
-    const auto current = std::find(controls.begin(), controls.end(), wxWindow::FindFocus());
-    std::size_t index = current == controls.end()
-        ? (backwards ? controls.size() - 1 : 0)
-        : static_cast<std::size_t>(std::distance(controls.begin(), current));
-    if (current != controls.end())
-        index = backwards ? (index == 0 ? controls.size() - 1 : index - 1)
-                          : (index + 1) % controls.size();
-    NavigationController::Focus(controls[index]);
+    std::vector<wxWindow*> focusable;
+    focusable.reserve(controls.size());
+    for (auto* control : controls)
+        if (NavigationController::IsFocusable(control)) focusable.push_back(control);
+    if (focusable.empty()) return;
+
+    auto* focused = wxWindow::FindFocus();
+    const auto current = std::find_if(
+        focusable.begin(), focusable.end(),
+        [focused](wxWindow* control)
+        {
+            return focused == control ||
+                NavigationController::IsDescendantOf(focused, control);
+        });
+    std::size_t index = current == focusable.end()
+        ? (backwards ? focusable.size() - 1 : 0)
+        : static_cast<std::size_t>(std::distance(focusable.begin(), current));
+    if (current != focusable.end())
+        index = backwards ? (index == 0 ? focusable.size() - 1 : index - 1)
+                          : (index + 1) % focusable.size();
+    NavigationController::Focus(focusable[index]);
 }
 
 template <typename CancelAction, typename SubmitAction>

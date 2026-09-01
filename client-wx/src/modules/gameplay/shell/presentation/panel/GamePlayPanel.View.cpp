@@ -49,7 +49,7 @@ void GamePlayPanel::PublishLogMessages(const std::vector<std::string>& messages)
     {
         const auto separator = message.find('|');
         onHistoryMessage_(FromUtf8(separator == std::string::npos
-            ? message : message.substr(separator + 1)));
+            ? message : message.substr(separator + 1)), false);
     }
 }
 

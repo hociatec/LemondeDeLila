@@ -45,11 +45,12 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
             acknowledgement.command));
         if (!acknowledgement.ok)
         {
-            const auto message = acknowledgement.message.empty()
-                ? std::string("Action indisponible.")
-                : acknowledgement.message;
-            UpdateStatus(FromUtf8(message), true, true);
-            if (onHistoryMessage_) onHistoryMessage_(FromUtf8(message));
+            if (!acknowledgement.message.empty())
+            {
+                UpdateStatus(FromUtf8(acknowledgement.message), true, true);
+                if (onHistoryMessage_)
+                    onHistoryMessage_(FromUtf8(acknowledgement.message), false);
+            }
             pawnSelectionPanel_->AllowRetry();
             submittedPromptActionType_.clear();
             SyncInlinePrompt();
@@ -67,7 +68,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         {
             UpdateStatus(FromUtf8(acknowledgement.message), false, true);
             if (!openedPanel && onHistoryMessage_)
-                onHistoryMessage_(FromUtf8(acknowledgement.message));
+                onHistoryMessage_(FromUtf8(acknowledgement.message), false);
         }
         if (acknowledgement.roomOperation == "start" ||
             acknowledgement.roomOperation == "reset")
@@ -76,10 +77,9 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
     }
     case domain::GameEventType::TurnUpdated:
     {
-        const auto message = event.message.empty()
-            ? wxString(L"Tour inconnu.")
-            : wxString(L"C'est au tour de ") + FromUtf8(event.message) + wxString(L".");
-        if (onHistoryMessage_) onHistoryMessage_(message);
+        if (roomStarted_ && state_.system.match.status == "started" &&
+            !event.message.empty() && onHistoryMessage_)
+            onHistoryMessage_(FromUtf8(event.message), false);
         return;
     }
     case domain::GameEventType::ActionCandidates:
@@ -88,10 +88,10 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
             promptPanel_->ApplyCandidates(*event.candidates);
         return;
     case domain::GameEventType::Rules:
-        rulesText_ = event.rules.empty() ? "Aucune règle publiée." : std::move(event.rules);
+        rulesText_ = std::move(event.rules);
         activeInfoPanel_ = "rules";
         UpdateInfoPanel();
-        if (onHistoryMessage_) onHistoryMessage_(BuildInfoText("rules"));
+        if (onHistoryMessage_) onHistoryMessage_(BuildInfoText("rules"), false);
         return;
     case domain::GameEventType::Error:
         inputSubmissionGuard_.Reset();
@@ -100,7 +100,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         lila::shared::logging::LogError("GameInput", "Server error: " + event.message);
         UpdateStatus(FromUtf8(event.message), true, true);
         if (onHistoryMessage_ && !event.message.empty())
-            onHistoryMessage_(wxString(L"Erreur : ") + FromUtf8(event.message));
+            onHistoryMessage_(FromUtf8(event.message), false);
         if (event.errorCode == "GAME_STATE_CONFLICT")
         {
             submittedPromptActionType_.clear();

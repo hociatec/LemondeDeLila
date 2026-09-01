@@ -92,6 +92,8 @@ void GamePlayPanel::BuildLayout()
     linesList_->SetName(wxString(L"Actions de jeu"));
     linesList_->SetMinSize(wxSize(260, 90));
     content->Add(linesList_, 1, wxEXPAND | wxBOTTOM, 8);
+    actionsLabel_->Hide();
+    linesList_->Hide();
 
     choicesLabel_ = new wxStaticText(contentPanel_, wxID_ANY, wxString(L"Choix proposés"));
     choicesLabel_->SetForegroundColour(lila::shared::ui::Theme::Accent());

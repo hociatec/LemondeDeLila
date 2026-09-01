@@ -47,6 +47,7 @@ private:
 
     IGameSessionGateway& gateway_;
     std::jthread receiveThread_;
+    std::mutex lifecycleMutex_;
     std::mutex eventHandlerMutex_;
     EventHandler eventHandler_;
     std::atomic<std::size_t> sessionGeneration_ = 0;

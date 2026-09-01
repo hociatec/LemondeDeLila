@@ -10,7 +10,7 @@ import {
   roundScoring,
   when,
 } from '../../../engine/sdk/public-api';
-import { LAMA_MAX_DECK, type LamaCard } from './content';
+import { LAMA_MAX_DECK, nextLamaValue, type LamaCard } from './content';
 import {
   LAMA_ACTIONS,
   LAMA_PHASES,
@@ -41,6 +41,7 @@ const cardSchema = defineCardsSchema({
       deck: 'lama',
       initial: 0,
       visibility: 'owner',
+      ownerVisibility: 'active-round',
     }),
   },
 });
@@ -54,6 +55,23 @@ export default defineGame<LamaState>()({
     'Défaussez vos cartes ou quittez la manche pour limiter vos jetons.',
   content: defineGameContent('lama', { cards: LAMA_MAX_DECK }),
   players: { min: 2, max: 6 },
+  presentation: {
+    score: {
+      label: 'Jetons',
+      unit: { singular: 'jeton', plural: 'jetons' },
+      changeNarration: 'delta-and-total',
+    },
+  },
+  shortcuts: [
+    { key: 'Space', type: 'action', actionType: 'draw', label: 'Piocher' },
+    { key: 'S', type: 'interface', id: 'score', label: 'Jetons' },
+    {
+      key: 'C',
+      type: 'interface',
+      id: 'discard',
+      label: 'Carte au-dessus',
+    },
+  ],
   config: LAMA_CONFIGURATION,
   patterns: [
     cardGame({
@@ -62,6 +80,7 @@ export default defineGame<LamaState>()({
       handId: 'lama-hands',
     }),
   ],
+  initialization: { scores: 0, startRound: false },
   initialPhase: LAMA_PHASES.initialPhase,
   phases: LAMA_PHASES.phases,
   lifecycle: {
@@ -101,8 +120,7 @@ export default defineGame<LamaState>()({
           .hand<LamaCard>('lama-hands', actor.id)
           .find(
             (card) =>
-              top != null &&
-              (card === top || card === (top === 7 ? 1 : top + 1)),
+              top != null && (card === top || card === nextLamaValue(top)),
           );
         if (playable != null)
           return { type: 'lama_play', payload: { value: playable } };

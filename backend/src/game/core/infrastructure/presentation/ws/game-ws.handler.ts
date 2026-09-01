@@ -133,7 +133,10 @@ export class GameWsHandler {
     return this.queue.run(roomId, async () => {
       const resolved = await this.realtime.resolve(roomId);
       this.realtime.bind(session, roomId, resolved.gameType);
-      const actions = this.commands.resolveActions(payload, user.id);
+      const actions = this.rebaseSetupConfigurationVersion(
+        resolved,
+        this.commands.resolveActions(payload, user.id),
+      );
       if (actions.length === 0) {
         return {
           type: 'game.state',
@@ -189,12 +192,7 @@ export class GameWsHandler {
         key,
         resolved.state.status,
       );
-      if (!operation) {
-        return this.keyAcknowledgement(roomId, resolved.gameType, key, {
-          ok: false,
-          message: 'Aucune action disponible pour ce raccourci.',
-        });
-      }
+      if (!operation) return null;
       const gameType = await this.rooms.transition(
         roomId,
         operation,
@@ -221,6 +219,33 @@ export class GameWsHandler {
       roomId,
     });
     await this.realtime.commit(roomId, resolved, resolved.state, next);
+  }
+
+  private rebaseSetupConfigurationVersion(
+    resolved: ResolvedGameState,
+    actions: GameSingleActionDto[],
+  ): GameSingleActionDto[] {
+    const refreshedFrom = resolved.setupRosterRefreshedFromVersion;
+    const currentVersion = Number(resolved.state.version);
+    if (
+      refreshedFrom == null ||
+      !Number.isInteger(currentVersion) ||
+      currentVersion <= refreshedFrom
+    ) {
+      return actions;
+    }
+    return actions.map((action) => {
+      if (
+        action.type !== 'game.configure' ||
+        Number(action.meta?.knownVersion) !== refreshedFrom
+      ) {
+        return action;
+      }
+      return {
+        ...action,
+        meta: { ...action.meta, knownVersion: currentVersion },
+      };
+    });
   }
 
   private keyAcknowledgement(

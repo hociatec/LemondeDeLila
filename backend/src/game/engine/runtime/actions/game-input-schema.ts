@@ -28,6 +28,16 @@ type InferSchema<TSchema> =
   TSchema extends GameInputSchema<infer TValue> ? TValue : never;
 
 export const gameInput = {
+  label<TValue>(
+    label: string,
+    input: GameInputSchema<TValue>,
+  ): GameInputSchema<TValue> {
+    return schema((value, path) => input.parse(value, path), {
+      ...input.describe(),
+      label: label.trim(),
+    });
+  },
+
   string(
     options: { min?: number; max?: number } = {},
   ): GameInputSchema<string> {

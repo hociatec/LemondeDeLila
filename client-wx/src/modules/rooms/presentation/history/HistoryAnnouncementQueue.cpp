@@ -35,11 +35,12 @@ wxStaticText* HistoryAnnouncementQueue::Control() const noexcept
     return liveRegion_;
 }
 
-void HistoryAnnouncementQueue::Enqueue(const wxString& message)
+void HistoryAnnouncementQueue::Enqueue(const wxString& message, bool allowRepeat)
 {
     if (message.empty()) return;
-    if ((!pending_.empty() && pending_.back() == message) ||
-        (pending_.empty() && timer_.IsRunning() && lastAnnounced_ == message))
+    if (!allowRepeat &&
+        ((!pending_.empty() && pending_.back() == message) ||
+         (pending_.empty() && timer_.IsRunning() && lastAnnounced_ == message)))
         return;
 
     pending_.push_back(message);

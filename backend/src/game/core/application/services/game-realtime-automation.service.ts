@@ -21,6 +21,7 @@ import { GameEngineService } from './game-engine.service';
 import { GameEngineMetricsService } from './game-engine-metrics.service';
 import { gameNowMs } from './game-execution-scope.service';
 import { GameRegistryService } from './game-registry.service';
+import { GameRoomCommandQueueService } from './game-room-command-queue.service';
 
 type AutomationPlan = {
   signature: string;
@@ -28,9 +29,18 @@ type AutomationPlan = {
   actions: GameSingleActionDto[];
 };
 
+type AutomaticStateCommittedHandler = (input: {
+  roomId: number;
+  gameType: string;
+  handler: GameRuntime;
+  state: GameStateEntity;
+  version: number;
+}) => void;
+
 @Injectable()
 export class GameRealtimeAutomationService implements OnModuleInit {
   private readonly logger = new Logger(GameRealtimeAutomationService.name);
+  private onStateCommitted: AutomaticStateCommittedHandler | null = null;
 
   constructor(
     private readonly engine: GameEngineService,
@@ -39,12 +49,17 @@ export class GameRealtimeAutomationService implements OnModuleInit {
     private readonly scheduler: GameTaskScheduler,
     private readonly botSettings: BotSettingsService,
     private readonly executor: GameCommandExecutorService,
+    private readonly queue: GameRoomCommandQueueService,
     @Optional() private readonly metrics?: GameEngineMetricsService,
     @Optional() private readonly registry?: GameRegistryService,
   ) {}
 
   onModuleInit(): void {
     this.scheduler.registerProcessor((task) => this.executeTask(task));
+  }
+
+  setStateCommittedHandler(handler: AutomaticStateCommittedHandler): void {
+    this.onStateCommitted = handler;
   }
 
   schedule(input: {
@@ -91,6 +106,10 @@ export class GameRealtimeAutomationService implements OnModuleInit {
   }
 
   async executeTask(task: GameScheduledTask): Promise<void> {
+    return this.queue.run(task.roomId, () => this.executeTaskInRoom(task));
+  }
+
+  private async executeTaskInRoom(task: GameScheduledTask): Promise<void> {
     const handler = this.registry?.getHandler(task.gameType);
     if (!handler)
       throw new Error(`Runtime de jeu indisponible: ${task.gameType}`);
@@ -115,13 +134,11 @@ export class GameRealtimeAutomationService implements OnModuleInit {
       });
       return;
     }
-    if (currentPlan.dueAtMs > gameNowMs()) {
-      this.schedule({
-        roomId: task.roomId,
-        gameType: task.gameType,
-        handler,
-        state: current,
-      });
+    // The persisted task owns the deadline. A bot plan is computed from
+    // "now + delay", so recomputing and comparing that deadline here would
+    // postpone the bot forever each time the worker wakes up.
+    if (task.dueAtMs > gameNowMs()) {
+      void this.scheduler.schedule(task);
       return;
     }
 
@@ -147,6 +164,15 @@ export class GameRealtimeAutomationService implements OnModuleInit {
       next,
     );
     if (!result.committed) throw new GameStateConflictError();
+    const presentedState = structuredClone(next);
+    presentedState.version = result.version;
+    this.onStateCommitted?.({
+      roomId: task.roomId,
+      gameType: task.gameType,
+      handler,
+      state: presentedState,
+      version: result.version,
+    });
     this.schedule({
       roomId: task.roomId,
       gameType: task.gameType,
@@ -159,11 +185,15 @@ export class GameRealtimeAutomationService implements OnModuleInit {
     handler: GameRuntime,
     state: GameStateEntity,
   ): AutomationPlan | null {
+    const roundNumber = Number(
+      (state as GameStateEntity & { engine?: { round?: { number?: number } } })
+        .engine?.round?.number ?? 0,
+    );
     const automatic = handler.getAutomaticActions(state);
     if (automatic?.actions?.length) {
       const dueAtMs = Number(automatic.executeAtMs ?? gameNowMs());
       return {
-        signature: `automatic:${automatic.key}:${Number(state.turn?.turnNumber ?? 0)}`,
+        signature: `automatic:${automatic.key}:round:${roundNumber}:turn:${Number(state.turn?.turnNumber ?? 0)}`,
         dueAtMs,
         actions: automatic.actions,
       };
@@ -177,7 +207,7 @@ export class GameRealtimeAutomationService implements OnModuleInit {
       this.botRunner.suggestForHandler(handler, state, currentPlayerId) ?? [];
     if (suggested.length === 0) return null;
     return {
-      signature: `bot:${currentPlayerId}:${Number(state.turn?.turnNumber ?? 0)}`,
+      signature: `bot:${currentPlayerId}:round:${roundNumber}:turn:${Number(state.turn?.turnNumber ?? 0)}`,
       dueAtMs: gameNowMs() + this.botSettings.getBotTurnDelayMs(),
       actions: suggested.map((action) => ({
         ...action,

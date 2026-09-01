@@ -171,7 +171,7 @@ void DecodePlayers(const nlohmann::json& raw, std::vector<domain::GamePlayer>& p
         player.username = detail::ReadString(item, "username");
         player.isBot = detail::ReadBool(item, "isBot");
         player.alive = !item.contains("alive") || detail::ReadBool(item, "alive");
-        if (player.id > 0) players.push_back(std::move(player));
+        if (player.id != 0) players.push_back(std::move(player));
     }
 }
 }
@@ -193,25 +193,37 @@ domain::GameSystem GameSystemDecoder::Decode(const nlohmann::json& system)
         for (const auto& item : setupValues->items())
             result.setup.values.emplace(item.key(), DecodeGameValue(item.value()));
     const auto events = detail::ObjectOrEmpty(system.value("events", nlohmann::json::object()));
-    const auto latest = events.find("latestByType");
-    if (latest != events.end() && latest->is_object())
-        for (const auto& item : latest->items())
-        {
-            if (!item.value().is_object()) continue;
-            domain::GameEngineEvent event;
-            event.id = detail::ReadString(item.value(), "id");
-            event.type = detail::ReadString(item.value(), "type");
-            const auto occurredAtMs = OptionalInt64(item.value(), "occurredAtMs");
-            if (event.id.empty() || event.type.empty() || !occurredAtMs) continue;
-            event.details = DecodeEventData(event.type, detail::ObjectOrEmpty(
-                item.value().value("data", nlohmann::json::object())));
-            event.actorId = OptionalInt(item.value(), "actorId");
-            event.occurredAtMs = *occurredAtMs;
-            event.sequence = OptionalInt64(item.value(), "sequence");
-            result.events.push_back(std::move(event));
-        }
+    const auto decodeEvent = [&result](const nlohmann::json& raw)
+    {
+        if (!raw.is_object()) return;
+        domain::GameEngineEvent event;
+        event.id = detail::ReadString(raw, "id");
+        event.type = detail::ReadString(raw, "type");
+        const auto occurredAtMs = OptionalInt64(raw, "occurredAtMs");
+        if (event.id.empty() || event.type.empty() || !occurredAtMs) return;
+        event.details = DecodeEventData(event.type, detail::ObjectOrEmpty(
+            raw.value("data", nlohmann::json::object())));
+        event.actorId = OptionalInt(raw, "actorId");
+        event.occurredAtMs = *occurredAtMs;
+        event.sequence = OptionalInt64(raw, "sequence");
+        result.events.push_back(std::move(event));
+    };
+    const auto recent = events.find("recent");
+    if (recent != events.end() && recent->is_array())
+    {
+        for (const auto& raw : *recent) decodeEvent(raw);
+    }
+    else
+    {
+        const auto latest = events.find("latestByType");
+        if (latest != events.end() && latest->is_object())
+            for (const auto& item : latest->items()) decodeEvent(item.value());
+    }
     std::sort(result.events.begin(), result.events.end(), [](const auto& left, const auto& right)
-        { return left.occurredAtMs < right.occurredAtMs; });
+        {
+            if (left.sequence && right.sequence) return *left.sequence < *right.sequence;
+            return left.occurredAtMs < right.occurredAtMs;
+        });
     return result;
 }
 }

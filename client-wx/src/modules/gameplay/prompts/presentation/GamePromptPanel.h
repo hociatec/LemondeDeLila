@@ -66,6 +66,7 @@ private:
     void Submit();
     void Cancel();
     void FocusFirst();
+    void ReportValidationError(const wxString& message, wxWindow* target);
     void RequestCandidates(bool reset);
     [[nodiscard]] static std::string BuildSignature(const domain::GamePrompt& prompt);
 

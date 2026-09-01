@@ -14,9 +14,19 @@ public:
 
     [[nodiscard]] lila::modules::rooms::domain::RoomState Create(
         std::string_view,
-        std::stop_token) override
+        std::stop_token stopToken) override
     {
-        Activate();
+        std::unique_lock lock(mutex);
+        ++createCount;
+        createEntered = true;
+        active = true;
+        interrupted = false;
+        condition.notify_all();
+        condition.wait(lock, [this, stopToken]()
+        {
+            return !blockCreate || stopToken.stop_requested();
+        });
+        if (stopToken.stop_requested()) throw std::runtime_error("create cancelled");
         return room;
     }
 
@@ -25,6 +35,10 @@ public:
         bool,
         std::stop_token) override
     {
+        {
+            std::scoped_lock lock(mutex);
+            ++joinCount;
+        }
         Activate();
         return room;
     }
@@ -93,6 +107,15 @@ public:
 
     void TriggerReceiveFailure() { Interrupt(); }
 
+    void ReleaseCreate()
+    {
+        {
+            std::scoped_lock lock(mutex);
+            blockCreate = false;
+        }
+        condition.notify_all();
+    }
+
     void Activate()
     {
         std::scoped_lock lock(mutex);
@@ -106,7 +129,10 @@ public:
     std::deque<lila::modules::rooms::domain::RoomEvent> events;
     int reconnectCount = 0;
     int pingCount = 0;
+    int createCount = 0;
+    int joinCount = 0;
     bool active = false;
     bool interrupted = false;
+    bool blockCreate = false;
+    bool createEntered = false;
 };
-

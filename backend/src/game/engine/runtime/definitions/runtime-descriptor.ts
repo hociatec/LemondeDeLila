@@ -16,6 +16,9 @@ export function describeGameDefinition<
     rulesVersion: definition.rulesVersion,
     ...(definition.subcategory ? { subcategory: definition.subcategory } : {}),
     players: { ...definition.players },
+    ...(definition.presentation
+      ? { presentation: structuredClone(definition.presentation) }
+      : {}),
     actions: describeActions(definition),
     choices: Object.entries(definition.choices ?? {}).map(([id, choice]) => ({
       id,
@@ -59,7 +62,10 @@ function describeActions<
     ? [
         {
           type: GAME_CONFIGURE_ACTION,
-          input: definition.config.input.describe(),
+          input: describeInput(
+            definition.config.input.describe(),
+            definition.config.defaults,
+          ),
           documentation: 'Configure la partie avant son démarrage.',
           ui: {
             label: definition.config.ui?.submitLabel ?? 'Configurer',
@@ -72,7 +78,7 @@ function describeActions<
     ...configurationAction,
     ...Object.entries(definition.actions).map(([type, action]) => ({
       type,
-      input: action.input.describe(),
+      input: describeInput(action.input.describe()),
       ...(action.documentation ? { documentation: action.documentation } : {}),
       ...(action.enumerateCandidateInputs ? { paginatedCandidates: true } : {}),
       ui: deriveUi(type, action.input.describe(), action.ui),
@@ -88,7 +94,10 @@ function describeConfiguration<
   return {
     configuration: {
       actionType: GAME_CONFIGURE_ACTION,
-      input: definition.config.input.describe(),
+      input: describeInput(
+        definition.config.input.describe(),
+        definition.config.defaults,
+      ),
       defaults: structuredClone(
         definition.config.defaults as Record<string, unknown>,
       ),
@@ -117,7 +126,12 @@ export function deriveGameShortcuts<
     const key =
       action.ui?.shortcut ?? inferShortcut(type, action.input.describe());
     if (!key || usedKeys.has(key)) continue;
-    shortcuts.push({ key, type: 'action', actionType: type });
+    shortcuts.push({
+      key,
+      type: 'action',
+      actionType: type,
+      ...(action.ui?.label ? { label: action.ui.label } : {}),
+    });
     usedKeys.add(key);
     actionTypes.add(type);
   }
@@ -146,6 +160,33 @@ function deriveUi(
   };
 }
 
+function describeInput(
+  input: Record<string, unknown>,
+  initialValue?: unknown,
+): Record<string, unknown> {
+  const described = structuredClone(input);
+  const properties = asRecord(described.properties);
+  const initialValues = asRecord(initialValue);
+  if (Object.keys(properties).length > 0) {
+    described.properties = Object.fromEntries(
+      Object.entries(properties).map(([key, raw]) => {
+        const field = describeInput(asRecord(raw), initialValues[key]);
+        return [key, { label: humanize(key), ...field }];
+      }),
+    );
+  }
+  const items = asRecord(described.items);
+  if (Object.keys(items).length > 0) described.items = describeInput(items);
+  if (
+    typeof initialValue === 'string' ||
+    typeof initialValue === 'number' ||
+    typeof initialValue === 'boolean'
+  ) {
+    described.initialText = String(initialValue);
+  }
+  return described;
+}
+
 function inferControl(
   input: Record<string, unknown>,
 ): 'button' | 'card' | 'player' | 'pawn' | 'number' | 'form' {
@@ -169,9 +210,13 @@ function inferShortcut(
 ): string | null {
   if (inferControl(input) !== 'button') return null;
   const normalized = actionType.toLowerCase().replaceAll('_', '-');
-  if (normalized.includes('roll') || normalized.includes('launch'))
+  if (
+    normalized.includes('roll') ||
+    normalized.includes('launch') ||
+    normalized.includes('draw') ||
+    normalized.includes('pick')
+  )
     return 'Space';
-  if (normalized.includes('draw') || normalized.includes('pick')) return 'D';
   if (
     normalized.includes('pass') ||
     normalized.includes('end-turn') ||

@@ -106,10 +106,8 @@ void GamePlayPanel::BindEvents()
         {
             submittedPromptActionType_ = action.type;
             dismissedPromptActionType_.clear();
-            const auto* prompt = ActivePrompt();
             const bool startsRoomAfterSubmission = !roomStarted_ && roomStartFlowRequested_ &&
-                !state_.system.setup.complete && prompt &&
-                prompt->actionType == action.type;
+                !state_.system.setup.complete;
             if (startsRoomAfterSubmission &&
                 !startConfigurationFlow_.TryBeginSubmission(state_.system.setup))
                 return;
@@ -167,8 +165,10 @@ bool GamePlayPanel::ActivateSelectedHandCard()
     if (static_cast<std::size_t>(selected) >= hand.size()) return false;
     if (hand[static_cast<std::size_t>(selected)].disabled)
     {
-        // WPF consumes Enter silently on an unplayable card: it must not fall
-        // through to a global ENTER shortcut or announce a misleading error.
+        UpdateStatus(
+            wxString(L"Cette carte ne peut pas être jouée maintenant."),
+            true,
+            true);
         return true;
     }
     auto action = application::cards::GameCardActionResolver::Resolve(
@@ -177,7 +177,10 @@ bool GamePlayPanel::ActivateSelectedHandCard()
     {
         lila::shared::logging::LogWarning(
             "GameInput", "Card activation has no server-provided action.");
-        UpdateStatus(wxString(L"Cette carte ne peut pas \u00EAtre jou\u00E9e."), true, true);
+        UpdateStatus(
+            wxString(L"Cette carte ne peut pas être jouée maintenant."),
+            true,
+            true);
         return true;
     }
     lila::shared::logging::LogInfo(
@@ -209,7 +212,8 @@ bool GamePlayPanel::ActivateSelectedGridCell()
         {boardId, cellId, gridPanel_->SelectedX(), gridPanel_->SelectedY()});
     if (!action)
     {
-        UpdateStatus(wxString(L"Aucune action disponible pour cette case."), false, true);
+        lila::shared::logging::LogWarning(
+            "GameInput", "Grid activation has no server-provided action.");
         return true;
     }
     PrepareAndExecuteAction(*action);

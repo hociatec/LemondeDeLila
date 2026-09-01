@@ -26,7 +26,7 @@ void GamePromptPanel::Submit()
         if (selected == wxNOT_FOUND || selected < 0 ||
             static_cast<std::size_t>(selected) >= candidates_.size())
         {
-            if (onValidationError_) onValidationError_(
+            ReportValidationError(
                 wxString(L"Sélectionnez un candidat fourni par le serveur."), candidatesList_);
             return;
         }
@@ -60,7 +60,7 @@ void GamePromptPanel::Submit()
             if (count < control.field.minimumSelections ||
                 (control.field.maximumSelections > 0 && count > control.field.maximumSelections))
             {
-                if (onValidationError_) onValidationError_(
+                ReportValidationError(
                     wxString(L"Nombre de sélections invalide."), control.multipleChoice);
                 return;
             }
@@ -77,7 +77,11 @@ void GamePromptPanel::Submit()
             }
             const int valueIndex = selected - (control.field.optional ? 1 : 0);
             if (valueIndex < 0 || static_cast<std::size_t>(valueIndex) >= control.field.choices.size())
+            {
+                ReportValidationError(
+                    FromUtf8(control.field.label), control.choice);
                 return;
+            }
             action.payload[control.field.key] = infrastructure::EncodeGameValue(
                 control.field.choices[static_cast<std::size_t>(valueIndex)]);
             continue;
@@ -91,9 +95,8 @@ void GamePromptPanel::Submit()
             auto* target = control.checkbox != nullptr
                 ? static_cast<wxWindow*>(control.checkbox)
                 : static_cast<wxWindow*>(control.text);
-            if (onValidationError_)
-                onValidationError_(FromUtf8(control.field.label + " : " + parsed.error), target);
-            lila::shared::accessibility::NavigationController::Focus(target);
+            ReportValidationError(
+                FromUtf8(control.field.label + " : " + parsed.error), target);
             return;
         }
         action.payload[control.field.key] = std::move(parsed.value);

@@ -58,9 +58,18 @@ export type GameEventPlayerView<TType extends string, TData> = {
   data: TData;
   actorId: number | null;
   occurredAtMs: number;
+  sequence: number;
 };
 
 export type GameEventsPlayerView<TEvents extends object = EngineEventMap> = {
+  recent: Array<
+    {
+      [TType in keyof TEvents & string]: GameEventPlayerView<
+        TType,
+        TEvents[TType]
+      >;
+    }[keyof TEvents & string]
+  >;
   latestByType: Partial<{
     [TType in keyof TEvents & string]: GameEventPlayerView<
       TType,

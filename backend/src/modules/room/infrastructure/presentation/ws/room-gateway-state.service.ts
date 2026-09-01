@@ -158,11 +158,12 @@ export class RoomGatewayStateService {
         roomId,
         this.presenter.presentFocusIntent(focusIntent),
       );
-      await this.broadcastRoomIntent(
-        ctx,
-        roomId,
-        this.presenter.presentFocusAnnouncement(focusIntent),
-      );
+      if (focusIntent.announce !== false)
+        await this.broadcastRoomIntent(
+          ctx,
+          roomId,
+          this.presenter.presentFocusAnnouncement(focusIntent),
+        );
     }
 
     const previousSnapshot = ctx.lastRoomSnapshotByRoomId.get(roomId);

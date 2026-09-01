@@ -20,6 +20,27 @@ std::string Player(const domain::GameState& state, int id)
 std::string GameCapabilityTextBuilder::Build(
     const domain::GameState& state, const std::string& capability)
 {
+    if (capability == "hand")
+    {
+        const auto count = state.kits.VisibleHand().size();
+        return "Vous avez " + std::to_string(count) +
+            (count > 1 ? " cartes en main." : " carte en main.");
+    }
+    if (capability == "current-turn")
+    {
+        const auto current = state.system.turn.currentPlayerId;
+        return !current
+            ? "Aucun tour actif."
+            : "C'est au tour de " + Player(state, *current) + ".";
+    }
+    if (capability == "discard")
+    {
+        if (!state.kits.cards) return "Carte au-dessus indisponible.";
+        for (const auto& discard : state.kits.cards->discards)
+            if (!discard.cards.empty())
+                return "Carte au-dessus : " + discard.cards.back().label + ".";
+        return "Aucune carte sur la défausse.";
+    }
     if (const auto text = BuildBoardCapabilityText(state, capability)) return *text;
     if (const auto text = BuildValueCapabilityText(state, capability)) return *text;
     if (const auto text = BuildAssetCapabilityText(state, capability)) return *text;

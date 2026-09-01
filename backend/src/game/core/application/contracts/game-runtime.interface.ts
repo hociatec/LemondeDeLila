@@ -84,6 +84,13 @@ export type GameRuntimeDescriptor = {
   stateVersion: number;
   rulesVersion: string;
   players: { min: number; max: number };
+  presentation?: {
+    score?: {
+      label: string;
+      unit: { singular: string; plural: string };
+      changeNarration?: 'total' | 'delta-and-total';
+    };
+  };
   actions: Array<{
     type: string;
     input: Record<string, unknown>;

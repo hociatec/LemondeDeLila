@@ -45,7 +45,9 @@ std::string_view RoomShortcutPolicy::Resolve(
         return "room:info";
     if (key == 'R' && RoomActionPolicy::AllowsInterface(RoomInterfaceAction::Rules))
         return "room:rules";
-    if (key == 'X' && RoomActionPolicy::AllowsServer(room, RoomServerAction::Reset)) return "room:reset";
+    const bool started = room.started || room.status == "started" || room.status == "finished";
+    if (key == 'X' && started &&
+        RoomActionPolicy::AllowsServer(room, RoomServerAction::Reset)) return "room:reset";
     if (key == 'Q' && RoomActionPolicy::AllowsServer(room, RoomServerAction::Leave)) return "room:leave";
     return {};
 }

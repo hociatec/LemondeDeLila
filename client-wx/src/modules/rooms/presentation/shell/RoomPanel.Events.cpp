@@ -54,9 +54,9 @@ void RoomPanel::BindEvents()
                     target != nullptr ? target : static_cast<wxWindow*>(gameZoneAnchor_)));
         });
     gamePlayPanel_->SetHistoryMessageHandler(
-        [this](const wxString& message)
+        [this](const wxString& message, bool allowRepeat)
         {
-            AppendRoomAnnouncement(message);
+            AppendRoomAnnouncement(message, allowRepeat);
         });
     gamePlayPanel_->SetTableShortcutHandler(
         [this](wxKeyEvent& event)

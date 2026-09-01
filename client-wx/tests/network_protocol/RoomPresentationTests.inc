@@ -17,6 +17,7 @@ void TestRoomPresentationMatchesWpfWaitingTable()
 
     using Model = lila::modules::rooms::presentation::RoomPresentationModel;
     using ShortcutPolicy = lila::modules::rooms::presentation::RoomShortcutPolicy;
+    using EventType = lila::modules::rooms::domain::RoomEventType;
     const auto items = Model::BuildItems(room);
     Expect(!items.empty() && items.front().id == "room:start", "Nom du jeu activable en premier attendu");
     Expect(items.front().label == wxString::FromUTF8("Les quatre vents"), "Nom du jeu WPF attendu");
@@ -37,12 +38,19 @@ void TestRoomPresentationMatchesWpfWaitingTable()
         ShortcutPolicy::Resolve('Q', false, false, false, false, room) == "room:leave",
         "Q doit quitter une table avant le demarrage");
     Expect(
+        ShortcutPolicy::Resolve('X', false, false, false, false, room).empty(),
+        "X ne doit rien faire avant le demarrage");
+    Expect(
         Model::BuildPlayers(room) == wxString::FromUTF8(
             "Joueurs : alice, bob. Spectateurs : aucun. Bots : aucun."),
         "Annonce complete des joueurs attendue");
     Expect(
         Model::BuildStatus(room).Contains(wxString::FromUTF8("Table prête")),
         "Table prête seulement une fois le minimum serveur atteint attendu");
+    Expect(
+        Model::ShouldRepeatAnnouncement(EventType::Info) &&
+            !Model::ShouldRepeatAnnouncement(EventType::Announcement),
+        "I doit pouvoir réannoncer les informations sans répéter les annonces spontanées");
 
     auto waitingRoom = room;
     waitingRoom.players.resize(1);
@@ -57,8 +65,9 @@ void TestRoomPresentationMatchesWpfWaitingTable()
         Model::ActionForId(waitingItems.front().id) == Model::Action::ShowGameStatus,
         "Entree sans assez de participants doit annoncer le statut de la table");
     Expect(
-        Model::BuildStatus(waitingRoom).Contains(wxString::FromUTF8("1 sur 2 requis")),
-        "Progression vers le minimum serveur visible attendue");
+        Model::BuildStatus(waitingRoom) == wxString::FromUTF8(
+            "Pour jouer, il faut être au minimum 2 participants (actuellement 1)."),
+        "Minimum serveur explicite attendu");
 
     room.bots.push_back({9, "Spirit"});
     Expect(

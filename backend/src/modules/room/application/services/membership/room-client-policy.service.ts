@@ -64,9 +64,7 @@ export class RoomClientPolicyService {
         : minimum;
     const canStart = !started && hasMinimumParticipants(humans, bots, minimum);
 
-    const actions = new Set<string>([
-      'room.leave',
-    ]);
+    const actions = new Set<string>(['room.leave']);
 
     if (canToggleRole) {
       actions.add('room.set-role');

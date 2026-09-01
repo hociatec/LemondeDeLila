@@ -56,7 +56,7 @@ class GamePlayPanel final : public wxPanel
 {
 public:
     using ZoneFocusRequestedHandler = std::function<void()>;
-    using HistoryMessageHandler = std::function<void(const wxString&)>;
+    using HistoryMessageHandler = std::function<void(const wxString&, bool)>;
     using TableShortcutHandler = std::function<bool(wxKeyEvent&)>;
     using GameSoundEventHandler = std::function<void(
         const std::string&, const std::vector<int>& winnerPlayerIds)>;
@@ -80,6 +80,7 @@ public:
     bool BeginRoomStart();
     void ShowRules();
     void SetRoomStarted(bool started);
+    void ResetRoomSetup();
     void NotifyRoomStartFailed(const wxString& message);
     bool HandleZoneActivation();
     [[nodiscard]] bool HandleKey(wxKeyEvent& event);
@@ -88,6 +89,7 @@ public:
 private:
     void BuildLayout();
     void BindEvents();
+    void ResetSessionState();
     void AttachEventHandler();
     void StartJoin();
     void PrepareAndExecuteAction(domain::GameAction action);

@@ -117,7 +117,7 @@ std::vector<wxWindow*> GamePromptPanel::TabTargets() const
         if (candidatesMoreButton_->IsShown()) controls.push_back(candidatesMoreButton_);
     }
     for (const auto& field : fields_)
-        controls.push_back(field.ordering != nullptr ? static_cast<wxWindow*>(field.ordering)
+        controls.push_back(field.ordering != nullptr ? static_cast<wxWindow*>(field.ordering->GetList())
             : field.multipleChoice != nullptr ? static_cast<wxWindow*>(field.multipleChoice)
             : field.choice != nullptr ? static_cast<wxWindow*>(field.choice)
             : field.checkbox != nullptr ? static_cast<wxWindow*>(field.checkbox)
@@ -131,6 +131,12 @@ void GamePromptPanel::FocusFirst()
 {
     for (auto* control : TabTargets())
         if (lila::shared::accessibility::NavigationController::Focus(control)) return;
+}
+
+void GamePromptPanel::ReportValidationError(const wxString& message, wxWindow* target)
+{
+    if (onValidationError_) onValidationError_(message, target);
+    lila::shared::accessibility::NavigationController::Focus(target);
 }
 
 bool GamePromptPanel::HandleKey(wxKeyEvent& event)

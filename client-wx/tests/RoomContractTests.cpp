@@ -52,8 +52,11 @@ int main()
         "room:info", "I doit continuer à afficher les informations.");
     Expect(presentation::RoomShortcutPolicy::Resolve('R', false, false, false, false, room) ==
         "room:rules", "R doit continuer à afficher les règles.");
+    Expect(presentation::RoomShortcutPolicy::Resolve('X', false, false, false, false, room).empty(),
+        "X doit rester silencieux tant que la table n'est pas démarree.");
+    room.status = "started";
     Expect(presentation::RoomShortcutPolicy::Resolve('X', false, false, false, false, room) ==
-        "room:reset", "X doit continuer à réinitialiser la table.");
+        "room:reset", "X doit réinitialiser une table démarree.");
     Expect(presentation::RoomShortcutPolicy::Resolve('Q', false, false, false, false, room) ==
         "room:leave", "Q doit continuer à quitter la table.");
     domain::RoomState forbiddenRoom;

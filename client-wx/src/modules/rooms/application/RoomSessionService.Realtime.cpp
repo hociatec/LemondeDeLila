@@ -40,6 +40,7 @@ std::chrono::milliseconds ReconnectDelay(int attempt)
 
 void RoomSessionService::Start()
 {
+    std::scoped_lock lifecycleLock(lifecycleMutex_);
     if (receiveThread_.joinable() || keepAliveThread_.joinable()) return;
     const auto generation = sessionGeneration_.load();
     reconnecting_.store(false);
@@ -57,7 +58,7 @@ void RoomSessionService::StopTasks(bool leaveRoom)
     if (keepAliveThread_.joinable()) keepAliveThread_.request_stop();
 
     if (leaveRoom) gateway_.Leave();
-    else gateway_.Interrupt();
+    else gateway_.Close();
 
     receiveThread_ = std::jthread{};
     keepAliveThread_ = std::jthread{};

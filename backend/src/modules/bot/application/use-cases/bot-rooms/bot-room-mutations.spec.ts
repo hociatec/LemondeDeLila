@@ -5,13 +5,18 @@ import { AddBotToRoomService } from './add-bot-to-room.service';
 describe('distributed bot room mutations', () => {
   it('performs capacity and creation inside the repository room lock', async () => {
     const order: string[] = [];
-    const rooms = {
-      runRoomMutation: jest.fn(async (_roomId, operation) => {
-        order.push('lock');
-        const result = await operation(rooms);
-        order.push('unlock');
-        return result;
-      }),
+    const rooms: BotRoomRepository = {
+      runRoomMutation: jest.fn(
+        async <T>(
+          _roomId: number,
+          operation: (repository: BotRoomRepository) => Promise<T>,
+        ): Promise<T> => {
+          order.push('lock');
+          const result: T = await operation(rooms);
+          order.push('unlock');
+          return result;
+        },
+      ),
       findRoomById: jest.fn(async () => {
         order.push('room');
         return {
@@ -28,10 +33,10 @@ describe('distributed bot room mutations', () => {
         order.push('create');
         return { id: 8, name: 'Nova' };
       }),
-    };
+    } as unknown as BotRoomRepository;
     const names = { pickName: jest.fn().mockResolvedValue('Nova') };
     const service = new AddBotToRoomService(
-      rooms as unknown as BotRoomRepository,
+      rooms,
       names as never,
       new BotRoomPolicyService(),
     );

@@ -45,15 +45,14 @@ std::optional<std::size_t> GameCardActionResolver::ResolveIndex(
     // the same card (for example an inspection action) for its primary action.
     if (card.disabled) return std::nullopt;
 
-    std::size_t occurrence = 0;
-    for (std::size_t index = 0; index < selectedCard; ++index)
-        if (cards[index].id == card.id) ++occurrence;
-
     for (std::size_t index = 0; index < actions.size(); ++index)
     {
         const auto& action = actions[index];
         if (action.disabled || !TargetsCard(action, card.id)) continue;
-        if (occurrence-- == 0) return index;
+        // Identical cards are interchangeable unless the server supplied an
+        // explicit actionIndex. A single enumerated action therefore applies
+        // to every copy of the same card in the hand.
+        return index;
     }
     return std::nullopt;
 }

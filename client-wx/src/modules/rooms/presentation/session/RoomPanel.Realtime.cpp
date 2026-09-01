@@ -6,8 +6,10 @@
 #include <wx/textctrl.h>
 #include <wx/weakref.h>
 
+#include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/rooms/application/RoomSessionService.h"
 #include "modules/audio/application/IAudioService.h"
+#include "modules/rooms/presentation/model/RoomPresentationModel.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation
@@ -45,6 +47,11 @@ void RoomPanel::AttachEventHandler()
 
 void RoomPanel::HandleRoomEvent(domain::RoomEvent event)
 {
+    // Events already queued by the previous session may reach the UI while its
+    // asynchronous shutdown is in progress. They must not overwrite the new
+    // connection screen or close the panel being opened.
+    if (state_ == State::Connecting) return;
+
     switch (event.type)
     {
     case domain::RoomEventType::StateUpdated:
@@ -57,7 +64,9 @@ void RoomPanel::HandleRoomEvent(domain::RoomEvent event)
             const auto message = lila::shared::text::FromUtf8(event.message);
             if (!ShouldIgnoreRoomAnnouncement(message))
             {
-                AppendRoomAnnouncement(message);
+                AppendRoomAnnouncement(
+                    message,
+                    RoomPresentationModel::ShouldRepeatAnnouncement(event.type));
                 UpdateStatus(message);
             }
         }
@@ -77,6 +86,8 @@ void RoomPanel::HandleRoomEvent(domain::RoomEvent event)
             UpdateStatus(lila::shared::text::FromUtf8(event.message), false, true);
         return;
     case domain::RoomEventType::BotAdded:
+        state_ = State::Ready;
+        pendingRealtimeCommand_.reset();
         if (event.member && std::none_of(
                 room_.bots.begin(), room_.bots.end(),
                 [&event](const domain::RoomMember& bot)
@@ -89,6 +100,8 @@ void RoomPanel::HandleRoomEvent(domain::RoomEvent event)
         }
         return;
     case domain::RoomEventType::BotRemoved:
+        state_ = State::Ready;
+        pendingRealtimeCommand_.reset();
         if (event.member)
         {
             const auto previousSize = room_.bots.size();
@@ -137,6 +150,10 @@ void RoomPanel::HandleRoomEvent(domain::RoomEvent event)
         return;
     case domain::RoomEventType::Error:
         state_ = State::Ready;
+        if (pendingRealtimeCommand_ == domain::RoomCommand::Start)
+            gamePlayPanel_->NotifyRoomStartFailed(
+                lila::shared::text::FromUtf8(event.message));
+        pendingRealtimeCommand_.reset();
         ShowRoom();
         if (!event.message.empty())
         {

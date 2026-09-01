@@ -103,7 +103,11 @@ export class GameScoreController {
     return this.state.scores[String(playerId)] ?? 0;
   }
 
-  set(playerId: number, value: number): number {
+  set(
+    playerId: number,
+    value: number,
+    options: { announce?: boolean } = {},
+  ): number {
     const previous = this.get(playerId);
     this.state.scores[String(playerId)] = value;
     this.emit('score.changed', {
@@ -111,16 +115,25 @@ export class GameScoreController {
       previous,
       value,
       delta: value - previous,
+      ...(options.announce === false ? { announce: false } : {}),
     });
     return value;
   }
 
-  add(playerId: number, amount: number): number {
-    return this.set(playerId, this.get(playerId) + amount);
+  add(
+    playerId: number,
+    amount: number,
+    options: { announce?: boolean } = {},
+  ): number {
+    return this.set(playerId, this.get(playerId) + amount, options);
   }
 
-  subtract(playerId: number, amount: number): number {
-    return this.add(playerId, -amount);
+  subtract(
+    playerId: number,
+    amount: number,
+    options: { announce?: boolean } = {},
+  ): number {
+    return this.add(playerId, -amount, options);
   }
 
   ranking(direction: 'asc' | 'desc' = 'desc'): number[][] {

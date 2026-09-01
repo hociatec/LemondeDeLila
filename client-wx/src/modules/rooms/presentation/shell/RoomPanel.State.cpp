@@ -21,10 +21,21 @@ namespace lila::modules::rooms::presentation
 void RoomPanel::ApplyRoom(domain::RoomState room)
 {
     if (!application::RoomStateUpdatePolicy::ShouldApply(room_, room)) return;
+    const bool resetCompleted =
+        pendingRealtimeCommand_ == domain::RoomCommand::Reset;
     room_ = std::move(room);
+    pendingRealtimeCommand_.reset();
+    if (resetCompleted) gamePlayPanel_->ResetRoomSetup();
     audioService_.StartTableAmbience(room_.tableAmbienceSoundId);
     state_ = State::Ready;
     ShowRoom();
+    if (resetCompleted)
+    {
+        AppendRoomAnnouncement(wxString(L"Table réinitialisée. Vous pouvez de nouveau "
+                                        L"ajouter ou retirer des bots puis configurer la partie."));
+        static_cast<void>(
+            lila::shared::accessibility::NavigationController::Focus(gameZoneAnchor_));
+    }
 }
 
 void RoomPanel::SyncGamePlayPanel()
@@ -66,9 +77,6 @@ void RoomPanel::ShowRoom()
     chatTitle_->Show(room_.chatEnabled);
     chatInput_->Show(room_.chatEnabled);
     chatInput_->Enable(room_.chatEnabled && state_ == State::Ready);
-    if (history_->IsEmpty())
-        AppendHistory(wxString(L"Table de ") + lila::shared::text::FromUtf8(room_.gameName) +
-            wxString(L" créée. Ajoutez des bots et commencez à jouer."));
     Layout();
     ApplyInitialFocusIfNeeded();
 }
@@ -116,12 +124,15 @@ void RoomPanel::AppendHistory(const wxString& message)
     history_->AppendText(message);
 }
 
-void RoomPanel::AppendRoomAnnouncement(const wxString& message)
+void RoomPanel::AppendRoomAnnouncement(const wxString& message, bool allowRepeat)
 {
     if (message.empty()) return;
+    const auto history = history_->GetValue();
+    if (!allowRepeat &&
+        (history == message || history.EndsWith(wxString(L"\n") + message))) return;
     if (!chatHistoryReceived_) pendingRoomAnnouncements_.push_back(message);
     AppendHistory(message);
-    historyAnnouncements_->Enqueue(message);
+    historyAnnouncements_->Enqueue(message, allowRepeat);
 }
 
 void RoomPanel::ResetHistoryAnnouncements()

@@ -25,7 +25,7 @@ void GamePlayPanel::UpdateTimerAnnouncements()
         const auto message = FromUtf8(
             label + " : " + std::to_string(seconds) + " seconde(s) restantes.");
         UpdateStatus(message, false, true);
-        if (onHistoryMessage_) onHistoryMessage_(message);
+        if (onHistoryMessage_) onHistoryMessage_(message, false);
     }
 }
 }

@@ -6,6 +6,7 @@
 #include <wx/panel.h>
 
 #include "modules/gameplay/cards/domain/GameCard.h"
+#include "modules/gameplay/actions/domain/GameAction.h"
 
 class wxListBox;
 class wxWindow;
@@ -17,7 +18,9 @@ class GameHandPanel final : public wxPanel
 public:
     explicit GameHandPanel(wxWindow* parent);
 
-    void ApplyCards(const std::vector<domain::GameCard>& cards);
+    void ApplyCards(
+        const std::vector<domain::GameCard>& cards,
+        const std::vector<domain::GameAction>& actions);
     void ClearHand();
     bool MoveSelection(bool backwards);
     [[nodiscard]] int SelectedIndex() const noexcept;
@@ -27,5 +30,6 @@ private:
     wxListBox* list_ = nullptr;
     std::vector<std::string> cardKeys_;
     std::vector<std::string> cardLabels_;
+    std::vector<bool> cardActionable_;
 };
 }

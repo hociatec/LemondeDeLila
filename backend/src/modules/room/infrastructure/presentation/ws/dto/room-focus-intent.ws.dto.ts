@@ -5,4 +5,5 @@ export type RoomFocusIntent = {
   region: RoomFocusIntentRegion;
   reason?: string;
   priority?: RoomFocusIntentPriority;
+  announce?: boolean;
 };

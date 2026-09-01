@@ -1,5 +1,6 @@
 #include "modules/rooms/presentation/shell/RoomPanel.h"
 
+#include <algorithm>
 #include <optional>
 #include <stop_token>
 #include <utility>
@@ -18,6 +19,16 @@
 
 namespace lila::modules::rooms::presentation
 {
+namespace
+{
+bool CompletesFromRealtimeState(domain::RoomCommand command) noexcept
+{
+    using Command = domain::RoomCommand;
+    return command == Command::Start || command == Command::Reset ||
+        command == Command::AddBot || command == Command::RemoveBot;
+}
+}
+
 void RoomPanel::HandleAction(std::string_view itemId)
 {
     using Action = RoomPresentationModel::Action;
@@ -27,11 +38,22 @@ void RoomPanel::HandleAction(std::string_view itemId)
     case Action::ShowGameStatus:
     {
         const auto message = RoomPresentationModel::BuildStatus(room_);
-        UpdateStatus(message, false, true);
-        AppendRoomAnnouncement(message);
+        // AppendRoomAnnouncement owns the spoken announcement. Publishing the
+        // same text assertively from the status label would make screen readers
+        // say it twice on the first activation.
+        UpdateStatus(message);
+        AppendRoomAnnouncement(message, true);
         return;
     }
     case Action::Start:
+        if (room_.players.size() + room_.bots.size() <
+            static_cast<std::size_t>(std::max(1, room_.minPlayers)))
+        {
+            const auto message = RoomPresentationModel::BuildStatus(room_);
+            UpdateStatus(message);
+            AppendRoomAnnouncement(message, true);
+            return;
+        }
         if (gamePlayPanel_->BeginRoomStart()) return;
         ExecuteCommand({Command::Start, false, {}});
         return;
@@ -66,6 +88,7 @@ void RoomPanel::ExecuteCommand(domain::RoomCommandRequest request)
     state_ = State::Busy;
     auto* service = &roomService_;
     const auto command = request.command;
+    if (CompletesFromRealtimeState(command)) pendingRealtimeCommand_ = command;
     wxWeakRef<RoomPanel> weakThis(this);
     requestSlot_.Track(lila::shared::concurrency::RunAsync(
         [service, request](std::stop_token stopToken) { service->Execute(request, stopToken); },
@@ -76,9 +99,10 @@ void RoomPanel::ExecuteCommand(domain::RoomCommandRequest request)
                 [weakThis, generation, command, error = std::move(error)]() mutable
                 {
                     if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
-                    weakThis->state_ = State::Ready;
                     if (error)
                     {
+                        weakThis->state_ = State::Ready;
+                        weakThis->pendingRealtimeCommand_.reset();
                         if (command == domain::RoomCommand::Start)
                             weakThis->gamePlayPanel_->NotifyRoomStartFailed(
                                 lila::shared::text::FromUtf8(error->UserMessage()));
@@ -86,6 +110,11 @@ void RoomPanel::ExecuteCommand(domain::RoomCommandRequest request)
                             lila::shared::text::FromUtf8(error->UserMessage()), true, true);
                         return;
                     }
+                    // The room acknowledgement only confirms receipt. Keep
+                    // the keyboard locked until the matching room event/state
+                    // proves that the mutation was actually applied.
+                    if (CompletesFromRealtimeState(command)) return;
+                    weakThis->state_ = State::Ready;
                     if (command == domain::RoomCommand::SendChat)
                     {
                         weakThis->audioService_.Play(

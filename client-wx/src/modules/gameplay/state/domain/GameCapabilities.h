@@ -78,6 +78,8 @@ struct GamePawnsView final { std::vector<GamePawnView> pawns; };
 struct GameScoreEntry final { int playerId = 0; double score = 0; int rank = 0; };
 struct GameScoreView final
 {
+    std::string label = "Scores";
+    std::string unit = "point(s)";
     std::map<int, double> byPlayer;
     std::vector<GameScoreEntry> leaderboard;
 };

@@ -74,8 +74,8 @@ export class RoomGatewayStatePresenter {
       payload: {
         message:
           gameName.length === 0
-            ? 'Table créée. Ajoutez des bots et commencez à jouer (Entrée).'
-            : `Table de ${gameName} créée. Ajoutez des bots et commencez à jouer (Entrée).`,
+            ? 'Table créée. Ajoutez des bots et commencez à jouer.'
+            : `Table de ${gameName} créée. Ajoutez des bots et commencez à jouer.`,
       },
     };
   }

@@ -134,6 +134,7 @@ void RoomPanel::Leave()
     roomService_.Leave();
     audioService_.Play(lila::modules::audio::domain::SoundCue::RoomExit);
     room_ = {};
+    pendingRealtimeCommand_.reset();
     if (onCloseRequested_) onCloseRequested_();
 }
 
@@ -142,6 +143,7 @@ void RoomPanel::CloseSession()
     CancelRequest();
     roomService_.Close();
     room_ = {};
+    pendingRealtimeCommand_.reset();
     saveInProgress_ = false;
     abandonInProgress_ = false;
     if (onCloseRequested_) onCloseRequested_();

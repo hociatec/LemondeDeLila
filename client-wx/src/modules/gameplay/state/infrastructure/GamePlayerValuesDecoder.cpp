@@ -25,6 +25,10 @@ std::optional<domain::GameScoreView> GamePlayerValuesDecoder::Score(const nlohma
 {
     if (!raw.is_object()) return std::nullopt;
     domain::GameScoreView result;
+    const auto label = detail::ReadString(raw, "label");
+    const auto unit = detail::ReadString(raw, "unit");
+    if (!label.empty()) result.label = label;
+    if (!unit.empty()) result.unit = unit;
     const auto byPlayer = raw.find("byPlayer");
     if (byPlayer != raw.end() && byPlayer->is_object())
         for (const auto& item : byPlayer->items())

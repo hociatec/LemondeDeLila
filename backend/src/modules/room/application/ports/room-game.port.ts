@@ -8,6 +8,7 @@ export interface RoomGamePort {
   startRoom(roomId: number, userId: number): Promise<void>;
   resetRoomSystem(roomId: number): Promise<void>;
   startRoomSystem(roomId: number): Promise<void>;
+  prepareNextRun(roomId: number): Promise<void>;
   notifyRoomStateUpdated(roomId: number): Promise<void>;
   findLatestActiveRoomForUser(
     userId: number,

@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <optional>
+#include <stdexcept>
 #include <utility>
 
 #include "modules/gameplay/session/application/IGameSessionGateway.h"
@@ -23,13 +24,17 @@ domain::GameState GameSessionService::Join(
     std::string_view gameType,
     std::stop_token stopToken)
 {
+    std::scoped_lock lifecycleLock(lifecycleMutex_);
     StopTasks();
+    if (stopToken.stop_requested())
+        throw std::runtime_error("Connexion au jeu interrompue.");
     return gateway_.Join(roomId, gameType, stopToken);
 }
 
 void GameSessionService::Start()
 {
-    StopTasks();
+    std::scoped_lock lifecycleLock(lifecycleMutex_);
+    if (receiveThread_.joinable()) return;
     const auto generation = ++sessionGeneration_;
     receiveThread_ = std::jthread(
         [this, generation](std::stop_token stopToken)
@@ -81,6 +86,7 @@ void GameSessionService::RequestActionCandidates(
 
 void GameSessionService::Close()
 {
+    std::scoped_lock lifecycleLock(lifecycleMutex_);
     StopTasks();
     gateway_.Close();
 }

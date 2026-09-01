@@ -18,6 +18,7 @@ export interface GameRoomContextPort {
   getRoomPayload(roomId: number): Promise<GameRoomPayload>;
   resetRoom(roomId: number, userId: number): Promise<void>;
   startRoom(roomId: number, userId: number): Promise<void>;
+  prepareNextRun(roomId: number): Promise<void>;
 }
 
 export type GameRoomDeletedListener = (roomId: number) => Promise<void> | void;

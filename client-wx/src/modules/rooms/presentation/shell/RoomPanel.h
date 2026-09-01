@@ -79,7 +79,7 @@ private:
     [[nodiscard]] bool TryHandleShortcut(wxKeyEvent& event);
     void SendChat();
     void AppendHistory(const wxString& message);
-    void AppendRoomAnnouncement(const wxString& message);
+    void AppendRoomAnnouncement(const wxString& message, bool allowRepeat = false);
     void ResetHistoryAnnouncements();
     void Save();
     void Leave();
@@ -127,6 +127,7 @@ private:
     bool saveInProgress_ = false;
     bool abandonInProgress_ = false;
     bool chatHistoryReceived_ = false;
+    std::optional<domain::RoomCommand> pendingRealtimeCommand_;
     int ambienceVolume_ = 15;
     std::vector<wxString> pendingRoomAnnouncements_;
     std::unique_ptr<history::HistoryAnnouncementQueue> historyAnnouncements_;

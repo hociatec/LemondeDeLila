@@ -18,7 +18,8 @@ void TestKnownCapabilitiesAreTyped()
         {"pawns", {{"sets", {{"racers", {{"definitions", nlohmann::json::array({
                 {{"id", "pawn-a"}, {"label", "Pion officiel"}}})},
             {"positions", {{"pawn-a", 4}}}, {"owners", {{"pawn-a", 7}}}}}}}}},
-        {"score", {{"byPlayer", {{"7", 12}}},
+        {"score", {{"label", "Prestige"}, {"unit", "étoile(s)"},
+            {"byPlayer", {{"7", 12}}},
             {"leaderboard", nlohmann::json::array({{{"playerId", 7}, {"score", 12}, {"rank", 1}}})}}},
         {"resources", {{"coins", {{"7", 3}}}}},
         {"counters", {{"rounds", 2}}},
@@ -57,12 +58,20 @@ void TestKnownCapabilitiesAreTyped()
             !state.kits.cards->hands[0].players[1].cardsVisible &&
             state.kits.cards->zones[0].cards[0].id == "c3",
         "Toutes les zones de cartes doivent être décodées dans des modèles explicites.");
+    Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
+            state, "hand") == "Vous avez 1 carte en main.",
+        "Le raccourci generique E doit annoncer uniquement la taille de la main.");
+    Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
+            state, "discard") == "Carte au-dessus : Carte une.",
+        "Un jeu de cartes doit pouvoir annoncer la carte au-dessus de la defausse.");
     Expect(state.kits.movement && state.kits.movement->tracks[0].positions.at("pawn-a") == 4,
         "Movement doit être décodé dans un modèle typé.");
     Expect(state.kits.pawns && state.kits.pawns->pawns[0].ownerId == 7 &&
             state.kits.pawns->pawns[0].label == "Pion officiel",
         "Les propriétaires et labels officiels de pions doivent être typés.");
-    Expect(state.kits.score && state.kits.resources && state.kits.counters && state.kits.status,
+    Expect(state.kits.score && state.kits.score->label == "Prestige" &&
+            state.kits.score->unit == "étoile(s)" && state.kits.resources &&
+            state.kits.counters && state.kits.status,
         "Les valeurs joueur connues doivent être typées.");
     Expect(state.kits.inventory && state.kits.economy && state.kits.ownership &&
             state.kits.collections,
@@ -161,10 +170,14 @@ void TestEventsHaveStableIdentityAndAccessibleText()
     payload["system"]["events"]["latestByType"] = {
         {"dice.rolled", {{"id", "42:0"}, {"type", "dice.rolled"},
             {"actorId", 7}, {"occurredAtMs", 100}, {"sequence", 17},
-            {"data", {{"total", 8}}}}},
+            {"data", {{"total", 8}, {"message", "Lila lance les dés : 8."}}}}},
         {"score.changed", {{"id", "42:1"}, {"type", "score.changed"},
             {"occurredAtMs", 101}, {"sequence", 18},
-            {"data", {{"playerId", 7}, {"value", 12}}}}}};
+            {"data", {{"playerId", 7}, {"value", 12},
+                {"message", "Lila a maintenant 12 point(s)."}}}}}};
+    payload["system"]["events"]["recent"] = nlohmann::json::array({
+        payload["system"]["events"]["latestByType"]["score.changed"],
+        payload["system"]["events"]["latestByType"]["dice.rolled"]});
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
     Expect(state.system.events.size() == 2 && state.system.events[0].details.total == "8" &&
             state.system.events[1].details.playerId == 7 &&
@@ -175,12 +188,44 @@ void TestEventsHaveStableIdentityAndAccessibleText()
         logMessages.push_back(event.Identity() + "|" +
             lila::modules::gameplay::presentation::events::GameEventPresenter::Present(
                 event, state.system.players));
-    Expect(logMessages.size() == 2 && logMessages[0].find("sequence:17|") == 0,
-        "La sequence backend doit être l'identité principale du message d'historique.");
+    Expect(logMessages.size() == 2 && logMessages[0].find("id:42:0|") == 0,
+        "L'identifiant versionné doit dédupliquer sans confondre deux états successifs.");
     Expect(logMessages[0].find("Lila lance les dés : 8") != std::string::npos &&
             logMessages[1].find("Lila a maintenant 12 point(s)") != std::string::npos &&
             logMessages[0].find('{') == std::string::npos,
-        "Un événement doit produire une phrase accessible sans dump JSON.");
+        "Le client doit restituer mot pour mot le message accessible du backend.");
+}
+
+void TestTechnicalEngineEventsStayOutOfPlayerHistory()
+{
+    using lila::modules::gameplay::domain::GameEngineEvent;
+    using lila::modules::gameplay::presentation::events::GameEventPresenter;
+    const std::vector<lila::modules::gameplay::domain::GamePlayer> players{
+        {7, "Lila", false, true}};
+    for (const std::string type : {
+             "game.command.accepted", "game.configured", "game.message",
+             "game.phase.changed", "match.started", "turn.ended",
+             "card.played", "card.drawn", "card.received", "card.discarded"})
+    {
+        GameEngineEvent event;
+        event.type = type;
+        event.actorId = 7;
+        event.details.playerId = 7;
+        Expect(GameEventPresenter::Present(event, players).empty(),
+            "Un evenement technique sans message serveur ne doit pas polluer l'historique.");
+    }
+    GameEngineEvent narrated;
+    narrated.type = "game.message";
+    narrated.details.message = "Vous jouez LAMA.";
+    Expect(GameEventPresenter::Present(narrated, players) == "Vous jouez LAMA.",
+        "La narration explicite du serveur doit rester prioritaire.");
+    GameEngineEvent tokens;
+    tokens.type = "score.changed";
+    tokens.details.playerId = 7;
+    tokens.details.value = "12";
+    Expect(GameEventPresenter::Present(tokens, players) ==
+            "Lila a maintenant 12 point(s).",
+        "Le repli client generique doit parler de points sans message serveur.");
 }
 
 void TestGridActionResolutionUsesBoardAndCell()

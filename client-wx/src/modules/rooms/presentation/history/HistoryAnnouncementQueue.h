@@ -21,7 +21,7 @@ public:
     ~HistoryAnnouncementQueue() override;
 
     [[nodiscard]] wxStaticText* Control() const noexcept;
-    void Enqueue(const wxString& message);
+    void Enqueue(const wxString& message, bool allowRepeat = false);
     void Reset();
 
 private:

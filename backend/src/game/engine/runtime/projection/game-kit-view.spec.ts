@@ -74,6 +74,30 @@ describe('projectGameKits', () => {
     });
   });
 
+  it('redacts an owner hand after the owner leaves an active round', () => {
+    const kits = createKits();
+    const handDefinition = {
+      component: 'cards.hands',
+      id: 'main',
+      deck: 'main',
+      initial: 1,
+      visibility: 'owner',
+      ownerVisibility: 'active-round',
+    } satisfies HandsDefinition;
+    kits.cards.decks.main = ['remaining'];
+    kits.cards.hands.main = { '1': ['hidden-after-leaving'] };
+
+    expect(projectGameKits(kits, 1, 3, [handDefinition], [1])).toMatchObject({
+      cards: {
+        hands: {
+          main: {
+            byPlayer: { '1': { count: 1 } },
+          },
+        },
+      },
+    });
+  });
+
   it('projects public zones and redacts hidden zones', () => {
     const kits = createKits();
     const publicZone = {

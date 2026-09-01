@@ -81,9 +81,10 @@ wxString RoomPresentationModel::BuildStatus(const domain::RoomState& room)
         return wxString::Format(
             wxString(L"Table prête. %zu participant(s)."), participants);
     return wxString::Format(
-        wxString(L"En attente de participants : %zu sur %zu requis."),
-        participants,
-        minimum);
+        wxString(L"Pour jouer, il faut être au minimum %zu participants "
+                 L"(actuellement %zu)."),
+        minimum,
+        participants);
 }
 
 wxString RoomPresentationModel::BuildDetails(
@@ -112,6 +113,12 @@ wxString RoomPresentationModel::BuildPlayers(const domain::RoomState& room)
     return wxString(L"Joueurs : ") + FormatMembers(room.players) +
         wxString(L". Spectateurs : ") + FormatMembers(room.spectators) +
         wxString(L". Bots : ") + FormatMembers(room.bots) + wxString(L".");
+}
+
+bool RoomPresentationModel::ShouldRepeatAnnouncement(
+    domain::RoomEventType type) noexcept
+{
+    return type == domain::RoomEventType::Info;
 }
 
 RoomPresentationModel::Action RoomPresentationModel::ActionForId(std::string_view id) noexcept
