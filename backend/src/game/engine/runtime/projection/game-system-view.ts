@@ -53,6 +53,7 @@ export function projectGameSystemView<
     runtime.engine.playerValues,
     viewerPlayerId,
     input.playerValuesVisibility,
+    (runtime.players ?? []).map((player) => player.id),
   );
   const kits = projectGameKits(
     runtime.engine.kits,

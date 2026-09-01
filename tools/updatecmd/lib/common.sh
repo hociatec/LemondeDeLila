@@ -84,6 +84,24 @@ tree_digest() {
   )
 }
 
+assert_immutable_git_source() {
+  local source_root="$1"
+  [[ -d "$source_root/.git" ]] \
+    || die "La source de production doit être un checkout Git versionné: $source_root"
+  git -C "$source_root" diff --quiet -- \
+    || die "La source contient des modifications non indexées."
+  git -C "$source_root" diff --cached --quiet -- \
+    || die "La source contient des modifications indexées non commitées."
+  [[ -z "$(git -C "$source_root" status --porcelain --untracked-files=normal)" ]] \
+    || die "La source contient des fichiers non suivis."
+  SOURCE_GIT_SHA="$(git -C "$source_root" rev-parse --verify HEAD)"
+  [[ "$SOURCE_GIT_SHA" =~ ^[a-f0-9]{40,64}$ ]] \
+    || die "SHA Git de source invalide."
+  if [[ -n "${GITHUB_SHA:-}" && "$SOURCE_GIT_SHA" != "$GITHUB_SHA" ]]; then
+    die "Le checkout ne correspond pas au SHA demandé par GitHub Actions."
+  fi
+}
+
 create_source_snapshot() {
   local source_root="$1"
   local destination="$2"
@@ -97,7 +115,7 @@ create_source_snapshot() {
     --exclude '/coverage/' \
     --exclude '/.env' \
     --exclude '/keys/' \
-    --exclude '/data/client-updates/' \
+    --exclude '/data/client-wx-updates/' \
     --exclude '/data/sounds/' \
     --exclude '/backend/logs/' \
     --exclude '/client-wx/logs/' \
@@ -108,12 +126,6 @@ create_source_snapshot() {
     --exclude '/logs/' \
     "$source_root/client-wx/" "$destination/client-wx/"
 
-  if [[ -d "$source_root/client-win/client-win/libs" ]]; then
-    mkdir -p "$destination/client-win/client-win"
-    rsync -a --delete \
-      "$source_root/client-win/client-win/libs/" \
-      "$destination/client-win/client-win/libs/"
-  fi
 }
 
 load_updatecmd_config() {

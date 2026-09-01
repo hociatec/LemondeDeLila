@@ -5,11 +5,6 @@ export function createWsRuntimeConfig(config: ConfigService): WsRuntimeConfig {
   const nodeEnv = String(config.get<string>('NODE_ENV') ?? '')
     .trim()
     .toLowerCase();
-  const sharedSecret = String(
-    config.get<string>('WS_SHARED_SECRET') ??
-      config.get<string>('REALTIME_WS_SECRET') ??
-      '',
-  ).trim();
   const jwtIssuer = String(
     config.get<string>('JWT_ISSUER') ?? 'le-monde-de-lila',
   ).trim();
@@ -27,7 +22,6 @@ export function createWsRuntimeConfig(config: ConfigService): WsRuntimeConfig {
 
   return {
     nodeEnv,
-    sharedSecret: sharedSecret || null,
     wsTicketSecret: wsTicketSecret || null,
     wsTicketTtlSeconds:
       Number.isFinite(wsTicketTtlRaw) && wsTicketTtlRaw >= 0
@@ -39,9 +33,6 @@ export function createWsRuntimeConfig(config: ConfigService): WsRuntimeConfig {
       Number.isFinite(clockToleranceRaw) && clockToleranceRaw >= 0
         ? clockToleranceRaw
         : 10,
-    jwtAlgorithm:
-      String(config.get<string>('JWT_ALGORITHM') ?? '').trim() || null,
-    jwtSecret: String(config.get<string>('JWT_SECRET') ?? '').trim() || null,
     jwtPrivateKeyPem:
       String(config.get<string>('JWT_PRIVATE_KEY_PEM') ?? '').trim() || null,
     jwtPrivateKeyPath:

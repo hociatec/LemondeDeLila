@@ -3,7 +3,6 @@ import { WsApiHubService } from '../../../../../platform/ws/public-api';
 
 type Subscription = {
   gameType: string | null;
-  refreshType: 'legacy' | 'lobby';
 };
 
 @Injectable()
@@ -23,16 +22,11 @@ export class RoomLobbyRefreshService implements OnModuleDestroy {
     this.subscriptions.clear();
   }
 
-  subscribe(
-    connectionId: string,
-    gameType?: string | null,
-    refreshType: 'legacy' | 'lobby' = 'legacy',
-  ) {
+  subscribe(connectionId: string, gameType?: string | null) {
     if (!connectionId || !connectionId.trim()) return;
     const normalized = typeof gameType === 'string' ? gameType.trim() : '';
     this.subscriptions.set(connectionId, {
       gameType: normalized || null,
-      refreshType,
     });
   }
 
@@ -67,12 +61,12 @@ export class RoomLobbyRefreshService implements OnModuleDestroy {
     if (entries.length === 0) return;
 
     const body = payload ?? { roomId: null, reason: null };
-    for (const [connectionId, sub] of entries) {
-      const type =
-        sub?.refreshType === 'lobby'
-          ? 'room.lobby.refresh'
-          : 'rooms.public.refresh';
-      const message = { type, requestId: 'push', payload: body };
+    for (const [connectionId] of entries) {
+      const message = {
+        type: 'room.lobby.refresh',
+        requestId: 'push',
+        payload: body,
+      };
       // For now we ignore per-gameType filtering and let clients request with filters.
       const ok = this.hub.send(connectionId, message);
       if (!ok) {

@@ -10,61 +10,33 @@ export class RoomWsRegistrar implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.registry.register('rooms.public.list', (session, payload) =>
-      this.handler.listPublic(session, payload, 'legacy'),
-    );
     this.registry.register('room.lobby.list', (session, payload) =>
-      this.handler.listPublic(session, payload, 'lobby'),
-    );
-    this.registry.register('rooms.public.join', (session, payload) =>
-      this.handler.joinPublic(session, payload, 'legacy'),
+      this.handler.listPublic(session, payload),
     );
     this.registry.register('room.lobby.join', (session, payload) =>
-      this.handler.joinPublic(session, payload, 'lobby'),
-    );
-    this.registry.register('rooms.public.leave', (session, payload) =>
-      this.handler.leavePublic(session, payload, 'legacy'),
+      this.handler.joinPublic(session, payload),
     );
     this.registry.register('room.lobby.leave', (session, payload) =>
-      this.handler.leavePublic(session, payload, 'lobby'),
-    );
-    this.registry.register('rooms.public.spectate', (session, payload) =>
-      this.handler.spectatePublic(session, payload, 'legacy'),
+      this.handler.leavePublic(session, payload),
     );
     this.registry.register('room.lobby.spectate', (session, payload) =>
-      this.handler.spectatePublic(session, payload, 'lobby'),
-    );
-    this.registry.register('rooms.public.subscribe', (session, payload) =>
-      this.handler.subscribePublic(session, payload, 'legacy'),
+      this.handler.spectatePublic(session, payload),
     );
     this.registry.register('room.lobby.subscribe', (session, payload) =>
-      this.handler.subscribePublic(session, payload, 'lobby'),
-    );
-    this.registry.register('rooms.public.unsubscribe', (session) =>
-      this.handler.unsubscribePublic(session, 'legacy'),
+      this.handler.subscribePublic(session, payload),
     );
     this.registry.register('room.lobby.unsubscribe', (session) =>
-      this.handler.unsubscribePublic(session, 'lobby'),
-    );
-    this.registry.register('rooms.invite.send', (session, payload) =>
-      this.handler.inviteSend(session, payload, 'legacy'),
+      this.handler.unsubscribePublic(session),
     );
     this.registry.register('room.lobby.invite.send', (session, payload) =>
-      this.handler.inviteSend(session, payload, 'lobby'),
-    );
-    this.registry.register('rooms.invite.presence.list', (session, payload) =>
-      this.handler.invitePresenceList(session, payload, 'legacy'),
+      this.handler.inviteSend(session, payload),
     );
     this.registry.register(
       'room.lobby.invite.presence.list',
-      (session, payload) =>
-        this.handler.invitePresenceList(session, payload, 'lobby'),
-    );
-    this.registry.register('rooms.invite.respond', (session, payload) =>
-      this.handler.inviteRespond(session, payload, 'legacy'),
+      (session, payload) => this.handler.invitePresenceList(session, payload),
     );
     this.registry.register('room.lobby.invite.respond', (session, payload) =>
-      this.handler.inviteRespond(session, payload, 'lobby'),
+      this.handler.inviteRespond(session, payload),
     );
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { spawn, spawnSync } from 'node:child_process';
 import * as http from 'node:http';
 import { getProcessEnvironment } from '../../../../platform/config/public-api';
@@ -10,6 +10,8 @@ import type {
 
 @Injectable()
 export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePort {
+  private readonly logger = new Logger(AdminMaintenanceRuntimeService.name);
+
   runCommand(
     argv: string[],
     opts?: { cwd?: string; timeoutMs?: number },
@@ -49,8 +51,14 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
             windowsHide: true,
           });
           child.unref();
-        } catch {
-          // best effort
+        } catch (error) {
+          this.logger.error(
+            JSON.stringify({
+              event: 'admin.maintenance.spawn_failed',
+              command: argv[0] ?? '',
+              message: error instanceof Error ? error.message : String(error),
+            }),
+          );
         }
       },
       Math.max(0, delayMs),
@@ -72,16 +80,35 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
           res.on('data', (chunk) => (body += chunk));
           res.on('end', () => resolve({ statusCode, body }));
         });
-        req.on('error', () => resolve({ statusCode: 0, body: '' }));
+        req.on('error', (error) => {
+          this.logger.warn(
+            JSON.stringify({
+              event: 'admin.maintenance.http_probe_failed',
+              message: error.message,
+            }),
+          );
+          resolve({ statusCode: 0, body: '' });
+        });
         req.setTimeout(timeoutMs, () => {
           try {
             req.destroy();
-          } catch {
-            /* ignore */
+          } catch (error) {
+            this.logger.warn(
+              JSON.stringify({
+                event: 'admin.maintenance.http_probe_destroy_failed',
+                message: error instanceof Error ? error.message : String(error),
+              }),
+            );
           }
           resolve({ statusCode: 0, body: '' });
         });
-      } catch {
+      } catch (error) {
+        this.logger.warn(
+          JSON.stringify({
+            event: 'admin.maintenance.http_probe_setup_failed',
+            message: error instanceof Error ? error.message : String(error),
+          }),
+        );
         resolve({ statusCode: 0, body: '' });
       }
     });

@@ -1,6 +1,6 @@
 void TestKnownCapabilitiesAreTyped()
 {
-    auto payload = V2Payload({{"roomId", 71}, {"runId", 9}, {"gameType", "capability-game"}});
+    auto payload = BuildGameView({{"roomId", 71}, {"runId", 9}, {"gameType", "capability-game"}});
     payload["system"]["setup"]["values"] = {
         {"targetScore", 25},
         {"teams", nlohmann::json::array({"red", "blue"})}};
@@ -18,7 +18,7 @@ void TestKnownCapabilitiesAreTyped()
         {"pawns", {{"sets", {{"racers", {{"definitions", nlohmann::json::array({
                 {{"id", "pawn-a"}, {"label", "Pion officiel"}}})},
             {"positions", {{"pawn-a", 4}}}, {"owners", {{"pawn-a", 7}}}}}}}}},
-        {"score", {{"label", "Prestige"}, {"unit", "étoile(s)"},
+        {"score", {{"label", "Prestige"}, {"unit", {{"singular", "étoile"}, {"plural", "étoiles"}}},
             {"byPlayer", {{"7", 12}}},
             {"leaderboard", nlohmann::json::array({{{"playerId", 7}, {"score", 12}, {"rank", 1}}})}}},
         {"resources", {{"coins", {{"7", 3}}}}},
@@ -70,7 +70,8 @@ void TestKnownCapabilitiesAreTyped()
             state.kits.pawns->pawns[0].label == "Pion officiel",
         "Les propriétaires et labels officiels de pions doivent être typés.");
     Expect(state.kits.score && state.kits.score->label == "Prestige" &&
-            state.kits.score->unit == "étoile(s)" && state.kits.resources &&
+            state.kits.score->UnitFor(1) == "étoile" &&
+            state.kits.score->UnitFor(12) == "étoiles" && state.kits.resources &&
             state.kits.counters && state.kits.status,
         "Les valeurs joueur connues doivent être typées.");
     Expect(state.kits.inventory && state.kits.economy && state.kits.ownership &&
@@ -91,7 +92,7 @@ void TestKnownCapabilitiesAreTyped()
 
 void TestEmptyV2KitsAndCapabilitiesRemainValid()
 {
-    auto payload = V2Payload({{"roomId", 79}, {"gameType", "empty-kits"}});
+    auto payload = BuildGameView({{"roomId", 79}, {"gameType", "empty-kits"}});
     payload["kits"] = nlohmann::json::object();
     const auto empty = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(
         payload);
@@ -109,7 +110,7 @@ void TestEmptyV2KitsAndCapabilitiesRemainValid()
 
 void TestPendingMultipleWorkflowsUseOneExplicitAction()
 {
-    auto payload = V2Payload({{"roomId", 72}, {"gameType", "choice-game"}, {"state", {
+    auto payload = BuildGameView({{"roomId", 72}, {"gameType", "choice-game"}, {"state", {
         {"actions", nlohmann::json::array({{{"type", "choice.resolve"},
             {"payload", {{"value", nlohmann::json::array()}}}}})},
         {"pending", {{"type", "choice"}, {"choices", nlohmann::json::array({"A", "B", "C"})},
@@ -132,7 +133,7 @@ void TestPendingSelectionPolicy()
     using lila::modules::gameplay::domain::GamePendingChoice;
     using lila::modules::gameplay::domain::GameValue;
 
-    auto unboundedPayload = V2Payload({{"roomId", 74}, {"gameType", "choice-game"}, {"state", {
+    auto unboundedPayload = BuildGameView({{"roomId", 74}, {"gameType", "choice-game"}, {"state", {
         {"actions", nlohmann::json::array({{{"type", "choice.resolve"},
             {"payload", {{"value", nlohmann::json::array()}}}}})},
         {"pending", {{"type", "choice"}, {"choices", nlohmann::json::array({"A", "B", "C"})},
@@ -164,7 +165,7 @@ void TestPendingSelectionPolicy()
 
 void TestEventsHaveStableIdentityAndAccessibleText()
 {
-    auto payload = V2Payload({{"roomId", 73}, {"gameType", "event-game"}});
+    auto payload = BuildGameView({{"roomId", 73}, {"gameType", "event-game"}});
     payload["system"]["players"]["all"] = nlohmann::json::array({
         {{"id", 7}, {"username", "Lila"}}});
     payload["system"]["events"]["latestByType"] = {
@@ -174,7 +175,7 @@ void TestEventsHaveStableIdentityAndAccessibleText()
         {"score.changed", {{"id", "42:1"}, {"type", "score.changed"},
             {"occurredAtMs", 101}, {"sequence", 18},
             {"data", {{"playerId", 7}, {"value", 12},
-                {"message", "Lila a maintenant 12 point(s)."}}}}}};
+                {"message", "Lila a maintenant 12 points."}}}}}};
     payload["system"]["events"]["recent"] = nlohmann::json::array({
         payload["system"]["events"]["latestByType"]["score.changed"],
         payload["system"]["events"]["latestByType"]["dice.rolled"]});
@@ -191,7 +192,7 @@ void TestEventsHaveStableIdentityAndAccessibleText()
     Expect(logMessages.size() == 2 && logMessages[0].find("id:42:0|") == 0,
         "L'identifiant versionné doit dédupliquer sans confondre deux états successifs.");
     Expect(logMessages[0].find("Lila lance les dés : 8") != std::string::npos &&
-            logMessages[1].find("Lila a maintenant 12 point(s)") != std::string::npos &&
+            logMessages[1].find("Lila a maintenant 12 points") != std::string::npos &&
             logMessages[0].find('{') == std::string::npos,
         "Le client doit restituer mot pour mot le message accessible du backend.");
 }
@@ -223,9 +224,11 @@ void TestTechnicalEngineEventsStayOutOfPlayerHistory()
     tokens.type = "score.changed";
     tokens.details.playerId = 7;
     tokens.details.value = "12";
-    Expect(GameEventPresenter::Present(tokens, players) ==
-            "Lila a maintenant 12 point(s).",
-        "Le repli client generique doit parler de points sans message serveur.");
+    Expect(GameEventPresenter::Present(tokens, players).empty(),
+        "Le client ne doit jamais reconstruire une annonce absente du backend.");
+    tokens.details.announce = false;
+    Expect(GameEventPresenter::Present(tokens, players).empty(),
+        "Un evenement silencieux du serveur ne doit pas entrer dans l'historique.");
 }
 
 void TestGridActionResolutionUsesBoardAndCell()

@@ -16,7 +16,9 @@ void FocusMemory::Remember(wxWindow* scope)
     }
 
     wxWindow* focused = wxWindow::FindFocus();
-    if (focused != nullptr && NavigationController::IsDescendantOf(focused, scope))
+    if (focused != nullptr && focused->IsShownOnScreen() && focused->IsEnabled() &&
+        focused->AcceptsFocus() &&
+        NavigationController::IsDescendantOf(focused, scope))
     {
         targets_.insert_or_assign(scope, wxWeakRef<wxWindow>(focused));
     }

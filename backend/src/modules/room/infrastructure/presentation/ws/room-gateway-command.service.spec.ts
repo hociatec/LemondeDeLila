@@ -4,18 +4,25 @@ import { RoomGatewayCommandService } from './room-gateway-command.service';
 describe('RoomGatewayCommandService transport pipeline', () => {
   const commands = new RoomGatewayCommandService();
 
-  it('validates and normalizes a known command envelope', () => {
+  it('accepts only the canonical intent envelope', () => {
     expect(
       commands.decode(
-        JSON.stringify({ type: ' room.ping ', payload: { clientSentAtMs: 1 } }),
+        JSON.stringify({
+          type: 'room.intent.execute',
+          payload: { intentId: 'room.ping', data: { clientSentAtMs: 1 } },
+        }),
       ),
-    ).toEqual({ type: 'room.ping', payload: { clientSentAtMs: 1 } });
+    ).toEqual({
+      type: 'room.intent.execute',
+      payload: { intentId: 'room.ping', data: { clientSentAtMs: 1 } },
+    });
   });
 
   it('presents malformed and unknown commands through stable error codes', () => {
     for (const [raw, code] of [
       ['not-json', 'ROOM_WS_INVALID_MESSAGE'],
       [JSON.stringify({ type: 'room.unknown' }), 'ROOM_WS_UNKNOWN_COMMAND'],
+      [JSON.stringify({ type: 'room.ping' }), 'ROOM_WS_UNKNOWN_COMMAND'],
     ] as const) {
       try {
         commands.decode(raw);

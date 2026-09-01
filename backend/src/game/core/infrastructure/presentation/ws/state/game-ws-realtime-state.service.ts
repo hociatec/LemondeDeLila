@@ -35,8 +35,8 @@ export class GameWsRealtimeStateService {
     private readonly rooms: GameWsRoomContextService,
     private readonly execution: GameExecutionScopeService,
   ) {
-    this.automation.setStateCommittedHandler?.((committed) => {
-      this.broadcast(
+    this.automation.setStateCommittedHandler?.(async (committed) => {
+      await this.publishCommittedState(
         committed.roomId,
         committed.gameType,
         committed.state,
@@ -129,16 +129,13 @@ export class GameWsRealtimeStateService {
     // while automation continues from the clean persisted state.
     const presentedState = structuredClone(next);
     presentedState.version = result.version;
-    this.broadcast(
+    await this.publishCommittedState(
       roomId,
       resolved.gameType,
       presentedState,
       resolved.handler,
       result.version,
     );
-    if (this.justFinished(previous, next)) {
-      await this.rooms.prepareNextRun(roomId);
-    }
     this.schedule(roomId, { ...resolved, state: result.state });
   }
 
@@ -173,16 +170,6 @@ export class GameWsRealtimeStateService {
     if (typeof roomRunId !== 'number') return;
 
     target.metadata = { ...(target.metadata ?? {}), roomRunId };
-  }
-
-  private justFinished(
-    previous: GameStateEntity,
-    next: GameStateEntity,
-  ): boolean {
-    return (
-      stringOrEmpty(previous.status).toLowerCase() !== 'finished' &&
-      stringOrEmpty(next.status).toLowerCase() === 'finished'
-    );
   }
 
   private async refreshSetupRoster(
@@ -279,6 +266,19 @@ export class GameWsRealtimeStateService {
           viewerPlayerId,
         }),
       });
+    }
+  }
+
+  private async publishCommittedState(
+    roomId: number,
+    gameType: string,
+    state: GameStateEntity,
+    handler: GameRuntime,
+    version: number,
+  ): Promise<void> {
+    this.broadcast(roomId, gameType, state, handler, version);
+    if (stringOrEmpty(state.status).toLowerCase() === 'finished') {
+      await this.rooms.prepareNextRun(roomId);
     }
   }
 }

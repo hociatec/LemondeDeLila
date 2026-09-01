@@ -20,4 +20,5 @@ backend/keys/github-secrets-a-copier.txt
 log/
 
 # Local dotnet CLI home (created during sandboxed test runs)
+.dotnet/
 .dotnet_home/

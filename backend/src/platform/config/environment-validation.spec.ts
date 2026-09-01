@@ -4,8 +4,28 @@ import path from 'node:path';
 
 const validBase = {
   NODE_ENV: 'test',
-  JWT_SECRET: 'a'.repeat(32),
+  JWT_ALGORITHM: 'RS256',
+  JWT_PRIVATE_KEY_PEM: 'private-key',
+  JWT_PUBLIC_KEY_PEM: 'public-key',
   WS_TICKET_SECRET: 'b'.repeat(32),
+};
+
+const validProduction = {
+  ...validBase,
+  NODE_ENV: 'production',
+  JWT_ALGORITHM: 'RS256',
+  JWT_PRIVATE_KEY_PEM: 'private-key',
+  JWT_PUBLIC_KEY_PEM: 'public-key',
+  JWT_AUDIENCE: 'lila-client',
+  WS_TICKET_SECRET: 'w'.repeat(32),
+  SESSION_STORE_REDIS_URL: 'redis://127.0.0.1:6379/1',
+  GAME_ENGINE_STATE_REDIS_URL: 'redis://127.0.0.1:6379/0',
+  RATE_LIMIT_REDIS_URL: 'redis://127.0.0.1:6379/4',
+  DB_USER: 'lila',
+  DB_PASSWORD: 'database-password',
+  CLIENT_WX_UPDATES_UPLOAD_TOKEN: 'u'.repeat(32),
+  CLIENT_WX_SIGNATURE_PUBLIC_KEY_PEM: 'update-public-key',
+  CLIENT_WX_UPDATES_PUBLIC_URL: 'https://updates.example.test/client-wx',
 };
 
 describe('environment validation', () => {
@@ -29,12 +49,49 @@ describe('environment validation', () => {
     expect(result.error?.message).toContain('SESSION_STORE_REDIS_URL');
   });
 
+  it('accepts a fully hardened production configuration', () => {
+    expect(
+      environmentValidationSchema.validate(validProduction).error,
+    ).toBeUndefined();
+  });
+
+  it.each([
+    [{ JWT_ALGORITHM: 'HS256' }, 'JWT_ALGORITHM'],
+    [{ JWT_AUDIENCE: undefined }, 'JWT_AUDIENCE'],
+    [{ DB_USER: 'root' }, 'DB_USER=root'],
+    [{ DB_PASSWORD: '' }, 'DB_PASSWORD'],
+    [{ RATE_LIMIT_REDIS_URL: undefined }, 'RATE_LIMIT_REDIS_URL'],
+    [
+      { CLIENT_WX_UPDATES_UPLOAD_TOKEN: undefined },
+      'CLIENT_WX_UPDATES_UPLOAD_TOKEN',
+    ],
+    [
+      { WS_TICKET_SECRET: 'change-me-with-at-least-32-characters' },
+      'WS_TICKET_SECRET',
+    ],
+  ])('rejects an unsafe production setting', (override, expectedMessage) => {
+    const result = environmentValidationSchema.validate({
+      ...validProduction,
+      ...override,
+    });
+    expect(result.error?.message).toContain(expectedMessage);
+  });
+
+  it('requires token and network allowlist when production maintenance is enabled', () => {
+    const result = environmentValidationSchema.validate({
+      ...validProduction,
+      ADMIN_MAINTENANCE_ENABLED: true,
+      ADMIN_MAINTENANCE_TOKEN: 'm'.repeat(32),
+    });
+    expect(result.error?.message).toContain('ADMIN_MAINTENANCE_ALLOWED_IPS');
+  });
+
   it('requires both RSA key sides when RSA is configured', () => {
     const result = environmentValidationSchema.validate({
       ...validBase,
-      JWT_SECRET: undefined,
       JWT_ALGORITHM: 'RS256',
       JWT_PRIVATE_KEY_PEM: 'private',
+      JWT_PUBLIC_KEY_PEM: undefined,
     });
     expect(result.error?.message).toContain('JWT_PUBLIC_KEY');
   });

@@ -58,7 +58,7 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
         {
             append("score:" + std::to_string(score.playerId), std::to_string(score.rank) + ". " +
                 Player(state, score.playerId) + " : " + Amount(score.score) + " " +
-                state.kits.score->unit);
+                state.kits.score->UnitFor(score.score));
         }
     }
     if (state.kits.resources && std::any_of(

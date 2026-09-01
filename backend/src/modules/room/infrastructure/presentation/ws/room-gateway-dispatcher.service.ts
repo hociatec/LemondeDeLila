@@ -105,14 +105,14 @@ export class RoomGatewayDispatcherService {
           payload,
           receivedAtMs,
         ),
-      executeLegacyRoomCommand: (
+      executeRoomCommand: (
         client: WebSocket,
         meta: ClientMeta,
         type: string | undefined,
         payload: unknown,
         receivedAtMs: number,
       ) =>
-        this.commands.executeLegacyRoomCommand(
+        this.commands.executeRoomCommand(
           this.commandContext(),
           client,
           meta,

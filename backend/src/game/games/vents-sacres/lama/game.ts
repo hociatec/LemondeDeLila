@@ -60,6 +60,7 @@ export default defineGame<LamaState>()({
       label: 'Jetons',
       unit: { singular: 'jeton', plural: 'jetons' },
       changeNarration: 'delta-and-total',
+      visibility: 'active-match',
     },
   },
   shortcuts: [

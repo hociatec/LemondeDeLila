@@ -8,6 +8,8 @@ import type { GameStateWithActions } from '../../../../application/contracts/gam
 import type { GameShortcutHint } from '../../../../../shortcuts/public-api';
 import { projectDiceActionView } from '../../../../../engine/runtime/projection/dice-action-view';
 import { GameVisibilityService } from '../../../../application/services/game-visibility.service';
+import { genericGameEventMessage } from './game-ws-generic-event-message';
+import { cardMessageLabel, scalarMessageText } from './game-ws-message-values';
 
 type PresentStateInput = {
   state: GameStateEntity;
@@ -45,12 +47,12 @@ export class GameWsStatePresenter {
     const kits = this.withScorePresentation(
       this.asRecord(exposed.kits),
       presentation.score,
+      input.state.status,
     );
     const system = this.withServerMessages(
       this.asRecord(exposed.system),
       Number(input.viewerPlayerId ?? 0) || null,
       presentation,
-      kits,
     );
     return {
       ...exposed,
@@ -64,7 +66,12 @@ export class GameWsStatePresenter {
       version: input.version,
       system: {
         ...system,
-        shortcuts: this.resolveShortcuts(input.handler, input.state, exposed),
+        shortcuts: this.resolveShortcuts(
+          input.handler,
+          input.state,
+          exposed,
+          kits,
+        ),
       },
     };
   }
@@ -85,11 +92,26 @@ export class GameWsStatePresenter {
     handler: GameRuntime,
     state: GameStateEntity,
     exposed: GameStateWithActions,
+    kits: Record<string, unknown>,
   ): GameShortcutHint[] {
-    const shortcuts = handler.getShortcuts({
+    const declaredShortcuts = handler.getShortcuts({
       currentPlayerId: state.turn?.currentPlayerId ?? null,
-      started: String(state.status ?? '').toLowerCase() === 'started',
+      started: this.isActiveMatchStatus(state.status),
     });
+    const score = this.asRecord(kits.score);
+    const hasScore = Object.keys(score).length > 0;
+    const shortcuts = declaredShortcuts.filter(
+      (shortcut) =>
+        !hasScore || this.stringValue(shortcut.key).toUpperCase() !== 'S',
+    );
+    if (hasScore) {
+      shortcuts.push({
+        key: 'S',
+        type: 'interface',
+        id: 'score',
+        label: this.stringValue(score.label) || 'Scores',
+      });
+    }
     const rawActions = exposed.actions;
     const actions = (Array.isArray(rawActions) ? rawActions : []).map(
       (action) => this.asRecord(action),
@@ -102,7 +124,10 @@ export class GameWsStatePresenter {
     return shortcuts
       .filter(
         (shortcut) =>
-          shortcut.type === 'interface' || actionTypes.has(shortcut.actionType),
+          (shortcut.type === 'interface' &&
+            (shortcut.id !== 'score' ||
+              Object.keys(this.asRecord(kits.score)).length > 0)) ||
+          (shortcut.type === 'action' && actionTypes.has(shortcut.actionType)),
       )
       .map((shortcut) => {
         if (shortcut.label) return shortcut;
@@ -130,7 +155,14 @@ export class GameWsStatePresenter {
   private withScorePresentation(
     kits: Record<string, unknown>,
     presentation?: ScorePresentationDescriptor,
+    status?: unknown,
   ): Record<string, unknown> {
+    if (
+      presentation?.visibility === 'active-match' &&
+      !this.isActiveMatchStatus(status)
+    ) {
+      return { ...kits, score: null };
+    }
     const score = this.asRecord(kits.score);
     if (Object.keys(score).length === 0) return kits;
     return {
@@ -147,7 +179,6 @@ export class GameWsStatePresenter {
     system: Record<string, unknown>,
     viewerPlayerId: number | null,
     presentation: GamePresentationDescriptor,
-    kits: Record<string, unknown>,
   ): Record<string, unknown> {
     const players = this.asRecord(system.players).all;
     const playerNames = new Map<number, string>();
@@ -166,10 +197,15 @@ export class GameWsStatePresenter {
     const receivedCardData = this.asRecord(
       this.asRecord(latestByType['card.received']).data,
     );
-    const viewerHand = this.viewerHand(kits, viewerPlayerId);
-    const started =
-      this.stringValue(this.asRecord(system.match).status).toLowerCase() ===
-      'started';
+    const recentEvents = Array.isArray(events.recent) ? events.recent : [];
+    const pairedTurn = this.pairedTurnAfterSemanticMessage(
+      recentEvents,
+      this.asRecord(latestByType['game.message']),
+      semanticMessageKey,
+    );
+    const started = this.isActiveMatchStatus(
+      this.asRecord(system.match).status,
+    );
     const presentEvent = (rawEvent: unknown): Record<string, unknown> => {
       const event = this.asRecord(rawEvent);
       const data = this.asRecord(event.data);
@@ -179,6 +215,8 @@ export class GameWsStatePresenter {
         (type === 'card.received' &&
           semanticMessageKey === 'game.card.drawn') ||
         (type === 'card.played' && semanticMessageKey === 'game.card.played') ||
+        (type === 'turn.started' &&
+          this.stringValue(event.id) === pairedTurn.eventId) ||
         (semanticMessageKey === 'game.round.started' &&
           (type === 'match.started' ||
             type === 'round.started' ||
@@ -196,8 +234,8 @@ export class GameWsStatePresenter {
             started,
             viewerPlayerId,
             receivedCardData,
+            pairedTurn.data,
             presentation,
-            viewerHand,
           );
       return message ? { ...event, data: { ...data, message } } : event;
     };
@@ -205,33 +243,11 @@ export class GameWsStatePresenter {
     for (const [key, rawEvent] of Object.entries(latestByType)) {
       presented[key] = presentEvent(rawEvent);
     }
-    const recent = Array.isArray(events.recent)
-      ? events.recent.map((event) => presentEvent(event))
-      : [];
+    const recent = recentEvents.map((event) => presentEvent(event));
     return {
       ...system,
       events: { ...events, recent, latestByType: presented },
     };
-  }
-
-  private viewerHand(
-    kits: Record<string, unknown>,
-    viewerPlayerId: number | null,
-  ): string[] {
-    if (viewerPlayerId == null) return [];
-    const cards = this.asRecord(kits.cards);
-    const hands = this.asRecord(cards.hands);
-    const result: string[] = [];
-    for (const rawHand of Object.values(hands)) {
-      const byPlayer = this.asRecord(this.asRecord(rawHand).byPlayer);
-      const own = byPlayer[String(viewerPlayerId)];
-      if (!Array.isArray(own)) continue;
-      for (const card of own) {
-        const label = this.cardLabel(card);
-        if (label) result.push(label);
-      }
-    }
-    return result;
   }
 
   private eventMessage(
@@ -242,11 +258,12 @@ export class GameWsStatePresenter {
     started: boolean,
     viewerPlayerId: number | null,
     receivedCardData: Record<string, unknown>,
+    nextTurnData: Record<string, unknown>,
     presentation: GamePresentationDescriptor,
-    viewerHand: readonly string[],
   ): string {
     if (!started && (type === 'turn.started' || type === 'turn.ended'))
       return '';
+    if (data.announce === false) return '';
     const explicit = this.stringValue(data.message);
     if (explicit) return explicit;
 
@@ -257,56 +274,24 @@ export class GameWsStatePresenter {
         ? 'Vous'
         : (players.get(id) ?? `Joueur ${id}`);
     };
-    const actor = player(actorId);
-    const value = (key: string): string => this.scalarText(data[key]);
-
     if (type === 'game.message')
       return this.semanticMessage(
         data,
         player,
         players,
         receivedCardData,
-        viewerHand,
+        nextTurnData,
       );
 
-    if (type === 'turn.started') {
-      const id = this.numberValue(data.playerId);
-      const name = id == null ? '' : (players.get(id) ?? `Joueur ${id}`);
-      return name ? `C'est au tour de ${name}.` : '';
-    }
-    if (type === 'turn.ended') return '';
-    if (type === 'dice.rolled' && actor)
-      return `${actor} lance les dés${value('total') ? ` : ${value('total')}` : ''}.`;
-    if (type === 'card.drawn' && actor)
-      return `${actor} ${actor === 'Vous' ? 'piochez' : 'pioche'} une carte.`;
-    if (type === 'card.received') {
-      const name = player(data.playerId);
-      return name ? `${name} reçoit une carte.` : '';
-    }
-    if (type === 'card.played' && actor)
-      return `${actor} joue ${this.scalarText(data.card) || 'une carte'}.`;
     if (type === 'score.changed' && data.announce !== false)
       return this.scoreMessage(data, player, presentation.score);
-    if (type === 'player.eliminated') {
-      const name = player(data.playerId);
-      return name ? `${name} est éliminé.` : '';
-    }
-    if (type === 'player.skipped') {
-      const name = player(data.playerId);
-      return name ? `${name} passe son tour.` : '';
-    }
-    if (type === 'round.player-left') {
-      const name = player(data.playerId);
-      return name
-        ? `${name} ${name === 'Vous' ? 'sortez' : 'sort'} de la manche.`
-        : '';
-    }
-    if (type === 'match.started') return 'La partie démarre, bon jeu !';
-    if (type === 'round.started' && value('number'))
-      return `La manche ${value('number')} commence.`;
-    if (type === 'round.ended') return 'La manche est terminée.';
-    if (type === 'game.finished') return 'La partie est terminée.';
-    return '';
+    return genericGameEventMessage({
+      type,
+      data,
+      actorId,
+      players,
+      viewerPlayerId,
+    });
   }
 
   private semanticMessage(
@@ -314,13 +299,13 @@ export class GameWsStatePresenter {
     player: (value: unknown) => string,
     players: ReadonlyMap<number, string>,
     receivedCardData: Record<string, unknown>,
-    viewerHand: readonly string[],
+    nextTurnData: Record<string, unknown>,
   ): string {
     const messageKey = this.stringValue(data.key);
     const params = this.asRecord(data.params);
     const namedPlayer = player(params.playerId);
     const card =
-      this.scalarText(params.cardLabel) || this.scalarText(params.cardId);
+      scalarMessageText(params.cardLabel) || scalarMessageText(params.cardId);
     if (messageKey === 'game.card.played' && namedPlayer)
       return `${namedPlayer} ${namedPlayer === 'Vous' ? 'jouez' : 'joue'} ${card || 'une carte'}.`;
     if (messageKey === 'game.card.drawn' && namedPlayer) {
@@ -328,16 +313,24 @@ export class GameWsStatePresenter {
       const receivedByPlayer = this.numberValue(receivedCardData.playerId);
       const privateCard =
         namedPlayer === 'Vous' && drawnForPlayer === receivedByPlayer
-          ? this.cardLabel(receivedCardData.card)
+          ? cardMessageLabel(receivedCardData.card)
           : '';
-      return `${namedPlayer} ${namedPlayer === 'Vous' ? 'piochez' : 'pioche'} ${privateCard || 'une carte'}.`;
+      return this.withNextTurn(
+        `${namedPlayer} ${namedPlayer === 'Vous' ? 'piochez' : 'pioche'} ${privateCard || 'une carte'}.`,
+        nextTurnData,
+        players,
+      );
     }
     if (messageKey === 'game.player.passed' && namedPlayer)
-      return namedPlayer === 'Vous'
-        ? 'Vous passez votre tour.'
-        : `${namedPlayer} passe son tour.`;
+      return this.withNextTurn(
+        namedPlayer === 'Vous'
+          ? 'Vous passez votre tour.'
+          : `${namedPlayer} passe son tour.`,
+        nextTurnData,
+        players,
+      );
     if (messageKey !== 'game.round.started') return '';
-    const round = this.scalarText(params.round);
+    const round = scalarMessageText(params.round);
     const starterId = this.numberValue(params.starterPlayerId);
     const starter =
       starterId == null
@@ -351,10 +344,49 @@ export class GameWsStatePresenter {
           : 'Une nouvelle manche commence.',
       'Tout le monde reçoit son paquet de cartes.',
     ];
-    if (viewerHand.length > 0)
-      messages.push(`Vos cartes : ${viewerHand.join(', ')}.`);
     if (starter) messages.push(`C'est au tour de ${starter}.`);
     return messages.join('\n');
+  }
+
+  private pairedTurnAfterSemanticMessage(
+    recentEvents: unknown[],
+    semanticEvent: Record<string, unknown>,
+    semanticKey: string,
+  ): { eventId: string; data: Record<string, unknown> } {
+    if (
+      semanticKey !== 'game.card.drawn' &&
+      semanticKey !== 'game.player.passed'
+    ) {
+      return { eventId: '', data: {} };
+    }
+    const semanticId = this.stringValue(semanticEvent.id);
+    const semanticIndex = recentEvents.findIndex(
+      (rawEvent) => this.stringValue(this.asRecord(rawEvent).id) === semanticId,
+    );
+    if (!semanticId || semanticIndex < 0) return { eventId: '', data: {} };
+    for (const rawEvent of recentEvents.slice(semanticIndex + 1)) {
+      const event = this.asRecord(rawEvent);
+      const type = this.stringValue(event.type);
+      if (type === 'game.message') break;
+      if (type === 'turn.started') {
+        return {
+          eventId: this.stringValue(event.id),
+          data: this.asRecord(event.data),
+        };
+      }
+    }
+    return { eventId: '', data: {} };
+  }
+
+  private withNextTurn(
+    message: string,
+    nextTurnData: Record<string, unknown>,
+    players: ReadonlyMap<number, string>,
+  ): string {
+    const playerId = this.numberValue(nextTurnData.playerId);
+    if (playerId == null) return message;
+    const name = players.get(playerId) ?? `Joueur ${playerId}`;
+    return `${message}\nC'est au tour de ${name}.`;
   }
 
   private scoreMessage(
@@ -363,7 +395,7 @@ export class GameWsStatePresenter {
     presentation?: ScorePresentationDescriptor,
   ): string {
     const name = player(data.playerId);
-    const value = this.scalarText(data.value);
+    const value = scalarMessageText(data.value);
     const delta = this.numberValue(data.delta);
     if (
       presentation?.changeNarration === 'delta-and-total' &&
@@ -396,27 +428,13 @@ export class GameWsStatePresenter {
     return typeof value === 'string' ? value.trim() : '';
   }
 
+  private isActiveMatchStatus(value: unknown): boolean {
+    const status = this.stringValue(value).toLowerCase();
+    return status === 'started' || status === 'playing';
+  }
+
   private numberValue(value: unknown): number | null {
     const number = typeof value === 'number' ? value : Number.NaN;
     return Number.isFinite(number) ? number : null;
-  }
-
-  private scalarText(value: unknown): string {
-    if (typeof value === 'string') return value.trim();
-    if (typeof value === 'number' || typeof value === 'boolean')
-      return String(value);
-    return '';
-  }
-
-  private cardLabel(value: unknown): string {
-    const scalar = this.scalarText(value);
-    if (scalar) return scalar;
-    const card = this.asRecord(value);
-    return (
-      this.scalarText(card.label) ||
-      this.scalarText(card.name) ||
-      this.scalarText(card.id) ||
-      this.scalarText(card.value)
-    );
   }
 }

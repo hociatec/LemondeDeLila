@@ -33,7 +33,7 @@ export class WxUpdateReleaseService {
     private readonly validator: WxUpdateArtifactValidatorService = new WxUpdateArtifactValidatorService(),
   ) {
     const backendRoot = path.resolve(__dirname, '..', '..', '..', '..');
-    const dataRoot = path.join(backendRoot, 'data', 'client-updates');
+    const dataRoot = path.join(backendRoot, 'data', 'client-wx-updates');
     this.updatesDir =
       readEnvironment('CLIENT_WX_UPDATES_DIR').trim() ||
       path.join(dataRoot, 'client-wx');

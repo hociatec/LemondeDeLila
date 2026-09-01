@@ -385,4 +385,96 @@ describe('GameWsRealtimeStateService run isolation', () => {
       expect.objectContaining({ state: persisted }),
     );
   });
+
+  it('prepares the room for bots and a new configuration after game finish', async () => {
+    const previous = {
+      ...gameState({ roomRunId: 2 }),
+      version: 4,
+    };
+    const next = {
+      ...gameState({ roomRunId: 2 }),
+      status: 'finished',
+    };
+    const persisted = { ...next, version: 5 };
+    const rooms = { prepareNextRun: jest.fn().mockResolvedValue(undefined) };
+    const hub = {
+      listConnections: jest.fn().mockReturnValue([
+        {
+          connectionId: 'owner',
+          meta: { scope: 'game', roomId: 4, userId: 1 },
+        },
+      ]),
+      send: jest.fn(),
+    };
+    const service = new GameWsRealtimeStateService(
+      {} as never,
+      {
+        compareAndSetInternalState: jest.fn().mockResolvedValue({
+          committed: true,
+          version: 5,
+          state: persisted,
+        }),
+      } as never,
+      {} as never,
+      { schedule: jest.fn() } as never,
+      { present: jest.fn().mockReturnValue({ status: 'finished' }) } as never,
+      hub as never,
+      rooms as never,
+      execution() as never,
+    );
+
+    await service.commit(
+      4,
+      { gameType: 'lama', state: previous, handler: {} as GameRuntime },
+      previous,
+      next,
+    );
+
+    expect(hub.send).toHaveBeenCalledWith(
+      'owner',
+      expect.objectContaining({ type: 'game.state' }),
+    );
+    expect(rooms.prepareNextRun).toHaveBeenCalledWith(4);
+    expect(hub.send.mock.invocationCallOrder[0]).toBeLessThan(
+      rooms.prepareNextRun.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('also prepares the room when an automatic action finishes the game', async () => {
+    let committedHandler:
+      | ((input: {
+          roomId: number;
+          gameType: string;
+          handler: GameRuntime;
+          state: GameStateEntity;
+          version: number;
+        }) => Promise<void> | void)
+      | undefined;
+    const automation = {
+      setStateCommittedHandler: jest.fn((handler) => {
+        committedHandler = handler;
+      }),
+    };
+    const rooms = { prepareNextRun: jest.fn().mockResolvedValue(undefined) };
+    new GameWsRealtimeStateService(
+      {} as never,
+      {} as never,
+      {} as never,
+      automation as never,
+      { present: jest.fn() } as never,
+      { listConnections: jest.fn().mockReturnValue([]) } as never,
+      rooms as never,
+      execution() as never,
+    );
+
+    await committedHandler?.({
+      roomId: 4,
+      gameType: 'lama',
+      handler: {} as GameRuntime,
+      state: { ...gameState({ roomRunId: 2 }), status: 'finished' },
+      version: 5,
+    });
+
+    expect(rooms.prepareNextRun).toHaveBeenCalledWith(4);
+  });
 });

@@ -38,38 +38,6 @@ export class SoundsController {
     });
   }
 
-  @Get(':soundId/:sha.mp3')
-  async getSound(
-    @Param('soundId') soundId: string,
-    @Param('sha') sha: string,
-    @Res() res: Response,
-  ) {
-    // Backward-compatible route: older clients requested .mp3. We now serve .wav by default.
-    // If the server only has .wav, redirect so clients that can follow redirects still work.
-    const { entry, filePath, ext } = await this.sounds.resolveSoundFile(
-      soundId,
-      sha,
-    );
-
-    if (ext === '.wav') {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      res.setHeader('ETag', `"${entry.sha256}"`);
-      return res.redirect(
-        301,
-        `/api/sounds/${encodeURIComponent(entry.soundId)}/${entry.sha256}.wav`,
-      );
-    }
-
-    // Helmet sets `Cross-Origin-Resource-Policy: same-origin` by default, which prevents
-    // <audio> previews from working when the admin/front-end is hosted on a different origin.
-    // Sounds are not sensitive; allow cross-origin loading for media playback.
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    res.setHeader('ETag', `"${entry.sha256}"`);
-    return res.sendFile(filePath, SOUND_FILE_SEND_OPTIONS);
-  }
-
   @Get(':soundId/:sha.wav')
   async getSoundWav(
     @Param('soundId') soundId: string,

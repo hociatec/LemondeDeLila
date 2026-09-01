@@ -51,12 +51,12 @@ export function parseRoomCreateRequest(
 export function parseRoomJoinRequest(
   row: Record<string, unknown>,
 ): RoomJoinRequest {
-  const roomId = Number(row.roomId ?? row.room ?? 0);
+  const roomId = Number(row.roomId ?? 0);
   if (!Number.isSafeInteger(roomId) || roomId <= 0) {
     throw new BadRequestException('Identifiant de room invalide');
   }
   const spectator = resolveTruthyFlag(row.spectator);
-  const silent = resolveTruthyFlag(row.silent) || resolveTruthyFlag(row.hidden);
+  const silent = resolveTruthyFlag(row.hidden);
 
   return { roomId, spectator, silent };
 }

@@ -7,7 +7,6 @@
 #include "shared/errors/catalog/NetworkErrorMessages.h"
 
 
-#include <array>
 #include <cctype>
 #include <stdexcept>
 #include <string>
@@ -59,45 +58,23 @@ std::string WsTicketProvider::GetTicket(const std::string& scope, const std::str
     }
 
     const std::string origin = lila::shared::network::WebSocketOriginToHttp(backendApiWsEndpoint_);
-    const std::array<std::string, 2> candidates = {{
-        origin + std::string(lila::shared::network::ws::WsTicketPath) + scope,
-        origin + std::string(lila::shared::network::ws::WsTicketApiPath) + scope,
-    }};
-
-    std::string lastErrorMessage = lila::shared::errors::WsTicketUnavailable;
-    for (const std::string& url : candidates)
+    const std::string url =
+        origin + std::string(lila::shared::network::ws::WsTicketPath) + scope;
+    const auto responseBody = RequestWsTicketResponse(url, bearerToken);
+    const auto document = lila::shared::data::json::ParseDocument(
+        responseBody, lila::shared::errors::WsTicketResponseInvalid);
+    const auto iterator = document.find(
+        std::string(lila::shared::network::ws::WsTicketResponseField));
+    if (iterator != document.end() && iterator->is_string())
     {
-        try
+        const std::string ticket = iterator->get<std::string>();
+        if (!ticket.empty())
         {
-            const auto responseBody = RequestWsTicketResponse(url, bearerToken);
-            const auto document = lila::shared::data::json::ParseDocument(responseBody, lila::shared::errors::WsTicketResponseInvalid);
-            const auto iterator = document.find(std::string(lila::shared::network::ws::WsTicketResponseField));
-            if (iterator != document.end() && iterator->is_string())
-            {
-                const std::string ticket = iterator->get<std::string>();
-                if (!ticket.empty())
-                {
-                    return ticket;
-                }
-            }
-
-            lastErrorMessage = lila::shared::errors::WsTicketMissing;
-        }
-        catch (const lila::shared::network::http::WsTicketRequestError& exception)
-        {
-            lastErrorMessage = exception.what();
-            if (exception.StatusCode() == 401 || exception.StatusCode() == 403)
-            {
-                throw;
-            }
-        }
-        catch (const std::exception& exception)
-        {
-            lastErrorMessage = exception.what();
+            return ticket;
         }
     }
 
-    throw std::runtime_error(lastErrorMessage);
+    throw std::runtime_error(lila::shared::errors::WsTicketMissing);
 #else
     (void)scope;
     (void)bearerToken;

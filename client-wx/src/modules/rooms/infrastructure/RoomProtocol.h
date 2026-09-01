@@ -4,6 +4,7 @@
 
 namespace lila::modules::rooms::infrastructure::protocol
 {
+inline constexpr std::string_view IntentExecute = "room.intent.execute";
 inline constexpr std::string_view Create = "room.create";
 inline constexpr std::string_view Join = "room.join";
 inline constexpr std::string_view Leave = "room.leave";
@@ -30,7 +31,6 @@ inline constexpr std::string_view Role = "room.role";
 inline constexpr std::string_view BotAdded = "bot.added";
 inline constexpr std::string_view BotRemoved = "bot.removed";
 inline constexpr std::string_view InfoResult = "room.info";
-inline constexpr std::string_view Intent = "room.intent";
 inline constexpr std::string_view ChatMessage = "room.chat.message";
 inline constexpr std::string_view ChatHistory = "room.chat.history";
 inline constexpr std::string_view Ack = "room.ack";

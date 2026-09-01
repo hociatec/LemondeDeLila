@@ -5,6 +5,7 @@ import compression from 'compression';
 import {
   json,
   urlencoded,
+  type Application,
   type NextFunction,
   type Request,
   type Response,
@@ -13,11 +14,13 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import {
   normalizeCorrelationId,
+  prometheusMetrics,
   runWithCorrelationId,
   ServLoggerService,
 } from './platform/observability/public-api';
 import { LilaWsAdapter } from './platform/ws/infrastructure/platform/lila-ws.adapter';
 import { NormalizedValidationPipe } from './platform/validation/public-api';
+import { configureOpenApi } from './platform/openapi/public-api';
 
 const bootstrapLogger = new Logger('bootstrap');
 
@@ -33,18 +36,21 @@ async function bootstrap() {
   app.enableShutdownHooks(['SIGTERM', 'SIGINT']);
 
   const nodeEnv = config.get<string>('NODE_ENV', 'development').toLowerCase();
-
-  if (!config.get<string>('CLIENT_UPDATES_DIR') && nodeEnv === 'production') {
-    console.warn(
-      '[updates] CLIENT_UPDATES_DIR is not set; using the default path from ClientUpdatesService. ' +
-        'For explicit control, set CLIENT_UPDATES_DIR in the systemd environment.',
-    );
-  }
+  const trustedProxies = String(config.get<string>('TRUSTED_PROXY_CIDRS') ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const express = app.getHttpAdapter().getInstance() as Application;
+  express.set(
+    'trust proxy',
+    trustedProxies.length > 0 ? trustedProxies : false,
+  );
 
   app.use(helmet());
   app.use(compression());
   app.use(json({ limit: '256kb' }));
   app.use(urlencoded({ extended: false, limit: '64kb', parameterLimit: 200 }));
+  app.use(prometheusMetrics.middleware.bind(prometheusMetrics));
   app.use((request: Request, response: Response, next: NextFunction) => {
     const correlationId = normalizeCorrelationId(
       request.headers['x-request-id'],
@@ -79,6 +85,11 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  const openApiEnabled = config.get<boolean>(
+    'OPENAPI_ENABLED',
+    nodeEnv !== 'production',
+  );
+  if (openApiEnabled) configureOpenApi(app);
 
   const port = config.get<number>('PORT', 3000);
   await app.listen(port);

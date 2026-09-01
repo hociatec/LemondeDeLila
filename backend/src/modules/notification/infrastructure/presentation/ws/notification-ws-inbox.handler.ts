@@ -122,7 +122,7 @@ export class NotificationWsInboxHandler {
       const items = await this.adminContacts.listInbox(meta.userId, 200);
       send(client, WS_EVENTS.notify.inbox.snapshot, { items }, requestId);
     } catch {
-      // Legacy deletion is best effort.
+      // The inbox snapshot will reconcile the client on its next refresh.
     }
   }
 
@@ -139,7 +139,7 @@ export class NotificationWsInboxHandler {
       await this.adminContacts.markRead(meta.userId, id);
       send(client, WS_EVENTS.notify.inbox.markRead, { ok: true }, requestId);
     } catch {
-      // Legacy acknowledgement is best effort.
+      // Read acknowledgements are non-blocking for the realtime session.
     }
   }
 

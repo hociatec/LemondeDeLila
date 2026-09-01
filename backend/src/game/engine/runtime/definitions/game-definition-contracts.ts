@@ -63,6 +63,7 @@ export type GamePresentation = {
     label: string;
     unit: { singular: string; plural: string };
     changeNarration?: 'total' | 'delta-and-total';
+    visibility?: 'always' | 'active-match';
   };
 };
 
@@ -231,19 +232,6 @@ export interface VictoryRule<TState extends object> {
   } | null;
 }
 
-export type GameStateMigration<TState extends object> = {
-  from: number;
-  to: number;
-  migrate(state: TState): TState;
-};
-
-/** Migrates persisted references when a static content catalogue changes. */
-export type GameContentMigration<TState extends object> = {
-  from: string;
-  to: string;
-  migrate(state: DeclarativeState<TState>): void;
-};
-
 export interface CompiledGameDefinition<
   TState extends object,
   TActions extends GameActionMap<TState>,
@@ -265,8 +253,6 @@ export interface CompiledGameDefinition<
   readonly stateVersion: number;
   readonly contentVersion: string;
   readonly rulesVersion: string;
-  readonly migrations: readonly GameStateMigration<TState>[];
-  readonly contentMigrations: readonly GameContentMigration<TState>[];
   readonly shortcuts?: readonly GameShortcutHint[];
   readonly presentation?: GamePresentation;
   readonly players: { min: number; max: number };
@@ -413,13 +399,9 @@ export type GameDefinitionInput<
   | 'stateVersion'
   | 'contentVersion'
   | 'rulesVersion'
-  | 'migrations'
-  | 'contentMigrations'
 > & {
   readonly content?: GameContentShape;
   readonly stateVersion?: number;
   readonly contentVersion?: string;
   readonly rulesVersion?: string;
-  readonly migrations?: readonly GameStateMigration<TState>[];
-  readonly contentMigrations?: readonly GameContentMigration<TState>[];
 };

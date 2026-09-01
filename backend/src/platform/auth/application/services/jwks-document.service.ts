@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { createHash, createPublicKey } from 'crypto';
 import {
   readAuthRuntimeConfigFromEnv,
   type AuthRuntimeConfig,
 } from '../ports/auth-runtime-config.port';
 
-import { getJwtAlgorithm, requireJwtVerifyKey } from './jwt-config.service';
+import { requireJwtVerifyKey } from './jwt-config.service';
 
 @Injectable()
 export class JwksDocumentService {
@@ -16,11 +16,6 @@ export class JwksDocumentService {
   }
 
   buildDocument() {
-    const algorithm = getJwtAlgorithm(this.config);
-    if (algorithm !== 'RS256') {
-      throw new NotFoundException();
-    }
-
     const publicKeyPem = requireJwtVerifyKey(this.config);
     const keyObject = createPublicKey(publicKeyPem);
     const jwk = keyObject.export({ format: 'jwk' });

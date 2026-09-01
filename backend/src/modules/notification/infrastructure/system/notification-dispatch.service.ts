@@ -6,10 +6,7 @@ import {
   NotificationTransport,
   NotificationEvent,
 } from '../transport/notification-transport';
-import {
-  fixMojibakeDeep,
-  getErrorDetails,
-} from '../../../../shared/utils/public-api';
+import { getErrorDetails } from '../../../../shared/utils/public-api';
 
 @Injectable()
 export class NotificationDispatchService
@@ -50,12 +47,11 @@ export class NotificationDispatchService
   }
 
   async notifyUser(userId: number, type: string, payload: unknown) {
-    const repairedPayload = fixMojibakeDeep(payload);
     try {
       await this.transport.publish({
         userId,
         type,
-        payload: repairedPayload,
+        payload,
         origin: this.instanceId,
       });
     } catch (err) {
@@ -65,18 +61,17 @@ export class NotificationDispatchService
         err instanceof Error ? err.stack : String(err),
       );
     }
-    this.dispatchToLocal(userId, type, repairedPayload);
+    this.dispatchToLocal(userId, type, payload);
   }
 
   // Broadcast to all connected users.
   // Implementation detail: userId=0 is treated as a "global" event and dispatched to every socket.
   async notifyAll(type: string, payload: unknown) {
-    const repairedPayload = fixMojibakeDeep(payload);
     try {
       await this.transport.publish({
         userId: 0,
         type,
-        payload: repairedPayload,
+        payload,
         origin: this.instanceId,
       });
     } catch (err) {
@@ -86,7 +81,7 @@ export class NotificationDispatchService
         err instanceof Error ? err.stack : String(err),
       );
     }
-    this.dispatchToAllLocal(type, repairedPayload);
+    this.dispatchToAllLocal(type, payload);
   }
 
   disconnectAll(reason?: string, eventType?: string) {
@@ -137,7 +132,6 @@ export class NotificationDispatchService
   }
 
   private handleExternalEvent(event: NotificationEvent) {
-    const repairedPayload = fixMojibakeDeep(event.payload);
     if (event.origin === this.instanceId) {
       return;
     }
@@ -153,10 +147,10 @@ export class NotificationDispatchService
       return;
     }
     if (event.userId === 0) {
-      this.dispatchToAllLocal(event.type, repairedPayload);
+      this.dispatchToAllLocal(event.type, event.payload);
       return;
     }
-    this.dispatchToLocal(event.userId, event.type, repairedPayload);
+    this.dispatchToLocal(event.userId, event.type, event.payload);
   }
 
   private disconnectAllLocal(reason: string, eventType: string): void {

@@ -88,13 +88,6 @@ inline constexpr std::string_view User = "messaging.user";
 
 namespace admin
 {
-namespace clientUpdate
-{
-inline constexpr std::string_view Announce = "admin.client.update.announce";
-inline constexpr std::string_view ForceLatest = "admin.client.update.forceLatest";
-inline constexpr std::string_view Schedule = "admin.client.update.schedule";
-}
-
 namespace users
 {
 inline constexpr std::string_view List = "admin.users.list";

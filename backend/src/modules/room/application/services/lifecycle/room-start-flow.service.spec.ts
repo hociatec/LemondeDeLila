@@ -164,5 +164,43 @@ describe('Room start flow', () => {
     await expect(lifecycle.startRoom(context, 42, 1)).resolves.toBe(current);
     expect(current.status).toBe('started');
   });
+
+  it('unlocks setup actions when a finished game prepares the next run', async () => {
+    const current = room();
+    current.status = 'started';
+    current.startedAt = new Date(0);
+    const rooms = {
+      findById: jest.fn().mockResolvedValue(current),
+      update: jest.fn(async (_id: number, values: Partial<RoomRecord>) => {
+        Object.assign(current, values);
+      }),
+    };
+    const events = { publishLobbyChanged: jest.fn() };
+    const lifecycle = new RoomLifecycleService(
+      rooms as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      events as never,
+    );
+    const context = {
+      invalidateRoomPayloadCache: jest.fn(),
+      requireRoom: jest.fn().mockResolvedValue(current),
+    };
+
+    await lifecycle.prepareNextRun(context as never, 42);
+
+    expect(current).toMatchObject({ status: 'setup', startedAt: null });
+    expect(context.invalidateRoomPayloadCache).toHaveBeenCalledWith(42);
+    expect(events.publishLobbyChanged).toHaveBeenCalledWith(42, 'finished');
+    const actions = new RoomClientPolicyService().listAllowedActions(
+      payload(2, [1], [10]),
+      1,
+    );
+    expect(actions).toEqual(
+      expect.arrayContaining(['room.start', 'bot.add', 'bot.remove']),
+    );
+  });
 });
 /** Room application capability boundary. */

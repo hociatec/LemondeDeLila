@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "limits": {
-    "fileLines": 500,
-    "classLines": 500,
+    "fileLines": 450,
+    "classLines": 450,
     "methodLines": 80,
     "methodsPerClass": 20,
     "constructorDependencies": 8

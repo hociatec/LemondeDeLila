@@ -19,6 +19,7 @@ const iterations = Math.max(
 const maximumAverageMs = Number(
   process.env.GAME_BENCHMARK_MAX_AVERAGE_MS || 0,
 );
+const maximumP95Ms = Number(process.env.GAME_BENCHMARK_MAX_P95_MS || 0);
 Logger.overrideLogger(false);
 
 async function main() {
@@ -34,17 +35,28 @@ async function main() {
     samples.push(performance.now() - startedAt);
   }
   const averageMs = samples.reduce((sum, value) => sum + value, 0) / samples.length;
+  const ordered = [...samples].sort((left, right) => left - right);
+  const p95Ms = ordered[Math.max(0, Math.ceil(ordered.length * 0.95) - 1)];
   const result = {
     games: definitions.length,
     iterations,
     averageMs: Number(averageMs.toFixed(2)),
     minMs: Number(Math.min(...samples).toFixed(2)),
     maxMs: Number(Math.max(...samples).toFixed(2)),
+    p95Ms: Number(p95Ms.toFixed(2)),
+    gamesPerSecond: Number(
+      ((definitions.length * 1000) / averageMs).toFixed(2),
+    ),
   };
   console.log(JSON.stringify(result));
   if (maximumAverageMs > 0 && averageMs > maximumAverageMs) {
     throw new Error(
       `Régression benchmark: ${averageMs.toFixed(2)}ms > ${maximumAverageMs}ms`,
+    );
+  }
+  if (maximumP95Ms > 0 && p95Ms > maximumP95Ms) {
+    throw new Error(
+      `Régression benchmark p95: ${p95Ms.toFixed(2)}ms > ${maximumP95Ms}ms`,
     );
   }
 }

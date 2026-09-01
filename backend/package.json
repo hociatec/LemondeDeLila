@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "engines": {
-    "node": "^20.19.0 || ^22.13.0 || >=24.11.0"
+    "node": "^22.13.0 || >=24.11.0"
   },
   "allowScripts": {
     "@nestjs/core@11.2.3": true,
@@ -31,6 +31,7 @@
     "migration:run:dev": "npm run typeorm -- migration:run -d src/data-source.ts",
     "test:db:migrations": "node tools/mysql-migrations-integration.cjs",
     "test:redis:bullmq": "node tools/redis-bullmq-integration.cjs",
+    "test:disaster-recovery": "node tools/disaster-recovery-drill.cjs",
     "test:integration:real": "node tools/run-real-integration.cjs",
     "test:e2e:two-instances:real": "node tools/two-instance-real-e2e.cjs",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -51,6 +52,7 @@
     "test:e2e:game:campaign:real": "node tools/game-campaign-real-e2e.cjs",
     "test:load:room:real": "node tools/room-load-real.cjs",
     "benchmark:game-engine": "node tools/game-engine-benchmark.cjs",
+    "artifact:create": "node tools/create-deployment-artifact.cjs",
     "quality:report": "node tools/quality-report.cjs",
     "architecture:test": "node --test tools/architecture-check.spec.cjs",
     "architecture:check": "node tools/architecture-check.cjs",
@@ -69,7 +71,10 @@
     "layout:audit": "node tools/layout-architecture-audit.cjs",
     "scheduling:audit": "node tools/local-timer-audit.cjs",
     "operability:audit": "node tools/operability-audit.cjs",
-    "quality:check": "npm run quality:report && node tools/quality-check.cjs && npm run backend:audit && npm run persistence:audit:test && npm run persistence:audit && npm run security:audit && npm run layout:audit && npm run scheduling:audit && npm run operability:audit && npm run architecture:test && npm run architecture:check && npm run structure:test && npm run structure:check && npm run game-engine:audit:test && npm run game-engine:audit && npm run game:duplication",
+    "governance:audit": "node tools/repository-governance-check.cjs",
+    "contracts:ws": "node tools/generate-asyncapi-contract.cjs",
+    "contracts:ws:write": "node tools/generate-asyncapi-contract.cjs --write",
+    "quality:check": "npm run quality:report && node tools/quality-check.cjs && npm run backend:audit && npm run persistence:audit:test && npm run persistence:audit && npm run security:audit && npm run layout:audit && npm run scheduling:audit && npm run operability:audit && npm run governance:audit && npm run contracts:ws && npm run architecture:test && npm run architecture:check && npm run structure:test && npm run structure:check && npm run game-engine:audit:test && npm run game-engine:audit && npm run game:duplication",
     "test:transverse": "jest game/core/application/helpers/game-room-run-id.helper.spec.ts game/core/application/helpers/payload-validators.helper.spec.ts game/engine/runtime/declarative-game.runtime.spec.ts game/core/application/services/game-command-executor.service.spec.ts game/testing/architecture-tests/game/all-declarative-games.contract.spec.ts game/core/infrastructure/presentation/ws/game-ws-key-command.helper.spec.ts game/core/infrastructure/presentation/ws/game-ws-realtime-state.service.spec.ts modules/room/application/services/room-start-flow.service.spec.ts modules/update/infrastructure/persistence/wx-update-release.di.spec.ts modules/update/infrastructure/persistence/wx-update-release.service.spec.ts modules/update/infrastructure/persistence/wx-update-upload.service.spec.ts"
   },
   "dependencies": {
@@ -78,10 +83,16 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-ws": "^11.1.9",
+    "@nestjs/swagger": "^11.4.7",
     "@nestjs/terminus": "^11.0.0",
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.9",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.80.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.222.0",
+    "@opentelemetry/sdk-node": "^0.222.0",
+    "@prometheus-io/client": "^0.16.1",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.81.4",
     "class-transformer": "^0.5.1",
@@ -112,18 +123,18 @@
     "@types/bcrypt": "^6.0.0",
     "@types/compression": "^1.8.1",
     "@types/express": "^5.0.0",
-    "@types/jest": "^30.0.0",
+    "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^20.19.43",
     "@types/supertest": "^7.2.1",
-    "@types/winston": "^2.4.4",
     "@types/ws": "^8.18.1",
     "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^17.11.0",
-    "jest": "^30.0.0",
+    "jest": "^29.7.0",
+    "jest-util": "^29.7.0",
     "prettier": "^3.4.2",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
@@ -161,14 +172,20 @@
       "!**/*.d.ts",
       "!**/platform/database/migrations/**"
     ],
+    "coverageReporters": [
+      "text",
+      "json",
+      "json-summary",
+      "lcov"
+    ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "coverageThreshold": {
       "global": {
         "branches": 43,
-        "functions": 47,
-        "lines": 57,
-        "statements": 56
+        "functions": 48,
+        "lines": 58,
+        "statements": 58
       },
       "**/realtime-api-connection.service.ts": {
         "branches": 65,

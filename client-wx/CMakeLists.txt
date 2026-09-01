@@ -137,20 +137,6 @@ if(WIN32)
         "${CMAKE_CURRENT_BINARY_DIR}/bass.dll"
         COPYONLY
     )
-    set(
-        LILA_NVDA_CONTROLLER_DLL
-        "${CMAKE_CURRENT_SOURCE_DIR}/../client-win/client-win/libs/x64/nvdaControllerClient64.dll"
-        CACHE FILEPATH
-        "DLL NVDA 64 bits facultative utilisee pour les annonces accessibles"
-    )
-    if(EXISTS "${LILA_NVDA_CONTROLLER_DLL}")
-        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/libs/x64")
-        configure_file(
-            "${LILA_NVDA_CONTROLLER_DLL}"
-            "${CMAKE_CURRENT_BINARY_DIR}/libs/x64/nvdaControllerClient64.dll"
-            COPYONLY
-        )
-    endif()
 endif()
 
 set(

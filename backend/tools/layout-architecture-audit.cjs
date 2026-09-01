@@ -5,24 +5,64 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..', 'src');
 const moduleNames = [
-  'admin', 'bot', 'bug-reports', 'catalog', 'chat', 'client-updates', 'health',
-  'messaging', 'notification', 'presence', 'room', 'social', 'sounds', 'stats',
-  'update', 'user', 'vault',
+  'admin',
+  'bot',
+  'bug-reports',
+  'catalog',
+  'chat',
+  'health',
+  'messaging',
+  'notification',
+  'presence',
+  'room',
+  'social',
+  'sounds',
+  'stats',
+  'update',
+  'user',
+  'vault',
 ];
 const platformNames = [
-  'auth', 'config', 'database', 'observability', 'pubsub', 'realtime', 'redis',
-  'session', 'validation', 'ws',
+  'auth',
+  'config',
+  'database',
+  'observability',
+  'openapi',
+  'pubsub',
+  'realtime',
+  'redis',
+  'session',
+  'validation',
+  'ws',
 ];
 const sharedNames = ['interfaces', 'types', 'utils'];
 const runtimeDomains = [
-  'actions', 'automation', 'cards', 'choices', 'configuration', 'content',
-  'definitions', 'effects', 'events', 'kits', 'lifecycle', 'patterns',
-  'projection', 'recipes', 'state', 'submissions',
+  'actions',
+  'automation',
+  'cards',
+  'choices',
+  'configuration',
+  'content',
+  'definitions',
+  'effects',
+  'events',
+  'kits',
+  'lifecycle',
+  'patterns',
+  'projection',
+  'recipes',
+  'state',
+  'submissions',
 ];
 const runtimeRootFiles = new Set([
-  'declarative-game.runtime.spec.ts', 'declarative-game.runtime.ts',
-  'game-identifiers.ts', 'game-rule-context.ts', 'game-sdk-version.ts',
-  'game-selectors.ts', 'public-api.ts', 'typed-contracts.spec.ts',
+  'declarative-game.runtime.spec.ts',
+  'declarative-game.runtime.ts',
+  'game-identifiers.ts',
+  'game-rule-context.ts',
+  'game-sdk-version.ts',
+  'game-selectors.ts',
+  'public-api.ts',
+  'typed-contracts.spec.ts',
 ]);
 const allowedRoots = new Set(['modules', 'game', 'platform', 'shared']);
 const allowedFacades = new Set([
@@ -42,7 +82,8 @@ function relative(file) {
 }
 
 function directoryNames(directory) {
-  return fs.readdirSync(path.join(root, directory), { withFileTypes: true })
+  return fs
+    .readdirSync(path.join(root, directory), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name);
 }
@@ -50,7 +91,8 @@ function directoryNames(directory) {
 function compareDirectories(container, expected, violations) {
   const expectedSet = new Set(expected);
   for (const name of directoryNames(container)) {
-    if (!expectedSet.has(name)) violations.push(`${container}/${name}: composant non classé`);
+    if (!expectedSet.has(name))
+      violations.push(`${container}/${name}: composant non classé`);
   }
   for (const name of expected) {
     if (!fs.existsSync(path.join(root, container, name))) {
@@ -61,37 +103,59 @@ function compareDirectories(container, expected, violations) {
 
 function audit() {
   const violations = [];
-  const roots = fs.readdirSync(root, { withFileTypes: true })
+  const roots = fs
+    .readdirSync(root, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name);
   for (const directory of roots) {
-    if (!allowedRoots.has(directory)) violations.push(`racine non classée: ${directory}`);
+    if (!allowedRoots.has(directory))
+      violations.push(`racine non classée: ${directory}`);
   }
   compareDirectories('modules', moduleNames, violations);
   compareDirectories('platform', platformNames, violations);
   compareDirectories('shared', sharedNames, violations);
   compareDirectories('game/engine/runtime', runtimeDomains, violations);
-  for (const entry of fs.readdirSync(path.join(root, 'game/engine/runtime'), { withFileTypes: true })) {
+  for (const entry of fs.readdirSync(path.join(root, 'game/engine/runtime'), {
+    withFileTypes: true,
+  })) {
     if (entry.isFile() && !runtimeRootFiles.has(entry.name)) {
-      violations.push(`game/engine/runtime/${entry.name}: runtime non classé par sous-domaine`);
+      violations.push(
+        `game/engine/runtime/${entry.name}: runtime non classé par sous-domaine`,
+      );
     }
   }
   for (const presenter of [
     'game-ws-state.presenter.ts',
     'game-ws-realtime-state.service.ts',
   ]) {
-    if (fs.existsSync(path.join(root, 'game/core/infrastructure/presentation/ws', presenter))) {
-      violations.push(`game/core/infrastructure/presentation/ws/${presenter}: projection d'état hors sous-domaine state`);
+    if (
+      fs.existsSync(
+        path.join(root, 'game/core/infrastructure/presentation/ws', presenter),
+      )
+    ) {
+      violations.push(
+        `game/core/infrastructure/presentation/ws/${presenter}: projection d'état hors sous-domaine state`,
+      );
     }
   }
 
   for (const component of moduleNames) {
-    if (!fs.existsSync(path.join(root, 'modules', component, 'public-api.ts'))) {
+    if (
+      !fs.existsSync(path.join(root, 'modules', component, 'public-api.ts'))
+    ) {
       violations.push(`modules/${component}: public-api.ts manquant`);
     }
-    const nestModule = path.join(root, 'modules', component, 'module', `${component}.module.ts`);
+    const nestModule = path.join(
+      root,
+      'modules',
+      component,
+      'module',
+      `${component}.module.ts`,
+    );
     if (!fs.existsSync(nestModule)) {
-      violations.push(`modules/${component}: module Nest principal hors module/${component}.module.ts`);
+      violations.push(
+        `modules/${component}: module Nest principal hors module/${component}.module.ts`,
+      );
     }
   }
 
@@ -99,16 +163,26 @@ function audit() {
   for (const file of files) {
     const name = relative(file);
     const source = fs.readFileSync(file, 'utf8');
-    if (name.includes('/presentation/') && !name.includes('/infrastructure/presentation/')) {
-      violations.push(`${name}: adapter de présentation hors infrastructure/presentation`);
+    if (
+      name.includes('/presentation/') &&
+      !name.includes('/infrastructure/presentation/')
+    ) {
+      violations.push(
+        `${name}: adapter de présentation hors infrastructure/presentation`,
+      );
     }
     if (/^modules\/[^/]+\/[^/]+\.module\.ts$/.test(name)) {
       violations.push(`${name}: module Nest principal hors dossier module`);
     }
     if (name.includes('/application/models/')) {
-      violations.push(`${name}: dossier application/models générique interdit; utiliser contracts`);
+      violations.push(
+        `${name}: dossier application/models générique interdit; utiliser contracts`,
+      );
     }
-    if (/\/infrastructure\/.*repository\.ts$/.test(name) && !name.includes('/persistence/')) {
+    if (
+      /\/infrastructure\/.*repository\.ts$/.test(name) &&
+      !name.includes('/persistence/')
+    ) {
       violations.push(`${name}: repository hors persistence`);
     }
     if (
@@ -121,7 +195,9 @@ function audit() {
       name.startsWith('platform/ws/') &&
       /from ['"][^'"]*platform\/realtime\//.test(source)
     ) {
-      violations.push(`${name}: les primitives WS dépendent de l'orchestration realtime`);
+      violations.push(
+        `${name}: les primitives WS dépendent de l'orchestration realtime`,
+      );
     }
     if (
       name.startsWith('shared/') &&
@@ -129,14 +205,23 @@ function audit() {
     ) {
       violations.push(`${name}: shared dépend d'une frontière supérieure`);
     }
-    if (name.startsWith('game/games/') && /game\/core\/application\/runtime/.test(source)) {
+    if (
+      name.startsWith('game/games/') &&
+      /game\/core\/application\/runtime/.test(source)
+    ) {
       violations.push(`${name}: jeu important directement le runtime privé`);
     }
-    if (name.includes('facade') && !allowedFacades.has(name) && !/\.spec\.ts$/.test(name)) {
+    if (
+      name.includes('facade') &&
+      !allowedFacades.has(name) &&
+      !/\.spec\.ts$/.test(name)
+    ) {
       violations.push(`${name}: nouvelle façade sans frontière approuvée`);
     }
     if (
-      name.startsWith('modules/room/infrastructure/presentation/ws/room-gateway-') &&
+      name.startsWith(
+        'modules/room/infrastructure/presentation/ws/room-gateway-',
+      ) &&
       name.endsWith('.service.ts') &&
       !name.endsWith('dispatcher.service.ts') &&
       !name.endsWith('context.service.ts') &&
@@ -150,7 +235,9 @@ function audit() {
     relative(file).match(/^modules\/room\/application\/services\/[^/]+\.ts$/),
   );
   if (roomServices.length > 0) {
-    violations.push(`modules/room/application/services: ${roomServices.length} fichier(s) hors capacité`);
+    violations.push(
+      `modules/room/application/services: ${roomServices.length} fichier(s) hors capacité`,
+    );
   }
   const roomServiceCapabilities = new Set([
     'lifecycle',
@@ -161,7 +248,9 @@ function audit() {
   ]);
   for (const directory of directoryNames('modules/room/application/services')) {
     if (!roomServiceCapabilities.has(directory)) {
-      violations.push(`modules/room/application/services/${directory}: capacité inconnue`);
+      violations.push(
+        `modules/room/application/services/${directory}: capacité inconnue`,
+      );
     }
   }
 
@@ -181,7 +270,9 @@ function audit() {
 if (require.main === module) {
   const violations = audit();
   if (violations.length) {
-    console.error(`layout-architecture-audit: ${violations.length} violation(s)`);
+    console.error(
+      `layout-architecture-audit: ${violations.length} violation(s)`,
+    );
     for (const violation of violations) console.error(`- ${violation}`);
     process.exitCode = 1;
   } else {

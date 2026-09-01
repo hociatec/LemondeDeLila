@@ -5,7 +5,6 @@ import { AdminBroadcastWsHandler } from './admin-broadcast-ws.handler';
 import { AdminBugReportCommentsWsHandler } from './admin-bug-report-comments-ws.handler';
 import { AdminBugReportsWsHandler } from './admin-bug-reports-ws.handler';
 import { AdminChatWsHandler } from './admin-chat-ws.handler';
-import { AdminClientUpdatesWsHandler } from './admin-client-updates-ws.handler';
 import { AdminGamesWsHandler } from './admin-games-ws.handler';
 import { AdminLogsWsHandler } from './admin-logs-ws.handler';
 import { AdminMnemoQuizWsHandler } from './admin-mnemo-quiz-ws.handler';
@@ -29,7 +28,6 @@ export class AdminWsRegistrar implements OnModuleInit {
     private readonly roles: AdminRolesWsHandler,
     private readonly logs: AdminLogsWsHandler,
     private readonly broadcast: AdminBroadcastWsHandler,
-    private readonly clientUpdates: AdminClientUpdatesWsHandler,
     private readonly perf: AdminPerfWsHandler,
     private readonly profile: AdminProfileWsHandler,
     private readonly bugReports: AdminBugReportsWsHandler,
@@ -48,7 +46,6 @@ export class AdminWsRegistrar implements OnModuleInit {
       roles: this.roles,
       logs: this.logs,
       broadcast: this.broadcast,
-      clientUpdates: this.clientUpdates,
       perf: this.perf,
       profile: this.profile,
       bugReports: this.bugReports,

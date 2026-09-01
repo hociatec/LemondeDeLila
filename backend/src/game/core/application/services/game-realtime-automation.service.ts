@@ -35,7 +35,7 @@ type AutomaticStateCommittedHandler = (input: {
   handler: GameRuntime;
   state: GameStateEntity;
   version: number;
-}) => void;
+}) => Promise<void> | void;
 
 @Injectable()
 export class GameRealtimeAutomationService implements OnModuleInit {
@@ -166,7 +166,7 @@ export class GameRealtimeAutomationService implements OnModuleInit {
     if (!result.committed) throw new GameStateConflictError();
     const presentedState = structuredClone(next);
     presentedState.version = result.version;
-    this.onStateCommitted?.({
+    await this.onStateCommitted?.({
       roomId: task.roomId,
       gameType: task.gameType,
       handler,

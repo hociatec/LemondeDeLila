@@ -1,8 +1,8 @@
-name: Release - Client + Backend
+name: Release - Client WX + Backend
 
 on:
-  # Secours manuel historique uniquement. Le déploiement backend et la
-  # publication WX normaux se font localement avec `sudo updatecmd all`.
+  # Secours manuel uniquement. Le déploiement normal se fait localement avec
+  # `sudo updatecmd all`.
   workflow_dispatch:
 
 concurrency:
@@ -13,258 +13,72 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  client_wx_publish:
-    needs: [backend_deploy]
-    uses: ./.github/workflows/client-wx-auto-update.yml
-    secrets: inherit
-
-  client_win_publish:
-    name: Client Win - Build/Sign/Publish
-    runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 30
+  backend_artifact:
+    name: Backend - Validate immutable artifact
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          dotnet-version: "8.0.x"
-
-      - name: Setup MSBuild (Visual Studio)
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Compute version
-        id: ver
-        shell: pwsh
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Tests and quality contracts
         run: |
-          $csproj = "client-win/client-win/client-win.csproj"
-          [xml]$xml = Get-Content $csproj
-          $base = $xml.Project.PropertyGroup.Version | Select-Object -First 1
-          if ([string]::IsNullOrWhiteSpace($base)) { $base = "1.0.0" }
-          $parts = $base.Split(".")
-          $major = $parts[0]
-          $minor = if ($parts.Length -ge 2) { $parts[1] } else { "0" }
-          $run = "${{ github.run_number }}"
-          # IMPORTANT: github.run_number does not change on "Re-run jobs".
-          # Include run_attempt to guarantee a unique ClickOnce version on each retry.
-          $attempt = "${{ github.run_attempt }}"
-          $ver = "$major.$minor.$run.$attempt"
-          "version=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "version4=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
-      - name: Prepare ClickOnce signing cert
-        id: cert
-        shell: pwsh
-        env:
-          CODESIGN_PFX_BASE64: ${{ secrets.CODESIGN_PFX_BASE64 }}
-          CODESIGN_PFX_PASSWORD: ${{ secrets.CODESIGN_PFX_PASSWORD }}
+          npm run test:cov -- --runInBand
+          npm run quality:check
+          npm audit --omit=dev --audit-level=high
+      - name: Real integration
+        run: npm run test:integration:real
+      - name: Freeze production artifact
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:CODESIGN_PFX_BASE64) -or [string]::IsNullOrWhiteSpace($env:CODESIGN_PFX_PASSWORD)) {
-            throw "Missing secrets: CODESIGN_PFX_BASE64 and/or CODESIGN_PFX_PASSWORD"
-          }
-
-          $pfxPath = Join-Path $env:RUNNER_TEMP "codesign.pfx"
-          [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:CODESIGN_PFX_BASE64))
-
-          $secure = ConvertTo-SecureString -String $env:CODESIGN_PFX_PASSWORD -AsPlainText -Force
-          $cert = Import-PfxCertificate -FilePath $pfxPath -Password $secure -CertStoreLocation Cert:\CurrentUser\My
-          if (!$cert -or [string]::IsNullOrWhiteSpace($cert.Thumbprint)) {
-            throw "Unable to import PFX certificate"
-          }
-          "thumbprint=$($cert.Thumbprint)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
-      - name: ClickOnce publish (signed manifests)
-        id: pub
-        shell: pwsh
-        env:
-          CODESIGN_TIMESTAMP_URL: ${{ secrets.CODESIGN_TIMESTAMP_URL }}
-          LILA_UPDATES_BASEURL: ${{ secrets.LILA_UPDATES_BASEURL }}
-        run: |
-          $ErrorActionPreference = "Stop"
-          $ver = "${{ steps.ver.outputs.version }}"
-          $ver4 = "${{ steps.ver.outputs.version4 }}"
-          $thumb = "${{ steps.cert.outputs.thumbprint }}"
-          if ([string]::IsNullOrWhiteSpace($thumb)) { throw "thumbprint missing" }
-
-          $ts = $env:CODESIGN_TIMESTAMP_URL
-          if ([string]::IsNullOrWhiteSpace($ts)) { $ts = "http://timestamp.digicert.com" }
-
-          $baseUrl = $env:LILA_UPDATES_BASEURL
-          if ([string]::IsNullOrWhiteSpace($baseUrl)) { $baseUrl = "https://api.lilas.hociatec.fr/updates/client-win/" }
-          if (!$baseUrl.EndsWith("/")) { $baseUrl += "/" }
-
-          $publishDir = Join-Path $env:RUNNER_TEMP "clickonce-publish"
-          if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
-          New-Item -ItemType Directory -Path $publishDir | Out-Null
-
-          $binlog = Join-Path $env:RUNNER_TEMP "msbuild.binlog"
-          if (Test-Path $binlog) { Remove-Item $binlog -Force }
-
-          msbuild client-win/client-win/client-win.csproj `
-            /t:Publish `
-            /restore `
-            /p:Configuration=Release `
-            /p:PublishProfile=ClickOnce `
-            /p:PublishDir="$publishDir\\" `
-            /p:PublishUrl="$baseUrl" `
-            /p:InstallUrl="$baseUrl" `
-            /p:UpdateUrl="$baseUrl" `
-            /p:UpdateEnabled=true `
-            /p:UpdateMode=Background `
-            /p:UpdateInterval=0 `
-            /p:UpdateIntervalUnits=Days `
-            /p:ApplicationVersion="$ver4" `
-            /p:Version="$ver4" `
-            /p:AssemblyVersion="$ver4" `
-            /p:FileVersion="$ver4" `
-            /p:GenerateManifests=true `
-            /p:SignManifests=true `
-            /p:ManifestCertificateThumbprint="$thumb" `
-            /p:ManifestTimestampUrl="$ts" `
-            /bl:"$binlog"
-
-          "publishDir=$publishDir" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
-      - name: Upload MSBuild binlog (always)
-        if: always()
-        uses: actions/upload-artifact@v4
+          npm prune --omit=dev
+          npm run artifact:create -- "$RUNNER_TEMP/backend-deployment.tar.gz"
+          npm sbom --omit=dev --sbom-format cyclonedx > "$RUNNER_TEMP/backend-sbom.cdx.json"
+      - name: Sign SLSA build provenance
+        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
         with:
-          name: msbuild-binlog
-          path: ${{ runner.temp }}/msbuild.binlog
-
-      - name: Zip publish directory
-        id: zip
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          $ver = "${{ steps.ver.outputs.version }}"
-          $publishDir = "${{ steps.pub.outputs.publishDir }}"
-          $zipPath = Join-Path $env:RUNNER_TEMP ("client-win-$ver-clickonce.zip")
-          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-          Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
-          "zip=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
-      - name: Upload to server (chunked)
-        shell: pwsh
-        env:
-          LILA_API_BASE: ${{ secrets.LILA_API_BASE }}
-          LILA_UPLOAD_TOKEN: ${{ secrets.LILA_UPLOAD_TOKEN }}
-        run: |
-          $ErrorActionPreference = "Stop"
-          function Get-HttpStatusCode {
-            param([System.Management.Automation.ErrorRecord]$ErrorRecord)
-            $resp = $ErrorRecord.Exception.Response
-            if (-not $resp) { return 0 }
-            try { return [int]$resp.StatusCode } catch { return 0 }
-          }
-          function Invoke-WithRetry {
-            param(
-              [scriptblock]$Action,
-              [int]$MaxAttempts = 5,
-              [int]$BaseDelaySeconds = 2
-            )
-            $attempt = 1
-            while ($true) {
-              try {
-                return & $Action
-              } catch {
-                $status = Get-HttpStatusCode -ErrorRecord $_
-                $isClientError = $status -ge 400 -and $status -lt 500
-                $retryableClientError = $status -eq 409 -or $status -eq 429
-                if ($isClientError -and -not $retryableClientError) { throw }
-                if ($attempt -ge $MaxAttempts) { throw }
-                $delay = [Math]::Min(30, $BaseDelaySeconds * [Math]::Pow(2, $attempt - 1))
-                Start-Sleep -Seconds ([int]$delay)
-                $attempt++
-              }
-            }
-          }
-
-          $api = $env:LILA_API_BASE
-          if ([string]::IsNullOrWhiteSpace($api)) { throw "Missing secret: LILA_API_BASE (example: https://api.lilas.hociatec.fr/api/)" }
-          if (!$api.EndsWith("/")) { $api += "/" }
-          $uploadToken = ($env:LILA_UPLOAD_TOKEN ?? "").Trim()
-          if ([string]::IsNullOrWhiteSpace($uploadToken)) { throw "Missing secret: LILA_UPLOAD_TOKEN" }
-          if ($uploadToken -notmatch '^[0-9a-f]{64}$') {
-            throw "Invalid LILA_UPLOAD_TOKEN format (expected 64 lowercase hex chars, no prefix like '- ')."
-          }
-
-          $ver = "${{ steps.ver.outputs.version }}"
-          $zipPath = "${{ steps.zip.outputs.zip }}"
-          $size = (Get-Item $zipPath).Length
-
-          $headers = @{ "x-client-updates-upload-token" = $uploadToken }
-          $initUrl = "$api" + "ci/client-updates/upload/init"
-          $chunkUrl = "$api" + "ci/client-updates/upload/chunk"
-          $completeUrl = "$api" + "ci/client-updates/upload/complete"
-
-          $initBody = @{
-            version = $ver
-            message = "Auto publish ClickOnce (main @ ${{ github.sha }})"
-            minRequiredVersion = $ver
-            totalBytes = $size
-          } | ConvertTo-Json
-
-          $init = Invoke-WithRetry { Invoke-RestMethod -Method Post -Uri $initUrl -Headers $headers -ContentType "application/json" -Body $initBody }
-          $uploadId = $init.uploadId
-          if ([string]::IsNullOrWhiteSpace($uploadId)) { throw "uploadId missing" }
-          Write-Host "Initialized chunked upload: uploadId=$uploadId bytes=$size version=$ver"
-
-          $chunkSize = 10MB
-          $buffer = New-Object byte[] $chunkSize
-          $fs = [IO.File]::OpenRead($zipPath)
-          try {
-            $index = 0
-            while ($true) {
-              $read = $fs.Read($buffer, 0, $buffer.Length)
-              if ($read -le 0) { break }
-              $tmp = Join-Path $env:RUNNER_TEMP ("chunk-$index.part")
-              [IO.File]::WriteAllBytes($tmp, $buffer[0..($read-1)])
-
-              try {
-                Invoke-WithRetry {
-                  Invoke-RestMethod -Method Post -Uri $chunkUrl -Headers $headers -Form @{
-                    uploadId = $uploadId
-                    index = "$index"
-                    file = Get-Item $tmp
-                  } | Out-Null
-                } | Out-Null
-              } catch {
-                $resp = $_.Exception.Response
-                $status = if ($resp) { [int]$resp.StatusCode } else { 0 }
-                # Idempotence: chunk already present on server.
-                if ($status -ne 409) { throw }
-              }
-
-              Remove-Item $tmp -Force
-              $index++
-            }
-          } finally {
-            $fs.Dispose()
-          }
-
-          $completeBody = @{ uploadId = $uploadId } | ConvertTo-Json
-          Invoke-WithRetry { Invoke-RestMethod -Method Post -Uri $completeUrl -Headers $headers -ContentType "application/json" -Body $completeBody | Out-Null } | Out-Null
+          subject-path: ${{ runner.temp }}/backend-deployment.tar.gz
+      - name: Sign CycloneDX SBOM attestation
+        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
+        with:
+          subject-path: ${{ runner.temp }}/backend-deployment.tar.gz
+          sbom-path: ${{ runner.temp }}/backend-sbom.cdx.json
+      - name: Upload exact validated bytes
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backend-deployment-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/backend-deployment.tar.gz
+            ${{ runner.temp }}/backend-deployment.tar.gz.sha256
+            ${{ runner.temp }}/backend-sbom.cdx.json
+          if-no-files-found: error
+          retention-days: 30
 
   backend_deploy:
-    name: Backend - Rebuild & Restart
+    name: Backend - Content-addressed release
     runs-on: [self-hosted, Linux, X64]
-    needs: [client_win_publish]
+    needs: [backend_artifact]
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Download exact validated backend bytes
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          node-version: "20"
-
-      - name: Verify Node/npm on runner
-        run: |
-          set -euo pipefail
-          echo "node=$(command -v node)"
-          echo "npm=$(command -v npm)"
-          node -v
-          npm -v
-
+          name: backend-deployment-${{ github.sha }}
+          path: ${{ runner.temp }}/backend-deployment
       - name: Guard stale deploy lock
         run: |
           set -euo pipefail
@@ -281,4 +95,13 @@ jobs:
       - name: Deploy on server
         run: |
           set -euo pipefail
-          sudo -n /usr/local/sbin/deploy-lemonde-prod
+          artifact="$RUNNER_TEMP/backend-deployment/backend-deployment.tar.gz"
+          digest="$(tr -d '\r\n' < "$artifact.sha256")"
+          sudo -n /usr/local/sbin/updatecmd backend \
+            --artifact "$artifact" \
+            --artifact-sha256 "$digest"
+
+  client_wx_publish:
+    needs: [backend_deploy]
+    uses: ./.github/workflows/client-wx-auto-update.yml
+    secrets: inherit

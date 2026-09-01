@@ -14,8 +14,6 @@ describe('JwksController', () => {
     const publicKeyPem = publicKey.export({ type: 'spki', format: 'pem' });
 
     const config: AuthRuntimeConfig = {
-      jwtAlgorithm: 'RS256',
-      jwtSecret: null,
       jwtPrivateKeyPem: null,
       jwtPrivateKeyPath: null,
       jwtPublicKeyPem: String(publicKeyPem),

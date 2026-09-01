@@ -133,11 +133,7 @@ bool GamePlayPanel::HandleZoneActivation()
     if (!IsOpen()) return false;
     if (!roomStarted_)
         return roomStartFlowRequested_ || roomStartPending_;
-    if (IsFinished())
-    {
-        SendKey("ENTER");
-        return true;
-    }
+    if (IsFinished()) return false;
     if (IsConfirmationVisible() || IsInlinePromptVisible()) return true;
     if (pawnSelectionPanel_->IsActive()) return true;
     if (const auto* prompt = ActivePrompt())

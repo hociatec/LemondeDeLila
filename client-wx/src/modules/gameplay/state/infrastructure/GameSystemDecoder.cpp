@@ -50,6 +50,9 @@ domain::GameEngineEventData DecodeEventData(
     const std::string& eventType, const nlohmann::json& data)
 {
     domain::GameEngineEventData result;
+    const auto announce = data.find("announce");
+    if (announce != data.end() && announce->is_boolean())
+        result.announce = announce->get<bool>();
     result.message = EventText(data, "message");
     result.content = EventContent(data, "card");
     result.deckId = EventText(data, "deckId");

@@ -12,20 +12,17 @@ type WsRequestLike = IncomingMessage & {
 };
 
 type WsClientLike = {
+  readyState?: number;
   upgradeReq?: WsRequestLike;
   req?: WsRequestLike;
   handshakeHeaders?: IncomingHttpHeaders;
-  url?: string;
 };
 
 @Injectable()
 export class WsTicketAuthService {
   constructor(private readonly tickets: WsTicketService) {}
 
-  /**
-   * Validates a short-lived WS ticket from query or headers.
-   * Returns true if valid; false otherwise (callers typically close the socket).
-   */
+  /** Validates the short-lived WS ticket carried by the canonical header. */
   validate(
     client: WsClientLike,
     args: unknown[],
@@ -85,24 +82,6 @@ export class WsTicketAuthService {
   private extractTicket(client: WsClientLike, args: unknown[]): string | null {
     const firstArg = args[0];
     const request = this.resolveRequest(client, firstArg);
-    const urlCandidate = this.pickUrl(client, request);
-
-    if (urlCandidate) {
-      const trimmedUrl = urlCandidate.trim();
-      if (trimmedUrl) {
-        try {
-          const url = new URL(trimmedUrl, 'ws://localhost');
-          const fromQuery =
-            url.searchParams.get('ticket') ?? url.searchParams.get('wsTicket');
-          if (fromQuery && fromQuery.trim()) {
-            return fromQuery.trim();
-          }
-        } catch {
-          /* ignore */
-        }
-      }
-    }
-
     const headers = client.handshakeHeaders ?? request?.headers;
     return this.readTicketHeader(headers);
   }
@@ -113,14 +92,7 @@ export class WsTicketAuthService {
     if (!headers) {
       return null;
     }
-    const candidates = ['x-lila-ws-ticket', 'x-lila-ticket', 'x-ws-ticket'];
-    for (const key of candidates) {
-      const value = this.normalizeHeaderValue(headers[key]);
-      if (value) {
-        return value;
-      }
-    }
-    return null;
+    return this.normalizeHeaderValue(headers['x-lila-ws-ticket']);
   }
 
   private resolveRequest(
@@ -131,17 +103,6 @@ export class WsTicketAuthService {
       return firstArg as WsRequestLike;
     }
     return client.upgradeReq ?? client.req ?? null;
-  }
-
-  private pickUrl(
-    client: WsClientLike,
-    request: WsRequestLike | null,
-  ): string | null {
-    const raw =
-      (typeof client.url === 'string' ? client.url : '') ||
-      (typeof request?.url === 'string' ? request.url : '');
-    const trimmed = raw.trim();
-    return trimmed || null;
   }
 
   private normalizeHeaderValue(

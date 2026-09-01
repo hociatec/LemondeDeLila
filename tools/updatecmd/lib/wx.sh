@@ -8,7 +8,7 @@ wx_api() {
     --retry 4 --retry-all-errors --retry-delay 2 \
     --connect-timeout 10 --max-time 300 \
     -X "$method" \
-    -H "x-client-updates-upload-token: $WX_UPLOAD_TOKEN" \
+    -H "x-client-wx-updates-upload-token: $WX_UPLOAD_TOKEN" \
     "$@" "${WX_API_BASE%/}$path"
 }
 
@@ -85,9 +85,6 @@ configure_and_build_wx() {
   mkdir -p "$source_dir" "$WX_BUILD_DIR" "$WX_BINARY_CACHE"
   rsync -a --delete "$SNAPSHOT_DIR/client-wx/" "$source_dir/client-wx/"
   rsync -a --delete "$SNAPSHOT_DIR/backend/" "$source_dir/backend/"
-  if [[ -d "$SNAPSHOT_DIR/client-win" ]]; then
-    rsync -a --delete "$SNAPSHOT_DIR/client-win/" "$source_dir/client-win/"
-  fi
   chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$source_dir" "$WX_BUILD_DIR" "$WX_BINARY_CACHE"
 
   log "Configuration MinGW du client WX $WX_VERSION (cache persistant activé)."

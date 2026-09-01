@@ -23,7 +23,7 @@ import {
 } from './definitions/component-kit';
 import { standardTurn } from './kits/turn-kit';
 import { createDeclarativeState } from './state/declarative-state.factory';
-import { migrateDeclarativeState } from './content/game-state-migration';
+import { loadDeclarativeState } from './content/game-state-loader';
 import { assertValidGameSession } from './state/game-session-contracts';
 import { DeclarativeGameQueries } from './projection/declarative-game-queries';
 
@@ -196,15 +196,12 @@ export class DeclarativeGameRuntime<
   }
 
   protected runtimeState(state: GameStateEntity): DeclarativeState<TState> {
-    return migrateDeclarativeState(
+    return loadDeclarativeState(
       state,
       this.definition.id,
       this.definition.stateVersion,
       this.definition.contentVersion,
       this.definition.rulesVersion,
-      this.definition.migrations,
-      this.definition.contentMigrations,
-      this.definition.config,
     );
   }
 

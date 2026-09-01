@@ -109,7 +109,7 @@ int main()
         run("SecurityWipe", TestSecurityWipe);
         run("JsonFileStorageRejectsOversizedFiles", TestJsonFileStorageRejectsOversizedFiles);
         run("JsonFileStorageRejectsCorruptedFiles", TestJsonFileStorageRejectsCorruptedFiles);
-        run("OptionsCodecMigratesLegacyFieldsAndSchema", TestOptionsCodecMigratesLegacyFieldsAndSchema);
+        run("OptionsCodecRejectsObsoleteSchema", TestOptionsCodecRejectsObsoleteSchema);
         run("SoundCatalogAndPerCueOptionsRoundTrip", TestSoundCatalogAndPerCueOptionsRoundTrip);
         run("AudioSettingsAndServiceRouting", TestAudioSettingsAndServiceRouting);
         run("SessionClearWipesRefreshToken", TestSessionClearWipesRefreshToken);
@@ -120,7 +120,7 @@ int main()
         run("EncodingRoundTripUnicode", TestEncodingRoundTripUnicode);
         run("EncodingRejectsInvalidUtf8", TestEncodingRejectsInvalidUtf8);
         run("BrokenAccentRepairCanBeToggled", TestBrokenAccentRepairCanBeToggled);
-        run("RealtimeProtocolFallbackTypeAndPayloadValidation", TestRealtimeProtocolFallbackTypeAndPayloadValidation);
+        run("RealtimeProtocolStrictCorrelationAndPayloadValidation", TestRealtimeProtocolStrictCorrelationAndPayloadValidation);
         run("ChatProtocolHandlesMalformedAndUnknownEvents", TestChatProtocolHandlesMalformedAndUnknownEvents);
         run("ChatMessageStoreEnforcesLimits", TestChatMessageStoreEnforcesLimits);
         run("ChatMessageActionRights", TestChatMessageActionRights);
