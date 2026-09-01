@@ -42,7 +42,10 @@ void GamePlayPanel::Open(
 {
     if (roomId <= 0 || gameType.empty()) return;
     if (IsOpenFor(roomId, gameType)) return;
-    CloseSession();
+    // The transport transition belongs to GameSessionService::Join, which is
+    // already executed by StartJoin on a background worker. Only reset the
+    // presentation here so opening a room can never wait on WinHTTP on the UI.
+    ResetSessionState();
     AttachEventHandler();
     roomId_ = roomId;
     gameType_ = std::move(gameType);
@@ -51,19 +54,23 @@ void GamePlayPanel::Open(
     roomStartFlowRequested_ = false;
     roomStartPending_ = false;
     startConfigurationFlow_.Reset();
-    ClearView();
     Show(roomStarted_);
     StartJoin();
 }
 
 void GamePlayPanel::CloseSession()
 {
+    ResetSessionState();
+    service_.Close();
+}
+
+void GamePlayPanel::ResetSessionState()
+{
     requestSlot_.Cancel();
     inputRequestSlot_.Cancel();
     inputSubmissionGuard_.Reset();
     retryableActionCommand_.reset();
     service_.ClearEventHandler();
-    service_.Close();
     roomId_ = 0;
     gameType_.clear();
     gameName_.clear();
@@ -117,59 +124,6 @@ void GamePlayPanel::SetRoomStartRequestedHandler(RoomStartRequestedHandler handl
     onRoomStartRequested_ = std::move(handler);
 }
 
-bool GamePlayPanel::BeginRoomStart()
-{
-    if (!IsOpen() || roomStarted_ || roomStartPending_) return false;
-    startConfigurationFlow_.Reset();
-    roomStartFlowRequested_ = true;
-    Show();
-    if (state_.roomId <= 0)
-    {
-        UpdateStatus(wxString(L"Chargement de la configuration..."));
-        if (GetParent()) GetParent()->Layout();
-        return true;
-    }
-    if (!state_.system.setup.complete && ActivePrompt() != nullptr)
-    {
-        dismissedPromptActionType_.clear();
-        submittedPromptActionType_.clear();
-        SyncInlinePrompt();
-        if (GetParent()) GetParent()->Layout();
-        return true;
-    }
-    roomStartFlowRequested_ = false;
-    roomStartPending_ = true;
-    if (onRoomStartRequested_) onRoomStartRequested_();
-    return true;
-}
-
-void GamePlayPanel::SetRoomStarted(bool started)
-{
-    const bool becameStarted = started && !roomStarted_;
-    roomStarted_ = started;
-    if (started)
-    {
-        roomStartFlowRequested_ = false;
-        roomStartPending_ = false;
-        startConfigurationFlow_.Reset();
-    }
-    Show(roomStarted_ || roomStartFlowRequested_ || roomStartPending_);
-    if (becameStarted && onZoneFocusRequested_) onZoneFocusRequested_();
-}
-
-void GamePlayPanel::NotifyRoomStartFailed(const wxString& message)
-{
-    if (roomStarted_) return;
-    roomStartPending_ = false;
-    roomStartFlowRequested_ = true;
-    startConfigurationFlow_.Reset();
-    submittedPromptActionType_.clear();
-    UpdateStatus(message, true, true);
-    SyncInlinePrompt();
-    Show();
-    if (GetParent()) GetParent()->Layout();
-}
-
 wxWindow* GamePlayPanel::PreferredNavigationTarget() const
 {
     if (confirmationPanel_ != nullptr && confirmationPanel_->IsActive())
@@ -182,14 +136,22 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
         const auto targets = promptPanel_->TabTargets();
         if (!targets.empty()) return targets.front();
     }
-    // State received during start-up may already expose a hand. Until the room
-    // is confirmed started, keep RoomPanel's game-zone anchor as the target so
-    // the transient hand cannot become a keyboard trap.
-    if (!roomStarted_) return nullptr;
+    // The game websocket can confirm the configured match just before the room
+    // websocket publishes its started status. In that short interval the hand
+    // is already authoritative and must remain keyboard-accessible.
+    const bool gameStateStarted =
+        state_.system.match.status == "started" && state_.system.setup.complete;
+    if (!roomStarted_ && !gameStateStarted) return nullptr;
     if (pawnSelectionPanel_ != nullptr)
     {
         if (auto* target = pawnSelectionPanel_->NavigationTarget()) return target;
     }
+    // Leaving a round hides the viewer's hand. Do not then move focus to the
+    // read-only results list: screen readers would recite every score and empty
+    // capability section after the leave announcement. Returning no target
+    // keeps focus on the stable game-zone anchor.
+    if (state_.kits.VisibleHand().empty() &&
+        !state_.system.round.leftPlayerIds.empty()) return nullptr;
     if (handPanel_ != nullptr)
     {
         if (auto* target = handPanel_->NavigationTarget()) return target;

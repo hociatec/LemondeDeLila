@@ -33,6 +33,7 @@
 #include "network_protocol/Support.RoomSession.inc"
 #include "network_protocol/Support.Chat.inc"
 #include "network_protocol/ServiceResilienceTests.inc"
+#include "network_protocol/RoomSessionConcurrencyTests.inc"
 
 int main()
 {
@@ -43,6 +44,7 @@ int main()
         TestChatServiceReconnectsAfterTransientFailure();
         TestChatServiceSendReportsTransportFailure();
         TestRoomSessionServiceReconnectsAndRepublishesState();
+        TestRoomSessionServiceSerializesOpenTransitions();
         std::cout << "Service resilience tests passed.\n";
         return 0;
     }

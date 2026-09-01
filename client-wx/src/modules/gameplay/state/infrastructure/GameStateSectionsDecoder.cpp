@@ -52,6 +52,7 @@ std::vector<domain::GameShortcut> DecodeShortcuts(const nlohmann::json& system)
         else if (type == "ACTION") shortcut.kind = domain::GameShortcutKind::Action;
         shortcut.id = ReadString(raw, "id");
         shortcut.actionType = ReadString(raw, "actionType");
+        shortcut.label = ReadString(raw, "label");
         if (!shortcut.normalizedKey.empty() && shortcut.kind != domain::GameShortcutKind::Unknown)
             result.push_back(std::move(shortcut));
     }
@@ -94,8 +95,8 @@ std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode)
         if (choices != raw.end() && choices->is_array())
             for (const auto& choice : *choices)
                 field.choices.push_back(DecodeGameValue(choice));
-        if (field.label.empty()) field.label = field.key;
-        if (!field.key.empty()) prompt.fields.push_back(std::move(field));
+        if (!field.key.empty() && !field.label.empty())
+            prompt.fields.push_back(std::move(field));
     }
     return prompt.fields.empty() ? std::nullopt : std::optional<domain::GamePrompt>(std::move(prompt));
 }

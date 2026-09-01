@@ -19,7 +19,6 @@ namespace lila::modules::rooms::presentation
 void RoomPanel::StartRequest()
 {
     CancelRequest();
-    roomService_.Close();
     const auto generation = requestSlot_.CurrentToken();
     state_ = State::Connecting;
     auto* service = &roomService_;

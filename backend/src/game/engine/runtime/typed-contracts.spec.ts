@@ -183,6 +183,7 @@ describe('typed game contracts', () => {
       data: { round: 2 },
       actorId: 1,
       occurredAtMs: 10,
+      sequence: 0,
     };
     type Context = GameContextFor<typeof typedDefinition>;
     const assertTypedValueIds = (context: Context): void => {

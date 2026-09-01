@@ -31,9 +31,9 @@ std::optional<std::string> BuildValueCapabilityText(
     {
         for (const auto& entry : state.kits.score->leaderboard)
         {
-            out << entry.rank << ". " << Player(state, entry.playerId) << " : ";
+            out << Player(state, entry.playerId) << " : ";
             Amount(out, entry.score);
-            out << '\n';
+            out << ' ' << state.kits.score->unit << '\n';
         }
         return out.str();
     }

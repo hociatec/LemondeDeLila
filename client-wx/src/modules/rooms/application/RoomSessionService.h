@@ -32,6 +32,7 @@ public:
     void Leave();
     void Close();
 private:
+    void CloseSessionLocked();
     void StopTasks(bool leaveRoom);
     void ReceiveLoop(std::stop_token stopToken, std::size_t generation);
     void KeepAliveLoop(std::stop_token stopToken, std::size_t generation);
@@ -40,6 +41,7 @@ private:
     IRoomSessionGateway& gateway_;
     std::jthread receiveThread_;
     std::jthread keepAliveThread_;
+    std::mutex lifecycleMutex_;
     std::mutex eventHandlerMutex_;
     EventHandler eventHandler_;
     std::atomic<std::size_t> sessionGeneration_ = 0;

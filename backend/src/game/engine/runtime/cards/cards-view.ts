@@ -23,24 +23,12 @@ export function projectCardsKitState(
   definitions: readonly (
     HandsDefinition | CardSetsDefinition | CardZoneDefinition
   )[] = [],
+  roundInactivePlayerIds: readonly number[] = [],
 ): CardsPlayerView {
-  const handDefinitions = new Map(
-    definitions
-      .filter(
-        (definition): definition is HandsDefinition =>
-          definition.component === 'cards.hands',
-      )
-      .map((definition) => [definition.id, definition]),
-  );
-  const setDefinitions = new Map(
-    definitions
-      .filter(
-        (definition): definition is CardSetsDefinition =>
-          definition.component === 'cards.sets',
-      )
-      .map((definition) => [definition.id, definition]),
-  );
+  const handDefinitions = indexHands(definitions);
+  const setDefinitions = indexCardSets(definitions);
   const zoneDefinitions = indexCardZones(definitions);
+  const inactiveRoundPlayers = new Set(roundInactivePlayerIds);
   return {
     decks: Object.fromEntries(
       Object.entries(state.decks).map(([id, cards]) => [
@@ -65,7 +53,10 @@ export function projectCardsKitState(
             byPlayer: Object.fromEntries(
               Object.entries(byPlayer).map(([playerId, cards]) => [
                 playerId,
-                visibility === 'public' || Number(playerId) === viewerPlayerId
+                visibility === 'public' ||
+                (Number(playerId) === viewerPlayerId &&
+                  (definition?.ownerVisibility !== 'active-round' ||
+                    !inactiveRoundPlayers.has(Number(playerId))))
                   ? structuredClone(cards)
                   : { count: cards.length },
               ]),
@@ -95,6 +86,36 @@ export function projectCardsKitState(
       }),
     ),
   };
+}
+
+function indexHands(
+  definitions: readonly (
+    HandsDefinition | CardSetsDefinition | CardZoneDefinition
+  )[],
+): Map<string, HandsDefinition> {
+  return new Map(
+    definitions
+      .filter(
+        (definition): definition is HandsDefinition =>
+          definition.component === 'cards.hands',
+      )
+      .map((definition) => [definition.id, definition]),
+  );
+}
+
+function indexCardSets(
+  definitions: readonly (
+    HandsDefinition | CardSetsDefinition | CardZoneDefinition
+  )[],
+): Map<string, CardSetsDefinition> {
+  return new Map(
+    definitions
+      .filter(
+        (definition): definition is CardSetsDefinition =>
+          definition.component === 'cards.sets',
+      )
+      .map((definition) => [definition.id, definition]),
+  );
 }
 
 function indexCardZones(

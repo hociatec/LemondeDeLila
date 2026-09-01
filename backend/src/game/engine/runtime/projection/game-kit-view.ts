@@ -97,6 +97,7 @@ export function projectGameKits(
   viewerPlayerId: number | null,
   turnNumber: number,
   components: readonly GameComponentDefinition[] = [],
+  roundInactivePlayerIds: readonly number[] = [],
 ): GameKitsPlayerView {
   const extras: GameKitsPlayerView = {};
   if (kits.cards && Object.keys(kits.cards.decks).length > 0) {
@@ -104,6 +105,7 @@ export function projectGameKits(
       kits.cards,
       viewerPlayerId,
       cardProjectionDefinitions(components),
+      roundInactivePlayerIds,
     );
   }
   if (kits.inventory && Object.keys(kits.inventory.byPlayer).length > 0) {

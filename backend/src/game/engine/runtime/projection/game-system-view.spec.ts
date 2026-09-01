@@ -46,6 +46,21 @@ describe('game system view event visibility', () => {
     expect(nextVersion['dice.rolled']?.id).toBe('43:0');
   });
 
+  it('keeps every repeated event in emission order', () => {
+    const events = [
+      event('score.changed', { kind: 'public' }, { playerId: 1, delta: 2 }),
+      event('score.changed', { kind: 'public' }, { playerId: 2, delta: 4 }),
+    ];
+    const projected = projectEventsForPlayer(events, 1, 9);
+
+    expect(projected.recent.map((item) => item.id)).toEqual(['9:0', '9:1']);
+    expect(projected.recent.map((item) => item.sequence)).toEqual([0, 1]);
+    expect(projected.latestByType['score.changed']?.data).toMatchObject({
+      playerId: 2,
+      delta: 4,
+    });
+  });
+
   it('adds only the viewer-specific part of split events', () => {
     const events = [
       event(

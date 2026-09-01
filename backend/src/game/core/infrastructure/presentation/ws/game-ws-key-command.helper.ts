@@ -22,7 +22,8 @@ export function resolveGameLifecycleOperation(
 ): 'reset' | 'start' | null {
   const key = normalizeGameKey(rawKey);
   const status = stringValue(rawStatus).toLowerCase();
-  if (key === 'X') return 'reset';
+  if (key === 'X' && (status === 'started' || status === 'finished'))
+    return 'reset';
   if (key === 'ENTER' && status !== 'started') return 'start';
   return null;
 }
@@ -34,8 +35,13 @@ export function resolvePresentedGameKey(
   const normalized = normalizeGameKey(rawKey);
   if (!normalized) return { kind: 'none' };
 
+  const system = asRecord(presented.system);
   const extras = asRecord(presented.extras);
-  const shortcuts = Array.isArray(extras.shortcuts) ? extras.shortcuts : [];
+  const shortcuts = Array.isArray(system.shortcuts)
+    ? system.shortcuts
+    : Array.isArray(extras.shortcuts)
+      ? extras.shortcuts
+      : [];
   const candidates = normalized.startsWith('SHIFT+')
     ? [normalized, normalized.slice('SHIFT+'.length)]
     : [normalized];

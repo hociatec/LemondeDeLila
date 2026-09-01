@@ -58,6 +58,14 @@ export type GameActionUiHint = {
 
 export type GameChoiceUiHint = Omit<GameActionUiHint, 'intent' | 'shortcut'>;
 
+export type GamePresentation = {
+  score?: {
+    label: string;
+    unit: { singular: string; plural: string };
+    changeNarration?: 'total' | 'delta-and-total';
+  };
+};
+
 /**
  * Existential action shape used only as a generic constraint. Payloads remain
  * exact on the concrete action map while the runtime may enumerate actions
@@ -260,6 +268,7 @@ export interface CompiledGameDefinition<
   readonly migrations: readonly GameStateMigration<TState>[];
   readonly contentMigrations: readonly GameContentMigration<TState>[];
   readonly shortcuts?: readonly GameShortcutHint[];
+  readonly presentation?: GamePresentation;
   readonly players: { min: number; max: number };
   readonly patterns?: TPatterns;
   readonly components?: readonly GameComponentDefinition[];

@@ -63,4 +63,8 @@ export class GameWsRoomContextService {
   async buildPayload(roomId: number): Promise<GameRoomPayload> {
     return this.roomGame.getRoomPayload(roomId);
   }
+
+  async prepareNextRun(roomId: number): Promise<void> {
+    await this.roomGame.prepareNextRun(roomId);
+  }
 }

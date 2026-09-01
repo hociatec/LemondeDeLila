@@ -30,27 +30,18 @@ std::string GameEventPresenter::Present(
 {
     const auto& data = event.details;
     if (!data.message.empty()) return data.message;
-    const auto actor = event.actorId ? [&]()
-    {
-        for (const auto& player : players) if (player.id == *event.actorId) return player.username;
-        return std::string("Joueur ") + std::to_string(*event.actorId);
-    }() : std::string("Un joueur");
+    const auto actor = event.actorId ? Player(event.actorId, players) : std::string("Un joueur");
     if (event.type == "dice.rolled")
         return actor + " lance les dés" + (data.total.empty()
             ? "." : " : " + data.total + ".");
     if (event.type == "card.drawn")
-        return actor + " pioche une carte" + (Label(data.deckId).empty()
-            ? "." : " dans " + Label(data.deckId) + ".");
+        return {};
     if (event.type == "card.received")
-        return Player(data.playerId, players) + " reçoit une carte.";
+        return {};
     if (event.type == "card.played")
-    {
-        return actor + " joue " + (data.content.empty() ? "une carte" : data.content) + ".";
-    }
+        return {};
     if (event.type == "card.discarded")
-    {
-        return (data.content.empty() ? "Une carte" : data.content) + " est défaussée.";
-    }
+        return {};
     if (event.type == "card.transferred")
         return Player(data.sourcePlayerId, players) + " donne une carte à " +
             Player(data.targetPlayerId, players) + ".";
@@ -58,14 +49,14 @@ std::string GameEventPresenter::Present(
         return Player(data.leftPlayerId, players) + " et " +
             Player(data.rightPlayerId, players) + " échangent leurs cartes.";
     if (event.type == "score.changed")
-        return Player(data.playerId, players) + " a maintenant " + data.value + " point(s).";
+        return Player(data.playerId, players) + " a maintenant " + data.value +
+            " point(s).";
     if (event.type == "resource.changed")
         return Player(data.playerId, players) + " : " + Label(data.resourceId) + " vaut " +
             data.value + ".";
     if (event.type == "resource.transferred")
-        return Player(data.sourcePlayerId, players) + " transfère " +
-            data.amount + " " + Label(data.resourceId) + " à " +
-            Player(data.targetPlayerId, players) + ".";
+        return Player(data.sourcePlayerId, players) + " transfère " + data.amount + " " +
+            Label(data.resourceId) + " à " + Player(data.targetPlayerId, players) + ".";
     if (event.type == "pawn.moved")
         return actor + " déplace son pion de la case " + data.fromPosition +
             " à la case " + data.toPosition + ".";
@@ -74,15 +65,14 @@ std::string GameEventPresenter::Present(
     if (event.type == "pawn.assigned")
         return Label(data.pawnId) + " est attribué à " + Player(data.playerId, players) + ".";
     if (event.type == "turn.started")
-        return "Tour de " + Player(data.playerId, players) + ".";
+        return {};
     if (event.type == "turn.ended")
-        return "Le tour de " + Player(data.playerId, players) + " est terminé.";
+        return {};
     if (event.type == "player.eliminated")
         return Player(data.playerId, players) + " est éliminé.";
     if (event.type == "player.skipped")
         return Player(data.playerId, players) + " passe son tour.";
-    if (event.type == "round.started")
-        return "La manche " + data.number + " commence.";
+    if (event.type == "round.started") return {};
     if (event.type == "quiz.asked") return "Une nouvelle question est posée.";
     if (event.type == "quiz.revealed") return "La réponse du quiz est révélée.";
     if (event.type == "submissions.revealed" || event.type == "submission.revealed")
@@ -104,7 +94,8 @@ std::string GameEventPresenter::Present(
     if (event.type == "round.ended") return "La manche est terminée.";
     if (event.type == "match.finished" || event.type == "game.finished")
         return "La partie est terminée.";
-    const auto type = Label(event.type);
-    return type.empty() ? std::string("Événement de jeu.") : type + ".";
+    // Unknown engine events are protocol details, not player-facing prose.
+    // A readable server message must be supplied explicitly to enter history.
+    return {};
 }
 }

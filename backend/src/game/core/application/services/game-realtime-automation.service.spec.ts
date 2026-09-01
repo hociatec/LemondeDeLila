@@ -27,7 +27,11 @@ describe('GameRealtimeAutomationService', () => {
       }),
     }) as unknown as GameRuntime;
 
-  function harness(current = state(), runtime = handler()) {
+  function harness(
+    current = state(),
+    runtime = handler(),
+    suggestedActions: Array<{ type: string; payload: object }> = [],
+  ) {
     let processor: GameTaskProcessor | undefined;
     const scheduled: GameScheduledTask[] = [];
     const scheduler = {
@@ -50,12 +54,20 @@ describe('GameRealtimeAutomationService', () => {
       }),
     };
     const executor = { execute: jest.fn().mockReturnValue(next) };
+    const queue = {
+      run: jest.fn((_roomId: number, command: () => Promise<void>) =>
+        command(),
+      ),
+    };
     const service = new GameRealtimeAutomationService(
       engine as never,
-      { suggestForHandler: jest.fn() } as never,
+      {
+        suggestForHandler: jest.fn().mockReturnValue(suggestedActions),
+      } as never,
       scheduler,
       { getBotTurnDelayMs: () => 25 } as never,
       executor as never,
+      queue as never,
       undefined,
       { getHandler: () => runtime } as never,
     );
@@ -66,6 +78,7 @@ describe('GameRealtimeAutomationService', () => {
       scheduled,
       engine,
       executor,
+      queue,
       processor: () => processor!,
       runtime,
       current,
@@ -95,6 +108,8 @@ describe('GameRealtimeAutomationService', () => {
 
   it('executes a due task through the command executor and an atomic CAS', async () => {
     const test = harness();
+    const committed = jest.fn();
+    test.service.setStateCommittedHandler(committed);
     test.service.schedule({
       roomId: 12,
       gameType: 'example',
@@ -103,6 +118,8 @@ describe('GameRealtimeAutomationService', () => {
     });
     await Promise.resolve();
     await test.processor()(test.scheduled[0]!);
+
+    expect(test.queue.run).toHaveBeenCalledWith(12, expect.any(Function));
 
     expect(test.executor.execute).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -123,6 +140,84 @@ describe('GameRealtimeAutomationService', () => {
       4,
       expect.any(Object),
     );
+    expect(committed).toHaveBeenCalledWith(
+      expect.objectContaining({
+        roomId: 12,
+        gameType: 'example',
+        handler: test.runtime,
+        version: 5,
+      }),
+    );
+  });
+
+  it('executes a bot task when its persisted deadline is due', async () => {
+    const botState = state({
+      players: [{ id: -7, username: 'Bot LAMA', isBot: true }],
+      turn: { currentPlayerId: -7, direction: 1, turnNumber: 3 },
+      engine: { round: { number: 2 } },
+    });
+    const runtime = {
+      gameType: 'lama',
+      getAutomaticActions: () => null,
+    } as unknown as GameRuntime;
+    const test = harness(botState, runtime, [{ type: 'draw', payload: {} }]);
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'lama',
+      handler: runtime,
+      state: botState,
+    });
+    await Promise.resolve();
+    const task = test.scheduled[0]!;
+    expect(task.signature).toBe('bot:-7:round:2:turn:3');
+    task.dueAtMs = Date.now() - 1;
+
+    await test.processor()(task);
+
+    expect(test.executor.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: null,
+        actions: [
+          expect.objectContaining({
+            type: 'draw',
+            meta: expect.objectContaining({ actorId: -7 }),
+          }),
+        ],
+      }),
+    );
+  });
+
+  it('gives the same bot turn a distinct identity in the next round', async () => {
+    const runtime = {
+      gameType: 'lama',
+      getAutomaticActions: () => null,
+    } as unknown as GameRuntime;
+    const test = harness(undefined, runtime, [{ type: 'draw', payload: {} }]);
+    const botTurn = (round: number) =>
+      state({
+        players: [{ id: -7, username: 'Bot LAMA', isBot: true }],
+        turn: { currentPlayerId: -7, direction: 1, turnNumber: 3 },
+        engine: { round: { number: round } },
+      });
+
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'lama',
+      handler: runtime,
+      state: botTurn(1),
+    });
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'lama',
+      handler: runtime,
+      state: botTurn(2),
+    });
+    await Promise.resolve();
+
+    expect(test.scheduled.map((task) => task.signature)).toEqual([
+      'bot:-7:round:1:turn:3',
+      'bot:-7:round:2:turn:3',
+    ]);
   });
 
   it('makes a stale delivery harmless and replaces it from persisted state', async () => {
@@ -132,7 +227,7 @@ describe('GameRealtimeAutomationService', () => {
       key: 'game-realtime:3:example',
       roomId: 3,
       gameType: 'example',
-      signature: 'automatic:pause:2:2',
+      signature: 'automatic:pause:2:round:0:turn:2',
       generation: 4,
       dueAtMs: Date.now() - 10,
     });
@@ -177,7 +272,7 @@ describe('GameRealtimeAutomationService', () => {
       key: 'game-realtime:9:example',
       roomId: 9,
       gameType: 'example',
-      signature: 'automatic:pause:2:2',
+      signature: 'automatic:pause:2:round:0:turn:2',
       generation: 4,
       dueAtMs: Date.now() - 1,
     };
@@ -201,7 +296,7 @@ describe('GameRealtimeAutomationService', () => {
         key: 'game-realtime:20:example',
         roomId: 20,
         gameType: 'example',
-        signature: 'automatic:pause:2:2',
+        signature: 'automatic:pause:2:round:0:turn:2',
         generation: 4,
         dueAtMs: Date.now() - 1,
       }),
@@ -209,7 +304,7 @@ describe('GameRealtimeAutomationService', () => {
         key: 'game-realtime:21:example',
         roomId: 21,
         gameType: 'example',
-        signature: 'automatic:pause:2:2',
+        signature: 'automatic:pause:2:round:0:turn:2',
         generation: 4,
         dueAtMs: Date.now() - 1,
       }),

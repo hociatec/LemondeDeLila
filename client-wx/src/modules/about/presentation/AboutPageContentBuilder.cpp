@@ -33,9 +33,11 @@ wxString BuildShortcutsText()
     text << L"- Ctrl+M : mode joueur/spectateur\n";
     text << L"- Ctrl+H : visibilité de la table\n\n";
     text << L"Objets / interface (en partie, selon le jeu)\n";
+    text << L"- t : annoncer à qui est le tour\n";
+    text << L"- s : annoncer les scores disponibles\n";
+    text << L"- e : annoncer le nombre de cartes en main\n";
     text << L"- Espace : piocher\n";
     text << L"- Retour arrière : défausser (choisir une carte)\n";
-    text << L"- s : score (Panier Express)\n";
     text << L"- l : shopping list (Panier Express)\n";
     text << L"- b : annoncer panier\n";
     text << L"- i : annoncer l'inventaire\n";

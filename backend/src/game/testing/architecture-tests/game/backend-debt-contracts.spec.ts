@@ -165,6 +165,33 @@ describe('backend debt contracts', () => {
     });
   });
 
+  it('forwards declarative presentation metadata through runtime descriptors', () => {
+    const definition = defineGame({
+      id: 'presentation-contract',
+      displayName: 'Presentation Contract',
+      category: 'Tests',
+      players: { min: 1, max: 1 },
+      presentation: {
+        score: {
+          label: 'Jetons',
+          unit: { singular: 'jeton', plural: 'jetons' },
+          changeNarration: 'delta-and-total',
+        },
+      },
+      setup: () => ({}),
+      actions: {
+        pass: defineAction({
+          input: gameInput.object({}),
+          execute: ({ ctx }) => ctx.turn.complete(),
+        }),
+      },
+    });
+
+    expect(
+      new DeclarativeGameRuntime(definition).getDescriptor().presentation,
+    ).toEqual(definition.presentation);
+  });
+
   it('keeps patterns optional for atypical games using only actions and kits', async () => {
     const definition = defineGame({
       id: 'no-pattern-contract',

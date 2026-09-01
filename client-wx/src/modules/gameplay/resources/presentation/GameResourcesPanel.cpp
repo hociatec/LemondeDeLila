@@ -31,7 +31,7 @@ GameResourcesPanel::GameResourcesPanel(wxWindow* parent) : wxPanel(parent)
     auto* layout = new wxBoxSizer(wxVERTICAL);
     rows_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
-    rows_->SetName(wxString(L"Scores, ressources, inventaires et marché. Liste navigable."));
+    rows_->SetName(wxString(L"Résultats, ressources, inventaires et marché. Liste navigable."));
     layout->Add(rows_, 1, wxEXPAND);
     SetSizer(layout);
     Hide();
@@ -53,14 +53,17 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
     };
     if (state.kits.score)
     {
-        appendSection("scores", "Scores");
+        appendSection("scores", state.kits.score->label);
         for (const auto& score : state.kits.score->leaderboard)
         {
             append("score:" + std::to_string(score.playerId), std::to_string(score.rank) + ". " +
-                Player(state, score.playerId) + " : " + Amount(score.score) + " points");
+                Player(state, score.playerId) + " : " + Amount(score.score) + " " +
+                state.kits.score->unit);
         }
     }
-    if (state.kits.resources)
+    if (state.kits.resources && std::any_of(
+        state.kits.resources->players.begin(), state.kits.resources->players.end(),
+        [](const auto& player) { return !player.values.empty(); }))
     {
         appendSection("resources", "Ressources");
         for (const auto& player : state.kits.resources->players)
@@ -71,7 +74,7 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
                     application::info::HumanLabel(value.id) + " : " + Amount(value.value));
             }
     }
-    if (state.kits.counters)
+    if (state.kits.counters && !state.kits.counters->values.empty())
     {
         appendSection("counters", "Compteurs");
         for (const auto& value : state.kits.counters->values)
@@ -80,7 +83,9 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
                 application::info::HumanLabel(value.id) + " : " + Amount(value.value));
         }
     }
-    if (state.kits.inventory)
+    if (state.kits.inventory && std::any_of(
+        state.kits.inventory->sets.begin(), state.kits.inventory->sets.end(),
+        [](const auto& set) { return !set.players.empty(); }))
     {
         appendSection("inventory", "Inventaires");
         for (const auto& set : state.kits.inventory->sets)
@@ -102,7 +107,9 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
                 }
             }
     }
-    if (state.kits.economy)
+    if (state.kits.economy && std::any_of(
+        state.kits.economy->markets.begin(), state.kits.economy->markets.end(),
+        [](const auto& market) { return !market.prices.empty(); }))
     {
         appendSection("economy", "Marché");
         for (const auto& market : state.kits.economy->markets)
@@ -113,7 +120,9 @@ void GameResourcesPanel::Apply(const domain::GameState& state)
                     " " + application::info::HumanLabel(market.currency));
             }
     }
-    if (state.kits.collections)
+    if (state.kits.collections && std::any_of(
+        state.kits.collections->players.begin(), state.kits.collections->players.end(),
+        [](const auto& collection) { return !collection.groups.empty(); }))
     {
         appendSection("collections", "Collections");
         for (const auto& collection : state.kits.collections->players)

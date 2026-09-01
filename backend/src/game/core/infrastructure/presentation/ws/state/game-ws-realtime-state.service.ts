@@ -20,6 +20,7 @@ export type ResolvedGameState = {
   gameType: string;
   state: GameStateEntity;
   handler: GameRuntime;
+  setupRosterRefreshedFromVersion?: number;
 };
 
 @Injectable()
@@ -33,7 +34,17 @@ export class GameWsRealtimeStateService {
     private readonly hub: WsApiHubService,
     private readonly rooms: GameWsRoomContextService,
     private readonly execution: GameExecutionScopeService,
-  ) {}
+  ) {
+    this.automation.setStateCommittedHandler?.((committed) => {
+      this.broadcast(
+        committed.roomId,
+        committed.gameType,
+        committed.state,
+        committed.handler,
+        committed.version,
+      );
+    });
+  }
 
   async resolve(roomId: number): Promise<ResolvedGameState> {
     const room = await this.rooms.buildPayload(roomId);
@@ -44,7 +55,14 @@ export class GameWsRealtimeStateService {
     const existing = await this.engine.exportInternalState(roomId, gameType);
     if (existing && this.belongsToCurrentRun(existing, room.room)) {
       this.ensureVersion(existing);
-      return { gameType, state: existing, handler };
+      const refreshed = await this.refreshSetupRoster(
+        roomId,
+        gameType,
+        existing,
+        room,
+        handler,
+      );
+      return { gameType, handler, ...refreshed };
     }
     if (existing) await this.clear(roomId, gameType);
 
@@ -106,13 +124,21 @@ export class GameWsRealtimeStateService {
       next,
     );
     if (!result.committed) throw new GameStateConflictError();
+    // The store drains transient domain events before persistence. Broadcast
+    // the command result so clients receive its draw/play/turn announcements,
+    // while automation continues from the clean persisted state.
+    const presentedState = structuredClone(next);
+    presentedState.version = result.version;
     this.broadcast(
       roomId,
       resolved.gameType,
-      result.state,
+      presentedState,
       resolved.handler,
       result.version,
     );
+    if (this.justFinished(previous, next)) {
+      await this.rooms.prepareNextRun(roomId);
+    }
     this.schedule(roomId, { ...resolved, state: result.state });
   }
 
@@ -147,6 +173,74 @@ export class GameWsRealtimeStateService {
     if (typeof roomRunId !== 'number') return;
 
     target.metadata = { ...(target.metadata ?? {}), roomRunId };
+  }
+
+  private justFinished(
+    previous: GameStateEntity,
+    next: GameStateEntity,
+  ): boolean {
+    return (
+      stringOrEmpty(previous.status).toLowerCase() !== 'finished' &&
+      stringOrEmpty(next.status).toLowerCase() === 'finished'
+    );
+  }
+
+  private async refreshSetupRoster(
+    roomId: number,
+    gameType: string,
+    existing: GameStateEntity,
+    room: Parameters<GameRoomStateFactory['build']>[0],
+    handler: GameRuntime,
+  ): Promise<{
+    state: GameStateEntity;
+    setupRosterRefreshedFromVersion?: number;
+  }> {
+    if (
+      stringOrEmpty(room.room.status).toLowerCase() !== 'setup' ||
+      stringOrEmpty(existing.status).toLowerCase() !== 'setup' ||
+      stringOrEmpty(existing.phase).toLowerCase() !== 'setup'
+    ) {
+      return { state: existing };
+    }
+    const base = this.stateFactory.build(room, gameType);
+    if (this.sameRoster(existing.players ?? [], base.players ?? [])) {
+      return { state: existing };
+    }
+    const context = this.execution.create(base, null);
+    const refreshed = this.execution.run(context, () =>
+      handler.hydrateInitialState(base, context),
+    );
+    this.preserveRoomRunId(existing, refreshed);
+    const result = await this.engine.compareAndSetInternalState(
+      roomId,
+      gameType,
+      this.ensureVersion(existing),
+      refreshed,
+    );
+    return result.committed
+      ? {
+          state: result.state,
+          setupRosterRefreshedFromVersion: this.ensureVersion(existing),
+        }
+      : { state: result.state };
+  }
+
+  private sameRoster(
+    left: NonNullable<GameStateEntity['players']>,
+    right: NonNullable<GameStateEntity['players']>,
+  ): boolean {
+    return (
+      left.length === right.length &&
+      left.every((player, index) => {
+        const candidate = right[index];
+        return (
+          candidate != null &&
+          player.id === candidate.id &&
+          player.username === candidate.username &&
+          Boolean(player.isBot) === Boolean(candidate.isBot)
+        );
+      })
+    );
   }
 
   private ensureVersion(state: GameStateEntity): number {

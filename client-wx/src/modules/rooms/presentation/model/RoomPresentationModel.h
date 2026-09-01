@@ -44,6 +44,8 @@ public:
         std::string_view gameSummary = {},
         std::string_view gameEngine = {});
     [[nodiscard]] static wxString BuildPlayers(const domain::RoomState& room);
+    [[nodiscard]] static bool ShouldRepeatAnnouncement(
+        domain::RoomEventType type) noexcept;
     [[nodiscard]] static Action ActionForId(std::string_view id) noexcept;
 };
 }

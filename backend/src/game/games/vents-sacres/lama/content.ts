@@ -1,15 +1,16 @@
 import { freezeGameContent } from '../../../engine/sdk/public-api';
 
-export type LamaCard = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type LamaCard = 1 | 2 | 3 | 4 | 5 | 6 | 'LAMA';
 
-export const LAMA_VALUE: LamaCard = 7;
+export const LAMA_VALUE = 'LAMA' as const satisfies LamaCard;
+export const LAMA_NUMBER_VALUES = [1, 2, 3, 4, 5, 6] as const;
 export const LAMA_CARD_VALUES: LamaCard[] = [1, 2, 3, 4, 5, 6, LAMA_VALUE];
 export const LAMA_MAX_DECK = LAMA_CARD_VALUES.flatMap((value) =>
   Array.from({ length: 20 }, () => value),
 );
 
 export function lamaLabel(value: LamaCard): string {
-  return value === LAMA_VALUE ? 'LAMA' : String(value);
+  return String(value);
 }
 
 export function lamaPenalty(value: LamaCard): number {

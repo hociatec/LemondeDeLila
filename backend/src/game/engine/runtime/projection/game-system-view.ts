@@ -59,6 +59,7 @@ export function projectGameSystemView<
     viewerPlayerId,
     runtime.turn?.turnNumber ?? 0,
     input.components ?? [],
+    runtime.engine.round.leftPlayerIds,
   );
   const match = projectMatch(runtime.engine.match);
   const turn = projectTurn(
@@ -160,20 +161,24 @@ export function projectEventsForPlayer<TEvents extends object = EngineEventMap>(
   stateVersion = 0,
 ): GameEventsPlayerView<TEvents> {
   const latestByType: Record<string, GameEventPlayerView<string, unknown>> = {};
+  const recent: Array<GameEventPlayerView<string, unknown>> = [];
   for (const [index, event] of events.entries()) {
     const projected = projectPendingGameEvent(event, viewerPlayerId);
     if (projected == null) continue;
-    latestByType[event.type] = {
+    const view = {
       id: `${stateVersion}:${index}`,
       type: projected.type,
       data: projected.data,
       actorId: projected.actorId,
       occurredAtMs: projected.occurredAtMs,
+      sequence: index,
     };
+    recent.push(view);
+    latestByType[event.type] = view;
   }
   // Pending events are persisted through a string-keyed transport boundary;
   // their registry type is restored here after visibility projection.
-  return { latestByType } as GameEventsPlayerView<TEvents>;
+  return { recent, latestByType } as GameEventsPlayerView<TEvents>;
 }
 
 function projectEffectSource(

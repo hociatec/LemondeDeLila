@@ -49,5 +49,20 @@ describe('game websocket key commands', () => {
     expect(resolveGameLifecycleOperation('ENTER', 'started')).toBeNull();
     expect(resolveGameLifecycleOperation('ENTER', 'finished')).toBe('start');
     expect(resolveGameLifecycleOperation('X', 'started')).toBe('reset');
+    expect(resolveGameLifecycleOperation('X', 'setup')).toBeNull();
+  });
+
+  it('reads shortcuts from the current V2 system contract', () => {
+    expect(
+      resolvePresentedGameKey(
+        {
+          actions: [{ type: 'draw', payload: {} }],
+          system: {
+            shortcuts: [{ key: 'SPACE', type: 'action', actionType: 'draw' }],
+          },
+        },
+        'SPACE',
+      ),
+    ).toEqual({ kind: 'action', action: { type: 'draw', payload: {} } });
   });
 });

@@ -105,12 +105,10 @@ wxString GameShortcutResolver::BuildHelpText(const domain::GameState& state)
     wxString result;
     for (const auto& shortcut : state.system.shortcuts)
     {
+        if (shortcut.label.empty()) continue;
         if (!result.empty()) result += wxString(L" | ");
         result += FromUtf8(shortcut.normalizedKey);
-        if (shortcut.kind == domain::GameShortcutKind::Interface)
-            result += wxString(L" ") + FromUtf8(shortcut.id);
-        else if (shortcut.kind == domain::GameShortcutKind::Action)
-            result += wxString(L" ") + FromUtf8(shortcut.actionType);
+        result += wxString(L" ") + FromUtf8(shortcut.label);
     }
     return result;
 }

@@ -23,6 +23,7 @@ domain::GameInputDescriptor Input(const nlohmann::json& raw, std::string key = {
     result.type = detail::ReadString(raw, "type");
     result.label = detail::ReadString(raw, "label");
     result.description = detail::ReadString(raw, "description");
+    result.initialText = detail::ReadString(raw, "initialText");
     result.optional = detail::ReadBool(raw, "optional");
     result.integer = detail::ReadBool(raw, "integer") || result.type == "integer";
     result.multiple = detail::ReadBool(raw, "multiple");

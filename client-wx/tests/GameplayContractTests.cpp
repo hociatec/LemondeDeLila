@@ -25,6 +25,7 @@
 #include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
 #include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
+#include "modules/gameplay/shortcuts/application/GameGenericShortcutPolicy.h"
 
 namespace
 {
@@ -78,6 +79,7 @@ nlohmann::json V2Payload(const nlohmann::json& legacy)
 
 #include "gameplay/PromptTests.inc"
 #include "gameplay/CardTests.inc"
+#include "gameplay/CardPresentationTests.inc"
 #include "gameplay/PendingDiceTests.inc"
 #include "gameplay/PawnAndStateTests.inc"
 #include "gameplay/StartConfigurationFlowTests.inc"
@@ -119,6 +121,7 @@ int main()
         TestPendingMultipleWorkflowsUseOneExplicitAction();
         TestPendingSelectionPolicy();
         TestEventsHaveStableIdentityAndAccessibleText();
+        TestTechnicalEngineEventsStayOutOfPlayerHistory();
         TestGridActionResolutionUsesBoardAndCell();
         std::cout << "Gameplay contract tests passed.\n";
         return 0;

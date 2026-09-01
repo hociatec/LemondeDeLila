@@ -8,15 +8,30 @@ export function pressed(key: string): string {
   return `pressed ${trimmed.toUpperCase()}`;
 }
 
-export function interfaceShortcut(key: string, id: string): GameShortcutHint {
-  return { key: pressed(key), type: 'interface', id };
+export function interfaceShortcut(
+  key: string,
+  id: string,
+  label?: string,
+): GameShortcutHint {
+  return {
+    key: pressed(key),
+    type: 'interface',
+    id,
+    ...(label ? { label } : {}),
+  };
 }
 
 export function actionShortcut(
   key: string,
   actionType: string,
+  label?: string,
 ): GameShortcutHint {
-  return { key: pressed(key), type: 'action', actionType };
+  return {
+    key: pressed(key),
+    type: 'action',
+    actionType,
+    ...(label ? { label } : {}),
+  };
 }
 
 export function when(

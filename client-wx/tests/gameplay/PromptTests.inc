@@ -72,9 +72,12 @@ void TestActionCatalogBuildsTypedControls()
     const auto catalog = nlohmann::json::array({{
         {"type", "answer"},
         {"input", {{"type", "object"}, {"properties", {
-            {"choice", {{"type", "enum"}, {"values", {"alpha", "beta"}}}},
-            {"count", {{"type", "number"}, {"integer", true}, {"min", 1}}},
-            {"tags", {{"type", "array"}, {"items", {{"type", "string"}}}}},
+            {"choice", {{"type", "enum"}, {"label", "Choix"},
+                {"values", {"alpha", "beta"}}}},
+            {"count", {{"type", "number"}, {"label", "Nombre"},
+                {"initialText", "6"}, {"integer", true}, {"min", 1}}},
+            {"tags", {{"type", "array"}, {"label", "Étiquettes"},
+                {"items", {{"type", "string"}}}}},
         }}}},
         {"ui", {{"label", "Répondre"}, {"control", "form"}}},
     }});
@@ -90,8 +93,9 @@ void TestActionCatalogBuildsTypedControls()
         [](const auto& field) { return field.key == "tags"; });
     Expect(choice != prompt->fields.end() && choice->choices.size() == 2,
         "Une enum doit devenir une liste de choix typée.");
-    Expect(count != prompt->fields.end() && count->integer && count->minimum == 1,
-        "Les contraintes numériques doivent être conservées.");
+    Expect(count != prompt->fields.end() && count->integer && count->minimum == 1 &&
+            count->label == "Nombre" && count->initialText == "6",
+        "Les libellés, valeurs initiales et contraintes doivent venir du catalogue backend.");
     Expect(tags != prompt->fields.end() && tags->kind == "array",
         "Un tableau doit rester un tableau générique éditable.");
 }
@@ -172,6 +176,6 @@ void TestActionLabelsRemainDistinct()
     };
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
     const auto lines = lila::modules::gameplay::application::GameActionPresentationPolicy::GenericLines(state);
-    Expect(lines.size() == 2, "Les deux actions doivent être affichées.");
-    Expect(lines[0].label != lines[1].label, "Le payload doit distinguer des libellés identiques.");
+    Expect(lines.empty(),
+        "Les actions serveur ne doivent jamais devenir une liste visible de secours.");
 }

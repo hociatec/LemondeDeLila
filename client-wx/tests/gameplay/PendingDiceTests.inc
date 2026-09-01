@@ -109,6 +109,6 @@ void TestClassicRollActionContract()
 
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
     const auto lines = lila::modules::gameplay::application::GameActionPresentationPolicy::GenericLines(state);
-    Expect(lines.size() == 2 && lines.front().label.find("ROLL_DICE") != std::string::npos,
-        "Une action inconnue du panneau de dés doit rester utilisable via GameLine.");
+    Expect(lines.empty(),
+        "Une action de dé non liee ne doit pas produire de fallback visuel.");
 }

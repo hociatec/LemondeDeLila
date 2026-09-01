@@ -26,7 +26,13 @@ public:
 
     [[nodiscard]] bool ObserveSetup(const domain::GameSetup& setup) noexcept
     {
-        if (phase_ != Phase::AwaitingSetupProjection || !setup.complete) return false;
+        if (!setup.complete ||
+            (phase_ != Phase::AwaitingActionAcknowledgement &&
+             phase_ != Phase::AwaitingSetupProjection))
+            return false;
+        // The committed setup projection is sufficient proof that the
+        // configuration succeeded. WebSocket state and acknowledgement
+        // messages may legally arrive in either order.
         phase_ = Phase::AwaitingRoomStart;
         return true;
     }

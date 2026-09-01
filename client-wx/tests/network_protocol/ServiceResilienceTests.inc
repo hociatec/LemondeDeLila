@@ -207,4 +207,5 @@ void TestRoomSessionServiceReconnectsAndRepublishesState()
     service.Close();
     std::cout << "[TEST PASSED] RoomSessionServiceReconnectsAndRepublishesState\n";
 }
+
 }

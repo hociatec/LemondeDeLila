@@ -4,6 +4,7 @@ import {
   type NoGameState,
 } from '../../../engine/sdk/public-api';
 import type { LamaConfig } from './config';
+import { LAMA_CARD_VALUES } from './content';
 import { LAMA_PHASES, startLama } from './rules';
 
 const LAMA_DEFAULT_CONFIG: LamaConfig = {
@@ -17,12 +18,30 @@ const LAMA_DEFAULT_CONFIG: LamaConfig = {
 
 export const LAMA_CONFIGURATION = defineConfiguration<NoGameState, LamaConfig>({
   input: gameInput.object({
-    loseAtScore: gameInput.number({ integer: true, min: 5, max: 200 }),
-    roundPauseSeconds: gameInput.number({ integer: true, min: 0, max: 120 }),
-    allowPlayAfterDraw: gameInput.boolean(),
-    startingHandSize: gameInput.number({ integer: true, min: 1, max: 20 }),
-    copiesPerCardValue: gameInput.number({ integer: true, min: 1, max: 20 }),
-    returnTokenFromRound: gameInput.number({ integer: true, min: 1, max: 50 }),
+    loseAtScore: gameInput.label(
+      "Seuil de jetons d'élimination",
+      gameInput.number({ integer: true, min: 5, max: 200 }),
+    ),
+    roundPauseSeconds: gameInput.label(
+      'Pause entre les manches en secondes',
+      gameInput.number({ integer: true, min: 0, max: 120 }),
+    ),
+    allowPlayAfterDraw: gameInput.label(
+      'Autoriser à jouer après avoir pioché',
+      gameInput.boolean(),
+    ),
+    startingHandSize: gameInput.label(
+      'Nombre de cartes initiales',
+      gameInput.number({ integer: true, min: 1, max: 20 }),
+    ),
+    copiesPerCardValue: gameInput.label(
+      'Exemplaires de chaque valeur',
+      gameInput.number({ integer: true, min: 1, max: 20 }),
+    ),
+    returnTokenFromRound: gameInput.label(
+      'Rendre un jeton à partir de la manche',
+      gameInput.number({ integer: true, min: 1, max: 50 }),
+    ),
   }),
   defaults: LAMA_DEFAULT_CONFIG,
   phase: LAMA_PHASES.initialPhase,
@@ -33,6 +52,6 @@ export const LAMA_CONFIGURATION = defineConfiguration<NoGameState, LamaConfig>({
   },
   validate: ({ config, ctx }) =>
     ctx.players.count() * config.startingHandSize + 1 <=
-    config.copiesPerCardValue * 7,
+    config.copiesPerCardValue * LAMA_CARD_VALUES.length,
   onConfigured: ({ state, ctx }) => startLama(state, ctx),
 });

@@ -14,6 +14,7 @@ struct GameInputDescriptor final
     std::string type;
     std::string label;
     std::string description;
+    std::string initialText;
     bool optional = false;
     bool integer = false;
     bool multiple = false;

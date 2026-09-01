@@ -182,6 +182,22 @@ export class RoomLifecycleService {
     return room;
   }
 
+  async prepareNextRun(
+    context: RoomLifecycleContext,
+    roomId: number,
+  ): Promise<RoomRecord> {
+    const existing = await this.rooms.findById(roomId);
+    if (!existing) {
+      throw new NotFoundException('Table introuvable');
+    }
+
+    await this.rooms.update(existing.id, { status: 'setup', startedAt: null });
+    const room = await context.requireRoom(existing.id);
+    await context.invalidateRoomPayloadCache(room.id);
+    await this.roomEvents.publishLobbyChanged(room.id, 'finished');
+    return room;
+  }
+
   private async ensureStartable(
     context: RoomLifecycleContext,
     room: RoomRecord,

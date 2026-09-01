@@ -30,7 +30,12 @@ export class RoomGatewayAnnouncements {
     const previous = normalized(context.lastRoomStatusByRoomId.get(roomId));
     const next = normalized(payload.room.status);
     return previous !== 'started' && next === 'started'
-      ? { region: 'game', reason: 'room.started', priority: 'assertive' }
+      ? {
+          region: 'game',
+          reason: 'room.started',
+          priority: 'assertive',
+          announce: false,
+        }
       : null;
   }
 
@@ -56,10 +61,10 @@ export class RoomGatewayAnnouncements {
     focus: RoomFocusIntent,
   ): void {
     context.safeSend(client, this.presenter.presentRoomFocus(roomId, focus));
-    for (const intent of [
-      this.presenter.presentFocusIntent(focus),
-      this.presenter.presentFocusAnnouncement(focus),
-    ]) {
+    const intents = [this.presenter.presentFocusIntent(focus)];
+    if (focus.announce !== false)
+      intents.push(this.presenter.presentFocusAnnouncement(focus));
+    for (const intent of intents) {
       context.safeSend(
         client,
         this.presenter.presentRoomIntent(roomId, intent),

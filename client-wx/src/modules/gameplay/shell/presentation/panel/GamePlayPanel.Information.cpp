@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <string_view>
 #include <utility>
 
 #include <wx/choice.h>
@@ -35,7 +36,16 @@ void GamePlayPanel::RebuildInfoPanelChoices()
     append("players", L"Joueurs");
     append("setup", L"Configuration");
     for (const auto& [id, label] : Capabilities)
-        if (state_.kits.Has(id)) append(id, label);
+        if (state_.kits.Has(id))
+        {
+            if (std::string_view{id} == "score" && state_.kits.score)
+            {
+                const auto scoreLabel = FromUtf8(state_.kits.score->label + " et classement");
+                nextIds.push_back(id);
+                nextLabels.push_back(scoreLabel);
+            }
+            else append(id, label);
+        }
     if (state_.effect) append("effect", L"Effet courant");
     if (!state_.timers.empty()) append("timers", L"Minuteries");
     if (!state_.game.Empty()) append("specific", L"Informations spécifiques");
@@ -62,6 +72,6 @@ void GamePlayPanel::SelectInfoPanel(const std::string& id, bool announce)
         infoPanelChoice_->SetSelection(static_cast<int>(std::distance(infoPanelIds_.begin(), found)));
     UpdateInfoPanel();
     const auto text = BuildInfoText(id);
-    if (announce && onHistoryMessage_ && !text.empty()) onHistoryMessage_(text);
+    if (announce && onHistoryMessage_ && !text.empty()) onHistoryMessage_(text, true);
 }
 }

@@ -83,6 +83,10 @@ export class RoomLifecycleFacadeService {
     return this.lifecycle.resetRoomSystem(this.buildContext(), roomId);
   }
 
+  async prepareNextRun(roomId: number): Promise<RoomRecord> {
+    return this.lifecycle.prepareNextRun(this.buildContext(), roomId);
+  }
+
   private async countActiveHumans(roomId: number): Promise<number> {
     return this.participants.countActiveByRoom(roomId);
   }

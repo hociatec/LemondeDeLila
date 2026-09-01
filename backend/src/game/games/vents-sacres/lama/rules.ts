@@ -8,7 +8,9 @@ import {
 import type { GameContext, NoGameState } from '../../../engine/sdk/public-api';
 import {
   buildLamaDeck,
-  LAMA_CARD_VALUES,
+  LAMA_NUMBER_VALUES,
+  LAMA_VALUE,
+  lamaLabel,
   lamaPenalty,
   nextLamaValue,
   type LamaCard,
@@ -27,18 +29,26 @@ const HANDS = 'lama-hands';
 const DRAWN_TURN_FLAG = 'lama.drawn';
 
 export const play = defineAction<LamaState, { value: LamaCard }>({
+  ui: { label: 'Jouer une carte', control: 'card' },
   input: gameInput.object({
-    value: gameInput.numberEnum(LAMA_CARD_VALUES),
+    value: gameInput.union([
+      gameInput.numberEnum(LAMA_NUMBER_VALUES),
+      gameInput.literal(LAMA_VALUE),
+    ]),
   }),
   documentation:
     'Joue une carte égale ou immédiatement supérieure à la défausse.',
   available: ({ actor, ctx }) =>
-    LAMA_PHASES.is(ctx, 'turn') && playableValues(actor.id, ctx).length > 0,
+    isCurrentPlayer(actor.id, ctx) &&
+    LAMA_PHASES.is(ctx, 'turn') &&
+    playableValues(actor.id, ctx).length > 0,
   validate: ({ actor, input, ctx }) =>
+    isCurrentPlayer(actor.id, ctx) &&
     playableValues(actor.id, ctx).includes(input.value),
   enumerate: ({ actor, ctx }) =>
     playableValues(actor.id, ctx).map((value) => ({ value })),
   execute: ({ state, actor, input, ctx }) => {
+    requireCurrentPlayer(actor.id, ctx);
     const value = input.value;
     if (!playableValues(actor.id, ctx).includes(value))
       rejectRule('Carte LAMA injouable');
@@ -46,6 +56,7 @@ export const play = defineAction<LamaState, { value: LamaCard }>({
     ctx.events.message('game.card.played', {
       playerId: actor.id,
       cardId: value,
+      cardLabel: lamaLabel(value),
     });
     if (ctx.cards.hand<LamaCard>(HANDS, actor.id).length === 0)
       endRound(state, actor.id, ctx);
@@ -54,19 +65,23 @@ export const play = defineAction<LamaState, { value: LamaCard }>({
 });
 
 export const draw = defineAction<LamaState, Record<string, never>>({
+  ui: { label: 'Piocher', control: 'button', shortcut: 'Space' },
   input: gameInput.object({}),
-  documentation: 'Pioche au plus une carte pendant le tour.',
-  available: ({ ctx }) =>
+  documentation:
+    "Pioche au plus une carte pendant le tour, tant qu'aucun joueur n'est sorti de la manche.",
+  available: ({ actor, ctx }) =>
+    isCurrentPlayer(actor.id, ctx) &&
     LAMA_PHASES.is(ctx, 'turn') &&
+    ctx.round.leftPlayers().length === 0 &&
     !ctx.turn.flags.get<boolean>(DRAWN_TURN_FLAG) &&
     ctx.cards.deckCount(DECK) > 0,
   execute: ({ actor, ctx }) => {
+    requireCurrentPlayer(actor.id, ctx);
     const card = ctx.cards.draw<LamaCard>(DECK);
     if (card == null) rejectRule('Pioche LAMA vide');
     ctx.cards.give(HANDS, actor.id, card);
     ctx.events.message('game.card.drawn', {
       playerId: actor.id,
-      cardId: card,
       deckId: DECK,
     });
     if (lamaConfig(ctx).allowPlayAfterDraw) ctx.turn.flags.set(DRAWN_TURN_FLAG);
@@ -77,29 +92,34 @@ export const draw = defineAction<LamaState, Record<string, never>>({
 });
 
 export const pass = defineAction<LamaState, Record<string, never>>({
+  ui: { label: 'Passer', control: 'button' },
   input: gameInput.object({}),
   documentation:
     'Termine le tour après une pioche lorsque cette option est active.',
-  available: ({ ctx }) =>
+  available: ({ actor, ctx }) =>
+    isCurrentPlayer(actor.id, ctx) &&
     LAMA_PHASES.is(ctx, 'turn') &&
     lamaConfig(ctx).allowPlayAfterDraw &&
     ctx.turn.flags.get<boolean>(DRAWN_TURN_FLAG) === true,
   execute: ({ actor, ctx }) => {
+    requireCurrentPlayer(actor.id, ctx);
     ctx.events.message('game.player.passed', { playerId: actor.id });
     ctx.turn.end();
   },
 });
 
 export const quit = defineAction<LamaState, Record<string, never>>({
+  ui: { label: 'Sortir de la manche', control: 'button', shortcut: 'P' },
   input: gameInput.object({}),
   documentation:
     'Se retire de la manche en conservant ses cartes pour le décompte.',
   available: ({ actor, ctx }) =>
+    isCurrentPlayer(actor.id, ctx) &&
     LAMA_PHASES.is(ctx, 'turn') &&
     ctx.round.activePlayers().some((player) => player.id === actor.id),
   execute: ({ state, actor, ctx }) => {
+    requireCurrentPlayer(actor.id, ctx);
     ctx.round.leave(actor.id);
-    ctx.events.message('lama.round.quit', { playerId: actor.id });
     if (activeRoundPlayers(ctx).length === 0) endRound(state, null, ctx);
     else ctx.turn.end();
   },
@@ -124,7 +144,6 @@ export function resolveReturn(
     rejectRule('Rendu de jetons LAMA invalide');
   if (value > ctx.score.get(playerId)) rejectRule('Jetons LAMA insuffisants');
   ctx.score.subtract(playerId, value);
-  ctx.events.message('lama.tokens.returned', { playerId, value });
   advanceAfterLamaRound(state, ctx);
 }
 
@@ -155,6 +174,11 @@ export function prepareLamaRound(_state: LamaState, ctx: RuleContext): void {
     HANDS,
     players.map((player) => player.id),
   );
+  const starterId = ctx.round.starter() ?? survivors[0]?.id;
+  ctx.events.message('game.round.started', {
+    round: ctx.round.number,
+    starterPlayerId: starterId,
+  });
   ctx.cards.deal(
     DECK,
     HANDS,
@@ -166,12 +190,15 @@ export function prepareLamaRound(_state: LamaState, ctx: RuleContext): void {
   ctx.cards.discard(DECK, first);
   ctx.turn.flags.clear();
   LAMA_PHASES.transition(ctx, 'turn');
-  const starterId = ctx.round.starter() ?? survivors[0]?.id;
   if (starterId != null) ctx.turn.to(starterId);
-  ctx.events.message('game.round.started', {
-    round: ctx.round.number,
-    firstCardId: first,
-  });
+}
+
+function isCurrentPlayer(playerId: number, ctx: RuleContext): boolean {
+  return ctx.players.current()?.id === playerId;
+}
+
+function requireCurrentPlayer(playerId: number, ctx: RuleContext): void {
+  if (!isCurrentPlayer(playerId, ctx)) rejectRule("Ce n'est pas votre tour");
 }
 
 function endRound(
@@ -212,6 +239,7 @@ export function scoreLamaRound(_state: LamaState, ctx: RuleContext): void {
     ctx.score.add(
       player.id,
       [...unique].reduce((total, card) => total + lamaPenalty(card), 0),
+      { announce: false },
     );
   }
 }

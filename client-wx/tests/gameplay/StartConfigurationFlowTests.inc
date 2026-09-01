@@ -25,4 +25,13 @@ void TestStartConfigurationIsSubmittedOnlyOnce()
     flow.Reset();
     Expect(!flow.IsAwaitingActionAcknowledgement() && !flow.IsAwaitingRoomStart(),
         "La confirmation du demarrage doit terminer le flux de configuration.");
+
+    setup.complete = false;
+    Expect(flow.TryBeginSubmission(setup),
+        "Une nouvelle configuration doit pouvoir commencer apres reinitialisation.");
+    setup.complete = true;
+    Expect(flow.ObserveSetup(setup) && flow.IsAwaitingRoomStart(),
+        "La projection recue avant l'acquittement doit aussi declencher le demarrage.");
+    Expect(!flow.Acknowledge("game.action"),
+        "L'acquittement tardif ne doit pas demander un second demarrage.");
 }

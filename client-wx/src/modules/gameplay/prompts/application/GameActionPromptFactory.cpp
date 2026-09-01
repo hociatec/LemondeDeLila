@@ -1,27 +1,17 @@
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
 
 #include <algorithm>
-#include <cctype>
-
 namespace lila::modules::gameplay::application
 {
 namespace
 {
-std::string Humanize(std::string value)
-{
-    for (auto& character : value)
-        if (character == '_' || character == '-' || character == '.') character = ' ';
-    if (!value.empty()) value[0] = static_cast<char>(std::toupper(
-        static_cast<unsigned char>(value[0])));
-    return value;
-}
-
 domain::GamePromptField Field(const domain::GameInputDescriptor& input)
 {
     domain::GamePromptField field;
     field.key = input.key;
-    field.label = input.label.empty() ? Humanize(input.key) : input.label;
+    field.label = input.label;
     field.kind = input.type.empty() ? "json" : input.type;
+    field.initialText = input.initialText;
     field.minimum = input.minimum;
     field.maximum = input.maximum;
     field.optional = input.optional;
@@ -46,13 +36,17 @@ std::optional<domain::GamePrompt> GameActionPromptFactory::Build(
         descriptor->input->type != "object") return std::nullopt;
     domain::GamePrompt prompt;
     prompt.actionType = action.type;
-    prompt.title = descriptor->label.empty() ? Humanize(action.type) : descriptor->label;
+    if (descriptor->label.empty()) return std::nullopt;
+    prompt.title = descriptor->label;
     prompt.label = prompt.title;
     prompt.paginatedCandidates = descriptor->paginatedCandidates;
     for (const auto& property : descriptor->input->properties)
     {
         if (action.payload.contains(property.key)) continue;
-        prompt.fields.push_back(Field(property));
+        auto field = Field(property);
+        if (field.key.empty() || field.label.empty() || field.kind.empty())
+            continue;
+        prompt.fields.push_back(std::move(field));
     }
     return prompt.fields.empty() && !prompt.paginatedCandidates ? std::nullopt
                                  : std::optional<domain::GamePrompt>(std::move(prompt));

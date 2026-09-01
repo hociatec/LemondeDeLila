@@ -18,5 +18,6 @@ struct GameShortcut final
     GameShortcutKind kind = GameShortcutKind::Unknown;
     std::string id;
     std::string actionType;
+    std::string label;
 };
 }

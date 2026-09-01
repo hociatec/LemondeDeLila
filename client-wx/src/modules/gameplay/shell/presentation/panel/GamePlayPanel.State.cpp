@@ -24,6 +24,7 @@
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
+#include "shared/accessibility/application/NavigationController.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -31,13 +32,14 @@ namespace lila::modules::gameplay::presentation
 {
 namespace
 {
-std::vector<std::string> EventMessages(const domain::GameSystem& system)
+std::vector<std::string> EventMessages(const domain::GameState& state)
 {
     std::vector<std::string> messages;
-    messages.reserve(system.events.size());
-    for (const auto& event : system.events)
+    messages.reserve(state.system.events.size());
+    for (const auto& event : state.system.events)
     {
-        const auto message = events::GameEventPresenter::Present(event, system.players);
+        const auto message = events::GameEventPresenter::Present(
+            event, state.system.players);
         if (!message.empty()) messages.push_back(event.Identity() + "|" + message);
     }
     return messages;
@@ -47,6 +49,9 @@ std::vector<std::string> EventMessages(const domain::GameSystem& system)
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
     const wxWeakRef<wxWindow> focusedBefore(wxWindow::FindFocus());
+    const bool focusWasInsideGame =
+        lila::shared::accessibility::NavigationController::IsDescendantOf(
+            focusedBefore.get(), this);
     std::optional<domain::GameValue> previousPendingChoice;
     std::vector<domain::GameValue> previousPendingOrder;
     if (state_.pending && choicesList_->GetSelection() != wxNOT_FOUND)
@@ -66,7 +71,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
                 previousPendingOrder.push_back(state_.pending->choices[stateIndex].value);
         }
     const bool initialState = state_.viewVersion == 0;
-    const auto previousTurnPlayer = state_.system.turn.currentPlayerId;
     if (!application::GameStateUpdatePolicy::ShouldApply(state_, state))
     {
         lila::shared::logging::LogWarning(
@@ -79,7 +83,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     }
     auto nextLines = application::GameActionPresentationPolicy::GenericLines(state);
     auto nextPawnSelection = infrastructure::PawnSelectionDecoder::Decode(state.pending);
-    auto nextLogMessages = EventMessages(state.system);
+    auto nextLogMessages = EventMessages(state);
     state_ = std::move(state);
     lines_ = std::move(nextLines);
     pawnSelection_ = std::move(nextPawnSelection);
@@ -97,16 +101,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
                         ? state_.system.match.result->winnerPlayerIds : std::vector<int>{});
     }
     UpdateStatus(wxString{});
-    if (initialState)
-    {
-        logCursor_.Restore(nextLogMessages);
-        if (onHistoryMessage_)
-            onHistoryMessage_(FromUtf8(TurnLabel(state_)));
-    }
+    if (initialState) logCursor_.Restore(nextLogMessages);
     else PublishLogMessages(nextLogMessages);
-    if (!initialState && previousTurnPlayer != state_.system.turn.currentPlayerId &&
-        onHistoryMessage_)
-        onHistoryMessage_(FromUtf8(TurnLabel(state_)));
     if (IsFinished())
     {
         confirmationPanel_->HideConfirmation();
@@ -120,7 +116,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     pendingLabel_->SetLabel(BuildPendingText());
     pendingLabel_->Show(!pendingLabel_->GetLabel().empty());
     RebuildLines();
-    handPanel_->ApplyCards(state_.kits.VisibleHand());
+    handPanel_->ApplyCards(state_.kits.VisibleHand(), state_.actions);
     dicePanel_->Apply(state_.kits.dice);
     gridPanel_->Apply(state_.kits.grid ? &*state_.kits.grid : nullptr,
         state_.actions, state_.system.players,
@@ -128,10 +124,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     movementPanel_->Apply(state_.kits, state_.system.players);
     resourcesPanel_->Apply(state_);
     workflowPanel_->Apply(state_);
-    const bool hasActions = !lines_.empty() &&
-        (!state_.pending || state_.pending->type.empty());
-    actionsLabel_->Show(hasActions);
-    linesList_->Show(hasActions);
+    actionsLabel_->Hide();
+    linesList_->Hide();
     const bool hasActionableChoices = state_.pending &&
         application::GamePendingSelectionPolicy::HasActionableChoices(*state_.pending);
     std::vector<std::string> nextPendingSignatures;
@@ -192,8 +186,15 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     if (GetParent()) GetParent()->Layout();
     const bool focusPreserved = focusedBefore && focusedBefore->IsShownOnScreen() &&
         focusedBefore->IsEnabled() && focusedBefore->AcceptsFocus();
-    if (!focusPreserved && PreferredNavigationTarget() != nullptr && onZoneFocusRequested_)
-        onZoneFocusRequested_();
+    if (!focusPreserved && focusWasInsideGame)
+    {
+        auto* target = PreferredNavigationTarget();
+        if (target != nullptr)
+            static_cast<void>(
+                lila::shared::accessibility::NavigationController::Focus(target));
+        else if (onZoneFocusRequested_)
+            onZoneFocusRequested_();
+    }
     const bool setupProjectionCompleted = startConfigurationFlow_.ObserveSetup(
         state_.system.setup);
     if (!roomStarted_ && roomStartFlowRequested_ &&

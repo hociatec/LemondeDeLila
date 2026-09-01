@@ -46,6 +46,7 @@ export type HandsDefinition<TDeckId extends string = string> = {
   deck: TDeckId;
   initial: number;
   visibility: 'owner' | 'public';
+  ownerVisibility?: 'always' | 'active-round';
 };
 
 export type CardZoneDefinition<TDeckId extends string = string> = {

@@ -32,6 +32,10 @@ export class RoomGameAdapter implements RoomGamePort {
     await this.lifecycle.startRoomSystem(roomId);
   }
 
+  async prepareNextRun(roomId: number): Promise<void> {
+    await this.lifecycle.prepareNextRun(roomId);
+  }
+
   notifyRoomStateUpdated(roomId: number) {
     return this.roomState.notifyRoomStateUpdated(roomId);
   }

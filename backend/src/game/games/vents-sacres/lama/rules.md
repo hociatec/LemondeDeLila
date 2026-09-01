@@ -7,6 +7,7 @@ Implémentation jouable des règles de base :
   - **Piocher**,
   - **Sortir du round**.
 - Vous pouvez jouer une valeur **égale** à la carte du dessus de la défausse, ou **+1** (6 → LAMA → 1).
+- Dès qu’un joueur sort du round, les joueurs encore en lice ne peuvent plus piocher et doivent jouer uniquement avec les cartes de leur main, ou sortir à leur tour.
 - Le round se termine quand :
   - un joueur n’a plus de cartes, ou
   - tous les joueurs sont sortis.

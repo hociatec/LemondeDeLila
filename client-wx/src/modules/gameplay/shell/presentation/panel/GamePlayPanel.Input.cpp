@@ -15,6 +15,7 @@
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
+#include "modules/gameplay/shortcuts/application/GameGenericShortcutPolicy.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/encoding/Encoding.h"
@@ -62,11 +63,23 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         return false;
     }
 
+    if (event.IsAutoRepeat() && key != "F5") return true;
+
+    // Read-only information remains available while the room and the first
+    // projected game state finish their startup handshake.
+    const auto genericPanel =
+        application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(state_, key);
+    if (!genericPanel.empty())
+    {
+        SelectInfoPanel(genericPanel, true);
+        return true;
+    }
+
     // Before the room starts, Enter must reach the room activation path so it
     // can either start or announce the server-provided participant constraint.
-    if (!roomStarted_) return false;
-
-    if (event.IsAutoRepeat() && key != "F5") return true;
+    const bool gameStateStarted =
+        state_.system.match.status == "started" && state_.system.setup.complete;
+    if (!roomStarted_ && !gameStateStarted) return false;
 
     if (key == "ENTER")
     {
@@ -116,14 +129,8 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         return true;
     }
     if (HandleShortcut(key)) return true;
-    if (key == "T")
-    {
-        const auto message = FromUtf8(TurnLabel(state_));
-        UpdateStatus(message, false, true);
-        if (onHistoryMessage_) onHistoryMessage_(message);
-        return true;
-    }
-    SendKey(key);
+    // An unconfigured key is deliberately silent and must not create a
+    // protocol request or a generic server error.
     return true;
 }
 
@@ -169,7 +176,6 @@ bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
         {
             lila::shared::logging::LogWarning(
                 "GameInput", "Shortcut action is unavailable for key=" + normalizedKey);
-            UpdateStatus(wxString(L"Action indisponible."), true, true);
             return true;
         }
         lila::shared::logging::LogInfo(
