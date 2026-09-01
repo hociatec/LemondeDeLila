@@ -1,4 +1,4 @@
-void TestRealtimeProtocolFallbackTypeAndPayloadValidation()
+void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
 {
     Expect(
         !lila::shared::network::realtime::protocol::IsResponseForRequest(
@@ -20,10 +20,10 @@ void TestRealtimeProtocolFallbackTypeAndPayloadValidation()
         "La reponse d'une autre requete doit etre ignoree");
 
     const auto response = lila::shared::network::realtime::protocol::ParseResponse(
-        R"({"requestId":"req-1","success":true,"payload":{"ok":true}})",
+        R"({"type":"response.type","requestId":"req-1","success":true,"payload":{"ok":true}})",
         "req-1",
-        "fallback.type");
-    Expect(response.type == "fallback.type", "Fallback type attendu");
+        "response.type");
+    Expect(response.type == "response.type", "Type correle attendu");
     Expect(response.success, "Succes attendu");
 
     bool threw = false;
@@ -32,7 +32,7 @@ void TestRealtimeProtocolFallbackTypeAndPayloadValidation()
         static_cast<void>(lila::shared::network::realtime::protocol::ParseResponse(
             R"({"type":"x","requestId":"req-1","payload":"oops"})",
             "req-1",
-            "fallback.type"));
+            "x"));
     }
     catch (const lila::shared::network::realtime::protocol::RealtimeProtocolError&)
     {
@@ -41,7 +41,7 @@ void TestRealtimeProtocolFallbackTypeAndPayloadValidation()
 
     Expect(threw, "Payload invalide devait echouer");
 
-    std::cout << "[TEST PASSED] RealtimeProtocolFallbackTypeAndPayloadValidation\n";
+    std::cout << "[TEST PASSED] RealtimeProtocolStrictCorrelationAndPayloadValidation\n";
 }
 
 void TestChatProtocolHandlesMalformedAndUnknownEvents()
@@ -173,4 +173,3 @@ void TestNavigationControllerKeyboardSemantics()
 
     std::cout << "[TEST PASSED] NavigationControllerKeyboardSemantics\n";
 }
-

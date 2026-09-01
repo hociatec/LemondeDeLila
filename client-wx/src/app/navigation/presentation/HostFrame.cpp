@@ -5,7 +5,9 @@
 #include <wx/event.h>
 #include <wx/panel.h>
 #include <wx/sizer.h>
+#include <wx/weakref.h>
 
+#include "shared/accessibility/application/NavigationController.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/config/domain/AppConfig.h"
 #include "shared/text/presentation/encoding/Encoding.h"
@@ -29,6 +31,8 @@ HostFrame::HostFrame()
 {
     Bind(wxEVT_CLOSE_WINDOW, &HostFrame::OnClose, this);
     Bind(wxEVT_CHAR_HOOK, &HostFrame::OnCharHook, this);
+    Bind(wxEVT_ACTIVATE, &HostFrame::OnActivate, this);
+    Bind(wxEVT_CHILD_FOCUS, &HostFrame::OnChildFocus, this);
     contentRoot_ = new lila::shared::accessibility::NonFocusablePanel(this);
     auto* rootSizer = new wxBoxSizer(wxVERTICAL);
     rootSizer->Add(contentRoot_, 1, wxEXPAND);
@@ -77,6 +81,50 @@ void HostFrame::OnCharHook(wxKeyEvent& event)
     event.Skip();
 }
 
+void HostFrame::OnActivate(wxActivateEvent& event)
+{
+    if (!event.GetActive())
+    {
+        focusMemory_.Remember(currentContent_);
+        event.Skip();
+        return;
+    }
+
+    wxWeakRef<HostFrame> weakThis(this);
+    CallAfter(
+        [weakThis]()
+        {
+            if (auto* frame = weakThis.get())
+                frame->RestoreContentFocusAfterActivation();
+        });
+    event.Skip();
+}
+
+void HostFrame::OnChildFocus(wxChildFocusEvent& event)
+{
+    focusMemory_.Remember(currentContent_);
+    event.Skip();
+}
+
+void HostFrame::RestoreContentFocusAfterActivation()
+{
+    if (!IsActive() || currentContent_ == nullptr ||
+        !currentContent_->IsShownOnScreen())
+        return;
+
+    auto* focused = wxWindow::FindFocus();
+    if (focused != nullptr && focused->IsShownOnScreen() &&
+        focused->IsEnabled() && focused->AcceptsFocus() &&
+        lila::shared::accessibility::NavigationController::IsDescendantOf(
+            focused, currentContent_))
+        return;
+
+    if (focused != nullptr && wxGetTopLevelParent(focused) != this)
+        return;
+
+    static_cast<void>(focusMemory_.Restore(currentContent_));
+}
+
 void HostFrame::SetContent(wxWindow* content)
 {
     if (contentRoot_ == nullptr)
@@ -91,6 +139,7 @@ void HostFrame::SetContent(wxWindow* content)
     }
     if (currentContent_ != nullptr && currentContent_ != content)
     {
+        focusMemory_.Forget(currentContent_);
         currentContent_->Hide();
     }
 
@@ -119,6 +168,7 @@ void HostFrame::RemoveContent(wxWindow* content)
     }
     if (currentContent_ == content)
     {
+        focusMemory_.Forget(currentContent_);
         currentContent_->Hide();
         currentContent_ = nullptr;
     }

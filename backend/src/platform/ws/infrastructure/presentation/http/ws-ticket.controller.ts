@@ -17,18 +17,8 @@ export class WsTicketController {
   constructor(private readonly tickets: WsTicketService) {}
 
   @UseGuards(HttpJwtGuard)
-  @Get('ws/ticket')
-  getTicket(@Req() req: RequestWithUser, @Query('scope') scopeRaw: string) {
-    return this.issue(req, scopeRaw);
-  }
-
-  // Some deployments proxy only /api/* to the backend. Provide a compatible path as well.
-  @UseGuards(HttpJwtGuard)
   @Get('api/ws/ticket')
-  getTicketUnderApi(
-    @Req() req: RequestWithUser,
-    @Query('scope') scopeRaw: string,
-  ) {
+  getTicket(@Req() req: RequestWithUser, @Query('scope') scopeRaw: string) {
     return this.issue(req, scopeRaw);
   }
 

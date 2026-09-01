@@ -113,8 +113,6 @@ function compileGameDefinition<
   const normalizedBase = {
     stateVersion: 1,
     rulesVersion: '1',
-    migrations: [],
-    contentMigrations: [],
     ...definition,
     content,
     contentVersion: definition.contentVersion ?? content.version,

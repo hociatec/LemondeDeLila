@@ -20,8 +20,7 @@ const databaseEnvironment = {
 };
 
 const authEnvironment = {
-  JWT_ALGORITHM: Joi.string().valid('HS256', 'RS256').optional(),
-  JWT_SECRET: Joi.string().min(32).optional(),
+  JWT_ALGORITHM: Joi.string().valid('RS256').default('RS256'),
   JWT_PRIVATE_KEY_PEM: Joi.string().optional(),
   JWT_PUBLIC_KEY_PEM: Joi.string().optional(),
   JWT_PRIVATE_KEY_PATH: Joi.string().optional(),
@@ -41,15 +40,22 @@ const redisAndRateLimitEnvironment = {
   ROOM_PAYLOAD_REDIS_URL: Joi.string().uri().optional(),
   NOTIFICATION_REDIS_URL: Joi.string().uri().optional(),
   PRESENCE_REDIS_URL: Joi.string().uri().optional(),
+  RATE_LIMIT_REDIS_URL: Joi.string().uri().optional(),
   RATE_LIMIT_TTL: Joi.number().integer().positive().default(60),
   RATE_LIMIT_COUNT: Joi.number().integer().positive().default(120),
 };
 
 const runtimeEnvironment = {
+  TRUSTED_PROXY_CIDRS: Joi.string().optional(),
   CORS_ORIGINS: Joi.string().optional(),
   LOG_LEVEL: Joi.string().default('info'),
   LOG_DIR: Joi.string().default('logs'),
   LOG_FILES_ENABLED: Joi.boolean().truthy('true').falsy('false').default(true),
+  OPENAPI_ENABLED: Joi.boolean().truthy('true').falsy('false').optional(),
+  HEALTH_CHECK_PATH: Joi.string().optional(),
+  HEALTH_MIN_FREE_BYTES: Joi.number().integer().min(0).default(104857600),
+  HEALTH_MAX_EVENT_LOOP_LAG_MS: Joi.number().positive().default(250),
+  HEALTH_MAX_FAILED_JOBS: Joi.number().integer().min(0).default(100),
   ENABLE_PROTOTYPE_GAMES: Joi.string().optional(),
   GAME_DEVTOOLS_ENABLED: Joi.string().valid('true', 'false').default('false'),
   GAME_ROOM_LOCK_TIMEOUT_SECONDS: Joi.number()
@@ -95,15 +101,7 @@ const runtimeEnvironment = {
 };
 
 const updateEnvironment = {
-  CLIENT_UPDATES_DIR: Joi.string().optional(),
-  CLIENT_UPDATES_META_PATH: Joi.string().optional(),
-  CLIENT_UPDATES_UPLOADS_DIR: Joi.string().optional(),
-  CLIENT_UPDATES_PUBLIC_URL: Joi.string().uri().optional(),
-  CLIENT_UPDATES_UPLOAD_TOKEN: Joi.string().optional(),
-  CLIENT_UPDATES_STORAGE_QUOTA_BYTES: Joi.number()
-    .integer()
-    .positive()
-    .optional(),
+  CLIENT_WX_UPDATES_UPLOAD_TOKEN: Joi.string().optional(),
   CLIENT_MIN_VERSION: Joi.string().optional(),
   CLIENT_FORCE_LATEST: Joi.boolean()
     .truthy('true', '1')
@@ -135,8 +133,6 @@ const websocketEnvironment = {
     .default(65536),
   WS_RATE_LIMIT_WINDOW_MS: Joi.number().integer().min(1000).default(10000),
   WS_RATE_LIMIT_COUNT: Joi.number().integer().min(1).default(60),
-  WS_SHARED_SECRET: Joi.string().optional(),
-  REALTIME_WS_SECRET: Joi.string().optional(),
 };
 
 export const environmentValidationSchema = Joi.object({
@@ -187,6 +183,67 @@ function validateProductionEnvironment(
       'GAME_ENGINE_STATE_REDIS_URL est requis en production',
     );
   }
+  if (!environment['RATE_LIMIT_REDIS_URL']) {
+    return customError(
+      helpers,
+      'RATE_LIMIT_REDIS_URL est requis en production',
+    );
+  }
+  if (normalizedString(environment['JWT_ALGORITHM']) !== 'RS256') {
+    return customError(helpers, 'JWT_ALGORITHM=RS256 est requis en production');
+  }
+  if (!nonEmptyString(environment['JWT_AUDIENCE'])) {
+    return customError(helpers, 'JWT_AUDIENCE est requis en production');
+  }
+  const databaseError = validateProductionDatabase(environment, helpers);
+  if (databaseError) return databaseError;
+  if (!validProductionSecret(environment['WS_TICKET_SECRET'])) {
+    return customError(
+      helpers,
+      'WS_TICKET_SECRET doit être un secret non générique en production',
+    );
+  }
+  if (!validProductionSecret(environment['CLIENT_WX_UPDATES_UPLOAD_TOKEN'])) {
+    return customError(
+      helpers,
+      'CLIENT_WX_UPDATES_UPLOAD_TOKEN est requis et doit contenir au moins 32 caractères en production',
+    );
+  }
+  const maintenanceError = validateProductionMaintenance(environment, helpers);
+  if (maintenanceError) return maintenanceError;
+  return validateProductionClientUpdates(environment, helpers);
+}
+
+function validateProductionMaintenance(
+  environment: EnvValidationInput,
+  helpers: Joi.CustomHelpers,
+): Joi.ErrorReport | null {
+  if (environment['ADMIN_MAINTENANCE_ENABLED'] !== true) return null;
+  if (environment['ADMIN_MAINTENANCE_REQUIRE_TOKEN'] !== true) {
+    return customError(
+      helpers,
+      'ADMIN_MAINTENANCE_REQUIRE_TOKEN doit être activé en production',
+    );
+  }
+  if (!validProductionSecret(environment['ADMIN_MAINTENANCE_TOKEN'])) {
+    return customError(
+      helpers,
+      'ADMIN_MAINTENANCE_TOKEN doit contenir au moins 32 caractères en production',
+    );
+  }
+  if (!nonEmptyString(environment['ADMIN_MAINTENANCE_ALLOWED_IPS'])) {
+    return customError(
+      helpers,
+      'ADMIN_MAINTENANCE_ALLOWED_IPS est requis quand la maintenance est activée en production',
+    );
+  }
+  return null;
+}
+
+function validateProductionClientUpdates(
+  environment: EnvValidationInput,
+  helpers: Joi.CustomHelpers,
+): Joi.ErrorReport | null {
   if (environment['CLIENT_WX_ALLOW_UNSIGNED'] === '1') {
     return customError(
       helpers,
@@ -217,24 +274,6 @@ function validateJwtEnvironment(
   environment: EnvValidationInput,
   helpers: Joi.CustomHelpers,
 ): EnvValidationInput | Joi.ErrorReport {
-  const configuredAlgorithm = normalizedString(environment['JWT_ALGORITHM']);
-  const hasRsaMaterial = Boolean(
-    environment['JWT_PRIVATE_KEY_PEM'] ||
-    environment['JWT_PRIVATE_KEY_PATH'] ||
-    environment['JWT_PUBLIC_KEY_PEM'] ||
-    environment['JWT_PUBLIC_KEY_PATH'],
-  );
-  const algorithm =
-    configuredAlgorithm === 'HS256' || configuredAlgorithm === 'RS256'
-      ? configuredAlgorithm
-      : hasRsaMaterial
-        ? 'RS256'
-        : 'HS256';
-  if (algorithm === 'HS256') {
-    return environment['JWT_SECRET']
-      ? environment
-      : customError(helpers, 'JWT_SECRET est requis en mode HS256');
-  }
   if (
     !environment['JWT_PRIVATE_KEY_PEM'] &&
     !environment['JWT_PRIVATE_KEY_PATH']
@@ -258,6 +297,63 @@ function validateJwtEnvironment(
 
 function normalizedString(value: unknown, fallback = ''): string {
   return typeof value === 'string' ? value.trim().toUpperCase() : fallback;
+}
+
+function nonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function validProductionSecret(value: unknown): boolean {
+  if (!nonEmptyString(value) || value.trim().length < 32) return false;
+  const normalized = value.trim().toLowerCase();
+  return ![
+    'change-me-with-at-least-32-characters',
+    'changeme',
+    'secret',
+    'password',
+  ].includes(normalized);
+}
+
+function validateProductionDatabase(
+  environment: EnvValidationInput,
+  helpers: Joi.CustomHelpers,
+): Joi.ErrorReport | null {
+  const databaseUrl = environment['DATABASE_URL'];
+  if (nonEmptyString(databaseUrl)) {
+    try {
+      const parsed = new URL(databaseUrl);
+      if (
+        !parsed.username ||
+        parsed.username.toLowerCase() === 'root' ||
+        !validConfigurationValue(decodeURIComponent(parsed.password))
+      ) {
+        return customError(
+          helpers,
+          'DATABASE_URL doit utiliser un compte non-root avec mot de passe en production',
+        );
+      }
+      return null;
+    } catch {
+      return customError(helpers, 'DATABASE_URL est invalide');
+    }
+  }
+  if (normalizedString(environment['DB_USER']) === 'ROOT') {
+    return customError(helpers, 'DB_USER=root est interdit en production');
+  }
+  if (!validConfigurationValue(environment['DB_PASSWORD'])) {
+    return customError(helpers, 'DB_PASSWORD est requis en production');
+  }
+  return null;
+}
+
+function validConfigurationValue(value: unknown): boolean {
+  if (!nonEmptyString(value)) return false;
+  const normalized = value.trim().toLowerCase();
+  return !(
+    normalized.startsWith('<') ||
+    normalized.includes('change-me') ||
+    ['changeme', 'password', 'secret'].includes(normalized)
+  );
 }
 
 function customError(

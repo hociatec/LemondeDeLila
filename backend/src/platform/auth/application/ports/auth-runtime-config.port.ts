@@ -1,6 +1,4 @@
 export type AuthRuntimeConfig = {
-  jwtAlgorithm: string | null;
-  jwtSecret: string | null;
   jwtPrivateKeyPem: string | null;
   jwtPrivateKeyPath: string | null;
   jwtPublicKeyPem: string | null;
@@ -21,8 +19,6 @@ export function readAuthRuntimeConfigFromEnv(): AuthRuntimeConfig {
   );
 
   return {
-    jwtAlgorithm: trimOrNull(readEnvironment('JWT_ALGORITHM')),
-    jwtSecret: trimOrNull(readEnvironment('JWT_SECRET')),
     jwtPrivateKeyPem: trimOrNull(readEnvironment('JWT_PRIVATE_KEY_PEM')),
     jwtPrivateKeyPath: trimOrNull(readEnvironment('JWT_PRIVATE_KEY_PATH')),
     jwtPublicKeyPem: trimOrNull(readEnvironment('JWT_PUBLIC_KEY_PEM')),

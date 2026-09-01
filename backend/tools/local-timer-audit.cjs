@@ -13,10 +13,6 @@ const allowedCalls = new Map([
     1,
   ],
   [
-    'modules/admin/application/use-cases/admin-client-updates/admin-client-update-scheduler.service.ts',
-    3,
-  ],
-  [
     'modules/notification/infrastructure/presentation/ws/notification-ws-connection.service.ts',
     1,
   ],

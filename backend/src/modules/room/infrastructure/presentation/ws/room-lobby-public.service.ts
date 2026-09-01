@@ -15,7 +15,7 @@ import type {
 } from './dto/rooms-public.ws.dto';
 import { buildPublicRoomList } from './room-lobby-list.helpers';
 import { RoomLobbyPresenter } from './room-lobby.presenter';
-import type { LobbyUser, LobbyWsVariant } from './room-lobby.types';
+import type { LobbyUser } from './room-lobby.types';
 
 type CatalogGameLike = { id: string; status?: unknown };
 
@@ -32,11 +32,7 @@ export class RoomLobbyPublicService {
     private readonly lobbyRepo: RoomLobbyRepository,
   ) {}
 
-  async list(
-    user: LobbyUser,
-    dto: RoomsPublicListDto,
-    variant: LobbyWsVariant,
-  ) {
+  async list(user: LobbyUser, dto: RoomsPublicListDto) {
     const isAdmin = Boolean(
       user.roles?.includes('ROLE_ADMIN') || user.roles?.includes('admin'),
     );
@@ -47,7 +43,7 @@ export class RoomLobbyPublicService {
     });
     const allowed = new Set(allowedGames.map((game) => game.id));
     if (!this.policy.ensureGameTypeAllowed(dto.gameType, allowed)) {
-      return this.presenter.presentPublicList(variant, {
+      return this.presenter.presentPublicList({
         items: [],
         groups: [],
       });
@@ -71,34 +67,20 @@ export class RoomLobbyPublicService {
       ...group,
       rooms: group.rooms.map(withBan),
     }));
-    return this.presenter.presentPublicList(variant, built);
+    return this.presenter.presentPublicList(built);
   }
 
-  async join(
-    user: LobbyUser,
-    dto: RoomsPublicJoinDto,
-    variant: LobbyWsVariant,
-  ) {
+  async join(user: LobbyUser, dto: RoomsPublicJoinDto) {
     this.policy.ensureNotBanned(this.roomState.isBanned(dto.roomId, user.id));
     await this.membership.joinRoom(dto.roomId, user.id);
     const state = await this.roomState.getRoomPayload(dto.roomId);
-    return this.presenter.presentJoinResult(
-      variant,
-      'joined',
-      dto.roomId,
-      state.room,
-    );
+    return this.presenter.presentJoinResult('joined', dto.roomId, state.room);
   }
 
-  async leave(
-    user: LobbyUser,
-    dto: RoomsPublicJoinDto,
-    variant: LobbyWsVariant,
-  ) {
+  async leave(user: LobbyUser, dto: RoomsPublicJoinDto) {
     const room = await this.membership.leaveRoom(dto.roomId, user.id);
     if (!room) {
       return this.presenter.presentJoinResult(
-        variant,
         'left',
         dto.roomId,
         undefined,
@@ -106,19 +88,13 @@ export class RoomLobbyPublicService {
       );
     }
     const state = await this.roomState.getRoomPayload(dto.roomId);
-    return this.presenter.presentJoinResult(
-      variant,
-      'left',
-      dto.roomId,
-      state.room,
-    );
+    return this.presenter.presentJoinResult('left', dto.roomId, state.room);
   }
 
-  async spectate(dto: RoomsPublicJoinDto, variant: LobbyWsVariant) {
+  async spectate(dto: RoomsPublicJoinDto) {
     const state = await this.roomState.getRoomPayload(dto.roomId);
     this.policy.ensureSpectatingAllowed(state);
     return this.presenter.presentJoinResult(
-      variant,
       'spectated',
       dto.roomId,
       state.room,

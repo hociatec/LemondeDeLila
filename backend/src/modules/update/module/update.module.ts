@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 
-import { ClientUpdatesModule } from '../../client-updates/public-api';
 import { UpdatePolicyService } from '../application/update-policy.service';
 import { WX_UPDATE_RELEASE_READER } from '../application/wx-update-release.reader';
 import { CiWxUpdateController } from '../infrastructure/http/ci-wx-update.controller';
@@ -13,7 +12,6 @@ import { WxUpdateArtifactValidatorService } from '../infrastructure/persistence/
 import { WxUpdateUploadService } from '../infrastructure/persistence/wx-update-upload.service';
 
 @Module({
-  imports: [ClientUpdatesModule],
   controllers: [
     WxUpdateManifestController,
     WxUpdateLatestController,
@@ -31,6 +29,6 @@ import { WxUpdateUploadService } from '../infrastructure/persistence/wx-update-u
     UpdateStaticService,
     UpdateUploadTokenGuard,
   ],
-  exports: [ClientUpdatesModule, WxUpdateReleaseService, UpdatePolicyService],
+  exports: [WxUpdateReleaseService, UpdatePolicyService],
 })
 export class UpdateModule {}

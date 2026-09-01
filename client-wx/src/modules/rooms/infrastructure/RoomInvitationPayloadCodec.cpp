@@ -7,7 +7,7 @@ namespace lila::modules::rooms::infrastructure
 std::optional<domain::RoomInvitation> ReadRoomInvitationMessage(std::string_view rawJson)
 {
     const auto envelope = nlohmann::json::parse(rawJson, nullptr, false);
-    if (!envelope.is_object() || envelope.value("type", std::string{}) != "rooms.invite.received")
+    if (!envelope.is_object() || envelope.value("type", std::string{}) != "room.lobby.invite.received")
         return std::nullopt;
     const auto payload = envelope.value("payload", nlohmann::json::object());
     const auto room = payload.value("room", nlohmann::json::object());

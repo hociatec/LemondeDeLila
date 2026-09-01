@@ -4,29 +4,24 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { timingSafeEqual } from 'crypto';
 import type { Request } from 'express';
 import { readEnvironment } from '../../../../platform/config/public-api';
+import { constantTimeSecretEquals } from '../../../../shared/utils/public-api';
 
 @Injectable()
 export class UpdateUploadTokenGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
-    const configured = readEnvironment('CLIENT_UPDATES_UPLOAD_TOKEN').trim();
+    const configured = readEnvironment('CLIENT_WX_UPDATES_UPLOAD_TOKEN').trim();
     const provided = String(
-      request.headers['x-client-updates-upload-token'] || '',
+      request.headers['x-client-wx-updates-upload-token'] || '',
     ).trim();
     if (!configured) {
       throw new UnauthorizedException(
-        'CLIENT_UPDATES_UPLOAD_TOKEN non configuré',
+        'CLIENT_WX_UPDATES_UPLOAD_TOKEN non configuré',
       );
     }
-    const expectedBytes = Buffer.from(configured, 'utf-8');
-    const providedBytes = Buffer.from(provided, 'utf-8');
-    if (
-      expectedBytes.length !== providedBytes.length ||
-      !timingSafeEqual(expectedBytes, providedBytes)
-    ) {
+    if (!constantTimeSecretEquals(configured, provided)) {
       throw new UnauthorizedException('Token upload invalide');
     }
     return true;

@@ -10,7 +10,11 @@ import type { RoomRecord } from '../../../../application/contracts/room-record.m
 import type { RoomUserRecord } from '../../../../application/contracts/room-user.model';
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
-import { toRoomEntity, toRoomRecord } from './room-typeorm.mappers';
+import {
+  toRoomEntity,
+  toRoomEntityPatch,
+  toRoomRecord,
+} from './room-typeorm.mappers';
 
 @Injectable()
 export class RoomTypeormRepository implements RoomRepository {
@@ -56,7 +60,7 @@ export class RoomTypeormRepository implements RoomRepository {
 
   async update(id: number, patch: Partial<RoomRecord>): Promise<void> {
     await this.rooms.save(
-      this.rooms.create(toRoomEntity(this.create({ ...patch, id }))),
+      this.rooms.create({ id, ...toRoomEntityPatch(patch) }),
     );
   }
 

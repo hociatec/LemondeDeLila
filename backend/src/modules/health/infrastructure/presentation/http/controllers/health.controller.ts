@@ -6,6 +6,8 @@ import {
 } from '@nestjs/terminus';
 import { getBuildInfo } from '../../../../../../platform/observability/public-api';
 import { RedisHealthIndicator } from '../../../checks/redis.health';
+import { BullmqHealthIndicator } from '../../../checks/bullmq.health';
+import { RuntimeHealthIndicator } from '../../../checks/runtime.health';
 
 @Controller('health')
 export class HealthController {
@@ -13,6 +15,8 @@ export class HealthController {
     private readonly health: HealthCheckService,
     private readonly db: TypeOrmHealthIndicator,
     private readonly redis: RedisHealthIndicator,
+    private readonly bullmq: BullmqHealthIndicator,
+    private readonly runtime: RuntimeHealthIndicator,
   ) {}
 
   @Get()
@@ -22,8 +26,9 @@ export class HealthController {
   }
 
   @Get('live')
+  @HealthCheck()
   live() {
-    return { status: 'ok' as const };
+    return this.health.check([() => this.runtime.checkEventLoop('eventLoop')]);
   }
 
   @Get('ready')
@@ -32,6 +37,8 @@ export class HealthController {
     return this.health.check([
       () => this.db.pingCheck('database'),
       () => this.redis.check('redis'),
+      () => this.bullmq.check('bullmq'),
+      () => this.runtime.checkStorage('storage'),
     ]);
   }
 

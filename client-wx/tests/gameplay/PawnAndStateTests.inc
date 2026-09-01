@@ -23,7 +23,7 @@ void TestServerDrivenPawnSelection()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     const auto selection = lila::modules::gameplay::infrastructure::PawnSelectionDecoder::Decode(
         state.pending);
     Expect(selection.has_value(), "Le choix de pion actif doit etre decode.");
@@ -50,7 +50,7 @@ void TestPawnSelectionHiddenForPassiveViewer()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     Expect(!lila::modules::gameplay::infrastructure::PawnSelectionDecoder::Decode(state.pending),
         "Un spectateur ou joueur passif ne doit pas recevoir une liste interactive.");
 }

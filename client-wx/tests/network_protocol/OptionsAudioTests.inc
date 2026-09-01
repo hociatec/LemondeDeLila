@@ -1,35 +1,24 @@
-void TestOptionsCodecMigratesLegacyFieldsAndSchema()
+void TestOptionsCodecRejectsObsoleteSchema()
 {
-    const nlohmann::json legacyDocument = {
+    const nlohmann::json obsoleteDocument = {
         {"confirmLogout", true},
         {"muteAll", true},
         {"schemaVersion", 1},
         {"currentVersion", "1.2.3"}
     };
 
-    const auto state = lila::modules::options::infrastructure::json::Parse(legacyDocument);
-    Expect(state.general.confirmExit, "confirmExit migre attendu");
-    Expect(state.general.repairBrokenAccents, "repairBrokenAccents doit etre actif par defaut");
-    Expect(state.audio.muteAll, "muteAll migre attendu");
-    Expect(state.runtime.currentVersion == std::optional<std::string>("1.2.3"), "currentVersion migree attendue");
-    Expect(
-        state.schemaVersion == lila::modules::options::domain::OptionsState::SchemaVersion,
-        "Schema version migree invalide");
+    bool rejected = false;
+    try
+    {
+        static_cast<void>(lila::modules::options::infrastructure::json::Parse(obsoleteDocument));
+    }
+    catch (const std::exception&)
+    {
+        rejected = true;
+    }
+    Expect(rejected, "Un schema d'options obsolete doit etre refuse");
 
-    const auto serialized = lila::modules::options::infrastructure::json::Serialize(state);
-    Expect(
-        serialized.at("schemaVersion") == lila::modules::options::domain::OptionsState::SchemaVersion,
-        "Schema serialise invalide");
-    Expect(serialized.at("general").at("confirmExit") == true, "confirmExit serialise attendu");
-    Expect(serialized.at("general").at("repairBrokenAccents") == true, "repairBrokenAccents serialise attendu");
-    Expect(!serialized.contains("confirmLogout"), "confirmLogout legacy ne doit plus etre serialise");
-    Expect(serialized.at("currentVersion") == "1.2.3", "currentVersion top-level attendue");
-    Expect(serialized.at("runtime").at("currentVersion") == "1.2.3", "currentVersion runtime attendue");
-    Expect(
-        serialized.at("internal").at("admin").at("adminChatModerationLoadLimit") == 200,
-        "Limite admin serialisee inattendue");
-
-    std::cout << "[TEST PASSED] OptionsCodecMigratesLegacyFieldsAndSchema\n";
+    std::cout << "[TEST PASSED] OptionsCodecRejectsObsoleteSchema\n";
 }
 
 void TestSoundCatalogAndPerCueOptionsRoundTrip()

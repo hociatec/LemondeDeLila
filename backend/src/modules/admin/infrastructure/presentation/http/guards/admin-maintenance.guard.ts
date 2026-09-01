@@ -9,6 +9,7 @@ import {
   readEnvironment,
   readEnvironmentBoolean,
 } from '../../../../../../platform/config/public-api';
+import { constantTimeSecretEquals } from '../../../../../../shared/utils/public-api';
 
 @Injectable()
 export class AdminMaintenanceGuard implements CanActivate {
@@ -30,7 +31,7 @@ export class AdminMaintenanceGuard implements CanActivate {
         );
       }
 
-      if (!token || token !== expected) {
+      if (!constantTimeSecretEquals(expected, token)) {
         throw new ForbiddenException('Token de maintenance invalide');
       }
     }
@@ -64,10 +65,9 @@ export class AdminMaintenanceGuard implements CanActivate {
   }
 
   private getRequestIp(request: Request): string | null {
-    const forwarded = String(request.headers['x-forwarded-for'] || '').trim();
-    const ip = forwarded
-      ? forwarded.split(',')[0]?.trim()
-      : String(request.ip || '').trim();
+    // Express derives request.ip from the socket and its trusted-proxy policy.
+    // Reading X-Forwarded-For directly would make the allowlist spoofable.
+    const ip = String(request.ip || '').trim();
     if (!ip) return null;
     // Normalize "::ffff:1.2.3.4" style addresses.
     return ip.startsWith('::ffff:') ? ip.slice('::ffff:'.length) : ip;

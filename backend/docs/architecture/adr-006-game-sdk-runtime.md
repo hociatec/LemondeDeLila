@@ -50,12 +50,10 @@ parallèles. Les cinq `state.ts` et les neuf `effects.ts` spécifiques restants
 sont intentionnels; une extraction générique exige trois usages réellement
 équivalents, pas une simple ressemblance locale.
 
-La normalisation résiduelle des anciens snapshots dans
-`game-state-migration.ts` pourra être supprimée après une migration offline et
-deux versions de production consécutives où l'inventaire de `game_sessions` ne
-contient plus aucun `engine.schemaVersion` antérieur à la version cible. Le
-runtime n'entretient plus de branche ou de format legacy parallèle pendant
-cette période.
+Le runtime charge uniquement les versions exactes du schéma, du contenu et des
+règles attendues. Toute conversion d'un snapshot historique doit être réalisée
+hors ligne avant le déploiement; aucune migration ni branche de compatibilité
+n'est exécutée dans le chemin de chargement.
 
 La revue détaillée des fichiers runtime proches des seuils et des services Room
 est consignée dans `runtime-cohesion-review.md`. Elle conclut à leur cohésion

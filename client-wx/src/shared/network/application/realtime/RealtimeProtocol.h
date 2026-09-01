@@ -26,6 +26,6 @@ public:
 [[nodiscard]] RealtimeApiResponse ParseResponse(
     const std::string& rawJson,
     const std::string& expectedRequestId,
-    const std::string& fallbackType);
+    const std::string& expectedType);
 }
 }

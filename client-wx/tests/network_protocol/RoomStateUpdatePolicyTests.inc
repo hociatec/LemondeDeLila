@@ -28,9 +28,9 @@ void TestRoomStateUpdatePolicyRejectsPreviousRuns()
         RoomStateUpdatePolicy::ShouldApply(started, nextRun),
         "Le prochain demarrage doit remplacer le run courant");
 
-    auto legacy = delayedSetup;
-    legacy.runId = 0;
+    auto missingRun = delayedSetup;
+    missingRun.runId = 0;
     Expect(
-        RoomStateUpdatePolicy::ShouldApply(started, legacy),
-        "Un serveur sans runId doit rester compatible");
+        !RoomStateUpdatePolicy::ShouldApply(started, missingRun),
+        "Un etat sans runId ne doit pas remplacer une partie versionnee");
 }

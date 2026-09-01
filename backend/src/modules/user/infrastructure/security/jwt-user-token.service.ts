@@ -7,14 +7,12 @@ import type {
 } from '../../application/ports/user-token.port';
 import {
   type AuthRuntimeConfig,
-  getJwtAlgorithm,
   requireJwtSigningKey,
 } from '../../../../platform/auth/public-api';
 
 @Injectable()
 export class JwtUserTokenService implements UserTokenServicePort {
   private readonly jwtSigningKey: string;
-  private readonly jwtAlgorithm: jwt.Algorithm;
   private readonly jwtExpiresIn: jwt.SignOptions['expiresIn'];
   private readonly jwtIssuer: string;
   private readonly jwtAudience: string | undefined;
@@ -22,7 +20,6 @@ export class JwtUserTokenService implements UserTokenServicePort {
   constructor(private readonly config: ConfigService) {
     const authConfig = this.toAuthRuntimeConfig(config);
     this.jwtSigningKey = requireJwtSigningKey(authConfig);
-    this.jwtAlgorithm = getJwtAlgorithm(authConfig);
     this.jwtExpiresIn = this.config.get<jwt.SignOptions['expiresIn']>(
       'JWT_EXPIRES_IN',
       '12h',
@@ -40,8 +37,6 @@ export class JwtUserTokenService implements UserTokenServicePort {
     };
     const tolerance = Number(config.get<number>('JWT_CLOCK_TOLERANCE_SECONDS'));
     return {
-      jwtAlgorithm: value('JWT_ALGORITHM'),
-      jwtSecret: value('JWT_SECRET'),
       jwtPrivateKeyPem: value('JWT_PRIVATE_KEY_PEM'),
       jwtPrivateKeyPath: value('JWT_PRIVATE_KEY_PATH'),
       jwtPublicKeyPem: value('JWT_PUBLIC_KEY_PEM'),
@@ -64,7 +59,7 @@ export class JwtUserTokenService implements UserTokenServicePort {
       this.jwtSigningKey,
       (() => {
         const options: jwt.SignOptions = {
-          algorithm: this.jwtAlgorithm,
+          algorithm: 'RS256',
           expiresIn: this.jwtExpiresIn,
           issuer: this.jwtIssuer,
           subject: String(payload.id),

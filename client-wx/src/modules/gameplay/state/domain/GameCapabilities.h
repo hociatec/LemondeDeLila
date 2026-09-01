@@ -79,9 +79,15 @@ struct GameScoreEntry final { int playerId = 0; double score = 0; int rank = 0; 
 struct GameScoreView final
 {
     std::string label = "Scores";
-    std::string unit = "point(s)";
+    std::string unitSingular = "point";
+    std::string unitPlural = "points";
     std::map<int, double> byPlayer;
     std::vector<GameScoreEntry> leaderboard;
+
+    [[nodiscard]] const std::string& UnitFor(double value) const noexcept
+    {
+        return value == 1.0 ? unitSingular : unitPlural;
+    }
 };
 
 struct GameNamedAmount final { std::string id; double value = 0; };

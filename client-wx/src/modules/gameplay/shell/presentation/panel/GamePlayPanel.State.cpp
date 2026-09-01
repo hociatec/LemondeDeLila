@@ -49,6 +49,8 @@ std::vector<std::string> EventMessages(const domain::GameState& state)
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
     const wxWeakRef<wxWindow> focusedBefore(wxWindow::FindFocus());
+    const bool hadVisibleHand = !state_.kits.VisibleHand().empty();
+    const bool receivesVisibleHand = !state.kits.VisibleHand().empty();
     const bool focusWasInsideGame =
         lila::shared::accessibility::NavigationController::IsDescendantOf(
             focusedBefore.get(), this);
@@ -108,6 +110,10 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         confirmationPanel_->HideConfirmation();
         promptPanel_->HidePrompt(true);
         pawnSelectionPanel_->Clear();
+        Hide();
+        if (GetParent()) GetParent()->Layout();
+        if (focusWasInsideGame && onZoneFocusRequested_) onZoneFocusRequested_();
+        return;
     }
     Show(roomStarted_ || roomStartFlowRequested_ || roomStartPending_);
     headerLabel_->SetLabel(BuildHeaderText());
@@ -195,6 +201,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         else if (onZoneFocusRequested_)
             onZoneFocusRequested_();
     }
+    if (!hadVisibleHand && receivesVisibleHand && onZoneFocusRequested_)
+        onZoneFocusRequested_();
     const bool setupProjectionCompleted = startConfigurationFlow_.ObserveSetup(
         state_.system.setup);
     if (!roomStarted_ && roomStartFlowRequested_ &&

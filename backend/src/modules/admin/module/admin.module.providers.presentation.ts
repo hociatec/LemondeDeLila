@@ -3,7 +3,6 @@ import { AdminBroadcastWsHandler } from '../infrastructure/presentation/ws/admin
 import { AdminBugReportCommentsWsHandler } from '../infrastructure/presentation/ws/admin-bug-report-comments-ws.handler';
 import { AdminBugReportsWsHandler } from '../infrastructure/presentation/ws/admin-bug-reports-ws.handler';
 import { AdminChatWsHandler } from '../infrastructure/presentation/ws/admin-chat-ws.handler';
-import { AdminClientUpdatesWsHandler } from '../infrastructure/presentation/ws/admin-client-updates-ws.handler';
 import { AdminGamesWsHandler } from '../infrastructure/presentation/ws/admin-games-ws.handler';
 import { AdminLogsWsHandler } from '../infrastructure/presentation/ws/admin-logs-ws.handler';
 import { AdminMnemoQuizWsHandler } from '../infrastructure/presentation/ws/admin-mnemo-quiz-ws.handler';
@@ -24,7 +23,6 @@ export const ADMIN_PRESENTATION_PROVIDERS = [
   AdminRolesWsHandler,
   AdminLogsWsHandler,
   AdminBroadcastWsHandler,
-  AdminClientUpdatesWsHandler,
   AdminPerfWsHandler,
   AdminProfileWsHandler,
   AdminBugReportsWsHandler,

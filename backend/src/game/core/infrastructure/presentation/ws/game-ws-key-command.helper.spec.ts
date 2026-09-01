@@ -47,8 +47,10 @@ describe('game websocket key commands', () => {
 
   it('never treats repeated Enter as a lifecycle command during a game', () => {
     expect(resolveGameLifecycleOperation('ENTER', 'started')).toBeNull();
-    expect(resolveGameLifecycleOperation('ENTER', 'finished')).toBe('start');
+    expect(resolveGameLifecycleOperation('ENTER', 'playing')).toBeNull();
+    expect(resolveGameLifecycleOperation('ENTER', 'finished')).toBe('reset');
     expect(resolveGameLifecycleOperation('X', 'started')).toBe('reset');
+    expect(resolveGameLifecycleOperation('X', 'playing')).toBe('reset');
     expect(resolveGameLifecycleOperation('X', 'setup')).toBeNull();
   });
 

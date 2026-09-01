@@ -1,6 +1,6 @@
 ﻿import { Inject, Injectable } from '@nestjs/common';
-import { WS_EVENTS } from '../../../../platform/realtime/public-api';
 import type { AdminNotificationPort } from '../../application/ports/admin-notification.port';
+import { WS_EVENTS } from '../../../../platform/realtime/public-api';
 import {
   NOTIFICATION_DISPATCHER,
   type NotificationDispatcher,
@@ -19,39 +19,6 @@ export class AdminNotificationAdapter implements AdminNotificationPort {
     payload: Record<string, unknown>,
   ): Promise<void> {
     return this.notifications.notifyUser(userId, eventType, payload);
-  }
-
-  notifyClientUpdateAvailable(
-    userId: number,
-    payload: Record<string, unknown>,
-  ): Promise<void> {
-    return this.notifications.notifyUser(
-      userId,
-      WS_EVENTS.clientUpdate.available,
-      payload,
-    );
-  }
-
-  notifyClientUpdateRequired(
-    userId: number,
-    payload: Record<string, unknown>,
-  ): Promise<void> {
-    return this.notifications.notifyUser(
-      userId,
-      WS_EVENTS.clientUpdate.required,
-      payload,
-    );
-  }
-
-  notifyClientUpdateImminent(
-    userId: number,
-    payload: Record<string, unknown>,
-  ): Promise<void> {
-    return this.notifications.notifyUser(
-      userId,
-      WS_EVENTS.clientUpdate.imminent,
-      payload,
-    );
   }
 
   disconnectAll(reason?: string): void {

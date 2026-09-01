@@ -126,6 +126,7 @@ void GamePlayPanel::SetRoomStartRequestedHandler(RoomStartRequestedHandler handl
 
 wxWindow* GamePlayPanel::PreferredNavigationTarget() const
 {
+    if (IsFinished()) return nullptr;
     if (confirmationPanel_ != nullptr && confirmationPanel_->IsActive())
     {
         const auto targets = confirmationPanel_->TabTargets();
@@ -140,7 +141,8 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     // websocket publishes its started status. In that short interval the hand
     // is already authoritative and must remain keyboard-accessible.
     const bool gameStateStarted =
-        state_.system.match.status == "started" && state_.system.setup.complete;
+        (state_.system.match.status == "started" ||
+         state_.system.match.status == "playing") && state_.system.setup.complete;
     if (!roomStarted_ && !gameStateStarted) return nullptr;
     if (pawnSelectionPanel_ != nullptr)
     {

@@ -65,19 +65,16 @@ bool IsResponseForRequest(
 
     const auto requestId = lila::shared::data::json::ReadOptionalString(
         decoded, lila::shared::network::realtime::fields::RequestId.data());
-    if (!requestId.empty()) return requestId == expectedRequestId;
-
-    // Legacy responses may not carry a request id. Unsolicited events use a
-    // different type, so they remain distinguishable from the awaited reply.
     const auto type = lila::shared::data::json::ReadOptionalString(
         decoded, lila::shared::network::realtime::fields::Type.data());
-    return !expectedType.empty() && type == expectedType;
+    return !requestId.empty() && requestId == expectedRequestId &&
+        !expectedType.empty() && type == expectedType;
 }
 
 RealtimeApiResponse ParseResponse(
     const std::string& rawJson,
     const std::string& expectedRequestId,
-    const std::string& fallbackType)
+    const std::string& expectedType)
 {
     nlohmann::json decoded;
     try
@@ -96,18 +93,14 @@ RealtimeApiResponse ParseResponse(
     RealtimeApiResponse response;
     response.type = lila::shared::data::json::ReadOptionalString(
         decoded, lila::shared::network::realtime::fields::Type.data());
-    if (response.type.empty())
-    {
-        response.type = fallbackType;
-    }
-    if (response.type.empty())
+    if (response.type.empty() || response.type != expectedType)
     {
         throw RealtimeProtocolError(lila::shared::errors::InvalidRealtimeResponse);
     }
 
     response.requestId = lila::shared::data::json::ReadOptionalString(
         decoded, lila::shared::network::realtime::fields::RequestId.data());
-    if (!response.requestId.empty() && response.requestId != expectedRequestId)
+    if (response.requestId.empty() || response.requestId != expectedRequestId)
     {
         throw RealtimeProtocolError(lila::shared::errors::RealtimeRequestMismatch);
     }

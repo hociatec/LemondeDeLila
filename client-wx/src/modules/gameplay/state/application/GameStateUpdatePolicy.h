@@ -43,7 +43,8 @@ private:
 
     [[nodiscard]] static bool IsActiveRound(const domain::GameState& state)
     {
-        return Normalize(state.system.match.status) == "started" ||
+        const auto status = Normalize(state.system.match.status);
+        return status == "started" || status == "playing" ||
             Normalize(state.system.setup.phase) == "round" ||
             !state.kits.VisibleHand().empty();
     }

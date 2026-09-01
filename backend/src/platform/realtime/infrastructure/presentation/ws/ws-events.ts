@@ -67,11 +67,6 @@ export const WS_EVENTS = {
     user: 'messaging.user',
   },
   admin: {
-    clientUpdate: {
-      announce: 'admin.client.update.announce',
-      forceLatest: 'admin.client.update.forceLatest',
-      schedule: 'admin.client.update.schedule',
-    },
     users: {
       list: 'admin.users.list',
       get: 'admin.users.get',

@@ -77,7 +77,9 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
     }
     case domain::GameEventType::TurnUpdated:
     {
-        if (roomStarted_ && state_.system.match.status == "started" &&
+        if (roomStarted_ &&
+            (state_.system.match.status == "started" ||
+             state_.system.match.status == "playing") &&
             !event.message.empty() && onHistoryMessage_)
             onHistoryMessage_(FromUtf8(event.message), false);
         return;

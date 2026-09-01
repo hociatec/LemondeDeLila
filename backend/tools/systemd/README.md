@@ -28,24 +28,6 @@ sudo systemctl daemon-reload
 sudo systemctl restart lila-backend.service
 ```
 
-### Données de mises à jour persistantes
-
-Configurer `CLIENT_UPDATES_DIR` vers un dossier persistant **hors de la source**.
-Ajouter aussi `CLIENT_UPDATES_META_PATH` et `CLIENT_UPDATES_UPLOADS_DIR` pour que tout le flux (init/chunk/complete)
-reste persistant et idempotent.
-
-Exemple (drop-in systemd) :
-
-- Copier `backend/tools/systemd/lila-backend.service.d/20-client-updates.conf` vers `/etc/systemd/system/lila-backend.service.d/20-client-updates.conf`
-- Adapter les chemins + l'URL publique
-- Optionnel mais recommandé : définir `TAVERNE_CATEGORIES_ROOT` hors de la source.
-- Puis :
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl restart lila-backend.service
-```
-
 ### API (résumé)
 
 - `POST /api/admin/maintenance/deploy` (JWT admin + header `x-admin-maintenance-token`)

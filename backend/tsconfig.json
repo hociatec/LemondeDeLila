@@ -21,7 +21,8 @@
       "@shared/*": ["src/shared/*"]
     },
     "incremental": true,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
+    "types": ["node", "jest"],
     "strict": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,

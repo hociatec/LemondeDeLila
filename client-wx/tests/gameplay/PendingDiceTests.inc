@@ -21,7 +21,7 @@ void TestPendingChoicesUseOnlyExplicitServerMappings()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     Expect(state.pending.has_value(), "Le pending generique doit etre conserve.");
     Expect(state.pending->viewerActionable && state.pending->choices.size() == 2,
         "Les choix destines au viewer doivent rester interactifs.");
@@ -49,7 +49,7 @@ void TestPendingChoicesStayPassiveWithoutServerMapping()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     Expect(state.pending.has_value() && !state.pending->viewerActionable,
         "Le client ne doit pas deduire un choix interactif depuis la liste d'actions.");
     Expect(!state.pending->choices[0].action.has_value(),
@@ -81,7 +81,7 @@ void TestGenericDiceContract()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     Expect(state.kits.dice.has_value() && state.kits.dice->dice.size() == 2,
         "Tous les des fournis par le serveur doivent etre conserves.");
     Expect(state.kits.dice->total == 8 && state.kits.dice->dice[1].value == 5,
@@ -107,7 +107,7 @@ void TestClassicRollActionContract()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     const auto lines = lila::modules::gameplay::application::GameActionPresentationPolicy::GenericLines(state);
     Expect(lines.empty(),
         "Une action de dé non liee ne doit pas produire de fallback visuel.");

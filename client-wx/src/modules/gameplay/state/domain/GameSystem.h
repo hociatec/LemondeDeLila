@@ -72,6 +72,7 @@ struct GameSetup final
 
 struct GameEngineEventData final
 {
+    bool announce = true;
     std::string message;
     std::string content;
     std::string deckId;

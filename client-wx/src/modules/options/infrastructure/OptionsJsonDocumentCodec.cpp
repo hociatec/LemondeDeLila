@@ -1,5 +1,4 @@
 #include "modules/options/infrastructure/OptionsJsonDocumentCodec.h"
-#include "modules/options/infrastructure/OptionsJsonSchemaMigrator.h"
 #include "modules/options/infrastructure/OptionsStateJsonMapper.h"
 
 #include "shared/errors/catalog/CoreErrorMessages.h"
@@ -15,7 +14,13 @@ domain::OptionsState Parse(const nlohmann::json& document)
         throw std::runtime_error(lila::shared::errors::InvalidOptionsFile);
     }
 
-    return ParseStateFromDocument(MigrateToCurrentSchema(document));
+    const auto version = document.find(std::string(keys::SchemaVersion));
+    if (version == document.end() || !version->is_number_integer() ||
+        version->get<int>() != domain::OptionsState::SchemaVersion)
+    {
+        throw std::runtime_error(lila::shared::errors::InvalidOptionsFile);
+    }
+    return ParseStateFromDocument(document);
 }
 
 nlohmann::json Serialize(const domain::OptionsState& state)

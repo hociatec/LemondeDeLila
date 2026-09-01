@@ -26,9 +26,6 @@ function createHandlerStub() {
     roleDefinitionDelete: jest.fn(async () => null),
     logsDownload: jest.fn(async () => null),
     broadcast: jest.fn(async () => null),
-    clientUpdateAnnounce: jest.fn(async () => null),
-    clientUpdateForceLatest: jest.fn(async () => null),
-    clientUpdateSchedule: jest.fn(async () => null),
     chatMessages: jest.fn(async () => null),
     chatSettingsGet: jest.fn(async () => null),
     chatSettingsUpdate: jest.fn(async () => null),
@@ -80,7 +77,6 @@ describe('AdminWsRegistrar', () => {
     const roles = createHandlerStub();
     const logs = createHandlerStub();
     const broadcast = createHandlerStub();
-    const clientUpdates = createHandlerStub();
     const perf = createHandlerStub();
     const profile = createHandlerStub();
     const bugReports = createHandlerStub();
@@ -98,7 +94,6 @@ describe('AdminWsRegistrar', () => {
       roles as any,
       logs as any,
       broadcast as any,
-      clientUpdates as any,
       perf as any,
       profile as any,
       bugReports as any,
@@ -111,7 +106,6 @@ describe('AdminWsRegistrar', () => {
 
     expect(registry.has(WS_EVENTS.admin.users.list)).toBe(true);
     expect(registry.has(WS_EVENTS.admin.games.update)).toBe(true);
-    expect(registry.has(WS_EVENTS.admin.clientUpdate.schedule)).toBe(true);
     expect(registry.has(WS_EVENTS.admin.chat.clear)).toBe(true);
     expect(registry.has(WS_EVENTS.admin.rooms.destroy)).toBe(true);
     expect(registry.has(WS_EVENTS.admin.quiz.mnemo.questionDelete)).toBe(true);

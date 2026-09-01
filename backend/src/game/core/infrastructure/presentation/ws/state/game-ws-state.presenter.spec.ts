@@ -20,6 +20,7 @@ describe('GameWsStatePresenter', () => {
       exposeStateForUser: () => ({
         ...state,
         actions: [{ type: 'play', label: 'Jouer', payload: { card: 3 } }],
+        kits: { score: { leaderboard: [] } },
       }),
       getShortcuts: () => [
         { key: 'P', type: 'action', actionType: 'play' },
@@ -51,9 +52,94 @@ describe('GameWsStatePresenter', () => {
     expect(payload.state).toBeUndefined();
   });
 
+  it('lets the game hide its score panel once the match is finished', () => {
+    const state = {
+      status: 'finished',
+      players: [{ id: 1, username: 'Lila' }],
+      metadata: {},
+    } as unknown as GameStateEntity;
+    const handler = {
+      exposeStateForUser: () => ({
+        system: { match: { status: 'finished' } },
+        kits: {
+          score: {
+            byPlayer: { '1': 0 },
+            leaderboard: [{ playerId: 1, score: 0, rank: 1 }],
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [
+        { key: 'S', type: 'interface', id: 'score', label: 'Jetons' },
+      ],
+      getDescriptor: () => ({
+        presentation: {
+          score: {
+            label: 'Jetons',
+            unit: { singular: 'jeton', plural: 'jetons' },
+            visibility: 'active-match',
+          },
+        },
+      }),
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state,
+      handler,
+      roomId: 6,
+      gameType: 'lama',
+      version: 9,
+      viewerPlayerId: 1,
+    });
+
+    expect((payload.kits as any).score).toBeNull();
+    expect((payload.system as any).shortcuts).toEqual([]);
+  });
+
+  it('reserves S for the generic score panel in every scored game', () => {
+    const state = {
+      status: 'playing',
+      players: [{ id: 1, username: 'Lila' }],
+      metadata: {},
+    } as unknown as GameStateEntity;
+    const handler = {
+      exposeStateForUser: () => ({
+        system: { match: { status: 'playing' } },
+        kits: {
+          score: {
+            byPlayer: { '1': 0 },
+            leaderboard: [{ playerId: 1, score: 0, rank: 1 }],
+          },
+        },
+        actions: [{ type: 'sell', label: 'Vendre', payload: {} }],
+      }),
+      getShortcuts: () => [
+        { key: 'S', type: 'action', actionType: 'sell', label: 'Vendre' },
+      ],
+      getDescriptor: () => ({
+        presentation: {
+          score: { visibility: 'active-match' },
+        },
+      }),
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state,
+      handler,
+      roomId: 6,
+      gameType: 'example',
+      version: 1,
+      viewerPlayerId: 1,
+    });
+
+    expect((payload.system as any).shortcuts).toEqual([
+      { key: 'S', type: 'interface', id: 'score', label: 'Scores' },
+    ]);
+  });
+
   it('publishes ready-to-render event messages for LAMA', () => {
     const state = {
-      status: 'started',
+      status: 'playing',
       phase: 'turn',
       turn: { currentPlayerId: 1, direction: 1 },
       players: [{ id: 1, username: 'Lila' }],
@@ -63,8 +149,16 @@ describe('GameWsStatePresenter', () => {
       ...state,
       actions: [],
       system: {
+        match: { status: 'playing' },
         players: { all: [{ id: 1, username: 'Lila' }] },
         events: {
+          recent: [
+            {
+              id: '2:2',
+              type: 'score.changed',
+              data: { playerId: 1, value: 1 },
+            },
+          ],
           latestByType: {
             'game.message': {
               id: '2:0',
@@ -132,6 +226,9 @@ describe('GameWsStatePresenter', () => {
       label: 'Jetons',
       unit: { singular: 'jeton', plural: 'jetons' },
     });
+    expect((payload.system as any).events.recent[0].data.message).toBe(
+      'Vous avez maintenant 1 jeton.',
+    );
   });
 
   it('announces the drawn card value only to the player who drew it', () => {
@@ -145,7 +242,12 @@ describe('GameWsStatePresenter', () => {
       exposeStateForUser: () => ({
         system: {
           match: { status: 'started' },
-          players: { all: [{ id: 1, username: 'Lila' }] },
+          players: {
+            all: [
+              { id: 1, username: 'Lila' },
+              { id: 2, username: 'Mina' },
+            ],
+          },
           events: {
             latestByType: {
               'card.received': {
@@ -161,6 +263,11 @@ describe('GameWsStatePresenter', () => {
                   key: 'game.card.drawn',
                   params: { playerId: 1, deckId: 'lama' },
                 },
+              },
+              'turn.started': {
+                id: '3:2',
+                type: 'turn.started',
+                data: { playerId: 2 },
               },
             },
           },
@@ -185,6 +292,10 @@ describe('GameWsStatePresenter', () => {
       ((payload.system as any).events.latestByType['card.received'] as any).data
         .message,
     ).toBeUndefined();
+    expect(
+      ((payload.system as any).events.latestByType['turn.started'] as any).data
+        .message,
+    ).toBe("C'est au tour de Mina.");
 
     const opponentPayload = createPresenter().present({
       state,
@@ -214,6 +325,11 @@ describe('GameWsStatePresenter', () => {
                     key: 'game.card.drawn',
                     params: { playerId: 1, deckId: 'lama' },
                   },
+                },
+                'turn.started': {
+                  id: '3:2',
+                  type: 'turn.started',
+                  data: { playerId: 2 },
                 },
               },
             },
@@ -285,6 +401,69 @@ describe('GameWsStatePresenter', () => {
       (payload.system as any).events.latestByType['match.started'].data.message,
     ).toBe('La partie démarre, bon jeu !');
   });
+
+  it.each([
+    ['game.player.passed', 'Vous passez votre tour.'],
+    ['game.card.drawn', 'Vous piochez une carte.'],
+  ])(
+    'announces the next player in the same utterance after %s',
+    (messageKey, actionMessage) => {
+      const events = [
+        {
+          id: '10:0',
+          type: 'game.message',
+          data: { key: messageKey, params: { playerId: 1 } },
+        },
+        {
+          id: '10:1',
+          type: 'turn.started',
+          data: { playerId: 2 },
+        },
+      ];
+      const handler = {
+        exposeStateForUser: () => ({
+          system: {
+            match: { status: 'started' },
+            players: {
+              all: [
+                { id: 1, username: 'Lila' },
+                { id: 2, username: 'Mina' },
+              ],
+            },
+            events: {
+              recent: events,
+              latestByType: {
+                'game.message': events[0],
+                'turn.started': events[1],
+              },
+            },
+          },
+          actions: [],
+        }),
+        getShortcuts: () => [],
+      } as unknown as GameRuntime;
+
+      const payload = createPresenter().present({
+        state: {
+          status: 'started',
+          players: [
+            { id: 1, username: 'Lila' },
+            { id: 2, username: 'Mina' },
+          ],
+        } as unknown as GameStateEntity,
+        handler,
+        roomId: 6,
+        gameType: 'example',
+        version: 10,
+        viewerPlayerId: 1,
+      });
+      const messages = (payload.system as any).events.recent
+        .map((event: any) => event.data.message)
+        .filter(Boolean);
+
+      expect(messages).toEqual([`${actionMessage}\nC'est au tour de Mina.`]);
+    },
+  );
 
   it('presents a LAMA round start as one player-facing narrative', () => {
     const state = {
@@ -372,7 +551,7 @@ describe('GameWsStatePresenter', () => {
     });
     const events = (payload.system as any).events.latestByType;
     expect(events['game.message'].data.message).toBe(
-      "La partie démarre.\nTout le monde reçoit son paquet de cartes.\nVos cartes : 1, 2, LAMA.\nC'est au tour de hacene.",
+      "La partie démarre.\nTout le monde reçoit son paquet de cartes.\nC'est au tour de hacene.",
     );
     expect((payload.system as any).events.recent[0].data.message).toBe(
       events['game.message'].data.message,
@@ -486,11 +665,11 @@ describe('GameWsStatePresenter', () => {
       .filter(Boolean);
     expect(messages).toEqual([
       'La manche est terminée.',
-      "La manche 2 commence.\nTout le monde reçoit son paquet de cartes.\nVos cartes : 2, 3, LAMA.\nC'est au tour de Mina.",
+      "La manche 2 commence.\nTout le monde reçoit son paquet de cartes.\nC'est au tour de Mina.",
     ]);
   });
 
-  it('publishes a server-driven configuration prompt without legacy rewriting', () => {
+  it('publishes a server-driven configuration prompt without rewriting', () => {
     const prompt = {
       type: 'config_prompt',
       label: 'Configuration',

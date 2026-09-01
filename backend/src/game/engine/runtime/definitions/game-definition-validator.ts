@@ -4,7 +4,6 @@ import { assertComponentDefinitions } from './game-definition-component-validato
 import {
   assertAuxiliaryDefinitions,
   assertConfiguration,
-  assertMigrations,
 } from './game-definition-auxiliary-validator';
 
 export type DefinitionToValidate = {
@@ -36,7 +35,6 @@ export type DefinitionToValidate = {
   stateVersion?: number;
   contentVersion?: string;
   rulesVersion?: string;
-  migrations?: readonly { from: number; to: number }[];
   config?: {
     input?: { parse?: unknown; describe?: unknown };
     defaults?: unknown;
@@ -66,7 +64,6 @@ export function assertGameDefinition(definition: DefinitionToValidate): void {
   assertComponentDefinitions(definition, fail);
   assertAuxiliaryDefinitions(definition, fail);
   assertConfiguration(definition, phaseNames, fail);
-  assertMigrations(definition, fail);
 }
 
 function assertMetadata(
