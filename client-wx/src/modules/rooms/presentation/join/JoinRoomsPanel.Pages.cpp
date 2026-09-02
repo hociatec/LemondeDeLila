@@ -1,7 +1,7 @@
 #include "modules/rooms/presentation/join/JoinRoomsPanel.h"
 
 #include <algorithm>
-#include <array>
+#include <span>
 
 #include <wx/stattext.h>
 #include <wx/weakref.h>
@@ -24,15 +24,9 @@ void JoinRoomsPanel::ApplyRooms(std::vector<domain::PublicRoom> rooms, PreparedH
 
 void JoinRoomsPanel::ShowLoading()
 {
-    using Item = lila::shared::ui::controls::VerticalMenuItem;
-    const std::array<Item, 1> items = {{
-        {"loading", wxString(L"Chargement des parties en cours")},
-    }};
     state_ = State::Loading;
-    menu_->SetItems(items);
-    menu_->SetSelectedIndexSilently(0);
+    menu_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{});
     lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, wxString{}, false);
-    FocusMenuIfVisible();
 }
 
 void JoinRoomsPanel::ShowRooms()
@@ -75,9 +69,8 @@ void JoinRoomsPanel::FocusMenuIfVisible()
             {
                 if (announceEmptyState)
                 {
-                    // The loading entry is reused for the empty state. Since
-                    // focus does not move, screen readers otherwise miss the
-                    // updated label.
+                    // Explicitly publish the asynchronous empty result so it
+                    // is spoken even when no selectable room exists.
                     lila::shared::accessibility::AccessibilityUtils::AnnounceStatus(
                         *focusedItem, focusedItem->GetLabel());
                 }
