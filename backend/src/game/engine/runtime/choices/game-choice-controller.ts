@@ -107,31 +107,17 @@ export class GameChoiceController {
   forPlayers<TValue>(
     options: Omit<ChoiceOptions<TValue>, 'player'> & {
       players: readonly number[];
+      kind?: 'one' | 'pawn';
     },
   ): void {
-    const playerIds = [...new Set(options.players)];
+    const { kind = 'one', players, ...choice } = options;
+    const playerIds = [...new Set(players)];
     if (playerIds.length === 0) {
       throw new GameConfigurationError(
         'Un choix collectif requiert des joueurs',
       );
     }
-    this.create('one', { ...options, player: playerIds[0] }, 1, 1, {
-      playerIds,
-    });
-  }
-
-  pawnsForPlayers(
-    options: Omit<ChoiceOptions<string>, 'player'> & {
-      players: readonly number[];
-    },
-  ): void {
-    const playerIds = [...new Set(options.players)];
-    if (playerIds.length === 0) {
-      throw new GameConfigurationError(
-        'Un choix collectif de pion requiert des joueurs',
-      );
-    }
-    this.create('pawn', { ...options, player: playerIds[0] }, 1, 1, {
+    this.create(kind, { ...choice, player: playerIds[0] }, 1, 1, {
       playerIds,
     });
   }

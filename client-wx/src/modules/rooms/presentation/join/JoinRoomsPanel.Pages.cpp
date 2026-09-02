@@ -48,12 +48,10 @@ void JoinRoomsPanel::FocusMenuIfVisible()
 {
     if (!IsShownOnScreen()) return;
 
-    const bool announceEmptyState =
-        state_ == State::Ready && navigator_.Rooms().empty();
     wxWeakRef<JoinRoomsPanel> weakThis(this);
     lila::shared::accessibility::FocusCoordinator::ScheduleAction(
         *this,
-        [weakThis, announceEmptyState]()
+        [weakThis]()
         {
             if (!weakThis || !weakThis->IsShownOnScreen())
                 return;
@@ -64,19 +62,7 @@ void JoinRoomsPanel::FocusMenuIfVisible()
 
             auto* focusedItem = weakThis->menu_->GetSelectedControl();
             if (focusedItem != nullptr && focusedItem->HasFocus())
-            {
-                if (announceEmptyState)
-                {
-                    // Explicitly publish the asynchronous empty result so it
-                    // is spoken even when no selectable room exists.
-                    lila::shared::accessibility::AccessibilityUtils::AnnounceStatus(
-                        *focusedItem, focusedItem->GetLabel());
-                }
-                else
-                {
-                    lila::shared::accessibility::AccessibilityUtils::NotifyFocus(*focusedItem);
-                }
-            }
+                lila::shared::accessibility::AccessibilityUtils::NotifyFocus(*focusedItem);
         });
 }
 }

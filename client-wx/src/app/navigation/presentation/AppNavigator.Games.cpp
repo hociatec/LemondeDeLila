@@ -33,6 +33,7 @@ void AppNavigator::ShowJoinRooms()
     if (auto* panel = dynamic_cast<modules::rooms::presentation::JoinRoomsPanel*>(view))
     {
         focusTransition_.Forget(view);
+        view->Hide();
         panel->ResetForNextPrepare();
         panel->Prepare(
             [this, sourceViewId, view]()

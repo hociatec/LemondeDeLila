@@ -2,12 +2,13 @@ import { SpanStatusCode, trace, type Attributes } from '@opentelemetry/api';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { NodeSDK } from '@opentelemetry/sdk-node';
+import { getProcessEnvironment } from '../../../config/public-api';
 
 const SERVICE_NAME = 'le-monde-de-lila-backend';
 let sdk: NodeSDK | null = null;
 
 export function startTelemetry(
-  environment: NodeJS.ProcessEnv = process.env,
+  environment: NodeJS.ProcessEnv = getProcessEnvironment(),
 ): NodeSDK | null {
   if (sdk || telemetryDisabled(environment)) return sdk;
   sdk = new NodeSDK({
