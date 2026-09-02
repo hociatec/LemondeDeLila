@@ -115,8 +115,7 @@ create_source_snapshot() {
     --exclude '/coverage/' \
     --exclude '/.env' \
     --exclude '/keys/' \
-    --exclude '/data/client-wx-updates/' \
-    --exclude '/data/sounds/' \
+    --exclude '/data/' \
     --exclude '/backend/logs/' \
     --exclude '/client-wx/logs/' \
     "$source_root/backend/" "$destination/backend/"
