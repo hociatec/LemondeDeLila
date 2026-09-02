@@ -23,8 +23,7 @@ void JoinRoomsPanel::Load(PreparedHandler onPrepared)
 {
     CancelRequest();
     const auto generation = requestSlot_.CurrentToken();
-    state_ = State::Loading;
-    statusLabel_->Hide();
+    ShowLoading();
 
     auto* service = &service_;
     wxWeakRef<JoinRoomsPanel> weakThis(this);

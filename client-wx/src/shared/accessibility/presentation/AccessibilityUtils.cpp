@@ -11,6 +11,7 @@ namespace
 // MinGW hides the WinEvent constant when the application still targets
 // Windows 7, even though newer Windows versions handle it at runtime.
 constexpr DWORD WinEventObjectLiveRegionChanged = 0x8019;
+constexpr DWORD WinEventObjectFocus = 0x8005;
 }
 #endif
 
@@ -91,6 +92,22 @@ void AccessibilityUtils::AnnounceLiveRegion(wxWindow& control, const wxString& m
             OBJID_CLIENT,
             CHILDID_SELF);
     }
+#endif
+}
+
+void AccessibilityUtils::NotifyFocus(wxWindow& control)
+{
+#ifdef __WXMSW__
+    if (control.GetHandle() != nullptr)
+    {
+        NotifyWinEvent(
+            WinEventObjectFocus,
+            reinterpret_cast<HWND>(control.GetHandle()),
+            OBJID_CLIENT,
+            CHILDID_SELF);
+    }
+#else
+    static_cast<void>(control);
 #endif
 }
 
