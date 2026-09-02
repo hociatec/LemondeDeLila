@@ -19,7 +19,8 @@ std::vector<domain::PublicRoom> RoomLobbyApi::ListPublic(std::stop_token stopTok
 {
     const auto response = lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_, sessionStore_, lila::shared::errors::NoActiveRoomSession,
-        "room.lobby.list", nlohmann::json::object(), lila::shared::errors::RoomLobbyLoadFailed, stopToken);
+        "room.lobby.list", nlohmann::json::object(), lila::shared::errors::RoomLobbyLoadFailed,
+        stopToken, "room.lobby.listed");
     return codec::ReadPublicRooms(response.payload);
 }
 
@@ -29,7 +30,8 @@ std::vector<domain::RoomInviteCandidate> RoomLobbyApi::ListInviteCandidates(
     const auto response = lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_, sessionStore_, lila::shared::errors::NoActiveRoomSession,
         "room.lobby.invite.presence.list", {{"roomId", roomId}},
-        lila::shared::errors::RoomLobbyLoadFailed, stopToken);
+        lila::shared::errors::RoomLobbyLoadFailed, stopToken,
+        "room.lobby.invite.presence.listed");
     std::vector<domain::RoomInviteCandidate> result;
     const auto players = response.payload.find("players");
     if (players == response.payload.end() || !players->is_array()) return result;
@@ -63,7 +65,8 @@ void RoomLobbyApi::SendInvite(int roomId, int userId, std::stop_token stopToken)
     static_cast<void>(lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_, sessionStore_, lila::shared::errors::NoActiveRoomSession,
         "room.lobby.invite.send", {{"roomId", roomId}, {"userId", userId}},
-        lila::shared::errors::RoomLobbyLoadFailed, stopToken));
+        lila::shared::errors::RoomLobbyLoadFailed, stopToken,
+        "room.lobby.invite.sent"));
 }
 
 void RoomLobbyApi::RespondInvite(
@@ -73,6 +76,7 @@ void RoomLobbyApi::RespondInvite(
         client_, sessionStore_, lila::shared::errors::NoActiveRoomSession,
         "room.lobby.invite.respond",
         {{"invitationId", std::string(invitationId)}, {"accept", accept}},
-        lila::shared::errors::RoomLobbyLoadFailed, stopToken));
+        lila::shared::errors::RoomLobbyLoadFailed, stopToken,
+        "room.lobby.invite.responded"));
 }
 }
