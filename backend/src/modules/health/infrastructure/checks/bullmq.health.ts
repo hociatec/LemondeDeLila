@@ -8,6 +8,7 @@ import {
 import { Queue } from 'bullmq';
 import type Redis from 'ioredis';
 import { RedisClientFactory } from '../../../../platform/redis/public-api';
+import { prometheusMetrics } from '../../../../platform/observability/public-api';
 
 @Injectable()
 export class BullmqHealthIndicator extends HealthIndicator {
@@ -44,6 +45,19 @@ export class BullmqHealthIndicator extends HealthIndicator {
         'delayed',
         'failed',
       );
+      prometheusMetrics.setBullmqJobs('game-engine-tasks', {
+        waiting: counts.waiting,
+        active: counts.active,
+        delayed: counts.delayed,
+        failed: counts.failed,
+      });
+      prometheusMetrics.setDependencyUp('bullmq', true);
+      const queued = counts.waiting + counts.active + counts.delayed;
+      prometheusMetrics.setDependencySaturation(
+        'bullmq',
+        'queued-jobs',
+        queued / Math.max(1, queued + 100),
+      );
       const maximumFailed = this.config.get<number>(
         'HEALTH_MAX_FAILED_JOBS',
         100,
@@ -57,6 +71,7 @@ export class BullmqHealthIndicator extends HealthIndicator {
       }
       return status;
     } catch (error) {
+      prometheusMetrics.setDependencyUp('bullmq', false);
       if (error instanceof HealthCheckError) throw error;
       throw new HealthCheckError(
         'BullMQ check failed',

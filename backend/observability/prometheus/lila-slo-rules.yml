@@ -1,0 +1,12 @@
+groups:
+  - name: lila-slo-recording
+    interval: 30s
+    rules:
+      - record: lila:slo:http_availability:ratio_rate5m
+        expr: 1 - (sum(rate(lila_http_requests_total{status=~"5.."}[5m])) / clamp_min(sum(rate(lila_http_requests_total[5m])), 1))
+      - record: lila:slo:http_latency_p95_seconds:rate5m
+        expr: histogram_quantile(0.95, sum by (le) (rate(lila_http_request_duration_seconds_bucket[5m])))
+      - record: lila:slo:ws_error:ratio_rate5m
+        expr: sum(rate(lila_ws_messages_total{outcome="error"}[5m])) / clamp_min(sum(rate(lila_ws_messages_total[5m])), 1)
+      - record: lila:slo:bullmq_failed:increase15m
+        expr: sum(increase(lila_bullmq_jobs{state="failed"}[15m]))

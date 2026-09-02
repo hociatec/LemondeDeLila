@@ -20,6 +20,15 @@ describe('PrometheusMetrics', () => {
 
     prometheusMetrics.middleware(request, response, next);
     finish?.();
+    prometheusMetrics.recordWebSocket('room.get', 'success', 0.01);
+    prometheusMetrics.setDependencyUp('database', true);
+    prometheusMetrics.setDependencySaturation('database', 'pool', 2);
+    prometheusMetrics.setBullmqJobs('game-engine-tasks', {
+      waiting: 1,
+      active: 2,
+      delayed: 3,
+      failed: 4,
+    });
 
     const output = await prometheusMetrics.registry.metrics();
     expect(next).toHaveBeenCalledTimes(1);
@@ -28,5 +37,15 @@ describe('PrometheusMetrics', () => {
       'lila_http_requests_total{method="GET",route="/health/ready",status="200"}',
     );
     expect(output).not.toContain('query');
+    expect(output).toContain(
+      'lila_ws_messages_total{type="room.get",outcome="success"} 1',
+    );
+    expect(output).toContain('lila_dependency_up{dependency="database"} 1');
+    expect(output).toContain(
+      'lila_dependency_saturation_ratio{dependency="database",resource="pool"} 1',
+    );
+    expect(output).toContain(
+      'lila_bullmq_jobs{queue="game-engine-tasks",state="failed"} 4',
+    );
   });
 });

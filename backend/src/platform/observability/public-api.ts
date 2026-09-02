@@ -9,3 +9,4 @@ export { sanitizeLogText, sanitizeLogValue } from './application/log-sanitizer';
 export { getBuildInfo, type BuildInfo } from './application/build-info';
 export { ObservabilityModule } from './observability.module';
 export { prometheusMetrics } from './infrastructure/metrics/prometheus-metrics';
+export { inSpan } from './infrastructure/tracing/telemetry';

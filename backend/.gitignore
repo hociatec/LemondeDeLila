@@ -2,6 +2,7 @@ node_modules/
 dist/
 dist.locked-*/
 coverage/
+.stryker-tmp/
 logs/
 data/client-updates/
 keys/*.pem

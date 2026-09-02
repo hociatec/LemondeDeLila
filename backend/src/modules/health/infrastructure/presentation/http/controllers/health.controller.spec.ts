@@ -21,12 +21,22 @@ describe('HealthController', () => {
       checkEventLoop: jest.fn(() => ({ eventLoop: { status: 'up' } })),
       checkStorage: jest.fn().mockResolvedValue({ storage: { status: 'up' } }),
     };
+    const dataSource = {
+      driver: {
+        pool: {
+          _allConnections: { length: 4 },
+          _freeConnections: { length: 2 },
+          config: { connectionLimit: 10 },
+        },
+      },
+    };
     const controller = new HealthController(
       health as any,
       db as any,
       redis as any,
       bullmq as any,
       runtime as any,
+      dataSource as any,
     );
 
     await expect(controller.live()).resolves.toEqual({ status: 'ok' });
