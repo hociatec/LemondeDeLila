@@ -8,17 +8,6 @@
 
 namespace lila::modules::update::launcher
 {
-std::wstring QuotePowerShellLiteral(const fs::path& path)
-{
-    std::wstring value = path.wstring();
-    std::wstring escaped;
-    for (const auto character : value) {
-        escaped.push_back(character);
-        if (character == L'\'') escaped.push_back(L'\'');
-    }
-    return L"'" + escaped + L"'";
-}
-
 std::uint16_t ReadUInt16(const std::vector<unsigned char>& bytes, std::size_t offset)
 {
     if (offset + 2 > bytes.size()) throw std::runtime_error("Truncated ZIP metadata.");
@@ -33,20 +22,6 @@ std::uint32_t ReadUInt32(const std::vector<unsigned char>& bytes, std::size_t of
         (static_cast<std::uint32_t>(bytes[offset + 1]) << 8) |
         (static_cast<std::uint32_t>(bytes[offset + 2]) << 16) |
         (static_cast<std::uint32_t>(bytes[offset + 3]) << 24);
-}
-
-bool IsSafeArchivePath(std::string value)
-{
-    if (value.empty() || value.front() == '/' || value.front() == '\\' ||
-        value.find('\0') != std::string::npos ||
-        (value.size() > 1 && value[1] == ':')) return false;
-    std::replace(value.begin(), value.end(), '\\', '/');
-    std::stringstream segments(value);
-    std::string segment;
-    while (std::getline(segments, segment, '/')) {
-        if (segment == ".." || segment == ".") return false;
-    }
-    return true;
 }
 
 std::uint64_t InspectArchive(const fs::path& archive, std::uint64_t compressedBytes)
@@ -140,81 +115,6 @@ void RenameWithRetry(const fs::path& source, const fs::path& destination)
         std::this_thread::sleep_for(std::chrono::milliseconds(250 * (attempt + 1)));
     }
     throw fs::filesystem_error("Unable to commit extracted update", source, destination, last);
-}
-
-void ExtractArchive(
-    const fs::path& archive,
-    const fs::path& destination,
-    std::uint64_t expectedExtractedBytes,
-    UpdateProgressDialog* progress)
-{
-    if (progress) progress->SetStage(L"Installation des fichiers…", 88);
-    fs::remove_all(destination);
-    fs::create_directories(destination);
-    std::wstring command = L"powershell.exe -NoLogo -NoProfile -NonInteractive "
-        L"-ExecutionPolicy Bypass -Command \"$ErrorActionPreference='Stop'; "
-        L"Expand-Archive -LiteralPath " + QuotePowerShellLiteral(archive) +
-        L" -DestinationPath " + QuotePowerShellLiteral(destination) + L" -Force\"";
-    STARTUPINFOW startup{};
-    startup.cb = sizeof(startup);
-    startup.dwFlags = STARTF_USESHOWWINDOW;
-    startup.wShowWindow = SW_HIDE;
-    PROCESS_INFORMATION process{};
-    if (!CreateProcessW(nullptr, command.data(), nullptr, nullptr, FALSE,
-            CREATE_NO_WINDOW, nullptr, destination.parent_path().c_str(), &startup, &process)) {
-        throw std::runtime_error("Unable to start archive extraction.");
-    }
-    CloseHandle(process.hThread);
-    const DWORD wait = WaitForSingleObject(process.hProcess, 5 * 60 * 1000);
-    DWORD exitCode = 1;
-    GetExitCodeProcess(process.hProcess, &exitCode);
-    if (wait != WAIT_OBJECT_0) {
-        TerminateProcess(process.hProcess, 0x4C494C41);
-        WaitForSingleObject(process.hProcess, 5000);
-    }
-    CloseHandle(process.hProcess);
-    if (wait != WAIT_OBJECT_0 || exitCode != 0) {
-        fs::remove_all(destination);
-        throw std::runtime_error("Update archive extraction failed.");
-    }
-    if (progress) progress->SetStage(L"Vérification des exécutables…", 94);
-    if (!fs::is_regular_file(destination / AppExecutable) ||
-        !fs::is_regular_file(destination / LauncherExecutable)) {
-        fs::remove_all(destination);
-        throw std::runtime_error("Update does not contain all required executables.");
-    }
-    if (!AllowUnsignedUpdates()) {
-        for (const auto* executable : {AppExecutable, LauncherExecutable}) {
-            std::string failure;
-            if (!VerifyAuthenticodeWithRetry(destination / executable, &failure)) {
-                fs::remove_all(destination);
-                throw std::runtime_error(
-                    "Update executable " + Narrow(executable) +
-                    " failed Authenticode verification (" + failure + ").");
-            }
-        }
-    }
-    if (progress) progress->SetStage(L"Contrôle de l'installation…", 97);
-    std::uint64_t actualExtractedBytes = 0;
-    for (const auto& entry : fs::recursive_directory_iterator(destination)) {
-        if (entry.is_symlink() || (entry.status().permissions() == fs::perms::unknown)) {
-            fs::remove_all(destination);
-            throw std::runtime_error("Update contains an unsafe filesystem entry.");
-        }
-        if (entry.is_regular_file()) {
-            const auto size = entry.file_size();
-            if (actualExtractedBytes > expectedExtractedBytes ||
-                size > expectedExtractedBytes - actualExtractedBytes) {
-                fs::remove_all(destination);
-                throw std::runtime_error("Extracted update exceeds its declared size.");
-            }
-            actualExtractedBytes += size;
-        }
-    }
-    if (actualExtractedBytes != expectedExtractedBytes) {
-        fs::remove_all(destination);
-        throw std::runtime_error("Extracted update size does not match ZIP metadata.");
-    }
 }
 
 }

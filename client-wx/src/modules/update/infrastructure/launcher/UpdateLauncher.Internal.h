@@ -17,6 +17,7 @@ namespace fs = std::filesystem;
 using Manifest = lila::modules::update::UpdateManifest;
 using lila::modules::update::BuildStagedUpdateArchiveFileName;
 using lila::modules::update::CanonicalUpdateSignature;
+using lila::modules::update::IsSafeArchivePath;
 using lila::modules::update::IsSafeReleaseId;
 using lila::modules::update::IsUpdateNewer;
 using lila::modules::update::ParseUpdateManifest;
