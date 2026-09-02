@@ -3,8 +3,10 @@
 #include <algorithm>
 
 #include <wx/stattext.h>
+#include <wx/weakref.h>
 
 #include "modules/rooms/presentation/lobby/RoomLobbyPresentationModel.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 #include "shared/ui/presentation/layout/ListPagePresentation.h"
 
@@ -37,6 +39,16 @@ void JoinRoomsPanel::ShowError(const wxString& message, PreparedHandler onPrepar
 
 void JoinRoomsPanel::FocusMenuIfVisible()
 {
-    lila::shared::ui::layout::FocusListPageIfVisible(*this, BuildFocusPlan());
+    if (!IsShownOnScreen()) return;
+
+    wxWeakRef<JoinRoomsPanel> weakThis(this);
+    lila::shared::accessibility::FocusCoordinator::Schedule(
+        *this,
+        [weakThis]()
+        {
+            if (!weakThis || !weakThis->IsShownOnScreen())
+                return lila::shared::accessibility::FocusManager::Plan{};
+            return weakThis->BuildFocusPlan();
+        });
 }
 }
