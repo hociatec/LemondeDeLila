@@ -5,6 +5,13 @@
 
 #ifdef __WXMSW__
 #include <windows.h>
+
+namespace
+{
+// MinGW hides the WinEvent constant when the application still targets
+// Windows 7, even though newer Windows versions handle it at runtime.
+constexpr DWORD WinEventObjectLiveRegionChanged = 0x8019;
+}
 #endif
 
 namespace lila::shared::accessibility
@@ -60,7 +67,7 @@ void AccessibilityUtils::AnnounceStatus(wxWindow& control, const wxString& messa
     if (control.GetHandle() != nullptr)
     {
         NotifyWinEvent(
-            EVENT_OBJECT_LIVEREGIONCHANGED,
+            WinEventObjectLiveRegionChanged,
             reinterpret_cast<HWND>(control.GetHandle()),
             OBJID_CLIENT,
             CHILDID_SELF);
@@ -79,7 +86,7 @@ void AccessibilityUtils::AnnounceLiveRegion(wxWindow& control, const wxString& m
     if (control.GetHandle() != nullptr)
     {
         NotifyWinEvent(
-            LiveRegionChangedEvent,
+            WinEventObjectLiveRegionChanged,
             reinterpret_cast<HWND>(control.GetHandle()),
             OBJID_CLIENT,
             CHILDID_SELF);
