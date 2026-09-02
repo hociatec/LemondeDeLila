@@ -31,6 +31,18 @@ PawnSelectionPanel::PawnSelectionPanel(wxWindow* parent)
     SetSizer(root);
     Hide();
     list_->Bind(wxEVT_LISTBOX_DCLICK, [this](wxCommandEvent&) { Submit(); });
+    list_->Bind(
+        wxEVT_KEY_DOWN,
+        [this](wxKeyEvent& event)
+        {
+            const int key = event.GetKeyCode();
+            if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
+            {
+                Submit();
+                return;
+            }
+            event.Skip();
+        });
 }
 
 void PawnSelectionPanel::SetSubmitHandler(SubmitHandler handler)
