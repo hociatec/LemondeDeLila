@@ -18,6 +18,18 @@ void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
             "req-1",
             "vault.restore"),
         "La reponse d'une autre requete doit etre ignoree");
+    Expect(
+        lila::shared::network::realtime::protocol::IsResponseForRequest(
+            R"({"type":"error","context":"vault.restore","requestId":"req-1","payload":{"message":"Session expiree"}})",
+            "req-1",
+            "vault.restore"),
+        "Une erreur correlee doit terminer la requete");
+    Expect(
+        !lila::shared::network::realtime::protocol::IsResponseForRequest(
+            R"({"type":"error","context":"rooms.public.list","requestId":"req-1","payload":{"message":"Erreur"}})",
+            "req-1",
+            "vault.restore"),
+        "L'erreur d'une autre requete doit etre ignoree");
 
     const auto response = lila::shared::network::realtime::protocol::ParseResponse(
         R"({"type":"response.type","requestId":"req-1","success":true,"payload":{"ok":true}})",
@@ -25,6 +37,16 @@ void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
         "response.type");
     Expect(response.type == "response.type", "Type correle attendu");
     Expect(response.success, "Succes attendu");
+
+    const auto errorResponse = lila::shared::network::realtime::protocol::ParseResponse(
+        R"({"type":"error","context":"vault.restore","requestId":"req-1","payload":{"message":"Session expiree"}})",
+        "req-1",
+        "vault.restore");
+    Expect(!errorResponse.success, "Echec correle attendu");
+    Expect(
+        errorResponse.errorKind == lila::shared::network::realtime::RealtimeErrorKind::Server,
+        "Erreur serveur attendue");
+    Expect(errorResponse.errorMessage == "Session expiree", "Message d'erreur attendu");
 
     bool threw = false;
     try

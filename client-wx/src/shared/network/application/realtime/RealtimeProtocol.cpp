@@ -67,8 +67,13 @@ bool IsResponseForRequest(
         decoded, lila::shared::network::realtime::fields::RequestId.data());
     const auto type = lila::shared::data::json::ReadOptionalString(
         decoded, lila::shared::network::realtime::fields::Type.data());
+    const auto context = lila::shared::data::json::ReadOptionalString(
+        decoded, lila::shared::network::realtime::fields::Context.data());
+    const bool matchingType = !expectedType.empty() && type == expectedType;
+    const bool matchingError = type == lila::shared::network::realtime::fields::ErrorType
+        && context == expectedType;
     return !requestId.empty() && requestId == expectedRequestId &&
-        !expectedType.empty() && type == expectedType;
+        (matchingType || matchingError);
 }
 
 RealtimeApiResponse ParseResponse(
@@ -93,7 +98,12 @@ RealtimeApiResponse ParseResponse(
     RealtimeApiResponse response;
     response.type = lila::shared::data::json::ReadOptionalString(
         decoded, lila::shared::network::realtime::fields::Type.data());
-    if (response.type.empty() || response.type != expectedType)
+    const auto context = lila::shared::data::json::ReadOptionalString(
+        decoded, lila::shared::network::realtime::fields::Context.data());
+    const bool matchingType = !expectedType.empty() && response.type == expectedType;
+    const bool matchingError = response.type == lila::shared::network::realtime::fields::ErrorType
+        && context == expectedType;
+    if (!matchingType && !matchingError)
     {
         throw RealtimeProtocolError(lila::shared::errors::InvalidRealtimeResponse);
     }
