@@ -13,6 +13,12 @@ void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
             "vault.restore"),
         "La reponse correlee de restauration doit etre acceptee");
     Expect(
+        lila::shared::network::realtime::protocol::IsResponseForRequest(
+            R"({"type":"auth.login.ok","requestId":"req-login","payload":{"token":"jwt"}})",
+            "req-login",
+            "auth.login"),
+        "La reponse de succes auth suffixee par .ok doit etre acceptee");
+    Expect(
         !lila::shared::network::realtime::protocol::IsResponseForRequest(
             R"({"type":"vault.restore","requestId":"req-2","payload":{"roomId":42}})",
             "req-1",
@@ -37,6 +43,13 @@ void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
         "response.type");
     Expect(response.type == "response.type", "Type correle attendu");
     Expect(response.success, "Succes attendu");
+
+    const auto authResponse = lila::shared::network::realtime::protocol::ParseResponse(
+        R"({"type":"auth.login.ok","requestId":"req-login","payload":{"token":"jwt"}})",
+        "req-login",
+        "auth.login");
+    Expect(authResponse.success, "Connexion auth reussie attendue");
+    Expect(authResponse.type == "auth.login.ok", "Type de succes auth attendu");
 
     const auto errorResponse = lila::shared::network::realtime::protocol::ParseResponse(
         R"({"type":"error","context":"vault.restore","requestId":"req-1","payload":{"message":"Session expiree"}})",

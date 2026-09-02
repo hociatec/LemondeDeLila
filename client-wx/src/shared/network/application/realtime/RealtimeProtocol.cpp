@@ -12,6 +12,11 @@
 
 namespace
 {
+bool IsSuccessTypeForRequest(const std::string& responseType, const std::string& requestType)
+{
+    return !requestType.empty()
+        && (responseType == requestType || responseType == requestType + ".ok");
+}
 }
 
 namespace lila::shared::network::realtime::protocol
@@ -69,7 +74,7 @@ bool IsResponseForRequest(
         decoded, lila::shared::network::realtime::fields::Type.data());
     const auto context = lila::shared::data::json::ReadOptionalString(
         decoded, lila::shared::network::realtime::fields::Context.data());
-    const bool matchingType = !expectedType.empty() && type == expectedType;
+    const bool matchingType = IsSuccessTypeForRequest(type, expectedType);
     const bool matchingError = type == lila::shared::network::realtime::fields::ErrorType
         && context == expectedType;
     return !requestId.empty() && requestId == expectedRequestId &&
@@ -100,7 +105,7 @@ RealtimeApiResponse ParseResponse(
         decoded, lila::shared::network::realtime::fields::Type.data());
     const auto context = lila::shared::data::json::ReadOptionalString(
         decoded, lila::shared::network::realtime::fields::Context.data());
-    const bool matchingType = !expectedType.empty() && response.type == expectedType;
+    const bool matchingType = IsSuccessTypeForRequest(response.type, expectedType);
     const bool matchingError = response.type == lila::shared::network::realtime::fields::ErrorType
         && context == expectedType;
     if (!matchingType && !matchingError)
