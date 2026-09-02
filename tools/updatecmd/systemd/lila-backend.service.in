@@ -11,7 +11,7 @@ WorkingDirectory=@INSTALL_ROOT@/current/backend
 Environment=NODE_ENV=production
 EnvironmentFile=@BACKEND_ENV_FILE@
 EnvironmentFile=-@INSTALL_ROOT@/current/.release.env
-ExecStart=/usr/bin/node dist/main
+ExecStart=/usr/bin/node --require ./dist/platform/observability/infrastructure/tracing/telemetry-register.js dist/main
 Restart=on-failure
 RestartSec=3
 TimeoutStartSec=90
