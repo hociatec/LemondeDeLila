@@ -26,7 +26,7 @@ void JoinRoomsPanel::ShowLoading()
 {
     using Item = lila::shared::ui::controls::VerticalMenuItem;
     const std::array<Item, 1> items = {{
-        {"loading", wxString(L"Rejoindre une partie")},
+        {"loading", wxString(L"Liste des parties disponibles")},
     }};
     state_ = State::Loading;
     menu_->SetItems(items);
