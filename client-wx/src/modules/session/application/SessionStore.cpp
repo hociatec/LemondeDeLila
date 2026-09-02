@@ -40,6 +40,12 @@ void SessionStore::Clear()
     ++generation_;
 }
 
+void SessionStore::SetSessionExpiredHandler(std::function<void()> handler)
+{
+    std::scoped_lock lock(mutex_);
+    sessionExpiredHandler_ = std::move(handler);
+}
+
 std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle>
 SessionStore::LogoutAsync(std::function<void()> completion)
 {

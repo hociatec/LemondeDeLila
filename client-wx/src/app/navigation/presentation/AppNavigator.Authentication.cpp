@@ -113,6 +113,30 @@ void AppNavigator::OnLogoutRequested(std::size_t)
     ResetSessionViews();
 }
 
+void AppNavigator::OnSessionExpired()
+{
+    if (closing_ || currentViewId_ == ViewId::Home)
+    {
+        return;
+    }
+
+    lila::shared::logging::LogWarning(
+        "Navigator",
+        "Session expired. Returning to authentication.");
+    lastMainMenuSelection_ = 0;
+    messagingOpenedFromSocial_ = false;
+    presenceMonitor_.Stop();
+    roomInvitationMonitor_.Stop();
+    if (invitationResponseTask_)
+    {
+        invitationResponseTask_->RequestCancel();
+        invitationResponseTask_.reset();
+    }
+    pendingInvitations_.clear();
+    ResetSessionViews();
+    ShowHome();
+}
+
 void AppNavigator::ResetSessionViews()
 {
     messagingOpenedFromSocial_ = false;
