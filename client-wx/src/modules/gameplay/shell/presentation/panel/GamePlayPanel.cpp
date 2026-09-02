@@ -7,6 +7,7 @@
 #include <wx/choice.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/dice/application/GameDiceActionResolver.h"
 #include "modules/gameplay/session/application/GameSessionService.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
@@ -157,6 +158,12 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     {
         if (auto* target = handPanel_->NavigationTarget()) return target;
     }
+    // A dice roll is activated from the stable room game-zone anchor. Scores
+    // and other read-only capability lists must not steal the initial focus.
+    if (const auto* dice = state_.kits.Dice();
+        dice != nullptr && application::dice::GameDiceActionResolver::Resolve(
+            *dice, state_.actions).has_value())
+        return nullptr;
     if (gridPanel_ != nullptr)
     {
         if (auto* target = gridPanel_->NavigationTarget(); target && gridPanel_->IsShown())
