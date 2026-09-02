@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { getProcessEnvironment } from '../../../../platform/config/public-api';
 
 type ContentReleaseEntry = {
   file: string;
@@ -26,7 +27,7 @@ let cachedManifest: ContentReleaseManifest | null = null;
 
 export function loadExternalGameContent(
   gameId: string,
-  environment: NodeJS.ProcessEnv = process.env,
+  environment: NodeJS.ProcessEnv = getProcessEnvironment(),
 ): ExternalGameContent | null {
   const configuredRoot = environment.LILA_CONTENT_RELEASE_DIR?.trim();
   if (!configuredRoot) return null;
