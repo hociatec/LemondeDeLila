@@ -33,6 +33,11 @@ ensure_wx_native_dependencies() {
   rsync -a --delete "$SOURCE_ROOT/tools/updatecmd/vcpkg-overlays/miniz/" \
     "$overlay_root/miniz/"
   chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$overlay_root/miniz"
+  if [[ -f "$WX_VCPKG_ROOT/installed/$WX_VCPKG_TRIPLET/bin/libminiz.dll" ]]; then
+    log "Migration de miniz dynamique vers la variante statique du lanceur."
+    run_as "$BUILD_USER" "$WX_VCPKG_ROOT/vcpkg" remove \
+      "miniz:$WX_VCPKG_TRIPLET"
+  fi
   run_as "$BUILD_USER" env \
     VCPKG_DEFAULT_BINARY_CACHE="$WX_BINARY_CACHE" \
     VCPKG_BINARY_SOURCES="clear;files,$WX_BINARY_CACHE,readwrite" \
