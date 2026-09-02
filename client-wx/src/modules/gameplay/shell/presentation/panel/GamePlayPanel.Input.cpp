@@ -39,6 +39,10 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     {
         return promptPanel_->HandleKey(event);
     }
+    // A projected game state can already contain the next run's pawn choice
+    // while the room is still in setup. Until the room confirms its start,
+    // Enter belongs exclusively to the stable room game-zone activation.
+    if (!roomStarted_) return false;
     if (pawnSelectionPanel_->IsActive())
     {
         return pawnSelectionPanel_->HandleKey(event);
@@ -73,13 +77,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         SelectInfoPanel(genericPanel, true);
         return true;
     }
-
-    // Before the room starts, Enter must reach the room activation path so it
-    // can either start or announce the server-provided participant constraint.
-    const bool gameStateStarted =
-        (state_.system.match.status == "started" ||
-         state_.system.match.status == "playing") && state_.system.setup.complete;
-    if (!roomStarted_ && !gameStateStarted) return false;
 
     if (key == "ENTER")
     {

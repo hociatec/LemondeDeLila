@@ -137,13 +137,10 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
         const auto targets = promptPanel_->TabTargets();
         if (!targets.empty()) return targets.front();
     }
-    // The game websocket can confirm the configured match just before the room
-    // websocket publishes its started status. In that short interval the hand
-    // is already authoritative and must remain keyboard-accessible.
-    const bool gameStateStarted =
-        (state_.system.match.status == "started" ||
-         state_.system.match.status == "playing") && state_.system.setup.complete;
-    if (!roomStarted_ && !gameStateStarted) return nullptr;
+    // The game socket prepares the next run before the room starts. Those
+    // controls must remain hidden from keyboard navigation until the room
+    // confirms the transition; only the stable game-zone anchor is exposed.
+    if (!roomStarted_) return nullptr;
     if (pawnSelectionPanel_ != nullptr)
     {
         if (auto* target = pawnSelectionPanel_->NavigationTarget()) return target;

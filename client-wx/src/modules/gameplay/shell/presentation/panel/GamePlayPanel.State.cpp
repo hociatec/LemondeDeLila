@@ -181,9 +181,12 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     UpdateInfoPanel();
     infoText_->Show(!infoText_->GetValue().empty());
     SyncInlinePrompt();
+    const auto visiblePawnSelection = roomStarted_
+        ? pawnSelection_
+        : std::optional<domain::PawnSelection>{};
     const bool pawnSelectionCompleted =
-        pawnSelectionPanel_->IsActive() && !pawnSelection_.has_value();
-    pawnSelectionPanel_->Apply(pawnSelection_);
+        pawnSelectionPanel_->IsActive() && !visiblePawnSelection.has_value();
+    pawnSelectionPanel_->Apply(visiblePawnSelection);
     if (pawnSelectionCompleted && onZoneFocusRequested_) onZoneFocusRequested_();
     SyncContentVisibility();
     Layout();
