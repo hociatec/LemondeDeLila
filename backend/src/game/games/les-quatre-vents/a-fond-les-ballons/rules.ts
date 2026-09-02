@@ -69,6 +69,7 @@ function moveBy(
     trackId: TRACK,
     playerId,
     distance: delta,
+    tiles: A_FOND_LES_BALLONS_TILES,
     depth: depth + 1,
     maxDepth: MAX_DEPTH,
     blocked: () => ctx.match.lifecycle() === 'finished',
@@ -89,6 +90,7 @@ function landOn(
   ctx.movement.resolveLanding({
     trackId: TRACK,
     playerId,
+    tiles: A_FOND_LES_BALLONS_TILES,
     depth,
     maxDepth: MAX_DEPTH,
     blocked: () => ctx.match.lifecycle() === 'finished',

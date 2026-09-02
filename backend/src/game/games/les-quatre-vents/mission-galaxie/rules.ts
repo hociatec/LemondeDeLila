@@ -195,6 +195,7 @@ export function moveMissionAndResolve(
     trackId: TRACK,
     playerId,
     distance: delta,
+    tiles: MISSION_GALAXIE_CONTENT.tiles,
     depth: depth + 1,
     maxDepth: MAX_EFFECT_DEPTH,
     blocked: () =>

@@ -182,10 +182,11 @@ export class GamePawnController {
 
   assign(setId: string, playerId: number, pawnId: string): void {
     const definition = this.requireSet(setId);
+    const pawn = definition.pawns.find((candidate) => candidate.id === pawnId);
     if (!this.players.some((player) => player.id === playerId)) {
       throw new GameRuleViolationError('UNKNOWN_PLAYER', { playerId });
     }
-    if (!definition.pawns.some((pawn) => pawn.id === pawnId)) {
+    if (!pawn) {
       throw new GameRuleViolationError('UNKNOWN_PAWN', { setId, pawnId });
     }
     const owner = this.owner(setId, pawnId);
@@ -208,7 +209,12 @@ export class GamePawnController {
     }
     assigned.push(pawnId);
     (this.state.owners[setId] ??= {})[pawnId] = playerId;
-    this.emit('pawn.assigned', { setId, pawnId, playerId });
+    this.emit('pawn.assigned', {
+      setId,
+      pawnId,
+      pawnLabel: pawn.label ?? pawn.name ?? pawn.id,
+      playerId,
+    });
   }
 
   selectionComplete(setId: string): boolean {

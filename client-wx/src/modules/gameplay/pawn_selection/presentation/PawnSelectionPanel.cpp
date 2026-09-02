@@ -19,13 +19,13 @@ PawnSelectionPanel::PawnSelectionPanel(wxWindow* parent)
 {
     SetBackgroundColour(lila::shared::ui::Theme::PanelBackground());
     auto* root = new wxBoxSizer(wxVERTICAL);
-    label_ = new wxStaticText(this, wxID_ANY, wxString(L"Votre pion."));
+    label_ = new wxStaticText(this, wxID_ANY, wxString(L"Choisissez votre pion."));
     label_->SetForegroundColour(lila::shared::ui::Theme::Accent());
     label_->SetFont(lila::shared::ui::Theme::TitleFont());
     root->Add(label_, 0, wxEXPAND | wxBOTTOM, 6);
     list_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
-    list_->SetName(wxString(L"Votre pion."));
+    list_->SetName(wxString(L"Choisissez votre pion."));
     list_->SetMinSize(wxSize(260, 120));
     root->Add(list_, 1, wxEXPAND);
     SetSizer(root);
