@@ -24,6 +24,21 @@ ensure_wx_mingw_wrapper_compatibility() {
     || die "Le wrapper wxWidgets installé n'est pas compatible avec MinGW."
 }
 
+ensure_wx_native_dependencies() {
+  local miniz_config="$WX_VCPKG_ROOT/installed/$WX_VCPKG_TRIPLET/share/miniz/minizConfig.cmake"
+  [[ -s "$miniz_config" ]] && return
+
+  log "Installation de la dépendance native miniz du lanceur WX."
+  run_as "$BUILD_USER" env \
+    VCPKG_DEFAULT_BINARY_CACHE="$WX_BINARY_CACHE" \
+    VCPKG_BINARY_SOURCES="clear;files,$WX_BINARY_CACHE,readwrite" \
+    VCPKG_FEATURE_FLAGS=binarycaching \
+    "$WX_VCPKG_ROOT/vcpkg" install miniz \
+      --triplet "$WX_VCPKG_TRIPLET" --host-triplet x64-linux \
+      --overlay-triplets "$SNAPSHOT_DIR/client-wx/cmake/vcpkg-triplets"
+  require_nonempty_file "$miniz_config" "Configuration CMake miniz absente après installation"
+}
+
 resolve_wx_release() {
   local status_json="$1"
   local server_sequence server_version server_patch state_sequence state_patch next_patch epoch
@@ -406,6 +421,7 @@ build_and_publish_wx() {
   require_nonempty_file "$WX_BASS_ROOT/bass.dll" "Runtime BASS absent"
   require_nonempty_file "$WX_BASS_ROOT/libbass.dll.a" "Bibliothèque d'import BASS MinGW absente"
   ensure_wx_mingw_wrapper_compatibility
+  ensure_wx_native_dependencies
 
   WX_UPLOAD_TOKEN="$(tr -d '\r\n' <"$WX_UPLOAD_TOKEN_FILE")"
   [[ -n "$WX_UPLOAD_TOKEN" ]] || die "Token WX vide."

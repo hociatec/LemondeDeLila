@@ -168,7 +168,7 @@ run_as "$BUILD_USER" env \
   VCPKG_DEFAULT_BINARY_CACHE="$WX_BINARY_CACHE" \
   VCPKG_BINARY_SOURCES="clear;files,$WX_BINARY_CACHE,readwrite" \
   VCPKG_FEATURE_FLAGS=binarycaching \
-  "$WX_VCPKG_ROOT/vcpkg" install wxwidgets nlohmann-json \
+  "$WX_VCPKG_ROOT/vcpkg" install wxwidgets nlohmann-json miniz \
     --triplet "$WX_VCPKG_TRIPLET" --host-triplet x64-linux \
     --overlay-ports "$VCPKG_OVERLAY_ROOT" \
     --overlay-triplets "$SOURCE_ROOT/client-wx/cmake/vcpkg-triplets"
