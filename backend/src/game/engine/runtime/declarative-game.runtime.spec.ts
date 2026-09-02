@@ -175,6 +175,16 @@ describe('DeclarativeGameRuntime', () => {
 
     expect(adapter.getAvailableActions(state, 2)).toEqual([]);
     expect(adapter.getAvailableActions(state, 1)).toHaveLength(2);
+    expect(adapter.exposeStateForUser(state, 1).pending).toMatchObject({
+      workflowKind: 'confirm',
+      data: {
+        choiceActionsByIndex: [
+          { type: 'choice.resolve', payload: { value: true } },
+          { type: 'choice.resolve', payload: { value: false } },
+        ],
+      },
+    });
+    expect(adapter.exposeStateForUser(state, 2).pending?.data).toBeUndefined();
     expect(() =>
       adapter.validateAction(
         state,
