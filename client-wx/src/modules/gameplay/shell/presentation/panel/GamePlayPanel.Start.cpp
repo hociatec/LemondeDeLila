@@ -1,5 +1,6 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
+#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
 
 namespace lila::modules::gameplay::presentation
