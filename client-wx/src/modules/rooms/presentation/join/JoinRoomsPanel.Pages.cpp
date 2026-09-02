@@ -1,7 +1,6 @@
 #include "modules/rooms/presentation/join/JoinRoomsPanel.h"
 
 #include <algorithm>
-#include <array>
 
 #include <wx/stattext.h>
 #include <wx/weakref.h>
@@ -24,15 +23,8 @@ void JoinRoomsPanel::ApplyRooms(std::vector<domain::PublicRoom> rooms, PreparedH
 
 void JoinRoomsPanel::ShowLoading()
 {
-    using Item = lila::shared::ui::controls::VerticalMenuItem;
-    const std::array<Item, 1> items = {{
-        {"loading", wxString(L"Liste des parties disponibles")},
-    }};
     state_ = State::Loading;
-    menu_->SetItems(items);
-    menu_->SetSelectedIndexSilently(0);
     lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, wxString{}, false);
-    FocusMenuIfVisible();
 }
 
 void JoinRoomsPanel::ShowRooms()
