@@ -72,8 +72,16 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
         while (!stopToken.stop_requested())
         {
             const auto rawJson = webSocketClient_.Receive();
-            if (!protocol::IsResponseForRequest(rawJson, requestId, request.type)) continue;
-            return protocol::ParseResponse(rawJson, requestId, request.type);
+            if (!protocol::IsResponseForRequest(
+                    rawJson,
+                    requestId,
+                    request.type,
+                    request.expectedResponseType)) continue;
+            return protocol::ParseResponse(
+                rawJson,
+                requestId,
+                request.type,
+                request.expectedResponseType);
         }
         throw std::runtime_error("WebSocket operation cancelled.");
     }

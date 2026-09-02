@@ -16,7 +16,8 @@ void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
         lila::shared::network::realtime::protocol::IsResponseForRequest(
             R"({"type":"auth.login.ok","requestId":"req-login","payload":{"token":"jwt"}})",
             "req-login",
-            "auth.login"),
+            "auth.login",
+            "auth.login.ok"),
         "La reponse de succes auth suffixee par .ok doit etre acceptee");
     Expect(
         !lila::shared::network::realtime::protocol::IsResponseForRequest(
@@ -47,7 +48,8 @@ void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
     const auto authResponse = lila::shared::network::realtime::protocol::ParseResponse(
         R"({"type":"auth.login.ok","requestId":"req-login","payload":{"token":"jwt"}})",
         "req-login",
-        "auth.login");
+        "auth.login",
+        "auth.login.ok");
     Expect(authResponse.success, "Connexion auth reussie attendue");
     Expect(authResponse.type == "auth.login.ok", "Type de succes auth attendu");
 
