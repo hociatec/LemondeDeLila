@@ -11,6 +11,8 @@ class GameLogCursor final
 public:
     [[nodiscard]] std::vector<std::string> ExtractNew(
         const std::vector<std::string>& messages);
+    [[nodiscard]] bool RestoreInitialBaseline(
+        const std::vector<std::string>& messages, int stateVersion);
     void Restore(const std::vector<std::string>& messages);
     void Reset() noexcept;
 

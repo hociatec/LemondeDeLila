@@ -102,8 +102,9 @@ void GamePlayPanel::ApplyState(domain::GameState state)
                         ? state_.system.match.result->winnerPlayerIds : std::vector<int>{});
     }
     UpdateStatus(wxString{});
-    if (initialState) logCursor_.Restore(nextLogMessages);
-    else PublishLogMessages(nextLogMessages);
+    if (!initialState ||
+        !logCursor_.RestoreInitialBaseline(nextLogMessages, state_.version))
+        PublishLogMessages(nextLogMessages);
     if (IsFinished())
     {
         confirmationPanel_->HideConfirmation();

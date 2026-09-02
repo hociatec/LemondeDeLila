@@ -27,7 +27,8 @@ void TestServerDrivenPawnSelection()
     const auto selection = lila::modules::gameplay::infrastructure::PawnSelectionDecoder::Decode(
         state.pending);
     Expect(selection.has_value(), "Le choix de pion actif doit etre decode.");
-    Expect(selection->label == "Votre pion.", "Le libelle WPF du choix de pion est attendu.");
+    Expect(selection->label == "Choisissez votre pion.",
+        "Le libelle accessible du choix de pion est attendu.");
     Expect(selection->choices.size() == 2, "Tous les pions serveur doivent etre proposes.");
     Expect(selection->choices[1].label == "Un caillou", "Le libelle serveur doit rester intact.");
     Expect(selection->choices[1].action.payload.at("pawnId") == "stone",
@@ -72,6 +73,18 @@ void TestGameLogCursor()
     cursor.Reset();
     Expect(cursor.ExtractNew({"D"}) == std::vector<std::string>({"D"}),
         "La reinitialisation doit ouvrir une nouvelle session.");
+
+    cursor.Reset();
+    Expect(cursor.RestoreInitialBaseline({"initial|Configuration"}, 1),
+        "Le premier etat de base doit seulement initialiser le curseur.");
+    Expect(cursor.ExtractNew({"initial|Configuration"}).empty(),
+        "Les evenements de configuration initiaux ne doivent pas etre annonces.");
+    cursor.Reset();
+    Expect(!cursor.RestoreInitialBaseline({"choice|Baloo a choisi un pion"}, 2),
+        "Une mise a jour recue pendant la connexion ne doit pas etre masquee.");
+    Expect(cursor.ExtractNew({"choice|Baloo a choisi un pion"}) ==
+            std::vector<std::string>({"choice|Baloo a choisi un pion"}),
+        "Le choix concurrent d'un autre joueur doit rester annoncable.");
 }
 
 void TestOlderGameStateCannotRestoreSetupPrompt()

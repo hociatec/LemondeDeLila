@@ -31,6 +31,14 @@ void GameLogCursor::Reset() noexcept
     publishedIdentities_.clear();
 }
 
+bool GameLogCursor::RestoreInitialBaseline(
+    const std::vector<std::string>& messages, int stateVersion)
+{
+    if (stateVersion > 1) return false;
+    Restore(messages);
+    return true;
+}
+
 void GameLogCursor::Restore(const std::vector<std::string>& messages)
 {
     for (const auto& message : messages)
