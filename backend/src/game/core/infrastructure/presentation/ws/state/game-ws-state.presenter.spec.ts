@@ -156,7 +156,12 @@ describe('GameWsStatePresenter', () => {
             {
               id: '2:2',
               type: 'score.changed',
-              data: { playerId: 1, value: 1 },
+              data: {
+                playerId: 1,
+                previous: 12,
+                value: 2,
+                delta: -10,
+              },
             },
           ],
           latestByType: {
@@ -227,7 +232,7 @@ describe('GameWsStatePresenter', () => {
       unit: { singular: 'jeton', plural: 'jetons' },
     });
     expect((payload.system as any).events.recent[0].data.message).toBe(
-      'Vous avez maintenant 1 jeton.',
+      'Vous rendez 10 jetons et en avez maintenant 2.',
     );
   });
 
@@ -580,7 +585,6 @@ describe('GameWsStatePresenter', () => {
           previous: 0,
           value: 3,
           delta: 3,
-          announce: false,
         },
       },
       {
@@ -593,7 +597,6 @@ describe('GameWsStatePresenter', () => {
           previous: 0,
           value: 5,
           delta: 5,
-          announce: false,
         },
       },
       {
@@ -665,6 +668,8 @@ describe('GameWsStatePresenter', () => {
       .filter(Boolean);
     expect(messages).toEqual([
       'La manche est terminée.',
+      'Vous recevez 3 jetons et en avez maintenant 3.',
+      'Mina reçoit 5 jetons et en a maintenant 5.',
       "La manche 2 commence.\nTout le monde reçoit son paquet de cartes.\nC'est au tour de Mina.",
     ]);
   });

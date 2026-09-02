@@ -239,7 +239,6 @@ export function scoreLamaRound(_state: LamaState, ctx: RuleContext): void {
     ctx.score.add(
       player.id,
       [...unique].reduce((total, card) => total + lamaPenalty(card), 0),
-      { announce: false },
     );
   }
 }
