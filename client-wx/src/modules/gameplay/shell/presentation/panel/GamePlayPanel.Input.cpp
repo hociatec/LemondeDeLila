@@ -8,8 +8,6 @@
 #include <wx/choice.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
-#include "modules/gameplay/dice/application/GameDiceActionResolver.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
@@ -99,11 +97,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         }
         auto* focused = wxWindow::FindFocus();
         if (focused == infoPanelChoice_) return false;
-        if (focused == dicePanel_->NavigationTarget())
-        {
-            static_cast<void>(ActivateSelectedDie());
-            return true;
-        }
         if (focused == gridPanel_->NavigationTarget())
         {
             static_cast<void>(ActivateSelectedGridCell());
@@ -114,6 +107,7 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             ActivateSelectedLine();
             return true;
         }
+        if (ActivateDiceRoll()) return true;
         if (const auto* prompt = ActivePrompt();
             prompt && submittedPromptActionType_ == prompt->actionType)
             return true;

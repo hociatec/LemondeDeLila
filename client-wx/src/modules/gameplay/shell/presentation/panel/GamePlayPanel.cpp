@@ -8,7 +8,6 @@
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/session/application/GameSessionService.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
@@ -157,10 +156,6 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     if (handPanel_ != nullptr)
     {
         if (auto* target = handPanel_->NavigationTarget()) return target;
-    }
-    if (dicePanel_ != nullptr)
-    {
-        if (auto* target = dicePanel_->NavigationTarget()) return target;
     }
     if (gridPanel_ != nullptr)
     {

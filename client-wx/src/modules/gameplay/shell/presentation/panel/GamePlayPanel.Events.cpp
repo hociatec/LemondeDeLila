@@ -13,7 +13,6 @@
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/cards/application/GameCardActionResolver.h"
 #include "modules/gameplay/dice/application/GameDiceActionResolver.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
@@ -44,9 +43,6 @@ void GamePlayPanel::BindEvents()
     handPanel_->Bind(
         wxEVT_LISTBOX_DCLICK,
         [this](wxCommandEvent&) { static_cast<void>(ActivateSelectedHandCard()); });
-    dicePanel_->Bind(
-        wxEVT_LISTBOX_DCLICK,
-        [this](wxCommandEvent&) { static_cast<void>(ActivateSelectedDie()); });
     gridPanel_->Bind(
         wxEVT_LISTBOX_DCLICK,
         [this](wxCommandEvent&) { static_cast<void>(ActivateSelectedGridCell()); });
@@ -185,14 +181,12 @@ bool GamePlayPanel::ActivateSelectedHandCard()
     return true;
 }
 
-bool GamePlayPanel::ActivateSelectedDie()
+bool GamePlayPanel::ActivateDiceRoll()
 {
     const auto* dice = state_.kits.Dice();
     if (dice == nullptr) return false;
-    const int selected = dicePanel_->SelectedIndex();
-    const auto index = selected >= 0 ? static_cast<std::size_t>(selected) : std::size_t{0};
     auto action = application::dice::GameDiceActionResolver::Resolve(
-        *dice, state_.actions, index);
+        *dice, state_.actions);
     if (!action) return false;
     PrepareAndExecuteAction(std::move(*action));
     return true;

@@ -12,7 +12,6 @@
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/events/presentation/GameEventPresenter.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/resources/presentation/GameResourcesPanel.h"
@@ -123,7 +122,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     pendingLabel_->Show(!pendingLabel_->GetLabel().empty());
     RebuildLines();
     handPanel_->ApplyCards(state_.kits.VisibleHand(), state_.actions);
-    dicePanel_->Apply(state_.kits.dice);
     gridPanel_->Apply(state_.kits.grid ? &*state_.kits.grid : nullptr,
         state_.actions, state_.system.players,
         state_.kits.pawns ? &*state_.kits.pawns : nullptr);
