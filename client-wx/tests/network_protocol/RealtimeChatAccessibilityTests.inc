@@ -20,6 +20,19 @@ void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
             "auth.login.ok"),
         "La reponse de succes auth suffixee par .ok doit etre acceptee");
     Expect(
+        lila::shared::network::realtime::protocol::IsResponseForRequest(
+            R"({"type":"room.lobby.listed","requestId":"req-lobby","payload":{"items":[],"groups":[]}})",
+            "req-lobby",
+            "room.lobby.list",
+            "room.lobby.listed"),
+        "La reponse listee du lobby doit terminer la requete room.lobby.list");
+    Expect(
+        !lila::shared::network::realtime::protocol::IsResponseForRequest(
+            R"({"type":"room.lobby.listed","requestId":"req-lobby","payload":{"items":[],"groups":[]}})",
+            "req-lobby",
+            "room.lobby.list"),
+        "Le type de reponse du lobby doit etre configure explicitement");
+    Expect(
         !lila::shared::network::realtime::protocol::IsResponseForRequest(
             R"({"type":"vault.restore","requestId":"req-2","payload":{"roomId":42}})",
             "req-1",
