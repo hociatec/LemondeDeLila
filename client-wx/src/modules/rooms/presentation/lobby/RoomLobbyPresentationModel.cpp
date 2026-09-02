@@ -23,7 +23,8 @@ std::vector<lila::shared::ui::controls::VerticalMenuItem> RoomLobbyPresentationM
             label += wxString(L", par ") + lila::shared::text::FromUtf8(room.ownerUsername);
         items.push_back({std::to_string(room.id), std::move(label)});
     }
-    if (items.empty()) items.push_back({"empty", wxString(L"Aucune table disponible")});
+    if (items.empty())
+        items.push_back({"empty", wxString(L"Aucune partie n\u2019est en cours")});
     return items;
 }
 }
