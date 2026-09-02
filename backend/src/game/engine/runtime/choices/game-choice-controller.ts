@@ -233,7 +233,7 @@ export class GameChoiceController {
     const pending: PendingState = {
       schemaVersion: 1,
       type: `engine.choice.${kind}`,
-      label: 'Choix requis',
+      label: kind === 'pawn' ? 'Choisissez votre pion.' : 'Choix requis',
       playerId: options.player,
       ...(mode.playerIds
         ? { playerIds: [...mode.playerIds], resolvedPlayerIds: [] }

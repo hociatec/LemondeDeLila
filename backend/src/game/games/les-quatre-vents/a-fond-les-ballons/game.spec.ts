@@ -6,6 +6,26 @@ import { A_FOND_CARD_COUNT } from './rules';
 import gameDefinition from './game';
 
 describe('À fond les ballons declarative game', () => {
+  it('assigns a pawn to bots before asking human players', async () => {
+    const game = testGame(gameDefinition)
+      .players(['Hacene', { username: 'Baloo', isBot: true }])
+      .seed(83);
+    await game.start();
+
+    const view = game.view(1) as unknown as {
+      pending: object | null;
+      kits: StableGameKitsView;
+    };
+    expect(
+      view.kits.pawns?.sets['balloons-pawns'].assignments['-2'],
+    ).toHaveLength(1);
+    expect(view.pending).toMatchObject({
+      label: 'Choisissez votre pion.',
+      playerIds: [1],
+      resolvedPlayerIds: [],
+    });
+  });
+
   it('selects unique pawns then resolves a deterministic roll', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(83);
     await game.start();

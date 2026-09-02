@@ -69,8 +69,19 @@ export type EngineEventMap = {
         to: number;
         distance: number;
       };
-  'pawn.landed': { trackId: string; playerId: number; position: number };
-  'pawn.assigned': { setId: string; pawnId: string; playerId: number };
+  'pawn.landed': {
+    trackId: string;
+    playerId: number;
+    position: number;
+    tileLabel?: string;
+    tileDescription?: string;
+  };
+  'pawn.assigned': {
+    setId: string;
+    pawnId: string;
+    pawnLabel?: string;
+    playerId: number;
+  };
   'score.changed': {
     playerId: number;
     previous: number;

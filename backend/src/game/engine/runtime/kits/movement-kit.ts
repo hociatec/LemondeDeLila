@@ -218,6 +218,12 @@ export class GameMovementController {
       tile: options.tileAt?.(position) ?? options.tiles?.[position],
       depth,
     };
+    this.emit('pawn.landed', {
+      trackId: options.trackId,
+      playerId: options.playerId,
+      position,
+      ...tileNarration(landing.tile),
+    });
     options.onLand(landing);
     options.onComplete?.(landing);
     return position;
@@ -286,6 +292,31 @@ export class GameMovementController {
     if (!track) throw new GameNotFoundError(`Piste inconnue: ${trackId}`);
     return track;
   }
+}
+
+type TTileNarration = {
+  tileLabel?: string;
+  tileDescription?: string;
+};
+
+function tileNarration(tile: unknown): TTileNarration {
+  if (!tile || typeof tile !== 'object' || Array.isArray(tile)) return {};
+  const value = tile as Record<string, unknown>;
+  const tileLabel = firstText(value.label, value.title, value.name, value.type);
+  const tileDescription = firstText(value.description, value.text);
+  return {
+    ...(tileLabel ? { tileLabel } : {}),
+    ...(tileDescription && tileDescription !== tileLabel
+      ? { tileDescription }
+      : {}),
+  };
+}
+
+function firstText(...values: unknown[]): string {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
+  return '';
 }
 
 function deepFreeze<TValue>(value: TValue): TValue {
