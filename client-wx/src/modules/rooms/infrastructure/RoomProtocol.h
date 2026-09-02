@@ -5,6 +5,7 @@
 namespace lila::modules::rooms::infrastructure::protocol
 {
 inline constexpr std::string_view IntentExecute = "room.intent.execute";
+inline constexpr std::string_view Intent = "room.intent";
 inline constexpr std::string_view Create = "room.create";
 inline constexpr std::string_view Join = "room.join";
 inline constexpr std::string_view Leave = "room.leave";
