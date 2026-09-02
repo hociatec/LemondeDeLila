@@ -60,8 +60,17 @@ export default defineGame<AFondLesBallonsState>()({
   initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
   setup: ({ ctx }) => {
-    const starterId = ctx.round.starter();
-    if (starterId != null) requestPawn(starterId, ctx);
+    // Pawn selection is a setup interaction, not the first gameplay turn.
+    // Always let the human room owner choose immediately; the randomly drawn
+    // starter is restored once every pawn has been selected.
+    const chooserId =
+      ctx.config.owner() ??
+      ctx.players.all().find((player) => !player.isBot)?.id ??
+      ctx.round.starter();
+    if (chooserId != null) {
+      ctx.turn.to(chooserId);
+      requestPawn(chooserId, ctx);
+    }
     return {};
   },
   initialPhase: A_FOND_LES_BALLONS_PHASES.initialPhase,
