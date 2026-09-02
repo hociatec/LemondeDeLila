@@ -65,6 +65,21 @@ void TestRoomAndVaultPresentationState()
         42, "Table", "game", "waiting", false, false, 4, 2, 0, "alice"}});
     Expect(lobby.SelectedRoom() != nullptr, "Table publique selectionnee attendue");
     Expect(lobby.SelectedRoom()->id == 42, "Identifiant de table publique attendu");
+    lobby.Reset({
+        lila::modules::rooms::domain::PublicRoom{
+            42, "Table", "game", "waiting", false, false, 4, 2, 0, "alice"},
+        lila::modules::rooms::domain::PublicRoom{
+            43, "Autre table", "game", "waiting", false, false, 4, 2, 0, "bob"}});
+    lobby.Select(1);
+    lobby.Reset({
+        lila::modules::rooms::domain::PublicRoom{
+            44, "Nouvelle table", "game", "waiting", false, false, 4, 2, 0, "carol"},
+        lila::modules::rooms::domain::PublicRoom{
+            45, "Deuxieme table", "game", "waiting", false, false, 4, 2, 0, "dave"}});
+    Expect(
+        lobby.SelectedIndex() == 0 && lobby.SelectedRoom() != nullptr &&
+            lobby.SelectedRoom()->id == 44,
+        "La liste des tables rechargee doit cibler sa premiere entree");
 
     std::cout << "[TEST PASSED] RoomAndVaultPresentationState\n";
 }
@@ -225,4 +240,3 @@ void TestLeaderboardPayloadAndNavigation()
 
     std::cout << "[TEST PASSED] LeaderboardPayloadAndNavigation\n";
 }
-

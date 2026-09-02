@@ -1,6 +1,5 @@
 #include "modules/rooms/presentation/navigation/RoomLobbyNavigator.h"
 
-#include <algorithm>
 #include <utility>
 
 namespace lila::modules::rooms::presentation
@@ -8,8 +7,7 @@ namespace lila::modules::rooms::presentation
 void RoomLobbyNavigator::Reset(std::vector<domain::PublicRoom> rooms)
 {
     rooms_ = std::move(rooms);
-    selectedIndex_ = std::min(
-        selectedIndex_, rooms_.empty() ? std::size_t{0} : rooms_.size() - 1);
+    selectedIndex_ = 0;
 }
 
 void RoomLobbyNavigator::Select(std::size_t index)

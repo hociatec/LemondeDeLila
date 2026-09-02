@@ -169,7 +169,7 @@ describe('GameRealtimeAutomationService', () => {
     });
     await Promise.resolve();
     const task = test.scheduled[0]!;
-    expect(task.signature).toBe('bot:-7:round:2:turn:3');
+    expect(task.signature).toBe('bot:-7:play:round:2:turn:3');
     task.dueAtMs = Date.now() - 1;
 
     await test.processor()(task);
@@ -180,6 +180,59 @@ describe('GameRealtimeAutomationService', () => {
         actions: [
           expect.objectContaining({
             type: 'draw',
+            meta: expect.objectContaining({ actorId: -7 }),
+          }),
+        ],
+      }),
+    );
+  });
+
+  it('lets an unresolved bot answer a collective choice during a human turn', async () => {
+    const collectiveChoice = state({
+      players: [
+        { id: 1, username: 'Alice', isBot: false },
+        { id: -7, username: 'Bot Ballons', isBot: true },
+      ],
+      turn: { currentPlayerId: 1, direction: 1, turnNumber: 2 },
+      pending: {
+        type: 'choice',
+        playerIds: [1, -7],
+        resolvedPlayerIds: [],
+        data: {
+          choiceId: 'a-fond-les-ballons.pawn',
+          options: ['blue', 'red'],
+        },
+      },
+    });
+    const runtime = {
+      gameType: 'a-fond-les-ballons',
+      getAutomaticActions: () => null,
+    } as unknown as GameRuntime;
+    const test = harness(collectiveChoice, runtime, [
+      { type: 'choice.resolve', payload: { value: 'red' } },
+    ]);
+
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'a-fond-les-ballons',
+      handler: runtime,
+      state: collectiveChoice,
+    });
+    await Promise.resolve();
+
+    expect(test.scheduled[0]).toEqual(
+      expect.objectContaining({
+        signature: 'bot:-7:choice:a-fond-les-ballons.pawn:round:0:turn:2',
+      }),
+    );
+    const task = test.scheduled[0]!;
+    task.dueAtMs = Date.now() - 1;
+    await test.processor()(task);
+    expect(test.executor.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actions: [
+          expect.objectContaining({
+            type: 'choice.resolve',
             meta: expect.objectContaining({ actorId: -7 }),
           }),
         ],
@@ -215,8 +268,8 @@ describe('GameRealtimeAutomationService', () => {
     await Promise.resolve();
 
     expect(test.scheduled.map((task) => task.signature)).toEqual([
-      'bot:-7:round:1:turn:3',
-      'bot:-7:round:2:turn:3',
+      'bot:-7:play:round:1:turn:3',
+      'bot:-7:play:round:2:turn:3',
     ]);
   });
 
