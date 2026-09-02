@@ -6,7 +6,7 @@ import { A_FOND_CARD_COUNT } from './rules';
 import gameDefinition from './game';
 
 describe('À fond les ballons declarative game', () => {
-  it('assigns a pawn to bots before asking human players', async () => {
+  it('lets bots resolve the same announced pawn choice as human players', async () => {
     const game = testGame(gameDefinition)
       .players(['Hacene', { username: 'Baloo', isBot: true }])
       .seed(83);
@@ -16,13 +16,23 @@ describe('À fond les ballons declarative game', () => {
       pending: object | null;
       kits: StableGameKitsView;
     };
-    expect(
-      view.kits.pawns?.sets['balloons-pawns'].assignments['-2'],
-    ).toHaveLength(1);
+    expect(view.kits.pawns?.sets['balloons-pawns'].assignments['-2']).toEqual(
+      [],
+    );
     expect(view.pending).toMatchObject({
       label: 'Choisissez votre pion.',
-      playerIds: [1],
+      playerIds: [1, -2],
       resolvedPlayerIds: [],
+    });
+
+    await game.choose(-2, 'professeur-gribouille');
+    expect(
+      (game.view(1) as unknown as { kits: StableGameKitsView }).kits.pawns
+        ?.sets['balloons-pawns'].assignments['-2'],
+    ).toEqual(['professeur-gribouille']);
+    expect(game.view(1).pending).toMatchObject({
+      playerIds: [1, -2],
+      resolvedPlayerIds: [-2],
     });
   });
 

@@ -86,10 +86,10 @@ function landOn(
   ctx: RuleContext,
 ): void {
   if (depth > MAX_DEPTH || ctx.match.lifecycle() === 'finished') return;
-  ctx.movement.moveTo(TRACK, playerId, target);
-  ctx.movement.resolveLanding({
+  ctx.movement.moveAndResolve({
     trackId: TRACK,
     playerId,
+    distance: target - ctx.movement.position(TRACK, playerId),
     tiles: A_FOND_LES_BALLONS_TILES,
     depth,
     maxDepth: MAX_DEPTH,
@@ -107,7 +107,6 @@ function resolveLandedTile(
   ctx: RuleContext,
 ): void {
   const tile = A_FOND_LES_BALLONS_TILES[target];
-  ctx.events.message('game.pawn.landed', { playerId, tileId: target });
   if (tile.type === 'finish') {
     ctx.match.finish({ winners: [playerId], reason: 'golden-nut' });
   } else if (tile.type === 'bonus') moveBy(state, playerId, 2, depth, ctx);

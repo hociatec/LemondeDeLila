@@ -4,6 +4,7 @@ describe('genericGameEventMessage', () => {
   const players = new Map([
     [1, 'Hacene'],
     [2, 'Baloo'],
+    [-2, 'Bot Baloo'],
   ]);
 
   const message = (
@@ -41,10 +42,16 @@ describe('genericGameEventMessage', () => {
     expect(message('pawn.assigned', data, 1, 2)).toBe(
       'Hacene a choisi « Capitaine Cacahuète ».',
     );
+    expect(message('pawn.assigned', { ...data, playerId: -2 }, -2, 1)).toBe(
+      'Bot Baloo a choisi « Capitaine Cacahuète ».',
+    );
   });
 
   it('describes the destination without repeating the technical movement', () => {
     expect(message('pawn.moved', { from: 0, to: 3 }, 1, 1)).toBe('');
+    expect(message('pawn.landed', { playerId: 2, position: 6 }, 2, 1)).toBe(
+      'Baloo arrive sur la case 6.',
+    );
     expect(
       message(
         'pawn.landed',

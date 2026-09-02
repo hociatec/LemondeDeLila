@@ -236,6 +236,58 @@ describe('GameWsStatePresenter', () => {
     );
   });
 
+  it('announces a pawn choice to its author and to every other player', () => {
+    const state = {
+      status: 'playing',
+      players: [
+        { id: 1, username: 'Hacene' },
+        { id: 2, username: 'Mina' },
+      ],
+      metadata: {},
+    } as unknown as GameStateEntity;
+    const exposed = {
+      system: {
+        match: { status: 'playing' },
+        players: { all: state.players },
+        events: {
+          recent: [
+            {
+              id: '4:0',
+              type: 'pawn.assigned',
+              actorId: 1,
+              data: {
+                playerId: 1,
+                pawnId: 'capitaine-cacahuete',
+                pawnLabel: 'Capitaine Cacahuète',
+              },
+            },
+          ],
+          latestByType: {},
+        },
+      },
+      kits: {},
+      actions: [],
+    };
+    const handler = {
+      exposeStateForUser: () => exposed,
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+    const presentFor = (viewerPlayerId: number) =>
+      (
+        createPresenter().present({
+          state,
+          handler,
+          roomId: 8,
+          gameType: 'a-fond-les-ballons',
+          version: 4,
+          viewerPlayerId,
+        }).system as any
+      ).events.recent[0].data.message;
+
+    expect(presentFor(1)).toBe('Vous avez choisi « Capitaine Cacahuète ».');
+    expect(presentFor(2)).toBe('Hacene a choisi « Capitaine Cacahuète ».');
+  });
+
   it('announces the drawn card value only to the player who drew it', () => {
     const state = {
       status: 'started',
