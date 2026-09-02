@@ -35,7 +35,7 @@ ensure_wx_native_dependencies() {
     VCPKG_FEATURE_FLAGS=binarycaching \
     "$WX_VCPKG_ROOT/vcpkg" install miniz \
       --triplet "$WX_VCPKG_TRIPLET" --host-triplet x64-linux \
-      --overlay-triplets "$SNAPSHOT_DIR/client-wx/cmake/vcpkg-triplets"
+      --overlay-triplets "$SOURCE_ROOT/client-wx/cmake/vcpkg-triplets"
   require_nonempty_file "$miniz_config" "Configuration CMake miniz absente après installation"
 }
 
