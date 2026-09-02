@@ -148,6 +148,11 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     {
         if (auto* target = pawnSelectionPanel_->NavigationTarget()) return target;
     }
+    // Pawn selection is sequential. While another player is choosing, keep
+    // focus on the stable game-zone anchor instead of announcing a read-only
+    // movement row such as "player, track, square, progress". When it becomes
+    // this viewer's turn, the actionable pawn panel above takes priority.
+    if (state_.pending && state_.pending->workflowKind == "pawn") return nullptr;
     // Leaving a round hides the viewer's hand. Do not then move focus to the
     // read-only results list: screen readers would recite every score and empty
     // capability section after the leave announcement. Returning no target
