@@ -137,8 +137,7 @@ export function sequentialPawnSelection<TState extends object>(
     ctx: GameContext<TState>,
   ): void => {
     const participants = [...new Set(playerIds)];
-    const humanParticipants = assignBotPawns(options.setId, participants, ctx);
-    if (humanParticipants.length === 0) {
+    if (participants.length === 0) {
       options.complete({ ctx });
       return;
     }
@@ -146,11 +145,11 @@ export function sequentialPawnSelection<TState extends object>(
     ctx.choice.forPlayers({
       id: options.choiceId,
       kind: 'pawn',
-      players: humanParticipants,
+      players: participants,
       options: available.map((pawn) => pawn.id),
       label: (pawnId) => pawnLabel(available, pawnId),
     });
-    const first = humanParticipants[0];
+    const first = participants[0];
     if (first != null) ctx.turn.to(first);
   };
   const resolve = (
@@ -179,24 +178,6 @@ export function sequentialPawnSelection<TState extends object>(
     options.complete({ ctx });
   };
   return Object.freeze({ request, requestAll, resolve });
-}
-
-function assignBotPawns<TState extends object>(
-  setId: string,
-  participants: readonly number[],
-  ctx: GameContext<TState>,
-): number[] {
-  const bots = new Set(
-    ctx.players
-      .all()
-      .filter((player) => player.isBot)
-      .map((player) => player.id),
-  );
-  for (const playerId of participants.filter((id) => bots.has(id))) {
-    const pawn = ctx.random.pick(ctx.pawns.available(setId));
-    if (pawn) ctx.pawns.assign(setId, playerId, pawn.id);
-  }
-  return participants.filter((id) => !bots.has(id));
 }
 
 function continueCollectivePawnSelection<TState extends object>(

@@ -95,7 +95,6 @@ function boardAndPlayerMessage(
     const verb = name === 'Vous' ? 'arrivez' : 'arrive';
     const label = tileLabel(value('tileLabel'));
     const description = value('tileDescription');
-    if (!label && !description) return '';
     return [
       `${name} ${verb} sur la case ${value('position')}${label ? ` : ${label}` : ''}.`,
       description ? `Description : ${description}` : '',

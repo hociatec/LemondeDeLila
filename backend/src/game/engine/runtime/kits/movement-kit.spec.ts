@@ -31,16 +31,15 @@ describe('GameMovementController', () => {
       onLand: () => {},
     });
 
-    expect(
-      events.find(
-        (event) => event.type === 'pawn.landed' && event.data.tileLabel != null,
-      )?.data,
-    ).toEqual(
+    expect(events.find((event) => event.type === 'pawn.landed')?.data).toEqual(
       expect.objectContaining({
         position: 3,
         tileLabel: 'Clairière enchantée',
         tileDescription: 'Des lucioles éclairent le chemin.',
       }),
+    );
+    expect(events.filter((event) => event.type === 'pawn.landed')).toHaveLength(
+      1,
     );
   });
 });

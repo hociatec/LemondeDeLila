@@ -185,6 +185,7 @@ export class GameMovementController {
     playerId: number,
     distance: number,
     onPass?: (position: number) => void,
+    emitLanding = true,
   ): number {
     const current = this.position(trackId, playerId);
     const next = this.preview(trackId, playerId, distance);
@@ -199,7 +200,9 @@ export class GameMovementController {
     for (const position of this.passedPositions(trackId, current, distance)) {
       onPass?.(position);
     }
-    this.emit('pawn.landed', { trackId, playerId, position: next });
+    if (emitLanding) {
+      this.emit('pawn.landed', { trackId, playerId, position: next });
+    }
     const effects = this.definitions.get(trackId)?.landingEffects?.[next] ?? [];
     this.scheduleEffects(...effects);
     return next;
@@ -246,6 +249,7 @@ export class GameMovementController {
           playerId: options.playerId,
           position,
         }),
+      false,
     );
     return this.resolveLanding(options);
   }
