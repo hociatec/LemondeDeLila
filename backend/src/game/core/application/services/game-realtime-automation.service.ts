@@ -198,20 +198,64 @@ export class GameRealtimeAutomationService implements OnModuleInit {
         actions: automatic.actions,
       };
     }
+    const pendingBotPlayerId = this.pendingBotPlayerId(state);
+    if (pendingBotPlayerId != null) {
+      return this.botPlan(
+        handler,
+        state,
+        pendingBotPlayerId,
+        roundNumber,
+        true,
+      );
+    }
     const currentPlayerId = state.turn?.currentPlayerId ?? null;
     const currentPlayer = (state.players ?? []).find(
       (player) => player.id === currentPlayerId,
     );
     if (!currentPlayer?.isBot || currentPlayerId == null) return null;
+    return this.botPlan(handler, state, currentPlayerId, roundNumber, false);
+  }
+
+  private pendingBotPlayerId(state: GameStateEntity): number | null {
+    const pending = state.pending;
+    if (!pending) return null;
+    const resolved = new Set(pending.resolvedPlayerIds ?? []);
+    const expectedPlayerIds = pending.playerIds?.length
+      ? pending.playerIds.filter((playerId) => !resolved.has(playerId))
+      : pending.playerId == null
+        ? []
+        : [pending.playerId];
+    for (const playerId of expectedPlayerIds) {
+      const player = (state.players ?? []).find(
+        (candidate) => candidate.id === playerId,
+      );
+      if (player?.isBot) return playerId;
+    }
+    return null;
+  }
+
+  private botPlan(
+    handler: GameRuntime,
+    state: GameStateEntity,
+    playerId: number,
+    roundNumber: number,
+    pendingChoice: boolean,
+  ): AutomationPlan | null {
     const suggested =
-      this.botRunner.suggestForHandler(handler, state, currentPlayerId) ?? [];
+      this.botRunner.suggestForHandler(handler, state, playerId) ?? [];
     if (suggested.length === 0) return null;
+    const rawChoiceId = state.pending?.data?.choiceId;
+    const choiceId =
+      typeof rawChoiceId === 'string' || typeof rawChoiceId === 'number'
+        ? String(rawChoiceId)
+        : 'pending';
+    const context = pendingChoice ? `choice:${choiceId}` : 'play';
     return {
-      signature: `bot:${currentPlayerId}:round:${roundNumber}:turn:${Number(state.turn?.turnNumber ?? 0)}`,
+      signature: `bot:${playerId}:${context}:round:${roundNumber}:turn:${Number(state.turn?.turnNumber ?? 0)}`,
       dueAtMs: gameNowMs() + this.botSettings.getBotTurnDelayMs(),
       actions: suggested.map((action) => ({
         ...action,
-        meta: { ...(action.meta ?? {}), actorId: currentPlayerId },
+        meta: { ...(action.meta ?? {}), actorId: playerId },
       })),
     };
   }

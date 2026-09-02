@@ -34,6 +34,7 @@ public:
     ~JoinRoomsPanel() override;
 
     void Prepare(PreparedHandler onPrepared);
+    void ResetForNextPrepare();
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:

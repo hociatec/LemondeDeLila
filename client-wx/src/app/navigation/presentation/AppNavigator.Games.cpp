@@ -29,6 +29,11 @@ void AppNavigator::ShowCatalog(std::size_t selectedIndex)
 void AppNavigator::ShowJoinRooms()
 {
     auto* view = GetOrCreateView(ViewId::JoinRooms);
+    if (auto* panel = dynamic_cast<modules::rooms::presentation::JoinRoomsPanel*>(view))
+    {
+        focusTransition_.Forget(view);
+        panel->ResetForNextPrepare();
+    }
     ReplaceView(ViewId::JoinRooms, view);
     if (auto* panel = dynamic_cast<modules::rooms::presentation::JoinRoomsPanel*>(view))
     {
