@@ -32,6 +32,19 @@ describe('À fond les ballons declarative game', () => {
       ]),
     );
     expect(initialView.kits.pawns?.sets['balloons-pawns'].owners).toEqual({});
+    expect(game.view(2).pending).toMatchObject({
+      workflowKind: 'pawn',
+      playerIds: [1, 2],
+      resolvedPlayerIds: [],
+      data: {
+        choiceActionsByIndex: expect.arrayContaining([
+          {
+            type: 'choice.resolve',
+            payload: { value: 'professeur-gribouille' },
+          },
+        ]),
+      },
+    });
 
     await game.choose(firstChooser, 'capitaine-cacahuete');
     const second = firstChooser === 1 ? 2 : 1;
@@ -43,9 +56,21 @@ describe('À fond les ballons declarative game', () => {
         String(firstChooser)
       ],
     ).toEqual(['capitaine-cacahuete']);
-    expect(game.view(second).pending).toMatchObject({
+    const secondPending = (
+      game.view(second) as unknown as {
+        pending: {
+          data?: { choiceActionsByIndex?: unknown[] };
+        } | null;
+      }
+    ).pending;
+    expect(secondPending).toMatchObject({
       workflowKind: 'pawn',
-      playerId: second,
+      playerIds: [1, 2],
+      resolvedPlayerIds: [firstChooser],
+    });
+    expect(secondPending?.data?.choiceActionsByIndex).not.toContainEqual({
+      type: 'choice.resolve',
+      payload: { value: 'capitaine-cacahuete' },
     });
     await game.choose(second, 'professeur-gribouille');
     expect(game.inspect.setupComplete()).toBe(true);

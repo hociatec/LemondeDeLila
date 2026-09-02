@@ -49,6 +49,7 @@ const pawnSelection = sequentialPawnSelection<AFondLesBallonsState>({
 });
 
 export const requestPawn = pawnSelection.request;
+export const requestPawns = pawnSelection.requestAll;
 export const resolvePawn = pawnSelection.resolve;
 
 function applySwap(actorId: number, targetId: number, ctx: RuleContext): void {
