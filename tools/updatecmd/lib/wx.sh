@@ -26,15 +26,20 @@ ensure_wx_mingw_wrapper_compatibility() {
 
 ensure_wx_native_dependencies() {
   local miniz_config="$WX_VCPKG_ROOT/installed/$WX_VCPKG_TRIPLET/share/miniz/minizConfig.cmake"
-  [[ -s "$miniz_config" ]] && return
+  local overlay_root="$CACHE_ROOT/vcpkg-overlays"
 
   log "Installation de la dépendance native miniz du lanceur WX."
+  mkdir -p "$overlay_root/miniz"
+  rsync -a --delete "$SOURCE_ROOT/tools/updatecmd/vcpkg-overlays/miniz/" \
+    "$overlay_root/miniz/"
+  chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$overlay_root/miniz"
   run_as "$BUILD_USER" env \
     VCPKG_DEFAULT_BINARY_CACHE="$WX_BINARY_CACHE" \
     VCPKG_BINARY_SOURCES="clear;files,$WX_BINARY_CACHE,readwrite" \
     VCPKG_FEATURE_FLAGS=binarycaching \
     "$WX_VCPKG_ROOT/vcpkg" install miniz \
       --triplet "$WX_VCPKG_TRIPLET" --host-triplet x64-linux \
+      --overlay-ports "$overlay_root" \
       --overlay-triplets "$SOURCE_ROOT/client-wx/cmake/vcpkg-triplets"
   require_nonempty_file "$miniz_config" "Configuration CMake miniz absente après installation"
 }
