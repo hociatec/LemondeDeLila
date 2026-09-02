@@ -175,7 +175,10 @@ describe('Room start flow', () => {
         Object.assign(current, values);
       }),
     };
-    const events = { publishLobbyChanged: jest.fn() };
+    const events = {
+      publishLobbyChanged: jest.fn(),
+      publishRoomStateUpdated: jest.fn(),
+    };
     const lifecycle = new RoomLifecycleService(
       rooms as never,
       {} as never,
@@ -194,6 +197,7 @@ describe('Room start flow', () => {
     expect(current).toMatchObject({ status: 'setup', startedAt: null });
     expect(context.invalidateRoomPayloadCache).toHaveBeenCalledWith(42);
     expect(events.publishLobbyChanged).toHaveBeenCalledWith(42, 'finished');
+    expect(events.publishRoomStateUpdated).toHaveBeenCalledWith(42);
     const actions = new RoomClientPolicyService().listAllowedActions(
       payload(2, [1], [10]),
       1,
