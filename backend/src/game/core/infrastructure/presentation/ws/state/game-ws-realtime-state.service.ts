@@ -182,8 +182,9 @@ export class GameWsRealtimeStateService {
     state: GameStateEntity;
     setupRosterRefreshedFromVersion?: number;
   }> {
+    const roomStatus = stringOrEmpty(room.room.status).toLowerCase();
     if (
-      stringOrEmpty(room.room.status).toLowerCase() !== 'setup' ||
+      (roomStatus !== 'setup' && roomStatus !== 'started') ||
       stringOrEmpty(existing.status).toLowerCase() !== 'setup' ||
       stringOrEmpty(existing.phase).toLowerCase() !== 'setup'
     ) {

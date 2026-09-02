@@ -153,6 +153,62 @@ describe('GameWsRealtimeStateService run isolation', () => {
     );
   });
 
+  it('rebuilds a stale setup roster when the room starts with a newly added bot', async () => {
+    const current = {
+      ...gameState({ roomRunId: 2 }),
+      status: 'setup',
+      phase: 'setup',
+      version: 1,
+      players: [{ id: 1, username: 'Owner', isBot: false }],
+    };
+    const handler = {
+      hydrateInitialState: jest.fn((state) => state),
+    } as unknown as GameRuntime;
+    const engine = {
+      exportInternalState: jest.fn().mockResolvedValue(current),
+      compareAndSetInternalState: jest.fn(
+        async (_roomId, _gameType, expectedVersion, state) => ({
+          committed: true,
+          version: expectedVersion + 1,
+          state: { ...state, version: expectedVersion + 1 },
+        }),
+      ),
+    };
+    const room = {
+      room: {
+        id: 4,
+        gameType: 'a-fond-les-ballons',
+        status: 'started',
+        runId: 2,
+        startedAt: new Date(0).toISOString(),
+        owner: { id: 1 },
+        players: [{ id: 1, username: 'Owner' }],
+        bots: [{ id: 9, name: 'Bot Ballons' }],
+      },
+    };
+    const service = new GameWsRealtimeStateService(
+      new GameRoomStateFactory(),
+      engine as never,
+      { getHandler: jest.fn().mockReturnValue(handler) } as never,
+      { clear: jest.fn() } as never,
+      {} as never,
+      {} as never,
+      { buildPayload: jest.fn().mockResolvedValue(room) } as never,
+      execution() as never,
+    );
+
+    const resolved = await service.resolve(4);
+
+    expect(resolved.state.players).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 1, isBot: false }),
+        expect.objectContaining({ id: -9, isBot: true }),
+      ]),
+    );
+    expect(resolved.setupRosterRefreshedFromVersion).toBe(1);
+    expect(handler.hydrateInitialState).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps configured setup state when the room starts its reserved run', async () => {
     let stored: GameStateEntity | null = null;
     const hydrateInitialState = jest.fn((state) => state);
