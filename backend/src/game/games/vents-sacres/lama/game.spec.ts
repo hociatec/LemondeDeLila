@@ -2,8 +2,27 @@ import { testGame } from '../../../engine/sdk/public-api';
 import type { LamaCard } from './content';
 import { nextLamaValue } from './content';
 import gameDefinition from './game';
+import { scoreLamaRound } from './rules';
 
 describe('LAMA declarative game', () => {
+  it('announces each positive round penalty through the score events', () => {
+    const add = jest.fn();
+    const hands: Record<number, LamaCard[]> = {
+      1: [1, 1, 2],
+      2: ['LAMA', 'LAMA'],
+    };
+
+    scoreLamaRound({}, {
+      players: { all: () => [{ id: 1 }, { id: 2 }] },
+      match: { playerStatus: () => 'active' },
+      cards: { hand: (_handId: string, playerId: number) => hands[playerId] },
+      score: { add },
+    } as never);
+
+    expect(add).toHaveBeenNthCalledWith(1, 1, 3);
+    expect(add).toHaveBeenNthCalledWith(2, 2, 10);
+  });
+
   it('publishes P for the available leave-round action', async () => {
     expect(gameDefinition.actions.lama_quit.ui).toMatchObject({
       shortcut: 'P',
