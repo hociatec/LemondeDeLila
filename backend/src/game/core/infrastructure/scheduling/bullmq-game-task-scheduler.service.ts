@@ -5,6 +5,7 @@ import Redis from 'ioredis';
 import { createHash } from 'node:crypto';
 import {
   currentCorrelationId,
+  inSpan,
   normalizeCorrelationId,
   runWithCorrelationId,
 } from '../../../../platform/observability/public-api';
@@ -76,9 +77,19 @@ export class BullmqGameTaskSchedulerService
           job.data.gameType,
           Math.max(0, startedAtMs - job.data.dueAtMs),
         );
-        await runWithCorrelationId(
-          normalizeCorrelationId(job.data.correlationId),
-          () => processor(job.data),
+        await inSpan(
+          'bullmq game-engine-tasks execute',
+          {
+            'messaging.system': 'bullmq',
+            'messaging.destination.name': QUEUE_NAME,
+            'messaging.operation.name': 'execute',
+            'lila.game.type': job.data.gameType,
+          },
+          () =>
+            runWithCorrelationId(
+              normalizeCorrelationId(job.data.correlationId),
+              () => processor(job.data),
+            ),
         );
       },
       { connection: this.connection, concurrency: 16 },

@@ -51,6 +51,10 @@ const runtimeEnvironment = {
   LOG_LEVEL: Joi.string().default('info'),
   LOG_DIR: Joi.string().default('logs'),
   LOG_FILES_ENABLED: Joi.boolean().truthy('true').falsy('false').default(true),
+  OTEL_SDK_DISABLED: Joi.boolean().truthy('true').falsy('false').default(false),
+  OTEL_SERVICE_NAME: Joi.string().min(1).default('le-monde-de-lila-backend'),
+  OTEL_EXPORTER_OTLP_ENDPOINT: Joi.string().uri().optional(),
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: Joi.string().uri().optional(),
   OPENAPI_ENABLED: Joi.boolean().truthy('true').falsy('false').optional(),
   HEALTH_CHECK_PATH: Joi.string().optional(),
   HEALTH_MIN_FREE_BYTES: Joi.number().integer().min(0).default(104857600),
@@ -64,6 +68,7 @@ const runtimeEnvironment = {
     .max(30)
     .default(5),
   GAME_MODULES_ROOT: Joi.string().optional(),
+  LILA_CONTENT_RELEASE_DIR: Joi.string().optional(),
   WS_PERMESSAGE_DEFLATE: Joi.boolean()
     .truthy('true')
     .falsy('false')
@@ -188,6 +193,18 @@ function validateProductionEnvironment(
       helpers,
       'RATE_LIMIT_REDIS_URL est requis en production',
     );
+  }
+  if (environment['OTEL_SDK_DISABLED'] === true) {
+    return customError(
+      helpers,
+      'OTEL_SDK_DISABLED doit être désactivé en production',
+    );
+  }
+  if (
+    !environment['OTEL_EXPORTER_OTLP_ENDPOINT'] &&
+    !environment['OTEL_EXPORTER_OTLP_TRACES_ENDPOINT']
+  ) {
+    return customError(helpers, 'Un endpoint OTLP est requis en production');
   }
   if (normalizedString(environment['JWT_ALGORITHM']) !== 'RS256') {
     return customError(helpers, 'JWT_ALGORITHM=RS256 est requis en production');

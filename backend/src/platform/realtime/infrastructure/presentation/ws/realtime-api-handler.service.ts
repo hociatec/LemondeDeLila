@@ -19,8 +19,10 @@ import {
 } from '../../../../../shared/utils/public-api';
 import { WsRouteRegistry } from '../../../../ws/public-api';
 import {
+  inSpan,
   normalizeCorrelationId,
   PerfMetricsService,
+  prometheusMetrics,
   runWithCorrelationId,
 } from '../../../../observability/public-api';
 import type {
@@ -153,6 +155,7 @@ export class RealtimeApiHandlerService {
       { kind: 'execute' }
     >,
   ): Promise<void> {
+    const startedAt = process.hrtime.bigint();
     try {
       if (type === 'r' || type === 'R') {
         replay.complete([]);
@@ -173,7 +176,15 @@ export class RealtimeApiHandlerService {
       this.logger.debug(
         `WS -> backend type=${type} requestId=${requestId ?? 'n/a'} userId=${session.user?.id ?? 'anon'} connectionId=${session.connectionId}`,
       );
-      const response = await handler(session, payload);
+      const response = await inSpan(
+        `ws ${type}`,
+        {
+          'messaging.system': 'websocket',
+          'messaging.operation.name': type,
+          'lila.connection.authenticated': session.user !== null,
+        },
+        () => handler(session, payload),
+      );
       const elapsedMs = Date.now() - start;
       if (elapsedMs >= 2000) {
         this.logger.warn(
@@ -191,7 +202,17 @@ export class RealtimeApiHandlerService {
       }));
       replay.complete(frames);
       for (const frame of frames) this.safeSend(client, frame);
+      prometheusMetrics.recordWebSocket(
+        type,
+        'success',
+        Number(process.hrtime.bigint() - startedAt) / 1_000_000_000,
+      );
     } catch (err) {
+      prometheusMetrics.recordWebSocket(
+        type,
+        'error',
+        Number(process.hrtime.bigint() - startedAt) / 1_000_000_000,
+      );
       this.perf.record('ws.handler.error', 0, { type });
       this.logger.error(
         `Erreur handler WS type=${type} requestId=${requestId ?? 'n/a'} userId=${session.user?.id ?? 'anon'} connectionId=${session.connectionId}: ${getErrorMessage(err, 'Erreur inconnue')}`,

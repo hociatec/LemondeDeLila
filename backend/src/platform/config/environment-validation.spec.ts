@@ -21,6 +21,7 @@ const validProduction = {
   SESSION_STORE_REDIS_URL: 'redis://127.0.0.1:6379/1',
   GAME_ENGINE_STATE_REDIS_URL: 'redis://127.0.0.1:6379/0',
   RATE_LIMIT_REDIS_URL: 'redis://127.0.0.1:6379/4',
+  OTEL_EXPORTER_OTLP_ENDPOINT: 'https://otel.example.test',
   DB_USER: 'lila',
   DB_PASSWORD: 'database-password',
   CLIENT_WX_UPDATES_UPLOAD_TOKEN: 'u'.repeat(32),
@@ -61,6 +62,8 @@ describe('environment validation', () => {
     [{ DB_USER: 'root' }, 'DB_USER=root'],
     [{ DB_PASSWORD: '' }, 'DB_PASSWORD'],
     [{ RATE_LIMIT_REDIS_URL: undefined }, 'RATE_LIMIT_REDIS_URL'],
+    [{ OTEL_EXPORTER_OTLP_ENDPOINT: undefined }, 'endpoint OTLP'],
+    [{ OTEL_SDK_DISABLED: true }, 'OTEL_SDK_DISABLED'],
     [
       { CLIENT_WX_UPDATES_UPLOAD_TOKEN: undefined },
       'CLIENT_WX_UPDATES_UPLOAD_TOKEN',
