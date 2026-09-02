@@ -75,7 +75,7 @@ void TestStagedArchiveUsesZipExtension()
     using namespace lila::modules::update;
     Expect(BuildStagedUpdateArchiveFileName("1.4.2-release") ==
             "1.4.2-release.download.zip",
-        "L'archive temporaire doit conserver une extension compatible avec Expand-Archive");
+        "L'archive temporaire doit conserver une extension ZIP explicite");
 
     bool rejected = false;
     try
@@ -89,6 +89,27 @@ void TestStagedArchiveUsesZipExtension()
     Expect(rejected,
         "Le nom d'archive temporaire doit rejeter une release dangereuse");
 }
+
+void TestArchivePathsStayInsideStaging()
+{
+    using lila::modules::update::IsSafeArchivePath;
+    Expect(IsSafeArchivePath("resources/sounds/theme.ogg"),
+        "Un chemin ZIP relatif normal doit etre accepte");
+    Expect(IsSafeArchivePath("resources/"),
+        "Une entree de dossier ZIP doit etre acceptee");
+    Expect(!IsSafeArchivePath("../outside.exe"),
+        "Une traversee ZIP doit etre rejetee");
+    Expect(!IsSafeArchivePath("folder/./file.exe"),
+        "Un segment ZIP ambigu doit etre rejete");
+    Expect(!IsSafeArchivePath("folder//file.exe"),
+        "Un segment ZIP vide doit etre rejete");
+    Expect(!IsSafeArchivePath("payload.exe:stream"),
+        "Un flux NTFS alternatif doit etre rejete");
+    Expect(!IsSafeArchivePath("C:\\payload.exe"),
+        "Un chemin ZIP absolu Windows doit etre rejete");
+    Expect(!IsSafeArchivePath(std::string("file\0.exe", 9)),
+        "Un chemin ZIP contenant un octet nul doit etre rejete");
+}
 }
 
 int main()
@@ -97,6 +118,7 @@ int main()
     {
         TestUpdateProtocolRejectsUnsafeMetadata();
         TestStagedArchiveUsesZipExtension();
+        TestArchivePathsStayInsideStaging();
         std::cout << "Update protocol tests passed.\n";
         return 0;
     }

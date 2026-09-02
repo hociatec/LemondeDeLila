@@ -23,6 +23,7 @@ struct UpdateManifest
 [[nodiscard]] std::array<int, 4> ParseUpdateVersion(const std::string& version);
 [[nodiscard]] bool IsUpdateNewer(const std::string& candidate, const std::string& current);
 [[nodiscard]] bool IsSafeReleaseId(const std::string& value);
+[[nodiscard]] bool IsSafeArchivePath(std::string value);
 [[nodiscard]] std::string BuildStagedUpdateArchiveFileName(const std::string& releaseId);
 [[nodiscard]] UpdateManifest ParseUpdateManifest(const std::string& raw);
 [[nodiscard]] std::string CanonicalUpdateSignature(const UpdateManifest& manifest);

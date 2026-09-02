@@ -93,6 +93,10 @@ find_package(wxWidgets CONFIG REQUIRED COMPONENTS core base)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
+if(WIN32)
+    find_package(miniz CONFIG REQUIRED)
+endif()
+
 configure_file(
     src/shared/config/generated/AppBuildInfo.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/generated/AppBuildInfo.h
@@ -250,6 +254,7 @@ if(WIN32)
         src/modules/update/infrastructure/launcher/UpdateLauncher.Runtime.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Security.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.State.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Zip.cpp
         src/modules/update/domain/UpdateProtocol.cpp
         src/modules/update/domain/UpdateTrustPolicy.cpp
     )
@@ -259,6 +264,7 @@ if(WIN32)
     )
     target_link_libraries(lila_launcher PRIVATE
         nlohmann_json::nlohmann_json
+        miniz::miniz
         winhttp
         bcrypt
         crypt32
