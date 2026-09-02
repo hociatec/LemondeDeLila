@@ -29,10 +29,7 @@ inline RealtimeApiResponse SendAndCheckAuth(
         throw std::runtime_error(noActiveSessionMessage);
     }
 
-    const RealtimeApiRequest request{
-        .type = type,
-        .payload = std::move(payload),
-    };
+    const RealtimeApiRequest request(type, std::move(payload));
     auto response = client.Send(request, sessionStore.AccessToken(stopToken), stopToken);
     if ((response.statusCode == 401 || response.statusCode == 403)
         && !stopToken.stop_requested())

@@ -46,7 +46,11 @@ RealtimeApiResponse RealtimeApiClient::Send(
         deadline.emplace(webSocketClient_, requestTimeout_);
         const auto rawJson = webSocketClient_.SendAndReceive(
             endpoint_, envelope, headers_, stopToken);
-        return protocol::ParseResponse(rawJson, requestId, request.type);
+        return protocol::ParseResponse(
+            rawJson,
+            requestId,
+            request.type,
+            request.expectedResponseType);
     }
     catch (const protocol::RealtimeProtocolError& exception)
     {

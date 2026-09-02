@@ -22,10 +22,12 @@ public:
 [[nodiscard]] bool IsResponseForRequest(
     const std::string& rawJson,
     const std::string& expectedRequestId,
-    const std::string& expectedType);
+    const std::string& expectedRequestType,
+    const std::string& expectedResponseType = {});
 [[nodiscard]] RealtimeApiResponse ParseResponse(
     const std::string& rawJson,
     const std::string& expectedRequestId,
-    const std::string& expectedType);
+    const std::string& expectedRequestType,
+    const std::string& expectedResponseType = {});
 }
 }
