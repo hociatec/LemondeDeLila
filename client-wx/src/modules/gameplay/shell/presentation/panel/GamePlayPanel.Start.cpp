@@ -53,6 +53,8 @@ void GamePlayPanel::SetRoomStarted(bool started)
         roomStartFlowRequested_ = false;
         roomStartPending_ = false;
         startConfigurationFlow_.Reset();
+        pawnSelectionPanel_->Apply(pawnSelection_);
+        SyncContentVisibility();
     }
     else if (becameSetup)
     {
