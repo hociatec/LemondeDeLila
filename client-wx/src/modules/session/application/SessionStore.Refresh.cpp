@@ -107,6 +107,7 @@ std::string SessionStore::RefreshAccessToken(std::stop_token stopToken)
 
     std::string supersededRefreshToken;
     std::string postRefreshError;
+    std::function<void()> sessionExpiredHandler;
     {
         std::scoped_lock lock(mutex_);
         refreshInProgress_ = false;
@@ -127,11 +128,11 @@ std::string SessionStore::RefreshAccessToken(std::stop_token stopToken)
                 current_ = {};
                 persisted_ = false;
                 ++generation_;
+                sessionExpiredHandler = sessionExpiredHandler_;
             }
-            throw std::runtime_error(
-                result.errorMessage.empty()
-                    ? lila::shared::errors::SessionExpiredMessage
-                    : result.errorMessage);
+            postRefreshError = result.errorMessage.empty()
+                ? lila::shared::errors::SessionExpiredMessage
+                : result.errorMessage;
         }
         else
         {
@@ -172,6 +173,11 @@ std::string SessionStore::RefreshAccessToken(std::stop_token stopToken)
                 return current_.token;
             }
         }
+    }
+
+    if (sessionExpiredHandler)
+    {
+        sessionExpiredHandler();
     }
 
     if (!supersededRefreshToken.empty())

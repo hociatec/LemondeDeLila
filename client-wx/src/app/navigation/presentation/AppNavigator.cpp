@@ -46,6 +46,7 @@ AppNavigator::AppNavigator(
 
 AppNavigator::~AppNavigator()
 {
+    sessionStore_.SetSessionExpiredHandler({});
     roomInvitationMonitor_.SetInvitationHandler({});
     roomInvitationMonitor_.Stop();
     presenceMonitor_.Stop();
@@ -71,6 +72,17 @@ bool AppNavigator::Start()
                 audioService_.Play(lila::modules::audio::domain::SoundCue::Selection);
             });
         hostFrame_->SetPresenceRequestedHandler([this]() { ShowPresence(); });
+        const wxWeakRef<HostFrame> weakFrame(hostFrame_);
+        sessionStore_.SetSessionExpiredHandler(
+            [this, weakFrame]()
+            {
+                if (!weakFrame) return;
+                weakFrame->CallAfter(
+                    [this, weakFrame]()
+                    {
+                        if (weakFrame) OnSessionExpired();
+                    });
+            });
         roomInvitationMonitor_.SetInvitationHandler(
             [this](modules::rooms::domain::RoomInvitation invitation)
             {

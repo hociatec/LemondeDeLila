@@ -109,6 +109,36 @@ void TestSessionStoreRejectsSupersededConcurrentRefresh()
     std::cout << "[TEST PASSED] SessionStoreRejectsSupersededConcurrentRefresh\n";
 }
 
+void TestSessionStoreNotifiesRejectedRefresh()
+{
+    lila::modules::session::application::SessionStore sessionStore(
+        std::make_unique<InMemorySessionRepository>(),
+        std::make_unique<RejectingSessionRefresher>());
+    lila::modules::session::domain::Session session;
+    session.userId = lila::shared::domain::UserId{1};
+    session.username = "expired-user";
+    session.refreshToken = "expired-refresh-token";
+    sessionStore.Open(std::move(session), true);
+
+    int notificationCount = 0;
+    sessionStore.SetSessionExpiredHandler([&notificationCount]() { ++notificationCount; });
+    bool rejected = false;
+    try
+    {
+        static_cast<void>(sessionStore.RefreshAccessToken());
+    }
+    catch (const std::exception&)
+    {
+        rejected = true;
+    }
+
+    Expect(rejected, "Le renouvellement refuse devait echouer");
+    Expect(notificationCount == 1, "L'expiration de session devait etre notifiee une fois");
+    Expect(!sessionStore.HasActiveSession(), "La session refusee devait etre effacee");
+
+    std::cout << "[TEST PASSED] SessionStoreNotifiesRejectedRefresh\n";
+}
+
 void TestAtomicFileWriterReplacesExistingContent()
 {
     const std::filesystem::path path = std::filesystem::current_path() / "atomic-write-test.txt";
@@ -169,4 +199,3 @@ void TestBrokenAccentRepairCanBeToggled()
 
     std::cout << "[TEST PASSED] BrokenAccentRepairCanBeToggled\n";
 }
-

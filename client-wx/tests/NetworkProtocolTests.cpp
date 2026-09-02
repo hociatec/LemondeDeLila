@@ -116,6 +116,7 @@ int main()
         run("SessionMovePreservesSecrets", TestSessionMovePreservesSecrets);
         run("SessionStoreRestoreLoadsPersistedSession", TestSessionStoreRestoreLoadsPersistedSession);
         run("SessionStoreRejectsSupersededConcurrentRefresh", TestSessionStoreRejectsSupersededConcurrentRefresh);
+        run("SessionStoreNotifiesRejectedRefresh", TestSessionStoreNotifiesRejectedRefresh);
         run("AtomicFileWriterReplacesExistingContent", TestAtomicFileWriterReplacesExistingContent);
         run("EncodingRoundTripUnicode", TestEncodingRoundTripUnicode);
         run("EncodingRejectsInvalidUtf8", TestEncodingRejectsInvalidUtf8);

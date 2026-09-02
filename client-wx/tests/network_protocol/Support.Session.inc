@@ -124,3 +124,22 @@ private:
     std::vector<std::string> revokedTokens_;
 };
 
+class RejectingSessionRefresher final
+    : public lila::modules::session::application::ISessionRefresher
+{
+public:
+    [[nodiscard]] lila::modules::session::application::SessionRefreshResult Refresh(
+        const std::string&,
+        std::stop_token = {}) override
+    {
+        lila::modules::session::application::SessionRefreshResult result;
+        result.rejected = true;
+        result.errorMessage = "Refresh token invalide ou expire";
+        return result;
+    }
+
+    [[nodiscard]] bool Revoke(const std::string&, std::stop_token = {}) override
+    {
+        return true;
+    }
+};
