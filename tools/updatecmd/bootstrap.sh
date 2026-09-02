@@ -154,8 +154,10 @@ if [[ ! -x "$WX_VCPKG_ROOT/vcpkg" ]]; then
 fi
 chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$WX_VCPKG_ROOT" "$WX_BINARY_CACHE"
 VCPKG_OVERLAY_ROOT="$CACHE_ROOT/vcpkg-overlays"
-mkdir -p "$VCPKG_OVERLAY_ROOT/libwebp"
+mkdir -p "$VCPKG_OVERLAY_ROOT/libwebp" "$VCPKG_OVERLAY_ROOT/miniz"
 rsync -a --delete "$WX_VCPKG_ROOT/ports/libwebp/" "$VCPKG_OVERLAY_ROOT/libwebp/"
+rsync -a --delete "$SOURCE_ROOT/tools/updatecmd/vcpkg-overlays/miniz/" \
+  "$VCPKG_OVERLAY_ROOT/miniz/"
 install -m 0644 "$SOURCE_ROOT/tools/updatecmd/vcpkg-overlays/libwebp-mingw-gcc10-avx2.patch" \
   "$VCPKG_OVERLAY_ROOT/libwebp/libwebp-mingw-gcc10-avx2.patch"
 if ! grep -q 'libwebp-mingw-gcc10-avx2.patch' "$VCPKG_OVERLAY_ROOT/libwebp/portfile.cmake"; then
