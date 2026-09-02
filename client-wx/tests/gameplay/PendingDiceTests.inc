@@ -86,7 +86,7 @@ void TestGenericDiceContract()
         "Tous les des fournis par le serveur doivent etre conserves.");
     Expect(state.kits.dice->total == 8 && state.kits.dice->dice[1].value == 5,
         "Les valeurs individuelles et le total doivent etre decodes.");
-    const auto action = GameDiceActionResolver::Resolve(*state.kits.dice, state.actions, 0);
+    const auto action = GameDiceActionResolver::Resolve(*state.kits.dice, state.actions);
     Expect(action.has_value() && action->type == "server-specific-roll",
         "Le lancer doit utiliser l'index serveur sans connaitre le nom de l'action.");
     Expect(lila::modules::gameplay::application::dice::GameDiceTextBuilder::DieText(
