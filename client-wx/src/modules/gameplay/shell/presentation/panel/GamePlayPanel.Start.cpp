@@ -54,8 +54,25 @@ void GamePlayPanel::SetRoomStarted(bool started)
         roomStartFlowRequested_ = false;
         roomStartPending_ = false;
         startConfigurationFlow_.Reset();
-        pawnSelectionPanel_->Apply(pawnSelection_);
-        SyncContentVisibility();
+        if (becameStarted)
+        {
+            // The setup projection may predate a bot/roster mutation. Never
+            // expose those cached actions after the room starts: rejoin first
+            // so Enter can only submit an action from the authoritative run.
+            inputRequestSlot_.Cancel();
+            inputSubmissionGuard_.Reset();
+            retryableActionCommand_.reset();
+            state_ = {};
+            lines_.clear();
+            pawnSelection_.reset();
+            ClearView();
+            StartJoin();
+        }
+        else
+        {
+            pawnSelectionPanel_->Apply(pawnSelection_);
+            SyncContentVisibility();
+        }
     }
     else if (becameSetup)
     {

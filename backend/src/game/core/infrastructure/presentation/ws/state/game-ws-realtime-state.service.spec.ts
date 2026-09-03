@@ -131,6 +131,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
 
     expect(resolved.state.metadata?.roomStartedAt).toBe(startedAt);
     expect(resolved.state.version).toBe(5);
+    expect(resolved.commandRebaseFromVersion).toBe(4);
     expect(engine.compareAndSetInternalState).toHaveBeenCalledWith(
       4,
       'lama',
@@ -196,7 +197,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
       { id: 1, username: 'Owner', isBot: false },
       { id: -9, username: 'Bot LAMA', isBot: true },
     ]);
-    expect(resolved.setupRosterRefreshedFromVersion).toBe(1);
+    expect(resolved.commandRebaseFromVersion).toBe(1);
     expect(rooms.refreshPayload).toHaveBeenCalledWith(4);
     expect(handler.hydrateInitialState).toHaveBeenCalledTimes(1);
     expect(engine.compareAndSetInternalState).toHaveBeenCalledWith(
@@ -266,7 +267,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
         expect.objectContaining({ id: -9, isBot: true }),
       ]),
     );
-    expect(resolved.setupRosterRefreshedFromVersion).toBe(1);
+    expect(resolved.commandRebaseFromVersion).toBe(1);
     expect(handler.hydrateInitialState).toHaveBeenCalledTimes(1);
   });
 

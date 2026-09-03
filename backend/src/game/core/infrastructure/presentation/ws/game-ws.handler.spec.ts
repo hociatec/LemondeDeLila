@@ -2,7 +2,7 @@ import type { GameRuntime } from '../../../application/contracts/game-runtime.in
 import type { GameStateEntity } from '../../../application/contracts/game-state.model';
 import { GameWsHandler } from './game-ws.handler';
 
-describe('GameWsHandler setup roster version', () => {
+describe('GameWsHandler internal state refresh version', () => {
   const state = (version: number): GameStateEntity => ({
     status: 'setup',
     phase: 'setup',
@@ -13,16 +13,16 @@ describe('GameWsHandler setup roster version', () => {
 
   const setup = (
     knownVersion: number,
-    setupRosterRefreshedFromVersion?: number,
+    commandRebaseFromVersion?: number,
     actionType = 'choice.resolve',
   ) => {
     const resolved = {
       gameType: 'lama',
       state: state(2),
       handler: {} as GameRuntime,
-      ...(setupRosterRefreshedFromVersion == null
+      ...(commandRebaseFromVersion == null
         ? {}
-        : { setupRosterRefreshedFromVersion }),
+        : { commandRebaseFromVersion }),
     };
     const actions = [
       {
@@ -88,6 +88,22 @@ describe('GameWsHandler setup roster version', () => {
         actions: [
           expect.objectContaining({
             type: 'game.configure',
+            meta: expect.objectContaining({ knownVersion: 2 }),
+          }),
+        ],
+      }),
+    );
+  });
+
+  it('rebases the first action after the start timestamp is persisted', async () => {
+    const test = setup(1, 1, 'choice.resolve');
+
+    await test.handler.action({ user: { id: 7 } } as never, {});
+
+    expect(test.executor.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actions: [
+          expect.objectContaining({
             meta: expect.objectContaining({ knownVersion: 2 }),
           }),
         ],

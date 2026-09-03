@@ -20,7 +20,7 @@ export type ResolvedGameState = {
   gameType: string;
   state: GameStateEntity;
   handler: GameRuntime;
-  setupRosterRefreshedFromVersion?: number;
+  commandRebaseFromVersion?: number;
 };
 
 @Injectable()
@@ -73,13 +73,20 @@ export class GameWsRealtimeStateService {
         room,
         handler,
       );
-      const state = await this.refreshRoomStartedAt(
+      const started = await this.refreshRoomStartedAt(
         roomId,
         gameType,
         refreshed.state,
         room.room.startedAt,
       );
-      return { gameType, handler, ...refreshed, state };
+      return {
+        gameType,
+        handler,
+        state: started.state,
+        commandRebaseFromVersion:
+          refreshed.commandRebaseFromVersion ??
+          started.commandRebaseFromVersion,
+      };
     }
     if (existing) await this.clear(roomId, gameType);
 
@@ -194,9 +201,12 @@ export class GameWsRealtimeStateService {
     gameType: string,
     existing: GameStateEntity,
     roomStartedAt: Date | string | null | undefined,
-  ): Promise<GameStateEntity> {
+  ): Promise<{
+    state: GameStateEntity;
+    commandRebaseFromVersion?: number;
+  }> {
     if (existing.metadata?.roomStartedAt != null || roomStartedAt == null) {
-      return existing;
+      return { state: existing };
     }
     const normalizedStartedAt =
       roomStartedAt instanceof Date
@@ -213,7 +223,12 @@ export class GameWsRealtimeStateService {
       this.ensureVersion(existing),
       next,
     );
-    return result.state;
+    return result.committed
+      ? {
+          state: result.state,
+          commandRebaseFromVersion: this.ensureVersion(existing),
+        }
+      : { state: result.state };
   }
 
   private async refreshSetupRoster(
@@ -224,7 +239,7 @@ export class GameWsRealtimeStateService {
     handler: GameRuntime,
   ): Promise<{
     state: GameStateEntity;
-    setupRosterRefreshedFromVersion?: number;
+    commandRebaseFromVersion?: number;
   }> {
     const roomStatus = stringOrEmpty(room.room.status).toLowerCase();
     if (
@@ -251,7 +266,7 @@ export class GameWsRealtimeStateService {
     return result.committed
       ? {
           state: result.state,
-          setupRosterRefreshedFromVersion: this.ensureVersion(existing),
+          commandRebaseFromVersion: this.ensureVersion(existing),
         }
       : { state: result.state };
   }
