@@ -137,6 +137,53 @@ describe('GameWsStatePresenter', () => {
     ]);
   });
 
+  it('lets a scored game reserve S for a declared interface panel', () => {
+    const state = {
+      status: 'playing',
+      players: [{ id: 1, username: 'Lila' }],
+      metadata: {},
+    } as unknown as GameStateEntity;
+    const handler = {
+      exposeStateForUser: () => ({
+        system: { match: { status: 'playing' } },
+        kits: {
+          score: {
+            byPlayer: { '1': 0 },
+            leaderboard: [{ playerId: 1, score: 0, rank: 1 }],
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [
+        {
+          key: 'S',
+          type: 'interface',
+          id: 'inventory:shopping-baskets',
+          label: 'Panier',
+        },
+      ],
+      getDescriptor: () => ({ presentation: {} }),
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state,
+      handler,
+      roomId: 6,
+      gameType: 'panier-express',
+      version: 1,
+      viewerPlayerId: 1,
+    });
+
+    expect((payload.system as any).shortcuts).toEqual([
+      {
+        key: 'S',
+        type: 'interface',
+        id: 'inventory:shopping-baskets',
+        label: 'Panier',
+      },
+    ]);
+  });
+
   it('publishes ready-to-render event messages for LAMA', () => {
     const state = {
       status: 'playing',

@@ -14,7 +14,7 @@ import {
   FROUSSE_ACTIONS,
   FROUSSE_EFFECTS,
   FROUSSE_PHASES,
-  requestPawn,
+  requestPawns,
   resolvePawn,
 } from './rules';
 import type { NoGameState as FrousseState } from '../../../engine/sdk/public-api';
@@ -58,7 +58,10 @@ export default defineGame<FrousseState>()({
   initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   setup: ({ players, ctx }) => {
-    requestPawn(players[0].id, ctx);
+    requestPawns(
+      players.map((player) => player.id),
+      ctx,
+    );
     return {};
   },
   initialPhase: FROUSSE_PHASES.initialPhase,

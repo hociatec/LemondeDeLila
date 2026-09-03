@@ -54,7 +54,7 @@ const pawnSelection = sequentialPawnSelection<MinuitState>({
   },
 });
 
-export const requestPawn = pawnSelection.request;
+export const requestPawns = pawnSelection.requestAll;
 export const resolvePawn = pawnSelection.resolve;
 
 export function resolvePending(

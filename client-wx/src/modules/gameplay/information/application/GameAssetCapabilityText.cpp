@@ -1,7 +1,9 @@
 #include "modules/gameplay/information/application/GameKnownCapabilityText.h"
 
+#include <algorithm>
 #include <cmath>
 #include <sstream>
+#include <string_view>
 
 #include "modules/gameplay/information/application/GameValueTextBuilder.h"
 
@@ -21,6 +23,28 @@ std::optional<std::string> BuildAssetCapabilityText(
     const domain::GameState& state, const std::string& capability)
 {
     std::ostringstream out;
+    constexpr std::string_view InventoryPrefix = "inventory:";
+    if (capability.starts_with(InventoryPrefix) && state.kits.inventory)
+    {
+        const auto setId = capability.substr(InventoryPrefix.size());
+        const auto found = std::find_if(
+            state.kits.inventory->sets.begin(), state.kits.inventory->sets.end(),
+            [&setId](const domain::GameInventorySet& set) { return set.id == setId; });
+        if (found == state.kits.inventory->sets.end()) return std::string{};
+        const std::string title = setId == "shopping-lists" ? "Liste de courses"
+            : setId == "shopping-baskets" ? "Panier" : HumanLabel(setId);
+        for (const auto& player : found->players)
+        {
+            out << title << " de " << Player(state, player.playerId) << '\n';
+            if (player.quantities.empty() && !player.hiddenCount)
+                out << "- vide\n";
+            if (player.hiddenCount)
+                out << "- " << *player.hiddenCount << " objet(s) masqué(s)\n";
+            for (const auto& [item, count] : player.quantities)
+                out << "- " << HumanLabel(item) << " : " << count << '\n';
+        }
+        return out.str();
+    }
     if (capability == "inventory" && state.kits.inventory)
     {
         for (const auto& set : state.kits.inventory->sets)

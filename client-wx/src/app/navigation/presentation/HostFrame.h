@@ -35,6 +35,7 @@ private:
     wxWindow* contentRoot_ = nullptr;
     wxWindow* currentContent_ = nullptr;
     lila::shared::accessibility::FocusMemory focusMemory_;
+    bool restoreFocusAfterActivation_ = false;
     PresenceRequestedHandler onPresenceRequested_;
     CloseRequestedHandler onCloseRequested_;
 };

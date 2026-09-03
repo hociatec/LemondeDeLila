@@ -90,7 +90,7 @@ const pawnSelection = sequentialPawnSelection<FrousseState>({
   },
 });
 
-export const requestPawn = pawnSelection.request;
+export const requestPawns = pawnSelection.requestAll;
 export const resolvePawn = pawnSelection.resolve;
 
 function modifiedRoll(playerId: number, ctx: RuleContext): number {

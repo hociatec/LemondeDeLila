@@ -229,6 +229,10 @@ export class GameTestKit<
     return replayed;
   }
 
+  async events() {
+    return this.sessionStore.listEvents(1, this.definition.id);
+  }
+
   result(): MatchResult | null {
     const state = this.requireState() as GameStateEntity & {
       engine?: { match?: { result?: MatchResult | null } };

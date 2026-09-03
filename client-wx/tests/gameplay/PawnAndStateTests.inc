@@ -152,10 +152,30 @@ void TestCapabilityInformationIsInspectable()
     lila::modules::gameplay::domain::GameResourcesView resources;
     resources.players.push_back({7, {{"coins", 3}}});
     state.kits.resources = std::move(resources);
+    lila::modules::gameplay::domain::GameInventoryView inventory;
+    inventory.sets.push_back({"shopping-lists", "owner", {
+        {7, {{"melon", 1}, {"jeune-pousse-d-ortie", 1}}, std::nullopt}}});
+    inventory.sets.push_back({"shopping-baskets", "owner", {
+        {7, {{"melon", 1}}, std::nullopt}}});
+    state.kits.inventory = std::move(inventory);
     Expect(GameCapabilityTextBuilder::Build(state, "match").find("En cours") != std::string::npos,
         "L'état du match doit être inspectable.");
     Expect(GameCapabilityTextBuilder::Build(state, "setup").find("Lila") != std::string::npos,
         "La configuration doit nommer son propriétaire.");
     Expect(GameCapabilityTextBuilder::Build(state, "resources").find("Pièces") != std::string::npos,
         "Chaque capability doit conserver une présentation générique.");
+    Expect(GameCapabilityTextBuilder::Build(state, "inventory:shopping-lists").find(
+            "Liste de courses de Lila") != std::string::npos,
+        "L doit pouvoir annoncer seulement la liste de courses privée.");
+    Expect(GameCapabilityTextBuilder::Build(state, "inventory:shopping-baskets").find(
+            "Panier de Lila") != std::string::npos,
+        "S doit pouvoir annoncer seulement le panier privé.");
+
+    state.kits.score = lila::modules::gameplay::domain::GameScoreView{};
+    state.system.shortcuts.push_back({"S", "S",
+        lila::modules::gameplay::domain::GameShortcutKind::Interface,
+        "inventory:shopping-baskets", "", "Panier"});
+    Expect(lila::modules::gameplay::application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(
+            state, "S").empty(),
+        "Un raccourci S explicite du jeu doit remplacer le raccourci générique des scores.");
 }

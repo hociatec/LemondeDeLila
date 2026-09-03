@@ -88,6 +88,7 @@ void HostFrame::OnActivate(wxActivateEvent& event)
     if (!event.GetActive())
     {
         focusMemory_.Remember(currentContent_);
+        restoreFocusAfterActivation_ = true;
         event.Skip();
         return;
     }
@@ -104,24 +105,40 @@ void HostFrame::OnActivate(wxActivateEvent& event)
 
 void HostFrame::OnChildFocus(wxChildFocusEvent& event)
 {
-    focusMemory_.Remember(currentContent_);
+    // Windows can temporarily focus the frame or its first child while an
+    // application is being reactivated. Do not let that transient focus
+    // overwrite the control remembered when the application lost focus.
+    if (!restoreFocusAfterActivation_)
+        focusMemory_.Remember(currentContent_);
     event.Skip();
 }
 
 void HostFrame::RestoreContentFocusAfterActivation()
 {
-    if (!IsActive() || currentContent_ == nullptr ||
-        !currentContent_->IsShownOnScreen())
+    if (!IsActive())
         return;
+    if (currentContent_ == nullptr || !currentContent_->IsShownOnScreen())
+    {
+        restoreFocusAfterActivation_ = false;
+        return;
+    }
 
     auto* focused = wxWindow::FindFocus();
+
+    if (focused != nullptr && wxGetTopLevelParent(focused) != this)
+        return;
+
+    if (restoreFocusAfterActivation_)
+    {
+        restoreFocusAfterActivation_ = false;
+        if (focusMemory_.Restore(currentContent_))
+            return;
+    }
+
     if (focused != nullptr && focused->IsShownOnScreen() &&
         focused->IsEnabled() && focused->AcceptsFocus() &&
         lila::shared::accessibility::NavigationController::IsDescendantOf(
             focused, currentContent_))
-        return;
-
-    if (focused != nullptr && wxGetTopLevelParent(focused) != this)
         return;
 
     if (focusMemory_.Restore(currentContent_))

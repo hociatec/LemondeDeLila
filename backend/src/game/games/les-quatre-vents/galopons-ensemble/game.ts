@@ -18,7 +18,7 @@ import {
   moveGaloponsAndResolve,
   moveToNextRegion,
   pairAdvance,
-  requestPawn,
+  requestPawns,
   resolvePawn,
 } from './rules';
 import type { NoGameState as GaloponsState } from '../../../engine/sdk/public-api';
@@ -55,7 +55,10 @@ export default defineGame<GaloponsState>()({
   initialization: { firstPlayer: 'first', startRound: true },
   shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   setup: ({ players, ctx }) => {
-    requestPawn(players[0].id, ctx);
+    requestPawns(
+      players.map((player) => player.id),
+      ctx,
+    );
     return {};
   },
   initialPhase: GALOPONS_PHASES.initialPhase,

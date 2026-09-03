@@ -46,6 +46,14 @@ void GamePlayPanel::RebuildInfoPanelChoices()
             }
             else append(id, label);
         }
+    if (state_.kits.inventory)
+        for (const auto& set : state_.kits.inventory->sets)
+        {
+            if (set.id == "shopping-lists")
+                append("inventory:shopping-lists", L"Liste de courses");
+            else if (set.id == "shopping-baskets")
+                append("inventory:shopping-baskets", L"Panier");
+        }
     if (state_.effect) append("effect", L"Effet courant");
     if (!state_.timers.empty()) append("timers", L"Minuteries");
     if (!state_.game.Empty()) append("specific", L"Informations spécifiques");

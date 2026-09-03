@@ -1,13 +1,13 @@
 export type PanierPending =
-  | { kind: 'direction'; actorId: number; distance: number }
-  | { kind: 'quiz'; actorId: number; sessionId: string }
+  | { panierKind: 'direction'; actorId: number; distance: number }
+  | { panierKind: 'quiz'; actorId: number; sessionId: string }
   | {
-      kind: 'take';
+      panierKind: 'take';
       actorId: number;
       targetId: number;
     }
   | {
-      kind: 'give';
+      panierKind: 'give';
       actorId: number;
       targetId: number;
       take: string;
