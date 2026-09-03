@@ -96,7 +96,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
   it('rebuilds an unconfigured setup state after a bot is added', async () => {
     const current = {
       ...gameState({ roomRunId: 2 }),
-      status: 'setup',
+      status: 'playing',
       phase: 'setup',
       version: 1,
       players: [{ id: 1, username: 'Owner', isBot: false }],
@@ -166,7 +166,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
   it('rebuilds a stale setup roster when the room starts with a newly added bot', async () => {
     const current = {
       ...gameState({ roomRunId: 2 }),
-      status: 'setup',
+      status: 'playing',
       phase: 'setup',
       version: 1,
       players: [{ id: 1, username: 'Owner', isBot: false }],
