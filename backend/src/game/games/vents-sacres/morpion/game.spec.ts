@@ -23,6 +23,8 @@ describe('Morpion declarative game', () => {
     await game.choose(first!, MORPION_PAWNS[0].id);
     const second = game.state().pending?.playerId;
     expect(second).not.toBe(first);
+    expect(game.availableActions(first!)).toEqual([]);
+    expect(game.availableActions(second!)).toContain('choice.resolve');
     await game.choose(second!, MORPION_PAWNS[1].id);
 
     expect(assignments()?.[String(first)]).toEqual([MORPION_PAWNS[0].id]);
