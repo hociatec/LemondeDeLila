@@ -68,8 +68,12 @@ export default defineGame<AFondLesBallonsState>()({
     },
   ],
   setup: ({ ctx }) => {
+    const participants = ctx.players.all();
     requestPawns(
-      ctx.players.all().map((player) => player.id),
+      [
+        ...participants.filter((player) => !player.isBot),
+        ...participants.filter((player) => player.isBot),
+      ].map((player) => player.id),
       ctx,
     );
     return { awaitingCardDraw: false };
