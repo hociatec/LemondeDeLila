@@ -24,6 +24,21 @@ describe('À fond les ballons declarative game', () => {
       playerId: 1,
     });
     expect(game.availableActions(-2)).not.toContain('choice.resolve');
+    const selectionRequests = (
+      game.state() as unknown as {
+        engine?: {
+          pendingEvents?: Array<{
+            type: string;
+            data: { key?: string; params?: { playerId?: number } };
+          }>;
+        };
+      }
+    ).engine?.pendingEvents?.filter(
+      (event) =>
+        event.type === 'game.message' &&
+        event.data.key === 'game.pawn.selection-requested',
+    );
+    expect(selectionRequests?.at(-1)?.data.params?.playerId).toBe(1);
 
     await game.choose(1, 'capitaine-cacahuete');
     expect(game.inspect.setupComplete()).toBe(false);

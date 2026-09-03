@@ -325,6 +325,10 @@ export class GameWsStatePresenter {
       return namedPlayer === 'Vous'
         ? 'Vous devez piocher une carte. Appuyez sur Espace.'
         : `${namedPlayer} doit piocher une carte.`;
+    if (messageKey === 'game.pawn.selection-requested' && namedPlayer)
+      return namedPlayer === 'Vous'
+        ? 'Vous devez choisir votre pion.'
+        : `${namedPlayer} doit choisir son pion.`;
     if (messageKey === 'game.pawn.bonus-advance' && namedPlayer) {
       const spaces = this.numberValue(params.spaces) ?? 0;
       const distance = `${spaces} case${Math.abs(spaces) === 1 ? '' : 's'}`;

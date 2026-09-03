@@ -267,7 +267,7 @@ describe('DeclarativeGameRuntime', () => {
 
   it('finishes a turn after an optional effect choice times out', () => {
     const clock = new FixedGameClock(1_000);
-    let state = adapter.hydrateInitialState(baseState());
+    let state = runtimeState(adapter.hydrateInitialState(baseState()));
     state = apply(
       adapter,
       state,
