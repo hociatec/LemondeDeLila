@@ -1,4 +1,7 @@
-import { testGame } from '../../../engine/sdk/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../engine/sdk/public-api';
 import {
   PANIER_EVENTS,
   PANIER_EXCHANGES,
@@ -24,5 +27,29 @@ describe('Panier Express declarative game', () => {
     expect('shoppingLists' in game.view(actor)).toBe(false);
     expect('inventories' in game.view(actor)).toBe(false);
     expect(await game.replay()).toEqual(game.state());
+  });
+
+  it('waits for and assigns a publicly announced pawn to every participant', async () => {
+    const game = testGame(gameDefinition)
+      .players(['Hacene', { username: 'Kirikou', isBot: true }])
+      .seed(83);
+    await game.start();
+
+    expect(game.view(1).pending).toMatchObject({
+      label: 'Choisissez votre pion.',
+      playerIds: expect.arrayContaining([1, -2]),
+      resolvedPlayerIds: [],
+    });
+
+    const [humanPawn, botPawn] = PANIER_PAWNS;
+    await game.choose(1, humanPawn.id);
+    expect(game.inspect.setupComplete()).toBe(false);
+    await game.choose(-2, botPawn.id);
+
+    const pawns = (game.view(1) as unknown as { kits: StableGameKitsView }).kits
+      .pawns?.sets.panier.assignments;
+    expect(pawns?.['1']).toEqual([humanPawn.id]);
+    expect(pawns?.['-2']).toEqual([botPawn.id]);
+    expect(game.inspect.setupComplete()).toBe(true);
   });
 });
