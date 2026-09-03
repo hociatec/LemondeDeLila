@@ -31,6 +31,7 @@ describe('À fond les ballons declarative game', () => {
       label: 'Choisissez votre pion.',
       playerId: -2,
     });
+    expect(game.availableActions(1)).toEqual([]);
     expect(game.availableActions(-2)).toContain('choice.resolve');
 
     await game.choose(-2, 'professeur-gribouille');
