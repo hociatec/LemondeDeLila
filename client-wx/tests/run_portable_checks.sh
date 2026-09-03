@@ -132,6 +132,7 @@ c++ "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
   "$ROOT/src/modules/chat/application/ChatService.Messages.cpp" \
   "$ROOT/src/modules/chat/application/ChatService.Reconnect.cpp" \
   "$ROOT/src/modules/chat/application/ChatMessageStore.cpp" \
+  "$ROOT/src/modules/gameplay/session/application/GameSessionService.cpp" \
   "$ROOT/src/modules/options/application/OptionsStore.cpp" \
   "$ROOT/src/modules/rooms/application/RoomSessionService.cpp" \
   "$ROOT/src/modules/rooms/application/RoomSessionService.Realtime.cpp" \

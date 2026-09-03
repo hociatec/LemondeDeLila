@@ -43,6 +43,8 @@ public:
 private:
     void StopTasks();
     void ReceiveLoop(std::stop_token stopToken, std::size_t generation);
+    [[nodiscard]] bool ReconnectLoop(
+        std::stop_token stopToken, std::size_t generation);
     void NotifyEvent(domain::GameEvent event, std::size_t generation);
 
     IGameSessionGateway& gateway_;

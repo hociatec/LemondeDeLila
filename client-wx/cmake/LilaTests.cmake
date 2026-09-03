@@ -115,6 +115,7 @@ lila_add_test_executable(lemonde_de_lila_wx_service_resilience_tests
     src/modules/chat/application/ChatService.Messages.cpp
     src/modules/chat/application/ChatService.Reconnect.cpp
     src/modules/chat/application/ChatMessageStore.cpp
+    src/modules/gameplay/session/application/GameSessionService.cpp
     src/modules/options/application/OptionsStore.cpp
     src/modules/rooms/application/RoomSessionService.cpp
     src/modules/rooms/application/RoomSessionService.Realtime.cpp

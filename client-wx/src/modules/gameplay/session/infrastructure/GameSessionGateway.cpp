@@ -71,6 +71,21 @@ domain::GameState GameSessionGateway::Join(
     return AwaitState(stopToken);
 }
 
+domain::GameState GameSessionGateway::Reconnect(std::stop_token stopToken)
+{
+    const auto roomId = roomId_.load();
+    const auto gameType = gameType_;
+    if (roomId <= 0 || gameType.empty())
+        throw std::runtime_error("Aucune partie active.");
+    if (stopToken.stop_requested())
+        throw std::runtime_error("Reconnexion au jeu interrompue.");
+    Connect(stopToken);
+    SendJson(nlohmann::json{
+        {"type", "game.join"},
+        {"payload", {{"roomId", roomId}, {"gameType", gameType}}}});
+    return AwaitState(stopToken);
+}
+
 void GameSessionGateway::RequestState(std::stop_token)
 {
     const auto roomId = roomId_.load();
