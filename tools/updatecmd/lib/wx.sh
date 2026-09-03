@@ -127,6 +127,7 @@ configure_and_build_wx() {
       -DVCPKG_MANIFEST_MODE=OFF \
       -DVCPKG_APPLOCAL_DEPS=OFF \
       -DwxWidgets_DIR="$WX_VCPKG_ROOT/installed/$WX_VCPKG_TRIPLET/share/wxwidgets" \
+      -DNanoSVG_DIR="$WX_VCPKG_ROOT/installed/$WX_VCPKG_TRIPLET/share/nanosvg" \
       -DLILA_PROJECT_VERSION="${WX_VERSION}.0" \
       -DLILA_UPDATE_PUBLIC_KEY_DER_BASE64="$WX_UPDATE_PUBLIC_KEY" \
       -DLILA_UPDATE_AUTHENTICODE_SIGNER_SHA256="$WX_SIGNER_SHA256" \
