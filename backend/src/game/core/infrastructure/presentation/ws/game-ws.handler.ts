@@ -133,7 +133,7 @@ export class GameWsHandler {
     return this.queue.run(roomId, async () => {
       const resolved = await this.realtime.resolve(roomId);
       this.realtime.bind(session, roomId, resolved.gameType);
-      const actions = this.rebaseSetupRosterVersion(
+      const actions = this.rebaseInternalRefreshVersion(
         resolved,
         this.commands.resolveActions(payload, user.id),
       );
@@ -221,11 +221,11 @@ export class GameWsHandler {
     await this.realtime.commit(roomId, resolved, resolved.state, next);
   }
 
-  private rebaseSetupRosterVersion(
+  private rebaseInternalRefreshVersion(
     resolved: ResolvedGameState,
     actions: GameSingleActionDto[],
   ): GameSingleActionDto[] {
-    const refreshedFrom = resolved.setupRosterRefreshedFromVersion;
+    const refreshedFrom = resolved.commandRebaseFromVersion;
     const currentVersion = Number(resolved.state.version);
     if (
       refreshedFrom == null ||
