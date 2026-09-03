@@ -21,6 +21,9 @@ describe('RoomGateway state lifecycle', () => {
       roomId: 10,
     });
     expect(gateway.tryUpdateRoomPayload).toHaveBeenCalled();
+    expect(
+      gateway.tryUpdateRoomPayload.mock.invocationCallOrder[0],
+    ).toBeLessThan(gateway.broadcast.mock.invocationCallOrder[0]);
     expect(gateway.sendRoomState).not.toHaveBeenCalled();
   });
 

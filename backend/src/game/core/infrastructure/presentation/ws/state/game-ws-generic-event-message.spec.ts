@@ -47,6 +47,15 @@ describe('genericGameEventMessage', () => {
     );
   });
 
+  it('conjugates a skipped turn for the viewer', () => {
+    expect(message('player.skipped', { playerId: 1 }, 1, 1)).toBe(
+      'Vous passez votre tour.',
+    );
+    expect(message('player.skipped', { playerId: 2 }, 2, 1)).toBe(
+      'Baloo passe son tour.',
+    );
+  });
+
   it('describes the destination without repeating the technical movement', () => {
     expect(message('pawn.moved', { from: 0, to: 3 }, 1, 1)).toBe('');
     expect(message('pawn.landed', { playerId: 2, position: 6 }, 2, 1)).toBe(
