@@ -321,6 +321,15 @@ export class GameWsStatePresenter {
         players,
       );
     }
+    if (messageKey === 'game.card.draw-required' && namedPlayer)
+      return namedPlayer === 'Vous'
+        ? 'Vous devez piocher une carte. Appuyez sur Espace.'
+        : `${namedPlayer} doit piocher une carte.`;
+    if (messageKey === 'game.pawn.bonus-advance' && namedPlayer) {
+      const spaces = this.numberValue(params.spaces) ?? 0;
+      const distance = `${spaces} case${Math.abs(spaces) === 1 ? '' : 's'}`;
+      return `Bonus : ${namedPlayer === 'Vous' ? 'vous avancez' : `${namedPlayer} avance`} de ${distance}.`;
+    }
     if (messageKey === 'game.player.passed' && namedPlayer)
       return this.withNextTurn(
         namedPlayer === 'Vous'

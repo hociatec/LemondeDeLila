@@ -138,8 +138,10 @@ function resolveLandedTile(
   const tile = A_FOND_LES_BALLONS_TILES[target];
   if (tile.type === 'finish') {
     ctx.match.finish({ winners: [playerId], reason: 'golden-nut' });
-  } else if (tile.type === 'bonus') moveBy(state, playerId, 2, depth, ctx);
-  else if (tile.type === 'piege') {
+  } else if (tile.type === 'bonus') {
+    ctx.events.message('game.pawn.bonus-advance', { playerId, spaces: 2 });
+    moveBy(state, playerId, 2, depth, ctx);
+  } else if (tile.type === 'piege') {
     if (ctx.status.has(playerId, TRAP_IMMUNITY)) {
       ctx.events.message('a-fond-les-ballons.trap.ignored', { playerId });
     } else {
@@ -159,7 +161,10 @@ function resolveLandedTile(
       gameEffects.completeTurn(),
     );
   } else if (tile.type === 'chaton') landOn(state, playerId, 0, depth + 1, ctx);
-  else if (tile.type === 'folie') state.awaitingCardDraw = true;
+  else if (tile.type === 'folie') {
+    state.awaitingCardDraw = true;
+    ctx.events.message('game.card.draw-required', { playerId });
+  }
 }
 
 function drawBalloonCard(
