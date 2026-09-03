@@ -9,7 +9,11 @@ export type EventValue =
   | { [key: string]: EventValue };
 
 export type EngineEventMap = {
-  'turn.started': { playerId: number | null; turnNumber: number };
+  'turn.started': {
+    playerId: number | null;
+    turnNumber: number;
+    announce?: boolean;
+  };
   'turn.ended': { playerId: number | null; turnNumber: number };
   'turn.replaced': { slotOwnerId: number; replacementPlayerId: number };
   'turn.simultaneous.waiting': {

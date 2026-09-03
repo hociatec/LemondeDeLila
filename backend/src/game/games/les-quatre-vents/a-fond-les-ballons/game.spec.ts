@@ -52,6 +52,21 @@ describe('À fond les ballons declarative game', () => {
     expect(game.state().pending?.playerId).toBe(2);
     expect(game.availableActions(2)).toContain('choice.resolve');
     expect(game.availableActions(-1)).not.toContain('choice.resolve');
+    const setupTurn = (
+      game.state() as unknown as {
+        engine?: {
+          pendingEvents?: Array<{
+            type: string;
+            data: { playerId?: number; announce?: boolean };
+          }>;
+        };
+      }
+    ).engine?.pendingEvents
+      ?.filter(
+        (event) => event.type === 'turn.started' && event.data.playerId === 2,
+      )
+      .at(-1);
+    expect(setupTurn?.data.announce).toBe(false);
   });
 
   it('selects unique pawns then resolves a deterministic roll', async () => {
