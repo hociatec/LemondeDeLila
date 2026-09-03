@@ -143,6 +143,7 @@ void TestCapabilityInformationIsInspectable()
     using lila::modules::gameplay::application::info::GameCapabilityTextBuilder;
     lila::modules::gameplay::domain::GameState state;
     state.system.players.push_back({7, "Lila", false, true});
+    state.system.players.push_back({8, "Mina", false, true});
     state.system.match.status = "playing";
     state.system.round.number = 2;
     state.system.round.status = "playing";
@@ -154,9 +155,12 @@ void TestCapabilityInformationIsInspectable()
     state.kits.resources = std::move(resources);
     lila::modules::gameplay::domain::GameInventoryView inventory;
     inventory.sets.push_back({"shopping-lists", "owner", {
-        {7, {{"melon", 1}, {"jeune-pousse-d-ortie", 1}}, std::nullopt}}});
+        {7, {{"melon", 1}, {"jeune-pousse-d-ortie", 1}}, std::nullopt},
+        {8, {}, 5}}});
     inventory.sets.push_back({"shopping-baskets", "owner", {
-        {7, {{"melon", 1}}, std::nullopt}}});
+        {7, {{"melon", 1}}, std::nullopt}, {8, {}, 2}}});
+    inventory.sets.push_back({"market-items", "owner", {
+        {7, {{"epinard", 2}}, std::nullopt}, {8, {}, 4}}});
     state.kits.inventory = std::move(inventory);
     Expect(GameCapabilityTextBuilder::Build(state, "match").find("En cours") != std::string::npos,
         "L'état du match doit être inspectable.");
@@ -170,6 +174,17 @@ void TestCapabilityInformationIsInspectable()
     Expect(GameCapabilityTextBuilder::Build(state, "inventory:shopping-baskets").find(
             "Panier de Lila") != std::string::npos,
         "S doit pouvoir annoncer seulement le panier privé.");
+    const auto privateList = GameCapabilityTextBuilder::Build(
+        state, "inventory:shopping-lists");
+    Expect(privateList.find("Mina") == std::string::npos &&
+            privateList.find("masqué") == std::string::npos,
+        "L ne doit jamais annoncer les inventaires masqués des autres joueurs.");
+    const auto privateInventory = GameCapabilityTextBuilder::Build(
+        state, "inventory:market-items");
+    Expect(privateInventory.find("Inventaire de Lila") != std::string::npos &&
+            privateInventory.find("Epinard : 2") != std::string::npos &&
+            privateInventory.find("Mina") == std::string::npos,
+        "I doit annoncer uniquement l'inventaire privé du joueur.");
 
     state.kits.score = lila::modules::gameplay::domain::GameScoreView{};
     state.system.shortcuts.push_back({"S", "S",

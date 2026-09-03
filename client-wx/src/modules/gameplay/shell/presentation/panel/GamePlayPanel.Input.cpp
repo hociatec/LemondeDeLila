@@ -56,7 +56,7 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     const bool tableShortcutHasPriority =
         event.ControlDown() || event.AltDown() || event.MetaDown() ||
         keyCode == 'B' || keyCode == 'b' || keyCode == 'W' || keyCode == 'w' ||
-        keyCode == 'I' || keyCode == 'i' || keyCode == 'R' || keyCode == 'r' ||
+        keyCode == 'R' || keyCode == 'r' ||
         keyCode == 'Q' || keyCode == 'q' || keyCode == 'X' || keyCode == 'x';
     if (tableShortcutHasPriority && onTableShortcut_ && onTableShortcut_(event)) return true;
 
@@ -105,6 +105,9 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         return true;
     }
     if (HandleShortcut(key)) return true;
+    // A game may reserve I for its own inventory. Without such a declaration,
+    // let RoomPanel keep its usual information shortcut.
+    if (key == "I") return false;
     // An unconfigured key is deliberately silent and must not create a
     // protocol request or a generic server error.
     return true;

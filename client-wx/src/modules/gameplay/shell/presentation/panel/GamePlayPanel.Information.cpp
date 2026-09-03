@@ -53,6 +53,8 @@ void GamePlayPanel::RebuildInfoPanelChoices()
                 append("inventory:shopping-lists", L"Liste de courses");
             else if (set.id == "shopping-baskets")
                 append("inventory:shopping-baskets", L"Panier");
+            else if (set.id == "market-items")
+                append("inventory:market-items", L"Inventaire");
         }
     if (state_.effect) append("effect", L"Effet courant");
     if (!state_.timers.empty()) append("timers", L"Minuteries");

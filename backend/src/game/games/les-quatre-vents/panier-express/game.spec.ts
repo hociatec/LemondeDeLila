@@ -14,7 +14,7 @@ import {
 import gameDefinition from './game';
 
 describe('Panier Express declarative game', () => {
-  it('uses S for the basket, L for the shopping list and leaves P unused', () => {
+  it('declares the private information and manual draw shortcuts', () => {
     expect(gameDefinition.shortcuts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -26,6 +26,16 @@ describe('Panier Express declarative game', () => {
           key: 'L',
           type: 'interface',
           id: 'inventory:shopping-lists',
+        }),
+        expect.objectContaining({
+          key: 'I',
+          type: 'interface',
+          id: 'inventory:market-items',
+        }),
+        expect.objectContaining({
+          key: 'Space',
+          type: 'action',
+          actionType: 'draw_card',
         }),
       ]),
     );
@@ -137,6 +147,37 @@ describe('Panier Express declarative game', () => {
     expect(game.state().pending?.playerId).toBe(-1);
   });
 
+  it('waits for the player to draw a landed card manually', async () => {
+    const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(5);
+    await game.start();
+    await game.choose(1, PANIER_PAWNS[0].id);
+    await game.choose(2, PANIER_PAWNS[1].id);
+    const actor = game.state().turn?.currentPlayerId ?? 1;
+    const cardsBefore =
+      game.inspect.deckCount('events') + game.inspect.deckCount('exchanges');
+
+    await game.as(actor).do('roll', {});
+
+    expect(game.availableActions(actor)).toContain('draw_card');
+    expect(game.state().turn?.currentPlayerId).toBe(actor);
+    expect(
+      game.inspect.deckCount('events') + game.inspect.deckCount('exchanges'),
+    ).toBe(cardsBefore);
+
+    await game.as(actor).do('draw_card', {});
+
+    expect(
+      game.inspect.deckCount('events') + game.inspect.deckCount('exchanges'),
+    ).toBe(cardsBefore - 1);
+    const drawMessage = (await game.events())
+      .filter(
+        (event) =>
+          event.type === 'game.message' && event.data.key === 'game.card.drawn',
+      )
+      .at(-1);
+    expect(drawMessage?.data.params).toMatchObject({ automatic: false });
+  });
+
   it('keeps bots playing through automatic cards and intermediate choices', async () => {
     const initial = await testGame(gameDefinition)
       .players(['Mouche', 'Hacene'])
@@ -151,5 +192,28 @@ describe('Panier Express declarative game', () => {
     expect(result.status).not.toBe('deadlock');
     expect(result.error).toBeUndefined();
     expect(result.eventFrequency['card.drawn']).toBeGreaterThan(0);
+    const manualDrawMessages = (
+      result.finalState as unknown as {
+        engine?: {
+          pendingEvents?: Array<{
+            type: string;
+            data?: { key?: string; params?: object };
+          }>;
+        };
+      }
+    ).engine?.pendingEvents?.filter(
+      (event) =>
+        event.type === 'game.message' && event.data?.key === 'game.card.drawn',
+    );
+    expect(manualDrawMessages).not.toHaveLength(0);
+    expect(manualDrawMessages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          data: expect.objectContaining({
+            params: expect.objectContaining({ automatic: false }),
+          }),
+        }),
+      ]),
+    );
   });
 });

@@ -79,6 +79,12 @@ export default defineGame<PanierState>()({
   shortcuts: [
     { key: 'D', type: 'action', actionType: 'roll' },
     {
+      key: 'Space',
+      type: 'action',
+      actionType: 'draw_card',
+      label: 'Piocher la carte',
+    },
+    {
       key: 'S',
       type: 'interface',
       id: 'inventory:shopping-baskets',
@@ -89,6 +95,12 @@ export default defineGame<PanierState>()({
       type: 'interface',
       id: 'inventory:shopping-lists',
       label: 'Liste de courses',
+    },
+    {
+      key: 'I',
+      type: 'interface',
+      id: 'inventory:market-items',
+      label: 'Inventaire',
     },
   ],
   setup: ({ players, ctx }) => {
@@ -151,5 +163,10 @@ export default defineGame<PanierState>()({
       },
     ),
   ],
-  bot: { choose: () => ({ type: 'roll', payload: {} }) },
+  bot: {
+    choose: ({ availableActions }) => ({
+      type: availableActions.includes('draw_card') ? 'draw_card' : 'roll',
+      payload: {},
+    }),
+  },
 });
