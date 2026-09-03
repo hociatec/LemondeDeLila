@@ -154,15 +154,11 @@ function safeGameplayShortcut(
   shortcut: GameShortcutHint,
 ): GameShortcutHint | null {
   const key = shortcut.key.trim().toUpperCase();
-  // Enter validates forms and lifecycle transitions. It must never trigger a
-  // game menu or an action selected only because it happens to be visible.
+  // Enter is handled by the client's dedicated dice control. It must not be
+  // exposed as a server shortcut or compete with form validation.
   if (key === 'ENTER' || key === 'RETURN') return null;
-  if (
-    key === 'SPACE' &&
-    shortcut.type === 'action' &&
-    shortcut.actionType.trim().toLowerCase() === 'roll'
-  ) {
-    return { ...shortcut, key: 'D' };
+  if (shortcut.type === 'action' && isDiceRollAction(shortcut.actionType)) {
+    return null;
   }
   return shortcut;
 }
@@ -239,7 +235,7 @@ function inferShortcut(
 ): string | null {
   if (inferControl(input) !== 'button') return null;
   const normalized = actionType.toLowerCase().replaceAll('_', '-');
-  if (normalized.includes('roll') || normalized.includes('launch')) return 'D';
+  if (isDiceRollAction(normalized)) return null;
   if (normalized.includes('draw') || normalized.includes('pick'))
     return 'Space';
   if (
@@ -250,6 +246,11 @@ function inferShortcut(
     return null;
   }
   return null;
+}
+
+function isDiceRollAction(actionType: string): boolean {
+  const normalized = actionType.trim().toLowerCase().replaceAll('_', '-');
+  return normalized.includes('roll') || normalized.includes('launch');
 }
 
 function humanize(value: string): string {
