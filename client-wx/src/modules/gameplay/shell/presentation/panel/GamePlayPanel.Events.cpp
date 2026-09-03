@@ -142,6 +142,7 @@ bool GamePlayPanel::HandleZoneActivation()
         }
         return true;
     }
+    if (AnnounceActivationWait()) return true;
     return false;
 }
 
