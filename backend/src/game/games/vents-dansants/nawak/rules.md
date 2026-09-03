@@ -11,7 +11,7 @@ Choisissez les réponses les plus loufoques et empochez des points en faisant vo
 3. Les joueurs se passent au tour par tour jusqu'à ce que chacun ait choisi une réponse secrète au choix.
 
 ## Déroulement d’un tour
-1. Le joueur actif sélectionne l’une des trois réponses proposées (flèches et Entrée).
+1. Le joueur actif sélectionne l’une des trois réponses proposées (flèches et Espace).
 2. Une fois tout le monde passé, chaque joueur vote publiquement pour la réponse qu’il préfère (sauf la sienne).
 3. Chaque vote rapporte 1 point au joueur qui a choisi la réponse votée.
 4. Les réponses sans vote ne rapportent rien.

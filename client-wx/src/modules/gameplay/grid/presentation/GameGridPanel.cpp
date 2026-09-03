@@ -94,7 +94,7 @@ GameGridPanel::GameGridPanel(wxWindow* parent) : wxPanel(parent)
     cells_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
     cells_->SetName(wxString(
-        L"Grille de jeu. Flèches pour naviguer, Page précédente ou suivante pour changer de plateau, Entrée pour activer."));
+        L"Grille de jeu. Flèches pour naviguer, Page précédente ou suivante pour changer de plateau, Espace pour activer."));
     layout->Add(cells_, 1, wxEXPAND);
     SetSizer(layout);
     Hide();

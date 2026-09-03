@@ -9,6 +9,14 @@ namespace lila::modules::gameplay::presentation::shortcuts
 {
 namespace
 {
+bool IsUnsafeShortcut(const domain::GameShortcut& shortcut)
+{
+    if (shortcut.normalizedKey == "ENTER") return true;
+    return shortcut.normalizedKey == "SPACE" &&
+        shortcut.kind == domain::GameShortcutKind::Action &&
+        shortcut.actionType == "roll";
+}
+
 const domain::GameShortcut* FindAvailableAction(
     const domain::GameState& state,
     const std::vector<domain::GameLine>& lines,
@@ -18,7 +26,8 @@ const domain::GameShortcut* FindAvailableAction(
         state.system.shortcuts.begin(), state.system.shortcuts.end(),
         [&state, &lines, &normalizedKey](const domain::GameShortcut& shortcut)
         {
-            return shortcut.normalizedKey == normalizedKey &&
+            return !IsUnsafeShortcut(shortcut) &&
+                shortcut.normalizedKey == normalizedKey &&
                 shortcut.kind == domain::GameShortcutKind::Action &&
                 GameShortcutResolver::ResolveAction(
                     state, lines, shortcut.actionType, -1).has_value();
@@ -34,7 +43,8 @@ const domain::GameShortcut* FindInterface(
         state.system.shortcuts.begin(), state.system.shortcuts.end(),
         [&normalizedKey](const domain::GameShortcut& shortcut)
         {
-            return shortcut.normalizedKey == normalizedKey &&
+            return !IsUnsafeShortcut(shortcut) &&
+                shortcut.normalizedKey == normalizedKey &&
                 shortcut.kind == domain::GameShortcutKind::Interface;
         });
     return found == state.system.shortcuts.end() ? nullptr : &*found;
@@ -105,7 +115,7 @@ wxString GameShortcutResolver::BuildHelpText(const domain::GameState& state)
     wxString result;
     for (const auto& shortcut : state.system.shortcuts)
     {
-        if (shortcut.label.empty()) continue;
+        if (shortcut.label.empty() || IsUnsafeShortcut(shortcut)) continue;
         if (!result.empty()) result += wxString(L" | ");
         result += FromUtf8(shortcut.normalizedKey);
         result += wxString(L" ") + FromUtf8(shortcut.label);

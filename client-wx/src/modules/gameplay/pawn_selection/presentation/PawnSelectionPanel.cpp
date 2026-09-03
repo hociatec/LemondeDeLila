@@ -38,9 +38,10 @@ PawnSelectionPanel::PawnSelectionPanel(wxWindow* parent)
             const int key = event.GetKeyCode();
             if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
             {
-                // The Enter press that starts the room can still be held when
-                // this panel receives focus. Never let its auto-repeat choose
-                // the first preselected pawn.
+                return;
+            }
+            if (key == WXK_SPACE || key == WXK_NUMPAD_SPACE)
+            {
                 if (event.IsAutoRepeat()) return;
                 Submit();
                 return;
@@ -136,7 +137,8 @@ bool PawnSelectionPanel::HandleKey(wxKeyEvent& event)
 {
     if (!IsActive()) return false;
     const int key = event.GetKeyCode();
-    if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
+    if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER) return true;
+    if (key == WXK_SPACE || key == WXK_NUMPAD_SPACE)
     {
         if (event.IsAutoRepeat()) return true;
         Submit();

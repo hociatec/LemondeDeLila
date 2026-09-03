@@ -46,7 +46,7 @@ export default defineGame<CaDerapeState>()({
     counters: { [CA_NEXT_PLAYER_DELTA]: 0 },
     startRound: false,
   },
-  shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
+  shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   initialPhase: CA_DERAPE_PHASES.initialPhase,
   phases: CA_DERAPE_PHASES.phases,
   actions: CA_DERAPE_ACTIONS,

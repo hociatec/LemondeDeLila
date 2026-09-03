@@ -58,7 +58,7 @@ export default defineGame<AFondLesBallonsState>()({
     ...cardSchema.components,
   ],
   initialization: { firstPlayer: 'random', startRound: true },
-  shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
+  shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   setup: ({ ctx }) => {
     requestPawns(
       ctx.players.all().map((player) => player.id),
