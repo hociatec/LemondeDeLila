@@ -150,6 +150,24 @@ describe('GameRealtimeAutomationService', () => {
     );
   });
 
+  it('does not commit or reschedule an already applied automatic command', async () => {
+    const current = state();
+    const test = harness(current);
+    test.executor.execute.mockReturnValue(structuredClone(current));
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'example',
+      handler: test.runtime,
+      state: current,
+    });
+    await Promise.resolve();
+
+    await test.processor()(test.scheduled[0]!);
+
+    expect(test.engine.compareAndSetInternalState).not.toHaveBeenCalled();
+    expect(test.scheduler.schedule).toHaveBeenCalledTimes(1);
+  });
+
   it('executes a bot task when its persisted deadline is due', async () => {
     const botState = state({
       players: [{ id: -7, username: 'Bot LAMA', isBot: true }],

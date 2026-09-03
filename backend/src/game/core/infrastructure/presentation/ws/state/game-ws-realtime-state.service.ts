@@ -73,7 +73,13 @@ export class GameWsRealtimeStateService {
         room,
         handler,
       );
-      return { gameType, handler, ...refreshed };
+      const state = await this.refreshRoomStartedAt(
+        roomId,
+        gameType,
+        refreshed.state,
+        room.room.startedAt,
+      );
+      return { gameType, handler, ...refreshed, state };
     }
     if (existing) await this.clear(roomId, gameType);
 
@@ -181,6 +187,33 @@ export class GameWsRealtimeStateService {
     if (typeof roomRunId !== 'number') return;
 
     target.metadata = { ...(target.metadata ?? {}), roomRunId };
+  }
+
+  private async refreshRoomStartedAt(
+    roomId: number,
+    gameType: string,
+    existing: GameStateEntity,
+    roomStartedAt: Date | string | null | undefined,
+  ): Promise<GameStateEntity> {
+    if (existing.metadata?.roomStartedAt != null || roomStartedAt == null) {
+      return existing;
+    }
+    const normalizedStartedAt =
+      roomStartedAt instanceof Date
+        ? roomStartedAt.toISOString()
+        : roomStartedAt;
+    const next = structuredClone(existing);
+    next.metadata = {
+      ...(next.metadata ?? {}),
+      roomStartedAt: normalizedStartedAt,
+    };
+    const result = await this.engine.compareAndSetInternalState(
+      roomId,
+      gameType,
+      this.ensureVersion(existing),
+      next,
+    );
+    return result.state;
   }
 
   private async refreshSetupRoster(

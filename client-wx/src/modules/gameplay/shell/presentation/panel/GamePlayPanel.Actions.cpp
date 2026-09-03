@@ -36,7 +36,9 @@ void GamePlayPanel::PrepareAndExecuteAction(domain::GameAction action)
             action, state_.actionCatalog))
     {
         confirmationPanel_->HideConfirmation();
-        promptPanel_->ShowPrompt(*prompt, std::move(action));
+        if (promptPanel_->ShowPrompt(*prompt, std::move(action)) &&
+            onZoneFocusRequested_)
+            onZoneFocusRequested_();
         return;
     }
     ExecuteAction(std::move(action));
@@ -95,7 +97,9 @@ void GamePlayPanel::ShowInlinePrompt(domain::GameAction action)
     const auto* prompt = ActivePrompt();
     if (prompt == nullptr || prompt->actionType != action.type) return;
     confirmationPanel_->HideConfirmation();
-    promptPanel_->ShowPrompt(*prompt, std::move(action));
+    if (promptPanel_->ShowPrompt(*prompt, std::move(action)) &&
+        onZoneFocusRequested_)
+        onZoneFocusRequested_();
 }
 
 bool GamePlayPanel::ActivateSelectedPendingChoice()

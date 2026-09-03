@@ -22,6 +22,7 @@ import { GameEngineMetricsService } from './game-engine-metrics.service';
 import { gameNowMs } from './game-execution-scope.service';
 import { GameRegistryService } from './game-registry.service';
 import { GameRoomCommandQueueService } from './game-room-command-queue.service';
+import { sameSerializableValue } from '../../../engine/runtime/state/serializable-value';
 
 type AutomationPlan = {
   signature: string;
@@ -168,6 +169,19 @@ export class GameRealtimeAutomationService implements OnModuleInit {
       actorId: null,
       roomId: task.roomId,
     });
+    if (sameSerializableValue(current, next)) {
+      this.logger.warn(
+        JSON.stringify({
+          event: 'game.automation.noop',
+          key: task.key,
+          roomId: task.roomId,
+          gameType: task.gameType,
+          signature: task.signature,
+          generation: task.generation,
+        }),
+      );
+      return;
+    }
     this.metrics?.recordAutomaticActions(task.gameType, actions.length);
     const result = await this.engine.compareAndSetInternalState(
       task.roomId,
