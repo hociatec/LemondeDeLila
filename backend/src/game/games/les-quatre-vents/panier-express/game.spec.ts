@@ -58,4 +58,18 @@ describe('Panier Express declarative game', () => {
     expect(pawns?.['-2']).toEqual([botPawn.id]);
     expect(game.inspect.setupComplete()).toBe(true);
   });
+
+  it('offers the first pawn choice to a human when a bot is first in the roster', async () => {
+    const game = testGame(gameDefinition)
+      .players([{ username: 'Wallace', isBot: true }, 'Hacene'])
+      .seed(83);
+
+    await game.start();
+
+    expect(game.state().pending?.playerId).toBe(2);
+    expect(game.availableActions(2)).toContain('choice.resolve');
+    expect(game.availableActions(-1)).not.toContain('choice.resolve');
+    await game.choose(2, PANIER_PAWNS[0].id);
+    expect(game.state().pending?.playerId).toBe(-1);
+  });
 });

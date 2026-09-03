@@ -150,7 +150,18 @@ export function sequentialPawnSelection<TState extends object>(
     playerIds: readonly number[],
     ctx: GameContext<TState>,
   ): void => {
-    const participants = [...new Set(playerIds)];
+    const uniqueParticipants = [...new Set(playerIds)];
+    const playersById = new Map(
+      ctx.players.all().map((player) => [player.id, player] as const),
+    );
+    const participants = [
+      ...uniqueParticipants.filter(
+        (playerId) => !playersById.get(playerId)?.isBot,
+      ),
+      ...uniqueParticipants.filter(
+        (playerId) => playersById.get(playerId)?.isBot,
+      ),
+    ];
     if (participants.length === 0) {
       options.complete({ ctx });
       return;
