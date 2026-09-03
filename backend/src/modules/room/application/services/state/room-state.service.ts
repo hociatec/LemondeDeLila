@@ -53,5 +53,9 @@ export class RoomStateService {
   async getRoomPayload(roomId: number): Promise<RoomPayload> {
     return this.payloads.getRoomPayload(roomId);
   }
+
+  async refreshRoomPayload(roomId: number): Promise<RoomPayload> {
+    return this.payloads.refreshRoomPayload(roomId);
+  }
 }
 /** Room application capability boundary. */

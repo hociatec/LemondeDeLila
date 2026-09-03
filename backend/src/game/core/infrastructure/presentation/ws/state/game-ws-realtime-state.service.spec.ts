@@ -47,7 +47,10 @@ describe('GameWsRealtimeStateService run isolation', () => {
       automation as never,
       {} as never,
       {} as never,
-      { buildPayload: jest.fn().mockResolvedValue(roomPayload(2)) } as never,
+      {
+        buildPayload: jest.fn().mockResolvedValue(roomPayload(2)),
+        refreshPayload: jest.fn().mockResolvedValue(roomPayload(2)),
+      } as never,
       execution() as never,
     );
 
@@ -122,6 +125,12 @@ describe('GameWsRealtimeStateService run isolation', () => {
         bots: [{ id: 9, name: 'Bot LAMA' }],
       },
     };
+    const rooms = {
+      buildPayload: jest.fn().mockResolvedValue({
+        room: { ...room.room, bots: [] },
+      }),
+      refreshPayload: jest.fn().mockResolvedValue(room),
+    };
     const service = new GameWsRealtimeStateService(
       new GameRoomStateFactory(),
       engine as never,
@@ -129,7 +138,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
       { clear: jest.fn() } as never,
       {} as never,
       {} as never,
-      { buildPayload: jest.fn().mockResolvedValue(room) } as never,
+      rooms as never,
       execution() as never,
     );
 
@@ -140,6 +149,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
       { id: -9, username: 'Bot LAMA', isBot: true },
     ]);
     expect(resolved.setupRosterRefreshedFromVersion).toBe(1);
+    expect(rooms.refreshPayload).toHaveBeenCalledWith(4);
     expect(handler.hydrateInitialState).toHaveBeenCalledTimes(1);
     expect(engine.compareAndSetInternalState).toHaveBeenCalledWith(
       4,
@@ -193,7 +203,10 @@ describe('GameWsRealtimeStateService run isolation', () => {
       { clear: jest.fn() } as never,
       {} as never,
       {} as never,
-      { buildPayload: jest.fn().mockResolvedValue(room) } as never,
+      {
+        buildPayload: jest.fn().mockResolvedValue(room),
+        refreshPayload: jest.fn().mockResolvedValue(room),
+      } as never,
       execution() as never,
     );
 
@@ -258,6 +271,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
         .fn()
         .mockResolvedValueOnce(setupRoom)
         .mockResolvedValueOnce(startedRoom),
+      refreshPayload: jest.fn().mockResolvedValue(setupRoom),
     };
     const service = new GameWsRealtimeStateService(
       new GameRoomStateFactory(),
@@ -306,7 +320,10 @@ describe('GameWsRealtimeStateService run isolation', () => {
       {} as never,
       {} as never,
       {} as never,
-      { buildPayload: jest.fn().mockResolvedValue(roomPayload(2)) } as never,
+      {
+        buildPayload: jest.fn().mockResolvedValue(roomPayload(2)),
+        refreshPayload: jest.fn().mockResolvedValue(roomPayload(2)),
+      } as never,
       execution() as never,
     );
 
