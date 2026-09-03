@@ -19,8 +19,8 @@ import {
   A_FOND_LES_BALLONS_PHASES,
   requestPawns,
   resolvePawn,
+  type AFondLesBallonsState,
 } from './rules';
-import type { NoGameState as AFondLesBallonsState } from '../../../engine/sdk/public-api';
 
 const cardSchema = defineCardsSchema({
   decks: {
@@ -58,13 +58,21 @@ export default defineGame<AFondLesBallonsState>()({
     ...cardSchema.components,
   ],
   initialization: { firstPlayer: 'random', startRound: true },
-  shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
+  shortcuts: [
+    { key: 'D', type: 'action', actionType: 'roll' },
+    {
+      key: 'Space',
+      type: 'action',
+      actionType: 'draw_card',
+      label: 'Piocher',
+    },
+  ],
   setup: ({ ctx }) => {
     requestPawns(
       ctx.players.all().map((player) => player.id),
       ctx,
     );
-    return {};
+    return { awaitingCardDraw: false };
   },
   initialPhase: A_FOND_LES_BALLONS_PHASES.initialPhase,
   phases: A_FOND_LES_BALLONS_PHASES.phases,
@@ -76,5 +84,10 @@ export default defineGame<AFondLesBallonsState>()({
       resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
     }),
   },
-  bot: { choose: () => ({ type: 'roll', payload: {} }) },
+  bot: {
+    choose: ({ availableActions }) =>
+      availableActions.includes('draw_card')
+        ? { type: 'draw_card', payload: {} }
+        : { type: 'roll', payload: {} },
+  },
 });

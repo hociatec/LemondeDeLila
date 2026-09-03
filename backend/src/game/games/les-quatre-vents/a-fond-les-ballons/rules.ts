@@ -1,10 +1,12 @@
 import {
+  defineAction,
   defineEffect,
   drawAndResolve,
   drawEvent,
   gameEffects,
   gameInput,
   positionOf,
+  rejectRule,
   rollDice,
   sequentialPawnSelection,
   setupPlayingPhases,
@@ -16,7 +18,9 @@ import {
   type BalloonCard,
   type BalloonTileType,
 } from './content';
-import type { NoGameState as AFondLesBallonsState } from '../../../engine/sdk/public-api';
+export type AFondLesBallonsState = {
+  awaitingCardDraw: boolean;
+};
 
 type RuleContext = GameContext<AFondLesBallonsState>;
 export const A_FOND_LES_BALLONS_PHASES =
@@ -29,14 +33,39 @@ const TRAP_IMMUNITY = 'a-fond-les-ballons.trap-immunity';
 
 export const roll = rollDice<AFondLesBallonsState>({
   documentation: 'Lance le dé et résout toute la chaîne de cases et cartes.',
-  available: ({ ctx }) => A_FOND_LES_BALLONS_PHASES.is(ctx, 'playing'),
+  available: ({ state, ctx }) =>
+    A_FOND_LES_BALLONS_PHASES.is(ctx, 'playing') && !state.awaitingCardDraw,
   execute: ({ state, playerId, total, ctx }) => {
     moveBy(state, playerId, total, 0, ctx);
+    if (state.awaitingCardDraw) return;
     ctx.turn.complete({ waiting: ctx.choice.current() != null });
   },
 });
 
-export const A_FOND_LES_BALLONS_ACTIONS = { roll };
+export const drawCard = defineAction<
+  AFondLesBallonsState,
+  Record<string, never>
+>({
+  ui: { label: 'Piocher', control: 'button', shortcut: 'Space' },
+  input: gameInput.object({}),
+  documentation:
+    'Pioche manuellement la carte demandée par une case Folie loufoque.',
+  available: ({ state, actor, ctx }) =>
+    A_FOND_LES_BALLONS_PHASES.is(ctx, 'playing') &&
+    state.awaitingCardDraw &&
+    ctx.players.current()?.id === actor.id,
+  execute: ({ state, actor, ctx }) => {
+    if (!state.awaitingCardDraw || ctx.players.current()?.id !== actor.id) {
+      rejectRule('Aucune carte Folie loufoque à piocher');
+    }
+    state.awaitingCardDraw = false;
+    drawBalloonCard(state, actor.id, 0, ctx);
+    if (state.awaitingCardDraw) return;
+    ctx.turn.complete({ waiting: ctx.choice.current() != null });
+  },
+});
+
+export const A_FOND_LES_BALLONS_ACTIONS = { roll, draw_card: drawCard };
 
 const pawnSelection = sequentialPawnSelection<AFondLesBallonsState>({
   setId: PAWNS,
@@ -130,7 +159,7 @@ function resolveLandedTile(
       gameEffects.completeTurn(),
     );
   } else if (tile.type === 'chaton') landOn(state, playerId, 0, depth + 1, ctx);
-  else if (tile.type === 'folie') drawBalloonCard(state, playerId, depth, ctx);
+  else if (tile.type === 'folie') state.awaitingCardDraw = true;
 }
 
 function drawBalloonCard(
