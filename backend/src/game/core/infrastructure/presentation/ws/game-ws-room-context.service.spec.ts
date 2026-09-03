@@ -32,6 +32,17 @@ describe('GameWsRoomContextService transitions', () => {
     expect(roomGame.prepareNextRun).toHaveBeenCalledWith(4);
   });
 
+  it('requests an authoritative room payload for game initialization', async () => {
+    const payload = { room };
+    const roomGame = {
+      refreshRoomPayload: jest.fn().mockResolvedValue(payload),
+    };
+    const service = new GameWsRoomContextService(roomGame as never);
+
+    await expect(service.refreshPayload(4)).resolves.toBe(payload);
+    expect(roomGame.refreshRoomPayload).toHaveBeenCalledWith(4);
+  });
+
   it('propagates the owner authorization failure', async () => {
     const roomGame = {
       getRoomPayload: jest.fn().mockResolvedValue({ room }),

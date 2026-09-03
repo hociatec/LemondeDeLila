@@ -50,5 +50,16 @@ export class RoomPayloadService {
     await this.roomPayloadCache.persist(roomId, payload);
     return payload;
   }
+
+  async refreshRoomPayload(roomId: number): Promise<RoomPayload> {
+    const room = await this.rooms.findByIdWithPayloadRelations(roomId);
+    if (!room) {
+      throw new NotFoundException('Room introuvable');
+    }
+
+    const payload = await this.payloadBuilder.build(room);
+    await this.roomPayloadCache.persist(roomId, payload);
+    return payload;
+  }
 }
 /** Room application capability boundary. */

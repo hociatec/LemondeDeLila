@@ -47,12 +47,23 @@ export class GameWsRealtimeStateService {
   }
 
   async resolve(roomId: number): Promise<ResolvedGameState> {
-    const room = await this.rooms.buildPayload(roomId);
-    const gameType = stringOrEmpty(room.room.gameType).trim();
+    const cachedRoom = await this.rooms.buildPayload(roomId);
+    const gameType = stringOrEmpty(cachedRoom.room.gameType).trim();
     const handler = this.registry.getHandler(gameType);
     if (!handler) throw new NotFoundException(`Jeu introuvable: ${gameType}`);
 
     const existing = await this.engine.exportInternalState(roomId, gameType);
+    // A cached lobby payload is sufficient during ordinary turns, but never
+    // for creating or reconfiguring a game roster. Bot/human mutations and a
+    // start command can be handled concurrently by separate WS connections.
+    // Reading the relations from the database closes that last race even when
+    // the cache itself is new.
+    const room =
+      !existing ||
+      !this.belongsToCurrentRun(existing, cachedRoom.room) ||
+      this.isSetupState(existing)
+        ? await this.rooms.refreshPayload(roomId)
+        : cachedRoom;
     if (existing && this.belongsToCurrentRun(existing, room.room)) {
       this.ensureVersion(existing);
       const refreshed = await this.refreshSetupRoster(
@@ -228,6 +239,13 @@ export class GameWsRealtimeStateService {
           Boolean(player.isBot) === Boolean(candidate.isBot)
         );
       })
+    );
+  }
+
+  private isSetupState(state: GameStateEntity): boolean {
+    return (
+      stringOrEmpty(state.status).toLowerCase() === 'setup' &&
+      stringOrEmpty(state.phase).toLowerCase() === 'setup'
     );
   }
 
