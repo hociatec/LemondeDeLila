@@ -42,6 +42,18 @@ describe('À fond les ballons declarative game', () => {
     expect(game.inspect.setupComplete()).toBe(true);
   });
 
+  it('offers the first pawn choice to a human even when a bot is first in the roster', async () => {
+    const game = testGame(gameDefinition)
+      .players([{ username: 'Baloo', isBot: true }, 'Hacene'])
+      .seed(83);
+
+    await game.start();
+
+    expect(game.state().pending?.playerId).toBe(2);
+    expect(game.availableActions(2)).toContain('choice.resolve');
+    expect(game.availableActions(-1)).not.toContain('choice.resolve');
+  });
+
   it('selects unique pawns then resolves a deterministic roll', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(83);
     await game.start();

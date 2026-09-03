@@ -97,7 +97,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         // The dice control is the default action of the gameplay zone when no
         // selectable list owns Enter. Space is never routed here.
         if (ActivateDiceRoll()) return true;
-        if (AnnounceActivationWait()) return true;
         return true;
     }
     if (key == "F5")
@@ -109,29 +108,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     // An unconfigured key is deliberately silent and must not create a
     // protocol request or a generic server error.
     return true;
-}
-
-bool GamePlayPanel::AnnounceActivationWait()
-{
-    if (state_.roomId <= 0 || state_.version <= 0)
-    {
-        UpdateStatus(
-            wxString(L"Chargement de la partie en cours."),
-            false,
-            true);
-        return true;
-    }
-    if (state_.pending && state_.pending->workflowKind == "pawn" &&
-        !pawnSelectionPanel_->IsActive())
-    {
-        UpdateStatus(
-            wxString(L"Un autre joueur choisit son pion. Votre sélection sera "
-                     L"annoncée dès qu’elle sera disponible."),
-            false,
-            true);
-        return true;
-    }
-    return false;
 }
 
 void GamePlayPanel::ActivateSelectedLine()

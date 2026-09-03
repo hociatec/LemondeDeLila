@@ -111,7 +111,6 @@ private:
     bool ActivateSelectedHandCard();
     bool ActivateDiceRoll();
     bool ActivateSelectedGridCell();
-    bool AnnounceActivationWait();
     void SyncInlinePrompt();
     void ShowInlinePrompt(domain::GameAction action);
     [[nodiscard]] const domain::GamePrompt* ActivePrompt() const noexcept;
