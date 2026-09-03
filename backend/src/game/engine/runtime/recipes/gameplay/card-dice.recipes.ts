@@ -155,7 +155,7 @@ export function sequentialPawnSelection<TState extends object>(
     }
     const first = participants[0];
     if (first != null) {
-      ctx.turn.to(first);
+      ctx.turn.to(first, { announce: false });
       requestForPlayers(first, participants, ctx);
     }
   };
@@ -186,7 +186,7 @@ export function sequentialPawnSelection<TState extends object>(
     );
     const next = nextId == null ? null : playersById.get(nextId);
     if (next) {
-      ctx.turn.to(next.id);
+      ctx.turn.to(next.id, { announce: false });
       requestForPlayers(next.id, participantIds, ctx);
       return;
     }
