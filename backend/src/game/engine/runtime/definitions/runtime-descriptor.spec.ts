@@ -3,10 +3,11 @@ import { deriveGameShortcuts } from './runtime-descriptor';
 describe('runtime shortcut safety', () => {
   const button = { describe: () => ({ type: 'object', properties: {} }) };
 
-  it('reserves Enter and moves dice rolls from Space to D', () => {
+  it('reserves Enter for the client dice control and removes dice shortcuts', () => {
     const definition = {
       shortcuts: [
         { key: 'Space', type: 'action', actionType: 'roll' },
+        { key: 'D', type: 'action', actionType: 'roll' },
         { key: 'Enter', type: 'action', actionType: 'pass' },
         { key: 'Enter', type: 'interface', id: 'details' },
       ],
@@ -16,9 +17,7 @@ describe('runtime shortcut safety', () => {
       },
     };
 
-    expect(deriveGameShortcuts(definition as never)).toEqual([
-      { key: 'D', type: 'action', actionType: 'roll' },
-    ]);
+    expect(deriveGameShortcuts(definition as never)).toEqual([]);
   });
 
   it('keeps Space available for a non-dice action', () => {

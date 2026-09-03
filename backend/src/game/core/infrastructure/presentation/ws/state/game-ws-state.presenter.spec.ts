@@ -505,16 +505,23 @@ describe('GameWsStatePresenter', () => {
   });
 
   it.each([
-    ['game.player.passed', 'Vous passez votre tour.'],
-    ['game.card.drawn', 'Vous piochez une carte.'],
+    ['game.player.passed', 'Vous passez votre tour.', false],
+    [
+      'game.card.drawn',
+      'Vous piochez une carte. Son effet est appliqué automatiquement.',
+      true,
+    ],
   ])(
     'announces the next player in the same utterance after %s',
-    (messageKey, actionMessage) => {
+    (messageKey, actionMessage, automatic) => {
       const events = [
         {
           id: '10:0',
           type: 'game.message',
-          data: { key: messageKey, params: { playerId: 1 } },
+          data: {
+            key: messageKey,
+            params: { playerId: 1, ...(automatic ? { automatic: true } : {}) },
+          },
         },
         {
           id: '10:1',
@@ -566,6 +573,52 @@ describe('GameWsStatePresenter', () => {
       expect(messages).toEqual([`${actionMessage}\nC'est au tour de Mina.`]);
     },
   );
+
+  it('does not repeat two consecutive announcements for the same turn', () => {
+    const events = [
+      {
+        id: '10:0',
+        type: 'turn.started',
+        data: { playerId: 1 },
+      },
+      {
+        id: '10:1',
+        type: 'turn.started',
+        data: { playerId: 1 },
+      },
+    ];
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'started' },
+          players: { all: [{ id: 1, username: 'Hacene' }] },
+          events: {
+            recent: events,
+            latestByType: { 'turn.started': events[1] },
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state: {
+        status: 'started',
+        players: [{ id: 1, username: 'Hacene' }],
+      } as unknown as GameStateEntity,
+      handler,
+      roomId: 6,
+      gameType: 'panier-express',
+      version: 10,
+      viewerPlayerId: 1,
+    });
+    const messages = (payload.system as any).events.recent
+      .map((event: any) => event.data.message)
+      .filter(Boolean);
+
+    expect(messages).toEqual(["C'est au tour de Hacene."]);
+  });
 
   it('explains manual draws and movement bonuses to players and spectators', () => {
     const events = [

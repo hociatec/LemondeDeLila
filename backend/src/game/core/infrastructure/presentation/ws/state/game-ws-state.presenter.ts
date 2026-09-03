@@ -243,11 +243,39 @@ export class GameWsStatePresenter {
     for (const [key, rawEvent] of Object.entries(latestByType)) {
       presented[key] = presentEvent(rawEvent);
     }
-    const recent = recentEvents.map((event) => presentEvent(event));
+    const recent = this.withoutRepeatedTurnAnnouncements(
+      recentEvents.map((event) => presentEvent(event)),
+    );
     return {
       ...system,
       events: { ...events, recent, latestByType: presented },
     };
+  }
+
+  private withoutRepeatedTurnAnnouncements(
+    events: Record<string, unknown>[],
+  ): Record<string, unknown>[] {
+    let previousLastLine = '';
+    return events.map((event) => {
+      const data = this.asRecord(event.data);
+      const message = this.stringValue(data.message);
+      if (!message) return event;
+      const lines = message
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const isRepeatedTurn =
+        lines.length === 1 &&
+        lines[0].startsWith("C'est au tour de ") &&
+        lines[0] === previousLastLine;
+      if (isRepeatedTurn) {
+        const remainingData = { ...data };
+        delete remainingData.message;
+        return { ...event, data: remainingData };
+      }
+      previousLastLine = lines.at(-1) ?? previousLastLine;
+      return event;
+    });
   }
 
   private eventMessage(
@@ -315,8 +343,9 @@ export class GameWsStatePresenter {
         namedPlayer === 'Vous' && drawnForPlayer === receivedByPlayer
           ? cardMessageLabel(receivedCardData.card)
           : '';
+      const automatic = params.automatic === true;
       return this.withNextTurn(
-        `${namedPlayer} ${namedPlayer === 'Vous' ? 'piochez' : 'pioche'} ${privateCard || 'une carte'}.`,
+        `${namedPlayer} ${namedPlayer === 'Vous' ? 'piochez' : 'pioche'} ${privateCard || 'une carte'}.${automatic ? ' Son effet est appliqué automatiquement.' : ''}`,
         nextTurnData,
         players,
       );

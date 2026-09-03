@@ -95,6 +95,7 @@ export function drawAndResolve<
       ctx.events.message('game.card.drawn', {
         playerId: options.playerId,
         deckId: options.deckId,
+        automatic: true,
         ...cardEventIdentity(card),
         ...options.eventData?.(card),
       });
