@@ -61,7 +61,7 @@ export class GameWsRealtimeStateService {
     const room =
       !existing ||
       !this.belongsToCurrentRun(existing, cachedRoom.room) ||
-      this.isSetupState(existing)
+      this.isRosterConfigurationState(existing)
         ? await this.rooms.refreshPayload(roomId)
         : cachedRoom;
     if (existing && this.belongsToCurrentRun(existing, room.room)) {
@@ -196,7 +196,6 @@ export class GameWsRealtimeStateService {
     const roomStatus = stringOrEmpty(room.room.status).toLowerCase();
     if (
       (roomStatus !== 'setup' && roomStatus !== 'started') ||
-      stringOrEmpty(existing.status).toLowerCase() !== 'setup' ||
       stringOrEmpty(existing.phase).toLowerCase() !== 'setup'
     ) {
       return { state: existing };
@@ -242,11 +241,11 @@ export class GameWsRealtimeStateService {
     );
   }
 
-  private isSetupState(state: GameStateEntity): boolean {
-    return (
-      stringOrEmpty(state.status).toLowerCase() === 'setup' &&
-      stringOrEmpty(state.phase).toLowerCase() === 'setup'
-    );
+  private isRosterConfigurationState(state: GameStateEntity): boolean {
+    // Declarative games start the match lifecycle before asynchronous setup
+    // choices (pawns, roles, etc.) have finished. Their public status is thus
+    // already "playing" while the phase remains "setup".
+    return stringOrEmpty(state.phase).toLowerCase() === 'setup';
   }
 
   private ensureVersion(state: GameStateEntity): number {
