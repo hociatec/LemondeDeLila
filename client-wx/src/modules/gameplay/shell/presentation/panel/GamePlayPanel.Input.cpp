@@ -80,12 +80,8 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
 
     if (key == "ENTER")
     {
-        // Enter must never activate whichever gameplay item happens to be
-        // selected. Explicit forms are handled before this branch.
-        return true;
-    }
-    if (key == "SPACE")
-    {
+        // Enter activates only the control that actually owns focus. It must
+        // never fall through to an arbitrary visible list.
         auto* focused = wxWindow::FindFocus();
         if (handPanel_->IsShown() && focused == handPanel_->NavigationTarget())
             return ActivateSelectedHandCard();
@@ -98,6 +94,10 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             ActivateSelectedLine();
             return true;
         }
+        // The dice control is the default action of the gameplay zone when no
+        // selectable list owns Enter. Space is never routed here.
+        if (ActivateDiceRoll()) return true;
+        return true;
     }
     if (key == "F5")
     {

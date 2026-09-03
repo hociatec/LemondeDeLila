@@ -41,20 +41,15 @@ describe('Panier Express declarative game', () => {
     });
     expect(game.availableActions(-2)).not.toContain('choice.resolve');
 
-    const [humanPawn, botPawn] = PANIER_PAWNS;
+    const [humanPawn] = PANIER_PAWNS;
     await game.choose(1, humanPawn.id);
-    expect(game.inspect.setupComplete()).toBe(false);
-    expect(game.view(-2).pending).toMatchObject({
-      label: 'Choisissez votre pion.',
-      playerId: -2,
-    });
-    expect(game.availableActions(-2)).toContain('choice.resolve');
-    await game.choose(-2, botPawn.id);
 
     const pawns = (game.view(1) as unknown as { kits: StableGameKitsView }).kits
       .pawns?.sets.panier.assignments;
     expect(pawns?.['1']).toEqual([humanPawn.id]);
-    expect(pawns?.['-2']).toEqual([botPawn.id]);
+    expect(pawns?.['-2']).toHaveLength(1);
+    expect(pawns?.['-2']).not.toContain(humanPawn.id);
     expect(game.inspect.setupComplete()).toBe(true);
+    expect(game.state().pending).toBeNull();
   });
 });
