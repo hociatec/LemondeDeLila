@@ -19,12 +19,14 @@ describe('Morpion declarative game', () => {
     expect(assignments()?.['-2']).toEqual([]);
 
     const first = game.state().pending?.playerId;
-    expect(first).toBe(1);
+    expect(first).not.toBeNull();
     await game.choose(first!, MORPION_PAWNS[0].id);
+    const second = game.state().pending?.playerId;
+    expect(second).not.toBe(first);
+    await game.choose(second!, MORPION_PAWNS[1].id);
 
     expect(assignments()?.[String(first)]).toEqual([MORPION_PAWNS[0].id]);
-    expect(assignments()?.['-2']).toHaveLength(1);
-    expect(assignments()?.['-2']).not.toContain(MORPION_PAWNS[0].id);
+    expect(assignments()?.[String(second)]).toEqual([MORPION_PAWNS[1].id]);
     expect(game.state().pending).toBeNull();
   });
 

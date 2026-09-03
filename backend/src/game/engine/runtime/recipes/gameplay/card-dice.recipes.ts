@@ -153,30 +153,11 @@ export function sequentialPawnSelection<TState extends object>(
       options.complete({ ctx });
       return;
     }
-    const playersById = new Map(
-      ctx.players.all().map((player) => [player.id, player] as const),
-    );
-    let firstId = participants.find((candidate) => playersById.has(candidate));
-    let first = firstId == null ? null : playersById.get(firstId);
-    while (first?.isBot) {
-      const selected = ctx.random.pick(ctx.pawns.available(options.setId));
-      if (!selected) break;
-      ctx.turn.to(first.id);
-      ctx.pawns.assign(options.setId, first.id, selected.id);
-      firstId = participants.find(
-        (candidate) =>
-          playersById.has(candidate) &&
-          ctx.pawns.assigned(options.setId, candidate).length <
-            ctx.pawns.perPlayer(options.setId),
-      );
-      first = firstId == null ? null : playersById.get(firstId);
+    const first = participants[0];
+    if (first != null) {
+      ctx.turn.to(first);
+      requestForPlayers(first, participants, ctx);
     }
-    if (first) {
-      ctx.turn.to(first.id);
-      requestForPlayers(first.id, participants, ctx);
-      return;
-    }
-    options.complete({ ctx });
   };
   const resolve = (
     playerId: number,
@@ -197,30 +178,13 @@ export function sequentialPawnSelection<TState extends object>(
     const playersById = new Map(
       ctx.players.all().map((player) => [player.id, player] as const),
     );
-    let nextId = participantIds.find(
+    const nextId = participantIds.find(
       (candidate) =>
         playersById.has(candidate) &&
         ctx.pawns.assigned(options.setId, candidate).length <
           ctx.pawns.perPlayer(options.setId),
     );
-    let next = nextId == null ? null : playersById.get(nextId);
-    // Pawn selection is a mandatory setup step, not a strategic bot turn.
-    // Resolve consecutive bots immediately so setup cannot stall waiting for
-    // the asynchronous turn scheduler. Each assignment still emits the same
-    // public pawn.assigned event as a human choice.
-    while (next?.isBot) {
-      const selected = ctx.random.pick(ctx.pawns.available(options.setId));
-      if (!selected) break;
-      ctx.turn.to(next.id);
-      ctx.pawns.assign(options.setId, next.id, selected.id);
-      nextId = participantIds.find(
-        (candidate) =>
-          playersById.has(candidate) &&
-          ctx.pawns.assigned(options.setId, candidate).length <
-            ctx.pawns.perPlayer(options.setId),
-      );
-      next = nextId == null ? null : playersById.get(nextId);
-    }
+    const next = nextId == null ? null : playersById.get(nextId);
     if (next) {
       ctx.turn.to(next.id);
       requestForPlayers(next.id, participantIds, ctx);
