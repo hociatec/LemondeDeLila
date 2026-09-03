@@ -100,11 +100,18 @@ export class GameWsStatePresenter {
     });
     const score = this.asRecord(kits.score);
     const hasScore = Object.keys(score).length > 0;
+    const declaredScoreKey = declaredShortcuts.find(
+      (shortcut) =>
+        this.stringValue(shortcut.key).toUpperCase() === 'S' &&
+        shortcut.type === 'interface',
+    );
     const shortcuts = declaredShortcuts.filter(
       (shortcut) =>
-        !hasScore || this.stringValue(shortcut.key).toUpperCase() !== 'S',
+        !hasScore ||
+        this.stringValue(shortcut.key).toUpperCase() !== 'S' ||
+        shortcut === declaredScoreKey,
     );
-    if (hasScore) {
+    if (hasScore && !declaredScoreKey) {
       shortcuts.push({
         key: 'S',
         type: 'interface',

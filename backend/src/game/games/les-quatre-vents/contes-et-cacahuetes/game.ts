@@ -14,7 +14,7 @@ import { CONTES_DECKS, CONTES_PAWNS, CONTES_TILES } from './content';
 import {
   CONTES_ACTIONS,
   CONTES_PHASES,
-  requestPawn,
+  requestPawns,
   resolveCard,
   resolveLaughter,
   resolveOption,
@@ -70,7 +70,10 @@ export default defineGame<ContesState>()({
   initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   setup: ({ players, ctx }) => {
-    requestPawn(players[0].id, ctx);
+    requestPawns(
+      players.map((player) => player.id),
+      ctx,
+    );
     return {};
   },
   initialPhase: CONTES_PHASES.initialPhase,

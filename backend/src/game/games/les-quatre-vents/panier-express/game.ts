@@ -76,7 +76,21 @@ export default defineGame<PanierState>()({
     inventory.set({ id: 'shopping-lists', visibility: 'owner' }),
     inventory.set({ id: 'shopping-baskets', visibility: 'owner' }),
   ],
-  shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
+  shortcuts: [
+    { key: 'D', type: 'action', actionType: 'roll' },
+    {
+      key: 'S',
+      type: 'interface',
+      id: 'inventory:shopping-baskets',
+      label: 'Panier',
+    },
+    {
+      key: 'L',
+      type: 'interface',
+      id: 'inventory:shopping-lists',
+      label: 'Liste de courses',
+    },
+  ],
   setup: ({ players, ctx }) => {
     const selectedLists = ctx.random.shuffle(PANIER_LISTS);
     const starter = ctx.random.pick(players) ?? players[0];

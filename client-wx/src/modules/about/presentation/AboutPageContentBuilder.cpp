@@ -34,12 +34,11 @@ wxString BuildShortcutsText()
     text << L"- Ctrl+H : visibilité de la table\n\n";
     text << L"Objets / interface (en partie, selon le jeu)\n";
     text << L"- t : annoncer à qui est le tour\n";
-    text << L"- s : annoncer les scores disponibles\n";
+    text << L"- s : annoncer les scores, ou votre panier dans Panier Express\n";
     text << L"- e : annoncer le nombre de cartes en main\n";
     text << L"- Espace : piocher\n";
     text << L"- Retour arrière : défausser (choisir une carte)\n";
-    text << L"- l : shopping list (Panier Express)\n";
-    text << L"- b : annoncer panier\n";
+    text << L"- l : annoncer votre liste de courses (Panier Express)\n";
     text << L"- i : annoncer l'inventaire\n";
     text << L"- c : annoncer main\n";
     text << L"- f : annoncer les familles complètes\n";

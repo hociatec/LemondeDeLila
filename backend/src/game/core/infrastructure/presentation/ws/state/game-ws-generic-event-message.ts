@@ -161,6 +161,16 @@ function activityMessage(
   }
   if (type === 'inventory.item-added' || type === 'inventory.item-removed')
     return inventoryMessage(type, data, player, value);
+  if (type === 'panier.shopping-list.announced') {
+    const name = player(data.playerId);
+    const items = Array.isArray(data.items)
+      ? data.items.map((item) => humanLabel(scalarText(item))).filter(Boolean)
+      : [];
+    if (!name) return '';
+    return name === 'Vous'
+      ? `Votre liste de courses : ${items.join(', ')}.`
+      : `Liste de courses de ${name} : ${items.join(', ')}.`;
+  }
   if (type === 'economy.item-bought' || type === 'economy.item-sold')
     return economyMessage(type, data, player, value);
   return '';

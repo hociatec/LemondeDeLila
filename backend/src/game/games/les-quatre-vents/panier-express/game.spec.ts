@@ -2,6 +2,8 @@ import {
   testGame,
   type StableGameKitsView,
 } from '../../../engine/sdk/public-api';
+import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
+import { GameSimulator } from '../../../core/testing/game-simulator';
 import {
   PANIER_EVENTS,
   PANIER_EXCHANGES,
@@ -12,6 +14,28 @@ import {
 import gameDefinition from './game';
 
 describe('Panier Express declarative game', () => {
+  it('uses S for the basket, L for the shopping list and leaves P unused', () => {
+    expect(gameDefinition.shortcuts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: 'S',
+          type: 'interface',
+          id: 'inventory:shopping-baskets',
+        }),
+        expect.objectContaining({
+          key: 'L',
+          type: 'interface',
+          id: 'inventory:shopping-lists',
+        }),
+      ]),
+    );
+    expect(
+      gameDefinition.shortcuts?.some(
+        (shortcut) => shortcut.key.toUpperCase() === 'P',
+      ),
+    ).toBe(false);
+  });
+
   it('preserves every card and keeps private shopping data private', async () => {
     expect(PANIER_TILES).toHaveLength(40);
     expect(PANIER_EVENTS).toHaveLength(40);
@@ -24,6 +48,14 @@ describe('Panier Express declarative game', () => {
     await game.choose(2, PANIER_PAWNS[1].id);
     const actor = game.state().turn?.currentPlayerId ?? 1;
     await game.as(actor).do('roll', {});
+    const landing = (await game.events())
+      .filter((event) => event.type === 'pawn.landed')
+      .at(-1);
+    const position = Number(landing?.data.position ?? -1);
+    expect(landing?.data).toMatchObject({
+      tileLabel: PANIER_TILES[position]?.label,
+      tileDescription: PANIER_TILES[position]?.description,
+    });
     expect('shoppingLists' in game.view(actor)).toBe(false);
     expect('inventories' in game.view(actor)).toBe(false);
     expect(await game.replay()).toEqual(game.state());
@@ -43,6 +75,16 @@ describe('Panier Express declarative game', () => {
 
     const [humanPawn, botPawn] = PANIER_PAWNS;
     await game.choose(1, humanPawn.id);
+    const shoppingListAnnouncement = (await game.events()).find(
+      (event) => event.type === 'panier.shopping-list.announced',
+    );
+    expect(shoppingListAnnouncement).toMatchObject({
+      data: {
+        playerId: 1,
+        items: game.inventory(1, 'shopping-lists'),
+      },
+      visibility: { kind: 'private', playerIds: [1] },
+    });
     expect(game.inspect.setupComplete()).toBe(false);
     expect(game.view(-2).pending).toMatchObject({
       label: 'Choisissez votre pion.',
@@ -51,6 +93,28 @@ describe('Panier Express declarative game', () => {
     expect(game.availableActions(1)).toEqual([]);
     expect(game.availableActions(-2)).toContain('choice.resolve');
     await game.choose(-2, botPawn.id);
+
+    const shoppingListAnnouncements = (await game.events()).filter(
+      (event) => event.type === 'panier.shopping-list.announced',
+    );
+    expect(shoppingListAnnouncements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          data: expect.objectContaining({
+            playerId: 1,
+            items: game.inventory(1, 'shopping-lists'),
+          }),
+          visibility: { kind: 'private', playerIds: [1] },
+        }),
+        expect.objectContaining({
+          data: expect.objectContaining({
+            playerId: -2,
+            items: game.inventory(-2, 'shopping-lists'),
+          }),
+          visibility: { kind: 'private', playerIds: [-2] },
+        }),
+      ]),
+    );
 
     const pawns = (game.view(1) as unknown as { kits: StableGameKitsView }).kits
       .pawns?.sets.panier.assignments;
@@ -71,5 +135,21 @@ describe('Panier Express declarative game', () => {
     expect(game.availableActions(-1)).not.toContain('choice.resolve');
     await game.choose(2, PANIER_PAWNS[0].id);
     expect(game.state().pending?.playerId).toBe(-1);
+  });
+
+  it('keeps bots playing through automatic cards and intermediate choices', async () => {
+    const initial = await testGame(gameDefinition)
+      .players(['Mouche', 'Hacene'])
+      .seed(83)
+      .start();
+    const result = new GameSimulator().run(
+      new DeclarativeGameRuntime(gameDefinition),
+      initial.state(),
+      { maxCommands: 150 },
+    );
+
+    expect(result.status).not.toBe('deadlock');
+    expect(result.error).toBeUndefined();
+    expect(result.eventFrequency['card.drawn']).toBeGreaterThan(0);
   });
 });

@@ -18,7 +18,7 @@ import {
 import {
   AVENTURE_ACTIONS,
   AVENTURE_PHASES,
-  requestPawn,
+  requestPawns,
   resolveAventureTile,
   resolvePawnChoice,
 } from './rules';
@@ -69,8 +69,10 @@ export default defineGame<AventureSauvageState>()({
     { key: 'P', type: 'interface', id: 'position' },
   ],
   setup: ({ players, ctx }) => {
-    const first = players[0];
-    if (first) requestPawn(first.id, ctx);
+    requestPawns(
+      players.map((player) => player.id),
+      ctx,
+    );
     return {};
   },
   initialPhase: AVENTURE_PHASES.initialPhase,

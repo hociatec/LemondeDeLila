@@ -77,7 +77,6 @@ const pawnSelection = sequentialPawnSelection<AFondLesBallonsState>({
   },
 });
 
-export const requestPawn = pawnSelection.request;
 export const requestPawns = pawnSelection.requestAll;
 export const resolvePawn = pawnSelection.resolve;
 

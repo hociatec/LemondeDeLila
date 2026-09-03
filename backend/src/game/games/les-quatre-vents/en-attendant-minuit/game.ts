@@ -14,7 +14,7 @@ import {
   MINUIT_ACTIONS,
   MINUIT_EFFECTS,
   MINUIT_PHASES,
-  requestPawn,
+  requestPawns,
   resolvePawn,
   resolvePending,
 } from './rules';
@@ -59,7 +59,10 @@ export default defineGame<MinuitState>()({
   initialization: { firstPlayer: 'first', startRound: true },
   shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   setup: ({ players, ctx }) => {
-    requestPawn(players[0].id, ctx);
+    requestPawns(
+      players.map((player) => player.id),
+      ctx,
+    );
     return {};
   },
   initialPhase: MINUIT_PHASES.initialPhase,

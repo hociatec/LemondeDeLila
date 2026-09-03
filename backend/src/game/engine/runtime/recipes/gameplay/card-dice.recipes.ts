@@ -28,6 +28,11 @@ type SequentialPawnSelectionOptions<TState extends object> = {
   setId: string;
   choiceId: string;
   label?: (pawn: PawnDefinition) => string;
+  assigned?: (input: {
+    playerId: number;
+    pawnId: string;
+    ctx: GameContext<TState>;
+  }) => void;
   complete: (input: { ctx: GameContext<TState> }) => void;
 };
 
@@ -178,6 +183,7 @@ export function sequentialPawnSelection<TState extends object>(
     ctx: GameContext<TState>,
   ): void => {
     ctx.pawns.assign(options.setId, playerId, pawnId);
+    options.assigned?.({ playerId, pawnId, ctx });
     const continuation = ctx.choice.continuation<{
       pawnSelectionPlayerIds?: unknown;
     }>();
