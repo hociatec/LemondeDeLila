@@ -41,6 +41,7 @@ type AutomaticStateCommittedHandler = (input: {
 export class GameRealtimeAutomationService implements OnModuleInit {
   private readonly logger = new Logger(GameRealtimeAutomationService.name);
   private onStateCommitted: AutomaticStateCommittedHandler | null = null;
+  private readonly schedulerOperations = new Map<string, Promise<void>>();
 
   constructor(
     private readonly engine: GameEngineService,
@@ -71,7 +72,9 @@ export class GameRealtimeAutomationService implements OnModuleInit {
     const key = this.taskKey(input.roomId, input.gameType);
     const plan = this.resolvePlan(input.handler, input.state);
     if (!plan || String(input.state.status).toLowerCase() === 'finished') {
-      void this.cancel(key, input.gameType);
+      this.enqueueSchedulerOperation(key, () =>
+        this.cancel(key, input.gameType),
+      );
       return;
     }
     const task: GameScheduledTask = {
@@ -82,15 +85,18 @@ export class GameRealtimeAutomationService implements OnModuleInit {
       generation: Number(input.state.version ?? 0),
       dueAtMs: plan.dueAtMs,
     };
-    void this.scheduler.schedule(task).catch((error: unknown) => {
-      this.logger.error(
-        this.errorLog('game.task.schedule.failed', task, error),
-      );
-    });
+    this.enqueueSchedulerOperation(key, () =>
+      this.scheduler.schedule(task).catch((error: unknown) => {
+        this.logger.error(
+          this.errorLog('game.task.schedule.failed', task, error),
+        );
+      }),
+    );
   }
 
   clear(roomId: number, gameType: string): void {
-    void this.cancel(this.taskKey(roomId, gameType), gameType);
+    const key = this.taskKey(roomId, gameType);
+    this.enqueueSchedulerOperation(key, () => this.cancel(key, gameType));
   }
 
   clearRoom(roomId: number): void {
@@ -138,7 +144,13 @@ export class GameRealtimeAutomationService implements OnModuleInit {
     // "now + delay", so recomputing and comparing that deadline here would
     // postpone the bot forever each time the worker wakes up.
     if (task.dueAtMs > gameNowMs()) {
-      void this.scheduler.schedule(task);
+      this.enqueueSchedulerOperation(task.key, () =>
+        this.scheduler.schedule(task).catch((error: unknown) => {
+          this.logger.error(
+            this.errorLog('game.task.schedule.failed', task, error),
+          );
+        }),
+      );
       return;
     }
 
@@ -262,6 +274,24 @@ export class GameRealtimeAutomationService implements OnModuleInit {
 
   private taskKey(roomId: number, gameType: string): string {
     return `game-realtime:${roomId}:${gameType}`;
+  }
+
+  private enqueueSchedulerOperation(
+    key: string,
+    operation: () => Promise<void>,
+  ): void {
+    const previous = this.schedulerOperations.get(key);
+    const current = previous
+      ? previous.catch(() => undefined).then(operation)
+      : operation();
+    this.schedulerOperations.set(key, current);
+    void current
+      .finally(() => {
+        if (this.schedulerOperations.get(key) === current) {
+          this.schedulerOperations.delete(key);
+        }
+      })
+      .catch(() => undefined);
   }
 
   private async cancel(key: string, gameType: string): Promise<void> {
