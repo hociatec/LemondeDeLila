@@ -26,19 +26,17 @@ describe('À fond les ballons declarative game', () => {
     expect(game.availableActions(-2)).not.toContain('choice.resolve');
 
     await game.choose(1, 'capitaine-cacahuete');
-    expect(game.inspect.setupComplete()).toBe(false);
-    expect(game.view(-2).pending).toMatchObject({
-      label: 'Choisissez votre pion.',
-      playerId: -2,
-    });
-    expect(game.availableActions(-2)).toContain('choice.resolve');
-
-    await game.choose(-2, 'professeur-gribouille');
+    expect(game.inspect.setupComplete()).toBe(true);
+    expect(game.state().pending).toBeNull();
+    const botAssignment = (
+      game.view(1) as unknown as { kits: StableGameKitsView }
+    ).kits.pawns?.sets['balloons-pawns'].assignments['-2'];
+    expect(botAssignment).toHaveLength(1);
+    expect(botAssignment).not.toContain('capitaine-cacahuete');
     expect(
       (game.view(1) as unknown as { kits: StableGameKitsView }).kits.pawns
         ?.sets['balloons-pawns'].assignments['-2'],
-    ).toEqual(['professeur-gribouille']);
-    expect(game.inspect.setupComplete()).toBe(true);
+    ).toEqual(botAssignment);
   });
 
   it('selects unique pawns then resolves a deterministic roll', async () => {
