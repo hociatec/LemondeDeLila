@@ -21,7 +21,7 @@ import {
 import {
   PANIER_ACTIONS,
   PANIER_PHASES,
-  requestPawn,
+  requestPawns,
   resolveDirection,
   resolveGive,
   resolvePawn,
@@ -86,7 +86,10 @@ export default defineGame<PanierState>()({
         ctx.inventory.add('shopping-lists', player.id, item);
       }
     }
-    requestPawn(players[0].id, ctx);
+    requestPawns(
+      players.map((player) => player.id),
+      ctx,
+    );
     return {};
   },
   initialPhase: PANIER_PHASES.initialPhase,

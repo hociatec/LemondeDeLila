@@ -59,7 +59,7 @@ const pawnSelection = sequentialPawnSelection<PanierState>({
   },
 });
 
-export const requestPawn = pawnSelection.request;
+export const requestPawns = pawnSelection.requestAll;
 export const resolvePawn = pawnSelection.resolve;
 
 export function resolveDirection(
