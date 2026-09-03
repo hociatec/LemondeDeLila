@@ -15,6 +15,7 @@ enum class GameEventType
     TurnUpdated,
     ActionCandidates,
     Rules,
+    ConnectionStatus,
     Error,
     Ignored,
 };

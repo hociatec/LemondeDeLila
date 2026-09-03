@@ -18,6 +18,7 @@ public:
         int roomId,
         std::string_view gameType,
         std::stop_token stopToken) = 0;
+    [[nodiscard]] virtual domain::GameState Reconnect(std::stop_token stopToken) = 0;
     virtual void RequestState(std::stop_token stopToken) = 0;
     virtual void RequestRules(std::stop_token stopToken) = 0;
     virtual void SendKey(std::string_view key, std::stop_token stopToken) = 0;

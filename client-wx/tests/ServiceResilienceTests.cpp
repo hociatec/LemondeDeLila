@@ -17,6 +17,8 @@
 #include "modules/chat/application/ChatService.h"
 #include "modules/chat/application/IChatGateway.h"
 #include "modules/chat/infrastructure/ChatProtocol.h"
+#include "modules/gameplay/session/application/GameSessionService.h"
+#include "modules/gameplay/session/application/IGameSessionGateway.h"
 #include "modules/options/application/OptionsStore.h"
 #include "modules/options/domain/IOptionsRepository.h"
 #include "modules/options/domain/OptionsState.h"
@@ -33,6 +35,7 @@
 #include "network_protocol/Support.RoomSession.inc"
 #include "network_protocol/Support.Chat.inc"
 #include "network_protocol/ServiceResilienceTests.inc"
+#include "network_protocol/GameSessionReconnectTests.inc"
 #include "network_protocol/RoomSessionConcurrencyTests.inc"
 
 int main()
@@ -44,6 +47,7 @@ int main()
         TestChatServiceReconnectsAfterTransientFailure();
         TestChatServiceSendReportsTransportFailure();
         TestRoomSessionServiceReconnectsAndRepublishesState();
+        TestGameSessionServiceReconnectsAndRepublishesState();
         TestRoomSessionServiceSerializesOpenTransitions();
         std::cout << "Service resilience tests passed.\n";
         return 0;
