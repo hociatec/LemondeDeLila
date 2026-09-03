@@ -522,6 +522,87 @@ describe('GameWsStatePresenter', () => {
     },
   );
 
+  it('explains manual draws and movement bonuses to players and spectators', () => {
+    const events = [
+      {
+        id: '11:0',
+        type: 'game.message',
+        data: {
+          key: 'game.card.draw-required',
+          params: { playerId: 1 },
+        },
+      },
+      {
+        id: '11:1',
+        type: 'game.message',
+        data: {
+          key: 'game.pawn.bonus-advance',
+          params: { playerId: 1, spaces: 2 },
+        },
+      },
+      {
+        id: '11:2',
+        type: 'game.message',
+        data: {
+          key: 'game.card.draw-required',
+          params: { playerId: 2 },
+        },
+      },
+      {
+        id: '11:3',
+        type: 'game.message',
+        data: {
+          key: 'game.pawn.bonus-advance',
+          params: { playerId: 2, spaces: 2 },
+        },
+      },
+    ];
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'started' },
+          players: {
+            all: [
+              { id: 1, username: 'Lila' },
+              { id: 2, username: 'Mina' },
+            ],
+          },
+          events: {
+            recent: events,
+            latestByType: { 'game.message': events.at(-1) },
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state: {
+        status: 'started',
+        players: [
+          { id: 1, username: 'Lila' },
+          { id: 2, username: 'Mina' },
+        ],
+      } as unknown as GameStateEntity,
+      handler,
+      roomId: 6,
+      gameType: 'example',
+      version: 11,
+      viewerPlayerId: 1,
+    });
+    const messages = (payload.system as any).events.recent.map(
+      (event: any) => event.data.message,
+    );
+
+    expect(messages).toEqual([
+      'Vous devez piocher une carte. Appuyez sur Espace.',
+      'Bonus : vous avancez de 2 cases.',
+      'Mina doit piocher une carte.',
+      'Bonus : Mina avance de 2 cases.',
+    ]);
+  });
+
   it('presents a LAMA round start as one player-facing narrative', () => {
     const state = {
       status: 'started',
