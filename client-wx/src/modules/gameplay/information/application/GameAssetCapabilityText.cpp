@@ -32,14 +32,15 @@ std::optional<std::string> BuildAssetCapabilityText(
             [&setId](const domain::GameInventorySet& set) { return set.id == setId; });
         if (found == state.kits.inventory->sets.end()) return std::string{};
         const std::string title = setId == "shopping-lists" ? "Liste de courses"
-            : setId == "shopping-baskets" ? "Panier" : HumanLabel(setId);
+            : setId == "shopping-baskets" ? "Panier"
+            : setId == "market-items" ? "Inventaire" : HumanLabel(setId);
         for (const auto& player : found->players)
         {
+            if (found->visibility == "owner" && player.hiddenCount.has_value())
+                continue;
             out << title << " de " << Player(state, player.playerId) << '\n';
             if (player.quantities.empty() && !player.hiddenCount)
                 out << "- vide\n";
-            if (player.hiddenCount)
-                out << "- " << *player.hiddenCount << " objet(s) masqué(s)\n";
             for (const auto& [item, count] : player.quantities)
                 out << "- " << HumanLabel(item) << " : " << count << '\n';
         }

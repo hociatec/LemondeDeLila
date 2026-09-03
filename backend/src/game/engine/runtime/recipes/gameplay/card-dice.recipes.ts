@@ -10,6 +10,7 @@ import type { CardValue } from '../../cards/cards-kit';
 export type DrawAndResolveOptions<TCard extends CardValue, TResult> = {
   deckId: string;
   playerId: number;
+  automatic?: boolean;
   recycle?: boolean;
   discard?: boolean | ((input: { card: TCard; result: TResult }) => boolean);
   eventData?: (card: TCard) => Record<string, unknown>;
@@ -100,7 +101,7 @@ export function drawAndResolve<
       ctx.events.message('game.card.drawn', {
         playerId: options.playerId,
         deckId: options.deckId,
-        automatic: true,
+        automatic: options.automatic ?? true,
         ...cardEventIdentity(card),
         ...options.eventData?.(card),
       });
