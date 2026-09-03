@@ -127,12 +127,6 @@ std::vector<wxWindow*> GamePromptPanel::TabTargets() const
     return controls;
 }
 
-void GamePromptPanel::FocusFirst()
-{
-    for (auto* control : TabTargets())
-        if (lila::shared::accessibility::NavigationController::Focus(control)) return;
-}
-
 void GamePromptPanel::ReportValidationError(const wxString& message, wxWindow* target)
 {
     if (onValidationError_) onValidationError_(message, target);

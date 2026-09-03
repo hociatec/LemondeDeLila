@@ -33,7 +33,10 @@ bool FocusMemory::Restore(wxWindow* scope)
     }
 
     wxWindow* target = remembered->second.get();
-    if (target == nullptr || !NavigationController::IsDescendantOf(target, scope))
+    if (target == nullptr ||
+        !NavigationController::IsDescendantOf(target, scope) ||
+        !target->IsShownOnScreen() ||
+        !NavigationController::IsFocusable(target))
     {
         targets_.erase(remembered);
         return false;

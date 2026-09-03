@@ -8,6 +8,8 @@
 #include <wx/weakref.h>
 
 #include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/application/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/config/domain/AppConfig.h"
 #include "shared/text/presentation/encoding/Encoding.h"
@@ -122,7 +124,14 @@ void HostFrame::RestoreContentFocusAfterActivation()
     if (focused != nullptr && wxGetTopLevelParent(focused) != this)
         return;
 
-    static_cast<void>(focusMemory_.Restore(currentContent_));
+    if (focusMemory_.Restore(currentContent_))
+        return;
+
+    auto* focusView =
+        dynamic_cast<lila::shared::accessibility::FocusPlanView*>(currentContent_);
+    if (focusView != nullptr)
+        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(
+            focusView->BuildFocusPlan()));
 }
 
 void HostFrame::SetContent(wxWindow* content)

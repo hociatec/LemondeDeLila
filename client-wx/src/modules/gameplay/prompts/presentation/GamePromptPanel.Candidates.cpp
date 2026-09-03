@@ -27,7 +27,7 @@ std::string GamePromptPanel::BuildSignature(const domain::GamePrompt& prompt)
     return signature.str();
 }
 
-void GamePromptPanel::ShowPrompt(const domain::GamePrompt& prompt, domain::GameAction action)
+bool GamePromptPanel::ShowPrompt(const domain::GamePrompt& prompt, domain::GameAction action)
 {
     const bool wasActive = IsActive();
     action_ = std::move(action);
@@ -56,7 +56,7 @@ void GamePromptPanel::ShowPrompt(const domain::GamePrompt& prompt, domain::GameA
     if (!wasActive && onVisibilityChanged_) onVisibilityChanged_(true);
     Layout();
     if (paginatedCandidates_ && candidates_.empty()) RequestCandidates(true);
-    if (!wasActive || fieldsChanged) FocusFirst();
+    return !wasActive || fieldsChanged;
 }
 
 void GamePromptPanel::RequestCandidates(bool reset)

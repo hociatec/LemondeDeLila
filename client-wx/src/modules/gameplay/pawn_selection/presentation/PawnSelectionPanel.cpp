@@ -89,7 +89,6 @@ void PawnSelectionPanel::Apply(const std::optional<domain::PawnSelection>& selec
     Show();
     if (becameVisible && onVisibilityChanged_) onVisibilityChanged_(true);
     Layout();
-    if (changed) static_cast<void>(FocusSelection());
 }
 
 void PawnSelectionPanel::Clear()
@@ -106,13 +105,6 @@ void PawnSelectionPanel::Clear()
 void PawnSelectionPanel::AllowRetry() { submitting_ = false; }
 
 bool PawnSelectionPanel::IsActive() const { return IsShown(); }
-
-bool PawnSelectionPanel::FocusSelection()
-{
-    if (!IsActive() || list_->GetCount() == 0) return false;
-    if (list_->GetSelection() == wxNOT_FOUND) list_->SetSelection(0);
-    return lila::shared::accessibility::NavigationController::Focus(list_);
-}
 
 wxWindow* PawnSelectionPanel::NavigationTarget() const noexcept
 {

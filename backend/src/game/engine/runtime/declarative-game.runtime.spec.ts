@@ -15,6 +15,7 @@ import {
   defineGame,
 } from './definitions/game-definition';
 import { gameInput } from './actions/game-input-schema';
+import { defineEffect, gameEffects } from './effects/effects-kit';
 import { movement } from './kits/movement-kit';
 import { phase } from './kits/phase-kit';
 
@@ -56,7 +57,7 @@ const sampleGame = defineGame({
       autoTransition: () => true,
     }),
     playing: phase<SampleState>({
-      actions: ['score', 'confirm', 'selectPlayers'],
+      actions: ['score', 'confirm', 'selectPlayers', 'chooseThenComplete'],
     }),
   },
   actions: {
@@ -90,6 +91,26 @@ const sampleGame = defineGame({
           min: 1,
           max: 2,
         }),
+    }),
+    chooseThenComplete: defineAction<SampleState, Record<string, never>>({
+      input: gameInput.object({}),
+      execute: ({ ctx }) =>
+        ctx.effects.schedule(
+          gameEffects.custom(
+            'record-selected-player',
+            {},
+            gameEffects.target.chosenOpponent('effect-opponent', true),
+          ),
+          gameEffects.completeTurn(),
+        ),
+    }),
+  },
+  effects: {
+    'record-selected-player': defineEffect<SampleState, Record<string, never>>({
+      input: gameInput.object({}),
+      apply: ({ state, targetPlayerIds }) => {
+        state.selectedPlayers = [...targetPlayerIds];
+      },
     }),
   },
   choices: {
@@ -242,6 +263,39 @@ describe('DeclarativeGameRuntime', () => {
     );
     expect(timedOut.pending).toBeNull();
     expect(timedOut.game.confirmations).toBe(1);
+  });
+
+  it('finishes a turn after an optional effect choice times out', () => {
+    const clock = new FixedGameClock(1_000);
+    let state = adapter.hydrateInitialState(baseState());
+    state = apply(
+      adapter,
+      state,
+      adapter.validateAction(
+        state,
+        { type: 'chooseThenComplete', payload: {} },
+        1,
+      ),
+      1,
+      clock,
+    );
+    expect(state.pending).toMatchObject({
+      playerId: 1,
+      data: { choiceId: 'effect-opponent' },
+    });
+    clock.advanceBy(30_001);
+
+    state = apply(
+      adapter,
+      state,
+      adapter.validateAction(state, { type: 'choice.timeout' }, 1),
+      1,
+      clock,
+    );
+
+    expect(state.pending).toBeNull();
+    expect(state.game.selectedPlayers).toEqual([]);
+    expect(state.turn).toMatchObject({ currentPlayerId: 2, turnNumber: 2 });
   });
 
   it('gives bots only commands that remain valid for humans', () => {
