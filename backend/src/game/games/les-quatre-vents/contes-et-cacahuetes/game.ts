@@ -68,7 +68,7 @@ export default defineGame<ContesState>()({
     ...cardSchema.components,
   ],
   initialization: { firstPlayer: 'random', startRound: true },
-  shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
+  shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   setup: ({ players, ctx }) => {
     requestPawn(players[0].id, ctx);
     return {};

@@ -8,11 +8,14 @@ describe('game websocket key commands', () => {
   const presented = {
     actions: [
       { type: 'draw', payload: { deck: 'main' } },
+      { type: 'roll', payload: {} },
       { type: 'hidden_action', payload: { secret: true }, disabled: true },
     ],
     extras: {
       shortcuts: [
         { key: 'pressed SPACE', type: 'action', actionType: 'draw' },
+        { key: 'SPACE', type: 'action', actionType: 'roll' },
+        { key: 'ENTER', type: 'action', actionType: 'draw' },
         { key: 'H', type: 'action', actionType: 'hidden_action' },
         { key: 'C', type: 'interface', id: 'discard' },
       ],
@@ -43,6 +46,23 @@ describe('game websocket key commands', () => {
       panelId: 'discard',
       message: 'Carte au-dessus : 4.',
     });
+  });
+
+  it('never resolves Enter or a dice roll bound to Space', () => {
+    expect(resolvePresentedGameKey(presented, 'ENTER')).toEqual({
+      kind: 'none',
+    });
+    expect(
+      resolvePresentedGameKey(
+        {
+          actions: [{ type: 'roll', payload: {} }],
+          system: {
+            shortcuts: [{ key: 'SPACE', type: 'action', actionType: 'roll' }],
+          },
+        },
+        'SPACE',
+      ),
+    ).toEqual({ kind: 'none' });
   });
 
   it('never treats repeated Enter as a lifecycle command during a game', () => {

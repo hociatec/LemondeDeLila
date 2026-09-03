@@ -35,6 +35,9 @@ export function resolvePresentedGameKey(
 ): PresentedGameKeyResolution {
   const normalized = normalizeGameKey(rawKey);
   if (!normalized) return { kind: 'none' };
+  // Enter is reserved for explicit lifecycle/form handling. Never resolve it
+  // against a presented game menu or action.
+  if (normalized === 'ENTER') return { kind: 'none' };
 
   const system = asRecord(presented.system);
   const extras = asRecord(presented.extras);
@@ -54,6 +57,9 @@ export function resolvePresentedGameKey(
     for (const shortcut of matching) {
       if (shortcut.type !== 'action') continue;
       const actionType = stringValue(shortcut.actionType);
+      // Defence in depth for clients connected to an older game definition.
+      if (candidate === 'SPACE' && actionType.toLowerCase() === 'roll')
+        continue;
       const action = (Array.isArray(presented.actions) ? presented.actions : [])
         .map(asRecord)
         .find(

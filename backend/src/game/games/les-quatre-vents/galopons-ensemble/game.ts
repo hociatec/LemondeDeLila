@@ -53,7 +53,7 @@ export default defineGame<GaloponsState>()({
     ...cardSchema.components,
   ],
   initialization: { firstPlayer: 'first', startRound: true },
-  shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
+  shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   setup: ({ players, ctx }) => {
     requestPawn(players[0].id, ctx);
     return {};
