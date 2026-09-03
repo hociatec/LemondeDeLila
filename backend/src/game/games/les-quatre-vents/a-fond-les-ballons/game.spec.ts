@@ -106,8 +106,12 @@ describe('À fond les ballons declarative game', () => {
     await game.choose(second, 'professeur-gribouille');
     expect(game.inspect.setupComplete()).toBe(true);
     const gameplayStarter = game.state().turn?.currentPlayerId ?? 1;
+    const deckBeforeRoll = game.inspect.deckCount();
     await game.as(gameplayStarter).do('roll', {});
     expect(game.inspect.lastRoll()).toBeGreaterThanOrEqual(1);
+    expect(game.inspect.deckCount()).toBe(deckBeforeRoll);
+    expect(game.availableActions(gameplayStarter)).toContain('draw_card');
+    await game.as(gameplayStarter).do('draw_card', {});
     expect(game.inspect.deckCount()).toBe(A_FOND_CARD_COUNT - 1);
     expect(await game.replay()).toEqual(game.state());
   });
