@@ -288,6 +288,51 @@ describe('GameWsStatePresenter', () => {
     expect(presentFor(2)).toBe('Hacene a choisi « Capitaine Cacahuète ».');
   });
 
+  it('announces who must choose a pawn without calling it a turn', () => {
+    const players = [
+      { id: 1, username: 'Hacene' },
+      { id: 2, username: 'Mina' },
+    ];
+    const event = {
+      id: '4:1',
+      type: 'game.message',
+      data: {
+        key: 'game.pawn.selection-requested',
+        params: { playerId: 1 },
+      },
+    };
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'playing' },
+          players: { all: players },
+          events: { recent: [event], latestByType: { 'game.message': event } },
+        },
+        kits: {},
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+    const presentFor = (viewerPlayerId: number) =>
+      (
+        createPresenter().present({
+          state: {
+            status: 'playing',
+            players,
+            metadata: {},
+          } as unknown as GameStateEntity,
+          handler,
+          roomId: 8,
+          gameType: 'a-fond-les-ballons',
+          version: 4,
+          viewerPlayerId,
+        }).system as any
+      ).events.recent[0].data.message;
+
+    expect(presentFor(1)).toBe('Vous devez choisir votre pion.');
+    expect(presentFor(2)).toBe('Hacene doit choisir son pion.');
+  });
+
   it('announces the drawn card value only to the player who drew it', () => {
     const state = {
       status: 'started',

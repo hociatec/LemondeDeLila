@@ -129,6 +129,7 @@ export function sequentialPawnSelection<TState extends object>(
     ctx: GameContext<TState>,
   ): void => {
     const available = ctx.pawns.available(options.setId);
+    ctx.events.message('game.pawn.selection-requested', { playerId });
     ctx.choice.pawn({
       id: options.choiceId,
       player: playerId,
