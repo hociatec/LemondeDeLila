@@ -289,6 +289,11 @@ function resolvePanierEvent(playerId: number, ctx: RuleContext): void {
     automatic: false,
     recycle: true,
     discard: true,
+    eventData: (event) => ({
+      revealed: true,
+      cardLabel: event.label,
+      effectDescription: event.effectDescription,
+    }),
     resolve: (event) => ctx.effects.schedule(...event.effects),
   });
 }
@@ -300,6 +305,11 @@ function drawExchange(playerId: number, ctx: RuleContext): void {
     automatic: false,
     recycle: true,
     discard: true,
+    eventData: (exchange) => ({
+      revealed: true,
+      cardLabel: exchange.label,
+      effectDescription: exchange.effectDescription,
+    }),
     resolve: (exchange) => ctx.effects.schedule(...exchange.effects),
   });
 }

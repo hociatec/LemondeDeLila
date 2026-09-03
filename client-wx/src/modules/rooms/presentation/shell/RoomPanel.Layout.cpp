@@ -69,12 +69,17 @@ void RoomPanel::BuildLayout()
     chatInput_ = new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
     chatInput_->SetName(wxString(L"Message"));
     auto* historyTitle = new wxStaticText(this, wxID_ANY, wxString(L"Historique"));
+    historyTitle->SetName(wxString(L"Historique"));
     historyTitle->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
-    historyAnnouncements_ = std::make_unique<history::HistoryAnnouncementQueue>(this);
     history_ = new wxTextCtrl(
         this, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
     history_->SetName(wxString(L"Historique"));
+    // Keep the native control order aligned with the visual order. On Windows,
+    // assistive technologies may use the preceding static control as an inferred
+    // label: the history title must therefore be created immediately before the
+    // history field, never the changing live-announcement region.
+    historyAnnouncements_ = std::make_unique<history::HistoryAnnouncementQueue>(this);
     history_->SetMinSize(wxSize(440, 160));
     secondaryColumn->SetMinSize(wxSize(440, 160));
     secondaryColumn->Add(chatTitle_, 0, wxBOTTOM, 6);

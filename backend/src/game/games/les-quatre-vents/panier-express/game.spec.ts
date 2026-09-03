@@ -175,7 +175,16 @@ describe('Panier Express declarative game', () => {
           event.type === 'game.message' && event.data.key === 'game.card.drawn',
       )
       .at(-1);
-    expect(drawMessage?.data.params).toMatchObject({ automatic: false });
+    expect(drawMessage?.data.params).toMatchObject({
+      automatic: false,
+      revealed: true,
+      cardLabel: expect.any(String),
+      effectDescription: expect.any(String),
+    });
+    expect(game.state().pending).toMatchObject({
+      type: 'engine.choice.player',
+      playerId: actor,
+    });
   });
 
   it('keeps bots playing through automatic cards and intermediate choices', async () => {

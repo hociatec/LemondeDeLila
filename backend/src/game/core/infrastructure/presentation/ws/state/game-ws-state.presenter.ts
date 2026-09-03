@@ -350,9 +350,17 @@ export class GameWsStatePresenter {
         namedPlayer === 'Vous' && drawnForPlayer === receivedByPlayer
           ? cardMessageLabel(receivedCardData.card)
           : '';
+      const revealedCard = params.revealed === true ? card : '';
+      const displayedCard = revealedCard
+        ? `« ${revealedCard} »`
+        : privateCard || 'une carte';
+      const effectDescription = scalarMessageText(params.effectDescription);
+      const effectAnnouncement = effectDescription
+        ? ` Effet : ${effectDescription.replace(/[.!?]+$/u, '')}.`
+        : '';
       const automatic = params.automatic === true;
       return this.withNextTurn(
-        `${namedPlayer} ${namedPlayer === 'Vous' ? 'piochez' : 'pioche'} ${privateCard || 'une carte'}.${automatic ? ' Son effet est appliqué automatiquement.' : ''}`,
+        `${namedPlayer} ${namedPlayer === 'Vous' ? 'piochez' : 'pioche'} ${displayedCard}.${effectAnnouncement}${automatic ? ' Son effet est appliqué automatiquement.' : ''}`,
         nextTurnData,
         players,
       );

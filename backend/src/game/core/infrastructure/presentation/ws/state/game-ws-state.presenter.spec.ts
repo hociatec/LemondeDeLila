@@ -500,6 +500,57 @@ describe('GameWsStatePresenter', () => {
     ).toBe('Lila pioche une carte.');
   });
 
+  it('announces a revealed card and its effect', () => {
+    const state = {
+      status: 'started',
+      players: [
+        { id: 1, username: 'Lila' },
+        { id: 2, username: 'Mina' },
+      ],
+    } as unknown as GameStateEntity;
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'started' },
+          players: { all: state.players },
+          events: {
+            latestByType: {
+              'game.message': {
+                id: '4:0',
+                type: 'game.message',
+                data: {
+                  key: 'game.card.drawn',
+                  params: {
+                    playerId: 1,
+                    revealed: true,
+                    cardLabel: 'Coup de chance',
+                    effectDescription: 'Avancez de 2 cases',
+                  },
+                },
+              },
+            },
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state,
+      handler,
+      roomId: 6,
+      gameType: 'panier-express',
+      version: 4,
+      viewerPlayerId: 1,
+    });
+
+    expect(
+      ((payload.system as any).events.latestByType['game.message'] as any).data
+        .message,
+    ).toBe('Vous piochez « Coup de chance ». Effet : Avancez de 2 cases.');
+  });
+
   it('announces a player leaving a round through the standard event', () => {
     const state = {
       status: 'started',
