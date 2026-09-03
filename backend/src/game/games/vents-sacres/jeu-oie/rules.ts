@@ -1,7 +1,8 @@
 import {
-  rejectRule,
   defineAction,
   gameInput,
+  rejectRule,
+  sequentialPawnSelection,
   setupPlayingPhases,
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
@@ -40,13 +41,26 @@ export const roll = defineAction<JeuOieState, Record<string, never>>({
 
 export const JEU_OIE_ACTIONS = { roll };
 
+const pawnSelection = sequentialPawnSelection<JeuOieState>({
+  setId: 'goose',
+  choiceId: 'goose.pawn',
+  complete: ({ ctx }) => {
+    JEU_OIE_PHASES.transition(ctx, 'playing');
+    const starterId = ctx.round.starter();
+    if (starterId != null) {
+      ctx.turn.to(starterId);
+      ctx.events.message('game.started', { startingPlayerId: starterId });
+    }
+  },
+});
+
 export function initializeGoose(
   selectionOrder: number[],
   ctx: RuleContext,
 ): void {
   for (const player of ctx.players.all())
     ctx.movement.move(TRACK, player.id, 1);
-  queuePawnChoice(selectionOrder, 0, ctx);
+  pawnSelection.requestAll(selectionOrder, ctx);
 }
 
 export function assignPawn(
@@ -54,45 +68,7 @@ export function assignPawn(
   pawnId: string,
   ctx: RuleContext,
 ): void {
-  const pending = ctx.choice.consumeContinuation<{
-    selectionOrder: number[];
-    selectionIndex: number;
-  }>();
-  if (!pending) rejectRule('Ordre de sélection introuvable');
-  const playerId = pending.selectionOrder[pending.selectionIndex];
-  if (playerId == null || playerId !== actorId) {
-    rejectRule('Joueur de sélection introuvable');
-  }
-  ctx.pawns.assign('goose', actorId, pawnId);
-  const selectionIndex = pending.selectionIndex + 1;
-  if (selectionIndex >= pending.selectionOrder.length) {
-    JEU_OIE_PHASES.transition(ctx, 'playing');
-    ctx.turn.to(pending.selectionOrder[0]);
-    ctx.events.message('game.started', {
-      startingPlayerId: pending.selectionOrder[0],
-    });
-    return;
-  }
-  queuePawnChoice(pending.selectionOrder, selectionIndex, ctx);
-}
-
-function queuePawnChoice(
-  selectionOrder: number[],
-  selectionIndex: number,
-  ctx: RuleContext,
-): void {
-  const playerId = selectionOrder[selectionIndex];
-  if (playerId == null) return;
-  const available = ctx.pawns.available('goose');
-  const options = available.map((pawn) => pawn.id);
-  ctx.choice.pawn({
-    id: 'goose.pawn',
-    player: playerId,
-    options,
-    data: { selectionOrder, selectionIndex },
-    label: (pawnId) =>
-      available.find((pawn) => pawn.id === pawnId)?.label ?? pawnId,
-  });
+  pawnSelection.resolve(actorId, pawnId, ctx);
 }
 
 function land(

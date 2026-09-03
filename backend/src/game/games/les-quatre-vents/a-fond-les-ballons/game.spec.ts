@@ -6,7 +6,7 @@ import { A_FOND_CARD_COUNT } from './rules';
 import gameDefinition from './game';
 
 describe('À fond les ballons declarative game', () => {
-  it('lets bots resolve the same announced pawn choice as human players', async () => {
+  it('requires every participant to choose a pawn in roster order', async () => {
     const game = testGame(gameDefinition)
       .players(['Hacene', { username: 'Baloo', isBot: true }])
       .seed(83);
@@ -21,19 +21,24 @@ describe('À fond les ballons declarative game', () => {
     );
     expect(view.pending).toMatchObject({
       label: 'Choisissez votre pion.',
-      playerIds: [1, -2],
-      resolvedPlayerIds: [],
+      playerId: 1,
     });
+    expect(game.availableActions(-2)).not.toContain('choice.resolve');
+
+    await game.choose(1, 'capitaine-cacahuete');
+    expect(game.inspect.setupComplete()).toBe(false);
+    expect(game.view(-2).pending).toMatchObject({
+      label: 'Choisissez votre pion.',
+      playerId: -2,
+    });
+    expect(game.availableActions(-2)).toContain('choice.resolve');
 
     await game.choose(-2, 'professeur-gribouille');
     expect(
       (game.view(1) as unknown as { kits: StableGameKitsView }).kits.pawns
         ?.sets['balloons-pawns'].assignments['-2'],
     ).toEqual(['professeur-gribouille']);
-    expect(game.view(1).pending).toMatchObject({
-      playerIds: [1, -2],
-      resolvedPlayerIds: [-2],
-    });
+    expect(game.inspect.setupComplete()).toBe(true);
   });
 
   it('selects unique pawns then resolves a deterministic roll', async () => {
@@ -59,22 +64,18 @@ describe('À fond les ballons declarative game', () => {
           type: 'choice.resolve',
           payload: { value: 'capitaine-cacahuete' },
         },
+        {
+          type: 'choice.resolve',
+          payload: { value: 'professeur-gribouille' },
+        },
       ]),
     );
     expect(initialView.kits.pawns?.sets['balloons-pawns'].owners).toEqual({});
     expect(game.view(2).pending).toMatchObject({
       workflowKind: 'pawn',
-      playerIds: [1, 2],
-      resolvedPlayerIds: [],
-      data: {
-        choiceActionsByIndex: expect.arrayContaining([
-          {
-            type: 'choice.resolve',
-            payload: { value: 'professeur-gribouille' },
-          },
-        ]),
-      },
+      playerId: firstChooser,
     });
+    expect(game.availableActions(2)).not.toContain('choice.resolve');
 
     await game.choose(firstChooser, 'capitaine-cacahuete');
     const second = firstChooser === 1 ? 2 : 1;
@@ -95,8 +96,7 @@ describe('À fond les ballons declarative game', () => {
     ).pending;
     expect(secondPending).toMatchObject({
       workflowKind: 'pawn',
-      playerIds: [1, 2],
-      resolvedPlayerIds: [firstChooser],
+      playerId: second,
     });
     expect(secondPending?.data?.choiceActionsByIndex).not.toContainEqual({
       type: 'choice.resolve',

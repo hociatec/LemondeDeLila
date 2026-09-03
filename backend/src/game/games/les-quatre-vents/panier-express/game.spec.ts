@@ -37,13 +37,18 @@ describe('Panier Express declarative game', () => {
 
     expect(game.view(1).pending).toMatchObject({
       label: 'Choisissez votre pion.',
-      playerIds: expect.arrayContaining([1, -2]),
-      resolvedPlayerIds: [],
+      playerId: 1,
     });
+    expect(game.availableActions(-2)).not.toContain('choice.resolve');
 
     const [humanPawn, botPawn] = PANIER_PAWNS;
     await game.choose(1, humanPawn.id);
     expect(game.inspect.setupComplete()).toBe(false);
+    expect(game.view(-2).pending).toMatchObject({
+      label: 'Choisissez votre pion.',
+      playerId: -2,
+    });
+    expect(game.availableActions(-2)).toContain('choice.resolve');
     await game.choose(-2, botPawn.id);
 
     const pawns = (game.view(1) as unknown as { kits: StableGameKitsView }).kits
