@@ -116,7 +116,11 @@ function boardAndPlayerMessage(
   }
   if (type === 'player.skipped') {
     const name = player(data.playerId);
-    return name ? `${name} passe son tour.` : '';
+    return name
+      ? name === 'Vous'
+        ? 'Vous passez votre tour.'
+        : `${name} passe son tour.`
+      : '';
   }
   if (type === 'round.player-left') {
     const name = player(data.playerId);

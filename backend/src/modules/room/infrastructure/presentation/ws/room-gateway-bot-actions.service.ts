@@ -60,11 +60,6 @@ export class RoomGatewayBotActionsService {
         } catch (error) {
           throw mapBotError(error);
         }
-        await context.broadcast(
-          meta.roomId,
-          'bot.added',
-          this.presenter.presentBotAdded(meta.roomId, bot),
-        );
         const updated = await context.tryUpdateRoomPayload(
           meta.roomId,
           (room) => this.presenter.updateRoomPayloadWithAddedBot(room, bot),
@@ -73,6 +68,14 @@ export class RoomGatewayBotActionsService {
           await this.roomState.invalidateRoomPayloadCache(meta.roomId);
           await context.sendRoomState(meta.roomId);
         }
+        // The announcement is an observable readiness signal for clients: an
+        // owner can start the game as soon as it is received. Publish it only
+        // after every subsequent room read is guaranteed to include the bot.
+        await context.broadcast(
+          meta.roomId,
+          'bot.added',
+          this.presenter.presentBotAdded(meta.roomId, bot),
+        );
       },
       { roomId: meta.roomId, userId: meta.userId, ...trace },
     );
@@ -103,11 +106,6 @@ export class RoomGatewayBotActionsService {
         } catch (error) {
           throw mapBotError(error);
         }
-        await context.broadcast(
-          meta.roomId,
-          'bot.removed',
-          this.presenter.presentBotRemoved(meta.roomId, bot, botId),
-        );
         const updated = await context.tryUpdateRoomPayload(
           meta.roomId,
           (room) =>
@@ -117,6 +115,11 @@ export class RoomGatewayBotActionsService {
           await this.roomState.invalidateRoomPayloadCache(meta.roomId);
           await context.sendRoomState(meta.roomId);
         }
+        await context.broadcast(
+          meta.roomId,
+          'bot.removed',
+          this.presenter.presentBotRemoved(meta.roomId, bot, botId),
+        );
       },
       { roomId: meta.roomId, userId: meta.userId, ...trace },
     );

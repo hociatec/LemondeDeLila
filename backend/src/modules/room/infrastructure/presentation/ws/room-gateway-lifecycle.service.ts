@@ -122,11 +122,6 @@ export class RoomGatewayLifecycleService {
           meta.userId,
           false,
         );
-        await ctx.broadcast(
-          meta.roomId,
-          'state-updated',
-          this.presenter.presentStateUpdated(meta.roomId),
-        );
         const updated = await ctx.tryUpdateRoomPayload(meta.roomId, (state) => {
           state.room.status = room.status;
           state.room.startedAt = room.startedAt
@@ -140,6 +135,13 @@ export class RoomGatewayLifecycleService {
           await this.roomState.invalidateRoomPayloadCache(meta.roomId);
           await ctx.sendRoomState(meta.roomId);
         }
+        // A state-updated event makes clients enter the game immediately, so
+        // it must never overtake the cache transition to the started room.
+        await ctx.broadcast(
+          meta.roomId,
+          'state-updated',
+          this.presenter.presentStateUpdated(meta.roomId),
+        );
       },
       { roomId: meta.roomId, userId: meta.userId, ...trace },
     );
