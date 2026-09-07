@@ -252,11 +252,10 @@ export class GameEffectEngineController<TState extends object> {
       return false;
     }
     if (instruction.kind === 'choose-player') {
-      this.targetResolver.requestPlayerChoice(
+      return this.targetResolver.requestPlayerChoice(
         instruction.choiceId ?? 'engine.effect.player',
         instruction.candidates ?? 'opponents',
       );
-      return false;
     }
     if (instruction.kind === 'custom') {
       return executeCustomEffect({

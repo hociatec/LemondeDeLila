@@ -77,14 +77,19 @@ export class EffectTargetResolver<TState extends object> {
         ? []
         : [this.state.chosenPlayerId];
     }
-    this.state.queue.unshift(structuredClone(instruction));
-    this.requestPlayerChoice(
+    const resolvedImmediately = this.requestPlayerChoice(
       choiceId,
       selector.kind === 'chosen-player' ? 'active-players' : 'opponents',
       selector.optional === true,
       selector.kind === 'chosen-player' ? selector.playerIds : undefined,
       selector.chooserPlayerId,
     );
+    if (resolvedImmediately) {
+      return this.state.chosenPlayerId == null
+        ? []
+        : [this.state.chosenPlayerId];
+    }
+    this.state.queue.unshift(structuredClone(instruction));
     return null;
   }
 
@@ -94,7 +99,7 @@ export class EffectTargetResolver<TState extends object> {
     optional = false,
     candidatePlayerIds?: readonly number[],
     chooserPlayerId?: number,
-  ): void {
+  ): boolean {
     const actorId = chooserPlayerId ?? this.state.actorPlayerId;
     const allowed = candidatePlayerIds && new Set(candidatePlayerIds);
     const options = this.context.players
@@ -110,6 +115,17 @@ export class EffectTargetResolver<TState extends object> {
         'Aucune cible disponible pour cet effet',
         { choiceId, actorId },
       );
+    }
+    if (
+      (!optional && options.length === 1) ||
+      (optional && options.length === 0)
+    ) {
+      this.state.chosenPlayerId = options[0] ?? null;
+      this.state.playerChoiceResolved = true;
+      this.state.resolvedPlayerChoiceId = choiceId;
+      this.state.awaitingChoiceId = null;
+      this.state.awaitingPlayerChoice = null;
+      return true;
     }
     this.state.chosenPlayerId = null;
     this.state.playerChoiceResolved = false;
@@ -138,6 +154,7 @@ export class EffectTargetResolver<TState extends object> {
         label,
       });
     }
+    return false;
   }
 
   availableReactionOptions(

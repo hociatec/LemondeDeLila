@@ -155,7 +155,7 @@ function resolveLandedTile(
       gameEffects.custom(
         'a-fond-les-ballons.swap',
         {},
-        gameEffects.target.chosenOpponent('a-fond-les-ballons.swap', true),
+        gameEffects.target.chosenOpponent('a-fond-les-ballons.swap'),
       ),
       gameEffects.completeTurn(),
     );
