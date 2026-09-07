@@ -57,7 +57,13 @@ const sampleGame = defineGame({
       autoTransition: () => true,
     }),
     playing: phase<SampleState>({
-      actions: ['score', 'confirm', 'selectPlayers', 'chooseThenComplete'],
+      actions: [
+        'score',
+        'confirm',
+        'selectPlayers',
+        'chooseThenComplete',
+        'chooseRequiredThenComplete',
+      ],
     }),
   },
   actions: {
@@ -100,6 +106,21 @@ const sampleGame = defineGame({
             'record-selected-player',
             {},
             gameEffects.target.chosenOpponent('effect-opponent', true),
+          ),
+          gameEffects.completeTurn(),
+        ),
+    }),
+    chooseRequiredThenComplete: defineAction<
+      SampleState,
+      Record<string, never>
+    >({
+      input: gameInput.object({}),
+      execute: ({ ctx }) =>
+        ctx.effects.schedule(
+          gameEffects.custom(
+            'record-selected-player',
+            {},
+            gameEffects.target.chosenOpponent('required-opponent'),
           ),
           gameEffects.completeTurn(),
         ),
@@ -295,6 +316,20 @@ describe('DeclarativeGameRuntime', () => {
 
     expect(state.pending).toBeNull();
     expect(state.game.selectedPlayers).toEqual([]);
+    expect(state.turn).toMatchObject({ currentPlayerId: 2, turnNumber: 2 });
+  });
+
+  it('resolves an obligatory effect immediately when only one target exists', () => {
+    const state = execute(
+      adapter,
+      adapter.hydrateInitialState(baseState()),
+      'chooseRequiredThenComplete',
+      {},
+      1,
+    );
+
+    expect(state.pending).toBeNull();
+    expect(state.game.selectedPlayers).toEqual([2]);
     expect(state.turn).toMatchObject({ currentPlayerId: 2, turnNumber: 2 });
   });
 

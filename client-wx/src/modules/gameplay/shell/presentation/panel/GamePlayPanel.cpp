@@ -149,6 +149,13 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     // movement row such as "player, track, square, progress". When it becomes
     // this viewer's turn, the actionable pawn panel above takes priority.
     if (state_.pending && state_.pending->workflowKind == "pawn") return nullptr;
+    // A blocking generic choice must take priority over the stable dice-game
+    // anchor. Otherwise a human can receive an effect choice (for example a
+    // Tornado target) without keyboard or screen-reader focus reaching it.
+    if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
+        return choicesList_;
+    if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
+        return orderingChoices_;
     // Leaving a round hides the viewer's hand. Do not then move focus to the
     // read-only results list: screen readers would recite every score and empty
     // capability section after the leave announcement. Returning no target
@@ -175,10 +182,6 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
         if (auto* target = resourcesPanel_->NavigationTarget()) return target;
     if (workflowPanel_ != nullptr)
         if (auto* target = workflowPanel_->NavigationTarget()) return target;
-    if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
-        return choicesList_;
-    if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
-        return orderingChoices_;
     if (linesList_ != nullptr && linesList_->IsShown() && linesList_->GetCount() > 0)
         return linesList_;
     if (infoPanelChoice_ != nullptr && infoPanelChoice_->IsShown() &&
