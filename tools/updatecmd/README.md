@@ -77,9 +77,10 @@ sudo updatecmd all --source /chemin/absolu/vers/lemondeDeLila
 
 Pour un déploiement depuis les sources locales, `updatecmd` exige la branche
 `main`, un arbre Git propre et un remote `origin`. Il actualise `origin/main`,
-avance la branche locale en fast-forward si elle est en retard, ou publie son
-avance locale si elle est en avance. Il refuse toute divergence et n'effectue
-jamais de reset forcé. Le commit déployé est ainsi identique à `origin/main`.
+avance la branche locale en fast-forward si elle est en retard, et refuse une
+avance locale tant qu'elle n'a pas été intégrée à `origin/main` par pull
+request. Il refuse également toute divergence et n'effectue jamais de reset
+forcé. Le commit déployé est ainsi toujours identique à `origin/main`.
 
 Avec `--artifact`, il vérifie le SHA-256, le
 manifeste et les chemins de l'archive, puis réutilise directement `dist` et les
