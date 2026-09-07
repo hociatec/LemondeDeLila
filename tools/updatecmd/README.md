@@ -75,8 +75,13 @@ sudo updatecmd all --force
 sudo updatecmd all --source /chemin/absolu/vers/lemondeDeLila
 ```
 
-`updatecmd` refuse une source sale, non suivie par Git ou différente du SHA
-demandé par GitHub Actions. Avec `--artifact`, il vérifie le SHA-256, le
+Pour un déploiement depuis les sources locales, `updatecmd` exige la branche
+`main`, un arbre Git propre et un remote `origin`. Il actualise `origin/main`,
+avance la branche locale en fast-forward si elle est en retard, ou publie son
+avance locale si elle est en avance. Il refuse toute divergence et n'effectue
+jamais de reset forcé. Le commit déployé est ainsi identique à `origin/main`.
+
+Avec `--artifact`, il vérifie le SHA-256, le
 manifeste et les chemins de l'archive, puis réutilise directement `dist` et les
 dépendances de production sans compilation ni installation sur le serveur. Le
 backend est copié dans une release isolée. Les
