@@ -94,9 +94,50 @@ assert_immutable_git_source() {
     || die "La source contient des modifications indexées non commitées."
   [[ -z "$(git -C "$source_root" status --porcelain --untracked-files=normal)" ]] \
     || die "La source contient des fichiers non suivis."
+
+  local branch remote_ref local_sha remote_sha
+  branch="$(git -C "$source_root" symbolic-ref --quiet --short HEAD)" \
+    || die "La source doit être positionnée sur la branche main, pas sur un commit détaché."
+  [[ "$branch" == "main" ]] \
+    || die "Branche de déploiement invalide: $branch (main attendue)."
+  git -C "$source_root" remote get-url origin >/dev/null 2>&1 \
+    || die "Le dépôt de production doit déclarer le remote origin."
+
+  remote_ref="refs/remotes/origin/main"
+  log "Synchronisation de la source avec origin/main."
+  run_as "$BUILD_USER" git -C "$source_root" fetch --quiet origin \
+    "+refs/heads/main:$remote_ref" \
+    || die "Impossible d'actualiser origin/main."
+  local_sha="$(git -C "$source_root" rev-parse --verify HEAD)"
+  remote_sha="$(git -C "$source_root" rev-parse --verify "$remote_ref")"
+
+  if [[ "$local_sha" == "$remote_sha" ]]; then
+    :
+  elif git -C "$source_root" merge-base --is-ancestor "$local_sha" "$remote_sha"; then
+    log "Avance distante détectée; fast-forward de main vers origin/main."
+    run_as "$BUILD_USER" git -C "$source_root" merge --quiet --ff-only origin/main \
+      || die "Impossible d'aligner main sur origin/main en fast-forward."
+  elif git -C "$source_root" merge-base --is-ancestor "$remote_sha" "$local_sha"; then
+    log "Avance locale détectée; publication de main vers origin/main."
+    run_as "$BUILD_USER" git -C "$source_root" push --quiet origin \
+      HEAD:refs/heads/main \
+      || die "Impossible de publier main vers origin/main."
+  else
+    die "main et origin/main ont divergé; une résolution Git manuelle est requise."
+  fi
+
+  # Refermer la fenêtre entre le premier fetch et un éventuel push/merge. Si
+  # origin/main a encore avancé, le déploiement s'arrête au lieu de produire
+  # une version qui n'est déjà plus celle de main.
+  run_as "$BUILD_USER" git -C "$source_root" fetch --quiet origin \
+    "+refs/heads/main:$remote_ref" \
+    || die "Impossible de confirmer origin/main."
   SOURCE_GIT_SHA="$(git -C "$source_root" rev-parse --verify HEAD)"
+  remote_sha="$(git -C "$source_root" rev-parse --verify "$remote_ref")"
   [[ "$SOURCE_GIT_SHA" =~ ^[a-f0-9]{40,64}$ ]] \
     || die "SHA Git de source invalide."
+  [[ "$SOURCE_GIT_SHA" == "$remote_sha" ]] \
+    || die "main a changé pendant la synchronisation; relancez updatecmd."
   if [[ -n "${GITHUB_SHA:-}" && "$SOURCE_GIT_SHA" != "$GITHUB_SHA" ]]; then
     die "Le checkout ne correspond pas au SHA demandé par GitHub Actions."
   fi
