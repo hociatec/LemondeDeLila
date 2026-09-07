@@ -86,6 +86,7 @@ nlohmann::json BuildGameView(const nlohmann::json& fixture)
 #include "gameplay/StartConfigurationFlowTests.inc"
 #include "gameplay/ActionSubmissionGuardTests.inc"
 #include "gameplay/TypedCapabilityTests.inc"
+#include "gameplay/PositionShortcutTests.inc"
 
 int main()
 {
@@ -118,6 +119,7 @@ int main()
         TestActionCandidatesContract();
         TestCapabilityInformationIsInspectable();
         TestKnownCapabilitiesAreTyped();
+        TestBoardPositionShortcuts();
         TestEmptyV2KitsAndCapabilitiesRemainValid();
         TestPendingMultipleWorkflowsUseOneExplicitAction();
         TestPendingSelectionPolicy();
