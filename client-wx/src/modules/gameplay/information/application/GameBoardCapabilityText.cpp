@@ -1,5 +1,6 @@
 #include "modules/gameplay/information/application/GameKnownCapabilityText.h"
 
+#include <algorithm>
 #include <sstream>
 
 namespace lila::modules::gameplay::application::info
@@ -35,14 +36,18 @@ std::optional<std::string> BuildBoardCapabilityText(
     if (capability == "position" && state.kits.movement)
     {
         if (!state.viewerPlayerId) return "Votre position est indisponible.";
+        const auto viewer = std::find_if(
+            state.system.players.begin(), state.system.players.end(),
+            [&state](const auto& player) { return player.id == *state.viewerPlayerId; });
+        if (viewer == state.system.players.end()) return "Votre position est indisponible.";
         const auto entity = std::to_string(*state.viewerPlayerId);
         const bool includeTrack = state.kits.movement->tracks.size() > 1;
         for (const auto& track : state.kits.movement->tracks)
         {
             const auto found = track.positions.find(entity);
-            if (found == track.positions.end()) continue;
             if (includeTrack) out << "Piste " << track.id << " — ";
-            out << "Votre position : case " << found->second << ".\n";
+            out << "Votre position : case "
+                << (found == track.positions.end() ? 0 : found->second) << ".\n";
         }
         return out.str().empty() ? "Votre position est indisponible." : out.str();
     }
@@ -50,8 +55,13 @@ std::optional<std::string> BuildBoardCapabilityText(
     {
         const bool includeTrack = state.kits.movement->tracks.size() > 1;
         for (const auto& track : state.kits.movement->tracks)
-            for (const auto& [entity, position] : track.positions)
-                AppendPosition(out, state, track, entity, position, includeTrack);
+            for (const auto& player : state.system.players)
+            {
+                const auto entity = std::to_string(player.id);
+                const auto found = track.positions.find(entity);
+                AppendPosition(out, state, track, entity,
+                    found == track.positions.end() ? 0 : found->second, includeTrack);
+            }
         return out.str().empty() ? "Les positions sont indisponibles." : out.str();
     }
     if (capability == "movement" && state.kits.movement)
