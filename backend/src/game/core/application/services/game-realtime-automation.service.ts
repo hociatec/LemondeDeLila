@@ -159,7 +159,7 @@ export class GameRealtimeAutomationService implements OnModuleInit {
       ...action,
       meta: {
         ...(action.meta ?? {}),
-        commandId: `${task.key}:${task.signature}:${index}`,
+        commandId: `${task.key}:${task.signature}:generation:${task.generation}:${index}`,
       },
     }));
     const next = this.executor.execute({

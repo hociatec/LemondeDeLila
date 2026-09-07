@@ -1,9 +1,13 @@
 void TestKnownCapabilitiesAreTyped()
 {
-    auto payload = BuildGameView({{"roomId", 71}, {"runId", 9}, {"gameType", "capability-game"}});
+    auto payload = BuildGameView({{"roomId", 71}, {"viewerPlayerId", 7},
+        {"runId", 9}, {"gameType", "capability-game"}});
     payload["system"]["setup"]["values"] = {
         {"targetScore", 25},
         {"teams", nlohmann::json::array({"red", "blue"})}};
+    payload["system"]["players"]["all"] = nlohmann::json::array({
+        {{"id", 7}, {"username", "Lila"}},
+        {{"id", 8}, {"username", "Mina"}}});
     payload["kits"] = {
         {"cards", {
             {"decks", {{"draw", {{"count", 12}}}}},
@@ -14,7 +18,7 @@ void TestKnownCapabilitiesAreTyped()
                 {"8", {{"count", 4}}}}}}}}},
             {"zones", {{"river", {{"visibility", "public"}, {"cards", nlohmann::json::array({"c3"})}}}}}}},
         {"movement", {{"tracks", {{"main", {{"spaces", 20},
-            {"positions", {{"pawn-a", 4}}}}}}}}},
+            {"positions", {{"7", 4}, {"8", 9}}}}}}}}},
         {"pawns", {{"sets", {{"racers", {{"definitions", nlohmann::json::array({
                 {{"id", "pawn-a"}, {"label", "Pion officiel"}}})},
             {"positions", {{"pawn-a", 4}}}, {"owners", {{"pawn-a", 7}}}}}}}}},
@@ -64,8 +68,22 @@ void TestKnownCapabilitiesAreTyped()
     Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
             state, "discard") == "Carte au-dessus : Carte une.",
         "Un jeu de cartes doit pouvoir annoncer la carte au-dessus de la defausse.");
-    Expect(state.kits.movement && state.kits.movement->tracks[0].positions.at("pawn-a") == 4,
+    Expect(state.viewerPlayerId == 7 && state.kits.movement &&
+            state.kits.movement->tracks[0].positions.at("7") == 4,
         "Movement doit être décodé dans un modèle typé.");
+    Expect(lila::modules::gameplay::application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(
+            state, "P") == "position" &&
+            lila::modules::gameplay::application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(
+                state, "SHIFT+P") == "positions",
+        "p et Maj+P doivent annoncer les positions dans tous les jeux de plateau.");
+    Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
+            state, "position") == "Votre position : case 4.\n",
+        "p doit annoncer uniquement la position du joueur.");
+    const auto allPositions = lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
+        state, "positions");
+    Expect(allPositions.find("Lila : case 4.") != std::string::npos &&
+            allPositions.find("Mina : case 9.") != std::string::npos,
+        "Maj+P doit annoncer la position de tous les joueurs.");
     Expect(state.kits.pawns && state.kits.pawns->pawns[0].ownerId == 7 &&
             state.kits.pawns->pawns[0].label == "Pion officiel",
         "Les propriétaires et labels officiels de pions doivent être typés.");

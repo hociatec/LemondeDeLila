@@ -59,6 +59,7 @@ export class GameWsStatePresenter {
       kits,
       roomId: input.roomId,
       gameType: input.gameType,
+      viewerPlayerId: Number(input.viewerPlayerId ?? 0) || null,
       runId:
         typeof input.state.metadata?.roomRunId === 'number'
           ? input.state.metadata.roomRunId

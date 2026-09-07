@@ -16,6 +16,7 @@
 #include "modules/gameplay/state/infrastructure/GameSystemDecoder.h"
 #include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
 #include "modules/gameplay/state/infrastructure/GameWorkflowCapabilitiesDecoder.h"
+#include "shared/data/json/JsonCoercion.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -103,6 +104,8 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     if (!payload.is_object()) throw std::runtime_error("Etat de jeu invalide.");
     domain::GameState state;
     state.roomId = ReadInt(payload, "roomId");
+    state.viewerPlayerId = lila::shared::data::json::ReadOptionalIntegerCoerced(
+        payload, "viewerPlayerId");
     state.runId = ReadInt(payload, "runId");
     state.version = ReadInt(payload, "version");
     state.viewVersion = ReadInt(payload, "viewVersion");

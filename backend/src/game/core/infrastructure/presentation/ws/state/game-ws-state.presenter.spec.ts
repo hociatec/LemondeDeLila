@@ -49,6 +49,7 @@ describe('GameWsStatePresenter', () => {
       'Scores',
     ]);
     expect(payload.runId).toBe(7);
+    expect(payload.viewerPlayerId).toBe(1);
     expect(payload.state).toBeUndefined();
   });
 
