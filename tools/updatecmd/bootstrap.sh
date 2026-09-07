@@ -53,15 +53,9 @@ if [[ "$WX_VCPKG_TRIPLET" == "x64-mingw-dynamic" ]]; then
 fi
 
 mkdir -p "$INSTALL_ROOT/releases" "$STATE_ROOT" "$CACHE_ROOT" \
-  /var/lib/lemonde-de-lila/client-updates/client-wx "$BACKEND_SHARED_DATA_ROOT/sounds"
+  /var/lib/lemonde-de-lila/client-wx-updates "$BACKEND_SHARED_DATA_ROOT/sounds"
 chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$CACHE_ROOT" "$STATE_ROOT" "$INSTALL_ROOT/releases"
 chown -R "$BACKEND_RUNTIME_USER":"$BACKEND_RUNTIME_GROUP" /var/lib/lemonde-de-lila
-
-if [[ -d "$SOURCE_ROOT/backend/data/sounds" ]]; then
-  log "Synchronisation initiale des sons vers le stockage persistant."
-  rsync -a --ignore-existing "$SOURCE_ROOT/backend/data/sounds/" "$BACKEND_SHARED_DATA_ROOT/sounds/"
-  chown -R "$BACKEND_RUNTIME_USER":"$BACKEND_RUNTIME_GROUP" "$BACKEND_SHARED_DATA_ROOT/sounds"
-fi
 
 if [[ ! -f "$BACKEND_ENV_FILE" ]]; then
   if [[ -f "$SOURCE_ROOT/backend/.env" ]]; then
@@ -85,8 +79,8 @@ set_env_value() {
 }
 
 SYSTEMD_UPLOAD_TOKEN="$(systemctl show "$BACKEND_SERVICE" --property=Environment --value 2>/dev/null \
-  | tr ' ' '\n' | sed -n 's/^CLIENT_UPDATES_UPLOAD_TOKEN=//p' | tail -n 1)"
-CONFIGURED_UPLOAD_TOKEN="$(sed -n 's/^CLIENT_UPDATES_UPLOAD_TOKEN=//p' "$BACKEND_ENV_FILE" | tail -n 1)"
+  | tr ' ' '\n' | sed -n 's/^CLIENT_WX_UPDATES_UPLOAD_TOKEN=//p' | tail -n 1)"
+CONFIGURED_UPLOAD_TOKEN="$(sed -n 's/^CLIENT_WX_UPDATES_UPLOAD_TOKEN=//p' "$BACKEND_ENV_FILE" | tail -n 1)"
 CONFIGURED_UPLOAD_TOKEN="${CONFIGURED_UPLOAD_TOKEN%\"}"
 CONFIGURED_UPLOAD_TOKEN="${CONFIGURED_UPLOAD_TOKEN#\"}"
 if [[ -z "$CONFIGURED_UPLOAD_TOKEN" && -n "$SYSTEMD_UPLOAD_TOKEN" ]]; then
@@ -104,9 +98,9 @@ WX_BOOTSTRAP_TOKEN="$(tr -d '\r\n' <"$WX_UPLOAD_TOKEN_FILE")"
 if [[ -n "$CONFIGURED_UPLOAD_TOKEN" && "$CONFIGURED_UPLOAD_TOKEN" != "$WX_BOOTSTRAP_TOKEN" ]]; then
   die "Le token de $BACKEND_ENV_FILE diffère de $WX_UPLOAD_TOKEN_FILE. Alignez-les explicitement."
 fi
-set_env_value CLIENT_UPDATES_UPLOAD_TOKEN "$WX_BOOTSTRAP_TOKEN"
-set_env_value CLIENT_WX_UPDATES_DIR /var/lib/lemonde-de-lila/client-updates/client-wx
-set_env_value CLIENT_WX_UPDATES_META_PATH /var/lib/lemonde-de-lila/client-updates/client-wx-latest.json
+set_env_value CLIENT_WX_UPDATES_UPLOAD_TOKEN "$WX_BOOTSTRAP_TOKEN"
+set_env_value CLIENT_WX_UPDATES_DIR /var/lib/lemonde-de-lila/client-wx-updates
+set_env_value CLIENT_WX_UPDATES_META_PATH /var/lib/lemonde-de-lila/client-wx-updates/latest.json
 set_env_value CLIENT_WX_UPDATES_PUBLIC_URL "$WX_PUBLIC_URL"
 set_env_value LMDL_SOUNDS_DIR "$BACKEND_SHARED_DATA_ROOT/sounds"
 
@@ -160,8 +154,10 @@ if [[ ! -x "$WX_VCPKG_ROOT/vcpkg" ]]; then
 fi
 chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$WX_VCPKG_ROOT" "$WX_BINARY_CACHE"
 VCPKG_OVERLAY_ROOT="$CACHE_ROOT/vcpkg-overlays"
-mkdir -p "$VCPKG_OVERLAY_ROOT/libwebp"
+mkdir -p "$VCPKG_OVERLAY_ROOT/libwebp" "$VCPKG_OVERLAY_ROOT/miniz"
 rsync -a --delete "$WX_VCPKG_ROOT/ports/libwebp/" "$VCPKG_OVERLAY_ROOT/libwebp/"
+rsync -a --delete "$SOURCE_ROOT/tools/updatecmd/vcpkg-overlays/miniz/" \
+  "$VCPKG_OVERLAY_ROOT/miniz/"
 install -m 0644 "$SOURCE_ROOT/tools/updatecmd/vcpkg-overlays/libwebp-mingw-gcc10-avx2.patch" \
   "$VCPKG_OVERLAY_ROOT/libwebp/libwebp-mingw-gcc10-avx2.patch"
 if ! grep -q 'libwebp-mingw-gcc10-avx2.patch' "$VCPKG_OVERLAY_ROOT/libwebp/portfile.cmake"; then
@@ -174,7 +170,7 @@ run_as "$BUILD_USER" env \
   VCPKG_DEFAULT_BINARY_CACHE="$WX_BINARY_CACHE" \
   VCPKG_BINARY_SOURCES="clear;files,$WX_BINARY_CACHE,readwrite" \
   VCPKG_FEATURE_FLAGS=binarycaching \
-  "$WX_VCPKG_ROOT/vcpkg" install wxwidgets nlohmann-json \
+  "$WX_VCPKG_ROOT/vcpkg" install wxwidgets nlohmann-json miniz \
     --triplet "$WX_VCPKG_TRIPLET" --host-triplet x64-linux \
     --overlay-ports "$VCPKG_OVERLAY_ROOT" \
     --overlay-triplets "$SOURCE_ROOT/client-wx/cmake/vcpkg-triplets"
@@ -221,13 +217,6 @@ chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$WX_BASS_ROOT"
 chmod 0755 "$SOURCE_ROOT/updatecmd" "$SOURCE_ROOT/tools/updatecmd/updatecmd.sh" \
   "$SOURCE_ROOT/tools/updatecmd/bootstrap.sh"
 ln -sfn "$SOURCE_ROOT/updatecmd" /usr/local/sbin/updatecmd
-
-LEGACY_DEPLOY_COMMAND=/usr/local/sbin/deploy-lemonde-prod
-if [[ -f "$LEGACY_DEPLOY_COMMAND" && ! -f "${LEGACY_DEPLOY_COMMAND}.pre-updatecmd" ]]; then
-  cp -a "$LEGACY_DEPLOY_COMMAND" "${LEGACY_DEPLOY_COMMAND}.pre-updatecmd"
-fi
-install -m 0750 -o root -g root \
-  "$SOURCE_ROOT/backend/tools/systemd/lila-backend-deploy.sh" "$LEGACY_DEPLOY_COMMAND"
 
 SERVICE_TEMP="$(mktemp)"
 sed \

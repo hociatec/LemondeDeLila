@@ -8,8 +8,6 @@
 #include <wx/choice.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
-#include "modules/gameplay/dice/application/GameDiceActionResolver.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
@@ -31,6 +29,7 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     // control or a room-start transition owns the gameplay focus.
     if (event.AltDown() && keyCode == WXK_F4) return false;
     if (!IsOpen()) return false;
+    if (IsFinished()) return false;
 
     if (IsConfirmationVisible())
     {
@@ -40,6 +39,10 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     {
         return promptPanel_->HandleKey(event);
     }
+    // A projected game state can already contain the next run's pawn choice
+    // while the room is still in setup. Until the room confirms its start,
+    // Enter belongs exclusively to the stable room game-zone activation.
+    if (!roomStarted_) return false;
     if (pawnSelectionPanel_->IsActive())
     {
         return pawnSelectionPanel_->HandleKey(event);
@@ -75,19 +78,8 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         return true;
     }
 
-    // Before the room starts, Enter must reach the room activation path so it
-    // can either start or announce the server-provided participant constraint.
-    const bool gameStateStarted =
-        state_.system.match.status == "started" && state_.system.setup.complete;
-    if (!roomStarted_ && !gameStateStarted) return false;
-
     if (key == "ENTER")
     {
-        if (IsFinished())
-        {
-            SendKey("ENTER");
-            return true;
-        }
         // Match WPF: the visible hand/choice owns Enter even when focus still
         // sits on the stable game-zone anchor.
         if (handPanel_->IsShown() && !state_.kits.VisibleHand().empty())
@@ -102,11 +94,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         }
         auto* focused = wxWindow::FindFocus();
         if (focused == infoPanelChoice_) return false;
-        if (focused == dicePanel_->NavigationTarget())
-        {
-            static_cast<void>(ActivateSelectedDie());
-            return true;
-        }
         if (focused == gridPanel_->NavigationTarget())
         {
             static_cast<void>(ActivateSelectedGridCell());
@@ -117,6 +104,7 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             ActivateSelectedLine();
             return true;
         }
+        if (ActivateDiceRoll()) return true;
         if (const auto* prompt = ActivePrompt();
             prompt && submittedPromptActionType_ == prompt->actionType)
             return true;

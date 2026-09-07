@@ -23,7 +23,7 @@ Date: 2026-02-18
 - `validateAction` renvoie une action normalisée.
 - `getAvailableActions` respecte les `pending` bloquants.
 - `applyActions` est déterministe sur un état donné.
-- Les aliases legacy passent par les helpers centraux.
+- Aucun alias de protocole historique n'est accepté.
 
 ## 4) Qualité obligatoire avant merge
 - `npm run quality:check`

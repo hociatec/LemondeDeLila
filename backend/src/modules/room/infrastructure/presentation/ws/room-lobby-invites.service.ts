@@ -23,7 +23,7 @@ import type {
   RoomInviteSendDto,
 } from './dto/room-invite.ws.dto';
 import { RoomLobbyPresenter } from './room-lobby.presenter';
-import type { LobbyUser, LobbyWsVariant } from './room-lobby.types';
+import type { LobbyUser } from './room-lobby.types';
 
 @Injectable()
 export class RoomLobbyInvitesService {
@@ -40,13 +40,13 @@ export class RoomLobbyInvitesService {
     private readonly lobbyRepo: RoomLobbyRepository,
   ) {}
 
-  async send(user: LobbyUser, dto: RoomInviteSendDto, variant: LobbyWsVariant) {
+  async send(user: LobbyUser, dto: RoomInviteSendDto) {
     const room = this.policy.requireOwnedRoom(
       await this.lobbyRepo.findRoomWithOwner(dto.roomId),
       user.id,
     );
     if (await this.lobbyRepo.hasActiveParticipant(room.id, dto.userId)) {
-      return this.presenter.presentInviteSent(variant, {
+      return this.presenter.presentInviteSent({
         roomId: room.id,
         userId: dto.userId,
         alreadyInRoom: true,
@@ -55,35 +55,34 @@ export class RoomLobbyInvitesService {
     const existing = this.invites.findActive(room.id, dto.userId);
     if (existing) {
       return this.presenter.presentInviteSent(
-        variant,
         this.presenter.presentExistingInvite(room, existing),
       );
     }
     const invite = this.invites.create(room.id, user.id, dto.userId);
-    void this.notifications.notifyUser(dto.userId, 'rooms.invite.received', {
-      invitationId: invite.id,
-      room: {
-        id: room.id,
-        name: room.name,
-        gameType: room.gameType,
-        status: room.status,
-        maxPlayers: room.maxPlayers,
+    void this.notifications.notifyUser(
+      dto.userId,
+      'room.lobby.invite.received',
+      {
+        invitationId: invite.id,
+        room: {
+          id: room.id,
+          name: room.name,
+          gameType: room.gameType,
+          status: room.status,
+          maxPlayers: room.maxPlayers,
+        },
+        from: { id: user.id, username: user.username },
+        expiresAt: invite.expiresAt,
       },
-      from: { id: user.id, username: user.username },
-      expiresAt: invite.expiresAt,
-    });
-    return this.presenter.presentInviteSent(variant, {
+    );
+    return this.presenter.presentInviteSent({
       invitationId: invite.id,
       roomId: room.id,
       userId: dto.userId,
     });
   }
 
-  async listPresence(
-    user: LobbyUser,
-    dto: RoomInvitePresenceListDto,
-    variant: LobbyWsVariant,
-  ) {
+  async listPresence(user: LobbyUser, dto: RoomInvitePresenceListDto) {
     const room = this.policy.requireOwnedRoom(
       await this.lobbyRepo.findRoomWithOwner(dto.roomId),
       user.id,
@@ -109,35 +108,27 @@ export class RoomLobbyInvitesService {
           sensitivity: 'base',
         }),
       );
-    return this.presenter.presentInvitePresenceList(
-      variant,
-      dto.roomId,
-      players,
-    );
+    return this.presenter.presentInvitePresenceList(dto.roomId, players);
   }
 
-  async respond(
-    user: LobbyUser,
-    dto: RoomInviteRespondDto,
-    variant: LobbyWsVariant,
-  ) {
+  async respond(user: LobbyUser, dto: RoomInviteRespondDto) {
     const invite = this.policy.requireInviteRecipient(
       this.invites.get(dto.invitationId),
       user.id,
     );
     if (!invite) {
-      return this.presenter.presentInviteResponded(variant, {
+      return this.presenter.presentInviteResponded({
         invitationId: dto.invitationId,
         accepted: false,
         expired: true,
       });
     }
     if (dto.accept) {
-      return this.accept(user, invite, dto.invitationId, variant);
+      return this.accept(user, invite, dto.invitationId);
     }
     this.invites.delete(dto.invitationId);
     this.notifyResponse(invite, dto.invitationId, user, false);
-    return this.presenter.presentInviteResponded(variant, {
+    return this.presenter.presentInviteResponded({
       invitationId: dto.invitationId,
       accepted: false,
     });
@@ -147,17 +138,10 @@ export class RoomLobbyInvitesService {
     user: LobbyUser,
     invite: RoomInvite,
     invitationId: string,
-    variant: LobbyWsVariant,
   ) {
     const current = await this.roomState.getRoomPayload(invite.roomId);
     if (this.isStarted(current)) {
-      return this.acceptAsSpectator(
-        user,
-        invite,
-        invitationId,
-        variant,
-        current.room,
-      );
+      return this.acceptAsSpectator(user, invite, invitationId, current.room);
     }
     try {
       await this.membership.joinRoom(invite.roomId, user.id, {
@@ -170,18 +154,11 @@ export class RoomLobbyInvitesService {
         throw error;
       }
       const state = await this.roomState.getRoomPayload(invite.roomId);
-      return this.acceptAsSpectator(
-        user,
-        invite,
-        invitationId,
-        variant,
-        state.room,
-      );
+      return this.acceptAsSpectator(user, invite, invitationId, state.room);
     }
     const state = await this.roomState.getRoomPayload(invite.roomId);
     this.notifyResponse(invite, invitationId, user, true);
     return this.presenter.presentInviteAccepted(
-      variant,
       invite.roomId,
       state.room,
       false,
@@ -192,18 +169,12 @@ export class RoomLobbyInvitesService {
     user: LobbyUser,
     invite: RoomInvite,
     invitationId: string,
-    variant: LobbyWsVariant,
     room: RoomPayload['room'],
   ) {
     this.invites.consume(invitationId, { keep: true });
     await this.refreshRoom(invite.roomId);
     this.notifyResponse(invite, invitationId, user, true);
-    return this.presenter.presentInviteAccepted(
-      variant,
-      invite.roomId,
-      room,
-      true,
-    );
+    return this.presenter.presentInviteAccepted(invite.roomId, room, true);
   }
 
   private notifyResponse(
@@ -214,7 +185,7 @@ export class RoomLobbyInvitesService {
   ): void {
     void this.notifications.notifyUser(
       invite.fromUserId,
-      'rooms.invite.responded',
+      'room.lobby.invite.responded',
       {
         invitationId,
         roomId: invite.roomId,

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/terminus';
 import Redis from 'ioredis';
 import { RedisClientFactory } from '../../../../platform/redis/public-api';
+import { prometheusMetrics } from '../../../../platform/observability/public-api';
 
 @Injectable()
 export class RedisHealthIndicator extends HealthIndicator {
@@ -35,8 +36,10 @@ export class RedisHealthIndicator extends HealthIndicator {
       await client.connect();
       await client.ping();
       await client.quit();
+      prometheusMetrics.setDependencyUp('redis', true);
       return this.getStatus(key, true);
     } catch (error) {
+      prometheusMetrics.setDependencyUp('redis', false);
       if (client) {
         try {
           client.disconnect();

@@ -8,7 +8,6 @@ import type { AdminBroadcastWsHandler } from './admin-broadcast-ws.handler';
 import type { AdminBugReportCommentsWsHandler } from './admin-bug-report-comments-ws.handler';
 import type { AdminBugReportsWsHandler } from './admin-bug-reports-ws.handler';
 import type { AdminChatWsHandler } from './admin-chat-ws.handler';
-import type { AdminClientUpdatesWsHandler } from './admin-client-updates-ws.handler';
 import type { AdminGamesWsHandler } from './admin-games-ws.handler';
 import type { AdminLogsWsHandler } from './admin-logs-ws.handler';
 import type { AdminMnemoQuizWsHandler } from './admin-mnemo-quiz-ws.handler';
@@ -28,7 +27,6 @@ export type AdminWsHandlers = {
   roles: AdminRolesWsHandler;
   logs: AdminLogsWsHandler;
   broadcast: AdminBroadcastWsHandler;
-  clientUpdates: AdminClientUpdatesWsHandler;
   perf: AdminPerfWsHandler;
   profile: AdminProfileWsHandler;
   bugReports: AdminBugReportsWsHandler;
@@ -130,18 +128,6 @@ const ADMIN_WS_ROUTES: AdminRouteDefinition[] = [
   {
     event: WS_EVENTS.admin.broadcast,
     bind: (h) => (s, p) => h.broadcast.broadcast(s, p),
-  },
-  {
-    event: WS_EVENTS.admin.clientUpdate.announce,
-    bind: (h) => (s, p) => h.clientUpdates.clientUpdateAnnounce(s, p),
-  },
-  {
-    event: WS_EVENTS.admin.clientUpdate.forceLatest,
-    bind: (h) => (s, p) => h.clientUpdates.clientUpdateForceLatest(s, p),
-  },
-  {
-    event: WS_EVENTS.admin.clientUpdate.schedule,
-    bind: (h) => (s, p) => h.clientUpdates.clientUpdateSchedule(s, p),
   },
   {
     event: WS_EVENTS.admin.chat.messages,

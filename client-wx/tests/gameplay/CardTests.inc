@@ -12,7 +12,7 @@ void TestGenericCardsContract()
         }}}},
     };
 
-    auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     const auto& hand = state.kits.VisibleHand();
     Expect(hand.size() == 3, "Toutes les cartes de la main doivent etre conservees.");
     Expect(hand[0].id == "wolf" && hand[0].label == "Le loup",
@@ -37,11 +37,16 @@ void TestGenericCardsContract()
             state, "current-turn") == "C'est au tour de Lila.",
         "T doit annoncer uniquement le joueur dont c'est le tour.");
     state.kits.score->label = "Jetons";
-    state.kits.score->unit = "jeton(s)";
+    state.kits.score->unitSingular = "jeton";
+    state.kits.score->unitPlural = "jetons";
+    state.kits.score->leaderboard = {{7, 1, 1}};
+    Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
+            state, "score") == "Lila : 1 jeton\n",
+        "S doit annoncer l'unite singuliere fournie par le serveur.");
     state.kits.score->leaderboard = {{7, 12, 1}};
     Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
-            state, "score") == "Lila : 12 jeton(s)\n",
-        "S doit annoncer l'unite de score fournie par le serveur sans prefixer le rang.");
+            state, "score") == "Lila : 12 jetons\n",
+        "S doit annoncer l'unite plurielle fournie par le serveur.");
 }
 
 void TestCardsCarryTheirActionsAcrossGames()
@@ -65,7 +70,7 @@ void TestCardsCarryTheirActionsAcrossGames()
             })}}},
         }},
     };
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     const auto first = GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 0);
     const auto second = GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 1);
     Expect(first.has_value() && first->payload.at("cardId") == "wolf",
@@ -78,7 +83,7 @@ void TestCardsCarryTheirActionsAcrossGames()
             {{"type", "play"}, {"payload", {{"value", 2}}}},
         })}, {"extras", {{"hand", nlohmann::json::array({2, 2})}}}}}};
     const auto sharedActionState = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(
-            V2Payload(sharedActionPayload));
+            BuildGameView(sharedActionPayload));
     Expect(GameCardActionResolver::Resolve(
             sharedActionState.kits.VisibleHand(), sharedActionState.actions, 1).has_value(),
         "Une action enumeree par valeur doit jouer chaque exemplaire identique.");
@@ -117,7 +122,7 @@ void TestServerDrivenKeyboardActionsSurviveTheClientContract()
         }},
     };
 
-    const auto state = GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     const auto play = GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 0);
     Expect(play.has_value() && play->type == "play_card",
         "Entree sur une carte doit retrouver l'action associee par le serveur.");

@@ -25,7 +25,6 @@ inline constexpr std::string_view ShowNavigationStatus = "showNavigationStatus";
 inline constexpr std::string_view MuteAll = "muteAll";
 inline constexpr std::string_view ConfirmExit = "confirmExit";
 inline constexpr std::string_view RepairBrokenAccents = "repairBrokenAccents";
-inline constexpr std::string_view LegacyConfirmLogout = "confirmLogout";
 inline constexpr std::string_view EnableBetaGames = "enableBetaGames";
 inline constexpr std::string_view SoundAmbience = "soundAmbience";
 inline constexpr std::string_view SoundAppLaunch = "soundAppLaunch";

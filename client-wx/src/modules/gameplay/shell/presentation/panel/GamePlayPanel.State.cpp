@@ -12,7 +12,6 @@
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/events/presentation/GameEventPresenter.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/resources/presentation/GameResourcesPanel.h"
@@ -49,6 +48,8 @@ std::vector<std::string> EventMessages(const domain::GameState& state)
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
     const wxWeakRef<wxWindow> focusedBefore(wxWindow::FindFocus());
+    const bool hadVisibleHand = !state_.kits.VisibleHand().empty();
+    const bool receivesVisibleHand = !state.kits.VisibleHand().empty();
     const bool focusWasInsideGame =
         lila::shared::accessibility::NavigationController::IsDescendantOf(
             focusedBefore.get(), this);
@@ -108,6 +109,10 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         confirmationPanel_->HideConfirmation();
         promptPanel_->HidePrompt(true);
         pawnSelectionPanel_->Clear();
+        Hide();
+        if (GetParent()) GetParent()->Layout();
+        if (focusWasInsideGame && onZoneFocusRequested_) onZoneFocusRequested_();
+        return;
     }
     Show(roomStarted_ || roomStartFlowRequested_ || roomStartPending_);
     headerLabel_->SetLabel(BuildHeaderText());
@@ -117,7 +122,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     pendingLabel_->Show(!pendingLabel_->GetLabel().empty());
     RebuildLines();
     handPanel_->ApplyCards(state_.kits.VisibleHand(), state_.actions);
-    dicePanel_->Apply(state_.kits.dice);
     gridPanel_->Apply(state_.kits.grid ? &*state_.kits.grid : nullptr,
         state_.actions, state_.system.players,
         state_.kits.pawns ? &*state_.kits.pawns : nullptr);
@@ -177,9 +181,12 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     UpdateInfoPanel();
     infoText_->Show(!infoText_->GetValue().empty());
     SyncInlinePrompt();
+    const auto visiblePawnSelection = roomStarted_
+        ? pawnSelection_
+        : std::optional<domain::PawnSelection>{};
     const bool pawnSelectionCompleted =
-        pawnSelectionPanel_->IsActive() && !pawnSelection_.has_value();
-    pawnSelectionPanel_->Apply(pawnSelection_);
+        pawnSelectionPanel_->IsActive() && !visiblePawnSelection.has_value();
+    pawnSelectionPanel_->Apply(visiblePawnSelection);
     if (pawnSelectionCompleted && onZoneFocusRequested_) onZoneFocusRequested_();
     SyncContentVisibility();
     Layout();
@@ -195,6 +202,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         else if (onZoneFocusRequested_)
             onZoneFocusRequested_();
     }
+    if (!hadVisibleHand && receivesVisibleHand && onZoneFocusRequested_)
+        onZoneFocusRequested_();
     const bool setupProjectionCompleted = startConfigurationFlow_.ObserveSetup(
         state_.system.setup);
     if (!roomStarted_ && roomStartFlowRequested_ &&

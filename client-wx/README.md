@@ -73,6 +73,10 @@ les limites ZIP, l’espace disque, SHA-256, la signature RSA du manifeste et
 les signatures Authenticode, puis effectue une bascule atomique avec retour à
 la version précédente en l’absence de signal de santé.
 
+L’archive de mise à jour est extraite directement dans le lanceur avec
+`miniz`. Aucun PowerShell ni autre processus de script n’est lancé sur le poste
+de l’utilisateur.
+
 La construction, la signature et la publication sont réalisées directement
 sur le serveur avec `sudo updatecmd wx --force`, ou avec
 `sudo updatecmd all --force` pour déployer aussi le backend. Les secrets de

@@ -41,12 +41,31 @@ bool IsSafeReleaseId(const std::string& value)
     return std::regex_match(value, pattern) && value.find("..") == std::string::npos;
 }
 
+bool IsSafeArchivePath(std::string value)
+{
+    if (value.empty() || value.front() == '/' || value.front() == '\\' ||
+        value.find('\0') != std::string::npos || value.find(':') != std::string::npos) {
+        return false;
+    }
+    std::replace(value.begin(), value.end(), '\\', '/');
+    std::size_t start = 0;
+    while (start < value.size()) {
+        const auto end = value.find('/', start);
+        const auto length = (end == std::string::npos ? value.size() : end) - start;
+        const auto segment = value.substr(start, length);
+        if (segment.empty() || segment == "." || segment == "..") return false;
+        if (end == std::string::npos) break;
+        start = end + 1;
+    }
+    return true;
+}
+
 std::string BuildStagedUpdateArchiveFileName(const std::string& releaseId)
 {
     if (!IsSafeReleaseId(releaseId)) {
         throw std::runtime_error("Unsafe update release identifier.");
     }
-    // Expand-Archive requires a .zip suffix even when the file is only staged.
+    // Keep an explicit ZIP suffix so diagnostics and recovery can identify it.
     return releaseId + ".download.zip";
 }
 

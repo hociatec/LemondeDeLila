@@ -10,7 +10,6 @@
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/resources/presentation/GameResourcesPanel.h"
@@ -69,9 +68,6 @@ void GamePlayPanel::BuildLayout()
 
     handPanel_ = new hand::GameHandPanel(contentPanel_);
     content->Add(handPanel_, 1, wxEXPAND | wxBOTTOM, 8);
-
-    dicePanel_ = new dice::GameDicePanel(contentPanel_);
-    content->Add(dicePanel_, 1, wxEXPAND | wxBOTTOM, 8);
 
     gridPanel_ = new grid::GameGridPanel(contentPanel_);
     content->Add(gridPanel_, 1, wxEXPAND | wxBOTTOM, 8);

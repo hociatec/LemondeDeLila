@@ -373,10 +373,23 @@ function projectPending(
     blocking: pending.blocking,
   };
   if (!expected) return common;
+  const data = pending.data ? structuredClone(pending.data) : undefined;
+  const kind = typeof data?.kind === 'string' ? data.kind : '';
+  const options = Array.isArray(data?.options) ? data.options : [];
+  if (
+    data &&
+    options.length > 0 &&
+    !['many', 'players', 'ordering'].includes(kind)
+  ) {
+    data.choiceActionsByIndex = options.map((value) => ({
+      type: 'choice.resolve',
+      payload: { value: structuredClone(value) },
+    }));
+  }
   return {
     ...common,
     question: pending.question,
     choices: pending.choices ? [...pending.choices] : undefined,
-    data: pending.data ? structuredClone(pending.data) : undefined,
+    data,
   };
 }

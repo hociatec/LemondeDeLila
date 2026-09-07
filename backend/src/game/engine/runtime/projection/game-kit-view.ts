@@ -64,7 +64,7 @@ export type PawnSetsPlayerView = {
       owners: Record<string, number>;
       assignments: Record<string, string[]>;
       byPlayer: Record<string, string[]>;
-      positions: Record<string, number>;
+      positions?: Record<string, number>;
     }
   >;
 };
@@ -234,6 +234,9 @@ function projectPawnKit(
           const definition = pawnDefinitions.find(
             (candidate) => candidate.id === setId,
           );
+          const projectedPositions = Object.fromEntries(
+            Object.entries(positions).filter(([, position]) => position !== 0),
+          );
           return [
             setId,
             {
@@ -241,7 +244,9 @@ function projectPawnKit(
               owners: structuredClone(pawns.owners[setId] ?? {}),
               assignments: structuredClone(pawns.assignments[setId] ?? {}),
               byPlayer: structuredClone(pawns.assignments[setId] ?? {}),
-              positions: structuredClone(positions),
+              ...(Object.keys(projectedPositions).length > 0
+                ? { positions: projectedPositions }
+                : {}),
             },
           ];
         }),

@@ -54,7 +54,6 @@ if (trackedResult.status === 0) {
     .filter(
       (file) =>
         file.startsWith('coverage/') ||
-        file.startsWith('data/client-updates/') ||
         /^\.tmp-eslint-.*\.json$/.test(file),
     );
   if (trackedArtifacts.length > 0) {

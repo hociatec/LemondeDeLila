@@ -158,11 +158,21 @@ function auditPendingIsolation(
   adapter: GameRuntime,
   state: GameStateEntity,
 ): void {
-  const pendingPlayerId = state.pending?.playerId;
-  if (pendingPlayerId == null) return;
+  const pending = state.pending;
+  if (!pending) return;
+  const expectedPlayerIds = new Set(
+    pending.playerIds?.length
+      ? pending.playerIds.filter(
+          (playerId) => !(pending.resolvedPlayerIds ?? []).includes(playerId),
+        )
+      : pending.playerId == null
+        ? []
+        : [pending.playerId],
+  );
+  if (expectedPlayerIds.size === 0) return;
   for (const player of state.players ?? []) {
     const available = adapter.getAvailableActions(state, player.id);
-    if (player.id !== pendingPlayerId) {
+    if (!expectedPlayerIds.has(player.id)) {
       invariant(
         available.length === 0,
         'un pending laisse agir un autre joueur',

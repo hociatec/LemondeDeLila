@@ -1,4 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
+import { generateKeyPairSync } from 'crypto';
 import { sign } from 'jsonwebtoken';
 import type { WsRuntimeConfig } from '../ports/ws-runtime-config.port';
 import { WsJwtAuthService } from './ws-jwt-auth.service';
@@ -6,22 +7,26 @@ import { WsTicketAuthService } from './ws-ticket-auth.service';
 import { WsTicketService } from './ws-ticket.service';
 
 const secret = 'unit-test-secret-with-at-least-32-characters';
+const { publicKey, privateKey } = generateKeyPairSync('rsa', {
+  modulusLength: 2048,
+});
+const publicKeyPem = String(publicKey.export({ type: 'spki', format: 'pem' }));
+const privateKeyPem = String(
+  privateKey.export({ type: 'pkcs8', format: 'pem' }),
+);
 
 const runtimeConfig = (
   overrides: Partial<WsRuntimeConfig> = {},
 ): WsRuntimeConfig => ({
   nodeEnv: 'test',
-  sharedSecret: null,
   wsTicketSecret: secret,
   wsTicketTtlSeconds: 60,
   jwtIssuer: 'le-monde-de-lila',
   jwtAudience: null,
   jwtClockToleranceSeconds: 10,
-  jwtAlgorithm: 'HS256',
-  jwtSecret: secret,
-  jwtPrivateKeyPem: null,
+  jwtPrivateKeyPem: privateKeyPem,
   jwtPrivateKeyPath: null,
-  jwtPublicKeyPem: null,
+  jwtPublicKeyPem: publicKeyPem,
   jwtPublicKeyPath: null,
   maxBufferedBytes: 1_048_576,
   ...overrides,
@@ -44,14 +49,30 @@ describe('WsJwtAuthService', () => {
     expect(service.extractClientProduct(client, [])).toBe('desktop');
   });
 
-  it('falls back to query parameters and rejects malformed URLs', () => {
+  it('rejects URL metadata and accepts canonical request headers', () => {
     const client = {
       url: '/ws?token=query-token&version=2.0&clientProduct=WX',
     };
-    expect(service.extractToken(client, [])).toBe('query-token');
-    expect(service.extractClientVersion(client, [])).toBe('2.0');
-    expect(service.extractClientProduct(client, [])).toBe('wx');
+    expect(service.extractToken(client, [])).toBeNull();
+    expect(service.extractClientVersion(client, [])).toBeNull();
+    expect(service.extractClientProduct(client, [])).toBeNull();
     expect(service.extractToken({ url: 'http://[' }, [])).toBeNull();
+    expect(service.extractClientVersion({ url: 'http://[' }, [])).toBeNull();
+    expect(service.extractClientProduct({ url: 'http://[' }, [])).toBeNull();
+    expect(
+      service.extractToken({}, [
+        {
+          url: '/ws?v=3.0&clientProduct=desktop',
+          headers: { authorization: ['Bearer request-token'] },
+        },
+      ]),
+    ).toBe('request-token');
+    expect(
+      service.extractToken(
+        { handshakeHeaders: { authorization: 'Basic x' } },
+        [],
+      ),
+    ).toBeNull();
   });
 
   it('verifies complete JWT payloads and safely handles invalid tokens', () => {
@@ -62,8 +83,13 @@ describe('WsJwtAuthService', () => {
         email: 'lila@example.test',
         roles: ['user'],
       },
-      secret,
-      { issuer: 'le-monde-de-lila', subject: '7', expiresIn: '5m' },
+      privateKeyPem,
+      {
+        algorithm: 'RS256',
+        issuer: 'le-monde-de-lila',
+        subject: '7',
+        expiresIn: '5m',
+      },
     );
     expect(service.verify(token)).toEqual(
       expect.objectContaining({
@@ -77,6 +103,28 @@ describe('WsJwtAuthService', () => {
     expect(service.tryVerify('invalid')).toBeNull();
     expect(service.tryVerify(null)).toBeNull();
     expect(() => service.verify('invalid')).toThrow(UnauthorizedException);
+  });
+
+  it('rejects incomplete payloads', () => {
+    const incomplete = sign({ username: 'x' }, privateKeyPem, {
+      algorithm: 'RS256',
+      issuer: 'le-monde-de-lila',
+      subject: '7',
+      expiresIn: '5m',
+    });
+    expect(() => service.verify(incomplete)).toThrow(UnauthorizedException);
+
+    const minimal = sign(
+      { id: 7, roles: ['user', 2, 'admin'] },
+      privateKeyPem,
+      {
+        algorithm: 'RS256',
+        issuer: 'le-monde-de-lila',
+        subject: 'fallback-name',
+        expiresIn: '5m',
+      },
+    );
+    expect(() => service.verify(minimal)).toThrow(UnauthorizedException);
   });
 });
 
@@ -114,7 +162,27 @@ describe('WsTicketService and WsTicketAuthService', () => {
     expect(() => production.issue(1, 'api')).toThrow(UnauthorizedException);
   });
 
-  it('extracts tickets from query and headers with detailed outcomes', () => {
+  it('rejects tickets with invalid payload fields', () => {
+    const tickets = new WsTicketService(runtimeConfig());
+    const ticket = (payload: object) =>
+      sign(payload, secret, {
+        audience: 'lila-ws',
+        issuer: 'lila-backend',
+        expiresIn: '1m',
+      });
+
+    expect(() =>
+      tickets.verify(ticket({ scope: 'api', jti: 'x' }), 'api'),
+    ).toThrow(UnauthorizedException);
+    expect(() =>
+      tickets.verify(ticket({ sub: '-1', scope: 'api', jti: 'x' }), 'api'),
+    ).toThrow(UnauthorizedException);
+    expect(() =>
+      tickets.verify(ticket({ sub: '1', scope: 'api', jti: ' ' }), 'api'),
+    ).toThrow(UnauthorizedException);
+  });
+
+  it('extracts tickets from the canonical header with detailed outcomes', () => {
     const tickets = { verify: jest.fn() } as unknown as WsTicketService;
     const auth = new WsTicketAuthService(tickets);
     expect(auth.validateIfTokenPresentDetailed({}, [], 'api', false)).toEqual({
@@ -127,19 +195,49 @@ describe('WsTicketService and WsTicketAuthService', () => {
       reason: 'missing_ticket',
       ticketPresent: false,
     });
-    expect(auth.validate({ url: '/ws?ticket=abc' }, [], 'api')).toBe(true);
+    expect(
+      auth.validate(
+        { handshakeHeaders: { 'x-lila-ws-ticket': 'abc' } },
+        [],
+        'api',
+      ),
+    ).toBe(true);
     expect(tickets.verify).toHaveBeenCalledWith('abc', 'api');
+
+    expect(
+      auth.validateIfTokenPresentDetailed(
+        {},
+        [{ headers: { 'x-lila-ws-ticket': 'request-ticket' } }],
+        'room',
+        true,
+      ),
+    ).toEqual({ ok: true, reason: 'ok', ticketPresent: true });
+    expect(tickets.verify).toHaveBeenCalledWith('request-ticket', 'room');
+    expect(auth.validateIfTokenPresent({}, [], 'api', false)).toBe(true);
+    expect(auth.validateIfTokenPresent({}, [], 'api', true)).toBe(false);
+    expect(auth.validate({}, [], 'api')).toBe(false);
 
     (tickets.verify as jest.Mock).mockImplementationOnce(() => {
       throw new Error('invalid');
     });
     expect(
       auth.validateIfTokenPresentDetailed(
-        { handshakeHeaders: { 'x-lila-ticket': ['bad'] } },
+        { handshakeHeaders: { 'x-lila-ws-ticket': ['bad'] } },
         [],
         'api',
         true,
       ),
     ).toEqual({ ok: false, reason: 'invalid_ticket', ticketPresent: true });
+
+    (tickets.verify as jest.Mock).mockImplementationOnce(() => {
+      throw new Error('invalid');
+    });
+    expect(
+      auth.validate(
+        { req: { headers: { 'x-lila-ws-ticket': 'invalid' } } as never },
+        [],
+        'api',
+      ),
+    ).toBe(false);
   });
 });

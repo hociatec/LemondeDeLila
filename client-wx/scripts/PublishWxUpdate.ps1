@@ -26,7 +26,7 @@ function Invoke-WithRetry {
 }
 
 $api = $ApiBase.TrimEnd('/')
-$headers = @{ 'x-client-updates-upload-token' = $UploadToken.Trim() }
+$headers = @{ 'x-client-wx-updates-upload-token' = $UploadToken.Trim() }
 $size = (Get-Item -LiteralPath $PackagePath).Length
 $installerSize = (Get-Item -LiteralPath $InstallerPath).Length
 $installerSha256 = (Get-FileHash -LiteralPath $InstallerPath -Algorithm SHA256).Hash.ToLowerInvariant()

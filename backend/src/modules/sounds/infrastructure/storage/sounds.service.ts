@@ -50,10 +50,7 @@ export class SoundsService {
     @Inject(NOTIFICATION_DISPATCHER)
     private readonly notifications: NotificationDispatcher,
   ) {
-    this.storageRoot = resolveSoundsDataRoot({
-      legacyRoot: path.resolve(__dirname, '..', '..', 'data', 'sounds'),
-      warn: (message) => this.logger.warn(message),
-    });
+    this.storageRoot = resolveSoundsDataRoot();
     this.maintenance = new SoundsMaintenanceManager({
       dataRoot: () => this.storageRoot,
       readManifest: () => this.readManifest(),

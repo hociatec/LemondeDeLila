@@ -6,6 +6,7 @@ namespace lila::shared::network::realtime::fields
 {
 inline constexpr std::string_view Type = "type";
 inline constexpr std::string_view RequestId = "requestId";
+inline constexpr std::string_view Context = "context";
 inline constexpr std::string_view Payload = "payload";
 inline constexpr std::string_view ProtocolVersion = "protocolVersion";
 inline constexpr std::string_view ClientVersion = "clientVersion";

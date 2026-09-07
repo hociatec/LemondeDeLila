@@ -48,30 +48,25 @@ Ce mécanisme remplace le secret partagé statique côté client (déconseillé)
 
 | Variable                                                                     | Description                                                                                                                                              |
 | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `JWT_ALGORITHM`                                                              | `RS256` (recommandé) ou `HS256` (legacy). Si absent, le backend déduit le mode selon la présence de clés RSA.                                            |
+| `JWT_ALGORITHM`                                                              | `RS256`, unique algorithme accepté.                                                                                                                       |
 | `JWT_PRIVATE_KEY_PATH` / `JWT_PRIVATE_KEY_PEM`                               | (RS256) Clé privée PEM pour signer les tokens. Ne jamais exposer au client.                                                                              |
 | `JWT_PUBLIC_KEY_PATH` / `JWT_PUBLIC_KEY_PEM`                                 | (RS256) Clé publique PEM pour vérifier les tokens. Peut être distribuée aux clients.                                                                     |
 | `REFRESH_TOKEN_TTL_SECONDS`                                                  | Durée de vie des refresh tokens opaques stockés sous forme hashée dans Redis (30 jours par défaut).                                                      |
-| `JWT_SECRET`                                                                 | (HS256 legacy) Secret partagé pour signer/vérifier. Ne jamais l’embarquer dans un client.                                                                |
 | `GAME_ENGINE_STATE_REDIS_URL`                                                | Redis utilisé pour persister l’état des parties (requis pour la reprise après crash).                                                                    |
 | `SESSION_STORE_REDIS_URL`                                                    | Redis pour les sessions WS/API, notifications et présence (peuvent avoir leurs URL dédiées).                                                             |
 | `ROOM_PAYLOAD_REDIS_URL`                                                     | (Optionnel) Redis pour le cache court des payloads room (sinon utilise `SESSION_STORE_REDIS_URL`).                                                       |
 | `NOTIFICATION_REDIS_URL`, `PRESENCE_REDIS_URL`                               | (Optionnel) Redis distincts pour partager les flux de notifications/presence entre plusieurs instances.                                                  |
 | `WS_TICKET_SECRET`                                                           | Secret serveur pour signer les tickets WS courts (ne jamais l’exposer au client).                                                                        |
 | `WS_TICKET_TTL_SECONDS`                                                      | Durée de vie des tickets WS en secondes (ex: 60).                                                                                                        |
-| `WS_SHARED_SECRET`                                                           | Legacy : ancien secret partagé côté client pour `/ws` (compat clients anciens uniquement).                                                               |
 | `DATABASE_URL`                                                               | Optionnel : connexion MySQL complète (`mysql://user:pwd@host:3306/db`). Sinon utiliser `DB_HOST`, `DB_USER`, etc.                                        |
 | `CORS_ORIGINS`                                                               | Liste d’origines autorisées (séparées par des virgules). En production, si vide : CORS est désactivé.                                                    |
 | `RATE_LIMIT_TTL` / `RATE_LIMIT_COUNT`                                        | Fenêtre (s) et nombre de requêtes maximum pour le throttling global.                                                                                     |
 | `LOG_DIR`, `LOG_FILES_ENABLED`, `LOG_LEVEL`                                  | Contrôlent l’écriture des logs Winston (dossier, activation fichiers, niveau). En container : préférer `LOG_FILES_ENABLED=false` pour loguer sur stdout. |
-| `CLIENT_UPDATES_DIR`                                                         | Dossier servi sur `/updates/client-win/` (ClickOnce/ZIP). Recommandé: un chemin persistant hors du dépôt.                                                |
-| `CLIENT_UPDATES_META_PATH`                                                   | Chemin du fichier `latest.json` (métadonnées), recommandé hors du dépôt.                                                                                 |
-| `CLIENT_UPDATES_UPLOADS_DIR`                                                 | Dossier des uploads chunkés temporaires (`init/chunk/complete`), recommandé hors du dépôt.                                                               |
-| `CLIENT_UPDATES_PUBLIC_URL`                                                  | URL publique des updates (ex: `https://api.lilas.hociatec.fr/updates/client-win/`).                                                                      |
 | `CLIENT_WX_UPDATES_DIR`                                                      | Stockage persistant des artefacts natifs WX.                                                                                                             |
 | `CLIENT_WX_UPDATES_META_PATH`                                                | Chemin du manifeste WX courant.                                                                                                                          |
 | `CLIENT_WX_UPDATES_PUBLIC_URL`                                               | URL publique WX. Une URL HTTPS absolue est obligatoire en production (défaut local : `/updates/client-wx`).                                              |
-| `CLIENT_WX_MIN_VERSION`                                                      | Version WX minimale d'urgence, indépendante de ClickOnce.                                                                                                |
+| `CLIENT_WX_UPDATES_UPLOAD_TOKEN`                                             | Secret d'authentification des publications WX.                                                                                                           |
+| `CLIENT_WX_MIN_VERSION`                                                      | Version WX minimale d'urgence.                                                                                                                           |
 | `CLIENT_WX_MAX_ARTIFACT_BYTES`                                               | Taille maximale acceptée pour une archive WX (défaut : 2 Gio).                                                                                           |
 | `CLIENT_WX_SIGNATURE_PUBLIC_KEY_DER_BASE64`                                  | Clé publique RSA SPKI DER/base64 vérifiant chaque publication WX.                                                                                        |
 | `CLIENT_WX_SIGNATURE_PUBLIC_KEY_PEM` / `CLIENT_WX_SIGNATURE_PUBLIC_KEY_PATH` | Alternatives PEM à la clé DER. Une des trois formes est obligatoire en production.                                                                       |
@@ -104,19 +99,20 @@ NODE_ENV=production node dist/main
 
 ### Déploiement de production
 
-Le déploiement normal est local au serveur Linux et ne passe ni par Git ni par
-GitHub Actions. Depuis la racine du projet :
+Le déploiement normal crée une release isolée et adressée par le SHA-256 exact
+du snapshot source. Depuis la racine du projet :
 
 ```bash
 sudo updatecmd backend
 ```
 
-La commande crée un instantané cohérent des fichiers locaux, installe les
+La commande crée un instantané cohérent, installe les
 dépendances dans une release isolée, compile, teste, exécute les migrations,
 bascule atomiquement la release puis contrôle `/health/info`. En cas d'échec du
 redémarrage ou du contrôle de santé, elle restaure automatiquement la release
-précédente. Voir `tools/updatecmd/README.md` pour l'installation et les autres
-commandes.
+précédente. Le workflow de secours fournit explicitement son checkout par
+`--source`, ce qui empêche de déployer un état mutable laissé sur le runner.
+Voir `tools/updatecmd/README.md` pour l'installation et les autres commandes.
 
 ## Maintenance (admin)
 

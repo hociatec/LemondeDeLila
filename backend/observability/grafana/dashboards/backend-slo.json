@@ -1,0 +1,19 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "panels": [
+    { "id": 1, "title": "Disponibilité HTTP", "type": "timeseries", "targets": [{ "expr": "lila:slo:http_availability:ratio_rate5m", "legendFormat": "availability" }] },
+    { "id": 2, "title": "Latence HTTP p95", "type": "timeseries", "targets": [{ "expr": "lila:slo:http_latency_p95_seconds:rate5m", "legendFormat": "p95" }] },
+    { "id": 3, "title": "Erreurs WebSocket", "type": "timeseries", "targets": [{ "expr": "lila:slo:ws_error:ratio_rate5m", "legendFormat": "error ratio" }] },
+    { "id": 4, "title": "BullMQ", "type": "timeseries", "targets": [{ "expr": "sum by (state) (lila_bullmq_jobs)", "legendFormat": "{{state}}" }] },
+    { "id": 5, "title": "Dépendances", "type": "timeseries", "targets": [{ "expr": "lila_dependency_up", "legendFormat": "{{dependency}}" }] },
+    { "id": 6, "title": "Saturation", "type": "timeseries", "targets": [{ "expr": "lila_dependency_saturation_ratio", "legendFormat": "{{dependency}} / {{resource}}" }] }
+  ],
+  "schemaVersion": 39,
+  "tags": ["lila", "slo"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Le Monde de Lila — SLO backend",
+  "uid": "lila-backend-slo",
+  "version": 1
+}

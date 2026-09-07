@@ -11,10 +11,16 @@ export function projectPlayerValues(
   state: PlayerValuesKitState,
   viewerPlayerId: number | null,
   visibility: PlayerValuesVisibility = {},
+  playerIds: readonly number[] = [],
 ): PlayerValuesPlayerView {
-  const scores = projectNumericByPlayer(
+  const projectedScores = projectNumericByPlayer(
     state.scores,
     viewerPlayerId,
+    visibility.scores,
+  );
+  const scores = completePublicScores(
+    projectedScores,
+    playerIds,
     visibility.scores,
   );
   return {
@@ -37,6 +43,23 @@ export function projectPlayerValues(
       visibility.statuses,
     ),
   };
+}
+
+function completePublicScores(
+  scores: Record<string, number>,
+  playerIds: readonly number[],
+  visibility: VisibilityRule | undefined,
+): Record<string, number> {
+  if (
+    visibility?.kind === 'hidden' ||
+    (visibility?.kind === 'hidden-until' && !visibility.revealed) ||
+    visibility?.kind === 'private-by-player'
+  ) {
+    return scores;
+  }
+  const completed = { ...scores };
+  for (const playerId of playerIds) completed[String(playerId)] ??= 0;
+  return completed;
 }
 
 export function projectStatusesByPlayer(

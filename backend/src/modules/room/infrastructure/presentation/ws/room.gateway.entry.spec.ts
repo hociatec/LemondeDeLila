@@ -113,7 +113,7 @@ describe('RoomGateway lifecycle scenarios', () => {
     await gateway.handleRoomJoin(
       socket,
       meta,
-      { roomId: 10, silent: true },
+      { roomId: 10, hidden: true },
       Date.now(),
     );
 
@@ -168,7 +168,7 @@ describe('RoomGateway lifecycle scenarios', () => {
     await gateway.handleRoomJoin(
       socket,
       meta,
-      { roomId: 10, silent: true },
+      { roomId: 10, hidden: true },
       Date.now(),
     );
 

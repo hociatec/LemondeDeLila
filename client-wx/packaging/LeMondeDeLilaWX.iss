@@ -11,8 +11,11 @@ DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 OutputDir={#OutputDir}
 OutputBaseFilename={#OutputBaseFilename}
-Compression=lzma2
-SolidCompression=yes
+; Keep files individually inspectable by security products. Solid LZMA payloads
+; are smaller, but their high entropy and limited scan visibility cause more
+; heuristic false positives on low-prevalence installers.
+Compression=zip
+SolidCompression=no
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64

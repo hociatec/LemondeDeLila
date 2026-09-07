@@ -30,7 +30,6 @@ add_executable(lemonde_de_lila_wx_tests
     src/modules/chat/infrastructure/ChatProtocol.cpp
     src/modules/options/application/OptionsStore.cpp
     src/modules/options/infrastructure/OptionsJsonDocumentCodec.cpp
-    src/modules/options/infrastructure/OptionsJsonSchemaMigrator.cpp
     src/modules/options/infrastructure/OptionsStateJsonMapper.cpp
     src/modules/session/application/SessionStore.cpp
     src/modules/session/application/SessionStore.Refresh.cpp

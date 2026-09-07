@@ -42,7 +42,6 @@ class AppError;
 
 namespace lila::modules::gameplay::presentation::confirmation { class GameActionConfirmationPanel; }
 namespace lila::modules::gameplay::presentation::hand { class GameHandPanel; }
-namespace lila::modules::gameplay::presentation::dice { class GameDicePanel; }
 namespace lila::modules::gameplay::presentation::grid { class GameGridPanel; }
 namespace lila::modules::gameplay::presentation::movement { class GameMovementPanel; }
 namespace lila::modules::gameplay::presentation::resources { class GameResourcesPanel; }
@@ -110,7 +109,7 @@ private:
     void ActivateSelectedLine();
     bool ActivateSelectedPendingChoice();
     bool ActivateSelectedHandCard();
-    bool ActivateSelectedDie();
+    bool ActivateDiceRoll();
     bool ActivateSelectedGridCell();
     void SyncInlinePrompt();
     void ShowInlinePrompt(domain::GameAction action);
@@ -143,7 +142,6 @@ private:
     wxStaticText* pendingLabel_ = nullptr;
     wxScrolledWindow* contentPanel_ = nullptr;
     hand::GameHandPanel* handPanel_ = nullptr;
-    dice::GameDicePanel* dicePanel_ = nullptr;
     grid::GameGridPanel* gridPanel_ = nullptr;
     movement::GameMovementPanel* movementPanel_ = nullptr;
     resources::GameResourcesPanel* resourcesPanel_ = nullptr;

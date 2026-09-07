@@ -12,34 +12,6 @@ export function isImmediateAckAction(type: string | undefined): boolean {
   );
 }
 
-export function mapIntentToLegacyCommand(intentId: string): string {
-  switch (intentId) {
-    case 'room.leave':
-    case 'room.chat.send':
-    case 'room.chat.history':
-    case 'room.start':
-    case 'room.reset':
-    case 'room.set-role':
-    case 'room.kick':
-    case 'room.ban':
-    case 'room.set-owner':
-    case 'room.set-ambience':
-    case 'room.toggle-privacy':
-    case 'room.info':
-    case 'room.ping':
-    case 'bot.add':
-    case 'bot.remove':
-    case 'room.create':
-    case 'room.join':
-      return intentId;
-    case 'room.toggle-role':
-    case 'room.role.toggle':
-      return 'room.set-role';
-    default:
-      return '';
-  }
-}
-
 export function extractTraceMeta(
   payload: unknown,
   receivedAtMs: number,

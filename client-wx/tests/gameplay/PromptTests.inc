@@ -26,7 +26,7 @@ void TestServerDrivenPrompt()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     Expect(state.pending && state.pending->prompt, "Le formulaire serveur doit être décodé.");
     const auto& prompt = *state.pending->prompt;
     Expect(prompt.actionType == "configure", "Le formulaire doit cibler son action.");
@@ -123,7 +123,7 @@ void TestStaleSetupPromptIsIgnoredDuringRound()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     Expect(state.pending && state.pending->prompt,
         "Le client V2 doit conserver le formulaire projeté sans réinterpréter la phase.");
     Expect(state.pending.has_value(),
@@ -155,7 +155,7 @@ void TestPromptWithoutItsServerActionCannotReopen()
         }},
     };
 
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     Expect(state.pending && state.pending->prompt,
         "Le formulaire projeté doit rester descriptible même sans action disponible.");
     Expect(state.pending.has_value(),
@@ -174,7 +174,7 @@ void TestActionLabelsRemainDistinct()
             {{"type", "play"}, {"label", "Jouer"}, {"payload", {{"card", "7"}}}},
         })},
     };
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     const auto lines = lila::modules::gameplay::application::GameActionPresentationPolicy::GenericLines(state);
     Expect(lines.empty(),
         "Les actions serveur ne doivent jamais devenir une liste visible de secours.");

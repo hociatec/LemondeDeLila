@@ -176,6 +176,7 @@ describe('backend debt contracts', () => {
           label: 'Jetons',
           unit: { singular: 'jeton', plural: 'jetons' },
           changeNarration: 'delta-and-total',
+          visibility: 'active-match',
         },
       },
       setup: () => ({}),

@@ -1,5 +1,6 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
+#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
 
 namespace lila::modules::gameplay::presentation
@@ -53,6 +54,8 @@ void GamePlayPanel::SetRoomStarted(bool started)
         roomStartFlowRequested_ = false;
         roomStartPending_ = false;
         startConfigurationFlow_.Reset();
+        pawnSelectionPanel_->Apply(pawnSelection_);
+        SyncContentVisibility();
     }
     else if (becameSetup)
     {

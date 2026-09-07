@@ -63,7 +63,7 @@ describe('RoomGateway disconnect and command dispatch lifecycle', () => {
     expect(sent[0].payload.traceId).toBe('trace-1');
   });
 
-  it('legacy dispatcher routes room.start and room.create actions', async () => {
+  it('routes canonical room.start and room.create intents', async () => {
     const { gateway } = createGatewayFixture();
     const socket = createSocket();
     const meta = {
@@ -83,14 +83,14 @@ describe('RoomGateway disconnect and command dispatch lifecycle', () => {
       .spyOn(gateway, 'handleRoomCreate')
       .mockResolvedValue(undefined);
 
-    await gateway.executeLegacyRoomCommand(
+    await gateway.executeRoomCommand(
       socket,
       meta,
       'room.start',
       { foo: 'bar' },
       Date.now(),
     );
-    await gateway.executeLegacyRoomCommand(
+    await gateway.executeRoomCommand(
       socket,
       meta,
       'room.create',
@@ -102,7 +102,7 @@ describe('RoomGateway disconnect and command dispatch lifecycle', () => {
     expect(createSpy).toHaveBeenCalled();
   });
 
-  it('room.intent.execute maps alias room.toggle-role to room.set-role', async () => {
+  it('rejects obsolete intent aliases', async () => {
     const { gateway } = createGatewayFixture();
     const socket = createSocket();
     const meta = {
@@ -115,36 +115,13 @@ describe('RoomGateway disconnect and command dispatch lifecycle', () => {
       isAdmin: false,
     };
 
-    const execSpy = jest
-      .spyOn(gateway, 'executeLegacyRoomCommand')
-      .mockResolvedValue(undefined);
-    const ackSpy = jest
-      .spyOn(gateway, 'sendImmediateAckIfNeeded')
-      .mockImplementation(() => undefined);
-
-    await gateway.handleRoomIntentExecute(
-      socket,
-      meta,
-      {
-        intentId: 'room.toggle-role',
-        payload: { spectator: true },
-      },
-      Date.now(),
-    );
-
-    expect(ackSpy).toHaveBeenCalledWith(
-      socket,
-      meta,
-      'room.set-role',
-      expect.objectContaining({ spectator: true }),
-      expect.any(Number),
-    );
-    expect(execSpy).toHaveBeenCalledWith(
-      socket,
-      meta,
-      'room.set-role',
-      expect.objectContaining({ spectator: true }),
-      expect.any(Number),
-    );
+    await expect(
+      gateway.handleRoomIntentExecute(
+        socket,
+        meta,
+        { intentId: 'room.toggle-role', data: { spectator: true } },
+        Date.now(),
+      ),
+    ).rejects.toThrow('Intent inconnu: room.toggle-role');
   });
 });

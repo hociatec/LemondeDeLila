@@ -9,6 +9,7 @@ import { projectGameKits } from './game-kit-view';
 import { createGridKitState } from '../kits/grid-kit';
 import { createMovementKitState } from '../kits/movement-kit';
 import { createQuizKitState } from '../kits/quiz-kit';
+import { createPawnKitState, type PawnSetDefinition } from '../kits/pawn-kit';
 
 describe('projectGameKits', () => {
   it('reveals owner hands and redacts every other private hand', () => {
@@ -151,6 +152,30 @@ describe('projectGameKits', () => {
         rollKey: '4:0:main',
       },
     });
+  });
+
+  it('omits initial pawn positions from the player projection', () => {
+    const pawns = createPawnKitState();
+    pawns.positions.racers = { waiting: 0, running: 4 };
+    pawns.owners.racers = {};
+    pawns.assignments.racers = {};
+    const kits: EngineKitsState = { ...createKits(), pawns };
+    const definition = {
+      component: 'pawn.set',
+      id: 'racers',
+      perPlayer: 1,
+      pawns: [
+        { id: 'waiting', label: 'En attente' },
+        { id: 'running', label: 'En course' },
+      ],
+    } satisfies PawnSetDefinition;
+
+    expect(projectGameKits(kits, null, 0, [definition])).toMatchObject({
+      pawns: { sets: { racers: { positions: { running: 4 } } } },
+    });
+    expect(
+      projectGameKits(kits, null, 0, [definition]).pawns?.sets.racers.positions,
+    ).not.toHaveProperty('waiting');
   });
 });
 

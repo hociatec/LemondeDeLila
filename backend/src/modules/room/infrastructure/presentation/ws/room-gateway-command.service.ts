@@ -4,11 +4,7 @@ import {
   normalizeCorrelationId,
   runWithCorrelationId,
 } from '../../../../../platform/observability/public-api';
-import {
-  extractTraceMeta,
-  isImmediateAckAction,
-  mapIntentToLegacyCommand,
-} from './room-command.helpers';
+import { extractTraceMeta, isImmediateAckAction } from './room-command.helpers';
 import type { ClientMeta, IncomingPayload } from './room-gateway.types';
 import {
   RoomWsIntentIdRequiredError,
@@ -18,8 +14,7 @@ import {
 } from '../../../domain/errors/room-ws.errors';
 
 const MAX_ROOM_MESSAGE_BYTES = 65_536;
-const ROOM_COMMANDS = new Set([
-  'room.intent.execute',
+const ROOM_INTENTS = new Set([
   'room.leave',
   'room.chat.send',
   'room.chat.history',
@@ -49,7 +44,7 @@ type CommandContext = {
     payload: unknown,
     receivedAtMs: number,
   ) => void;
-  executeLegacyRoomCommand: (
+  executeRoomCommand: (
     client: WebSocket,
     meta: ClientMeta,
     type: string | undefined,
@@ -152,7 +147,7 @@ export class RoomGatewayCommandService {
       throw new RoomWsInvalidMessageError();
     }
     const type = parsed.type?.trim();
-    if (!type || !ROOM_COMMANDS.has(type)) {
+    if (type !== 'room.intent.execute') {
       throw new RoomWsUnknownCommandError(type ?? '');
     }
     return { type, payload: parsed.payload };
@@ -164,29 +159,16 @@ export class RoomGatewayCommandService {
     meta: ClientMeta,
     payload: IncomingPayload,
   ): Promise<void> {
-    const type = payload?.type;
     const data = payload?.payload ?? {};
     const receivedAtMs = Date.now();
     const trace = extractTraceMeta(ctx.asRecord(data), receivedAtMs);
     await runWithCorrelationId(
       normalizeCorrelationId(trace.traceId),
       async () => {
-        if (type === 'room.intent.execute') {
-          await this.handleRoomIntentExecute(
-            ctx,
-            client,
-            meta,
-            data,
-            receivedAtMs,
-          );
-          return;
-        }
-
-        ctx.sendImmediateAckIfNeeded(client, meta, type, data, receivedAtMs);
-        await ctx.executeLegacyRoomCommand(
+        await this.handleRoomIntentExecute(
+          ctx,
           client,
           meta,
-          type,
           data,
           receivedAtMs,
         );
@@ -203,51 +185,43 @@ export class RoomGatewayCommandService {
   ): Promise<void> {
     const envelope = ctx.asRecord(payload);
     const intentIdRaw =
-      typeof envelope.intentId === 'string'
-        ? envelope.intentId
-        : typeof envelope.action === 'string'
-          ? envelope.action
-          : typeof envelope.type === 'string'
-            ? envelope.type
-            : '';
+      typeof envelope.intentId === 'string' ? envelope.intentId : '';
     const intentId = intentIdRaw.trim().toLowerCase();
     if (intentId.length === 0) {
       throw new RoomWsIntentIdRequiredError();
     }
 
-    const legacyType = mapIntentToLegacyCommand(intentId);
-    if (!legacyType) {
+    if (!ROOM_INTENTS.has(intentId)) {
       throw new RoomWsUnknownIntentError(intentId);
     }
 
-    const payloadSource = Object.prototype.hasOwnProperty.call(envelope, 'data')
-      ? envelope.data
-      : envelope.payload;
-    const legacyPayload: Record<string, unknown> =
-      payloadSource != null && typeof payloadSource === 'object'
-        ? { ...(payloadSource as Record<string, unknown>) }
+    const commandPayload: Record<string, unknown> =
+      Object.prototype.hasOwnProperty.call(envelope, 'data') &&
+      envelope.data != null &&
+      typeof envelope.data === 'object'
+        ? { ...(envelope.data as Record<string, unknown>) }
         : {};
 
     if (
-      !Object.prototype.hasOwnProperty.call(legacyPayload, '_trace') &&
+      !Object.prototype.hasOwnProperty.call(commandPayload, '_trace') &&
       envelope._trace != null &&
       typeof envelope._trace === 'object'
     ) {
-      legacyPayload._trace = envelope._trace;
+      commandPayload._trace = envelope._trace;
     }
 
     ctx.sendImmediateAckIfNeeded(
       client,
       meta,
-      legacyType,
-      legacyPayload,
+      intentId,
+      commandPayload,
       receivedAtMs,
     );
-    await ctx.executeLegacyRoomCommand(
+    await ctx.executeRoomCommand(
       client,
       meta,
-      legacyType,
-      legacyPayload,
+      intentId,
+      commandPayload,
       receivedAtMs,
     );
   }
@@ -277,7 +251,7 @@ export class RoomGatewayCommandService {
     });
   }
 
-  async executeLegacyRoomCommand(
+  async executeRoomCommand(
     ctx: CommandContext,
     client: WebSocket,
     meta: ClientMeta,

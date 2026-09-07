@@ -16,6 +16,7 @@ public:
     static void SetAccessibleStatus(wxWindow& control, const wxString& message);
     static void AnnounceStatus(wxWindow& control, const wxString& message);
     static void AnnounceLiveRegion(wxWindow& control, const wxString& message);
+    static void NotifyFocus(wxWindow& control);
     static void SetAccessibleName(wxWindow& control, const wxString& name, const wxString& description = wxString());
 };
 }

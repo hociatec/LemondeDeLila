@@ -203,8 +203,7 @@ export function createGatewayFixture(): GatewayFixture {
     asRecord,
     sendImmediateAckIfNeeded: (...args: any[]) =>
       gateway.sendImmediateAckIfNeeded(...args),
-    executeLegacyRoomCommand: (...args: any[]) =>
-      gateway.executeLegacyRoomCommand(...args),
+    executeRoomCommand: (...args: any[]) => gateway.executeRoomCommand(...args),
     handleRoomLeave: jest.fn().mockResolvedValue(undefined),
     handleChatSend: jest.fn().mockResolvedValue(undefined),
     handleChatHistory: jest.fn().mockResolvedValue(undefined),
@@ -238,8 +237,8 @@ export function createGatewayFixture(): GatewayFixture {
     presence.scheduleDelayedParticipantLeave(presenceContext(), roomId, userId);
   gateway.sendImmediateAckIfNeeded = (...args: any[]) =>
     commands.sendImmediateAckIfNeeded(commandContext(), ...args);
-  gateway.executeLegacyRoomCommand = (...args: any[]) =>
-    commands.executeLegacyRoomCommand(commandContext(), ...args);
+  gateway.executeRoomCommand = (...args: any[]) =>
+    commands.executeRoomCommand(commandContext(), ...args);
   gateway.handleRoomIntentExecute = (...args: any[]) =>
     commands.handleRoomIntentExecute(commandContext(), ...args);
 

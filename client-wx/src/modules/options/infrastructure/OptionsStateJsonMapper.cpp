@@ -10,22 +10,22 @@
 
 namespace lila::modules::options::infrastructure::json
 {
-domain::OptionsState ParseStateFromDocument(const nlohmann::json& migrated)
+domain::OptionsState ParseStateFromDocument(const nlohmann::json& document)
 {
     const auto& general = lila::shared::data::json::ReadRequiredObjectStrict(
-        migrated,
+        document,
         keys::General.data(),
         lila::shared::errors::InvalidOptionsFile);
     const auto& audio = lila::shared::data::json::ReadRequiredObjectStrict(
-        migrated,
+        document,
         keys::Audio.data(),
         lila::shared::errors::InvalidOptionsFile);
     const auto& chat = lila::shared::data::json::ReadRequiredObjectStrict(
-        migrated,
+        document,
         keys::Chat.data(),
         lila::shared::errors::InvalidOptionsFile);
     const auto& internal = lila::shared::data::json::ReadRequiredObjectStrict(
-        migrated,
+        document,
         keys::Internal.data(),
         lila::shared::errors::InvalidOptionsFile);
     const auto& admin = lila::shared::data::json::ReadRequiredObjectStrict(
@@ -33,13 +33,13 @@ domain::OptionsState ParseStateFromDocument(const nlohmann::json& migrated)
         keys::Admin.data(),
         lila::shared::errors::InvalidOptionsFile);
     const auto& runtime = lila::shared::data::json::ReadRequiredObjectStrict(
-        migrated,
+        document,
         keys::Runtime.data(),
         lila::shared::errors::InvalidOptionsFile);
 
     domain::OptionsState state;
     state.schemaVersion = lila::shared::data::json::ReadOptionalInteger(
-        migrated,
+        document,
         keys::SchemaVersion.data(),
         domain::OptionsState::SchemaVersion);
 
@@ -155,11 +155,8 @@ nlohmann::json BuildStateDocument(const domain::OptionsState& state)
 
     if (state.runtime.currentVersion.has_value())
     {
-        document[std::string(keys::CurrentVersion)] = *state.runtime.currentVersion;
         document[std::string(keys::Runtime)][std::string(keys::CurrentVersion)] = *state.runtime.currentVersion;
     }
-
-    document[std::string(keys::Admin)] = document.at(std::string(keys::Internal)).at(std::string(keys::Admin));
     return document;
 }
 }

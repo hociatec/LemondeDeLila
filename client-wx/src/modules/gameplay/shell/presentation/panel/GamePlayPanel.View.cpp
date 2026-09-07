@@ -7,7 +7,6 @@
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/information/presentation/GameInfoTextBuilder.h"
@@ -78,7 +77,6 @@ void GamePlayPanel::ClearView()
     choicesList_->Hide();
     orderingChoices_->Hide();
     handPanel_->ClearHand();
-    dicePanel_->Clear();
     gridPanel_->Clear();
     movementPanel_->Clear();
     resourcesPanel_->Clear();

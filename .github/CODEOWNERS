@@ -1,0 +1,9 @@
+# Security-sensitive backend boundaries
+/backend/src/platform/auth/ @hociatec
+/backend/src/platform/config/ @hociatec
+/backend/src/platform/ws/ @hociatec
+/backend/src/modules/admin/ @hociatec
+/backend/src/platform/database/migrations/ @hociatec
+/backend/tools/systemd/ @hociatec
+/.github/workflows/ @hociatec
+/.github/CODEOWNERS @hociatec

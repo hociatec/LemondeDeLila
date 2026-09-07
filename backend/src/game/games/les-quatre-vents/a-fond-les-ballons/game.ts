@@ -17,7 +17,7 @@ import {
   A_FOND_LES_BALLONS_ACTIONS,
   A_FOND_LES_BALLONS_EFFECTS,
   A_FOND_LES_BALLONS_PHASES,
-  requestPawn,
+  requestPawns,
   resolvePawn,
 } from './rules';
 import type { NoGameState as AFondLesBallonsState } from '../../../engine/sdk/public-api';
@@ -60,8 +60,10 @@ export default defineGame<AFondLesBallonsState>()({
   initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
   setup: ({ ctx }) => {
-    const starterId = ctx.round.starter();
-    if (starterId != null) requestPawn(starterId, ctx);
+    requestPawns(
+      ctx.players.all().map((player) => player.id),
+      ctx,
+    );
     return {};
   },
   initialPhase: A_FOND_LES_BALLONS_PHASES.initialPhase,

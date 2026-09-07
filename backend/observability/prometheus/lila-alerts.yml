@@ -1,0 +1,39 @@
+groups:
+  - name: lila-production-alerts
+    rules:
+      - alert: LilaHttpAvailabilityBudgetBurn
+        expr: lila:slo:http_availability:ratio_rate5m < 0.995
+        for: 10m
+        labels: { severity: critical, service: le-monde-de-lila }
+        annotations:
+          summary: Disponibilité HTTP sous le SLO de 99,5 %
+      - alert: LilaHttpLatencyHigh
+        expr: lila:slo:http_latency_p95_seconds:rate5m > 0.5
+        for: 15m
+        labels: { severity: warning, service: le-monde-de-lila }
+        annotations:
+          summary: Latence HTTP p95 supérieure à 500 ms
+      - alert: LilaWebSocketErrorsHigh
+        expr: lila:slo:ws_error:ratio_rate5m > 0.01
+        for: 10m
+        labels: { severity: critical, service: le-monde-de-lila }
+        annotations:
+          summary: Plus de 1 % des commandes WebSocket échouent
+      - alert: LilaBullmqBacklog
+        expr: sum(lila_bullmq_jobs{state=~"waiting|delayed"}) > 100
+        for: 15m
+        labels: { severity: warning, service: le-monde-de-lila }
+        annotations:
+          summary: File BullMQ durablement saturée
+      - alert: LilaDependencyUnavailable
+        expr: min by (dependency) (lila_dependency_up) == 0
+        for: 5m
+        labels: { severity: critical, service: le-monde-de-lila }
+        annotations:
+          summary: Dépendance backend indisponible
+      - alert: LilaDependencySaturated
+        expr: max by (dependency, resource) (lila_dependency_saturation_ratio) > 0.85
+        for: 15m
+        labels: { severity: warning, service: le-monde-de-lila }
+        annotations:
+          summary: Ressource DB, Redis ou BullMQ saturée

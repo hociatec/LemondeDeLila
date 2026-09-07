@@ -8,7 +8,7 @@ wx_api() {
     --retry 4 --retry-all-errors --retry-delay 2 \
     --connect-timeout 10 --max-time 300 \
     -X "$method" \
-    -H "x-client-updates-upload-token: $WX_UPLOAD_TOKEN" \
+    -H "x-client-wx-updates-upload-token: $WX_UPLOAD_TOKEN" \
     "$@" "${WX_API_BASE%/}$path"
 }
 
@@ -22,6 +22,31 @@ ensure_wx_mingw_wrapper_compatibility() {
   fi
   grep -Fqx 'if(WIN32 AND NOT MINGW)' "$wrapper" \
     || die "Le wrapper wxWidgets installé n'est pas compatible avec MinGW."
+}
+
+ensure_wx_native_dependencies() {
+  local miniz_config="$WX_VCPKG_ROOT/installed/$WX_VCPKG_TRIPLET/share/miniz/minizConfig.cmake"
+  local overlay_root="$CACHE_ROOT/vcpkg-overlays"
+
+  log "Installation de la dépendance native miniz du lanceur WX."
+  mkdir -p "$overlay_root/miniz"
+  rsync -a --delete "$SOURCE_ROOT/tools/updatecmd/vcpkg-overlays/miniz/" \
+    "$overlay_root/miniz/"
+  chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$overlay_root/miniz"
+  if [[ -f "$WX_VCPKG_ROOT/installed/$WX_VCPKG_TRIPLET/bin/libminiz.dll" ]]; then
+    log "Migration de miniz dynamique vers la variante statique du lanceur."
+    run_as "$BUILD_USER" "$WX_VCPKG_ROOT/vcpkg" remove \
+      "miniz:$WX_VCPKG_TRIPLET"
+  fi
+  run_as "$BUILD_USER" env \
+    VCPKG_DEFAULT_BINARY_CACHE="$WX_BINARY_CACHE" \
+    VCPKG_BINARY_SOURCES="clear;files,$WX_BINARY_CACHE,readwrite" \
+    VCPKG_FEATURE_FLAGS=binarycaching \
+    "$WX_VCPKG_ROOT/vcpkg" install miniz \
+      --triplet "$WX_VCPKG_TRIPLET" --host-triplet x64-linux \
+      --overlay-ports "$overlay_root" \
+      --overlay-triplets "$SOURCE_ROOT/client-wx/cmake/vcpkg-triplets"
+  require_nonempty_file "$miniz_config" "Configuration CMake miniz absente après installation"
 }
 
 resolve_wx_release() {
@@ -85,9 +110,6 @@ configure_and_build_wx() {
   mkdir -p "$source_dir" "$WX_BUILD_DIR" "$WX_BINARY_CACHE"
   rsync -a --delete "$SNAPSHOT_DIR/client-wx/" "$source_dir/client-wx/"
   rsync -a --delete "$SNAPSHOT_DIR/backend/" "$source_dir/backend/"
-  if [[ -d "$SNAPSHOT_DIR/client-win" ]]; then
-    rsync -a --delete "$SNAPSHOT_DIR/client-win/" "$source_dir/client-win/"
-  fi
   chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$source_dir" "$WX_BUILD_DIR" "$WX_BINARY_CACHE"
 
   log "Configuration MinGW du client WX $WX_VERSION (cache persistant activé)."
@@ -409,6 +431,7 @@ build_and_publish_wx() {
   require_nonempty_file "$WX_BASS_ROOT/bass.dll" "Runtime BASS absent"
   require_nonempty_file "$WX_BASS_ROOT/libbass.dll.a" "Bibliothèque d'import BASS MinGW absente"
   ensure_wx_mingw_wrapper_compatibility
+  ensure_wx_native_dependencies
 
   WX_UPLOAD_TOKEN="$(tr -d '\r\n' <"$WX_UPLOAD_TOKEN_FILE")"
   [[ -n "$WX_UPLOAD_TOKEN" ]] || die "Token WX vide."

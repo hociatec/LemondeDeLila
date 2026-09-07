@@ -80,7 +80,7 @@ int main()
         "room.ban", "Le bannissement doit utiliser le nom backend exact.");
     Expect(infrastructure::command_protocol::Type(domain::RoomCommand::SetOwner) ==
         "room.set-owner", "Le transfert doit utiliser le nom backend exact.");
-    const std::string raw = R"({"type":"rooms.invite.received","payload":{"invitationId":"inv-7","room":{"id":42,"name":"Table test"},"from":{"id":3,"username":"Lila"}}})";
+    const std::string raw = R"({"type":"room.lobby.invite.received","payload":{"invitationId":"inv-7","room":{"id":42,"name":"Table test"},"from":{"id":3,"username":"Lila"}}})";
     const auto invitation = infrastructure::ReadRoomInvitationMessage(raw);
     Expect(invitation && invitation->invitationId == "inv-7" && invitation->roomId == 42 &&
         invitation->fromUsername == "Lila", "L'invitation notify doit être décodée exactement.");

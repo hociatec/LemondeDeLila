@@ -120,6 +120,22 @@ export class GameChoiceController {
     });
   }
 
+  pawnsForPlayers(
+    options: Omit<ChoiceOptions<string>, 'player'> & {
+      players: readonly number[];
+    },
+  ): void {
+    const playerIds = [...new Set(options.players)];
+    if (playerIds.length === 0) {
+      throw new GameConfigurationError(
+        'Un choix collectif de pion requiert des joueurs',
+      );
+    }
+    this.create('pawn', { ...options, player: playerIds[0] }, 1, 1, {
+      playerIds,
+    });
+  }
+
   sequence<TValue>(options: {
     id: string;
     players: readonly number[];
@@ -153,6 +169,22 @@ export class GameChoiceController {
 
   current(): PendingState | null {
     return this.getPending() ?? null;
+  }
+
+  replaceOptions<TValue>(
+    options: readonly TValue[],
+    label?: (value: TValue) => string,
+  ): void {
+    const pending = this.current();
+    if (!pending) {
+      throw new GameStateViolationError('Aucun choix à actualiser');
+    }
+    pending.choices = options.map((value) => label?.(value) ?? String(value));
+    pending.data = {
+      ...structuredClone(pending.data ?? {}),
+      options: structuredClone([...options]),
+    };
+    this.setPending(pending);
   }
 
   continuation<TData extends object>(): TData | null {

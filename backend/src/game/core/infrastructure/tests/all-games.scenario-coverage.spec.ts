@@ -330,7 +330,9 @@ function collectCandidates(
       typeof state.turn?.currentPlayerId === 'number'
         ? state.turn.currentPlayerId
         : null,
-    started: String(state.status ?? '').toLowerCase() === 'started',
+    started: ['started', 'playing'].includes(
+      String(state.status ?? '').toLowerCase(),
+    ),
   });
   for (const hint of Array.isArray(shortcuts) ? shortcuts : []) {
     const shortcut = asShortcut(hint);

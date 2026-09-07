@@ -35,14 +35,14 @@ describe('SoundsService table ambiences', () => {
     return { service, notifications };
   }
 
-  it('defaults legacy entries to enabled=true and filters disabled in public list', async () => {
+  it('rejects entries without enabled and filters disabled in public list', async () => {
     const tableAmbiencesPath = path.join(tempRoot, 'table-ambiences.json');
     fs.writeFileSync(
       tableAmbiencesPath,
       JSON.stringify({
         updatedAt: '2026-03-01T00:00:00.000Z',
         items: [
-          { soundId: 'TableAmbience1', name: 'Ambiance legacy sans flag' },
+          { soundId: 'TableAmbience1', name: 'Ambiance sans flag' },
           {
             soundId: 'TableAmbience2',
             name: 'Ambiance inactive',
@@ -60,11 +60,6 @@ describe('SoundsService table ambiences', () => {
     });
     expect(all.items).toEqual([
       {
-        soundId: 'TableAmbience1',
-        name: 'Ambiance legacy sans flag',
-        enabled: true,
-      },
-      {
         soundId: 'TableAmbience2',
         name: 'Ambiance inactive',
         enabled: false,
@@ -72,13 +67,7 @@ describe('SoundsService table ambiences', () => {
     ]);
 
     const publicList = await service.listTableAmbiencesWithFilter();
-    expect(publicList.items).toEqual([
-      {
-        soundId: 'TableAmbience1',
-        name: 'Ambiance legacy sans flag',
-        enabled: true,
-      },
-    ]);
+    expect(publicList.items).toEqual([]);
   });
 
   it('keeps enabled flag when renaming and allows enable/disable toggles', async () => {

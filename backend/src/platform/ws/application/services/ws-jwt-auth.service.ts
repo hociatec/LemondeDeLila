@@ -11,10 +11,7 @@ import {
   WS_RUNTIME_CONFIG,
   type WsRuntimeConfig,
 } from '../ports/ws-runtime-config.port';
-import {
-  getJwtVerifyAlgorithms,
-  requireJwtVerifyKey,
-} from '../../../auth/public-api';
+import { requireJwtVerifyKey } from '../../../auth/public-api';
 
 export type WsRequestLike = IncomingMessage & {
   url?: string;
@@ -46,64 +43,26 @@ export class WsJwtAuthService {
   extractToken(client: WsClientLike, args: unknown[]): string | null {
     const firstArg = args[0];
     const request = this.resolveRequest(client, firstArg);
-    const urlCandidate = this.pickUrl(client, request);
-    const headerToken =
+    return (
       this.extractBearer(client.handshakeHeaders) ||
-      this.extractBearer(request?.headers);
-    if (headerToken) {
-      return headerToken;
-    }
-    return this.extractQueryToken(urlCandidate);
+      this.extractBearer(request?.headers)
+    );
   }
 
   extractClientVersion(client: WsClientLike, args: unknown[]): string | null {
     const firstArg = args[0];
     const request = this.resolveRequest(client, firstArg);
-    const urlCandidate = this.pickUrl(client, request);
     const headers = client.handshakeHeaders ?? request?.headers;
-    const headerVersion =
-      this.readHeader(headers, 'x-lila-client-version') ??
-      this.readHeader(headers, 'X-Lila-Client-Version');
-    if (headerVersion) {
-      return headerVersion;
-    }
-
-    if (urlCandidate) {
-      try {
-        const url = new URL(urlCandidate, 'ws://localhost');
-        const fromQuery =
-          url.searchParams.get('v') ??
-          url.searchParams.get('version') ??
-          url.searchParams.get('clientVersion') ??
-          '';
-        const trimmed = fromQuery.trim();
-        return trimmed || null;
-      } catch {
-        return null;
-      }
-    }
-
-    return null;
+    return this.readHeader(headers, 'x-lila-client-version');
   }
 
   extractClientProduct(client: WsClientLike, args: unknown[]): string | null {
     const firstArg = args[0];
     const request = this.resolveRequest(client, firstArg);
     const headers = client.handshakeHeaders ?? request?.headers;
-    const value = this.readHeader(headers, 'x-lila-client-product');
-    if (value) return value.toLowerCase();
-
-    const urlCandidate = this.pickUrl(client, request);
-    if (!urlCandidate) return null;
-    try {
-      const url = new URL(urlCandidate, 'ws://localhost');
-      return (
-        (url.searchParams.get('clientProduct') || '').trim().toLowerCase() ||
-        null
-      );
-    } catch {
-      return null;
-    }
+    return (
+      this.readHeader(headers, 'x-lila-client-product')?.toLowerCase() ?? null
+    );
   }
 
   verify(token: string): WsAuthPayload {
@@ -113,7 +72,7 @@ export class WsJwtAuthService {
     const clockTolerance = this.config.jwtClockToleranceSeconds;
     try {
       const verifyOptions: JwtVerifyOptions = {
-        algorithms: getJwtVerifyAlgorithms(this.config),
+        algorithms: ['RS256'],
         issuer,
         clockTolerance,
         ...(audience ? { audience } : {}),
@@ -124,13 +83,21 @@ export class WsJwtAuthService {
       }
       const record = WsJwtAuthService.toRecord(payload);
       const sub = WsJwtAuthService.getTrimmedString(record, 'sub');
+      const username = WsJwtAuthService.getTrimmedString(record, 'username');
       const id = WsJwtAuthService.getNumber(record, 'id');
       const exp = WsJwtAuthService.getNumber(record, 'exp');
       const iat = WsJwtAuthService.getNumber(record, 'iat');
-      if (!sub || id == null || exp == null || iat == null) {
+      if (!sub || !username || id == null || exp == null || iat == null) {
         throw new UnauthorizedException('Token invalide');
       }
-      return WsJwtAuthService.buildVerifiedPayload(record, id, sub, exp, iat);
+      return WsJwtAuthService.buildVerifiedPayload(
+        record,
+        id,
+        username,
+        sub,
+        exp,
+        iat,
+      );
     } catch {
       throw new UnauthorizedException('Token invalide');
     }
@@ -155,17 +122,6 @@ export class WsJwtAuthService {
     return client.upgradeReq ?? client.req ?? null;
   }
 
-  private pickUrl(
-    client: WsClientLike,
-    request: WsRequestLike | null,
-  ): string | null {
-    const raw =
-      (typeof client.url === 'string' ? client.url : '') ||
-      (typeof request?.url === 'string' ? request.url : '');
-    const trimmed = raw.trim();
-    return trimmed || null;
-  }
-
   private readHeader(
     headers: IncomingHttpHeaders | undefined,
     key: string,
@@ -180,9 +136,7 @@ export class WsJwtAuthService {
     headers: IncomingHttpHeaders | undefined,
   ): string | null {
     if (!headers) return null;
-    const authHeader =
-      this.readHeader(headers, 'authorization') ??
-      this.readHeader(headers, 'Authorization');
+    const authHeader = this.readHeader(headers, 'authorization');
     if (!authHeader) return null;
     const parts = authHeader.split(' ');
     if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
@@ -198,18 +152,6 @@ export class WsJwtAuthService {
     const value = Array.isArray(raw) ? raw[0] : raw;
     if (typeof value !== 'string') return null;
     return value.trim() || null;
-  }
-
-  private extractQueryToken(urlCandidate: string | null): string | null {
-    if (!urlCandidate) {
-      return null;
-    }
-    try {
-      const url = new URL(urlCandidate, 'ws://localhost');
-      return url.searchParams.get('token');
-    } catch {
-      return null;
-    }
   }
 
   private static toRecord(value: unknown): Record<string, unknown> {
@@ -262,13 +204,14 @@ export class WsJwtAuthService {
   private static buildVerifiedPayload(
     record: Record<string, unknown>,
     id: number,
+    username: string,
     sub: string,
     exp: number,
     iat: number,
   ): VerifiedWsPayload {
     return {
       id,
-      username: WsJwtAuthService.getTrimmedString(record, 'username') || sub,
+      username,
       email: WsJwtAuthService.getOptionalString(record, 'email'),
       roles: WsJwtAuthService.getStringArray(record, 'roles'),
       sub,

@@ -2,42 +2,14 @@
 
 namespace lila::modules::gameplay::application::dice
 {
-namespace
-{
-std::optional<std::size_t> ValidIndex(
-    const std::vector<domain::GameAction>& actions,
-    std::optional<std::size_t> index)
-{
-    if (!index.has_value() || *index >= actions.size() || actions[*index].disabled)
-        return std::nullopt;
-    return index;
-}
-
-}
-
-std::optional<std::size_t> GameDiceActionResolver::ResolveIndex(
-    const domain::GameDiceState& dice,
-    const std::vector<domain::GameAction>& actions,
-    std::size_t selectedDie)
-{
-    if (selectedDie < dice.dice.size())
-    {
-        const auto& die = dice.dice[selectedDie];
-        if (die.disabled) return std::nullopt;
-        if (auto index = ValidIndex(actions, die.actionIndex)) return index;
-    }
-    return ValidIndex(actions, dice.rollActionIndex);
-}
-
 std::optional<domain::GameAction> GameDiceActionResolver::Resolve(
     const domain::GameDiceState& dice,
-    const std::vector<domain::GameAction>& actions,
-    std::size_t selectedDie)
+    const std::vector<domain::GameAction>& actions)
 {
-    const auto index = ResolveIndex(dice, actions, selectedDie);
-    return index.has_value()
-        ? std::optional<domain::GameAction>(actions[*index])
-        : std::nullopt;
+    if (!dice.rollActionIndex.has_value() || *dice.rollActionIndex >= actions.size())
+        return std::nullopt;
+    const auto& action = actions[*dice.rollActionIndex];
+    return action.disabled ? std::nullopt : std::optional<domain::GameAction>(action);
 }
 
 }

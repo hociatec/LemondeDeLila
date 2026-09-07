@@ -33,7 +33,7 @@ std::optional<std::string> BuildValueCapabilityText(
         {
             out << Player(state, entry.playerId) << " : ";
             Amount(out, entry.score);
-            out << ' ' << state.kits.score->unit << '\n';
+            out << ' ' << state.kits.score->UnitFor(entry.score) << '\n';
         }
         return out.str();
     }

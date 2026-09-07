@@ -27,7 +27,7 @@ void TestOpaqueServerDrivenHandAndShortcuts()
         }},
     };
 
-    const auto state = GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     const auto play = GameCardActionResolver::Resolve(state.kits.VisibleHand(), state.actions, 0);
     Expect(play.has_value() && play->type == "opaque_play" &&
             play->payload.at("value") == 2,
@@ -76,7 +76,7 @@ void TestSpecializedActionsAreNotDuplicated()
         }},
     };
 
-    const auto state = GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     const auto lines = GameActionPresentationPolicy::GenericLines(state);
     Expect(lines.empty(),
         "Aucune action ne doit etre affichee en dehors de son controle ou raccourci serveur.");
@@ -107,7 +107,7 @@ void TestUnmappedSpecializedActionsRemainGeneric()
         }},
     };
 
-    const auto state = GameStatePayloadCodec::DecodeState(V2Payload(payload));
+    const auto state = GameStatePayloadCodec::DecodeState(BuildGameView(payload));
     const auto lines = GameActionPresentationPolicy::GenericLines(state);
     Expect(lines.empty(),
         "Une action sans liaison explicite ne doit pas produire de fallback visuel.");

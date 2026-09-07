@@ -89,6 +89,7 @@ export type GameRuntimeDescriptor = {
       label: string;
       unit: { singular: string; plural: string };
       changeNarration?: 'total' | 'delta-and-total';
+      visibility?: 'always' | 'active-match';
     };
   };
   actions: Array<{

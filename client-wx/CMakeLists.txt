@@ -93,6 +93,10 @@ find_package(wxWidgets CONFIG REQUIRED COMPONENTS core base)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
+if(WIN32)
+    find_package(miniz CONFIG REQUIRED)
+endif()
+
 configure_file(
     src/shared/config/generated/AppBuildInfo.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/generated/AppBuildInfo.h
@@ -137,20 +141,6 @@ if(WIN32)
         "${CMAKE_CURRENT_BINARY_DIR}/bass.dll"
         COPYONLY
     )
-    set(
-        LILA_NVDA_CONTROLLER_DLL
-        "${CMAKE_CURRENT_SOURCE_DIR}/../client-win/client-win/libs/x64/nvdaControllerClient64.dll"
-        CACHE FILEPATH
-        "DLL NVDA 64 bits facultative utilisee pour les annonces accessibles"
-    )
-    if(EXISTS "${LILA_NVDA_CONTROLLER_DLL}")
-        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/libs/x64")
-        configure_file(
-            "${LILA_NVDA_CONTROLLER_DLL}"
-            "${CMAKE_CURRENT_BINARY_DIR}/libs/x64/nvdaControllerClient64.dll"
-            COPYONLY
-        )
-    endif()
 endif()
 
 set(
@@ -264,6 +254,7 @@ if(WIN32)
         src/modules/update/infrastructure/launcher/UpdateLauncher.Runtime.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Security.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.State.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Zip.cpp
         src/modules/update/domain/UpdateProtocol.cpp
         src/modules/update/domain/UpdateTrustPolicy.cpp
     )
@@ -273,6 +264,7 @@ if(WIN32)
     )
     target_link_libraries(lila_launcher PRIVATE
         nlohmann_json::nlohmann_json
+        miniz::miniz
         winhttp
         bcrypt
         crypt32

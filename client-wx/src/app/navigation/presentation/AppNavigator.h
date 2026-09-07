@@ -73,6 +73,7 @@ private:
     void ReplaceView(domain::ViewId nextViewId, wxWindow* nextView);
     void OnLoginSucceeded(const lila::modules::user::domain::AuthenticationResult& result);
     void OnLogoutRequested(std::size_t selectedIndex);
+    void OnSessionExpired();
     void ResetView(domain::ViewId viewId);
     void ResetSessionViews();
     void ApplyViewFocus(wxWindow* view);

@@ -4,13 +4,6 @@ import { AdminBugReportCommentsService } from '../application/use-cases/admin-bu
 import { AdminBugReportsService } from '../application/use-cases/admin-bug-reports/admin-bug-reports.service';
 import { AdminChatModerationService } from '../application/use-cases/admin-chat/admin-chat-moderation.service';
 import { AdminChatService } from '../application/use-cases/admin-chat/admin-chat.service';
-import { AdminClientUpdateAnnounceService } from '../application/use-cases/admin-client-updates/admin-client-update-announce.service';
-import { AdminClientUpdateForceLatestService } from '../application/use-cases/admin-client-updates/admin-client-update-force-latest.service';
-import { AdminClientUpdateSchedulePlannerService } from '../application/use-cases/admin-client-updates/admin-client-update-schedule-planner.service';
-import { AdminClientUpdateSchedulerDispatchService } from '../application/use-cases/admin-client-updates/admin-client-update-scheduler-dispatch.service';
-import { AdminClientUpdateSchedulerService } from '../application/use-cases/admin-client-updates/admin-client-update-scheduler.service';
-import { AdminClientUpdatesDispatchService } from '../application/use-cases/admin-client-updates/admin-client-updates-dispatch.service';
-import { AdminClientUpdatesSharedService } from '../application/use-cases/admin-client-updates/admin-client-updates-shared.service';
 import { AdminDaemonReloadService } from '../application/use-cases/admin-maintenance/admin-daemon-reload.service';
 import { AdminDryRunBuildService } from '../application/use-cases/admin-maintenance/admin-dry-run-build.service';
 import { AdminRunMigrationsService } from '../application/use-cases/admin-maintenance/admin-run-migrations.service';
@@ -64,13 +57,6 @@ export const ADMIN_USE_CASE_PROVIDERS = [
   GetAdminDeployStatusService,
   GetAdminBackendServiceStatusService,
   GetAdminDeployLogsService,
-  AdminClientUpdatesSharedService,
-  AdminClientUpdateAnnounceService,
-  AdminClientUpdateForceLatestService,
-  AdminClientUpdateSchedulePlannerService,
-  AdminClientUpdateSchedulerDispatchService,
-  AdminClientUpdateSchedulerService,
-  AdminClientUpdatesDispatchService,
   AdminGameCategoriesService,
   AdminGamesManagementService,
   AdminGameOverridesService,

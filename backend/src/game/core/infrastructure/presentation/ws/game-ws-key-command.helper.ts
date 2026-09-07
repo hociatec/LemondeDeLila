@@ -22,9 +22,10 @@ export function resolveGameLifecycleOperation(
 ): 'reset' | 'start' | null {
   const key = normalizeGameKey(rawKey);
   const status = stringValue(rawStatus).toLowerCase();
-  if (key === 'X' && (status === 'started' || status === 'finished'))
-    return 'reset';
-  if (key === 'ENTER' && status !== 'started') return 'start';
+  const active = status === 'started' || status === 'playing';
+  if (key === 'X' && (active || status === 'finished')) return 'reset';
+  if (key === 'ENTER' && status === 'finished') return 'reset';
+  if (key === 'ENTER' && !active) return 'start';
   return null;
 }
 

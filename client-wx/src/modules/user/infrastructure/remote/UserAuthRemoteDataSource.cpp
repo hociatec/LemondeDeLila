@@ -30,11 +30,12 @@ shared::network::realtime::RealtimeApiResponse UserAuthRemoteDataSource::Login(
     const std::string& password) const
 {
     return client_.Send({
-        .type = std::string(lila::shared::network::ws::types::auth::Login),
-        .payload = {
+        std::string(lila::shared::network::ws::types::auth::Login),
+        {
             {std::string(lila::modules::user::infrastructure::remote::fields::Username), username},
             {std::string(lila::modules::user::infrastructure::remote::fields::Password), password}
         },
+        std::string(lila::shared::network::ws::types::auth::LoginOk),
     });
 }
 
@@ -43,10 +44,11 @@ shared::network::realtime::RealtimeApiResponse UserAuthRemoteDataSource::Refresh
     std::stop_token stopToken) const
 {
     return client_.Send({
-        .type = std::string(lila::shared::network::ws::types::auth::Refresh),
-        .payload = {
+        std::string(lila::shared::network::ws::types::auth::Refresh),
+        {
             {std::string(lila::modules::user::infrastructure::remote::fields::RefreshToken), refreshToken}
         },
+        std::string(lila::shared::network::ws::types::auth::RefreshOk),
     }, stopToken);
 }
 
@@ -55,10 +57,11 @@ shared::network::realtime::RealtimeApiResponse UserAuthRemoteDataSource::Logout(
     std::stop_token stopToken) const
 {
     return client_.Send({
-        .type = std::string(lila::shared::network::ws::types::auth::Logout),
-        .payload = {
+        std::string(lila::shared::network::ws::types::auth::Logout),
+        {
             {std::string(lila::modules::user::infrastructure::remote::fields::RefreshToken), refreshToken}
         },
+        std::string(lila::shared::network::ws::types::auth::LogoutOk),
     }, stopToken);
 }
 
@@ -68,12 +71,13 @@ shared::network::realtime::RealtimeApiResponse UserAuthRemoteDataSource::Registe
     const std::string& password) const
 {
     return client_.Send({
-        .type = std::string(lila::shared::network::ws::types::auth::Register),
-        .payload = {
+        std::string(lila::shared::network::ws::types::auth::Register),
+        {
             {std::string(lila::modules::user::infrastructure::remote::fields::Username), username},
             {std::string(lila::modules::user::infrastructure::remote::fields::Email), email},
             {std::string(lila::modules::user::infrastructure::remote::fields::Password), password}
         },
+        std::string(lila::shared::network::ws::types::auth::RegisterOk),
     });
 }
 

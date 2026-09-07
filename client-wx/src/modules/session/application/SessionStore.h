@@ -28,6 +28,7 @@ public:
 
     void Open(domain::Session session, bool persist);
     void Clear();
+    void SetSessionExpiredHandler(std::function<void()> handler);
     [[nodiscard]] std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle>
         LogoutAsync(std::function<void()> completion = {});
     [[nodiscard]] std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle>
@@ -56,5 +57,6 @@ private:
     bool refreshInProgress_ = false;
     std::uint64_t generation_ = 0;
     std::uint64_t lastSuccessfulRefreshGeneration_ = 0;
+    std::function<void()> sessionExpiredHandler_;
 };
 }

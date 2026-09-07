@@ -1,4 +1,4 @@
-void TestRealtimeProtocolFallbackTypeAndPayloadValidation()
+void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
 {
     Expect(
         !lila::shared::network::realtime::protocol::IsResponseForRequest(
@@ -13,18 +13,55 @@ void TestRealtimeProtocolFallbackTypeAndPayloadValidation()
             "vault.restore"),
         "La reponse correlee de restauration doit etre acceptee");
     Expect(
+        lila::shared::network::realtime::protocol::IsResponseForRequest(
+            R"({"type":"auth.login.ok","requestId":"req-login","payload":{"token":"jwt"}})",
+            "req-login",
+            "auth.login",
+            "auth.login.ok"),
+        "La reponse de succes auth suffixee par .ok doit etre acceptee");
+    Expect(
         !lila::shared::network::realtime::protocol::IsResponseForRequest(
             R"({"type":"vault.restore","requestId":"req-2","payload":{"roomId":42}})",
             "req-1",
             "vault.restore"),
         "La reponse d'une autre requete doit etre ignoree");
+    Expect(
+        lila::shared::network::realtime::protocol::IsResponseForRequest(
+            R"({"type":"error","context":"vault.restore","requestId":"req-1","payload":{"message":"Session expiree"}})",
+            "req-1",
+            "vault.restore"),
+        "Une erreur correlee doit terminer la requete");
+    Expect(
+        !lila::shared::network::realtime::protocol::IsResponseForRequest(
+            R"({"type":"error","context":"rooms.public.list","requestId":"req-1","payload":{"message":"Erreur"}})",
+            "req-1",
+            "vault.restore"),
+        "L'erreur d'une autre requete doit etre ignoree");
 
     const auto response = lila::shared::network::realtime::protocol::ParseResponse(
-        R"({"requestId":"req-1","success":true,"payload":{"ok":true}})",
+        R"({"type":"response.type","requestId":"req-1","success":true,"payload":{"ok":true}})",
         "req-1",
-        "fallback.type");
-    Expect(response.type == "fallback.type", "Fallback type attendu");
+        "response.type");
+    Expect(response.type == "response.type", "Type correle attendu");
     Expect(response.success, "Succes attendu");
+
+    const auto authResponse = lila::shared::network::realtime::protocol::ParseResponse(
+        R"({"type":"auth.login.ok","requestId":"req-login","payload":{"token":"jwt"}})",
+        "req-login",
+        "auth.login",
+        "auth.login.ok");
+    Expect(authResponse.success, "Connexion auth reussie attendue");
+    Expect(authResponse.type == "auth.login.ok", "Type de succes auth attendu");
+
+    const auto errorResponse = lila::shared::network::realtime::protocol::ParseResponse(
+        R"({"type":"error","context":"vault.restore","requestId":"req-1","payload":{"message":"Session expiree"}})",
+        "req-1",
+        "vault.restore");
+    Expect(!errorResponse.success, "Echec correle attendu");
+    Expect(
+        errorResponse.errorKind == lila::shared::network::realtime::RealtimeErrorKind::Server,
+        "Erreur serveur attendue");
+    Expect(errorResponse.errorMessage == "Session expiree", "Message d'erreur attendu");
 
     bool threw = false;
     try
@@ -32,7 +69,7 @@ void TestRealtimeProtocolFallbackTypeAndPayloadValidation()
         static_cast<void>(lila::shared::network::realtime::protocol::ParseResponse(
             R"({"type":"x","requestId":"req-1","payload":"oops"})",
             "req-1",
-            "fallback.type"));
+            "x"));
     }
     catch (const lila::shared::network::realtime::protocol::RealtimeProtocolError&)
     {
@@ -41,7 +78,7 @@ void TestRealtimeProtocolFallbackTypeAndPayloadValidation()
 
     Expect(threw, "Payload invalide devait echouer");
 
-    std::cout << "[TEST PASSED] RealtimeProtocolFallbackTypeAndPayloadValidation\n";
+    std::cout << "[TEST PASSED] RealtimeProtocolStrictCorrelationAndPayloadValidation\n";
 }
 
 void TestChatProtocolHandlesMalformedAndUnknownEvents()
@@ -173,4 +210,3 @@ void TestNavigationControllerKeyboardSemantics()
 
     std::cout << "[TEST PASSED] NavigationControllerKeyboardSemantics\n";
 }
-

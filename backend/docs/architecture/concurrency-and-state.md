@@ -13,7 +13,7 @@ Les retries ne concernent que les lectures idempotentes et les conflits explicit
 
 | Donnée | Source de vérité | Cache/local | Reconstruction |
 |---|---|---|---|
-| état de partie | MySQL `game_sessions` + version CAS | projections WS | relecture DB et migration d'état |
+| état de partie | MySQL `game_sessions` + version CAS | projections WS | relecture DB; conversion incompatible uniquement hors ligne |
 | sessions auth | Redis configuré en production | aucune | reconnexion obligatoire si Redis est perdu |
 | room et participants | MySQL | payload Redis/local | invalidation puis relecture DB |
 | présence/sockets | connexions actives de l'instance | Maps locales | reconnexion et resynchronisation |
@@ -24,12 +24,19 @@ Les notifications métier durables sont écrites en DB avant diffusion. Redis Pu
 
 ## États JSON
 
-Chaque état de jeu possède une version moteur et passe par `migrateDeclarativeState` à la lecture. La taille de l'état et de la timeline est bornée par `GameSnapshotPolicy`; les snapshots et événements sont séquencés et le replay est déterministe. Toute évolution incompatible ajoute une migration et un fixture d'ancien état. La timeline est physiquement séparée entre session courante, événements et snapshots, tout en restant atomique dans la transaction du `GameSessionTypeormStore`.
+Chaque état de jeu déclare les versions exactes du moteur, du contenu et des
+règles attendues. Une lecture incompatible échoue sans transformation runtime;
+la conversion éventuelle est une opération hors ligne préalable au déploiement.
+La taille de l'état et de la timeline est bornée par `GameSnapshotPolicy`; les
+snapshots et événements sont séquencés et le replay est déterministe. La
+timeline est physiquement séparée entre session courante, événements et
+snapshots, tout en restant atomique dans la transaction du
+`GameSessionTypeormStore`.
 
 ## Scénarios obligatoires
 
 - deux queues d'instances différentes sur une même room;
 - doublon de `commandId`, version obsolète et conflit CAS;
-- reprise d'un état d'ancienne version et replay identique;
+- rejet d'un état d'ancienne version et replay identique d'un état courant;
 - reconnexion après perte d'un broadcast;
 - arrêt pendant un timer: aucun callback local après destruction, reprise depuis l'état durable lorsqu'il s'agit d'une règle.

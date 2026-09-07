@@ -166,26 +166,6 @@ function audit() {
       /assertStorageCapacity/,
     ],
     [
-      'modules/client-updates/infrastructure/filesystem/client-updates-upload.service.ts',
-      /assertPathInside/,
-    ],
-    [
-      'modules/client-updates/infrastructure/filesystem/client-updates-upload-policy.ts',
-      /ensureClientUpdateStorageCapacity/,
-    ],
-    [
-      'modules/client-updates/infrastructure/filesystem/client-updates-archive-publisher.ts',
-      /assertNoSymlinkArchiveEntries/,
-    ],
-    [
-      'modules/client-updates/infrastructure/filesystem/client-updates-archive-publisher.ts',
-      /swapDirectory[\s\S]*rename\(backupDir, targetDir\)/,
-    ],
-    [
-      'modules/client-updates/infrastructure/filesystem/client-updates-publisher.service.ts',
-      /writeFileAtomic/,
-    ],
-    [
       'platform/observability/infrastructure/logging/serv-logger.service.ts',
       /sanitizeLogText/,
     ],

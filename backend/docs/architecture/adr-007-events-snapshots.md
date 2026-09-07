@@ -13,8 +13,7 @@ borné en taille, versionné et associé au run courant de la room. Le replay pa
 du dernier snapshot applicable puis rejoue les événements suivants dans l'ordre.
 Une projection WS provenant d'un ancien run est rejetée.
 
-Toute évolution incompatible de l'état ajoute une migration déterministe et un
-fixture d'ancienne version. Les tests couvrent commit atomique, replay,
-nettoyage concurrent sans suppression d'un snapshot plus récent, visibilité et
-rejet des snapshots obsolètes.
-
+Toute évolution incompatible de l'état impose une conversion hors ligne avant
+déploiement. Le runtime refuse les versions anciennes sans branche de migration.
+Les tests couvrent commit atomique, replay, nettoyage concurrent sans suppression
+d'un snapshot plus récent, visibilité et rejet des snapshots obsolètes.

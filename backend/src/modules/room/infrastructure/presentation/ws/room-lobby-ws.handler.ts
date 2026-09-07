@@ -17,7 +17,6 @@ import {
 import { RoomLobbyInvitesService } from './room-lobby-invites.service';
 import { RoomLobbyPublicService } from './room-lobby-public.service';
 import { RoomLobbyPresenter } from './room-lobby.presenter';
-import type { LobbyWsVariant } from './room-lobby.types';
 
 @Injectable()
 export class RoomLobbyWsHandler {
@@ -29,105 +28,66 @@ export class RoomLobbyWsHandler {
     private readonly presenter: RoomLobbyPresenter,
   ) {}
 
-  listPublic(
-    session: WsSession,
-    payload: unknown,
-    variant: LobbyWsVariant = 'legacy',
-  ) {
+  listPublic(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicListDto, payload);
-    return this.publicLobby.list(user, dto, variant);
+    return this.publicLobby.list(user, dto);
   }
 
-  joinPublic(
-    session: WsSession,
-    payload: unknown,
-    variant: LobbyWsVariant = 'legacy',
-  ) {
+  joinPublic(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicJoinDto, payload);
-    return this.publicLobby.join(user, dto, variant);
+    return this.publicLobby.join(user, dto);
   }
 
-  leavePublic(
-    session: WsSession,
-    payload: unknown,
-    variant: LobbyWsVariant = 'legacy',
-  ) {
+  leavePublic(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomsPublicJoinDto, payload);
-    return this.publicLobby.leave(user, dto, variant);
+    return this.publicLobby.leave(user, dto);
   }
 
-  spectatePublic(
-    session: WsSession,
-    payload: unknown,
-    variant: LobbyWsVariant = 'legacy',
-  ) {
+  spectatePublic(session: WsSession, payload: unknown) {
     requireUser(session);
     const dto = this.validator.validate(RoomsPublicJoinDto, payload);
-    return this.publicLobby.spectate(dto, variant);
+    return this.publicLobby.spectate(dto);
   }
 
-  async subscribePublic(
-    session: WsSession,
-    payload: unknown,
-    variant: LobbyWsVariant = 'legacy',
-  ) {
+  async subscribePublic(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const connectionId = this.requireConnectionId(session);
     const dto = this.validator.validate(RoomsPublicListDto, payload);
-    this.lobbyRefresh.subscribe(connectionId, dto.gameType ?? null, variant);
-    const listed = await this.publicLobby.list(user, dto, variant);
-    return this.presenter.presentSubscription(
-      variant,
-      'subscribed',
-      listed.payload,
-    );
+    this.lobbyRefresh.subscribe(connectionId, dto.gameType ?? null);
+    const listed = await this.publicLobby.list(user, dto);
+    return this.presenter.presentSubscription('subscribed', listed.payload);
   }
 
-  async unsubscribePublic(
-    session: WsSession,
-    variant: LobbyWsVariant = 'legacy',
-  ) {
+  async unsubscribePublic(session: WsSession) {
     requireUser(session);
     this.lobbyRefresh.unsubscribe(this.requireConnectionId(session));
-    return this.presenter.presentSubscription(variant, 'unsubscribed', {
+    return this.presenter.presentSubscription('unsubscribed', {
       ok: true,
     });
   }
 
-  inviteSend(
-    session: WsSession,
-    payload: unknown,
-    variant: LobbyWsVariant = 'legacy',
-  ) {
+  inviteSend(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomInviteSendDto, payload);
-    return this.invitations.send(user, dto, variant);
+    return this.invitations.send(user, dto);
   }
 
-  invitePresenceList(
-    session: WsSession,
-    payload: unknown,
-    variant: LobbyWsVariant = 'legacy',
-  ) {
+  invitePresenceList(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(
       RoomInvitePresenceListDto,
       payload ?? {},
     );
-    return this.invitations.listPresence(user, dto, variant);
+    return this.invitations.listPresence(user, dto);
   }
 
-  inviteRespond(
-    session: WsSession,
-    payload: unknown,
-    variant: LobbyWsVariant = 'legacy',
-  ) {
+  inviteRespond(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(RoomInviteRespondDto, payload);
-    return this.invitations.respond(user, dto, variant);
+    return this.invitations.respond(user, dto);
   }
 
   private requireConnectionId(session: WsSession): string {

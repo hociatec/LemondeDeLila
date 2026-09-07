@@ -3,11 +3,6 @@ export {
   isVersionLower,
   parseVersion,
 } from './version.utils';
-export {
-  fixMojibakeDeep,
-  fixMojibakeString,
-  readJsonFileWithFallback,
-} from './mojibake';
 export { playingLog } from './playing-logger';
 export {
   DEFAULT_MESSAGE_MAX_LENGTH,
@@ -30,6 +25,7 @@ export {
   writeFileAtomicSync,
 } from './atomic-file.utils';
 export { bestEffort } from './best-effort.utils';
+export { constantTimeSecretEquals } from './constant-time-secret';
 export {
   assertStorageCapacity,
   StorageCapacityError,

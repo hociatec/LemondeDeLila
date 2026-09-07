@@ -1,8 +1,9 @@
 # Déploiement local Linux avec `updatecmd`
 
-`updatecmd` remplace le déploiement GitHub Actions pour le backend et le client
-wx Windows. Le dossier source présent sur le serveur est la source de vérité :
-la commande ne lance ni `git pull`, ni `git clone`, ni workflow distant.
+`updatecmd` déploie le backend et le client wx Windows. En production, le
+backend provient de l'artefact immuable construit, testé et archivé par GitHub
+Actions. Sa provenance SLSA et son SBOM CycloneDX sont signés via Sigstore. La
+commande ne lance ni `git pull` ni `git clone`.
 
 ## Installation initiale
 
@@ -51,7 +52,9 @@ de la source dans `/etc/lemonde-de-lila/backend.env`.
 
 ## Utilisation courante
 
-Après avoir modifié ou synchronisé les fichiers locaux :
+Le déploiement backend normal est déclenché par le workflow manuel, qui fournit
+à `updatecmd` une archive et son SHA-256. Pour un build local de maintenance,
+après avoir synchronisé et commité les fichiers :
 
 ```bash
 sudo updatecmd all
@@ -72,11 +75,14 @@ sudo updatecmd all --force
 sudo updatecmd all --source /chemin/absolu/vers/lemondeDeLila
 ```
 
-Le backend est copié dans une release isolée, puis `npm ci`, le build et les
-tests sont exécutés pendant que l'ancienne release continue de servir. Les
+`updatecmd` refuse une source sale, non suivie par Git ou différente du SHA
+demandé par GitHub Actions. Avec `--artifact`, il vérifie le SHA-256, le
+manifeste et les chemins de l'archive, puis réutilise directement `dist` et les
+dépendances de production sans compilation ni installation sur le serveur. Le
+backend est copié dans une release isolée. Les
 migrations sont lancées avant une bascule de lien symbolique atomique. Après le
 redémarrage, `/health/info` doit annoncer le hash SHA-256 local attendu et
-`/health` doit confirmer que PostgreSQL et Redis sont disponibles. Sinon, le
+`/health` doit confirmer que MySQL et Redis sont disponibles. Sinon, le
 lien et le service reviennent automatiquement à la release précédente.
 
 Quand Redis local est protégé par `requirepass`, `updatecmd backend` et
@@ -103,7 +109,7 @@ secours. Ils ne partent plus automatiquement lors d'un push.
 - release active : `/opt/lemonde-de-lila/current`
 - cache de build : `/var/cache/lemonde-de-lila/updatecmd`
 - état des versions wx : `/var/lib/lemonde-de-lila/updatecmd`
-- mises à jour publiées : `/var/lib/lemonde-de-lila/client-updates/client-wx`
+- mises à jour publiées : `/var/lib/lemonde-de-lila/client-wx-updates`
 - secrets : `/etc/lemonde-de-lila/secrets` (root uniquement)
 
 Les cinq dernières releases backend sont conservées par défaut. Ce nombre est

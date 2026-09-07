@@ -181,6 +181,12 @@ if rg -n -i '\blama\b' "$ROOT/src"; then
   exit 1
 fi
 
+if rg -n 'event\.type[[:space:]]*==' \
+    "$ROOT/src/modules/gameplay/events/presentation/GameEventPresenter.cpp"; then
+  echo "Les annonces de jeu doivent être rédigées par le backend." >&2
+  exit 1
+fi
+
 if rg -n 'HandleZoneKey|HandleGlobalShortcut' "$ROOT/src/modules"; then
   echo "La saisie de jeu WX doit passer par un routeur unique." >&2
   exit 1

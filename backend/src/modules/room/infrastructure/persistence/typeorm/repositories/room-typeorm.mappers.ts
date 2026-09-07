@@ -116,6 +116,31 @@ export function toRoomEntity(room: RoomRecord): Partial<Room> {
   };
 }
 
+export function toRoomEntityPatch(room: Partial<RoomRecord>): Partial<Room> {
+  const patch: Partial<Room> = {};
+  if (room.name !== undefined) patch.name = room.name;
+  if (room.gameType !== undefined) patch.gameType = room.gameType;
+  if (room.maxPlayers !== undefined) patch.maxPlayers = room.maxPlayers;
+  if (room.isPrivate !== undefined) patch.isPrivate = room.isPrivate;
+  if (room.status !== undefined) patch.status = room.status;
+  if (room.owner !== undefined) {
+    patch.owner = room.owner ? ({ id: room.owner.id } as User) : null;
+  }
+  if (room.createdAt !== undefined) patch.createdAt = room.createdAt;
+  if (room.startedAt !== undefined) patch.startedAt = room.startedAt;
+  if (room.runId !== undefined) patch.runId = room.runId;
+  if (room.tableAmbienceSoundId !== undefined) {
+    patch.tableAmbienceSoundId = room.tableAmbienceSoundId;
+  }
+  if (room.restoredFromSnapshotId !== undefined) {
+    patch.restoredFromSnapshotId = room.restoredFromSnapshotId;
+  }
+  if (room.restoredOwnerUserId !== undefined) {
+    patch.restoredOwnerUserId = room.restoredOwnerUserId;
+  }
+  return patch;
+}
+
 export function toRoomParticipantEntity(
   participant: RoomParticipantRecord,
 ): Partial<RoomParticipant> {

@@ -64,37 +64,3 @@ export function assertConfiguration(
     fail('config.permission', 'permission inconnue');
   }
 }
-
-export function assertMigrations(
-  definition: DefinitionToValidate,
-  fail: ValidationFailure,
-): void {
-  const target = definition.stateVersion ?? 1;
-  const bySource = new Map<number, number>();
-  for (const migration of definition.migrations ?? []) {
-    if (
-      !Number.isInteger(migration.from) ||
-      !Number.isInteger(migration.to) ||
-      migration.from < 1 ||
-      migration.to <= migration.from ||
-      migration.to > target
-    ) {
-      fail(
-        'migrations',
-        `transition invalide ${migration.from}→${migration.to}`,
-      );
-    }
-    if (bySource.has(migration.from))
-      fail('migrations', `source dupliquée « ${migration.from} »`);
-    bySource.set(migration.from, migration.to);
-  }
-  if (target <= 1) return;
-  let cursor = 1;
-  const visited = new Set<number>();
-  while (cursor < target && !visited.has(cursor)) {
-    visited.add(cursor);
-    cursor = bySource.get(cursor) ?? 0;
-  }
-  if (cursor !== target)
-    fail('migrations', `chaîne incomplète de 1 vers ${target}`);
-}

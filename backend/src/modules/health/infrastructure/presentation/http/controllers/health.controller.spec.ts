@@ -14,16 +14,38 @@ describe('HealthController', () => {
     const redis = {
       check: jest.fn().mockResolvedValue({ redis: { status: 'up' } }),
     };
+    const bullmq = {
+      check: jest.fn().mockResolvedValue({ bullmq: { status: 'up' } }),
+    };
+    const runtime = {
+      checkEventLoop: jest.fn(() => ({ eventLoop: { status: 'up' } })),
+      checkStorage: jest.fn().mockResolvedValue({ storage: { status: 'up' } }),
+    };
+    const dataSource = {
+      driver: {
+        pool: {
+          _allConnections: { length: 4 },
+          _freeConnections: { length: 2 },
+          config: { connectionLimit: 10 },
+        },
+      },
+    };
     const controller = new HealthController(
       health as any,
       db as any,
       redis as any,
+      bullmq as any,
+      runtime as any,
+      dataSource as any,
     );
 
-    expect(controller.live()).toEqual({ status: 'ok' });
+    await expect(controller.live()).resolves.toEqual({ status: 'ok' });
     expect(db.pingCheck).not.toHaveBeenCalled();
+    expect(runtime.checkEventLoop).toHaveBeenCalledWith('eventLoop');
     await expect(controller.ready()).resolves.toEqual({ status: 'ok' });
     expect(db.pingCheck).toHaveBeenCalledWith('database');
     expect(redis.check).toHaveBeenCalledWith('redis');
+    expect(bullmq.check).toHaveBeenCalledWith('bullmq');
+    expect(runtime.checkStorage).toHaveBeenCalledWith('storage');
   });
 });

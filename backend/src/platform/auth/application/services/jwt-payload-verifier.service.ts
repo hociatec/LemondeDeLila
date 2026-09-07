@@ -6,10 +6,7 @@ import {
   readAuthRuntimeConfigFromEnv,
   type AuthRuntimeConfig,
 } from '../ports/auth-runtime-config.port';
-import {
-  getJwtVerifyAlgorithms,
-  requireJwtVerifyKey,
-} from './jwt-config.service';
+import { requireJwtVerifyKey } from './jwt-config.service';
 
 type JwtVerifyOptions = {
   algorithms?: Algorithm[];
@@ -100,7 +97,7 @@ export class JwtPayloadVerifierService {
 
     try {
       const verifyOptions: JwtVerifyOptions = {
-        algorithms: getJwtVerifyAlgorithms(this.config),
+        algorithms: ['RS256'],
         issuer,
         clockTolerance,
       };

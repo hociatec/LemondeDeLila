@@ -55,7 +55,7 @@ void RoomSessionGateway::Execute(
     }
 
     const auto traceId = CreateTraceId();
-    payload["_trace"] = {
+    const nlohmann::json trace = {
         {"id", traceId},
         {"sentAtMs", std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()).count()}};
@@ -69,8 +69,11 @@ void RoomSessionGateway::Execute(
     try
     {
         SendJson(nlohmann::json{
-            {"type", command_protocol::Type(request.command)},
-            {"payload", std::move(payload)}});
+            {"type", protocol::IntentExecute},
+            {"payload", {
+                {"intentId", command_protocol::Type(request.command)},
+                {"data", std::move(payload)},
+                {"_trace", trace}}}});
     }
     catch (...)
     {

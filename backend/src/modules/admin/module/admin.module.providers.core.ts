@@ -16,14 +16,12 @@ import {
 import { RoomMaintenanceSettingsService } from '../../room/public-api';
 import { SocialProfileSettingsService } from '../../social/public-api';
 import { GameStatsService } from '../../stats/public-api';
-import { ClientUpdatesService } from '../../update/public-api';
 import { AdminCatalogInvalidationService } from '../application/services/admin-catalog-invalidation.service';
 import { ADMIN_CATALOG_CACHE_PORT } from '../application/ports/admin-catalog-cache.port';
 import {
   ADMIN_CHAT_PORT,
   ADMIN_CHAT_SETTINGS_PORT,
 } from '../application/ports/admin-chat.port';
-import { ADMIN_CLIENT_UPDATES_PORT } from '../application/ports/admin-client-updates.port';
 import { ADMIN_GAME_CATEGORIES_PORT } from '../application/ports/admin-game-categories.port';
 import { ADMIN_GAME_OVERRIDES_PORT } from '../application/ports/admin-game-overrides.port';
 import { ADMIN_GAME_REGISTRY_PORT } from '../application/ports/admin-game-registry.port';
@@ -75,10 +73,6 @@ export const ADMIN_CORE_PROVIDERS = [
   {
     provide: ADMIN_NOTIFICATION_PORT,
     useExisting: AdminNotificationAdapter,
-  },
-  {
-    provide: ADMIN_CLIENT_UPDATES_PORT,
-    useExisting: ClientUpdatesService,
   },
   {
     provide: ADMIN_CHAT_PORT,

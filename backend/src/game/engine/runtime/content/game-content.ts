@@ -1,5 +1,6 @@
 import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
 import type { QuizQuestion } from '../kits/quiz-kit';
+import { loadExternalGameContent } from './external-content-release';
 
 export const GAME_CONTENT_KIND = 'lila.game-content' as const;
 
@@ -41,7 +42,8 @@ export function loadGameContent<TData extends object>(
   source: unknown,
   schema: GameContentSchema<TData>,
 ): GameContent<TData> {
-  let candidate = source;
+  const external = loadExternalGameContent(gameId);
+  let candidate = external?.source ?? source;
   if (typeof source === 'string') {
     try {
       candidate = JSON.parse(source) as unknown;
@@ -56,7 +58,9 @@ export function loadGameContent<TData extends object>(
     }
   }
   try {
-    return defineGameContent(gameId, schema.parse(candidate, 'content'));
+    return createGameContent(gameId, schema.parse(candidate, 'content'), {
+      ...(external ? { version: external.version } : {}),
+    });
   } catch (error) {
     if (error instanceof GameContentValidationError) throw error;
     throw new GameContentValidationError(`Contenu invalide pour ${gameId}`, {
@@ -70,6 +74,21 @@ export function defineGameContent<TData extends object>(
   gameId: string,
   data: TData,
   options: { version?: string } = {},
+): GameContent<TData> {
+  const external = loadExternalGameContent(gameId);
+  const candidate = external?.source ?? data;
+  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+    throw new GameContentValidationError(`Contenu invalide pour ${gameId}`);
+  }
+  return createGameContent(gameId, candidate as TData, {
+    ...(external ? { version: external.version } : options),
+  });
+}
+
+function createGameContent<TData extends object>(
+  gameId: string,
+  data: TData,
+  options: { version?: string },
 ): GameContent<TData> {
   if (!gameId.trim()) {
     throw new GameContentValidationError('Identifiant de contenu vide');

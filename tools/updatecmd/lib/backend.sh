@@ -20,6 +20,22 @@ prepare_backend_release() {
 
   log "Préparation du backend $BACKEND_SOURCE_ID pendant que la version courante reste active."
   mkdir -p "$release_dir"
+  if [[ "$BACKEND_ARTIFACT_MODE" == "1" ]]; then
+    rsync -a --delete "$SNAPSHOT_DIR/backend/" "$backend_dir/"
+    mkdir -p "$backend_dir/data"
+    ln -sfn "$BACKEND_SHARED_DATA_ROOT/sounds" "$backend_dir/data/sounds"
+    ln -sfn "$BACKEND_ENV_FILE" "$backend_dir/.env"
+    printf 'LEMONDEDELILA_BUILD_ID=%s\nSOURCE_VERSION=%s\nSOURCE_GIT_SHA=%s\n' \
+      "$BACKEND_SOURCE_ID" "$BACKEND_SOURCE_ID" "$SOURCE_GIT_SHA" \
+      >"$release_dir/.release.env"
+    chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$release_dir"
+    [[ -s "$backend_dir/dist/main.js" ]] || die "Artefact sans dist/main.js."
+    [[ -d "$backend_dir/node_modules" ]] || die "Artefact sans node_modules."
+    printf '%s\n' "$BACKEND_SOURCE_ID" >"$release_dir/.validated"
+    BACKEND_RELEASE_DIR="$release_dir"
+    log "Artefact CI réutilisé sans compilation ni installation côté serveur."
+    return
+  fi
   rsync -a --delete \
     --exclude '/node_modules/' \
     --exclude '/dist/' \
@@ -28,7 +44,8 @@ prepare_backend_release() {
   mkdir -p "$backend_dir/data"
   ln -sfn "$BACKEND_SHARED_DATA_ROOT/sounds" "$backend_dir/data/sounds"
   ln -sfn "$BACKEND_ENV_FILE" "$backend_dir/.env"
-  printf 'LEMONDEDELILA_BUILD_ID=%s\nSOURCE_VERSION=%s\n' "$BACKEND_SOURCE_ID" "$BACKEND_SOURCE_ID" \
+  printf 'LEMONDEDELILA_BUILD_ID=%s\nSOURCE_VERSION=%s\nSOURCE_GIT_SHA=%s\n' \
+    "$BACKEND_SOURCE_ID" "$BACKEND_SOURCE_ID" "$SOURCE_GIT_SHA" \
     >"$release_dir/.release.env"
   chown -R "$BUILD_USER":"$(id -gn "$BUILD_USER")" "$release_dir"
 

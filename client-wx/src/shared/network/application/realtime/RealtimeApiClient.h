@@ -5,6 +5,7 @@
 #include <mutex>
 #include <stop_token>
 #include <string>
+#include <utility>
 
 #include "shared/network/application/websocket/IWebSocketClient.h"
 #include "shared/network/domain/NetworkPolicy.h"
@@ -17,8 +18,19 @@ namespace lila::shared::network::realtime
 {
 struct RealtimeApiRequest
 {
+    RealtimeApiRequest(
+        std::string requestType,
+        nlohmann::json requestPayload,
+        std::string responseType = {})
+        : type(std::move(requestType)),
+          payload(std::move(requestPayload)),
+          expectedResponseType(std::move(responseType))
+    {
+    }
+
     std::string type;
     nlohmann::json payload;
+    std::string expectedResponseType;
 };
 
 enum class RealtimeErrorKind

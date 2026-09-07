@@ -34,6 +34,7 @@ public:
     ~JoinRoomsPanel() override;
 
     void Prepare(PreparedHandler onPrepared);
+    void ResetForNextPrepare();
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:
@@ -43,6 +44,7 @@ private:
     void BindEvents();
     void Load(PreparedHandler onPrepared = {});
     void ApplyRooms(std::vector<domain::PublicRoom> rooms, PreparedHandler onPrepared);
+    void ShowLoading();
     void ShowRooms();
     void ShowError(const wxString& message, PreparedHandler onPrepared);
     void CancelRequest();

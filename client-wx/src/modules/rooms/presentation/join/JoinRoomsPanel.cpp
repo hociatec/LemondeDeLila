@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <utility>
 
+#include <wx/stattext.h>
+
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
@@ -25,6 +27,15 @@ JoinRoomsPanel::JoinRoomsPanel(
 JoinRoomsPanel::~JoinRoomsPanel()
 {
     CancelRequest();
+}
+
+void JoinRoomsPanel::ResetForNextPrepare()
+{
+    CancelRequest();
+    navigator_.Reset({});
+    menu_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{});
+    state_ = State::Loading;
+    statusLabel_->Hide();
 }
 
 lila::shared::accessibility::FocusManager::Plan JoinRoomsPanel::BuildFocusPlan()

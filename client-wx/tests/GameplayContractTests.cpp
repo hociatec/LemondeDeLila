@@ -34,9 +34,9 @@ void Expect(bool condition, const char* message)
     if (!condition) throw std::runtime_error(message);
 }
 
-nlohmann::json V2Payload(const nlohmann::json& legacy)
+nlohmann::json BuildGameView(const nlohmann::json& fixture)
 {
-    auto source = legacy.value("state", legacy);
+    auto source = fixture.value("state", fixture);
     nlohmann::json system{
         {"match", {{"status", source.value("status", "playing")},
             {"startedAtMs", nullptr}, {"finishedAtMs", nullptr},
@@ -65,9 +65,9 @@ nlohmann::json V2Payload(const nlohmann::json& legacy)
         {"visibility", "owner"}, {"byPlayer", {{"1", extras["hand"]}}}}}}}};
     if (extras.contains("dice")) kits["dice"] = extras["dice"];
     nlohmann::json result{
-        {"viewVersion", 1}, {"roomId", legacy.value("roomId", 1)},
-        {"runId", legacy.value("runId", 0)},
-        {"version", legacy.value("version", 1)}, {"gameType", legacy.value("gameType", "test")},
+        {"viewVersion", 1}, {"roomId", fixture.value("roomId", 1)},
+        {"runId", fixture.value("runId", 0)},
+        {"version", fixture.value("version", 1)}, {"gameType", fixture.value("gameType", "test")},
         {"system", std::move(system)}, {"kits", std::move(kits)},
         {"effect", nlohmann::json::object()}, {"game", nlohmann::json::object()},
         {"actions", source.value("actions", nlohmann::json::array())},

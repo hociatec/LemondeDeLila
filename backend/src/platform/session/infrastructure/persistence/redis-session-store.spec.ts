@@ -43,12 +43,38 @@ describe('RedisSessionStore', () => {
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce('{')
       .mockResolvedValueOnce(JSON.stringify({ userId: '7' }))
-      .mockResolvedValueOnce(JSON.stringify({ userId: 7, roles: [1] }));
+      .mockResolvedValueOnce(JSON.stringify({ userId: 7, roles: [1] }))
+      .mockResolvedValueOnce(JSON.stringify([]))
+      .mockResolvedValueOnce(JSON.stringify({ userId: 1.5 }))
+      .mockResolvedValueOnce(JSON.stringify({ userId: 7, username: 4 }));
 
     await expect(store.get('missing')).resolves.toBeNull();
     await expect(store.get('malformed')).resolves.toBeNull();
     await expect(store.get('bad-user')).resolves.toBeNull();
     await expect(store.get('bad-roles')).resolves.toBeNull();
+    await expect(store.get('array')).resolves.toBeNull();
+    await expect(store.get('unsafe-user')).resolves.toBeNull();
+    await expect(store.get('bad-username')).resolves.toBeNull();
+  });
+
+  it('normalizes optional nullable session fields', async () => {
+    const store = new RedisSessionStore('redis://localhost:6379/1');
+    mockRedis.get
+      .mockResolvedValueOnce(JSON.stringify({ userId: null }))
+      .mockResolvedValueOnce(
+        JSON.stringify({ userId: 7, username: null, roles: null }),
+      );
+
+    await expect(store.get('anonymous')).resolves.toEqual({
+      userId: null,
+      username: undefined,
+      roles: undefined,
+    });
+    await expect(store.get('nullable')).resolves.toEqual({
+      userId: 7,
+      username: null,
+      roles: null,
+    });
   });
 
   it('closes the Redis connection during module shutdown', async () => {

@@ -49,8 +49,10 @@ domain::RoomState RoomSessionGateway::Create(std::string_view gameType, std::sto
     if (gameType.empty()) throw std::invalid_argument("gameType requis");
     Connect(stopToken);
     SendJson(nlohmann::json{
-        {"type", protocol::Create},
-        {"payload", {{"gameType", std::string(gameType)}}}});
+        {"type", protocol::IntentExecute},
+        {"payload", {
+            {"intentId", protocol::Create},
+            {"data", {{"gameType", std::string(gameType)}}}}}});
     lila::shared::logging::LogInfo(
         "Rooms", "TX room.create gameType=" + std::string(gameType));
     selfSpectator_.store(false);
@@ -63,8 +65,9 @@ domain::RoomState RoomSessionGateway::Join(int roomId, bool spectator, std::stop
 {
     if (roomId <= 0) throw std::invalid_argument("roomId invalide");
     Connect(stopToken);
-    SendJson(nlohmann::json{{"type", protocol::Join},
-        {"payload", {{"roomId", roomId}, {"spectator", spectator}, {"hidden", false}}}});
+    SendJson(nlohmann::json{{"type", protocol::IntentExecute},
+        {"payload", {{"intentId", protocol::Join},
+            {"data", {{"roomId", roomId}, {"spectator", spectator}, {"hidden", false}}}}}});
     lila::shared::logging::LogInfo(
         "Rooms", "TX room.join roomId=" + std::to_string(roomId));
     selfSpectator_.store(spectator);
@@ -86,8 +89,9 @@ domain::RoomState RoomSessionGateway::Reconnect(std::stop_token stopToken)
         pendingEvents_.clear();
     }
     Connect(stopToken);
-    SendJson(nlohmann::json{{"type", protocol::Join},
-        {"payload", {{"roomId", roomId}, {"spectator", spectator}, {"hidden", false}}}});
+    SendJson(nlohmann::json{{"type", protocol::IntentExecute},
+        {"payload", {{"intentId", protocol::Join},
+            {"data", {{"roomId", roomId}, {"spectator", spectator}, {"hidden", false}}}}}});
     lila::shared::logging::LogInfo(
         "Rooms", "TX room.join roomId=" + std::to_string(roomId) + " reconnect=true");
     auto state = AwaitState(roomId, {}, stopToken);
@@ -101,7 +105,8 @@ void RoomSessionGateway::Leave()
     {
         try
         {
-            SendJson(nlohmann::json{{"type", protocol::Leave}, {"payload", nlohmann::json::object()}});
+            SendJson(nlohmann::json{{"type", protocol::IntentExecute},
+                {"payload", {{"intentId", protocol::Leave}, {"data", nlohmann::json::object()}}}});
         }
         catch (...)
         {

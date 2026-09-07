@@ -153,6 +153,62 @@ describe('GameWsRealtimeStateService run isolation', () => {
     );
   });
 
+  it('rebuilds a stale setup roster when the room starts with a newly added bot', async () => {
+    const current = {
+      ...gameState({ roomRunId: 2 }),
+      status: 'setup',
+      phase: 'setup',
+      version: 1,
+      players: [{ id: 1, username: 'Owner', isBot: false }],
+    };
+    const handler = {
+      hydrateInitialState: jest.fn((state) => state),
+    } as unknown as GameRuntime;
+    const engine = {
+      exportInternalState: jest.fn().mockResolvedValue(current),
+      compareAndSetInternalState: jest.fn(
+        async (_roomId, _gameType, expectedVersion, state) => ({
+          committed: true,
+          version: expectedVersion + 1,
+          state: { ...state, version: expectedVersion + 1 },
+        }),
+      ),
+    };
+    const room = {
+      room: {
+        id: 4,
+        gameType: 'a-fond-les-ballons',
+        status: 'started',
+        runId: 2,
+        startedAt: new Date(0).toISOString(),
+        owner: { id: 1 },
+        players: [{ id: 1, username: 'Owner' }],
+        bots: [{ id: 9, name: 'Bot Ballons' }],
+      },
+    };
+    const service = new GameWsRealtimeStateService(
+      new GameRoomStateFactory(),
+      engine as never,
+      { getHandler: jest.fn().mockReturnValue(handler) } as never,
+      { clear: jest.fn() } as never,
+      {} as never,
+      {} as never,
+      { buildPayload: jest.fn().mockResolvedValue(room) } as never,
+      execution() as never,
+    );
+
+    const resolved = await service.resolve(4);
+
+    expect(resolved.state.players).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 1, isBot: false }),
+        expect.objectContaining({ id: -9, isBot: true }),
+      ]),
+    );
+    expect(resolved.setupRosterRefreshedFromVersion).toBe(1);
+    expect(handler.hydrateInitialState).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps configured setup state when the room starts its reserved run', async () => {
     let stored: GameStateEntity | null = null;
     const hydrateInitialState = jest.fn((state) => state);
@@ -384,5 +440,97 @@ describe('GameWsRealtimeStateService run isolation', () => {
     expect(automation.schedule).toHaveBeenCalledWith(
       expect.objectContaining({ state: persisted }),
     );
+  });
+
+  it('prepares the room for bots and a new configuration after game finish', async () => {
+    const previous = {
+      ...gameState({ roomRunId: 2 }),
+      version: 4,
+    };
+    const next = {
+      ...gameState({ roomRunId: 2 }),
+      status: 'finished',
+    };
+    const persisted = { ...next, version: 5 };
+    const rooms = { prepareNextRun: jest.fn().mockResolvedValue(undefined) };
+    const hub = {
+      listConnections: jest.fn().mockReturnValue([
+        {
+          connectionId: 'owner',
+          meta: { scope: 'game', roomId: 4, userId: 1 },
+        },
+      ]),
+      send: jest.fn(),
+    };
+    const service = new GameWsRealtimeStateService(
+      {} as never,
+      {
+        compareAndSetInternalState: jest.fn().mockResolvedValue({
+          committed: true,
+          version: 5,
+          state: persisted,
+        }),
+      } as never,
+      {} as never,
+      { schedule: jest.fn() } as never,
+      { present: jest.fn().mockReturnValue({ status: 'finished' }) } as never,
+      hub as never,
+      rooms as never,
+      execution() as never,
+    );
+
+    await service.commit(
+      4,
+      { gameType: 'lama', state: previous, handler: {} as GameRuntime },
+      previous,
+      next,
+    );
+
+    expect(hub.send).toHaveBeenCalledWith(
+      'owner',
+      expect.objectContaining({ type: 'game.state' }),
+    );
+    expect(rooms.prepareNextRun).toHaveBeenCalledWith(4);
+    expect(hub.send.mock.invocationCallOrder[0]).toBeLessThan(
+      rooms.prepareNextRun.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('also prepares the room when an automatic action finishes the game', async () => {
+    let committedHandler:
+      | ((input: {
+          roomId: number;
+          gameType: string;
+          handler: GameRuntime;
+          state: GameStateEntity;
+          version: number;
+        }) => Promise<void> | void)
+      | undefined;
+    const automation = {
+      setStateCommittedHandler: jest.fn((handler) => {
+        committedHandler = handler;
+      }),
+    };
+    const rooms = { prepareNextRun: jest.fn().mockResolvedValue(undefined) };
+    new GameWsRealtimeStateService(
+      {} as never,
+      {} as never,
+      {} as never,
+      automation as never,
+      { present: jest.fn() } as never,
+      { listConnections: jest.fn().mockReturnValue([]) } as never,
+      rooms as never,
+      execution() as never,
+    );
+
+    await committedHandler?.({
+      roomId: 4,
+      gameType: 'lama',
+      handler: {} as GameRuntime,
+      state: { ...gameState({ roomRunId: 2 }), status: 'finished' },
+      version: 5,
+    });
+
+    expect(rooms.prepareNextRun).toHaveBeenCalledWith(4);
   });
 });

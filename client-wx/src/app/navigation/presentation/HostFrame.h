@@ -4,6 +4,8 @@
 
 #include <wx/frame.h>
 
+#include "shared/accessibility/application/FocusMemory.h"
+
 class wxBoxSizer;
 class wxWindow;
 
@@ -26,9 +28,13 @@ public:
 private:
     void OnClose(wxCloseEvent& event);
     void OnCharHook(wxKeyEvent& event);
+    void OnActivate(wxActivateEvent& event);
+    void OnChildFocus(wxChildFocusEvent& event);
+    void RestoreContentFocusAfterActivation();
 
     wxWindow* contentRoot_ = nullptr;
     wxWindow* currentContent_ = nullptr;
+    lila::shared::accessibility::FocusMemory focusMemory_;
     PresenceRequestedHandler onPresenceRequested_;
     CloseRequestedHandler onCloseRequested_;
 };

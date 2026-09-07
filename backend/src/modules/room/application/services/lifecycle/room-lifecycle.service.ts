@@ -195,6 +195,7 @@ export class RoomLifecycleService {
     const room = await context.requireRoom(existing.id);
     await context.invalidateRoomPayloadCache(room.id);
     await this.roomEvents.publishLobbyChanged(room.id, 'finished');
+    await this.roomEvents.publishRoomStateUpdated(room.id);
     return room;
   }
 
