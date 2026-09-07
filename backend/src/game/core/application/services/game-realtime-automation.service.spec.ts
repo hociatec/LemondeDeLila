@@ -198,11 +198,53 @@ describe('GameRealtimeAutomationService', () => {
         actions: [
           expect.objectContaining({
             type: 'draw',
-            meta: expect.objectContaining({ actorId: -7 }),
+            meta: expect.objectContaining({
+              actorId: -7,
+              commandId: expect.stringContaining(':generation:4:'),
+            }),
           }),
         ],
       }),
     );
+  });
+
+  it('uses a fresh command identity for consecutive bot actions in the same turn', async () => {
+    const runtime = {
+      gameType: 'a-fond-les-ballons',
+      getAutomaticActions: () => null,
+    } as unknown as GameRuntime;
+    const botTurn = (version: number) =>
+      state({
+        version,
+        players: [{ id: -7, username: 'Pumbaa', isBot: true }],
+        turn: { currentPlayerId: -7, direction: 1, turnNumber: 3 },
+        engine: { round: { number: 2 } },
+      });
+    const test = harness(botTurn(4), runtime, [
+      { type: 'draw_card', payload: {} },
+    ]);
+    test.engine.exportInternalState
+      .mockResolvedValueOnce(botTurn(4))
+      .mockResolvedValueOnce(botTurn(5));
+    const baseTask = {
+      key: 'game-realtime:12:a-fond-les-ballons',
+      roomId: 12,
+      gameType: 'a-fond-les-ballons',
+      signature: 'bot:-7:play:round:2:turn:3',
+      dueAtMs: Date.now() - 1,
+    };
+
+    await test.processor()({ ...baseTask, generation: 4 });
+    await test.processor()({ ...baseTask, generation: 5 });
+
+    const commandIds = test.executor.execute.mock.calls.map(
+      ([input]) => input.actions[0].meta.commandId,
+    );
+    expect(commandIds).toEqual([
+      expect.stringContaining(':generation:4:'),
+      expect.stringContaining(':generation:5:'),
+    ]);
+    expect(commandIds[0]).not.toBe(commandIds[1]);
   });
 
   it('lets an unresolved bot answer a collective choice during a human turn', async () => {

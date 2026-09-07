@@ -42,7 +42,8 @@ wxString BuildShortcutsText()
     text << L"- i : annoncer l'inventaire\n";
     text << L"- c : annoncer main\n";
     text << L"- f : annoncer les familles complètes\n";
-    text << L"- p : position plateau\n\n";
+    text << L"- p : annoncer votre position sur le plateau\n";
+    text << L"- Maj+P : annoncer la position de tous les joueurs\n\n";
     text << L"Tchat\n";
     text << L"- Entrée : envoyer le message\n";
     text << L"- Échap : fermer le tchat\n";

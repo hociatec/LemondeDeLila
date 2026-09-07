@@ -17,6 +17,11 @@ public:
         // Reserved client-wide gameplay keys: their availability must not
         // depend on shortcuts declared by an individual game.
         if (normalizedKey == "T") return "current-turn";
+        if (state.kits.movement)
+        {
+            if (normalizedKey == "P") return "position";
+            if (normalizedKey == "SHIFT+P") return "positions";
+        }
         if (normalizedKey == "S" && state.kits.score)
         {
             const auto declared = std::find_if(

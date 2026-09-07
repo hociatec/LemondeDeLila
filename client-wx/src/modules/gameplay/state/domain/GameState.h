@@ -18,6 +18,7 @@ struct GameState final
     static constexpr int SupportedViewVersion = 1;
 
     int roomId = 0;
+    std::optional<int> viewerPlayerId;
     int runId = 0;
     int version = 0;
     int viewVersion = 0;

@@ -66,6 +66,7 @@ nlohmann::json BuildGameView(const nlohmann::json& fixture)
     if (extras.contains("dice")) kits["dice"] = extras["dice"];
     nlohmann::json result{
         {"viewVersion", 1}, {"roomId", fixture.value("roomId", 1)},
+        {"viewerPlayerId", fixture.value("viewerPlayerId", 0)},
         {"runId", fixture.value("runId", 0)},
         {"version", fixture.value("version", 1)}, {"gameType", fixture.value("gameType", "test")},
         {"system", std::move(system)}, {"kits", std::move(kits)},
