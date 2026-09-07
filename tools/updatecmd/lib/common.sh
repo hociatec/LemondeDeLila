@@ -118,10 +118,7 @@ assert_immutable_git_source() {
     run_as "$BUILD_USER" git -C "$source_root" merge --quiet --ff-only origin/main \
       || die "Impossible d'aligner main sur origin/main en fast-forward."
   elif git -C "$source_root" merge-base --is-ancestor "$remote_sha" "$local_sha"; then
-    log "Avance locale détectée; publication de main vers origin/main."
-    run_as "$BUILD_USER" git -C "$source_root" push --quiet origin \
-      HEAD:refs/heads/main \
-      || die "Impossible de publier main vers origin/main."
+    die "main locale est en avance sur origin/main; intégrez ces commits par pull request avant le déploiement."
   else
     die "main et origin/main ont divergé; une résolution Git manuelle est requise."
   fi

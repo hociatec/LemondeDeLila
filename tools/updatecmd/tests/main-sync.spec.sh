@@ -41,9 +41,10 @@ assert_immutable_git_source "$TEST_ROOT/deploy"
 
 printf 'local\n' >>"$TEST_ROOT/deploy/version.txt"
 git -C "$TEST_ROOT/deploy" commit --quiet -am local
-assert_immutable_git_source "$TEST_ROOT/deploy"
-[[ "$(git --git-dir="$TEST_ROOT/origin.git" rev-parse refs/heads/main)" == \
-   "$(git -C "$TEST_ROOT/deploy" rev-parse HEAD)" ]]
+if (assert_immutable_git_source "$TEST_ROOT/deploy" >/dev/null 2>&1); then
+  die "Une avance locale absente d'origin/main a été acceptée."
+fi
+git -C "$TEST_ROOT/deploy" reset --quiet --hard origin/main
 
 git -C "$TEST_ROOT/deploy" switch --quiet -c feature
 if (assert_immutable_git_source "$TEST_ROOT/deploy" >/dev/null 2>&1); then
