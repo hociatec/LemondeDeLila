@@ -155,6 +155,19 @@ describe('À fond les ballons declarative game', () => {
     expect(game.availableActions(gameplayStarter)).toContain('draw_card');
     await game.as(gameplayStarter).do('draw_card', {});
     expect(game.inspect.deckCount()).toBe(A_FOND_CARD_COUNT - 1);
+    const drawAnnouncement = (await game.events()).find(
+      (event) =>
+        event.type === 'game.message' &&
+        event.data.key === 'game.card.drawn',
+    );
+    expect(drawAnnouncement?.data.params).toEqual(
+      expect.objectContaining({
+        playerId: gameplayStarter,
+        revealed: true,
+        cardLabel: expect.any(String),
+        effectDescription: expect.any(String),
+      }),
+    );
     expect(await game.replay()).toEqual(game.state());
   });
 });

@@ -27,4 +27,16 @@ void TestBoardPositionShortcuts()
     Expect(allPositions.find("Lila : case 4.") != std::string::npos &&
             allPositions.find("Mina : case 9.") != std::string::npos,
         "Maj+P doit annoncer la position de tous les joueurs.");
+
+    payload["kits"]["movement"]["tracks"]["main"]["positions"] =
+        nlohmann::json::object();
+    const auto initialState =
+        lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
+    Expect(GameCapabilityTextBuilder::Build(initialState, "position") ==
+            "Votre position : case 0.\n",
+        "p doit annoncer la case 0 avant le premier déplacement.");
+    const auto initialPositions = GameCapabilityTextBuilder::Build(initialState, "positions");
+    Expect(initialPositions.find("Lila : case 0.") != std::string::npos &&
+            initialPositions.find("Mina : case 0.") != std::string::npos,
+        "Maj+P doit annoncer tous les joueurs en case 0 au départ.");
 }

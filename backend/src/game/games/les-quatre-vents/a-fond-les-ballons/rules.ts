@@ -175,10 +175,20 @@ function drawBalloonCard(
   drawAndResolve<AFondLesBallonsState, BalloonCard>(ctx, {
     deckId: DECK,
     playerId,
+    eventData: (card) => balloonCardAnnouncement(card),
     resolve: (card) => {
       ctx.effects.schedule(...card.effects);
     },
   });
+}
+
+function balloonCardAnnouncement(card: BalloonCard): Record<string, unknown> {
+  const separator = card.text.indexOf(':');
+  const cardLabel =
+    separator >= 0 ? card.text.slice(0, separator).trim() : card.text.trim();
+  const effectDescription =
+    separator >= 0 ? card.text.slice(separator + 1).trim() : card.text.trim();
+  return { revealed: true, cardLabel, effectDescription };
 }
 
 function moveToNextTile(
