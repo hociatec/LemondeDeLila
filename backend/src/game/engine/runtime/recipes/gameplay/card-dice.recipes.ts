@@ -121,32 +121,9 @@ export function sequentialPawnSelection<TState extends object>(
   requestAll: (playerIds: readonly number[], ctx: GameContext<TState>) => void;
   resolve: (playerId: number, pawnId: string, ctx: GameContext<TState>) => void;
 } {
-  const pawnLabel = (
-    available: readonly PawnDefinition[],
-    pawnId: string,
-  ): string => {
-    const pawn = available.find((candidate) => candidate.id === pawnId);
-    return pawn
-      ? (options.label?.(pawn) ?? pawn.label ?? pawn.name ?? pawn.id)
-      : pawnId;
-  };
-  const requestForPlayers = (
-    playerId: number,
-    playerIds: readonly number[],
-    ctx: GameContext<TState>,
-  ): void => {
-    const available = ctx.pawns.available(options.setId);
-    ctx.events.message('game.pawn.selection-requested', { playerId });
-    ctx.choice.pawn({
-      id: options.choiceId,
-      player: playerId,
-      options: available.map((pawn) => pawn.id),
-      label: (pawnId) => pawnLabel(available, pawnId),
-      data: { pawnSelectionPlayerIds: [...playerIds] },
-    });
-  };
   const request = (playerId: number, ctx: GameContext<TState>): void => {
-    requestForPlayers(
+    requestPawnSelection(
+      options,
       playerId,
       ctx.players.all().map((player) => player.id),
       ctx,
@@ -156,18 +133,7 @@ export function sequentialPawnSelection<TState extends object>(
     playerIds: readonly number[],
     ctx: GameContext<TState>,
   ): void => {
-    const uniqueParticipants = [...new Set(playerIds)];
-    const playersById = new Map(
-      ctx.players.all().map((player) => [player.id, player] as const),
-    );
-    const participants = [
-      ...uniqueParticipants.filter(
-        (playerId) => !playersById.get(playerId)?.isBot,
-      ),
-      ...uniqueParticipants.filter(
-        (playerId) => playersById.get(playerId)?.isBot,
-      ),
-    ];
+    const participants = orderedPawnSelectionParticipants(playerIds, ctx);
     if (participants.length === 0) {
       options.complete({ ctx });
       return;
@@ -175,7 +141,7 @@ export function sequentialPawnSelection<TState extends object>(
     const first = participants[0];
     if (first != null) {
       ctx.turn.to(first, { announce: false });
-      requestForPlayers(first, participants, ctx);
+      requestPawnSelection(options, first, participants, ctx);
     }
   };
   const resolve = (
@@ -185,34 +151,93 @@ export function sequentialPawnSelection<TState extends object>(
   ): void => {
     ctx.pawns.assign(options.setId, playerId, pawnId);
     options.assigned?.({ playerId, pawnId, ctx });
-    const continuation = ctx.choice.continuation<{
-      pawnSelectionPlayerIds?: unknown;
-    }>();
-    const configuredPlayers = continuation?.pawnSelectionPlayerIds;
-    const participantIds = Array.isArray(configuredPlayers)
-      ? configuredPlayers.filter(
-          (candidate): candidate is number =>
-            typeof candidate === 'number' && Number.isInteger(candidate),
-        )
-      : ctx.players.all().map((player) => player.id);
-    const playersById = new Map(
-      ctx.players.all().map((player) => [player.id, player] as const),
-    );
-    const nextId = participantIds.find(
-      (candidate) =>
-        playersById.has(candidate) &&
-        ctx.pawns.assigned(options.setId, candidate).length <
-          ctx.pawns.perPlayer(options.setId),
-    );
-    const next = nextId == null ? null : playersById.get(nextId);
+    const participantIds = pawnSelectionContinuationPlayers(ctx);
+    const next = nextPawnSelectionPlayer(options.setId, participantIds, ctx);
     if (next) {
       ctx.turn.to(next.id, { announce: false });
-      requestForPlayers(next.id, participantIds, ctx);
+      requestPawnSelection(options, next.id, participantIds, ctx);
       return;
     }
     options.complete({ ctx });
   };
   return Object.freeze({ request, requestAll, resolve });
+}
+
+function requestPawnSelection<TState extends object>(
+  options: SequentialPawnSelectionOptions<TState>,
+  playerId: number,
+  playerIds: readonly number[],
+  ctx: GameContext<TState>,
+): void {
+  const available = ctx.pawns.available(options.setId);
+  ctx.events.message('game.pawn.selection-requested', { playerId });
+  ctx.choice.pawn({
+    id: options.choiceId,
+    player: playerId,
+    options: available.map((pawn) => pawn.id),
+    label: (pawnId) => pawnSelectionLabel(options, available, pawnId),
+    data: { pawnSelectionPlayerIds: [...playerIds] },
+  });
+}
+
+function pawnSelectionLabel<TState extends object>(
+  options: SequentialPawnSelectionOptions<TState>,
+  available: readonly PawnDefinition[],
+  pawnId: string,
+): string {
+  const pawn = available.find((candidate) => candidate.id === pawnId);
+  return pawn
+    ? (options.label?.(pawn) ?? pawn.label ?? pawn.name ?? pawn.id)
+    : pawnId;
+}
+
+function orderedPawnSelectionParticipants<TState extends object>(
+  playerIds: readonly number[],
+  ctx: GameContext<TState>,
+): number[] {
+  const uniqueParticipants = [...new Set(playerIds)];
+  const playersById = new Map(
+    ctx.players.all().map((player) => [player.id, player] as const),
+  );
+  return [
+    ...uniqueParticipants.filter(
+      (playerId) => !playersById.get(playerId)?.isBot,
+    ),
+    ...uniqueParticipants.filter(
+      (playerId) => playersById.get(playerId)?.isBot,
+    ),
+  ];
+}
+
+function pawnSelectionContinuationPlayers<TState extends object>(
+  ctx: GameContext<TState>,
+): number[] {
+  const continuation = ctx.choice.continuation<{
+    pawnSelectionPlayerIds?: unknown;
+  }>();
+  const configuredPlayers = continuation?.pawnSelectionPlayerIds;
+  return Array.isArray(configuredPlayers)
+    ? configuredPlayers.filter(
+        (candidate): candidate is number =>
+          typeof candidate === 'number' && Number.isInteger(candidate),
+      )
+    : ctx.players.all().map((player) => player.id);
+}
+
+function nextPawnSelectionPlayer<TState extends object>(
+  setId: string,
+  participantIds: readonly number[],
+  ctx: GameContext<TState>,
+): ReturnType<GameContext<TState>['players']['all']>[number] | null {
+  const playersById = new Map(
+    ctx.players.all().map((player) => [player.id, player] as const),
+  );
+  const nextId = participantIds.find(
+    (candidate) =>
+      playersById.has(candidate) &&
+      ctx.pawns.assigned(setId, candidate).length < ctx.pawns.perPlayer(setId),
+  );
+  return nextId == null ? null : (playersById.get(nextId) ?? null);
 }
 
 export function passTurn<TState extends object>(): GameActionDefinition<

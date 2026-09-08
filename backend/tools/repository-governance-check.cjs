@@ -9,7 +9,20 @@ const repositoryRoot = path.resolve(__dirname, '../..');
 const workflowsRoot = path.join(repositoryRoot, '.github/workflows');
 const violations = [];
 
-for (const name of fs.readdirSync(workflowsRoot)) {
+const workflowNames = fs.existsSync(workflowsRoot)
+  ? fs.readdirSync(workflowsRoot)
+  : [];
+
+function readWorkflow(name) {
+  const filename = path.join(workflowsRoot, name);
+  if (!fs.existsSync(filename)) {
+    violations.push(`.github/workflows/${name}: fichier de gouvernance absent`);
+    return null;
+  }
+  return fs.readFileSync(filename, 'utf8');
+}
+
+for (const name of workflowNames) {
   if (!name.endsWith('.yml') && !name.endsWith('.yaml')) continue;
   const relative = `.github/workflows/${name}`;
   const source = fs.readFileSync(path.join(workflowsRoot, name), 'utf8');
@@ -24,11 +37,8 @@ for (const name of fs.readdirSync(workflowsRoot)) {
   }
 }
 
-const quality = fs.readFileSync(
-  path.join(workflowsRoot, 'backend-quality.yml'),
-  'utf8',
-);
-if (!/push:\s*\n\s*branches:\s*\[main\]/.test(quality)) {
+const quality = readWorkflow('backend-quality.yml');
+if (quality !== null && !/push:\s*\n\s*branches:\s*\[main\]/.test(quality)) {
   violations.push('backend-quality.yml: push sur main absent');
 }
 for (const required of [
@@ -42,10 +52,8 @@ for (const required of [
 }
 
 for (const deploymentWorkflow of ['backend-deploy.yml', 'release-main.yml']) {
-  const source = fs.readFileSync(
-    path.join(workflowsRoot, deploymentWorkflow),
-    'utf8',
-  );
+  const source = readWorkflow(deploymentWorkflow);
+  if (source === null) continue;
   for (const requiredPattern of [
     /artifact:create/,
     /actions\/attest@[a-f0-9]{40}/,
